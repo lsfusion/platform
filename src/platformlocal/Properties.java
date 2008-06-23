@@ -226,7 +226,7 @@ class DataProperty extends SourceProperty<DataPropertyInterface> {
 
             return Result;
         } else
-            return null;           
+            return null;
     }
 
     public String GetDBType() {
@@ -316,7 +316,7 @@ class RelationProperty extends SourceProperty<PropertyInterface> {
         super(iTableFactory);
         Implements = new PropertyImplement<PropertyInterfaceImplement>(iProperty);
     }
-    
+
     SourceExpr ProceedJoinSelect(JoinList Joins) {
         // для всех нижних делаем JoinSelect
         Iterator<PropertyInterface> im = Implements.Property.Interfaces.iterator();
@@ -328,7 +328,7 @@ class RelationProperty extends SourceProperty<PropertyInterface> {
 
         return Implements.Property.JoinSelect(Joins);
     }
-    
+
     public Class GetValueClass() {
         // пока так потом сделаем перегрузку по классам
         Iterator<PropertyInterface> im = Implements.Property.Interfaces.iterator();

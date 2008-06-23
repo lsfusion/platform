@@ -157,7 +157,9 @@ class GroupQuery extends FromQuery {
 
 class SelectQuery extends FromQuery {
     List<SelectExpression> Expressions;
-   
+
+    Integer Top = 0;
+
     SelectQuery(Select iFrom) { 
         super(iFrom);
         Expressions = new ArrayList<SelectExpression>();
@@ -171,7 +173,7 @@ class SelectQuery extends FromQuery {
         while (j.hasNext())
             ExprString = (ExprString.length()==0?"":ExprString+',') + j.next().GetSelect();
         
-        return "SELECT " + ExprString + FromString;
+        return "SELECT " + (Top>0?"TOP "+Top.toString()+" ":"") + ExprString + FromString;
    }
     
     public String GetInsert() {
