@@ -556,3 +556,8 @@ class FormBeanView {
         return Result;
     }
 }
+
+class Abc
+{
+
+}
