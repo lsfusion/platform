@@ -19,22 +19,20 @@ import java.util.Set;
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
 
 
-
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 class ObjectImplement {
-    
+
     // выбранный объект, класс выбранного объекта
     Integer idObject = null;
     Class Class = null;
-    
+
     // выбранный класс
     Class GridClass = null;
-    
+
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
     int Updated = 0;
-    
+
     GroupObjectImplement GroupTo;
-    
 
     // чисто для отладки
     String OutName = "";
@@ -50,7 +48,7 @@ class GroupObjectValue extends GroupObjectMap<Integer> {
 class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
     Integer Order = 0;
-    
+
     // глобальный идентификатор чтобы писать во ViewTable
     Integer GID = 0;
 
@@ -147,7 +145,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
 // представление св-ва
 class PropertyView {
     PropertyObjectImplement View;
-       
+
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     GroupObjectImplement ToDraw;
     
@@ -161,24 +159,27 @@ class PropertyView {
     }            
 }
 
-// класс в котором лежит какие изменения произошли
-// появляется по сути для отделения клиента, именно он возвращается назад клиенту
-class FormChanges {
-    
-    FormChanges() {
+class AbstractFormChanges<T,V,Z> {
+
+    AbstractFormChanges() {
         Objects = new HashMap();
         GridObjects = new HashMap();
         GridProperties = new HashMap();
         PanelProperties = new HashMap();
         DropProperties = new HashSet();
     }
-            
-    Map<GroupObjectImplement,GroupObjectValue> Objects;
-    Map<GroupObjectImplement,List<GroupObjectValue>> GridObjects;
-    Map<PropertyView,Map<GroupObjectValue,Object>> GridProperties;
-    Map<PropertyView,Object> PanelProperties;
-    Set<PropertyView> DropProperties;
-    
+
+    Map<T,V> Objects;
+    Map<T,List<V>> GridObjects;
+    Map<Z,Map<V,Object>> GridProperties;
+    Map<Z,Object> PanelProperties;
+    Set<Z> DropProperties;
+}
+
+// класс в котором лежит какие изменения произошли
+// появляется по сути для отделения клиента, именно он возвращается назад клиенту
+class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue,PropertyView> {
+   
     void Out(FormBeanView bv) {
         Iterator<GroupObjectImplement> ig = bv.Groups.iterator();
         System.out.println(" ------- GROUPOBJECTS ---------------");
