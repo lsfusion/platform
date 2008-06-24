@@ -413,10 +413,14 @@ class IDTable extends Table {
 class ViewTable extends Table {
     ViewTable(Integer iObjects) {
         super("viewtable"+iObjects.toString());
-        for(Integer i=0;i<iObjects;i++)
-            Objects.add(new KeyField("object"+i,"integer"));
+        Objects = new ArrayList();
+        for(Integer i=0;i<iObjects;i++) {
+            KeyField ObjKeyField = new KeyField("object"+i,"integer");
+            Objects.add(ObjKeyField);
+            KeyFields.add(ObjKeyField);
+        }
         
-        View = new KeyField("view","integer");
+        View = new KeyField("viewid","integer");
         KeyFields.add(View);
     }
             
@@ -439,6 +443,7 @@ class TableFactory extends TableImplement{
     TableFactory() {
         ObjectTable = new ObjectTable();
         IDTable = new IDTable();
+        ViewTables = new ArrayList();
         
         for(int i=0;i<5;i++)
             ViewTables.add(new ViewTable(i));
@@ -472,6 +477,8 @@ class TableFactory extends TableImplement{
         
         Adapter.CreateTable(ObjectTable);
         Adapter.CreateTable(IDTable);
+        Iterator<ViewTable> iv = ViewTables.iterator();
+        while(iv.hasNext()) Adapter.CreateTable(iv.next());
         
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
@@ -487,6 +494,13 @@ class BusinessLogics {
         TableFactory = new TableFactory();
         DataProperties = new ArrayList();
         Properties = new ArrayList();
+        
+        BaseClass = new Class(0);
+        
+        StringClass = new StringClass(1);
+        StringClass.AddParent(BaseClass);
+        IntegerClass = new QuantityClass(2);
+        IntegerClass.AddParent(BaseClass);
     }
     
     void AddDataProperty(DataProperty Property) {
@@ -501,6 +515,9 @@ class BusinessLogics {
     }
 
     Class BaseClass;
+    Class StringClass;
+    Class IntegerClass;
+    
     TableFactory TableFactory;
     Collection<DataProperty> DataProperties;
     Collection<Property> Properties;

@@ -422,30 +422,38 @@ class Test extends BusinessLogics  {
     
     
     void SimpleTest() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Class String = new StringClass(0);
-        Class Integer = new QuantityClass(1);
         
-        Class Base = new ObjectClass(2);
-        Class Article = new ObjectClass(3);
+        Class Base = new ObjectClass(3);
+        Base.AddParent(BaseClass);
+        Class Article = new ObjectClass(4);
         Article.AddParent(Base);
-        Class Store = new ObjectClass(4);
+        Class Store = new ObjectClass(5);
         Store.AddParent(Base);
-        Class Document = new ObjectClass(5);
+        Class Document = new ObjectClass(6);
         Document.AddParent(Base);
-        Class ArticleGroup = new ObjectClass(6);
+        Class ArticleGroup = new ObjectClass(7);
         ArticleGroup.AddParent(Base);
         
-        LDP Name = AddDProp(String,Base);
+        LDP Name = AddDProp(StringClass,Base);
         LDP DocStore = AddDProp(Store,Document);
-        LDP Quantity = AddDProp(Integer,Document,Article);
+        LDP Quantity = AddDProp(IntegerClass,Document,Article);
         LDP ArtToGroup = AddDProp(ArticleGroup,Article);
+        
+        Name.Property.OutName = "имя";
+        DocStore.Property.OutName = "склад";
+        Quantity.Property.OutName = "кол-во";
+        ArtToGroup.Property.OutName = "гр. тов";
 
-        AddRProp(Name,1,DocStore,1);
-        AddRProp(Name,1,ArtToGroup,1);
+        LRP StoreName = AddRProp(Name,1,DocStore,1);
+        StoreName.Property.OutName = "имя склада";
+        LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
+        ArtGroupName.Property.OutName = "имя гр. тов.";
         
         LGP GP = AddGProp(Quantity,DocStore,1,2);
-        AddGProp(GP,2);
-        
+        GP.Property.OutName = "сумм кол-во док. тов.";
+        LGP GAP = AddGProp(GP,2);
+        GAP.Property.OutName = "сумм кол-во тов.";
+
         TableImplement Include;
         
         Include = new TableImplement();
@@ -475,13 +483,14 @@ class Test extends BusinessLogics  {
         FillDB(ad);
         
         Integer i;
-        Integer[] Articles = new Integer[5];
+        Integer[] Articles = new Integer[6];
         for(i=0;i<Articles.length;i++) Articles[i]=Article.AddObject(ad, TableFactory);
         Name.ChangeProperty(ad,"КОЛБАСА", Articles[0]);
         Name.ChangeProperty(ad,"ТВОРОГ", Articles[1]);
         Name.ChangeProperty(ad,"МОЛОКО", Articles[2]);
         Name.ChangeProperty(ad,"ОБУВЬ", Articles[3]);
         Name.ChangeProperty(ad,"ДЖЕМПЕР", Articles[4]);
+        Name.ChangeProperty(ad,"МАЙКА", Articles[5]);
 
         Integer[] Stores = new Integer[2];
         for(i=0;i<Stores.length;i++) Stores[i]=Store.AddObject(ad, TableFactory);
@@ -520,12 +529,90 @@ class Test extends BusinessLogics  {
         Quantity.ChangeProperty(ad,20,Documents[1],Articles[3]);
         Quantity.ChangeProperty(ad,28,Documents[1],Articles[4]);
 
-        DataPropertyInterface[] ToDraw = new DataPropertyInterface[1];
-        ToDraw[0] = new DataPropertyInterface(Article);
+        // потестим FormBeanView
+        // пока один вид потестим
+        FormBeanView fbv  = new FormBeanView(ad,this);
+        ObjectImplement obj1 = new ObjectImplement();                
+        ObjectImplement obj2 = new ObjectImplement();
+        
+        GroupObjectImplement gv = new GroupObjectImplement();
+        gv.add(obj1);
+        gv.add(obj2);
+        fbv.Groups.add(gv);
+        obj1.GroupTo = gv;
+        obj2.GroupTo = gv;
+        
+        gv.GID = 1;
+
+        PropertyObjectImplement GrTovImpl=null;
+        
+        // закинем все одиночные
+        Iterator<Property> ipr = Properties.iterator();
+        while(ipr.hasNext()) {
+            Property DrawProp = ipr.next();
+            if(DrawProp.Interfaces.size() == 1) {
+                PropertyObjectImplement PropImpl = new PropertyObjectImplement(DrawProp);
+                PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj1);
+                if(DrawProp.OutName.equals("гр. тов"))
+                    GrTovImpl = PropImpl;
+                fbv.Properties.add(new PropertyView(PropImpl,gv));
+                
+                PropImpl = new PropertyObjectImplement(DrawProp);
+                PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
+                if(DrawProp.OutName.equals("гр. тов"))
+                    GrTovImpl = PropImpl;
+                fbv.Properties.add(new PropertyView(PropImpl,gv));
+            }
+        }
+        
+        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv,obj2,obj1);
+        AddPropView(fbv,GP,gv,obj2,obj1);
+
+        GroupObjectValue ChangeValue;
+        
+        obj1.OutName = "товар";
+        fbv.ChangeClass(obj1,Base.ID);
+        obj2.OutName = "док";
+        fbv.ChangeClass(obj2,Document.ID);
+        fbv.AddFilter(new NotNullFilter(QImpl));
+        
+        fbv.EndApply().Out(fbv);
+
+        ChangeValue = new GroupObjectValue();
+        ChangeValue.put(obj1,2);
+        ChangeValue.put(obj2,7);
+        fbv.ChangeObject(gv,ChangeValue);
+        
+        fbv.EndApply().Out(fbv);
+
+        ChangeValue = new GroupObjectValue();
+        ChangeValue.put(obj1,3);
+        ChangeValue.put(obj2,7);
+        fbv.ChangeObject(gv,ChangeValue);
+        
+        fbv.EndApply().Out(fbv);
+
+        fbv.ChangeClass(obj1,Article.ID);
+//        fbv.ChangeClassView(gv, false);
+        fbv.EndApply().Out(fbv);
+
+//        DataPropertyInterface[] ToDraw = new DataPropertyInterface[1];
+//        ToDraw[0] = new DataPropertyInterface(Article);
 //        ToDraw[1] = new DataPropertyInterface(Store);
-        DisplayClasses(ad,ToDraw);
+//        DisplayClasses(ad,ToDraw);
 
         ad.Disconnect();
+    }
+    
+    PropertyObjectImplement AddPropView(FormBeanView fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
+        PropertyObjectImplement PropImpl = new PropertyObjectImplement(ListProp.Property);
+        
+        ListIterator<PropertyInterface> i = ListProp.ListInterfaces.listIterator();
+        for(ObjectImplement Object : Params) {
+            PropImpl.Mapping.put(i.next(),Object);
+        }
+        fbv.Properties.add(new PropertyView(PropImpl,gv));
+        return PropImpl;
     }
     
     // "рисует" класс, со всеми св-вами

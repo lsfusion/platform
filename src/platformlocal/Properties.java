@@ -129,6 +129,9 @@ abstract class Property<T extends PropertyInterface> {
     abstract public InterfaceClassSet GetClassSet(Class ReqValue);
     
     abstract public String GetDBType();
+    
+    // для отладки
+    String OutName = "";
 }
 
 abstract class SourceProperty<T extends PropertyInterface> extends Property<T> {

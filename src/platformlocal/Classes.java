@@ -44,7 +44,7 @@ class Class {
     }
     
     Class FindClassID(Integer idClass) {
-        if(ID==idClass) return this;
+        if(ID.equals(idClass)) return this;
 
         Iterator<Class> i = Childs.iterator();
         while (i.hasNext()) {
