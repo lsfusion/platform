@@ -6,6 +6,9 @@
 package platformlocal;
 
 import java.awt.GridBagConstraints;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -19,6 +22,8 @@ public class TestClientForm {
     ClientGroupPropertyView gpMain;
     
     ClientPropertyView DocName, GoodName, GoodQuantity;
+    
+    ArrayList<ClientGroupObjectValue> Docs, Goods;
     
     ClientFormInit getClientObjectCache() {
         
@@ -68,10 +73,10 @@ public class TestClientForm {
 
         // отрисовка
 
-        goDocument.PanelConstraint = generatePanelConstraint(0);
-        goDocument.GridConstraint = generatePanelConstraint(1);
-        goGood.PanelConstraint = generatePanelConstraint(2);
-        goGood.GridConstraint = generatePanelConstraint(3);
+        goDocument.PanelConstraint = generatePanelConstraint(0,0.0);
+        goDocument.GridConstraint = generatePanelConstraint(1,1.0);
+        goGood.PanelConstraint = generatePanelConstraint(2,0.0);
+        goGood.GridConstraint = generatePanelConstraint(3,1.0);
         
         DocName.PanelConstraint = generatePropConstraint(0);
         GoodName.PanelConstraint = generatePropConstraint(1);
@@ -85,21 +90,60 @@ public class TestClientForm {
     ClientFormChanges getFormChanges() {
         
         ClientFormChanges changes = new ClientFormChanges();
+
+        Map<ClientGroupObjectValue,Object> PropValue;
         
-        changes.PanelProperties.put(DocName, "");
-        changes.PanelProperties.put(GoodName, "");
-        changes.PanelProperties.put(GoodQuantity, 0);
+        Docs = new ArrayList();
+        Docs.add(new ClientGroupObjectValue());
+        Docs.add(new ClientGroupObjectValue());
+        
+        changes.GridObjects.put(goDocument, Docs);
+        
+        PropValue = new HashMap();
+        PropValue.put(Docs.get(0), "НД1");
+        PropValue.put(Docs.get(1), "НД2");
+        changes.GridProperties.put(DocName, PropValue);
+
+        Goods = new ArrayList();
+        Goods.add(new ClientGroupObjectValue());
+        Goods.add(new ClientGroupObjectValue());
+        Goods.add(new ClientGroupObjectValue());
+        
+        changes.GridObjects.put(goGood, Goods);
+        
+        PropValue = new HashMap();
+        PropValue.put(Goods.get(0), "Молоко 1.5%");
+        PropValue.put(Goods.get(1), "Колбаса прима");
+        PropValue.put(Goods.get(2), "Сок юнит");
+        changes.GridProperties.put(GoodName, PropValue);
+
+        PropValue = new HashMap();
+        PropValue.put(Goods.get(0), 10);
+        PropValue.put(Goods.get(1), 20);
+        PropValue.put(Goods.get(2), 3);
+        changes.GridProperties.put(GoodQuantity, PropValue);
+        
+//        Docs.get(0).
+        
+        
+        changes.PanelProperties.put(DocName, "СА324235");
+        changes.PanelProperties.put(GoodName, "Молоко 1.5%");
+        changes.PanelProperties.put(GoodQuantity, 5);
+        
+/*        changes.GridProperties.put(DocName, new HashMap());
+        changes.GridProperties.put(GoodName, new HashMap());
+        changes.GridProperties.put(GoodQuantity, new HashMap());*/
         
         return changes;
         
     }
 
-    private GridBagConstraints generatePanelConstraint(int i) {
+    private GridBagConstraints generatePanelConstraint(int i, double weighty) {
 
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 1;
-        c.weighty = 1;
+        c.weighty = weighty;
         c.gridy = i;
         
         return c;
