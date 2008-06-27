@@ -536,15 +536,17 @@ class Test extends BusinessLogics  {
         ObjectImplement obj2 = new ObjectImplement();
         
         GroupObjectImplement gv = new GroupObjectImplement();
+        GroupObjectImplement gv2 = new GroupObjectImplement();
+
         gv.add(obj1);
-        gv.add(obj2);
-        fbv.Groups.add(gv);
-        obj1.GroupTo = gv;
-        obj2.GroupTo = gv;
-        
+        gv2.add(obj2);
+        fbv.AddGroup(gv);
+        fbv.AddGroup(gv2);
         gv.GID = 1;
+        gv2.GID = 2;
 
         PropertyObjectImplement GrTovImpl=null;
+        PropertyObjectImplement NameImpl=null;
         
         // закинем все одиночные
         Iterator<Property> ipr = Properties.iterator();
@@ -553,8 +555,8 @@ class Test extends BusinessLogics  {
             if(DrawProp.Interfaces.size() == 1) {
                 PropertyObjectImplement PropImpl = new PropertyObjectImplement(DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj1);
-                if(DrawProp.OutName.equals("гр. тов"))
-                    GrTovImpl = PropImpl;
+                if(DrawProp.OutName.equals("имя"))
+                    NameImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv));
                 
                 PropImpl = new PropertyObjectImplement(DrawProp);
@@ -565,8 +567,8 @@ class Test extends BusinessLogics  {
             }
         }
         
-        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv,obj2,obj1);
-        AddPropView(fbv,GP,gv,obj2,obj1);
+        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv2,obj2,obj1);
+        AddPropView(fbv,GP,gv2,obj2,obj1);
 
         GroupObjectValue ChangeValue;
         
@@ -575,25 +577,29 @@ class Test extends BusinessLogics  {
         obj2.OutName = "док";
         fbv.ChangeClass(obj2,Document.ID);
         fbv.AddFilter(new NotNullFilter(QImpl));
+        fbv.AddOrder(NameImpl);
         
         fbv.EndApply().Out(fbv);
 
         ChangeValue = new GroupObjectValue();
-        ChangeValue.put(obj1,2);
-        ChangeValue.put(obj2,7);
+        ChangeValue.put(obj1,8);
+        ChangeValue.put(obj2,13);
         fbv.ChangeObject(gv,ChangeValue);
         
         fbv.EndApply().Out(fbv);
 
-        ChangeValue = new GroupObjectValue();
+/*        ChangeValue = new GroupObjectValue();
         ChangeValue.put(obj1,3);
         ChangeValue.put(obj2,7);
         fbv.ChangeObject(gv,ChangeValue);
         
         fbv.EndApply().Out(fbv);
-
+*/
         fbv.ChangeClass(obj1,Article.ID);
-//        fbv.ChangeClassView(gv, false);
+        fbv.ChangeClassView(gv, false);
+        fbv.EndApply().Out(fbv);
+
+        fbv.ChangeClassView(gv, true);
         fbv.EndApply().Out(fbv);
 
 //        DataPropertyInterface[] ToDraw = new DataPropertyInterface[1];
@@ -671,29 +677,6 @@ class Test extends BusinessLogics  {
 
         Adapter.OutSelect(SimpleSelect);
     }
-}
-
-class MapBuilder<T,V> {
-    
-    void RecBuildMap(T[] From,V[] To,int iFr,List<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
-        if(iFr==From.length) {
-            Result.add((Map<T,V>)CurrentMap.clone());
-            return;
-        }
-
-        for(int v=0;v<To.length;v++)
-            if(!CurrentMap.containsValue(To[v])){
-                CurrentMap.put(From[iFr],To[v]);
-                RecBuildMap(From,To,iFr+1,Result,CurrentMap);
-                CurrentMap.remove(From[iFr]);
-            }
-    }
-    
-    List<Map<T,V>> BuildMap(T[] From,V[] To) {
-        List<Map<T,V>> Result = new ArrayList<Map<T,V>>();
-        RecBuildMap(From,To,0,Result,new HashMap<T,V>(0));
-        return Result;
-    }            
 }
 
 // для упрощенного создания св-в со списками интерфейсов, по сути как фасад

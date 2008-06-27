@@ -127,6 +127,7 @@ class DataAdapter {
         List<Map<String,Object>> ExecResult = new ArrayList<Map<String,Object>>();
         Statement Statement = Connection.createStatement();
         try {
+            System.out.println(Select.GetSelect());
             ResultSet Result = Statement.executeQuery(Select.GetSelect());
             try {
                 while(Result.next()) {

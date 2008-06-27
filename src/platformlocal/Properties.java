@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.ListIterator;
 import java.util.TreeMap;
 
 
@@ -28,9 +29,13 @@ class PropertyImplement<T> {
 
 interface PropertyInterfaceImplement {
 
-    public SourceExpr MapJoinSelect(JoinList Joins);
+    public SourceExpr MapJoinSelect(JoinList Joins,boolean Changed);
     public Class MapGetValueClass();
     public InterfaceClassSet MapGetClassSet(Class ReqValue);
+
+    // для increment'ного обновления
+    public boolean MapHasChanges();
+
 }
         
 
@@ -39,7 +44,7 @@ class PropertyInterface implements PropertyInterfaceImplement {
     SourceExpr JoinImplement;
     Class ValueClass;
     
-    public SourceExpr MapJoinSelect(JoinList Joins) {
+    public SourceExpr MapJoinSelect(JoinList Joins,boolean Changed) {
         return JoinImplement;
     }
     
@@ -56,6 +61,10 @@ class PropertyInterface implements PropertyInterfaceImplement {
         }
 
         return Result;
+    }
+    
+    public boolean MapHasChanges() {
+        return false;
     }
 }
 
@@ -132,6 +141,34 @@ abstract class Property<T extends PropertyInterface> {
     
     // для отладки
     String OutName = "";
+    
+    // для Increment'ного обновления
+    Table TableChanges;
+    Map<PropertyInterface,KeyField> KeyChanges;
+    Field ValueChanges;
+
+    // аналогичная схема должна быть для постоянных аггрегаций !!!
+    // связывает именно измененные записи
+    SourceExpr ChangedJoinSelect(JoinList Joins) {
+        Select SelectChanges = new SelectTable(TableChanges.Name);
+        Iterator<PropertyInterface> i = (Iterator<PropertyInterface>) Interfaces.iterator();
+        while(i.hasNext()) {
+            PropertyInterface Interface = i.next();
+            String FieldName = KeyChanges.get(Interface).Name;
+            // сюда мы маппимся 
+            if(Interface.JoinImplement==null)
+                Interface.JoinImplement = new FieldSourceExpr(SelectChanges,FieldName);
+            else 
+                SelectChanges.Wheres.add(new FieldWhere(Interface.JoinImplement,FieldName));
+        }
+        Joins.add(SelectChanges);
+        
+        return (new FieldSourceExpr(SelectChanges,ValueChanges.Name));
+    }
+    
+    boolean HasChanges() {
+        return TableChanges!=null;
+    }
 }
 
 abstract class SourceProperty<T extends PropertyInterface> extends Property<T> {
@@ -252,11 +289,16 @@ class DataProperty extends SourceProperty<DataPropertyInterface> {
         Adapter.UpdateInsertRecord(SourceTable,InsertKeys,InsertValues);
     }
 }
+
+abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
+    
+}
+
 class PropertyMapImplement extends PropertyImplement<PropertyInterface> implements PropertyInterfaceImplement {
     
     PropertyMapImplement(Property iProperty) {super(iProperty);}
 
-    public SourceExpr MapJoinSelect(JoinList Joins) {
+    public SourceExpr MapJoinSelect(JoinList Joins,boolean Changed) {
         
         // собираем null ссылки чтобы обновить свои JoinExprs
         Collection<PropertyInterface> NullInterfaces = new ArrayList<PropertyInterface>();
@@ -269,7 +311,7 @@ class PropertyMapImplement extends PropertyImplement<PropertyInterface> implemen
                 NullInterfaces.add(ImplementInterface);
         }
         
-        SourceExpr JoinSource = Property.JoinSelect(Joins);
+        SourceExpr JoinSource = (Changed?Property.ChangedJoinSelect(Joins):Property.JoinSelect(Joins));
         
         // прогоним и проверим если кто-то изменил с null себе закинем JoinExprs
         Iterator<PropertyInterface> in = NullInterfaces.iterator();
@@ -310,6 +352,10 @@ class PropertyMapImplement extends PropertyImplement<PropertyInterface> implemen
         
         return Result;
     }
+    
+    public boolean MapHasChanges() {
+        return Property.HasChanges();
+    }
 }
 
 class RelationProperty extends SourceProperty<PropertyInterface> {
@@ -326,7 +372,7 @@ class RelationProperty extends SourceProperty<PropertyInterface> {
         while (im.hasNext())
         {
             PropertyInterface ImplementInterface = im.next();
-            ImplementInterface.JoinImplement = Implements.Mapping.get(ImplementInterface).MapJoinSelect(Joins);
+            ImplementInterface.JoinImplement = Implements.Mapping.get(ImplementInterface).MapJoinSelect(Joins,false);
         }
 
         return Implements.Property.JoinSelect(Joins);
@@ -364,6 +410,70 @@ class RelationProperty extends SourceProperty<PropertyInterface> {
         }
         
         return Result;
+    }
+
+    // инкрементные св-ва
+    void IncrementChanges() {
+        // алгоритм такой - для всех map св-в (в которых были изменения) строим подмножества изм. св-в
+        // далее реализации этих св-в "замещаем" (то есть при JOIN будем подставлять), с остальными св-вами делаем LEFT JOIN на IS NULL 
+        // и JOIN'им с основным св-вом делая туда FULL JOIN новых значений
+        // или UNION или большой FULL JOIN в нужном порядке (и не делать LEFT JOIN на IS NULL) и там сделать большой NVL
+
+        Iterator<PropertyInterface> im = Implements.Property.Interfaces.iterator();
+        
+        List<PropertyInterface> ChangedProperties = new ArrayList();
+        while(im.hasNext()) {
+            PropertyInterface Interface = im.next();
+            // должен вернуть null если нету изменений (или просто транслирует интерфейс) иначе возвращает AggregateProperty
+            if(Implements.Mapping.get(Interface).MapHasChanges()) 
+                ChangedProperties.add(Interface);
+        }
+        
+        // конечный результат, с ключами и выражением 
+        SelectQuery ResultQuery = null;
+        Map<PropertyInterface,SelectExpression> ResultKeys = null;
+        SourceExpr ResultValue = null;
+
+        // строим все подмножества св-в в лексикографическом порядке
+        ListIterator<List<PropertyInterface>> il = (new SetBuilder<PropertyInterface>()).BuildSubSetList(ChangedProperties).listIterator();
+        while(il.hasNext()) {
+            List<PropertyInterface> ChangeProps = il.next();
+            // будем докидывать FULL JOIN'ы в нужном порядке получая соотв. NVL
+            // нужно за Join'ить со старыми значениями (исключить этот JOIN если пустое подмн-во !!! собсно в этом и заключается оптимизация инкрементности), затем с новыми (если она есть)
+            for(int ij=(ChangeProps.size()==0?1:0);ij<(Implements.Property.HasChanges()?2:1);ij++) {
+                SelectQuery SubQuery = new SelectQuery(null);
+
+                JoinList Joins = new JoinList();
+
+                // скинем все JoinImplement'ы
+                im = Interfaces.iterator();
+                while (im.hasNext()) im.next().JoinImplement = null;
+
+                im = Implements.Property.Interfaces.iterator();
+                while (im.hasNext()) {
+                    PropertyInterface ImplementInterface = im.next();
+                    PropertyInterfaceImplement MapInterface = Implements.Mapping.get(ImplementInterface);
+                    if(ChangeProps.contains(ImplementInterface))
+                        ImplementInterface.JoinImplement = MapInterface.MapJoinSelect(Joins,ChangeProps.contains(ImplementInterface));
+                }
+
+                if(ij==0)
+                    Implements.Property.JoinSelect(Joins);
+                else
+                    Implements.Property.ChangedJoinSelect(Joins);
+
+                // закинем все в запрос
+                int Keys = 1;
+                im = Interfaces.iterator();
+                while (im.hasNext()) {
+                    SubQuery.Expressions.add(new SelectExpression(im.next().JoinImplement,"key"+Keys));
+                    // сразу же заJoin'им SubQuery если он не первый
+                    if(ResultQuery!=null) {
+                        SubQuery.Joins.add(SubQuery);
+                    }
+                }
+            }
+        }
     }
 
     public String GetDBType() {
@@ -409,7 +519,7 @@ class GroupProperty extends SourceProperty<GroupPropertyInterface> {
         Iterator<GroupPropertyInterface> im = Interfaces.iterator();
         while (im.hasNext()) {
             GroupPropertyInterface ImplementInterface = im.next();
-            SourceExpr JoinSource = ImplementInterface.Implement.MapJoinSelect(QueryJoins);
+            SourceExpr JoinSource = ImplementInterface.Implement.MapJoinSelect(QueryJoins,false);
             
             KeyNum++;
             String KeyField = "key"+KeyNum.toString();

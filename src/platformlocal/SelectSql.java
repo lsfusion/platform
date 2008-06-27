@@ -57,7 +57,7 @@ abstract class Select {
         if (First)
             return " FROM " + SourceFrom + JoinFrom + WhereFrom;
         else
-            return ((JoinType.length()==0)?"":" "+JoinType) + " JOIN " + SourceFrom + WhereFrom + JoinFrom;
+            return ((JoinType.length()==0)?"":" "+JoinType) + " JOIN " + SourceFrom + (WhereFrom.length()==0?" ON 1=1":WhereFrom) + JoinFrom;
     }
 
     protected Integer AliasCounter = 0;
@@ -102,7 +102,7 @@ abstract class Query extends Select {
 
 // UNION особо не по Order'ишь так как нету источника
 class UnionQuery extends Query {
-    
+
     FromQuery Query;
     List<FromQuery> ExtraUnions;
     
@@ -286,7 +286,7 @@ class FieldExprCompareWhere extends Where {
 
     @Override
     public String GetSelect(Select From) {
-        return Source.GetSource() + (Compare==0?"=":(Compare==1?">=":"<=")) + (Value instanceof String?"'"+Value+"'":Value.toString());
+        return Source.GetSource() + (Compare==0?"=":(Compare==1?">":"<")) + (Value instanceof String?"'"+Value+"'":Value.toString());
     }
 }
 

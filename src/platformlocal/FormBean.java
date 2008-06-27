@@ -47,6 +47,13 @@ class GroupObjectValue extends GroupObjectMap<Integer> {
 
 class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
+    GroupObjectImplement() {
+        MapFilters = new HashSet();
+        MapOrders = new ArrayList();
+        Filters = new HashSet();
+        Orders = new ArrayList();
+    }
+
     Integer Order = 0;
 
     // глобальный идентификатор чтобы писать во ViewTable
@@ -56,8 +63,14 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     Boolean GridClassView = true;
 
     // закэшированные
-    Set<Filter> Filters = null;
-    List<PropertyObjectImplement> Orders = null;
+    
+    // вообще все фильтры
+    Set<Filter> MapFilters;
+    List<PropertyObjectImplement> MapOrders;
+    
+    // с активным интерфейсом
+    Set<Filter> Filters;
+    List<PropertyObjectImplement> Orders;
     
     boolean UpKeys, DownKeys;
     List<GroupObjectValue> Keys = null;
@@ -67,7 +80,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
     int Updated = 0;
 
-    int PageSize = 10;
+    int PageSize = 5;
     
     void Out(GroupObjectValue Value) {
         ListIterator<ObjectImplement> i = listIterator();
@@ -112,6 +125,16 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
         while(i.hasNext()) {
             ObjectImplement IntObject = i.next();
             if(IntObject.GroupTo!=ClassGroup && ((IntObject.Updated & (1<<0))!=0)) return true;
+        }
+        
+        return false;
+    }
+
+    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
+        Iterator<ObjectImplement> i = Mapping.values().iterator();
+        while(i.hasNext()) {
+            ObjectImplement IntObject = i.next();
+            if(((IntObject.Updated & (1<<(IntObject.GroupTo==ClassGroup?3:1))))!=0) return true;
         }
         
         return false;
@@ -252,6 +275,10 @@ class Filter {
         return Property.IsInInterface(ClassGroup);
     }
 
+    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
+        return Property.ClassUpdated(ClassGroup);
+    }
+
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
         return Property.ObjectUpdated(ClassGroup);
     }
@@ -286,6 +313,13 @@ class FormBeanView {
         InterfacePool = new HashMap();
         
         StructUpdated = true;
+    }
+    
+    void AddGroup(GroupObjectImplement Group) { 
+        Groups.add(Group);
+        Group.Order = Groups.size();
+        Iterator<ObjectImplement> i = Group.iterator();
+        while(i.hasNext()) i.next().GroupTo = Group;
     }
 
     List<GroupObjectImplement> Groups;
@@ -380,33 +414,24 @@ class FormBeanView {
         Map<GroupObjectImplement,List<PropertyObjectImplement>> MapGroupOrders = null;
         if(StructUpdated) {
             // построим Map'ы
+            // очистим старые 
+            Iterator<GroupObjectImplement> igo = Groups.iterator();
+            while(igo.hasNext()) {
+                GroupObjectImplement Group = igo.next();
+                Group.MapFilters = new HashSet();
+                Group.MapOrders = new ArrayList();
+            }
             // фильтры
-            MapGroupFilters = new HashMap();
             Iterator<Filter> ift = Filters.iterator();
             while(ift.hasNext()) {
                 Filter Filt = ift.next();
-                GroupObjectImplement ApplyObject = Filt.GetApplyObject();
-                
-                Set<Filter> FilterSet = MapGroupFilters.get(ApplyObject);
-                if(FilterSet==null) {
-                    FilterSet = new HashSet<Filter>();
-                    MapGroupFilters.put(ApplyObject, FilterSet);
-                }
-                FilterSet.add(Filt);
+                Filt.GetApplyObject().MapFilters.add(Filt);
             }
             // порядки
-            MapGroupOrders = new HashMap();
             ListIterator<PropertyObjectImplement> ior = Orders.listIterator();
             while(ior.hasNext()) {
                 PropertyObjectImplement Order = ior.next();
-                GroupObjectImplement ApplyObject = Order.GetApplyObject();
-                
-                List<PropertyObjectImplement> OrderList = MapGroupOrders.get(ApplyObject);
-                if(OrderList==null) {
-                    OrderList = new ArrayList<PropertyObjectImplement>();
-                    MapGroupOrders.put(ApplyObject, OrderList);
-                }
-                OrderList.add(Order);
+                Order.GetApplyObject().MapOrders.add(Order);
             }
         }
 
@@ -427,26 +452,37 @@ class FormBeanView {
             // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3), изменился "классовый" вид с false на true - (флаг Updated - 4)
             boolean UpdateKeys = ((Group.Updated & (1<<3))!=0);
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
-            if(StructUpdated) {
-                // проверяем интерфейсы, неактивные вырезаем
-                Set<Filter> GroupFilters = MapGroupFilters.get(Group);
-                if(GroupFilters==null) GroupFilters = new HashSet();
-                List<PropertyObjectImplement> GroupOrders = MapGroupOrders.get(Group);
-                if(GroupOrders==null) GroupOrders = new ArrayList();
-                
-                iof = GroupFilters.iterator();
-                while(iof.hasNext())
-                    if(!iof.next().IsInInterface(Group)) iof.remove();
-                ioo = GroupOrders.listIterator();
-                while(ioo.hasNext())
-                    if(!ioo.next().IsInInterface(Group)) ioo.remove();
-
-                if(!(GroupFilters.equals(Group.Filters) && GroupOrders.equals(Group.Orders))) {
-                    Group.Filters = GroupFilters;
-                    Group.Orders = GroupOrders;
-                    UpdateKeys = true;
-                }
+            // фильтры
+            iof = Group.MapFilters.iterator();
+            while(iof.hasNext()) {
+                Filter Filt = iof.next();
+                // если изменилась структура или кто-то изменил класс, перепроверяем
+                if(StructUpdated || Filt.ClassUpdated(Group))
+                    UpdateKeys = (Filt.IsInInterface(Group)?Group.Filters.add(Filt):Group.Filters.remove(Filt)) || UpdateKeys;
             }
+            // порядки
+            boolean SetOrderChanged = false;
+            ioo = Group.MapOrders.listIterator();
+            Set<PropertyObjectImplement> SetOrders = new HashSet(Group.Orders);
+            while(ioo.hasNext()) {
+                PropertyObjectImplement Order = ioo.next();
+                // если изменилась структура или кто-то изменил класс, перепроверяем
+                if(StructUpdated || Order.ClassUpdated(Group))
+                    SetOrderChanged = (Order.IsInInterface(Group)?SetOrders.add(Order):Group.Filters.remove(Order));
+            }
+            if(StructUpdated || SetOrderChanged) {
+                // переформирываваем порядок, если структура или принадлежность Order'у изменилась
+                ioo = Group.MapOrders.listIterator();
+                List<PropertyObjectImplement> NewOrder = new ArrayList();
+                while(ioo.hasNext()) {
+                    PropertyObjectImplement Order = ioo.next();
+                    if(SetOrders.contains(Order)) NewOrder.add(Order);
+                }
+
+                UpdateKeys = UpdateKeys || SetOrderChanged || !Group.Orders.equals(NewOrder);
+                Group.Orders = NewOrder;
+            }        
+
             if(!UpdateKeys) {
                 // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
                 iof = Group.Filters.iterator();
@@ -527,7 +563,7 @@ class FormBeanView {
                     // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                     if(OrderValues!=null) {
                         OrderSources.add(OrderExpr);
-                        OrderWheres.add(OrderValues.get(OrderExpr));
+                        OrderWheres.add(OrderValues.get(ToOrder));
                     }
                     
                     // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
@@ -542,13 +578,16 @@ class FormBeanView {
                     Select KeySelectTable = null;
                     if(KeyExpr==null) {
                         KeySelectTable = BL.TableFactory.ObjectTable.ClassSelect(Object.GridClass);
-                        KeySelectTable.JoinType = "FULL";
                         KeyExpr = new FieldSourceExpr(KeySelectTable,BL.TableFactory.ObjectTable.Key.Name);
-                    } else 
+                        
+                        // вставляем слева (если справа то null'ы кидает при ORDER BY)
+                        JoinKeys.add(0,KeySelectTable);
+                        if(JoinKeys.size()>1) JoinKeys.get(1).JoinType = "FULL";
+                    } else {
                         KeySelectTable = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
+                        JoinKeys.add(KeySelectTable);
+                    }
 
-                    JoinKeys.add(KeySelectTable);
-                    
                     // также закинем их в порядок и в запрос
                     SelectKeys.Orders.add(KeyExpr);
                     if(KeyOrder!=null) {
@@ -571,7 +610,7 @@ class FormBeanView {
                 }
                 
                 SelectKeys.Descending = DescOrder;
-                SelectKeys.Top = Group.PageSize*3;
+                SelectKeys.Top = (Group.GridClassView?Group.PageSize*3:1);
                 
                 // выполняем запрос
                 List<Map<String,Object>> KeyResult = Adapter.ExecuteSelect(SelectKeys);
@@ -614,7 +653,7 @@ class FormBeanView {
                     ioo = Group.Orders.listIterator();
                     while(ioo.hasNext()) {
                         PropertyObjectImplement ToOrder = ioo.next();
-                        OrderRow.put(ToOrder,(Integer)ResultRow.get("order"+((Integer)(ioo.nextIndex()-1))));
+                        OrderRow.put(ToOrder,ResultRow.get("order"+((Integer)(ioo.nextIndex()-1))));
                     }
                     
                     Group.Keys.add(KeyRow);
@@ -635,14 +674,13 @@ class FormBeanView {
 
         Collection<PropertyView> PanelProps = new ArrayList();
         Map<GroupObjectImplement,Collection<PropertyView>> GroupProps = new HashMap();
+        
+//        PanelProps.
 
         Iterator<PropertyView> ipv = Properties.iterator();
         while(ipv.hasNext()) {
             PropertyView DrawProp = ipv.next();
             
-            if(DrawProp.View.Property.OutName=="имя")
-                DrawProp = DrawProp;
-
             // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
             boolean Read = false;
             boolean CheckClass = false;
