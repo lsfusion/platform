@@ -25,7 +25,7 @@ public class TestClientForm {
     
     ArrayList<ClientGroupObjectValue> Docs, Goods;
     
-    ClientFormInit getClientObjectCache() {
+    ClientFormInit getClientFormInit() {
         
         ClientFormInit cache = new ClientFormInit();
         
@@ -110,7 +110,7 @@ public class TestClientForm {
         Goods.add(new ClientGroupObjectValue());
         
         changes.GridObjects.put(goGood, Goods);
-        
+
         PropValue = new HashMap();
         PropValue.put(Goods.get(0), "Молоко 1.5%");
         PropValue.put(Goods.get(1), "Колбаса прима");
@@ -122,9 +122,8 @@ public class TestClientForm {
         PropValue.put(Goods.get(1), 20);
         PropValue.put(Goods.get(2), 3);
         changes.GridProperties.put(GoodQuantity, PropValue);
-        
+  
 //        Docs.get(0).
-        
         
         changes.PanelProperties.put(DocName, "СА324235");
         changes.PanelProperties.put(GoodName, "Молоко 1.5%");

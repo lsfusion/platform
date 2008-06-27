@@ -114,7 +114,7 @@ class ClientFormInit {
 
 public class ClientForm extends FrameView {
 
-    ClientFormInit Objects;
+    ClientFormInit FormInit;
 
     JPanel mainPanel;
     GridBagLayout mainLayout;
@@ -129,7 +129,8 @@ public class ClientForm extends FrameView {
         setComponent(mainPanel);
 
         TestClientForm tcf = new TestClientForm();
-        Objects = tcf.getClientObjectCache();
+        FormInit = tcf.getClientFormInit();
+        
         CreateViewObjects();
         
         ApplyFormChanges(tcf.getFormChanges());
@@ -140,7 +141,6 @@ public class ClientForm extends FrameView {
     Map<ClientGroupObjectImplement, JPanel> ObjectPanels;
     
     Map<ClientPropertyView, ClientPropertyPanel> PropertyPanels;
-    Map<ClientPropertyView, TableColumn> PropertyColumns;
     
     protected void CreateViewObjects() {
         
@@ -148,9 +148,8 @@ public class ClientForm extends FrameView {
         ObjectPanels = new HashMap();
         
         PropertyPanels = new HashMap();
-        PropertyColumns = new HashMap();
 
-        Iterator<ClientGroupObjectImplement> ig = Objects.GroupObjects.iterator();
+        Iterator<ClientGroupObjectImplement> ig = FormInit.GroupObjects.iterator();
 
         int count = 0;
         
@@ -195,6 +194,7 @@ public class ClientForm extends FrameView {
                         
                 PropertyPanels.put(Property, PropertyPanel);
            
+                Property.PanelConstraint.gridx = FormInit.Properties.indexOf(Property);
                 GroupObjectPanel.add(PropertyPanel, Property.PanelConstraint);
             }
        }
@@ -208,7 +208,16 @@ public class ClientForm extends FrameView {
             ClientGroupObjectTableModel model = (ClientGroupObjectTableModel) GroupObjectGrid.getModel();
 
             if (model.Properties.indexOf(Property) == -1)
-                model.Properties.add(Property);
+            {
+                Iterator<ClientPropertyView> icp = model.Properties.iterator();
+                
+                int ind = FormInit.Properties.indexOf(Property), ins = 0;
+                
+                while (icp.hasNext() && FormInit.Properties.indexOf(icp.next()) < ind) { ins++; }
+               
+                model.Properties.add(ins, Property);
+                
+             }
             
             // Перерисовать грид
             GroupObjectGrid.createDefaultColumnsFromModel();
@@ -270,17 +279,11 @@ public class ClientForm extends FrameView {
            
            model.GridValues.put(Property, FormChanges.GridProperties.get(Property));
            
-//           GroupObjectGrid.updateUI();
        }
        
     }
     
-    protected void PlaceViewObjects() {
-        
-    }
-    
 }
-
 
 
 class ClientGroupObjectTableModel extends AbstractTableModel {
@@ -298,7 +301,6 @@ class ClientGroupObjectTableModel extends AbstractTableModel {
     }
     
     public String getColumnName(int col) {
-//        return "Hello";
         return Properties.get(col).Caption;
     }
 
