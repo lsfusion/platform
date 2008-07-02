@@ -22,6 +22,7 @@ class SetBuilder<T> {
     void RecFillSubSetList(List<T> BuildSet,int Current,List<List<T>> Result,ArrayList<T> CurrentSet) {
         if(Current>=BuildSet.size()) {
             Result.add((List<T>)CurrentSet.clone());
+            return;
         }
         
         RecFillSubSetList(BuildSet,Current+1,Result,CurrentSet);

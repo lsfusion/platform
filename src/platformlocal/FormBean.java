@@ -567,7 +567,7 @@ class FormBeanView {
                     }
                     
                     // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.add(new SelectExpression(OrderExpr,"order"+((Integer)(ioo.nextIndex()-1)).toString()));
+                    SelectKeys.Expressions.put("order"+((Integer)(ioo.nextIndex()-1)).toString(),OrderExpr);
                 }
 
                 // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
@@ -596,7 +596,7 @@ class FormBeanView {
                     }
                     
                     // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.add(new SelectExpression(KeyExpr,"key"+((Integer)(igo.nextIndex()-1)).toString()));
+                    SelectKeys.Expressions.put("key"+((Integer)(igo.nextIndex()-1)).toString(),KeyExpr);
                 }
                 
                 // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
@@ -770,7 +770,7 @@ class FormBeanView {
                 SelectFields++;
                 PropertyView DrawProp = ipv.next();
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.add(new SelectExpression(DrawProp.View.JoinSelect(JoinProps,null,null),SelectField));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null));
                 ToFields.put(DrawProp, SelectField);
             }
         
@@ -809,7 +809,7 @@ class FormBeanView {
                 SourceExpr KeyExpr = new FieldSourceExpr(SelectKeyTable,ikt.next().Name);
                 MapKeys.put(lgo.next(),KeyExpr);
                 // также в запрос надо ключи закинуть
-                SelectProps.Expressions.add(new SelectExpression(KeyExpr,"key"+(Integer)(lgo.nextIndex()-1)));
+                SelectProps.Expressions.put("key"+(Integer)(lgo.nextIndex()-1),KeyExpr);
             }
 
             Integer SelectFields = 0;
@@ -819,7 +819,7 @@ class FormBeanView {
                 SelectFields++;
                 PropertyView DrawProp = ipv.next();
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.add(new SelectExpression(DrawProp.View.JoinSelect(JoinProps,Group,MapKeys),SelectField));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys));
                 ToFields.put(DrawProp, SelectField);
             }
         

@@ -93,7 +93,7 @@ class DataAdapter {
             Select.From.Wheres.add(new FieldValueWhere(KeyFields.get(Key),Key.Name));
         }
         
-        Select.Expressions.add(new SelectExpression(new ValueSourceExpr(1),"isrec"));
+        Select.Expressions.put("isrec",new ValueSourceExpr(1));
 
         if(ExecuteSelect(Select).size()>0) {
             // есть запись нужно Update лупить
@@ -102,7 +102,7 @@ class DataAdapter {
             while(ip.hasNext()) {
                 Field Prop = ip.next();
                 Object PropValue = PropFields.get(Prop);
-                if(PropValue!=null) Select.Expressions.add(new SelectExpression(new ValueSourceExpr(PropValue),Prop.Name));
+                if(PropValue!=null) Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropValue));
             }
             UpdateRecords(Select);
         } else
@@ -119,23 +119,26 @@ class DataAdapter {
         Execute(Select.GetDelete());
     }
     
-    void InsertSelect(Table InsertTo,SelectQuery Select) throws SQLException {
-        Execute("INSERT INTO "+InsertTo.Name+" ("+Select.GetInsert()+") "+Select.GetSelect());
+    void InsertSelect(Table InsertTo,Query Select) throws SQLException {
+        StringBuilder InsertString = new StringBuilder();
+        String SelectString = Select.GetSelect(InsertString);
+        System.out.println("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
+        Execute("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
     }
 
     List<Map<String,Object>> ExecuteSelect(SelectQuery Select) throws SQLException {
         List<Map<String,Object>> ExecResult = new ArrayList<Map<String,Object>>();
         Statement Statement = Connection.createStatement();
+        String SelectString = Select.GetSelect(new StringBuilder());
         try {
-            System.out.println(Select.GetSelect());
-            ResultSet Result = Statement.executeQuery(Select.GetSelect());
+            ResultSet Result = Statement.executeQuery(SelectString);
             try {
                 while(Result.next()) {
-                    Iterator<SelectExpression> is = Select.Expressions.iterator();
+                    Iterator<String> is = Select.Expressions.keySet().iterator();
                     Map<String,Object> RowMap = new HashMap<String,Object>();
                     while(is.hasNext()) {
-                        SelectExpression SelectExpr = is.next();
-                        RowMap.put(SelectExpr.Field,Result.getObject(SelectExpr.Field));
+                        String SelectExpr = is.next();
+                        RowMap.put(SelectExpr,Result.getObject(SelectExpr));
                     }
                     ExecResult.add(RowMap);
                 }
@@ -151,16 +154,15 @@ class DataAdapter {
     
     void OutSelect(SelectQuery Select) throws SQLException {
         // выведем на экран
-        System.out.println(Select.GetSelect());
+        System.out.println(Select.GetSelect(new StringBuilder()));
         
         List<Map<String,Object>> Result = ExecuteSelect(Select);
         ListIterator<Map<String,Object>> ir = Result.listIterator();
         while(ir.hasNext()) {
             Map<String,Object> RowMap = ir.next();
-            Iterator<SelectExpression> is = Select.Expressions.iterator();
+            Iterator<String> is = Select.Expressions.keySet().iterator();
             while(is.hasNext()) {
-                SelectExpression SelectExpr = is.next();
-                System.out.print(RowMap.get(SelectExpr.Field));
+                System.out.print(RowMap.get(is.next()));
                 System.out.print(" ");
             }
             System.out.println("");
@@ -380,7 +382,7 @@ class ObjectTable extends Table {
     Integer GetClassID(DataAdapter Adapter,Integer idObject) throws SQLException {
         SelectQuery Query = new SelectQuery(new SelectTable(Name));
         Query.From.Wheres.add(new FieldValueWhere(idObject,Key.Name));
-        Query.Expressions.add(new SelectExpression(new FieldSourceExpr(Query.From,Class.Name),"classid"));
+        Query.Expressions.put("classid",new FieldSourceExpr(Query.From,Class.Name));
         return (Integer)Adapter.ExecuteSelect(Query).get(0).get("classid");
     }
   
@@ -399,12 +401,11 @@ class IDTable extends Table {
     Integer GenerateID(DataAdapter Adapter) throws SQLException { 
         SelectTable From = new SelectTable(Name);
         SelectQuery SelectID = new SelectQuery(From);
-        SelectExpression ExprID = new SelectExpression(new FieldSourceExpr(From,Key.Name),"lastid");
         // читаем
-        SelectID.Expressions.add(ExprID);
+        SelectID.Expressions.put("lastid",new FieldSourceExpr(From,Key.Name));
         Integer FreeID = (Integer)Adapter.ExecuteSelect(SelectID).get(0).get("lastid");
         // замещаем
-        ExprID.Expr = new ValueSourceExpr(FreeID+1);
+        SelectID.Expressions.put("lastid",new ValueSourceExpr(FreeID+1));
         Adapter.UpdateRecords(SelectID);
         return FreeID;
     }
@@ -435,19 +436,66 @@ class ViewTable extends Table {
     }
 }
 
+class ChangeTable extends Table {
+
+    Collection<KeyField> Objects;
+    KeyField Session;
+    KeyField Property;
+    Field Value;
+    
+    ChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
+        super("changetable"+iObjects+"t"+iDBType);
+
+        Objects = new ArrayList();
+        for(Integer i=0;i<iObjects;i++) {
+            KeyField ObjKeyField = new KeyField("object"+i,"integer");
+            Objects.add(ObjKeyField);
+            KeyFields.add(ObjKeyField);
+        }
+        
+        Session = new KeyField("session","integer");
+        KeyFields.add(Session);
+        
+        Property = new KeyField("property","integer");
+        KeyFields.add(Property);
+        
+        Value = new Field("value",DBTypes.get(iDBType));
+        PropFields.add(Value);
+    }
+}
+
 class TableFactory extends TableImplement{
     
     ObjectTable ObjectTable;
     IDTable IDTable;
     List<ViewTable> ViewTables;
-   
+    List<List<ChangeTable>> ChangeTables;
+    
+    ChangeTable GetChangeTable(Integer Objects, String DBType) {
+        return ChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
+    }
+
+    List<String> DBTypes;
+    
     TableFactory() {
         ObjectTable = new ObjectTable();
         IDTable = new IDTable();
         ViewTables = new ArrayList();
+        ChangeTables = new ArrayList();
         
-        for(int i=0;i<5;i++)
+        for(int i=1;i<5;i++)
             ViewTables.add(new ViewTable(i));
+
+        DBTypes = new ArrayList();
+        DBTypes.add("integer");
+        DBTypes.add("char(50)");
+        
+        for(int i=1;i<5;i++) {
+            List<ChangeTable> ObjChangeTables = new ArrayList();
+            ChangeTables.add(ObjChangeTables);
+            for(int j=0;j<DBTypes.size();j++)
+                ObjChangeTables.add(new ChangeTable(i,j,DBTypes));
+        }
     }
 
     void IncludeIntoGraph(TableImplement IncludeItem) {
@@ -480,7 +528,13 @@ class TableFactory extends TableImplement{
         Adapter.CreateTable(IDTable);
         Iterator<ViewTable> iv = ViewTables.iterator();
         while(iv.hasNext()) Adapter.CreateTable(iv.next());
-        
+
+        Iterator<List<ChangeTable>> ilc = ChangeTables.iterator();
+        while(ilc.hasNext()) {
+            Iterator<ChangeTable> ic = ilc.next().iterator();
+            while(ic.hasNext()) Adapter.CreateTable(ic.next());
+        }
+
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
         InsertKeys.put(IDTable.Key, 0);
@@ -523,10 +577,29 @@ class BusinessLogics {
     Collection<DataProperty> DataProperties;
     Collection<Property> Properties;
     
+    void UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
+        // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
+        
+        // нужно из графа зависимостей выделить направленный список аггрегированных св-в для IncrementChanges 
+        List<AggregateProperty> UpdateList = new ArrayList();
+        Iterator<AggregateProperty> i = Properties.iterator();
+        while(i.hasNext()) i.next().FillAggregateList(UpdateList,Session.Properties);
+
+        // запускаем IncrementChanges для этого списка
+        i = UpdateList.iterator();
+        while(i.hasNext()) i.next().IncrementChanges(Adapter, Session);
+    }
+    
     void FillDB(DataAdapter Adapter) throws SQLException {
         // инициализируем таблицы
         TableFactory.FillDB(Adapter);
 
+        // запишем ID'ки
+        int DataPropNum = 0;
+        Iterator<Property> ip = Properties.iterator();
+        while(ip.hasNext())
+            ip.next().ID = DataPropNum++;
+        
         Map<Table,Integer> Tables = new HashMap<Table,Integer>();
         // закинем в таблицы(создав там все что надо) св-ва
         Iterator<DataProperty> i = DataProperties.iterator();
@@ -538,7 +611,7 @@ class BusinessLogics {
             if(PropNum==null) PropNum = 0;
             PropNum++;
             Tables.put(Table, PropNum+1);
-
+            
             Field PropField = new Field("prop"+PropNum.toString(),Property.GetDBType());
             Table.PropFields.add(PropField);
             Property.Field = PropField;         
