@@ -292,6 +292,98 @@ abstract class SourceProperty<T extends PropertyInterface> extends Property<T> {
         
         Adapter.OutSelect(SelectChanges);
     }
+
+    // сохраняет изменения в таблицу
+    void SaveChanges(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+        
+        Map<KeyField,T> MapKeys = new HashMap();
+        Table SourceTable = GetTable(MapKeys);
+        ChangeTable ChangeTable = GetChangeTable();
+
+        // сначала вкидываем Insert того чего нету в Source             
+        SelectTable SelectChanges = new SelectTable(ChangeTable.Name);
+        SelectChanges.Wheres.add(new FieldWhere(new ValueSourceExpr(Session.ID),ChangeTable.Session.Name));
+        SelectChanges.Wheres.add(new FieldWhere(new ValueSourceExpr(ID),ChangeTable.Property.Name));
+
+       
+        SelectTable SelectSource = new SelectTable(SourceTable.Name);
+        SelectSource.Joins.add(SelectChanges);
+
+        SelectQuery InsertUpdate= new SelectQuery(SelectSource);
+
+        Iterator<KeyField> ifs = MapKeys.keySet().iterator();
+        KeyField Key = null;
+        while(ifs.hasNext()) {
+            Key = ifs.next();
+            T Interface = MapKeys.get(Key);
+            String ChangeKey = ChangeTableMap.get(Interface).Name;
+            SelectChanges.Wheres.add(new FieldWhere(new FieldSourceExpr(SelectSource,Key.Name),ChangeKey));
+            
+            InsertUpdate.Expressions.put(Key.Name,new FieldSourceExpr(SelectChanges,ChangeKey));
+        }
+        
+        // сначала сделаем Insert, на RIGHT JOIN, IS NULL
+        SelectSource.JoinType = "RIGHT";
+        SelectSource.Wheres.add(new FieldIsNullWhere(Key.Name));
+        Adapter.InsertSelect(SourceTable,InsertUpdate);
+        
+        // затем Update на inner join
+        SelectSource.JoinType = "";
+        SelectSource.Wheres.clear();
+        InsertUpdate.Expressions.clear();
+        InsertUpdate.Expressions.put(Field.Name,new FieldSourceExpr(SelectChanges,ChangeTable.Value.Name));
+        Adapter.UpdateRecords(InsertUpdate);
+    }
+
+    
+    Field Field;
+    abstract Table GetTable(Map<KeyField,T> MapJoins);
+            
+    // при текущей реализации проше предполагать что не имплементнутые Interface имеют null Select !!!!!
+    SourceExpr ProceedJoinSelect(JoinList Joins) {
+        if(Field!=null) {
+            Map<KeyField,T> MapJoins = new HashMap();
+            Table SourceTable = GetTable(MapJoins);
+
+            // прогоним проверим все ли Implement'ировано
+            Map<KeyField,SourceExpr> MapFields = new HashMap<KeyField,SourceExpr>();
+            Iterator<KeyField> it = SourceTable.KeyFields.iterator();
+            while(it.hasNext()) {
+                KeyField TableField = it.next();
+                MapFields.put(TableField,MapJoins.get(TableField).JoinImplement);
+            }
+
+            // поищем что такая таблица уже есть в запросе причем с такими же полями и такими же Join'ами
+            Map<Map<KeyField,SourceExpr>,SelectTable> CacheTable = Joins.CacheTables.get(SourceTable);
+            if(CacheTable==null) {
+                CacheTable = new HashMap<Map<KeyField,SourceExpr>,SelectTable>();
+                Joins.CacheTables.put(SourceTable,CacheTable);
+            }
+        
+            SelectTable JoinTable = CacheTable.get(MapFields);
+            if (JoinTable==null) {
+                JoinTable = new SelectTable(SourceTable.Name);
+                it = SourceTable.KeyFields.iterator();
+                while (it.hasNext())
+                {
+                    KeyField TableField = it.next();
+                    PropertyInterface Interface = MapJoins.get(TableField);
+                    if (Interface.JoinImplement==null) {
+                        Interface.JoinImplement = new FieldSourceExpr(JoinTable,TableField.Name);
+                        MapFields.put(TableField,Interface.JoinImplement);
+                    } else 
+                        JoinTable.Wheres.add(new FieldWhere(Interface.JoinImplement,TableField.Name));
+                }
+
+                CacheTable.put(MapFields, JoinTable);
+                Joins.add(JoinTable);
+            }
+
+            return new FieldSourceExpr(JoinTable,Field.Name);
+        } else {
+            return ((AggregateProperty)this).CalculateJoinSelect(Joins);
+        }
+    }
 }
 
 class DataPropertyInterface extends PropertyInterface {
@@ -305,7 +397,6 @@ class DataPropertyInterface extends PropertyInterface {
 
 class DataProperty extends SourceProperty<DataPropertyInterface> {
     Class Value;
-    Field Field;
     
     DataProperty(TableFactory iTableFactory,Class iValue) {
         super(iTableFactory);
@@ -313,45 +404,8 @@ class DataProperty extends SourceProperty<DataPropertyInterface> {
     }
 
     // при текущей реализации проше предполагать что не имплементнутые Interface имеют null Select !!!!!
-    SourceExpr ProceedJoinSelect(JoinList Joins) {
-        Map<KeyField,DataPropertyInterface> MapJoins = new HashMap<KeyField,DataPropertyInterface>();
-        Table SourceTable = TableFactory.GetTable(Interfaces,MapJoins);
-
-        // прогоним проверим все ли Implement'ировано
-        Map<KeyField,SourceExpr> MapFields = new HashMap<KeyField,SourceExpr>();
-        Iterator<KeyField> it = SourceTable.KeyFields.iterator();
-        while(it.hasNext()) {
-            KeyField TableField = it.next();
-            MapFields.put(TableField,MapJoins.get(TableField).JoinImplement);
-        }
-
-        // поищем что такая таблица уже есть в запросе причем с такими же полями и такими же Join'ами
-        Map<Map<KeyField,SourceExpr>,SelectTable> CacheTable = Joins.CacheTables.get(SourceTable);
-        if(CacheTable==null) {
-            CacheTable = new HashMap<Map<KeyField,SourceExpr>,SelectTable>();
-            Joins.CacheTables.put(SourceTable,CacheTable);
-        }
-        
-        SelectTable JoinTable = CacheTable.get(MapFields);
-        if (JoinTable==null) {
-            JoinTable = new SelectTable(SourceTable.Name);
-            it = SourceTable.KeyFields.iterator();
-            while (it.hasNext())
-            {
-                KeyField TableField = it.next();
-                DataPropertyInterface DataInterface = MapJoins.get(TableField);
-                if (DataInterface.JoinImplement==null) {
-                    DataInterface.JoinImplement = new FieldSourceExpr(JoinTable,TableField.Name);
-                    MapFields.put(TableField,DataInterface.JoinImplement);
-                } else 
-                    JoinTable.Wheres.add(new FieldWhere(DataInterface.JoinImplement,TableField.Name));
-            }
-
-            CacheTable.put(MapFields, JoinTable);
-            Joins.add(JoinTable);
-        }
-        
-        return new FieldSourceExpr(JoinTable,Field.Name);
+    Table GetTable(Map<KeyField,DataPropertyInterface> MapJoins) {
+        return TableFactory.GetTable(Interfaces,MapJoins);
     }
     
     public Class GetValueClass() {
@@ -438,6 +492,37 @@ abstract class AggregateProperty<T extends PropertyInterface> extends SourceProp
     AggregateProperty(TableFactory iTableFactory) {super(iTableFactory);}
 
     abstract void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException;
+
+    Map<DataPropertyInterface,T> AggregateMap;
+    
+    // сначала проверяет на persistence
+    Table GetTable(Map<KeyField,T> MapJoins) {
+        if(AggregateMap==null) {
+            AggregateMap = new HashMap();
+            InterfaceClass Parent = GetClassSet(null).GetCommonParent();
+            Iterator<T> i = Interfaces.iterator();
+            while(i.hasNext()) {
+                T Interface = i.next();
+                AggregateMap.put(new DataPropertyInterface(Parent.get(Interface)),Interface);
+            }
+        }
+        
+        Map<KeyField,DataPropertyInterface> MapData = new HashMap();
+        Table SourceTable = TableFactory.GetTable(AggregateMap.keySet(),MapData);
+        // перекодирукм на MapJoins
+        if(MapJoins!=null) {
+            Iterator<KeyField> im = MapData.keySet().iterator();
+            while(im.hasNext()) {
+                KeyField MapField = im.next();
+                MapJoins.put(MapField,AggregateMap.get(MapData.get(MapField)));
+            }
+        }
+        
+        return SourceTable;
+    }
+    
+    // расчитывает JoinSelect
+    abstract SourceExpr CalculateJoinSelect(JoinList Joins);
 }
 
 class PropertyMapImplement extends PropertyImplement<PropertyInterface> implements PropertyInterfaceImplement {
@@ -517,7 +602,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
         Implements = new PropertyImplement<PropertyInterfaceImplement>(iProperty);
     }
 
-    SourceExpr ProceedJoinSelect(JoinList Joins) {
+    SourceExpr CalculateJoinSelect(JoinList Joins) {
         // для всех нижних делаем JoinSelect
         Iterator<PropertyInterface> im = Implements.Property.Interfaces.iterator();
         while (im.hasNext())
@@ -704,7 +789,7 @@ class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     // дополнительные условия на классы
     Map<PropertyInterface,Class> ToClasses;
     
-    SourceExpr ProceedJoinSelect(JoinList Joins) {
+    SourceExpr CalculateJoinSelect(JoinList Joins) {
         JoinList QueryJoins = new JoinList();
         // создадим сразу Select
         GroupQuery QuerySelect = new GroupQuery(null);
@@ -1049,6 +1134,13 @@ class LinearFormulaProperty extends FormulaProperty<LinearFormulaPropertyInterfa
 }
 
 class InterfaceClassSet extends ArrayList<InterfaceClass> {
+
+    InterfaceClass GetCommonParent() {
+        Iterator<InterfaceClass> i = iterator();
+        InterfaceClass Result = i.next();
+        while(i.hasNext()) Result.CommonParent(i.next());
+        return Result;
+    }
     
     void Out(Collection<PropertyInterface> ToDraw) {
         Iterator<InterfaceClass> i = iterator();
@@ -1212,6 +1304,15 @@ class InterfaceClass extends HashMap<PropertyInterface,Class> {
         if(ResultOr==-1) return 1;
         return ResultOr;
     }
+    
+    // известно что одной размерности
+    void CommonParent(InterfaceClass Op) {
+        Iterator<PropertyInterface> i = keySet().iterator();
+        while(i.hasNext()) {
+            PropertyInterface Key = i.next();
+            put(Key,get(Key).CommonParent(Op.get(Key)));
+        }
+    }            
 }
     
 class ChangesSession {

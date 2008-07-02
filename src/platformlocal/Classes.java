@@ -55,6 +55,35 @@ class Class {
         return null;
     }
     
+    Class CommonParent(Class ToCommon) {
+        CommonParent1(1);
+        Class Result = CommonParent2();
+        CommonParent1(0);
+        
+        return Result;
+    }
+    
+    // 1-й шаг пометки
+    private void CommonParent1(int SetCheck) {
+        if(Check==SetCheck) return;
+        Check = SetCheck;
+        Iterator<Class> i = Parents.iterator();
+        while (i.hasNext()) i.next().CommonParent1(SetCheck);
+    }
+
+    // 2-й шаг выводит в Set, и сбрасывает пометки
+    private Class CommonParent2() {
+        if(Check==1) return this;
+        
+        Iterator<Class> i = Parents.iterator();
+        while (i.hasNext()) {
+            Class ParentClass = i.next().CommonParent2();
+            if(ParentClass!=null) return ParentClass;
+        }
+        
+        return null;
+    }
+
     void FillSetID(Collection<Integer> SetID) {
         if (SetID.contains(ID))
             return;

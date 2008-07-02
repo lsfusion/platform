@@ -122,7 +122,7 @@ class DataAdapter {
     void InsertSelect(Table InsertTo,Query Select) throws SQLException {
         StringBuilder InsertString = new StringBuilder();
         String SelectString = Select.GetSelect(InsertString);
-        System.out.println("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
+//        System.out.println("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
         Execute("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
     }
 
@@ -547,8 +547,8 @@ class BusinessLogics {
     BusinessLogics() {
         BaseClass = new Class(0);
         TableFactory = new TableFactory();
-        DataProperties = new ArrayList();
         Properties = new ArrayList();
+        PersistentProperties = new HashSet();
         
         BaseClass = new Class(0);
         
@@ -559,7 +559,6 @@ class BusinessLogics {
     }
     
     void AddDataProperty(DataProperty Property) {
-        DataProperties.add(Property);
         Properties.add(Property);
     }
 
@@ -574,9 +573,11 @@ class BusinessLogics {
     Class IntegerClass;
     
     TableFactory TableFactory;
-    Collection<DataProperty> DataProperties;
     Collection<Property> Properties;
     
+    Set<AggregateProperty> PersistentProperties;
+    
+        
     void UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         
@@ -590,31 +591,50 @@ class BusinessLogics {
         while(i.hasNext()) i.next().IncrementChanges(Adapter, Session);
     }
     
+    // сохраняет из Changes в базу
+    void SaveProperties(DataAdapter Adapter,Collection<? extends SourceProperty> Properties, ChangesSession Session) throws SQLException {
+        Iterator<SourceProperty> i = (Iterator<SourceProperty>) Properties.iterator();
+        while(i.hasNext()) i.next().SaveChanges(Adapter, Session);
+    }
+    
+    boolean Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+        // делается UpdateAggregations (для мн-ва persistent+constraints)
+        UpdateAggregations(Adapter,PersistentProperties,Session);
+
+        // записываем Data, затем PersistentProperties в таблицы из сессии
+        SaveProperties(Adapter,PersistentProperties,Session);
+        SaveProperties(Adapter,Session.Properties,Session);
+        
+        return true;
+    }
+    
     void FillDB(DataAdapter Adapter) throws SQLException {
         // инициализируем таблицы
         TableFactory.FillDB(Adapter);
 
         // запишем ID'ки
-        int DataPropNum = 0;
+        int IDPropNum = 0;
         Iterator<Property> ip = Properties.iterator();
         while(ip.hasNext())
-            ip.next().ID = DataPropNum++;
+            ip.next().ID = IDPropNum++;
         
         Map<Table,Integer> Tables = new HashMap<Table,Integer>();
         // закинем в таблицы(создав там все что надо) св-ва
-        Iterator<DataProperty> i = DataProperties.iterator();
+        Iterator<Property> i = Properties.iterator();
         while(i.hasNext()) {
-            DataProperty Property = i.next();
-            Table Table = TableFactory.GetTable(Property.Interfaces,null);
+            Property Property = i.next();
+            if(Property instanceof DataProperty || (Property instanceof AggregateProperty && PersistentProperties.contains(Property))) {
+                Table Table = ((SourceProperty)Property).GetTable(null);
 
-            Integer PropNum = Tables.get(Table);
-            if(PropNum==null) PropNum = 0;
-            PropNum++;
-            Tables.put(Table, PropNum+1);
+                Integer PropNum = Tables.get(Table);
+                if(PropNum==null) PropNum = 0;
+                PropNum++;
+                Tables.put(Table, PropNum+1);
             
-            Field PropField = new Field("prop"+PropNum.toString(),Property.GetDBType());
-            Table.PropFields.add(PropField);
-            Property.Field = PropField;         
+                Field PropField = new Field("prop"+PropNum.toString(),Property.GetDBType());
+                Table.PropFields.add(PropField);
+                ((SourceProperty)Property).Field = PropField;
+            }
         }
         
         Iterator<Table> it = Tables.keySet().iterator();

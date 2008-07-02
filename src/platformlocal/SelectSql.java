@@ -317,6 +317,15 @@ class FieldWhere extends Where {
     }
 }
 
+class FieldIsNullWhere extends Where {
+    FieldIsNullWhere(String iField) {Field = iField;}
+
+    String Field;
+    public String GetSelect(Select From) {
+        return From.Alias + '.' + Field + " IS NULL";
+    }
+}
+
 class FieldValueWhere extends Where {
     
     FieldValueWhere(Integer iValue,String iField) {
