@@ -140,25 +140,28 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
         return false;
     }
 
-    SourceExpr JoinSelect(JoinList Joins,GroupObjectImplement ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
+    SourceExpr JoinSelect(JoinList Joins,GroupObjectImplement ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,boolean Left) {
 
         Collection<PropertyInterface> NullInterfaces = new ArrayList();
+        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
         
         Iterator<PropertyInterface> i = Property.Interfaces.iterator();
         while(i.hasNext()) {
             PropertyInterface Interface = i.next();
             ObjectImplement IntObject = Mapping.get(Interface);
-            Interface.JoinImplement = (IntObject.GroupTo==ClassGroup?ClassSource.get(IntObject):new ValueSourceExpr(IntObject.idObject));
-            if(Interface.JoinImplement==null) NullInterfaces.add(Interface);
+            SourceExpr JoinExpr = (IntObject.GroupTo==ClassGroup?ClassSource.get(IntObject):new ValueSourceExpr(IntObject.idObject));
+            if(JoinExpr==null) 
+                NullInterfaces.add(Interface);
+            else
+                JoinImplement.put(Interface,JoinExpr);
         }
 
-        SourceExpr Result = Property.JoinSelect(Joins);
-        
+        SourceExpr Result = Property.JoinSelect(Joins,JoinImplement,Left);
+
         i = NullInterfaces.iterator();
         while(i.hasNext()) {
             PropertyInterface Interface = i.next();
-            ObjectImplement IntObject = Mapping.get(Interface);
-            ClassSource.put(IntObject,Interface.JoinImplement);
+            ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
         }
         
         return Result;
@@ -285,7 +288,7 @@ class Filter {
     
     // для полиморфизма сюда
     void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource) {
-        Property.JoinSelect(Joins,ClassGroup,ClassSource);
+        Property.JoinSelect(Joins,ClassGroup,ClassSource,false);
     }
 }
 
@@ -558,7 +561,7 @@ class FormBeanView {
                 while(ioo.hasNext()) {
                     PropertyObjectImplement ToOrder = ioo.next();
 
-                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources);
+                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,false);
                     SelectKeys.Orders.add(OrderExpr);
                     // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                     if(OrderValues!=null) {
@@ -575,7 +578,7 @@ class FormBeanView {
                 while(igo.hasNext()) {
                     ObjectImplement Object = igo.next();
                     SourceExpr KeyExpr = KeySources.get(Object);
-                    Select KeySelectTable = null;
+                    FromTable KeySelectTable = null;
                     if(KeyExpr==null) {
                         KeySelectTable = BL.TableFactory.ObjectTable.ClassSelect(Object.GridClass);
                         KeyExpr = new FieldSourceExpr(KeySelectTable,BL.TableFactory.ObjectTable.Key.Name);
@@ -600,7 +603,7 @@ class FormBeanView {
                 }
                 
                 // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
-                Iterator<Select> ijk = JoinKeys.iterator();
+                Iterator<From> ijk = JoinKeys.iterator();
                 SelectKeys.From = ijk.next();
                 while(ijk.hasNext()) SelectKeys.From.Joins.add(ijk.next());
 
@@ -761,7 +764,7 @@ class FormBeanView {
         // сначала PanelProps
         if(PanelProps.size()>0) {
             JoinProps = new JoinList();
-            SelectProps = new SelectQuery(new SelectTable("dumb"));
+            SelectProps = new SelectQuery(new FromTable("dumb"));
 
             Integer SelectFields = 0;
             Map<PropertyView,String> ToFields = new HashMap();
@@ -770,16 +773,13 @@ class FormBeanView {
                 SelectFields++;
                 PropertyView DrawProp = ipv.next();
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
-            Iterator<Select> isj = JoinProps.iterator();
-            while(isj.hasNext()) {
-                Select JoinSelect = isj.next();
-                SelectProps.From.Joins.add(JoinSelect);
-                JoinSelect.JoinType = "LEFT";
-            }
+            Iterator<From> isj = JoinProps.iterator();
+            while(isj.hasNext())
+                SelectProps.From.Joins.add(isj.next());
         
             Map<String,Object> ResultProps = Adapter.ExecuteSelect(SelectProps).get(0);
 
@@ -798,7 +798,7 @@ class FormBeanView {
             JoinProps = new JoinList();
             
             ViewTable KeyTable = BL.TableFactory.ViewTables.get(Group.size());
-            SelectTable SelectKeyTable = new SelectTable(KeyTable.Name);
+            FromTable SelectKeyTable = new FromTable(KeyTable.Name);
             SelectProps = new SelectQuery(SelectKeyTable);
 
             ListIterator<ObjectImplement> lgo = Group.listIterator();
@@ -819,16 +819,13 @@ class FormBeanView {
                 SelectFields++;
                 PropertyView DrawProp = ipv.next();
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
-            Iterator<Select> isj = JoinProps.iterator();
-            while(isj.hasNext()) {
-                Select JoinSelect = isj.next();
-                SelectProps.From.Joins.add(JoinSelect);
-                JoinSelect.JoinType = "LEFT";
-            }
+            Iterator<From> isj = JoinProps.iterator();
+            while(isj.hasNext())
+                SelectProps.From.Joins.add(isj.next());
         
             List<Map<String,Object>> ResultProps = Adapter.ExecuteSelect(SelectProps);
 

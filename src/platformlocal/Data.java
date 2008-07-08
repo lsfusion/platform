@@ -42,12 +42,17 @@ class DataAdapter {
     
     void CreateTable(Table Table) throws SQLException {
         String CreateString = "";
+        String KeyString = "";
         Iterator<KeyField> ik = Table.KeyFields.iterator();
-        while(ik.hasNext()) 
-            CreateString = (CreateString.length()==0?"":CreateString+',') + ik.next().GetDeclare();
+        while(ik.hasNext()) {
+            KeyField Key = ik.next();
+            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare();
+            KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
+        }
         Iterator<Field> it = Table.PropFields.iterator();
         while(it.hasNext()) 
             CreateString = CreateString+',' + it.next().GetDeclare();
+        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY CLUSTERED (" + KeyString + ")";
 
         Execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
     }
@@ -84,7 +89,7 @@ class DataAdapter {
 
     void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<Field,Object> PropFields) throws SQLException {
 
-        SelectTable From = new SelectTable(Table.Name);
+        FromTable From = new FromTable(Table.Name);
         SelectQuery Select = new SelectQuery(From);
         // сначала закинем KeyField'ы и прогоним Select
         Iterator<KeyField> ik = Table.KeyFields.iterator();
@@ -115,26 +120,30 @@ class DataAdapter {
         Execute(Select.GetUpdate());
     }
     
-    void DeleteRecords(SelectTable Select) throws SQLException {
-        Execute(Select.GetDelete());
+    void DeleteRecords(FromTable Table) throws SQLException {
+        Execute(Table.GetDelete());
     }
     
     void InsertSelect(Table InsertTo,Query Select) throws SQLException {
-        StringBuilder InsertString = new StringBuilder();
-        String SelectString = Select.GetSelect(InsertString);
+        Collection<String> ResultFields = new ArrayList();
+        String SelectString = Select.GetSelect(ResultFields);
+        String InsertString = "";
+        Iterator<String> i = ResultFields.iterator();
+        while(i.hasNext()) InsertString = (InsertString.length()==0?"":InsertString+",") + i.next();
 //        System.out.println("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
         Execute("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
     }
 
-    List<Map<String,Object>> ExecuteSelect(SelectQuery Select) throws SQLException {
+    List<Map<String,Object>> ExecuteSelect(Query Select) throws SQLException {
         List<Map<String,Object>> ExecResult = new ArrayList<Map<String,Object>>();
         Statement Statement = Connection.createStatement();
-        String SelectString = Select.GetSelect(new StringBuilder());
+        Collection<String> ResultFields = new ArrayList();
+        String SelectString = Select.GetSelect(ResultFields);
         try {
             ResultSet Result = Statement.executeQuery(SelectString);
             try {
                 while(Result.next()) {
-                    Iterator<String> is = Select.Expressions.keySet().iterator();
+                    Iterator<String> is = ResultFields.iterator();
                     Map<String,Object> RowMap = new HashMap<String,Object>();
                     while(is.hasNext()) {
                         String SelectExpr = is.next();
@@ -152,15 +161,16 @@ class DataAdapter {
         return ExecResult;
     }
     
-    void OutSelect(SelectQuery Select) throws SQLException {
+    void OutSelect(Query Select) throws SQLException {
         // выведем на экран
-        System.out.println(Select.GetSelect(new StringBuilder()));
-        
+        Collection<String> ResultFields = new ArrayList();
+        System.out.println(Select.GetSelect(ResultFields));
+
         List<Map<String,Object>> Result = ExecuteSelect(Select);
         ListIterator<Map<String,Object>> ir = Result.listIterator();
         while(ir.hasNext()) {
             Map<String,Object> RowMap = ir.next();
-            Iterator<String> is = Select.Expressions.keySet().iterator();
+            Iterator<String> is = ResultFields.iterator();
             while(is.hasNext()) {
                 System.out.print(RowMap.get(is.next()));
                 System.out.print(" ");
@@ -226,12 +236,14 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         Iterator<DataPropertyInterface> iToC = ToCompare.iterator();
         while(iToC.hasNext()) {
             DataPropertyInterface PairItem = iToC.next();
-            if((ToParent && ProceedItem.Class.IsParent(PairItem.Class) || (!ToParent && PairItem.Class.IsParent(ProceedItem.Class))) && !MapTo.containsKey(PairItem)) {
+            if((ToParent && ProceedItem.Class.IsParent(PairItem.Class) || (!ToParent && PairItem.Class.IsParent(ProceedItem.Class)))) {
+                if(!MapTo.containsKey(PairItem)) {
                 // если parent - есть связь и нету ключа, гоним рекурсию дальше
                 MapTo.put(PairItem, ProceedItem);
                 // если нашли карту выходим
                 if(RecCompare(ToParent,ToCompare,iRec,MapTo)) return true;
                 MapTo.remove(PairItem);
+                }
             }
         }
 
@@ -252,6 +264,7 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         ListIterator<DataPropertyInterface> iRec = (new ArrayList<DataPropertyInterface>(this)).listIterator();
         if(RecCompare(false,ToCompare,iRec,MapProceed)) {
             if(MapTo!=null) {
+                MapTo.clear();
                 Iterator<DataPropertyInterface> it = ToCompare.iterator();
                 while(it.hasNext()) {
                     DataPropertyInterface DataInterface = it.next();
@@ -307,9 +320,10 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         Iterator<TableImplement> i = Parents.iterator();
         while(i.hasNext()) {
             TableImplement Item = i.next();
-            if(Item.Compare(FindItem,MapTo)==2) return Item.GetTable(FindItem,MapTo);
+            if(Item.Compare(FindItem,MapTo)==2) 
+                return Item.GetTable(FindItem,MapTo);
         }
-
+        
         return Table;
     }
     
@@ -363,24 +377,24 @@ class ObjectTable extends Table {
         PropFields.add(Class);
     };
     
-    SelectTable ClassSelect(Class ToSelect) {
+    FromTable ClassSelect(Class ToSelect) {
         Collection<Integer> SetID = new HashSet<Integer>();
         ToSelect.FillSetID(SetID);
         
-        SelectTable ClassTable = new SelectTable(Name);
+        FromTable ClassTable = new FromTable(Name);
         ClassTable.Wheres.add(new FieldSetValueWhere(SetID,Class.Name));
         
         return ClassTable;
     }
     
-    SelectTable ClassJoinSelect(Class ToSelect,SourceExpr JoinImplement) {
-        SelectTable JoinTable = ClassSelect(ToSelect);
+    FromTable ClassJoinSelect(Class ToSelect,SourceExpr JoinImplement) {
+        FromTable JoinTable = ClassSelect(ToSelect);
         JoinTable.Wheres.add(new FieldWhere(JoinImplement,Key.Name));
         return JoinTable;
     }
     
     Integer GetClassID(DataAdapter Adapter,Integer idObject) throws SQLException {
-        SelectQuery Query = new SelectQuery(new SelectTable(Name));
+        SelectQuery Query = new SelectQuery(new FromTable(Name));
         Query.From.Wheres.add(new FieldValueWhere(idObject,Key.Name));
         Query.Expressions.put("classid",new FieldSourceExpr(Query.From,Class.Name));
         return (Integer)Adapter.ExecuteSelect(Query).get(0).get("classid");
@@ -399,7 +413,7 @@ class IDTable extends Table {
     }
     
     Integer GenerateID(DataAdapter Adapter) throws SQLException { 
-        SelectTable From = new SelectTable(Name);
+        FromTable From = new FromTable(Name);
         SelectQuery SelectID = new SelectQuery(From);
         // читаем
         SelectID.Expressions.put("lastid",new FieldSourceExpr(From,Key.Name));
@@ -430,7 +444,7 @@ class ViewTable extends Table {
     KeyField View;
     
     void DropViewID(DataAdapter Adapter,Integer ViewID) throws SQLException {
-        SelectTable Delete = new SelectTable(Name);
+        FromTable Delete = new FromTable(Name);
         Delete.Wheres.add(new FieldValueWhere(ViewID,View.Name));
         Adapter.DeleteRecords(Delete);
     }
@@ -470,6 +484,9 @@ class TableFactory extends TableImplement{
     IDTable IDTable;
     List<ViewTable> ViewTables;
     List<List<ChangeTable>> ChangeTables;
+    
+    // для отладки
+    boolean ReCalculateAggr = false;
     
     ChangeTable GetChangeTable(Integer Objects, String DBType) {
         return ChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
@@ -570,7 +587,7 @@ class BusinessLogics {
 
     Class BaseClass;
     Class StringClass;
-    Class IntegerClass;
+    IntegralClass IntegerClass;
     
     TableFactory TableFactory;
     Collection<Property> Properties;

@@ -13,19 +13,19 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ListIterator;
 
-abstract class Select {
+abstract class From {
 
-    Select() {
-        Joins = new ArrayList<Select>();
-        Wheres = new ArrayList<Where>();
+    From() {
+        Joins = new ArrayList();
+        Wheres = new ArrayList();
     }
     
     // к кому Join'ся
-    public Select JoinTo;
+    public From JoinTo;
     // как Join'ся (LEFT, INNER, FULL)
     public String JoinType = "";
     // обратная связь по дереву
-    public List<Select> Joins;
+    public List<From> Joins;
     // фильтры на Select
     public List<Where> Wheres;
     
@@ -35,18 +35,15 @@ abstract class Select {
     abstract public String GetSource();
     
     // получает строку FROM
-    public String GetFrom(Select ExecQuery,boolean First) {
+    public String GetFrom(AliasCounter Counter,boolean First) {
         // зафиксируем Alias
-        ExecQuery.FillAlias(this);
+        Counter.FillAlias(this);
         
         //получаем все Join строки
         String JoinFrom = "";
-        Iterator<Select> j = Joins.iterator();
+        Iterator<From> j = Joins.iterator();
         while (j.hasNext())
-        {
-            Select Join = j.next();
-            JoinFrom = JoinFrom + Join.GetFrom(ExecQuery,false);
-        }
+            JoinFrom = JoinFrom + j.next().GetFrom(Counter,false);
 
         String WhereFrom="";
         Iterator<Where> w = Wheres.iterator();
@@ -61,20 +58,24 @@ abstract class Select {
             return ((JoinType.length()==0)?"":" "+JoinType) + " JOIN " + SourceFrom + (WhereFrom.length()==0?" ON 1=1":WhereFrom) + JoinFrom;
     }
 
-    protected Integer AliasCounter = 0;
-    public void FillAlias(Select Object)
+}
+
+class AliasCounter {
+    
+    protected Integer Counter = 0;
+    public void FillAlias(From Object)
     {
-        AliasCounter++;
-        Object.Alias = "T" + AliasCounter.toString();
+        Counter++;
+        Object.Alias = "T" + Counter.toString();
     }           
 }
 
 // запрос
 // из таблицы
 
-class SelectTable extends Select {
+class FromTable extends From {
     
-    SelectTable(String iName) {Name=iName;}
+    FromTable(String iName) {Name=iName;}
     
     // имя таблицы
     protected String Name;
@@ -86,18 +87,31 @@ class SelectTable extends Select {
     
     public String GetDelete() {
 
-        String DeleteFrom = GetFrom(this,true);
+        String DeleteFrom = GetFrom(new AliasCounter(),true);
         return "DELETE " + Alias + DeleteFrom;
     }
 }
 
-abstract class Query extends Select {
+class FromQuery extends From {
+    
+    FromQuery(Query iFrom) {From=iFrom;}
+    
+    Query From;
+
+    public String GetSource() {
+
+        return "("+From.GetSelect(new ArrayList())+")";
+    }
+
+}
+
+abstract class Query {
     
     // собственно основной метод который получает Select
-    abstract public String GetSelect(StringBuilder InsertString);
+    abstract public String GetSelect(Collection<String> GetFields);
     
     public String GetSource() {
-        return "("+GetSelect(new StringBuilder())+")";
+        return "("+GetSelect(new ArrayList())+")";
     }
 }
 
@@ -120,7 +134,7 @@ class UnionQuery extends Query {
         SumCoeffs = new HashMap();
     }
 
-    public String GetSelect(StringBuilder InsertString) {
+    public String GetSelect(Collection<String> GetFields) {
 
         Collection<String> Fields = new ArrayList(Keys);
         Fields.addAll(Values);
@@ -136,10 +150,11 @@ class UnionQuery extends Query {
 
             ResultQuery = new SelectQuery(null);
         
-            Query LastQuery=null;
+            From LastQuery=null;
             while(i.hasNext()) {
-                Query Query = i.next();
-                Integer Coeff = SumCoeffs.get(Query);
+                Query SelectQuery = i.next();
+                From Query = new FromQuery(SelectQuery);
+                Integer Coeff = SumCoeffs.get(SelectQuery);
 
                 if(LastQuery==null)
                     ResultQuery.From = Query;
@@ -181,7 +196,7 @@ class UnionQuery extends Query {
 
                 LastQuery = Query;
             }
-        }           
+        }
 
         Iterator<String> ivs = ValueKeys.keySet().iterator();
         while(ivs.hasNext()) {
@@ -189,20 +204,21 @@ class UnionQuery extends Query {
             ResultQuery.Expressions.put(ValueField,new ValueSourceExpr(ValueKeys.get(ValueField)));
         }
 
-        return ResultQuery.GetSelect(InsertString);
+        return ResultQuery.GetSelect(GetFields);
     }
 }
-abstract class FromQuery extends Query {
+
+abstract class DataQuery extends Query {
     // откуда делать Select
-    Select From;
-    FromQuery(Select iFrom) {
+    From From;
+    DataQuery(From iFrom) {
         From = iFrom;
     }
 }
 
-class GroupQuery extends FromQuery {
+class GroupQuery extends DataQuery {
     
-    GroupQuery(Select iFrom) {
+    GroupQuery(From iFrom) {
         super(iFrom);
         GroupBy = new HashMap();
         AggrExprs = new HashMap();
@@ -211,8 +227,8 @@ class GroupQuery extends FromQuery {
     Map<String,SourceExpr> GroupBy;
     Map<String,GroupExpression> AggrExprs;
     
-    public String GetSelect(StringBuilder InsertString) {
-        String FromString = From.GetFrom(this,true);
+    public String GetSelect(Collection<String> GetFields) {
+        String FromString = From.GetFrom(new AliasCounter(),true);
         String ExprString = "", GroupString = "";
 
         Iterator<String> i = GroupBy.keySet().iterator();
@@ -221,39 +237,39 @@ class GroupQuery extends FromQuery {
             String Source = GroupBy.get(Field).GetSource();
             ExprString = (ExprString.length()==0?"":ExprString+',') + Source + " AS " + Field;
             GroupString = (GroupString.length()==0?"":GroupString+',') + Source;
-            InsertString.append((InsertString.length()==0?"":",")+Field);
+            GetFields.add(Field);
         }
 
         Iterator<String> j = AggrExprs.keySet().iterator();
         while (j.hasNext()) {
             String Field = j.next();
             ExprString = (ExprString.length()==0?"":ExprString+',') + AggrExprs.get(Field).GetSelect() + " AS " + Field;
-            InsertString.append((InsertString.length()==0?"":",")+Field);
+            GetFields.add(Field);
         }
         
         return "SELECT " + ExprString + FromString + " GROUP BY " + GroupString;
     }
 }
 
-class SelectQuery extends FromQuery {
+class SelectQuery extends DataQuery {
     Map<String,SourceExpr> Expressions;
 
     Integer Top = 0;
 
-    SelectQuery(Select iFrom) { 
+    SelectQuery(From iFrom) { 
         super(iFrom);
         Expressions = new HashMap();
     }
 
-    public String GetSelect(StringBuilder InsertString) {
-        String FromString = From.GetFrom(this,true);
+    public String GetSelect(Collection<String> GetFields) {
+        String FromString = From.GetFrom(new AliasCounter(),true);
         String ExprString = "";
 
         Iterator<String> j = Expressions.keySet().iterator();
         while (j.hasNext()) {
             String Field = j.next();
             ExprString = (ExprString.length()==0?"":ExprString+',') + Expressions.get(Field).GetSource() + " AS " + Field;
-            InsertString.append((InsertString.length()==0?"":",")+Field);
+            GetFields.add(Field);
         }
 
         return "SELECT " + (Top>0?"TOP "+Top.toString()+" ":"") + ExprString + FromString;
@@ -261,7 +277,7 @@ class SelectQuery extends FromQuery {
     
     // получае Update
     public String GetUpdate() {
-        String FromString  = From.GetFrom(this,true);
+        String FromString  = From.GetFrom(new AliasCounter(),true);
         String ExprString = "";
 
         Iterator<String> j = Expressions.keySet().iterator();
@@ -280,13 +296,13 @@ class OrderedSelectQuery extends SelectQuery {
 
     boolean Descending = false;
 
-    OrderedSelectQuery(Select iFrom) {
+    OrderedSelectQuery(From iFrom) {
         super(iFrom);
         Orders = new ArrayList<SourceExpr>();
     }
 
-    public String GetSelect(StringBuilder InsertString) {
-        String Select = super.GetSelect(InsertString);
+    public String GetSelect(Collection<String> GetFields) {
+        String Select = super.GetSelect(GetFields);
         
         String OrderString="";
         Iterator<SourceExpr> o = Orders.iterator();
@@ -301,7 +317,7 @@ class OrderedSelectQuery extends SelectQuery {
 
 abstract class Where {
 
-    abstract public String GetSelect(Select From);
+    abstract public String GetSelect(From From);
 }
 
 class FieldWhere extends Where {
@@ -312,17 +328,18 @@ class FieldWhere extends Where {
     // можно было бы номер в дереве но это не очень удобно
     SourceExpr Source;
 
-    public String GetSelect(Select From) {
+    public String GetSelect(From From) {
         return From.Alias + '.' + Field + '=' + Source.GetSource();
     }
 }
 
-class FieldIsNullWhere extends Where {
-    FieldIsNullWhere(String iField) {Field = iField;}
+class SourceIsNullWhere extends Where {
+    SourceIsNullWhere(SourceExpr iSource) {Source = iSource;}
 
-    String Field;
-    public String GetSelect(Select From) {
-        return From.Alias + '.' + Field + " IS NULL";
+    SourceExpr Source;
+
+    public String GetSelect(From From) {
+        return Source.GetSource() + " IS NULL";
     }
 }
 
@@ -336,7 +353,7 @@ class FieldValueWhere extends Where {
     Integer Value;
     String Field;
 
-    public String GetSelect(Select From) {
+    public String GetSelect(From From) {
         return From.Alias + '.' + Field + '=' + Value.toString();
     }
 }
@@ -346,7 +363,7 @@ class FieldSetValueWhere extends Where {
     String Field;
     Collection<Integer> SetValues;
 
-    public String GetSelect(Select From) {
+    public String GetSelect(From From) {
         String ListString = "";
         Iterator<Integer> i = SetValues.iterator();
         while(i.hasNext()) {
@@ -367,7 +384,7 @@ class FieldExprCompareWhere extends Where {
     int Compare;
 
     @Override
-    public String GetSelect(Select From) {
+    public String GetSelect(From From) {
         return Source.GetSource() + (Compare==0?"=":(Compare==1?">":"<")) + (Value instanceof String?"'"+Value+"'":Value.toString());
     }
 }
@@ -380,7 +397,7 @@ class FieldOPWhere extends Where {
     Where Op1, Op2;
     boolean And;
 
-    public String GetSelect(Select From) {
+    public String GetSelect(From From) {
         return "(" + Op1.GetSelect(From) + " " + (And?"AND":"OR") + " " + Op2.GetSelect(From) + ")";
     }
 }
@@ -425,9 +442,9 @@ class ValueSourceExpr extends SourceExpr {
 
 class FieldSourceExpr extends SourceExpr {
     
-    FieldSourceExpr(Select iSource,String iSourceField) {Source=iSource;SourceField=iSourceField;};
+    FieldSourceExpr(From iSource,String iSourceField) {Source=iSource;SourceField=iSourceField;};
     
-    Select Source;
+    From Source;
     protected String SourceField;
 
     public String GetSource() {
@@ -513,7 +530,23 @@ class FormulaSourceExpr extends SourceExpr {
         hash = 59 * hash + (this.Params != null ? this.Params.hashCode() : 0);
         return hash;
     }
+}
 
+class LinearSourceExpr extends SourceExpr {
+
+    Map<SourceExpr,Integer> Operands;
+
+    public String GetSource() {
+        Iterator<SourceExpr> i = Operands.keySet().iterator();
+        String Result = "";
+        while(i.hasNext()) {
+            SourceExpr Operand = i.next();
+            Integer Coeff = Operands.get(Operand);
+            Result = (Result.length()==0?"":Result+(Coeff>=0?"+":"")) + Coeff + "*" + Operand.GetSource();
+        }
+
+        return Result;
+    }
 }
 
 class GroupExpression {
