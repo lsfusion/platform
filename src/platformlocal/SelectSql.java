@@ -386,7 +386,7 @@ class FieldExprCompareWhere extends Where {
 
     @Override
     public String GetSelect(From From) {
-        return Source.GetSource() + (Compare==0?"=":(Compare==1?">":"<")) + (Value instanceof String?"'"+Value+"'":Value.toString());
+        return Source.GetSource() + (Compare==0?"=":(Compare==1?">":(Compare==2?"<":(Compare==3?">=":"<=")))) + (Value instanceof String?"'"+Value+"'":(Value instanceof SourceExpr?((SourceExpr)Value).GetSource():Value.toString()));
     }
 }
 
@@ -557,10 +557,12 @@ class LinearSourceExpr extends SourceExpr {
 class GroupExpression {
 
     SourceExpr Expr;
+    String Operation;
 
-    GroupExpression(SourceExpr iExpr) {Expr=iExpr;};
+    GroupExpression(SourceExpr iExpr,String iOperation) {Expr=iExpr; Operation=iOperation;};
     
     public String GetSelect() {
-        return "SUM(" + Expr.GetSource() + ")";
+        return Operation + "(" + Expr.GetSource() + ")";
     }
 }
+

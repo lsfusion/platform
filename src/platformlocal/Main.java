@@ -403,7 +403,7 @@ class Test extends BusinessLogics  {
     }
     
     LGP AddGProp(LP GroupProp,Object ...Params) {
-        GroupProperty Property = new GroupProperty(TableFactory,(SourceProperty)GroupProp.Property);
+        GroupProperty Property = new SumGroupProperty(TableFactory,(SourceProperty)GroupProp.Property);
         LGP ListProperty = new LGP(Property,GroupProp);
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(GroupProp,Params);
         ListIterator<PropertyInterfaceImplement> i = PropImpl.listIterator();
@@ -695,8 +695,8 @@ class Test extends BusinessLogics  {
         RashQuantity.ChangeProperty(Session,ad,2222,RashDocuments[4],Articles[5]);
 
         DocDate.ChangeProperty(Session,ad,1002,PrihDocuments[2]);
-//        DocStore.ChangeProperty(Session,ad,Stores[1],Documents[5]);
-//        Quantity.ChangeProperty(Session,ad,12,Documents[5],Articles[3]);
+        DocStore.ChangeProperty(Session,ad,Stores[1],Documents[5]);
+        Quantity.ChangeProperty(Session,ad,12,Documents[5],Articles[3]);
         DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[1]);
 //        Quantity.ChangeProperty(Session,ad,3,Documents[0],Articles[3]);
 //        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[3]);

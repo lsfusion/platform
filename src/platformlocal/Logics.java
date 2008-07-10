@@ -263,6 +263,9 @@ class ChangeTable extends Table {
     KeyField Session;
     KeyField Property;
     Field Value;
+    Field PrevValue;
+    // системное поля, по сути для MaxGroupProperty
+    Field SysValue;
     
     ChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
         super("changetable"+iObjects+"t"+iDBType);
@@ -282,6 +285,12 @@ class ChangeTable extends Table {
         
         Value = new Field("value",DBTypes.get(iDBType));
         PropFields.add(Value);
+
+        PrevValue = new Field("prevvalue",DBTypes.get(iDBType));
+        PropFields.add(PrevValue);
+
+        SysValue = new Field("sysvalue",DBTypes.get(iDBType));
+        PropFields.add(SysValue);
     }
 }
 
@@ -461,14 +470,18 @@ class BusinessLogics {
 
                 Integer PropNum = Tables.get(Table);
                 if(PropNum==null) PropNum = 1;
-                Tables.put(Table, PropNum++);
+                PropNum = PropNum + 1;
+                Tables.put(Table, PropNum);
 
                 Field PropField = new Field("prop"+PropNum.toString(),Property.GetDBType());
                 Table.PropFields.add(PropField);
                 ((SourceProperty)Property).Field = PropField;
             }
         }
-        
+
+        Iterator<Table> it = Tables.keySet().iterator();
+        while(it.hasNext()) Adapter.CreateTable(it.next());
+
         // построим в нужном порядке AggregateProperty и будем заполнять их
         List<AggregateProperty> UpdateList = new ArrayList();
         Iterator<AggregateProperty> ia = AggrProperties.iterator();
@@ -480,9 +493,6 @@ class BusinessLogics {
             if(Property instanceof GroupProperty)
                 ((GroupProperty)Property).FillDB(Adapter,ViewNum++);
         }
-
-        Iterator<Table> it = Tables.keySet().iterator();
-        while(it.hasNext()) Adapter.CreateTable(it.next());
         
         // создадим dumb
         Table DumbTable = new Table("dumb");
