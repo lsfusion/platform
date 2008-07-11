@@ -162,8 +162,8 @@ abstract class Property<T extends PropertyInterface> {
         JoinList Joins = new JoinList();
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
         SourceExpr ValueExpr = JoinSelect(Joins,JoinImplement,false);
-        Iterator<From> i = Joins.iterator();
         
+        ListIterator<From> i = Joins.listIterator();
         SelectQuery Select = new SelectQuery(i.next());
         while(i.hasNext()) Select.From.Joins.add(i.next());
         Iterator<T> ii = Interfaces.iterator();
@@ -801,7 +801,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
                 }
 
                 // закинем Join'ы как обычно
-                Iterator<From> is = Joins.iterator();
+                ListIterator<From> is = Joins.listIterator();
                 SubQuery.From = is.next();
                 while(is.hasNext()) SubQuery.From.Joins.add(is.next());
 
@@ -890,7 +890,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         }
 
         // закидываем From'ы
-        Iterator<From> is = QueryJoins.iterator();
+        ListIterator<From> is = QueryJoins.listIterator();
         SubQuery.From = is.next();
         while (is.hasNext())
             SubQuery.From.Joins.add(is.next());
@@ -1080,7 +1080,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
                 }
 
                 // закинем Join'ы как обычно
-                Iterator<From> is = Joins.iterator();
+                ListIterator<From> is = Joins.listIterator();
                 SubQuery.From = is.next();
                 while(is.hasNext()) SubQuery.From.Joins.add(is.next());
 
@@ -1209,7 +1209,7 @@ class MaxGroupProperty extends GroupProperty {
         // протранслируем все дальше
         JoinList JoinPrev = new JoinList();
         SourceExpr PrevValue = JoinSelect(JoinPrev,JoinImplement,true);
-        Iterator<From> ij = JoinPrev.iterator();
+        ListIterator<From> ij = JoinPrev.listIterator();
         while(ij.hasNext()) FromChangeQuery.Joins.add(ij.next());
         
         ResultQuery.Expressions.put(Table.Session.Name,new ValueSourceExpr(Session.ID));
@@ -1335,9 +1335,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
             Iterator<PropertyMapImplement> i = Operands.iterator();
             while(i.hasNext()) {
                 PropertyMapImplement Operand = i.next();
-                SourceExpr OperandExpr = Operand.MapJoinSelect(Joins,JoinImplement,Left,null,0);
-                ResultExpr.Operands.add(OperandExpr);
-                ResultExpr.Coeffs.put(OperandExpr,Coeffs.get(Operand));
+                ResultExpr.AddOperand(Operand.MapJoinSelect(Joins,JoinImplement,Left,null,0),Coeffs.get(Operand));
             }
             
             return ResultExpr;
@@ -1370,7 +1368,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
                 }
                 
                 // From'ы как обычно закидываем
-                Iterator<From> is = OpJoins.iterator();
+                ListIterator<From> is = OpJoins.listIterator();
                 SubQuery.From = is.next();
                 while(is.hasNext()) SubQuery.From.Joins.add(is.next());
                 
@@ -1467,7 +1465,7 @@ abstract class IndependentListProperty extends ListProperty {
                 }
                 
                 // закинем Join'ы как обычно
-                Iterator<From> is = Joins.iterator();
+                ListIterator<From> is = Joins.listIterator();
                 SubQuery.From = is.next();
                 while(is.hasNext()) SubQuery.From.Joins.add(is.next());
                 
@@ -1510,7 +1508,7 @@ class MaxListProperty extends ListProperty {
 
         ChangeTable Table = StartChangeTable(Adapter,Session);
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Table,Session,Operator);
+        UnionQuery ResultQuery = GetChangeUnion(Table,Session,2);
         
         ListIterator<List<PropertyMapImplement>> il = null;
         il = (new SetBuilder<PropertyMapImplement>()).BuildSubSetList(ChangedProperties).listIterator();
@@ -1525,15 +1523,35 @@ class MaxListProperty extends ListProperty {
             Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
             // так как делается LEFT JOIN важен порядок сначала закидываем ChangedProps ChangedJoinSelect
             i = ChangedProps.iterator();
-            while(i.hasNext())
-                ResultExpr.Operands.add(i.next().MapJoinSelect(SetJoins,JoinImplement,false,Session,0));
+            while(i.hasNext()) {
+                PropertyMapImplement Operand = i.next();
+                ResultExpr.AddOperand(Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,0),Coeffs.get(Operand));
+            }
             
             i = Operands.iterator();
             while(i.hasNext()) {
                 PropertyMapImplement Operand = i.next();
-                
+                if(!ChangedProps.contains(Operand))
+                    ResultExpr.AddOperand(Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,0),Coeffs.get(Operand));
             }
+            
+            ListIterator<From> ij = SetJoins.listIterator();
+            SelectQuery SubQuery = new SelectQuery(ij.next());
+            while(ij.hasNext()) SubQuery.From.Joins.add(ij.next());
+            
+            // закинем ключи значения
+            Iterator<PropertyInterface> ii = Interfaces.iterator();
+            while(ii.hasNext()) {
+                PropertyInterface Interface = ii.next();
+                SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
+            }
+            SubQuery.Expressions.put(Table.Value.Name,ResultExpr);
+
+            ResultQuery.Unions.add(SubQuery);
         }
+
+        Adapter.InsertSelect(Table,ResultQuery);
+        SessionChanged.put(Session,0);
     }
 }
 

@@ -191,8 +191,7 @@ class UnionQuery extends Query {
                                 ResultQuery.Expressions.put(Field,OldValue);
                             }
                         
-                            OldValue.Operands.add(NewValue);
-                            if(FieldCoeff!=null) OldValue.Coeffs.put(NewValue, FieldCoeff);
+                            OldValue.AddOperand(NewValue,FieldCoeff);
                         } else {
                             // ключ всегда на IsNull
                             if(LastQuery!=null)
@@ -563,6 +562,11 @@ class ListSourceExpr extends SourceExpr {
     int Operator;
     List<SourceExpr> Operands;
     Map<SourceExpr,Integer> Coeffs;
+    
+    void AddOperand(SourceExpr Operand,Integer Coeff) {
+        Operands.add(Operand);
+        Coeffs.put(Operand,Coeff);
+    }
 
     public String GetSource() {
         ListIterator<SourceExpr> i = Operands.listIterator();
@@ -572,20 +576,22 @@ class ListSourceExpr extends SourceExpr {
             Integer Coeff = Coeffs.get(Operand);
             if(Coeff==null) Coeff = 1;
             String OperandString = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString()));
+            if(Operator==1)
+                OperandString += "ISNULL(" + Operand.GetSource() + ",0)";
+            else
+                OperandString += Operand.GetSource();
+
             if(Operator==0 || Operator==1) {
-                OperandString += "ISNULL(" + Operand.GetSource() + "," + (Operator==1?0:-99999999) + ")";
-                if(Result.length()==0)
+                if(Result.length()==0) {
                     Result = OperandString;
-                else {
+                } else {
                     if(Operator==1)
                         Result = Result+(Coeff>=0?"+":"") + OperandString;
                     else
-                        Result = "MAX(" + Result + "," + OperandString + ")";
+                        Result = "(CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END)";
                 }
-            } else {
-                OperandString += Operand.GetSource();
+            } else
                 Result = (Result.length()==0?OperandString:"ISNULL(" + OperandString + "," + Result + ")");
-            }
         }
 
         return Result;

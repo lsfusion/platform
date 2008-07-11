@@ -417,8 +417,20 @@ class Test extends BusinessLogics  {
         return ListProperty;
     }
 
-    LRP AddLProp(int IntNum, Object ...Params) {
-        ListProperty Property = new SumListProperty(TableFactory);
+    LRP AddLProp(int ListType, int IntNum, Object ...Params) {
+        ListProperty Property = null;
+        switch(ListType) {
+            case 0:
+                Property = new MaxListProperty(TableFactory);
+                break;
+            case 1:
+                Property = new SumListProperty(TableFactory);
+                break;
+            case 2:
+                Property = new OverrideListProperty(TableFactory);
+                break;
+        }
+        
         LRP ListProperty = new LRP(Property,IntNum);
 
         for(int i=0;i<IntNum;i++) {
@@ -509,7 +521,7 @@ class Test extends BusinessLogics  {
         LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
         RashArtStore.Property.OutName = "расход по складу";
 
-        LRP OstArtStore = AddLProp(2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+        LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
         OstArtStore.Property.OutName = "остаток по складу";
 
         LGP OstArt = AddGProp(OstArtStore,true,2);
@@ -517,6 +529,9 @@ class Test extends BusinessLogics  {
 
         LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
         MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+
+        LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+        MaxOpStore.Property.OutName = "макс. операция";
 
         TableImplement Include;
         
@@ -552,7 +567,8 @@ class Test extends BusinessLogics  {
         PersistentProperties.add((AggregateProperty)OstArtStore.Property);
         PersistentProperties.add((AggregateProperty)OstArt.Property);
         PersistentProperties.add((AggregateProperty)MaxPrih.Property);
-
+        PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
+        
         DataAdapter ad = new DataAdapter();
         ad.Connect("");
 
@@ -663,7 +679,10 @@ class Test extends BusinessLogics  {
 //        OstArtStore.Property.Out(ad);
 //        OstArt.Property.Out(ad);
 //        ((SourceProperty)MaxPrih.Property).OutChangesTable(ad, Session);
-        MaxPrih.Property.Out(ad);
+//        MaxPrih.Property.Out(ad);
+        PrihArtStore.Property.Out(ad);
+        RashArtStore.Property.Out(ad);
+        MaxOpStore.Property.Out(ad);
 
 //        UpdateProps.add((AggregateProperty)GAP.Property);
 //        UpdateAggregations(ad, UpdateProps, Session);
@@ -677,6 +696,7 @@ class Test extends BusinessLogics  {
 //        ((AggregateProperty)OstArtStore.Property).CheckAggregation(ad,"OstArtStore");
         ((AggregateProperty)OstArt.Property).CheckAggregation(ad,"OstArt");
         ((AggregateProperty)MaxPrih.Property).CheckAggregation(ad,"MaxPrih");
+        ((AggregateProperty)MaxOpStore.Property).CheckAggregation(ad,"MaxOpStore");
         
 //        Name.Property.Out(ad);
 //        GP.Property.Out(ad);
@@ -730,7 +750,8 @@ class Test extends BusinessLogics  {
         MaxPrih.Property.Out(ad);
 
 //        OstArt.Property.Out(ad);
-
+        
+        MaxOpStore.Property.Out(ad);
 //        GSum.Property.Out(ad);
 //        GP.Property.Out(ad);
 //        G2P.Property.Out(ad);
@@ -741,6 +762,7 @@ class Test extends BusinessLogics  {
 //        ((AggregateProperty)OstArtStore.Property).CheckAggregation(ad,"OstArtStore");
         ((AggregateProperty)OstArt.Property).CheckAggregation(ad,"OstArt");
         ((AggregateProperty)MaxPrih.Property).CheckAggregation(ad,"MaxPrih");
+        ((AggregateProperty)MaxOpStore.Property).CheckAggregation(ad,"MaxOpStore");
 
         if(true) return;
         // потестим FormBeanView

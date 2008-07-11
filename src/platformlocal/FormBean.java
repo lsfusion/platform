@@ -603,7 +603,7 @@ class FormBeanView {
                 }
                 
                 // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
-                Iterator<From> ijk = JoinKeys.iterator();
+                ListIterator<From> ijk = JoinKeys.listIterator();
                 SelectKeys.From = ijk.next();
                 while(ijk.hasNext()) SelectKeys.From.Joins.add(ijk.next());
 
@@ -777,7 +777,7 @@ class FormBeanView {
                 ToFields.put(DrawProp, SelectField);
             }
         
-            Iterator<From> isj = JoinProps.iterator();
+            ListIterator<From> isj = JoinProps.listIterator();
             while(isj.hasNext())
                 SelectProps.From.Joins.add(isj.next());
         
@@ -823,7 +823,7 @@ class FormBeanView {
                 ToFields.put(DrawProp, SelectField);
             }
         
-            Iterator<From> isj = JoinProps.iterator();
+            ListIterator<From> isj = JoinProps.listIterator();
             while(isj.hasNext())
                 SelectProps.From.Joins.add(isj.next());
         
