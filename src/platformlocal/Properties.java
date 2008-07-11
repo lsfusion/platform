@@ -228,9 +228,9 @@ abstract class SourceProperty<T extends PropertyInterface> extends Property<T> {
     }
     
     // получает UnionQuery с проставленными ключами
-    UnionQuery GetChangeUnion(ChangeTable Table,ChangesSession Session) {
+    UnionQuery GetChangeUnion(ChangeTable Table,ChangesSession Session,int Operator) {
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = new UnionQuery();
+        UnionQuery ResultQuery = new UnionQuery(Operator);
         Iterator<T> im = Interfaces.iterator();
         while (im.hasNext()) 
             ResultQuery.Keys.add(ChangeTableMap.get(im.next()).Name);
@@ -759,10 +759,9 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
         // удаляем старые 
         ChangeTable Table = StartChangeTable(Adapter,Session);
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Table,Session);
+        UnionQuery ResultQuery = GetChangeUnion(Table,Session,2);
 
         Integer ResultValueType = null;
-        Map<List<PropertyInterface>,Integer> SumCoeffs = null;
         ListIterator<List<PropertyInterface>> il = null;
         // если ChangedProperties.size() - 0, то идет на то что было, иначе на = !!!! (всегда) (можно правда и на + давать по аналогии с GROUP, но это все равно медленнее работать будет)
         if(ChangedProperties.size()==0)
@@ -807,7 +806,6 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
                 while(is.hasNext()) SubQuery.From.Joins.add(is.next());
 
                 ResultQuery.Unions.add(SubQuery);
-                if(SumCoeffs!=null) ResultQuery.SumCoeffs.put(SubQuery,SumCoeffs.get(ChangeProps));
             }
         }
         
@@ -850,15 +848,15 @@ class GroupPropertyInterface extends PropertyInterface {
 abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     // каждый интерфейс должен имплементировать именно GetInterface GroupProperty
 
-    String Operation;
+    // оператор
+    int Operator;
     
-    GroupProperty(TableFactory iTableFactory,SourceProperty iProperty,String iOperation,int iGroupValue) {
+    GroupProperty(TableFactory iTableFactory,SourceProperty iProperty,int iOperator) {
         super(iTableFactory);
         GroupProperty = iProperty;
         ToClasses = new HashMap();
         GroupKeys = new HashMap();
-        Operation = iOperation;
-        GroupValue = iGroupValue;
+        Operator = iOperator;
     }
     
     // группировочное св-во собсно должно быть не формулой
@@ -877,7 +875,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         GroupQuery SubQuery = new GroupQuery(null);
 
         Map<PropertyInterface,SourceExpr> GroupImplement = new HashMap();
-        SubQuery.AggrExprs.put(GroupField,new GroupExpression(GroupProperty.JoinSelect(QueryJoins,GroupImplement,false),Operation));
+        SubQuery.AggrExprs.put(GroupField,new GroupExpression(GroupProperty.JoinSelect(QueryJoins,GroupImplement,false),Operator));
 
         Integer KeyNum = 0;
         Iterator<GroupPropertyInterface> im = Interfaces.iterator();
@@ -1010,19 +1008,17 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         return Changed;
     }
     
-    // перегружается поверх (Operation уже)
-    int GroupValue;
     // получает всевозможные инкрементные запросы для обеспечения IncrementChanges
-    GroupQuery IncrementQuery(ChangesSession Session,String ValueName,List<GroupPropertyInterface> ChangedProperties,int GroupSet,boolean InterfaceValue,boolean InterfaceSubSet,boolean InterfaceEmptySet) {
+    GroupQuery IncrementQuery(ChangesSession Session,String ValueName,List<GroupPropertyInterface> ChangedProperties,int GroupSet,boolean ValueType,boolean InterfaceSubSet,boolean InterfaceEmptySet) {
         // ValueName куда значение класть
         // ChangedProperties чтобы по нескольку раз не считать
         // GroupSet -> 0(G) - новые, 1(A) - предыдущие, 2(G/A) - новые и предыдущие
-        // InterfaceValue -> true(=) - новые, false(P) - предыдущие
+        // ValueType -> true(=) - новые, false(P) - предыдущие
         // InterfaceSubSet -> true - включать все подмн-ва, false - одиночные подмн-ва
         // InterfaceEmptySet -> true - включать пустое подмн-во, false - не включать
         // P GroupValue -> чтобы знать на какое значение считать =(0)/+(1)/prev(2), Operand определяет SUM\MAX
 
-        UnionQuery DataQuery = new UnionQuery();
+        UnionQuery DataQuery = new UnionQuery(2);
                     
         // заполняем ключи и значения для DataQuery
         int DataKeysNum = 1;
@@ -1067,13 +1063,13 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
                 Map<PropertyInterface,SourceExpr> GroupImplement = new HashMap();
                 
                 // значение
-                SubQuery.Expressions.put(ValueName,(GroupOp==1?GroupProperty.ChangedJoinSelect(Joins,GroupImplement,Session,GroupValue):GroupProperty.JoinSelect(Joins,GroupImplement,false)));
+                SubQuery.Expressions.put(ValueName,(GroupOp==1?GroupProperty.ChangedJoinSelect(Joins,GroupImplement,Session,(ValueType?Operator:2)):GroupProperty.JoinSelect(Joins,GroupImplement,false)));
 
                 // значения интерфейсов
                 im = Interfaces.iterator();
                 while (im.hasNext()) {
                     GroupPropertyInterface Interface = im.next();
-                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,Interface.Implement.MapJoinSelect(Joins,GroupImplement,false,(ChangeProps.contains(Interface)?Session:null),InterfaceValue?0:2));
+                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,Interface.Implement.MapJoinSelect(Joins,GroupImplement,false,(ChangeProps.contains(Interface)?Session:null),ValueType?0:2));
                 }
                 
                 // значения ключей базовые
@@ -1099,7 +1095,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
             String KeyField = ChangeTableMap.get(im.next()).Name;
             GroupQuery.GroupBy.put(KeyField,new FieldSourceExpr(FromDataQuery,KeyField));
         }
-        GroupQuery.AggrExprs.put(ValueName,new GroupExpression(new FieldSourceExpr(FromDataQuery,ValueName),Operation));
+        GroupQuery.AggrExprs.put(ValueName,new GroupExpression(new FieldSourceExpr(FromDataQuery,ValueName),Operator));
 
         return GroupQuery;
     }
@@ -1119,7 +1115,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
 
 class SumGroupProperty extends GroupProperty {
 
-    SumGroupProperty(TableFactory iTableFactory,SourceProperty iProperty) {super(iTableFactory,iProperty,"SUM",1);}
+    SumGroupProperty(TableFactory iTableFactory,SourceProperty iProperty) {super(iTableFactory,iProperty,1);}
 
     void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
         // алгоритм пока такой :
@@ -1137,7 +1133,7 @@ class SumGroupProperty extends GroupProperty {
         
         ChangeTable Table = StartChangeTable(Adapter,Session);
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Table,Session);
+        UnionQuery ResultQuery = GetChangeUnion(Table,Session,1);
 
         // InterfaceSubSet ij<=2
         // InterfaceValue ij<=2
@@ -1148,17 +1144,17 @@ class SumGroupProperty extends GroupProperty {
         if(GroupProperty.HasChanges(Session)) {
             GroupQuery = IncrementQuery(Session,Table.Value.Name,ChangedProperties,0,true,true,false);
             ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.SumCoeffs.put(GroupQuery,1);
+            ResultQuery.Coeffs.put(GroupQuery,1);
         }
 
         if(ChangedProperties.size()>0) {
             GroupQuery = IncrementQuery(Session,Table.Value.Name,ChangedProperties,1,true,true,false);
             ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.SumCoeffs.put(GroupQuery,1);
+            ResultQuery.Coeffs.put(GroupQuery,1);
             
             GroupQuery = IncrementQuery(Session,Table.Value.Name,ChangedProperties,1,false,false,false);
             ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.SumCoeffs.put(GroupQuery,-1);
+            ResultQuery.Coeffs.put(GroupQuery,-1);
         }
         
         Adapter.InsertSelect(Table,ResultQuery);
@@ -1169,7 +1165,7 @@ class SumGroupProperty extends GroupProperty {
 
 class MaxGroupProperty extends GroupProperty {
 
-    MaxGroupProperty(TableFactory iTableFactory,SourceProperty iProperty) {super(iTableFactory,iProperty,"MAX",0);}
+    MaxGroupProperty(TableFactory iTableFactory,SourceProperty iProperty) {super(iTableFactory,iProperty,0);}
 
     void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
         
@@ -1186,7 +1182,7 @@ class MaxGroupProperty extends GroupProperty {
 
         ChangeTable Table = StartChangeTable(Adapter,Session);
         // конечный результат, с ключами и выражением 
-        UnionQuery ChangeQuery = new UnionQuery();
+        UnionQuery ChangeQuery = new UnionQuery(2);
         FromQuery FromChangeQuery = new FromQuery(ChangeQuery);
         SelectQuery ResultQuery = new SelectQuery(FromChangeQuery);
 
@@ -1204,6 +1200,9 @@ class MaxGroupProperty extends GroupProperty {
         
         ChangeQuery.Values.add(Table.SysValue.Name);
         ChangeQuery.Unions.add(IncrementQuery(Session,Table.SysValue.Name,ChangedProperties,2,false,false,false));
+        
+//        Adapter.OutSelect(IncrementQuery(Session,Table.SysValue.Name,ChangedProperties,2,false,false,false));
+                
         ChangeQuery.Values.add(Table.Value.Name);
         ChangeQuery.Unions.add(IncrementQuery(Session,Table.Value.Name,ChangedProperties,2,true,true,false));
 
@@ -1226,13 +1225,14 @@ class MaxGroupProperty extends GroupProperty {
         ValueSourceExpr MinValue = new ValueSourceExpr(-99999999);
         NewValue = new IsNullSourceExpr(NewValue,MinValue);
         OldValue = new IsNullSourceExpr(OldValue,MinValue);
-        PrevValue = new IsNullSourceExpr(OldValue,MinValue);
+        PrevValue = new IsNullSourceExpr(PrevValue,MinValue);
         
         // null ассоциируется с -бесконечностью
         // удаляем всех пришедших<=старых значений и ушедшие<старых значений
         // то есть пропускаем (пришедшие>старых значений) или (ушедшие=старых значений)
         FromChangeQuery.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,1),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
 
+//        Adapter.OutSelect(ResultQuery);
         Adapter.InsertSelect(Table,ResultQuery);
         
         // для всех ушедших=старые значения (а они всегда <=) и пришедшие<старых значений обновляем по LEFT JOIN с запросом
@@ -1261,61 +1261,34 @@ class MaxGroupProperty extends GroupProperty {
         }
         FromChanges.Joins.add(FromNewQuery);
         UpdateQuery.Expressions.put(Table.Value.Name,new FieldSourceExpr(FromNewQuery,Table.Value.Name));
-        
+
+ //       Adapter.OutSelect(UpdateQuery);
+ //       System.out.println(UpdateQuery.GetUpdate());
         Adapter.UpdateRecords(UpdateQuery);
+//        OutChangesTable(Adapter, Session);
+        // помечаем изменение в сессии на =
+        SessionChanged.put(Session,0);
     }
 }
 
-// КОМБИНАЦИИ числовые (ЛИНЕЙНЫЕ,MAX) принимают null на входе, по сути как Relation но работают на Or\FULL JOIN
+// КОМБИНАЦИИ (ЛИНЕЙНЫЕ,MAX,OVERRIDE) принимают null на входе, по сути как Relation но работают на Or\FULL JOIN
 // соответственно мн-во св-в полностью должно отображаться на интерфейсы
 
-class LinearProperty extends AggregateProperty<PropertyInterface> {
+abstract class ListProperty extends AggregateProperty<PropertyInterface> {
 
-    LinearProperty(TableFactory iTableFactory) {
+    ListProperty(TableFactory iTableFactory,int iOperator) {
         super(iTableFactory);
-        Operands = new HashMap();
+        Operands = new ArrayList();
+        Operator = iOperator;
+        Coeffs = new HashMap();
     }
 
     // имплементации св-в (полные)
-    Map<PropertyMapImplement,Integer> Operands;
-
-    void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
-
-        ChangeTable Table = StartChangeTable(Adapter,Session);
-        // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Table,Session);
-
-        Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
-        while(i.hasNext()) {
-            PropertyMapImplement Operand = i.next();
-            if(Operand.MapHasChanges(Session)) {
-                // бежим по всем изменившимся и FULL JOIN'аем их на + с соответствуюшими коэффициентами
-                SelectQuery SubQuery = new SelectQuery(null);
-                JoinList Joins = new JoinList();
-                Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-                SubQuery.Expressions.put(Table.Value.Name,Operand.MapJoinSelect(Joins,JoinImplement,false,Session,1));
-
-                // закинем интерфейсы
-                Iterator<PropertyInterface> im = Interfaces.iterator();
-                while (im.hasNext()) {
-                    PropertyInterface Interface = im.next();
-                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
-                }
-                
-                // закинем Join'ы как обычно
-                Iterator<From> is = Joins.iterator();
-                SubQuery.From = is.next();
-                while(is.hasNext()) SubQuery.From.Joins.add(is.next());
-                
-                ResultQuery.Unions.add(SubQuery);
-                ResultQuery.SumCoeffs.put(SubQuery,Operands.get(Operand));
-            }
-        }
-        
-        Adapter.InsertSelect(Table,ResultQuery);
-        // помечаем изменение в сессии на +
-        SessionChanged.put(Session,1);
-    }
+    Collection<PropertyMapImplement> Operands;
+    
+    int Operator;
+    // коэффициенты
+    Map<PropertyMapImplement,Integer> Coeffs;
 
     SourceExpr CalculateJoinSelect(JoinList Joins, Map<PropertyInterface, SourceExpr> JoinImplement,boolean Left) {
         
@@ -1331,7 +1304,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
         if(!Left && JoinImplement.size()!=Interfaces.size()) {
             Table CommonTable = null;
             Map<KeyField,PropertyInterface> CommonJoins = null;
-            Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
+            Iterator<PropertyMapImplement> i = Operands.iterator();
             while(IsCommon && i.hasNext()) {
                 PropertyMapImplement Operand = i.next();
 
@@ -1358,11 +1331,13 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
         }
 
         if(IsCommon) {
-            LinearSourceExpr ResultExpr = new LinearSourceExpr();
-            Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
+            ListSourceExpr ResultExpr = new ListSourceExpr(Operator);
+            Iterator<PropertyMapImplement> i = Operands.iterator();
             while(i.hasNext()) {
                 PropertyMapImplement Operand = i.next();
-                ResultExpr.Operands.put(Operand.MapJoinSelect(Joins,JoinImplement,Left,null,0),Operands.get(Operand));
+                SourceExpr OperandExpr = Operand.MapJoinSelect(Joins,JoinImplement,Left,null,0);
+                ResultExpr.Operands.add(OperandExpr);
+                ResultExpr.Coeffs.put(OperandExpr,Coeffs.get(Operand));
             }
             
             return ResultExpr;
@@ -1372,7 +1347,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
             Map<PropertyInterface,String> MapFields = new HashMap();
             Iterator<PropertyInterface> ii = Interfaces.iterator();
             Integer KeyNum = 1;
-            UnionQuery ResultQuery = new UnionQuery();
+            UnionQuery ResultQuery = new UnionQuery(Operator);
             while(ii.hasNext()) {
                 String KeyField = "key"+(KeyNum++);
                 MapFields.put(ii.next(),KeyField);
@@ -1380,7 +1355,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
             }
             ResultQuery.Values.add(Value);
 
-            Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
+            Iterator<PropertyMapImplement> i = Operands.iterator();
             while(i.hasNext()) {
                 PropertyMapImplement Operand = i.next();
                 SelectQuery SubQuery = new SelectQuery(null);
@@ -1400,7 +1375,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
                 while(is.hasNext()) SubQuery.From.Joins.add(is.next());
                 
                 ResultQuery.Unions.add(SubQuery);
-                ResultQuery.SumCoeffs.put(SubQuery,Operands.get(Operand));
+                ResultQuery.Coeffs.put(SubQuery,Coeffs.get(Operand));
             }
             
             FromQuery FromResultQuery = new FromQuery(ResultQuery);
@@ -1424,7 +1399,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
 
     public Class GetValueClass() {
         // в отличии от Relation только когда есть хоть одно св-во
-        Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
+        Iterator<PropertyMapImplement> i = Operands.iterator();
         while(i.hasNext()) {
             Class ValueClass = i.next().MapGetValueClass();
             if(ValueClass!=null) return ValueClass;                
@@ -1436,7 +1411,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
     public InterfaceClassSet GetClassSet(Class ReqValue) {
         // в отличии от Relation делаем Or а не And
         InterfaceClassSet Result = new InterfaceClassSet();
-        Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
+        Iterator<PropertyMapImplement> i = Operands.iterator();
         while(i.hasNext())
             Result.OrSet(i.next().MapGetClassSet(ReqValue));
 
@@ -1444,7 +1419,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
     }
 
     public String GetDBType() {
-        return Operands.keySet().iterator().next().Property.GetDBType();        
+        return Operands.iterator().next().Property.GetDBType();        
     }
 
     boolean FillAggregateList(List<AggregateProperty> ChangedProperties, Set<DataProperty> ChangedSet) {
@@ -1452,7 +1427,7 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
 
         boolean Changed = false;
 
-        Iterator<PropertyMapImplement> i = Operands.keySet().iterator();
+        Iterator<PropertyMapImplement> i = Operands.iterator();
         while (i.hasNext()) 
             Changed = i.next().MapFillAggregateList(ChangedProperties,ChangedSet) || Changed;
 
@@ -1460,6 +1435,105 @@ class LinearProperty extends AggregateProperty<PropertyInterface> {
             ChangedProperties.add(this);
         
         return Changed;
+    }
+}
+
+// где операторы не зависимы (для Increment Updat'a) удобно
+abstract class IndependentListProperty extends ListProperty {
+    
+    IndependentListProperty(TableFactory iTableFactory,int iOperator) {super(iTableFactory,iOperator);}
+
+    void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
+
+        ChangeTable Table = StartChangeTable(Adapter,Session);
+        // конечный результат, с ключами и выражением 
+        UnionQuery ResultQuery = GetChangeUnion(Table,Session,Operator);
+
+        Iterator<PropertyMapImplement> i = Operands.iterator();
+        while(i.hasNext()) {
+            PropertyMapImplement Operand = i.next();
+            if(Operand.MapHasChanges(Session)) {
+                // бежим по всем изменившимся и FULL JOIN'аем их на + с соответствуюшими коэффициентами
+                SelectQuery SubQuery = new SelectQuery(null);
+                JoinList Joins = new JoinList();
+                Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
+                SubQuery.Expressions.put(Table.Value.Name,Operand.MapJoinSelect(Joins,JoinImplement,false,Session,2-Operator));
+
+                // закинем интерфейсы
+                Iterator<PropertyInterface> im = Interfaces.iterator();
+                while (im.hasNext()) {
+                    PropertyInterface Interface = im.next();
+                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
+                }
+                
+                // закинем Join'ы как обычно
+                Iterator<From> is = Joins.iterator();
+                SubQuery.From = is.next();
+                while(is.hasNext()) SubQuery.From.Joins.add(is.next());
+                
+                ResultQuery.Unions.add(SubQuery);
+                ResultQuery.Coeffs.put(SubQuery,Coeffs.get(Operand));
+            }
+        }
+        
+        Adapter.InsertSelect(Table,ResultQuery);
+        // помечаем изменение в сессии
+        SessionChanged.put(Session,2-Operator);
+    }
+
+}
+
+class SumListProperty extends IndependentListProperty {
+    
+    SumListProperty(TableFactory iTableFactory) {super(iTableFactory,1);}
+}
+
+class OverrideListProperty extends IndependentListProperty {
+    
+    OverrideListProperty(TableFactory iTableFactory) {super(iTableFactory,2);}
+}
+
+class MaxListProperty extends ListProperty {
+
+    MaxListProperty(TableFactory iTableFactory) {super(iTableFactory,0);}
+    
+    void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
+        // алгоритм такой берем все подмн-ва (не пустые), JoinSelect'им на LEFT остальные св-ва, получаем MAX
+        // все FullJoin'им на равно
+        
+        List<PropertyMapImplement> ChangedProperties = new ArrayList();
+        Iterator<PropertyMapImplement> i = Operands.iterator();
+        while(i.hasNext()) {
+            PropertyMapImplement Operand = i.next();
+            if(Operand.MapHasChanges(Session)) ChangedProperties.add(Operand);
+        }
+
+        ChangeTable Table = StartChangeTable(Adapter,Session);
+        // конечный результат, с ключами и выражением 
+        UnionQuery ResultQuery = GetChangeUnion(Table,Session,Operator);
+        
+        ListIterator<List<PropertyMapImplement>> il = null;
+        il = (new SetBuilder<PropertyMapImplement>()).BuildSubSetList(ChangedProperties).listIterator();
+        // пропустим пустое подмн-во
+        il.next();
+        while(il.hasNext()) {
+            List<PropertyMapImplement> ChangedProps = il.next();
+            
+            JoinList SetJoins = new JoinList();
+            ListSourceExpr ResultExpr = new ListSourceExpr(0);
+
+            Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
+            // так как делается LEFT JOIN важен порядок сначала закидываем ChangedProps ChangedJoinSelect
+            i = ChangedProps.iterator();
+            while(i.hasNext())
+                ResultExpr.Operands.add(i.next().MapJoinSelect(SetJoins,JoinImplement,false,Session,0));
+            
+            i = Operands.iterator();
+            while(i.hasNext()) {
+                PropertyMapImplement Operand = i.next();
+                
+            }
+        }
     }
 }
 

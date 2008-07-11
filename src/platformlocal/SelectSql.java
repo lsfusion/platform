@@ -114,9 +114,12 @@ abstract class Query {
     public String GetSource() {
         return "("+GetSelect(new ArrayList())+")";
     }
+    
+    abstract boolean containsField(String Field);
 }
 
 // объединяет запросы (направо считает более новыми значениями) 
+
 
 class UnionQuery extends Query {
       
@@ -125,14 +128,16 @@ class UnionQuery extends Query {
     Collection<String> Values;
     Map<String,Integer> ValueKeys;
     List<Query> Unions;
-    Map<Query,Integer> SumCoeffs;
+    Map<Query,Integer> Coeffs;
+    int Operator;
     
-    UnionQuery() {
+    UnionQuery(int iOperator) {
         Keys = new ArrayList();
         Values = new ArrayList();
         ValueKeys = new HashMap();
         Unions = new ArrayList();
-        SumCoeffs = new HashMap();
+        Coeffs = new HashMap();
+        Operator = iOperator;        
     }
 
     public String GetSelect(Collection<String> GetFields) {
@@ -141,7 +146,7 @@ class UnionQuery extends Query {
         Fields.addAll(Values);
 
         SelectQuery ResultQuery = null;
-        if(Unions.size()==1 && Unions.get(0) instanceof SelectQuery && (SumCoeffs.size()==0 || SumCoeffs.get(Unions.get(0))==1)) {
+        if(Unions.size()==1 && Unions.get(0) instanceof SelectQuery && (Coeffs.size()==0 || Coeffs.get(Unions.get(0))==1)) {
             // если один запрос его и возвращаем и коэффициент не 1
             ResultQuery = (SelectQuery)Unions.get(0);
         } else {
@@ -155,7 +160,6 @@ class UnionQuery extends Query {
             while(i.hasNext()) {
                 Query SelectQuery = i.next();
                 From Query = new FromQuery(SelectQuery);
-                Integer Coeff = SumCoeffs.get(SelectQuery);
 
                 if(LastQuery==null)
                     ResultQuery.From = Query;
@@ -173,28 +177,30 @@ class UnionQuery extends Query {
                 Iterator<String> ifi = Fields.iterator();
                 while(ifi.hasNext()) {
                     String Field = ifi.next();
-                    Integer FieldCoeff = (Values.contains(Field)?Coeff:null);
-                    SourceExpr NewValue = new FieldSourceExpr(Query,Field);
-                    if(LastQuery==null) {
-                        if(FieldCoeff!=null) {
-                            FormulaSourceExpr Formula = new FormulaSourceExpr(FieldCoeff+"*ISNULL(prm1,0)");
-                            Formula.Params.put("prm1",NewValue);
-                            NewValue = Formula;
-                        }                        
-                    } else {
-                        SourceExpr OldValue = ResultQuery.Expressions.get(Field);
-                        if(FieldCoeff==null)
-                            NewValue = new IsNullSourceExpr(NewValue,OldValue);
-                        else {
-                            FormulaSourceExpr Formula = new FormulaSourceExpr(FieldCoeff+"*ISNULL(prm2,0)+ISNULL(prm1,0)");
-                            Formula.Params.put("prm1",OldValue);
-                            Formula.Params.put("prm2",NewValue);
-                            NewValue = Formula;
+                    if(SelectQuery.containsField(Field)) {
+                       SourceExpr NewValue = new FieldSourceExpr(Query,Field);
+                       if(Values.contains(Field)) {
+                            // значение применяем оператор
+                            Integer FieldCoeff = Coeffs.get(SelectQuery);
+                            
+                            ListSourceExpr OldValue = null;
+                            if(ResultQuery.Expressions.containsKey(Field))
+                                OldValue = (ListSourceExpr)ResultQuery.Expressions.get(Field);
+                            else {
+                                OldValue = new ListSourceExpr(Operator);
+                                ResultQuery.Expressions.put(Field,OldValue);
+                            }
+                        
+                            OldValue.Operands.add(NewValue);
+                            if(FieldCoeff!=null) OldValue.Coeffs.put(NewValue, FieldCoeff);
+                        } else {
+                            // ключ всегда на IsNull
+                            if(LastQuery!=null)
+                               NewValue = new IsNullSourceExpr(NewValue,ResultQuery.Expressions.get(Field));
+                            ResultQuery.Expressions.put(Field,NewValue);
                         }
                     }
-                    ResultQuery.Expressions.put(Field,NewValue);
                 }
-
                 LastQuery = Query;
             }
         }
@@ -207,8 +213,11 @@ class UnionQuery extends Query {
 
         return ResultQuery.GetSelect(GetFields);
     }
-}
 
+    boolean containsField(String Field) {
+        return Keys.contains(Field) || Values.contains(Field);
+    }
+}
 abstract class DataQuery extends Query {
     // откуда делать Select
     From From;
@@ -250,6 +259,10 @@ class GroupQuery extends DataQuery {
         
         return "SELECT " + ExprString + FromString + " GROUP BY " + GroupString;
     }
+    
+    boolean containsField(String Field) {
+        return GroupBy.containsKey(Field) || AggrExprs.containsKey(Field);
+    }
 }
 
 class SelectQuery extends DataQuery {
@@ -289,7 +302,10 @@ class SelectQuery extends DataQuery {
         
         return "UPDATE " + From.Alias + " SET " + ExprString + FromString;
     }
-   
+
+    boolean containsField(String Field) {
+        return Expressions.containsKey(Field);
+    }
 }
 
 class OrderedSelectQuery extends SelectQuery {
@@ -533,21 +549,43 @@ class FormulaSourceExpr extends SourceExpr {
     }
 }
 
-class LinearSourceExpr extends SourceExpr {
+class ListSourceExpr extends SourceExpr {
 
-    LinearSourceExpr() {
-        Operands = new HashMap();
+    ListSourceExpr(int iOperator) {
+        Operator = iOperator;
+        Operands = new ArrayList();
+        Coeffs = new HashMap();
     }
     
-    Map<SourceExpr,Integer> Operands;
+    // 0 - MAX
+    // 1 - +
+    // 2 - ISNULL
+    int Operator;
+    List<SourceExpr> Operands;
+    Map<SourceExpr,Integer> Coeffs;
 
     public String GetSource() {
-        Iterator<SourceExpr> i = Operands.keySet().iterator();
+        ListIterator<SourceExpr> i = Operands.listIterator();
         String Result = "";
         while(i.hasNext()) {
             SourceExpr Operand = i.next();
-            Integer Coeff = Operands.get(Operand);
-            Result = (Result.length()==0?"":Result+(Coeff>=0?"+":"")) + Coeff + "*ISNULL(" + Operand.GetSource() + ",0)";
+            Integer Coeff = Coeffs.get(Operand);
+            if(Coeff==null) Coeff = 1;
+            String OperandString = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString()));
+            if(Operator==0 || Operator==1) {
+                OperandString += "ISNULL(" + Operand.GetSource() + "," + (Operator==1?0:-99999999) + ")";
+                if(Result.length()==0)
+                    Result = OperandString;
+                else {
+                    if(Operator==1)
+                        Result = Result+(Coeff>=0?"+":"") + OperandString;
+                    else
+                        Result = "MAX(" + Result + "," + OperandString + ")";
+                }
+            } else {
+                OperandString += Operand.GetSource();
+                Result = (Result.length()==0?OperandString:"ISNULL(" + OperandString + "," + Result + ")");
+            }
         }
 
         return Result;
@@ -557,12 +595,12 @@ class LinearSourceExpr extends SourceExpr {
 class GroupExpression {
 
     SourceExpr Expr;
-    String Operation;
+    int Operation;
 
-    GroupExpression(SourceExpr iExpr,String iOperation) {Expr=iExpr; Operation=iOperation;};
+    GroupExpression(SourceExpr iExpr,int iOperation) {Expr=iExpr; Operation=iOperation;};
     
     public String GetSelect() {
-        return Operation + "(" + Expr.GetSource() + ")";
+        return (Operation==1?"SUM":"MAX") + "(" + Expr.GetSource() + ")";
     }
 }
 

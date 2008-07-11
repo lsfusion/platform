@@ -440,7 +440,7 @@ class BusinessLogics {
         
         return true;
     }
-    
+
     void FillDB(DataAdapter Adapter) throws SQLException {
         // инициализируем таблицы
         TableFactory.FillDB(Adapter);
