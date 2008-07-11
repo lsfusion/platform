@@ -405,9 +405,9 @@ class Test extends BusinessLogics  {
     LGP AddGProp(LP GroupProp,boolean Sum,Object ...Params) {
         GroupProperty Property = null;
         if(Sum)
-            Property = new SumGroupProperty(TableFactory,(SourceProperty)GroupProp.Property);
+            Property = new SumGroupProperty(TableFactory,(ObjectProperty)GroupProp.Property);
         else
-            Property = new MaxGroupProperty(TableFactory,(SourceProperty)GroupProp.Property);
+            Property = new MaxGroupProperty(TableFactory,(ObjectProperty)GroupProp.Property);
         LGP ListProperty = new LGP(Property,GroupProp);
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(GroupProp,Params);
         ListIterator<PropertyInterfaceImplement> i = PropImpl.listIterator();
@@ -672,13 +672,13 @@ class Test extends BusinessLogics  {
 //        UpdateProps.add((AggregateProperty)QDep.Property);
 //        UpdateAggregations(ad, UpdateProps, Session);
 
-//        ((SourceProperty)QDep.Property).OutChangesTable(ad, Session);
+//        ((ObjectProperty)QDep.Property).OutChangesTable(ad, Session);
 
         Apply(ad,Session);
 
 //        OstArtStore.Property.Out(ad);
 //        OstArt.Property.Out(ad);
-//        ((SourceProperty)MaxPrih.Property).OutChangesTable(ad, Session);
+//        ((ObjectProperty)MaxPrih.Property).OutChangesTable(ad, Session);
 //        MaxPrih.Property.Out(ad);
         PrihArtStore.Property.Out(ad);
         RashArtStore.Property.Out(ad);
@@ -687,7 +687,7 @@ class Test extends BusinessLogics  {
 //        UpdateProps.add((AggregateProperty)GAP.Property);
 //        UpdateAggregations(ad, UpdateProps, Session);
 
-//        ((SourceProperty)G2P.Property).OutChangesTable(ad, Session);
+//        ((ObjectProperty)G2P.Property).OutChangesTable(ad, Session);
 
         ((AggregateProperty)GSum.Property).CheckAggregation(ad,"GSum");
         ((AggregateProperty)GP.Property).CheckAggregation(ad,"GP");
@@ -709,13 +709,13 @@ class Test extends BusinessLogics  {
         ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[4]);
         ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[5]);
 
-        ((SourceProperty)Name.Property).OutChangesTable(ad, Session);
+        ((ObjectProperty)Name.Property).OutChangesTable(ad, Session);
         
         List<AggregateProperty> UpdateProps = new ArrayList();
         UpdateProps.add((AggregateProperty)ArtGroupName.Property);
         UpdateAggregations(ad, UpdateProps, Session);
         
-        ((SourceProperty)ArtGroupName.Property).OutChangesTable(ad, Session);
+        ((ObjectProperty)ArtGroupName.Property).OutChangesTable(ad, Session);
  */      
         
 //        Quantity.ChangeProperty(Session,ad,1,Documents[0],Articles[0]);
@@ -735,7 +735,7 @@ class Test extends BusinessLogics  {
 //        Quantity.ChangeProperty(Session,ad,3,Documents[0],Articles[3]);
 //        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[3]);
 
-//        ((SourceProperty)DocStore.Property).OutChangesTable(ad, Session);
+//        ((ObjectProperty)DocStore.Property).OutChangesTable(ad, Session);
         
 //        List<AggregateProperty> UpdateProps = new ArrayList();
 //        UpdateProps.add((AggregateProperty)G2P.Property);
@@ -743,7 +743,7 @@ class Test extends BusinessLogics  {
 //        UpdateProps.add((AggregateProperty)GAP.Property);
 //        UpdateAggregations(ad, UpdateProps, Session);
 
-//        ((SourceProperty)GP.Property).OutChangesTable(ad, Session);
+//        ((ObjectProperty)GP.Property).OutChangesTable(ad, Session);
         
         Apply(ad,Session);
 

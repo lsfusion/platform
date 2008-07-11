@@ -425,8 +425,8 @@ class BusinessLogics {
     }
     
     // сохраняет из Changes в базу
-    void SaveProperties(DataAdapter Adapter,Collection<? extends SourceProperty> Properties, ChangesSession Session) throws SQLException {
-        Iterator<SourceProperty> i = (Iterator<SourceProperty>) Properties.iterator();
+    void SaveProperties(DataAdapter Adapter,Collection<? extends ObjectProperty> Properties, ChangesSession Session) throws SQLException {
+        Iterator<ObjectProperty> i = (Iterator<ObjectProperty>) Properties.iterator();
         while(i.hasNext()) i.next().SaveChanges(Adapter, Session);
     }
     
@@ -466,7 +466,7 @@ class BusinessLogics {
                 AggrProperties.add((AggregateProperty)Property);
 
             if(Property instanceof DataProperty || (Property instanceof AggregateProperty && PersistentProperties.contains(Property))) {
-                Table Table = ((SourceProperty)Property).GetTable(null);
+                Table Table = ((ObjectProperty)Property).GetTable(null);
 
                 Integer PropNum = Tables.get(Table);
                 if(PropNum==null) PropNum = 1;
@@ -475,7 +475,7 @@ class BusinessLogics {
 
                 Field PropField = new Field("prop"+PropNum.toString(),Property.GetDBType());
                 Table.PropFields.add(PropField);
-                ((SourceProperty)Property).Field = PropField;
+                ((ObjectProperty)Property).Field = PropField;
             }
         }
 

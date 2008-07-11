@@ -179,9 +179,10 @@ abstract class Property<T extends PropertyInterface> {
     }
 }
 
-abstract class SourceProperty<T extends PropertyInterface> extends Property<T> {
 
-    SourceProperty(TableFactory iTableFactory) {
+abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
+
+    ObjectProperty(TableFactory iTableFactory) {
         super();
         TableFactory = iTableFactory;
         SessionChanged = new HashMap();
@@ -421,7 +422,6 @@ abstract class SourceProperty<T extends PropertyInterface> extends Property<T> {
         }
     }
 }
-
 class DataPropertyInterface extends PropertyInterface {
     Class Class;
     
@@ -431,7 +431,7 @@ class DataPropertyInterface extends PropertyInterface {
 }        
 
 
-class DataProperty extends SourceProperty<DataPropertyInterface> {
+class DataProperty extends ObjectProperty<DataPropertyInterface> {
     Class Value;
     
     DataProperty(TableFactory iTableFactory,Class iValue) {
@@ -523,7 +523,7 @@ class DataProperty extends SourceProperty<DataPropertyInterface> {
     }
 }
 
-abstract class AggregateProperty<T extends PropertyInterface> extends SourceProperty<T> {
+abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProperty<T> {
     
     AggregateProperty(TableFactory iTableFactory) {super(iTableFactory);}
 
@@ -632,7 +632,7 @@ class PropertyMapImplement extends PropertyImplement<PropertyInterface> implemen
                 MapImplement.put(ImplementInterface,JoinExpr);
         }
         
-        SourceExpr JoinSource = (Session!=null?((SourceProperty)Property).ChangedJoinSelect(Joins,MapImplement,Session,Value):Property.JoinSelect(Joins,MapImplement,Left));
+        SourceExpr JoinSource = (Session!=null?((ObjectProperty)Property).ChangedJoinSelect(Joins,MapImplement,Session,Value):Property.JoinSelect(Joins,MapImplement,Left));
         
         // прогоним и проверим если кто-то изменил с null себе закинем JoinExprs
         Iterator<PropertyInterface> in = NullInterfaces.iterator();
@@ -765,7 +765,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
         ListIterator<List<PropertyInterface>> il = null;
         // если ChangedProperties.size() - 0, то идет на то что было, иначе на = !!!! (всегда) (можно правда и на + давать по аналогии с GROUP, но это все равно медленнее работать будет)
         if(ChangedProperties.size()==0)
-            ResultValueType = ((SourceProperty)Implements.Property).GetChangeType(Session);
+            ResultValueType = ((ObjectProperty)Implements.Property).GetChangeType(Session);
         else
             ResultValueType = 0;
 
@@ -790,7 +790,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
                     MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).MapJoinSelect(Joins,MapImplement,false,(ChangeProps.contains(ImplementInterface)?Session:null),0));
                 }
 
-                SourceExpr ValueExpr = (ij==0?Implements.Property.JoinSelect(Joins,MapJoinImplement,false):((SourceProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,ResultValueType));
+                SourceExpr ValueExpr = (ij==0?Implements.Property.JoinSelect(Joins,MapJoinImplement,false):((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,ResultValueType));
                 SubQuery.Expressions.put(Table.Value.Name,ValueExpr);
 
                 // закинем все ключи в запрос
@@ -851,7 +851,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     // оператор
     int Operator;
     
-    GroupProperty(TableFactory iTableFactory,SourceProperty iProperty,int iOperator) {
+    GroupProperty(TableFactory iTableFactory,ObjectProperty iProperty,int iOperator) {
         super(iTableFactory);
         GroupProperty = iProperty;
         ToClasses = new HashMap();
@@ -860,7 +860,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     }
     
     // группировочное св-во собсно должно быть не формулой
-    SourceProperty GroupProperty;
+    ObjectProperty GroupProperty;
     
     // дополнительные условия на классы
     Map<PropertyInterface,Class> ToClasses;
@@ -1115,7 +1115,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
 
 class SumGroupProperty extends GroupProperty {
 
-    SumGroupProperty(TableFactory iTableFactory,SourceProperty iProperty) {super(iTableFactory,iProperty,1);}
+    SumGroupProperty(TableFactory iTableFactory,ObjectProperty iProperty) {super(iTableFactory,iProperty,1);}
 
     void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
         // алгоритм пока такой :
@@ -1165,7 +1165,7 @@ class SumGroupProperty extends GroupProperty {
 
 class MaxGroupProperty extends GroupProperty {
 
-    MaxGroupProperty(TableFactory iTableFactory,SourceProperty iProperty) {super(iTableFactory,iProperty,0);}
+    MaxGroupProperty(TableFactory iTableFactory,ObjectProperty iProperty) {super(iTableFactory,iProperty,0);}
 
     void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
         
@@ -1308,7 +1308,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
             while(IsCommon && i.hasNext()) {
                 PropertyMapImplement Operand = i.next();
 
-                SourceProperty OpProperty = (SourceProperty)Operand.Property;
+                ObjectProperty OpProperty = (ObjectProperty)Operand.Property;
                 if(OpProperty.Field!=null) {
                     Map<KeyField,PropertyInterface> MapJoins = new HashMap();
                     Table SourceTable = OpProperty.GetTable(MapJoins);
