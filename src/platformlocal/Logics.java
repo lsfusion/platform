@@ -414,14 +414,44 @@ class BusinessLogics {
     void UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         
-        // нужно из графа зависимостей выделить направленный список аггрегированных св-в для IncrementChanges 
+        // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         List<AggregateProperty> UpdateList = new ArrayList();
         Iterator<AggregateProperty> i = Properties.iterator();
         while(i.hasNext()) i.next().FillAggregateList(UpdateList,Session.Properties);
+        
+        // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
+        // потом реализуем
 
+        // пробежим вперед пометим свойства которые изменились, но неясно на что
+        ListIterator<AggregateProperty> il = UpdateList.listIterator();
+        AggregateProperty Property = null;
+        while(il.hasNext()) { 
+            Property = il.next();
+            Property.SessionChanged.put(Session,null);
+        }
+        // пробежим по которым надо поставим 0
+        i = Properties.iterator();
+        while(i.hasNext())
+            i.next().SetChangeType(Session,0);
+        // бежим по списку (в обратном порядке) заполняем требования, 
+        while(Property!=null) {
+            Property.FillRequiredChanges(Session);
+
+            if(il.hasPrevious())
+                Property = il.previous();
+            else
+                Property = null;
+        }
+        
         // запускаем IncrementChanges для этого списка
-        i = UpdateList.iterator();
-        while(i.hasNext()) i.next().IncrementChanges(Adapter, Session);
+        il = UpdateList.listIterator();
+        while(il.hasNext()) 
+            il.next().IncrementChanges(Adapter, Session);
+        
+        // дропнем изменения (пока, потом для FormBean'ов понадобится по другому)
+        il = UpdateList.listIterator();
+        while(il.hasNext())
+            il.next().SessionChanged.remove(Session);
     }
     
     // сохраняет из Changes в базу
@@ -458,6 +488,10 @@ class BusinessLogics {
         Iterator<Property> i = Properties.iterator();
         while(i.hasNext()) {
             Property Property = i.next();
+            
+            // ChangeTable'ы заполним
+            if(Property instanceof ObjectProperty)
+                ((ObjectProperty)Property).FillChangeTable();;
 
             if(Property instanceof DataProperty)
                 DataProperties.add((DataProperty)Property);

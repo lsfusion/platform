@@ -107,7 +107,9 @@ class FromQuery extends From {
 }
 
 abstract class Query {
-    
+
+    Map<String,Integer> ValueKeys;
+
     // собственно основной метод который получает Select
     abstract public String GetSelect(Collection<String> GetFields);
     
@@ -126,7 +128,6 @@ class UnionQuery extends Query {
     // по сути чтобы разделить
     Collection<String> Keys;
     Collection<String> Values;
-    Map<String,Integer> ValueKeys;
     List<Query> Unions;
     Map<Query,Integer> Coeffs;
     int Operator;
@@ -207,7 +208,7 @@ class UnionQuery extends Query {
         Iterator<String> ivs = ValueKeys.keySet().iterator();
         while(ivs.hasNext()) {
             String ValueField = ivs.next();
-            ResultQuery.Expressions.put(ValueField,new ValueSourceExpr(ValueKeys.get(ValueField)));
+            ResultQuery.ValueKeys.put(ValueField,ValueKeys.get(ValueField));
         }
 
         return ResultQuery.GetSelect(GetFields);
@@ -249,6 +250,15 @@ class GroupQuery extends DataQuery {
             GetFields.add(Field);
         }
 
+        Iterator<String> ivs = ValueKeys.keySet().iterator();
+        while(ivs.hasNext()) {
+            String Field = ivs.next();
+            String Source = (new ValueSourceExpr(ValueKeys.get(Field))).GetSource();
+            ExprString = (ExprString.length()==0?"":ExprString+',') + Source + " AS " + Field;
+            GroupString = (GroupString.length()==0?"":GroupString+',') + Source;
+            GetFields.add(Field);
+        }
+       
         Iterator<String> j = AggrExprs.keySet().iterator();
         while (j.hasNext()) {
             String Field = j.next();
@@ -283,6 +293,12 @@ class SelectQuery extends DataQuery {
             String Field = j.next();
             ExprString = (ExprString.length()==0?"":ExprString+',') + Expressions.get(Field).GetSource() + " AS " + Field;
             GetFields.add(Field);
+        }
+
+        Iterator<String> ivs = ValueKeys.keySet().iterator();
+        while(ivs.hasNext()) {
+            String ValueField = ivs.next();
+            ExprString = (ExprString.length()==0?"":ExprString+',') + (new ValueSourceExpr(ValueKeys.get(ValueField))).GetSource() + " AS " + ValueField;
         }
 
         return "SELECT " + (Top>0?"TOP "+Top.toString()+" ":"") + ExprString + FromString;
@@ -512,6 +528,34 @@ class IsNullSourceExpr extends SourceExpr {
         return hash;
     }
 }
+
+
+class NullZeroSourceExpr extends SourceExpr {
+    
+    NullZeroSourceExpr(SourceExpr iExpr) {Expr=iExpr;};
+    
+    SourceExpr Expr;
+
+    public String GetSource() {
+        return "(CASE WHEN " + Expr.GetSource() + " IS NULL THEN NULL ELSE 0 END)";
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if(this==o) return true;
+        if(!(o instanceof NullZeroSourceExpr)) return false;
+        
+        return Expr.equals(((NullZeroSourceExpr)o).Expr);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.Expr != null ? this.Expr.hashCode() : 0);
+        return hash;
+    }
+}
+
 class FormulaSourceExpr extends SourceExpr {
    
    FormulaSourceExpr(String iFormula) {Formula=iFormula; Params=new HashMap<String,SourceExpr>();};
