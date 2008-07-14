@@ -631,7 +631,7 @@ class FormBeanView {
                 ListIterator<Map<String,Object>> ikr = KeyResult.listIterator();
 
                 // параллельно будем обновлять ключи чтобы Join'ить
-                ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size());
+                ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
                 InsertTable.DropViewID(Adapter, Group.GID);
 
                 while(ikr.hasNext()) {
