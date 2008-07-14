@@ -109,6 +109,9 @@ class FromQuery extends From {
 abstract class Query {
 
     Map<String,Integer> ValueKeys;
+    Query() {
+        ValueKeys = new HashMap();
+    }
 
     // собственно основной метод который получает Select
     abstract public String GetSelect(Collection<String> GetFields);
@@ -133,9 +136,9 @@ class UnionQuery extends Query {
     int Operator;
     
     UnionQuery(int iOperator) {
+        super();
         Keys = new ArrayList();
         Values = new ArrayList();
-        ValueKeys = new HashMap();
         Unions = new ArrayList();
         Coeffs = new HashMap();
         Operator = iOperator;        
@@ -222,6 +225,7 @@ abstract class DataQuery extends Query {
     // откуда делать Select
     From From;
     DataQuery(From iFrom) {
+        super();
         From = iFrom;
     }
 }
@@ -297,8 +301,9 @@ class SelectQuery extends DataQuery {
 
         Iterator<String> ivs = ValueKeys.keySet().iterator();
         while(ivs.hasNext()) {
-            String ValueField = ivs.next();
-            ExprString = (ExprString.length()==0?"":ExprString+',') + (new ValueSourceExpr(ValueKeys.get(ValueField))).GetSource() + " AS " + ValueField;
+            String Field = ivs.next();
+            ExprString = (ExprString.length()==0?"":ExprString+',') + (new ValueSourceExpr(ValueKeys.get(Field))).GetSource() + " AS " + Field;
+            GetFields.add(Field);
         }
 
         return "SELECT " + (Top>0?"TOP "+Top.toString()+" ":"") + ExprString + FromString;
@@ -632,13 +637,13 @@ class ListSourceExpr extends SourceExpr {
                     if(Operator==1)
                         Result = Result+(Coeff>=0?"+":"") + OperandString;
                     else
-                        Result = "(CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END)";
+                        Result = "CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END";
                 }
             } else
                 Result = (Result.length()==0?OperandString:"ISNULL(" + OperandString + "," + Result + ")");
         }
 
-        return Result;
+        return "("+Result+")";
     }
 }
 

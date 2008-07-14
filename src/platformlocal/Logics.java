@@ -431,8 +431,11 @@ class BusinessLogics {
         }
         // пробежим по которым надо поставим 0
         i = Properties.iterator();
-        while(i.hasNext())
-            i.next().SetChangeType(Session,0);
+        while(i.hasNext()) i.next().SetChangeType(Session,0);
+        // прогоним DataProperty также им 0 поставим чтобы 1 не появлялись
+        Iterator<DataProperty> id = Session.Properties.iterator();
+        while(id.hasNext()) id.next().SetChangeType(Session,0);
+
         // бежим по списку (в обратном порядке) заполняем требования, 
         while(Property!=null) {
             Property.FillRequiredChanges(Session);
@@ -442,6 +445,10 @@ class BusinessLogics {
             else
                 Property = null;
         }
+        
+        // прогоним DataProperty предыдущие значения докинуть
+        id = Session.Properties.iterator();
+        while(id.hasNext()) id.next().UpdateIncrementChanges(Adapter,Session);
         
         // запускаем IncrementChanges для этого списка
         il = UpdateList.listIterator();
