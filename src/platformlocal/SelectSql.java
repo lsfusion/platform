@@ -371,12 +371,13 @@ class FieldWhere extends Where {
 }
 
 class SourceIsNullWhere extends Where {
-    SourceIsNullWhere(SourceExpr iSource) {Source = iSource;}
+    SourceIsNullWhere(SourceExpr iSource,boolean iNot) {Source = iSource; Not=iNot;}
 
     SourceExpr Source;
+    boolean Not;
 
     public String GetSelect(From From) {
-        return Source.GetSource() + " IS NULL";
+        return (Not?"NOT ":"") + Source.GetSource() + " IS NULL";
     }
 }
 

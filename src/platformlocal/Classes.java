@@ -10,14 +10,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 /**
  *
  * @author ME
  */
-class Class {
+abstract class Class {
     Collection<Class> Parents;
     Collection<Class> Childs;
     
@@ -95,6 +97,18 @@ class Class {
             i.next().FillSetID(SetID);
     }
 
+    // заполняет список классов
+    void FillClassList(List<Class> ClassList) {
+        if (ClassList.contains(ID))
+            return;
+        
+        ClassList.add(this);
+        
+        Iterator<Class> i = Childs.iterator();
+        while(i.hasNext())
+            i.next().FillClassList(ClassList);
+    }
+
     // получает классы у которого есть оба интерфейса
     Collection<Class> CommonClassSet(Class ToCommon) {
         CommonClassSet1();
@@ -165,12 +179,19 @@ class Class {
         
         return FreeID;
     }
+    
+    // получает рандомный объект
+    abstract Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
 }
 
 // класс который можно сравнивать
 class IntegralClass extends Class {
     
     IntegralClass(Integer iID) {super(iID);}
+    
+    Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
+        return Randomizer.nextInt(Diap*Diap);
+    }
 }
 
 // класс который можно суммировать
@@ -190,8 +211,21 @@ class StringClass extends Class {
     String GetDBType() {
         return "char(50)";
     }
+    
+    Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
+        return "NAME "+Randomizer.nextInt(50);
+    }
+
 }
 
 class ObjectClass extends Class {    
     ObjectClass(Integer iID) {super(iID);}
+    
+    Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
+        SelectQuery SelectObjects = new SelectQuery(TableFactory.ObjectTable.ClassSelect(this));
+        SelectObjects.Expressions.put("objid",new FieldSourceExpr(SelectObjects.From,TableFactory.ObjectTable.Key.Name));
+        List<Map<String,Object>> Result = Adapter.ExecuteSelect(SelectObjects);
+        
+        return (Integer)Result.get(Randomizer.nextInt(Result.size())).get("objid");
+    }
 }

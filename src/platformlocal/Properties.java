@@ -365,7 +365,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         }
         
         // сначала сделаем Insert, на RIGHT JOIN, IS NULL
-        Insert.From.Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(SelectSource,Key.Name)));
+        Insert.From.Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(SelectSource,Key.Name),false));
 //        try {
         Adapter.InsertSelect(SourceTable,Insert);
 //        } catch(Exception e) {
@@ -692,25 +692,32 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
         Iterator<Map<String,Object>> i = AggrResult.iterator();
         while(i.hasNext()) {
             Map<String,Object> Row = i.next();
-            if(CalcResult.remove(Row)) 
+            
+            boolean ToRemove = false;
+            for(int j=0;!ToRemove && j<Interfaces.size();j++)
+                if(Row.get("key"+(j+1))==null) ToRemove = true;
+            
+            if(ToRemove || CalcResult.remove(Row))
                 i.remove();
             else {
                 Object Value =  Row.get("value");
-                if(Value==null) 
-                    i.remove();
-                else {
-                    if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
-                    if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
-                }
+                if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
+                if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
             }
         }
         // вычистим и отсюда 0
         i = CalcResult.iterator();
         while(i.hasNext()) {
-            Object Value =  i.next().get("value");
-            if(Value==null) 
+            Map<String,Object> Row = i.next();
+
+            boolean ToRemove = false;
+            for(int j=0;!ToRemove && j<Interfaces.size();j++)
+                if(Row.get("key"+(j+1))==null) ToRemove = true;
+
+            if(ToRemove)
                 i.remove();
             else {
+                Object Value = Row.get("value");
                 if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
                 if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
             }
@@ -1234,12 +1241,15 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
             }
         }
         
+        // закинем сразу проверки на !null
         FromQuery FromDataQuery = new FromQuery(DataQuery);
         GroupQuery GroupQuery = new GroupQuery(FromDataQuery);
         im = Interfaces.iterator();
         while (im.hasNext()) {
             String KeyField = ChangeTableMap.get(im.next()).Name;
-            GroupQuery.GroupBy.put(KeyField,new FieldSourceExpr(FromDataQuery,KeyField));
+            SourceExpr KeyExpr = new FieldSourceExpr(FromDataQuery,KeyField);
+            GroupQuery.GroupBy.put(KeyField,KeyExpr);
+            FromDataQuery.Wheres.add(new SourceIsNullWhere(KeyExpr,true));
         }
         GroupQuery.AggrExprs.put(ValueName,new GroupExpression(new FieldSourceExpr(FromDataQuery,ValueName),Operator));
 

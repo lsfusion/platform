@@ -379,12 +379,12 @@ class TableFactory extends TableImplement{
 class BusinessLogics {
     
     BusinessLogics() {
-        BaseClass = new Class(0);
+        BaseClass = new ObjectClass(0);
         TableFactory = new TableFactory();
         Properties = new ArrayList();
         PersistentProperties = new HashSet();
         
-        BaseClass = new Class(0);
+        BaseClass = new ObjectClass(0);
         
         StringClass = new StringClass(1);
         StringClass.AddParent(BaseClass);
@@ -543,7 +543,299 @@ class BusinessLogics {
         Adapter.Execute("INSERT INTO dumb (dumb) VALUES (1)");
     }
     
-    void AutoDBTest(DataAdapter Adapter) {
+    void CheckPersistent(DataAdapter Adapter) throws SQLException {
+        Iterator<AggregateProperty> i = PersistentProperties.iterator();
+        while(i.hasNext()) {
+            AggregateProperty Property = i.next();
+            Property.CheckAggregation(Adapter,Property.OutName);
+        }        
+    }
+
+    // функционал по заполнению св-в по номерам, нужен для BL
+    
+    LDP AddDProp(Class Value,Class ...Params) {
+        DataProperty Property = new DataProperty(TableFactory,Value);
+        LDP ListProperty = new LDP(Property);
+        for(Class Int : Params) {
+            ListProperty.AddInterface(Int);
+        }
+        AddDataProperty(Property);
+        return ListProperty;
+    }
+
+    LSFP AddSFProp(String Formula,Integer Params) {
+        StringFormulaProperty Property = new StringFormulaProperty(Formula);
+        LSFP ListProperty = new LSFP(Property,IntegerClass,Params);
+        Properties.add(Property);
+        return ListProperty;
+    }
+
+    LMFP AddMFProp(Integer Params) {
+        MultiplyFormulaProperty Property = new MultiplyFormulaProperty();
+        LMFP ListProperty = new LMFP(Property,IntegerClass,Params);
+        Properties.add(Property);
+        return ListProperty;
+    }
+
+    
+    List<PropertyInterfaceImplement> ReadPropImpl(LP MainProp,Object ...Params) {
+        List<PropertyInterfaceImplement> Result = new ArrayList<PropertyInterfaceImplement>();
+        int WaitInterfaces = 0, MainInt = 0;
+        PropertyMapImplement MapRead = null;
+        LP PropRead = null;
+        for(Object P : Params) {
+            if(P instanceof Integer) {
+                // число может быть как ссылкой на родной интерфейс так и 
+                PropertyInterface PropInt = MainProp.ListInterfaces.get((Integer)P-1);
+                if(WaitInterfaces==0) {
+                    // родную берем 
+                    Result.add(PropInt);
+                } else {
+                    // докидываем в маппинг
+                    MapRead.Mapping.put(PropRead.ListInterfaces.get(PropRead.ListInterfaces.size()-WaitInterfaces), PropInt);
+                    WaitInterfaces--;
+                }
+            } else {
+               // имплементация, типа LP
+               PropRead = (LP)P;
+               MapRead = new PropertyMapImplement(PropRead.Property);
+               WaitInterfaces = PropRead.ListInterfaces.size();
+               Result.add(MapRead);
+            }
+        }
+        
+        return Result;
+    }
+
+    LRP AddRProp(LP MainProp, int IntNum, Object ...Params) {
+        RelationProperty Property = new RelationProperty(TableFactory,MainProp.Property);
+        LRP ListProperty = new LRP(Property,IntNum);
+        int MainInt = 0;
+        List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(ListProperty,Params);
+        ListIterator<PropertyInterfaceImplement> i = PropImpl.listIterator();
+        while(i.hasNext()) {
+            Property.Implements.Mapping.put(MainProp.ListInterfaces.get(MainInt), i.next());
+            MainInt++;
+        }
+        Properties.add(Property);
+
+        return ListProperty;
+    }
+    
+    LGP AddGProp(LP GroupProp,boolean Sum,Object ...Params) {
+        GroupProperty Property = null;
+        if(Sum)
+            Property = new SumGroupProperty(TableFactory,(ObjectProperty)GroupProp.Property);
+        else
+            Property = new MaxGroupProperty(TableFactory,(ObjectProperty)GroupProp.Property);
+        LGP ListProperty = new LGP(Property,GroupProp);
+        List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(GroupProp,Params);
+        ListIterator<PropertyInterfaceImplement> i = PropImpl.listIterator();
+        while(i.hasNext()) ListProperty.AddInterface(i.next());
+        Properties.add(Property);
+        
+        return ListProperty;
+    }
+
+    LRP AddLProp(int ListType, int IntNum, Object ...Params) {
+        ListProperty Property = null;
+        switch(ListType) {
+            case 0:
+                Property = new MaxListProperty(TableFactory);
+                break;
+            case 1:
+                Property = new SumListProperty(TableFactory);
+                break;
+            case 2:
+                Property = new OverrideListProperty(TableFactory);
+                break;
+        }
+        
+        LRP ListProperty = new LRP(Property,IntNum);
+
+        for(int i=0;i<IntNum;i++) {
+            Integer Offs = i*(IntNum+2);
+            LP OpImplement = (LP)Params[Offs+1];
+            PropertyMapImplement Operand = new PropertyMapImplement(OpImplement.Property);
+            for(int j=0;j<IntNum;j++)
+                Operand.Mapping.put(OpImplement.ListInterfaces.get(((Integer)Params[Offs+2+j])-1),ListProperty.ListInterfaces.get(j));
+            Property.Operands.add(Operand);
+            Property.Coeffs.put(Operand,(Integer)Params[Offs]);
+        }
+        Properties.add(Property);
+
+        return ListProperty;
+    }
+
+    void RegGClass(LGP GroupProp,Object ...iParams) {
+        int iInt=0;
+        boolean bInt=true;
+        for(Object i : iParams) {
+            if(bInt) {
+                iInt = (Integer)i-1;
+                bInt = false;
+            } else {
+                ((GroupProperty)GroupProp.Property).ToClasses.put(GroupProp.GroupProperty.ListInterfaces.get(iInt),(Class)i);
+                bInt = true;
+            }
+        }        
+    }
+    
+    // генерирует белую БЛ
+    void OpenBL(boolean Implements,boolean Persistent) {
+
+        Class Base = new ObjectClass(3);
+        Base.AddParent(BaseClass);
+        Class Article = new ObjectClass(4);
+        Article.AddParent(Base);
+        Class Store = new ObjectClass(5);
+        Store.AddParent(Base);
+        Class Document = new ObjectClass(6);
+        Document.AddParent(Base);
+        Class PrihDocument = new ObjectClass(7);
+        PrihDocument.AddParent(Document);
+        Class RashDocument = new ObjectClass(8);
+        RashDocument.AddParent(Document);
+        Class ArticleGroup = new ObjectClass(9);
+        ArticleGroup.AddParent(Base);
+        
+        LDP Name = AddDProp(StringClass,Base);
+        LDP DocStore = AddDProp(Store,Document);
+        LDP Quantity = AddDProp(IntegerClass,Document,Article);
+        LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
+        LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
+        LDP ArtToGroup = AddDProp(ArticleGroup,Article);
+        LDP DocDate = AddDProp(IntegerClass,Document);
+
+        LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
+        LMFP Multiply = AddMFProp(2);
+
+        Name.Property.OutName = "имя";
+        DocStore.Property.OutName = "склад";
+        Quantity.Property.OutName = "кол-во";
+        PrihQuantity.Property.OutName = "кол-во прих.";
+        RashQuantity.Property.OutName = "кол-во расх.";
+        ArtToGroup.Property.OutName = "гр. тов";
+        DocDate.Property.OutName = "дата док.";
+
+        LRP StoreName = AddRProp(Name,1,DocStore,1);
+        StoreName.Property.OutName = "имя склада";
+        LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
+        ArtGroupName.Property.OutName = "имя гр. тов.";
+
+        LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
+        DDep.Property.OutName = "предш. док.";
+
+        LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
+        QDep.Property.OutName = "изм. баланса";
+
+        LGP GSum = AddGProp(QDep,true,2,3);
+        GSum.Property.OutName = "остаток до операции";
+
+        LGP GP = AddGProp(Quantity,true,DocStore,1,2);
+        GP.Property.OutName = "сумм кол-во док. тов.";
+        LGP GAP = AddGProp(GP,true,2);
+        GAP.Property.OutName = "сумм кол-во тов.";
+        LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
+        G2P.Property.OutName = "скл-гр. тов";
+
+        LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
+        PrihArtStore.Property.OutName = "приход по складу";
+
+        LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
+        RashArtStore.Property.OutName = "расход по складу";
+
+        LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+        OstArtStore.Property.OutName = "остаток по складу";
+
+        LGP OstArt = AddGProp(OstArtStore,true,2);
+        OstArt.Property.OutName = "остаток по товару";
+
+        LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
+        MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+
+        LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+        MaxOpStore.Property.OutName = "макс. операция";
+        
+        LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
+        SumMaxArt.Property.OutName = "сумма макс. операция";
+
+        TableImplement Include;
+        Include = new TableImplement();
+        Include.add(new DataPropertyInterface(Base));
+        Include.add(new DataPropertyInterface(Base));
+        TableFactory.IncludeIntoGraph(Include);
+
+        if(Implements) {
+            Include = new TableImplement();
+            Include.add(new DataPropertyInterface(Base));
+            TableFactory.IncludeIntoGraph(Include);
+            Include = new TableImplement();
+            Include.add(new DataPropertyInterface(Article));
+            TableFactory.IncludeIntoGraph(Include);
+            Include = new TableImplement();
+            Include.add(new DataPropertyInterface(Store));
+            TableFactory.IncludeIntoGraph(Include);
+            Include = new TableImplement();
+            Include.add(new DataPropertyInterface(ArticleGroup));
+            TableFactory.IncludeIntoGraph(Include);
+            Include = new TableImplement();
+            Include.add(new DataPropertyInterface(Article));
+            Include.add(new DataPropertyInterface(Document));
+            TableFactory.IncludeIntoGraph(Include);
+            Include = new TableImplement();
+            Include.add(new DataPropertyInterface(Article));
+            Include.add(new DataPropertyInterface(Store));
+            TableFactory.IncludeIntoGraph(Include);
+        }
+
+        if(Persistent) {
+            PersistentProperties.add((AggregateProperty)GP.Property);
+            PersistentProperties.add((AggregateProperty)GAP.Property);
+            PersistentProperties.add((AggregateProperty)G2P.Property);
+            PersistentProperties.add((AggregateProperty)GSum.Property);
+            PersistentProperties.add((AggregateProperty)OstArtStore.Property);
+            PersistentProperties.add((AggregateProperty)OstArt.Property);
+            PersistentProperties.add((AggregateProperty)MaxPrih.Property);
+            PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
+            PersistentProperties.add((AggregateProperty)SumMaxArt.Property);
+        }
+    }
+
+    void FullDBTest()  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        
+        // сгенерить БЛ
+        // сгенерить физ. модель
+        // сгенерить persistent аггрегации
+        OpenBL(true,false);
+
+        
+        while(true) {
+            DataAdapter Adapter = new DataAdapter();
+            Adapter.Connect("");
+        
+            FillDB(Adapter);
+
+            // сгенерить объекты (их пока тестить не надо)
+            List<Class> Classes = new ArrayList();
+            BaseClass.FillClassList(Classes);
+            Iterator<Class> i = Classes.iterator();
+            while(i.hasNext()) {
+                Class ObjectClass = i.next();
+                for(int j=0;j<6;j++)
+                    ObjectClass.AddObject(Adapter,TableFactory);
+            }
+
+            Random Randomizer = new Random();
+            // запустить ChangeDBTest
+            ChangeDBTest(Adapter,20,Randomizer);
+        
+            Adapter.Disconnect();
+        }
+    }
+    
+    
+    void ChangeDBTest(DataAdapter Adapter,Integer MaxIterations,Random Randomizer) throws SQLException {
         
         // сначала список получим
         List<DataProperty> DataProperties = new ArrayList();
@@ -554,17 +846,43 @@ class BusinessLogics {
                 DataProperties.add((DataProperty)Property);
         }
         
-        Random Randomizer = new Random();
-        while(true) {
+//        Randomizer.setSeed(1);
+        int Iterations = 2;
+        while(Iterations<MaxIterations) {
+            ChangesSession Session = new ChangesSession(Iterations++);
+            System.out.println(Iterations);
+
             int PropertiesChanged = Randomizer.nextInt(7)+1;
             for(int ip=0;ip<PropertiesChanged;ip++) {
                 // берем случайные n св-в
                 DataProperty ChangeProp = DataProperties.get(Randomizer.nextInt(DataProperties.size()));
-                int NumChanges = Randomizer.nextInt(7)+1;
+                int NumChanges = Randomizer.nextInt(4)+1;
                 for(int in=0;in<NumChanges;in++) {
+                    Object ValueObject = ChangeProp.Value.GetRandomObject(Adapter,TableFactory,Randomizer,Iterations);
+/*                    // теперь определяем класс найденного объекта
+                    Class ValueClass = null;
+                    if(ChangeProp.Value instanceof ObjectClass)
+                        ValueClass = BaseClass.FindClassID(ValueObject);
+                    else
+                        ValueClass = ChangeProp.Value;*/
+                        
+                    InterfaceClassSet InterfaceSet = ChangeProp.GetClassSet(null);
+                    // определяем входные классы
+                    InterfaceClass Classes = InterfaceSet.get(Randomizer.nextInt(InterfaceSet.size()));
+                    // генерим рандомные объекты этих классов
+                    Map<DataPropertyInterface,Integer> Keys = new HashMap();
+                    Iterator<DataPropertyInterface> ii = ChangeProp.Interfaces.iterator();
+                    while(ii.hasNext()) {
+                        DataPropertyInterface Interface = ii.next();
+                        Keys.put(Interface,(Integer)Classes.get(Interface).GetRandomObject(Adapter,TableFactory,Randomizer,0));
+                    }
                     
+                    ChangeProp.ChangeProperty(Adapter,Keys,ValueObject,Session);
                 }
             }
+            
+            Apply(Adapter,Session);
+            CheckPersistent(Adapter);
         }
     }
 }
