@@ -8,6 +8,7 @@ package platformlocal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,3 +63,18 @@ class MapBuilder<T,V> {
         return Result;
     }            
 }
+
+class MapUtils<T,V> {
+    
+    public T getKey(Map<T,V> m, V v) {
+        
+        Iterator<T> it = m.keySet().iterator();
+        while (it.hasNext()) {
+           T t = it.next();
+           if (m.get(t) == v) return t;
+        }
+        return null;
+        
+    }
+    
+} 
