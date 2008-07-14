@@ -797,7 +797,7 @@ class FormBeanView {
             Collection<PropertyView> GroupList = GroupProps.get(Group);
             JoinProps = new JoinList();
             
-            ViewTable KeyTable = BL.TableFactory.ViewTables.get(Group.size());
+            ViewTable KeyTable = BL.TableFactory.ViewTables.get(Group.size()-1);
             FromTable SelectKeyTable = new FromTable(KeyTable.Name);
             SelectProps = new SelectQuery(SelectKeyTable);
 
