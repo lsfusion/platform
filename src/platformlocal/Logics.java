@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Random;
 import java.util.Set;
 
 class TableImplement extends ArrayList<DataPropertyInterface> {
@@ -540,5 +541,30 @@ class BusinessLogics {
         DumbTable.KeyFields.add(new KeyField("dumb","integer"));
         Adapter.CreateTable(DumbTable);
         Adapter.Execute("INSERT INTO dumb (dumb) VALUES (1)");
+    }
+    
+    void AutoDBTest(DataAdapter Adapter) {
+        
+        // сначала список получим
+        List<DataProperty> DataProperties = new ArrayList();
+        Iterator<Property> i = Properties.iterator();
+        while(i.hasNext()) {
+            Property Property = i.next();
+            if(Property instanceof DataProperty)
+                DataProperties.add((DataProperty)Property);
+        }
+        
+        Random Randomizer = new Random();
+        while(true) {
+            int PropertiesChanged = Randomizer.nextInt(7)+1;
+            for(int ip=0;ip<PropertiesChanged;ip++) {
+                // берем случайные n св-в
+                DataProperty ChangeProp = DataProperties.get(Randomizer.nextInt(DataProperties.size()));
+                int NumChanges = Randomizer.nextInt(7)+1;
+                for(int in=0;in<NumChanges;in++) {
+                    
+                }
+            }
+        }
     }
 }
