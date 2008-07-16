@@ -6,12 +6,15 @@
 package platformlocal;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
@@ -20,7 +23,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.BoxLayout;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -45,7 +52,7 @@ public class ClientForm extends FrameView {
 
     ClientFormInit formInit;
     
-    FormBeanView formBean;
+    ClientFormBean clientBean;
             
     public ClientForm(SingleFrameApplication app) {
         super(app);
@@ -54,37 +61,40 @@ public class ClientForm extends FrameView {
 
         Test t = new Test();
         try {
-//            t.SimpleTest(this);
-        } catch(Exception e) {
-            
+            t.SimpleTest(this);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
 
     JPanel mainPanel;
-    GridBagLayout mainLayout;
 
     Map<ClientGroupObjectImplement, View> views;
     
-    public void InitializeForm(ClientFormInit formInit) {
+    public void InitializeForm() {
 
+        formInit = clientBean.getClientFormInit();
+        
         mainPanel = new JPanel();
-        mainLayout = new GridBagLayout();
+        BoxLayout mainLayout = new BoxLayout(mainPanel, BoxLayout.Y_AXIS);
         mainPanel.setLayout(mainLayout);
-
+        
         setComponent(mainPanel);
 
         views = new HashMap();
         
-        Iterator<ClientGroupObjectImplement> ig = formInit.GroupObjects.iterator();
-
-        while (ig.hasNext()) {
-            
-            ClientGroupObjectImplement groupObject = ig.next();
+        for (ClientGroupObjectImplement groupObject : formInit.GroupObjects) {
             
             View view = new View(groupObject);
-            
-            mainPanel.add(view, groupObject.GridConstraint);
+  
+            mainPanel.add(view);
             
             views.put(groupObject, view);
             
@@ -97,98 +107,51 @@ public class ClientForm extends FrameView {
         
         // Сначала меняем виды объектов
     
-        Iterator<ClientPropertyView> ip = formChanges.PanelProperties.keySet().iterator();
-        while (ip.hasNext())
-        {
-            ClientPropertyView property = ip.next();
-            views.get(property.GroupObject).addPanelProperty(property);
+        for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
+            views.get(property.groupObject).addPanelProperty(property);
         }
 
-       ip = formChanges.GridProperties.keySet().iterator();
-       while (ip.hasNext())
-       {
-            ClientPropertyView property = ip.next();
-            views.get(property.GroupObject).addGridProperty(property);
-       }
+        for (ClientPropertyView property : formChanges.GridProperties.keySet()) {
+            views.get(property.groupObject).addGridProperty(property);
+        }
 
-       ip = formChanges.DropProperties.iterator();
-       while (ip.hasNext())
-       {
-           ClientPropertyView property = ip.next();
-           views.get(property.GroupObject).dropProperty(property);
-       }
+        for (ClientPropertyView property : formChanges.DropProperties) {
+            views.get(property.groupObject).dropProperty(property);
+        }
        
         
-       // Затем подгружаем новые данные
+        // Затем подгружаем новые данные
        
-       // Сначала новые объекты
-
-       Iterator<ClientGroupObjectImplement> ig = formChanges.GridObjects.keySet().iterator();
-       while (ig.hasNext())
-       {
-           ClientGroupObjectImplement groupObject = ig.next();
-           views.get(groupObject).grid.setGridObjects(formChanges.GridObjects.get(groupObject));
-
-       }
+        // Сначала новые объекты
+        
+        for (ClientGroupObjectImplement groupObject : formChanges.GridObjects.keySet()) {
+            views.get(groupObject).grid.setGridObjects(formChanges.GridObjects.get(groupObject));
+        }
        
-       ig = formChanges.Objects.keySet().iterator();
-       while (ig.hasNext()) {
-
-           ClientGroupObjectImplement groupObject = ig.next();
-           views.get(groupObject).setCurrentObject(formChanges.Objects.get(groupObject));
-           
-       }
+        for (ClientGroupObjectImplement groupObject : formChanges.Objects.keySet()) {
+            views.get(groupObject).setCurrentObject(formChanges.Objects.get(groupObject));
+        }
        
-       // Затем их свойства
+        // Затем их свойства
+        
+        for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
+            views.get(property.groupObject).setPanelPropertyValue(property, formChanges.PanelProperties.get(property));
+        }
        
-       ip = formChanges.PanelProperties.keySet().iterator();
-       while (ip.hasNext())
-       {
-           ClientPropertyView property = ip.next();
-           views.get(property.GroupObject).setPanelPropertyValue(property, formChanges.PanelProperties.get(property));
-       }
+        for (ClientPropertyView property : formChanges.GridProperties.keySet()) {
+            views.get(property.groupObject).setGridPropertyValues(property, formChanges.GridProperties.get(property));
+        }
        
-       ip = formChanges.GridProperties.keySet().iterator();
-       while (ip.hasNext())
-       {
-           ClientPropertyView property = ip.next();
-           views.get(property.GroupObject).setGridPropertyValues(property, formChanges.GridProperties.get(property));
-           
-       }
-       
-       mainPanel.doLayout();
-       mainPanel.validate();
+        mainPanel.doLayout();
+        mainPanel.validate();
        
     }
     
     void ChangeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
         
-        MapUtils<GroupObjectImplement, ClientGroupObjectImplement> mgu = new MapUtils();
-        GroupObjectImplement GroupObject = mgu.getKey(grs, groupObject);
+        views.get(groupObject).setCurrentObject(objectValue);
 
-        MapUtils<GroupObjectValue, ClientGroupObjectValue> mvu = new MapUtils();
-        GroupObjectValue GroupVal = mvu.getKey(gos, objectValue);
-        
-        try {
-            formBean.ChangeObject(GroupObject, GroupVal);
-        } catch(Exception e) {
-            
-        }
-        
-        FormChanges fc = null;
-        try {
-            fc = formBean.EndApply();
-        } catch(SQLException e) {
-            
-        }
-        
-        fc.Out(formBean);
-        
-        if (fc != null)
-        {
-            ClientFormChanges cfc = ConvertFormChangesToClient(fc);
-            ApplyFormChanges(cfc);
-        }
+        ApplyFormChanges(clientBean.ChangeObject(groupObject, objectValue));
         
     }
     
@@ -204,13 +167,22 @@ public class ClientForm extends FrameView {
  
         public View(ClientGroupObjectImplement igroupObject) {
             
+            setLayout(new GridBagLayout());
+            
+            GridBagConstraints c = new GridBagConstraints();
+            c.fill = GridBagConstraints.BOTH;
+            c.weightx = 1;
+            c.gridx = 0;
+            
             groupObject = igroupObject;
 
             panel = new Panel();
-            add(panel, groupObject.PanelConstraint);
+            c.weighty = 0.3;
+            add(panel, c);
             
             grid = new Grid();
-            add(grid, groupObject.GridConstraint);
+            c.weighty = 0.7;
+            add(grid, c);
             
         }
 
@@ -240,19 +212,16 @@ public class ClientForm extends FrameView {
             currentObject = value;
             
             grid.selectObject(currentObject);
-            
         }
         
         public void setPanelPropertyValue(ClientPropertyView property, Object value) {
             
             panel.setPropertyValue(property, value);
-            
         }
 
         public void setGridPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue,Object> values) {
             
             grid.setPropertyValues(property, values);
-          
         }
         
         
@@ -260,18 +229,33 @@ public class ClientForm extends FrameView {
             
             Map<ClientPropertyView, PropertyGrid> properties;
             
-            public void Panel() {
+            public Panel() {
                 setLayout(new FlowLayout());
                 
+//                setPreferredSize(new Dimension(500, 200));
+                
                 properties = new HashMap();
+                
+/*                final Panel pan = this;
+                
+                JButton test = new JButton("Test");
+                test.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        System.out.println(getLayout().preferredLayoutSize(pan).height);
+                    }
+                    
+                });
+                        
+                add(test); */
+                
             }
             
             public void addProperty(ClientPropertyView property) {
          
                 if (properties.get(property) == null)
                 {
-                    PropertyGrid propview = new PropertyGrid();
-                    propview.setCaption(property.Caption);
+                    PropertyGrid propview = new PropertyGrid(property);
 
                     add(propview);
                     properties.put(property, propview);
@@ -293,79 +277,105 @@ public class ClientForm extends FrameView {
             
             public void setPropertyValue(ClientPropertyView property, Object value) {
                 
-                properties.get(property).setValue(value);
+                PropertyGrid propview = properties.get(property);
+                propview.setValue(value);
                 
             }
             
-            class PropertyGrid extends JTable {
+            class PropertyGrid extends JPanel {
 
-                PropertyModel model;
-
-                String caption = "";
-                Object value = null;
+                ClientPropertyView property;
                 
-                public void setCaption(String icaption) {
-                    caption = icaption;
+                JLabel label;
+                PropertyTable table;
+                
+                Object value;
+ 
+                public PropertyGrid(ClientPropertyView iproperty) {
+                    
+                    property = iproperty;
+                    
+                    setLayout(new FlowLayout());
+                    
+                    label = new JLabel(property.caption);
+                    add(label);
+                    
+                    table = new PropertyTable();
+                    add(table);
+                    
                 }
-
+                
                 public void setValue(Object ivalue) {
                     value = ivalue;
-                }
-
-                public PropertyGrid() {
-
-                    setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-                    model = new PropertyModel();
-                    setModel(model);
+                    
+                    repaint();
                 }
                 
-                class PropertyModel extends AbstractTableModel {
+                class PropertyTable extends JTable {
 
-                    public int getRowCount() {
-                        return 1;
+                    PropertyModel model;
+
+                    public PropertyTable() {
+
+                        model = new PropertyModel();
+                        setModel(model);
+                        
+                        setPreferredSize(property.getPreferredSize());
                     }
 
-                    public int getColumnCount() {
-                        return 2;
-                    }
+                    class PropertyModel extends AbstractTableModel {
 
-                    public Object getValueAt(int row, int col) {
-                        if (col == 0)
-                            return caption;
-                        else
+                        public int getRowCount() {
+                            return 1;
+                        }
+
+                        public int getColumnCount() {
+                            return 1;
+                        }
+
+                        public Object getValueAt(int row, int col) {
                             return value;
+                        }
 
                     }
-
+                    
                 }
 
             }            
         }
         
-        class Grid extends JScrollPane {
+        class Grid extends JPanel {
 
+            JScrollPane pane;
             Table table;
 
             List<ClientPropertyView> gridProperties;
             List<ClientGroupObjectValue> gridObjects;
             Map<ClientPropertyView,Map<ClientGroupObjectValue,Object>> gridValues;
             
-            public void Grid() {
+            public Grid() {
 
+                setLayout(new GridBagLayout());
+                
                 gridProperties = new ArrayList();
                 gridObjects = new ArrayList();
                 gridValues = new HashMap();
                 
-                setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-                
                 table = new Table();
-                add(table);
                 
+                pane = new JScrollPane(table);
+                pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+                
+                GridBagConstraints c = new GridBagConstraints();
+                c.fill = GridBagConstraints.BOTH;
+                c.weightx = 1;
+                c.weighty = 1;
+                c.insets = new Insets(4,4,4,4); 
+                
+                add(pane, c);
             }
             
             public void addProperty(ClientPropertyView property) {
-                
                 
                 if (gridProperties.indexOf(property) == -1) {
                     Iterator<ClientPropertyView> icp = gridProperties.iterator();
@@ -379,7 +389,7 @@ public class ClientForm extends FrameView {
 
                 }
 
-                table.createDefaultColumnsFromModel();
+                table.createColumnsFromModel();
                  
             }
             
@@ -387,7 +397,8 @@ public class ClientForm extends FrameView {
                 
                 gridProperties.remove(property);
                 gridValues.remove(property);
-                table.createDefaultColumnsFromModel();
+                
+                table.createColumnsFromModel();
 
             }
             
@@ -406,12 +417,12 @@ public class ClientForm extends FrameView {
                     
                     table.getSelectionModel().setLeadSelectionIndex(newindex);
                     
-                    final Point ViewPos = getViewport().getViewPosition();
+                    final Point ViewPos = pane.getViewport().getViewPosition();
                     final int dltpos = (newindex-oldindex) * table.getRowHeight();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             ViewPos.y += dltpos;
-                            getViewport().setViewPosition(ViewPos);
+                            pane.getViewport().setViewPosition(ViewPos);
                             table.scrollRectToVisible(table.getCellRect(newindex, 0, true));
                         }
                     });                
@@ -436,19 +447,28 @@ public class ClientForm extends FrameView {
                 
                 Model model;
                 
-                public void Table() {
+                public Table() {
 
                     model = new Model();
-                    table.setModel(model);
+                    setModel(model);
                     
                     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
                             ChangeObject(groupObject, model.getSelectedObject());
-        //                    System.out.println("valuechanged");
                         }
                     });
 
+                }
+                
+                public void createColumnsFromModel () {
+                    
+                    createDefaultColumnsFromModel();
+                    
+                    for (ClientPropertyView property : gridProperties) {
+                        getColumnModel().getColumn(gridProperties.indexOf(property)).setPreferredWidth(property.getPreferredWidth());
+                    }
+                    
                 }
                 
                 class Model extends AbstractTableModel {
@@ -458,7 +478,7 @@ public class ClientForm extends FrameView {
                     }
 
                     public String getColumnName(int col) {
-                        return gridProperties.get(col).Caption;
+                        return gridProperties.get(col).caption;
                     }
 
                     public int getRowCount() {
@@ -491,116 +511,6 @@ public class ClientForm extends FrameView {
             
         }
         
-    }
-    
-
-    // Здесь тестинг, заглушка на простую перекачку FormChanges в ClientFormChanges
-    Map<GroupObjectImplement, ClientGroupObjectImplement> grs;
-    Map<ObjectImplement, ClientObjectImplement> ors;
-    Map<PropertyView, ClientPropertyView> prs;
-    Map<GroupObjectValue, ClientGroupObjectValue> gos;
-    
-    ClientFormChanges ConvertFormChangesToClient (FormChanges fc)
-    {
-        ClientFormChanges cfc = new ClientFormChanges();
-        
-        Iterator<GroupObjectImplement> igo;
-        Iterator<GroupObjectValue> igv;
-        Iterator<ObjectImplement> ioi;
-        Iterator<PropertyView> ipv;
-                
-        igo = fc.Objects.keySet().iterator();
-        while (igo.hasNext())
-        {
-            GroupObjectImplement Group = igo.next();
-            ClientGroupObjectImplement ClientGroup = grs.get(Group);
-            
-            GroupObjectValue ObjectValue = fc.Objects.get(Group);
-            ClientGroupObjectValue ClientObjectValue = new ClientGroupObjectValue();
-            
-            ioi = ObjectValue.keySet().iterator();
-            while (ioi.hasNext())
-            {
-                ObjectImplement Object = ioi.next();
-                ClientObjectImplement ClientObject = ors.get(Object);
-                
-                ClientObjectValue.put(ClientObject, ObjectValue.get(Object));
-            }
-            
-            gos.put(ObjectValue, ClientObjectValue);
-            cfc.Objects.put(ClientGroup, ClientObjectValue);
-        }
-
-        igo = fc.GridObjects.keySet().iterator();
-        while (igo.hasNext())
-        {
-            GroupObjectImplement Group = igo.next();
-            ClientGroupObjectImplement ClientGroup = grs.get(Group);
-            
-            List<GroupObjectValue> ListObjectValue = fc.GridObjects.get(Group);
-            List<ClientGroupObjectValue> ListClientObjectValue = new ArrayList();
-            
-            igv = ListObjectValue.iterator();
-            while (igv.hasNext())
-            {
-                GroupObjectValue ObjectValue = igv.next();
-                ClientGroupObjectValue ClientObjectValue = new ClientGroupObjectValue();
-            
-                ioi = ObjectValue.keySet().iterator();
-                while (ioi.hasNext())
-                {
-                    ObjectImplement Object = ioi.next();
-                    ClientObjectImplement ClientObject = ors.get(Object);
-
-                    ClientObjectValue.put(ClientObject, ObjectValue.get(Object));
-                }
-                
-                gos.put(ObjectValue, ClientObjectValue);
-                ListClientObjectValue.add(ClientObjectValue);
-            }
-            
-            cfc.GridObjects.put(ClientGroup, ListClientObjectValue);
-        }
-        
-        ipv = fc.PanelProperties.keySet().iterator();
-        while (ipv.hasNext())
-        {
-            PropertyView Property = ipv.next();
-            ClientPropertyView ClientProp = prs.get(Property);
-            
-            cfc.PanelProperties.put(ClientProp, fc.PanelProperties.get(Property));
-        }
-
-        ipv = fc.GridProperties.keySet().iterator();
-        while (ipv.hasNext())
-        {
-            PropertyView Property = ipv.next();
-            ClientPropertyView ClientProp = prs.get(Property);
-            
-            Map<GroupObjectValue, Object> MapObjectValue = fc.GridProperties.get(Property);
-            Map<ClientGroupObjectValue, Object> ClientMapObjectValue = new HashMap();
-            
-            igv = MapObjectValue.keySet().iterator();
-            while (igv.hasNext())
-            {
-                GroupObjectValue ObjectValue = igv.next();
-                ClientGroupObjectValue ClientObjectValue = gos.get(ObjectValue);
-                ClientMapObjectValue.put(ClientObjectValue, MapObjectValue.get(ObjectValue));
-            }
-            cfc.GridProperties.put(ClientProp, ClientMapObjectValue);
-        }
-        
-        ipv = fc.DropProperties.iterator();
-        while (ipv.hasNext())
-        {
-            PropertyView Property = ipv.next();
-            ClientPropertyView ClientProp = prs.get(Property);
-            
-            cfc.DropProperties.add(ClientProp);
-        }
-        
-        return cfc;
-    
     }
     
 }
