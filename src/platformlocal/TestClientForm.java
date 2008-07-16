@@ -39,12 +39,12 @@ public class TestClientForm {
    
         Document = new ClientObjectImplement();
         Document.GID = 3;
-        Document.GroupObject = goDocument;
+        Document.groupObject = goDocument;
         cache.Objects.add(Document);
         
         Good = new ClientObjectImplement();
         Good.GID = 4;
-        Good.GroupObject = goGood;
+        Good.groupObject = goGood;
         cache.Objects.add(Good);
         
         gpMain = new ClientGroupPropertyView();
@@ -52,35 +52,35 @@ public class TestClientForm {
         
         DocName = new ClientPropertyView();
         DocName.GID = 5;
-        DocName.GroupProperty = gpMain;
-        DocName.GroupObject = goDocument;
-        DocName.Caption = "Номер документа";
+        DocName.groupProperty = gpMain;
+        DocName.groupObject = goDocument;
+        DocName.caption = "Номер документа";
         cache.Properties.add(DocName);
 
         GoodName = new ClientPropertyView();
         GoodName.GID = 6;
-        GoodName.GroupProperty = gpMain;
-        GoodName.GroupObject = goGood;
-        GoodName.Caption = "Наименование товара";
+        GoodName.groupProperty = gpMain;
+        GoodName.groupObject = goGood;
+        GoodName.caption = "Наименование товара";
         cache.Properties.add(GoodName);
         
         GoodQuantity = new ClientPropertyView();
         GoodQuantity.GID = 6;
-        GoodQuantity.GroupProperty = gpMain;
-        GoodQuantity.GroupObject = goGood;
-        GoodQuantity.Caption = "Кол-во товара";
+        GoodQuantity.groupProperty = gpMain;
+        GoodQuantity.groupObject = goGood;
+        GoodQuantity.caption = "Кол-во товара";
         cache.Properties.add(GoodQuantity);
 
         // отрисовка
 
-        goDocument.PanelConstraint = generatePanelConstraint(0,0.0);
+/*        goDocument.PanelConstraint = generatePanelConstraint(0,0.0);
         goDocument.GridConstraint = generatePanelConstraint(1,1.0);
         goGood.PanelConstraint = generatePanelConstraint(2,0.0);
-        goGood.GridConstraint = generatePanelConstraint(3,1.0);
+        goGood.GridConstraint = generatePanelConstraint(3,1.0);*/
         
-        DocName.PanelConstraint = generatePropConstraint(0);
+/*        DocName.PanelConstraint = generatePropConstraint(0);
         GoodName.PanelConstraint = generatePropConstraint(1);
-        GoodQuantity.PanelConstraint = generatePropConstraint(2);
+        GoodQuantity.PanelConstraint = generatePropConstraint(2);*/
         
         return cache;
         
