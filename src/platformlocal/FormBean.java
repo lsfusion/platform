@@ -83,37 +83,30 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     int PageSize = 5;
     
     void Out(GroupObjectValue Value) {
-        ListIterator<ObjectImplement> i = listIterator();
-        while(i.hasNext()) {
-            ObjectImplement Object = i.next();
+        for(ObjectImplement Object : this)
             System.out.print(" "+Object.OutName+" = "+Value.get(Object));
-        }                
     }
 }
 
-class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
-    PropertyObjectImplement(Property iProperty) {super(iProperty);}
+class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImplement> {
+    PropertyObjectImplement(ObjectProperty iProperty) {super(iProperty);}
     
     GroupObjectImplement GetApplyObject() {
         GroupObjectImplement ApplyObject=null;
-        Iterator<ObjectImplement> i = Mapping.values().iterator();
-        while(i.hasNext()) {
-            ObjectImplement IntObject = i.next();
+        for(ObjectImplement IntObject : Mapping.values())
             if(ApplyObject==null || IntObject.GroupTo.Order>ApplyObject.Order) ApplyObject = IntObject.GroupTo;
-        }
 
         return ApplyObject;
     }
     
     Class GetValueClass(GroupObjectImplement ClassGroup) {
-        Iterator<PropertyInterface> i = Property.Interfaces.iterator();
-        while(i.hasNext()) {
-            PropertyInterface Interface = i.next();
+        InterfaceClass ClassImplement = new InterfaceClass();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
-            Interface.ValueClass = (IntObject.GroupTo==ClassGroup?IntObject.GridClass:IntObject.Class);
+            ClassImplement.put(Interface,(IntObject.GroupTo==ClassGroup?IntObject.GridClass:IntObject.Class));
         }
-        
-        return Property.GetValueClass();
+
+        return Property.GetValueClass(ClassImplement);
     }
 
     boolean IsInInterface(GroupObjectImplement ClassGroup) {
@@ -121,21 +114,15 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
     }
 
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
-        Iterator<ObjectImplement> i = Mapping.values().iterator();
-        while(i.hasNext()) {
-            ObjectImplement IntObject = i.next();
+        for(ObjectImplement IntObject : Mapping.values())
             if(IntObject.GroupTo!=ClassGroup && ((IntObject.Updated & (1<<0))!=0)) return true;
-        }
         
         return false;
     }
 
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
-        Iterator<ObjectImplement> i = Mapping.values().iterator();
-        while(i.hasNext()) {
-            ObjectImplement IntObject = i.next();
+        for(ObjectImplement IntObject : Mapping.values())
             if(((IntObject.Updated & (1<<(IntObject.GroupTo==ClassGroup?3:1))))!=0) return true;
-        }
         
         return false;
     }
@@ -145,9 +132,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
         Collection<PropertyInterface> NullInterfaces = new ArrayList();
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
         
-        Iterator<PropertyInterface> i = Property.Interfaces.iterator();
-        while(i.hasNext()) {
-            PropertyInterface Interface = i.next();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
             SourceExpr JoinExpr = (IntObject.GroupTo==ClassGroup?ClassSource.get(IntObject):new ValueSourceExpr(IntObject.idObject));
             if(JoinExpr==null) 
@@ -158,11 +143,8 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
 
         SourceExpr Result = Property.JoinSelect(Joins,JoinImplement,Left);
 
-        i = NullInterfaces.iterator();
-        while(i.hasNext()) {
-            PropertyInterface Interface = i.next();
+        for(PropertyInterface Interface : NullInterfaces)
             ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
-        }
         
         return Result;
     }
@@ -207,17 +189,13 @@ class AbstractFormChanges<T,V,Z> {
 class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue,PropertyView> {
    
     void Out(FormBeanView bv) {
-        Iterator<GroupObjectImplement> ig = bv.Groups.iterator();
         System.out.println(" ------- GROUPOBJECTS ---------------");
-        while(ig.hasNext()) {
-            GroupObjectImplement Group = ig.next();
-
+        for(GroupObjectImplement Group : bv.Groups) {
             List<GroupObjectValue> GroupGridObjects = GridObjects.get(Group);
             if(GroupGridObjects!=null) {
                 System.out.println(Group.GID+" - Grid Changes");
-                ListIterator<GroupObjectValue> ir = GroupGridObjects.listIterator();
-                while(ir.hasNext()) { 
-                    Group.Out(ir.next());
+                for(GroupObjectValue Value : GroupGridObjects) { 
+                    Group.Out(Value);
                     System.out.println("");
                 }
             }
@@ -230,35 +208,26 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
             }
         }
 
-        Iterator<PropertyView> ipv = null;
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
-        ipv = GridProperties.keySet().iterator();
-        while(ipv.hasNext()) {
-            PropertyView Property = ipv.next();
+        for(PropertyView Property : GridProperties.keySet()) {
             Map<GroupObjectValue,Object> PropertyValues = GridProperties.get(Property);
             Property.Out();
             System.out.println(" ---- property");
-            Iterator<GroupObjectValue> igp = PropertyValues.keySet().iterator();
-            while(igp.hasNext()) {
-                GroupObjectValue gov = igp.next();
+            for(GroupObjectValue gov : PropertyValues.keySet()) { 
                 Property.ToDraw.Out(gov);
                 System.out.println(" - "+PropertyValues.get(gov));
             }                    
         }
 
         System.out.println(" ------- Panel ---------------");
-        ipv = PanelProperties.keySet().iterator();
-        while(ipv.hasNext()) {
-            PropertyView Property = ipv.next();
+        for(PropertyView Property : PanelProperties.keySet()) {
             Property.Out();
             System.out.println(" - "+PanelProperties.get(Property));
         }
         
         System.out.println(" ------- Drop ---------------");
-        ipv = DropProperties.iterator();
-        while(ipv.hasNext()) {
-            PropertyView Property = ipv.next();
+        for(PropertyView Property : DropProperties) {
             Property.Out();
             System.out.println("");
         }
@@ -321,8 +290,7 @@ class FormBeanView {
     void AddGroup(GroupObjectImplement Group) { 
         Groups.add(Group);
         Group.Order = Groups.size();
-        Iterator<ObjectImplement> i = Group.iterator();
-        while(i.hasNext()) i.next().GroupTo = Group;
+        for(ObjectImplement Object : Group) Object.GroupTo = Group;
     }
 
     List<GroupObjectImplement> Groups;
@@ -342,9 +310,7 @@ class FormBeanView {
     // это будут Bean'овские интерфейсы
     public void ChangeObject(GroupObjectImplement Group,GroupObjectValue Value) throws SQLException {    
         // проставим все объектам метки изменений
-        Iterator<ObjectImplement> i = Group.iterator();
-        while(i.hasNext()) {
-            ObjectImplement Object = i.next();
+        for(ObjectImplement Object : Group) {
             Integer idObject = Value.get(Object);
             if(Object.idObject!=idObject) {
                 // запишем объект
@@ -418,32 +384,20 @@ class FormBeanView {
         if(StructUpdated) {
             // построим Map'ы
             // очистим старые 
-            Iterator<GroupObjectImplement> igo = Groups.iterator();
-            while(igo.hasNext()) {
-                GroupObjectImplement Group = igo.next();
+            for(GroupObjectImplement Group : Groups) {
                 Group.MapFilters = new HashSet();
                 Group.MapOrders = new ArrayList();
             }
             // фильтры
-            Iterator<Filter> ift = Filters.iterator();
-            while(ift.hasNext()) {
-                Filter Filt = ift.next();
+            for(Filter Filt : Filters)
                 Filt.GetApplyObject().MapFilters.add(Filt);
-            }
+            
             // порядки
-            ListIterator<PropertyObjectImplement> ior = Orders.listIterator();
-            while(ior.hasNext()) {
-                PropertyObjectImplement Order = ior.next();
+            for(PropertyObjectImplement Order : Orders)
                 Order.GetApplyObject().MapOrders.add(Order);
-            }
         }
 
-        Iterator<Filter> iof = null;
-        ListIterator<PropertyObjectImplement> ioo = null;
-        ListIterator<GroupObjectImplement> ig = Groups.listIterator();
-        while(ig.hasNext()) {
-            GroupObjectImplement Group = ig.next();            
-            
+        for(GroupObjectImplement Group : Groups) {
             // флаг меняется ли объект (по сути делать GO TOP)
             boolean GoTop = true;
             
@@ -456,54 +410,51 @@ class FormBeanView {
             boolean UpdateKeys = ((Group.Updated & (1<<3))!=0);
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
             // фильтры
-            iof = Group.MapFilters.iterator();
-            while(iof.hasNext()) {
-                Filter Filt = iof.next();
+            for(Filter Filt : Group.MapFilters) {
                 // если изменилась структура или кто-то изменил класс, перепроверяем
                 if(StructUpdated || Filt.ClassUpdated(Group))
                     UpdateKeys = (Filt.IsInInterface(Group)?Group.Filters.add(Filt):Group.Filters.remove(Filt)) || UpdateKeys;
             }
             // порядки
             boolean SetOrderChanged = false;
-            ioo = Group.MapOrders.listIterator();
             Set<PropertyObjectImplement> SetOrders = new HashSet(Group.Orders);
-            while(ioo.hasNext()) {
-                PropertyObjectImplement Order = ioo.next();
+            for(PropertyObjectImplement Order : Group.MapOrders) {
                 // если изменилась структура или кто-то изменил класс, перепроверяем
                 if(StructUpdated || Order.ClassUpdated(Group))
                     SetOrderChanged = (Order.IsInInterface(Group)?SetOrders.add(Order):Group.Filters.remove(Order));
             }
             if(StructUpdated || SetOrderChanged) {
                 // переформирываваем порядок, если структура или принадлежность Order'у изменилась
-                ioo = Group.MapOrders.listIterator();
                 List<PropertyObjectImplement> NewOrder = new ArrayList();
-                while(ioo.hasNext()) {
-                    PropertyObjectImplement Order = ioo.next();
+                for(PropertyObjectImplement Order : Group.MapOrders)
                     if(SetOrders.contains(Order)) NewOrder.add(Order);
-                }
 
                 UpdateKeys = UpdateKeys || SetOrderChanged || !Group.Orders.equals(NewOrder);
                 Group.Orders = NewOrder;
             }        
 
+            // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
             if(!UpdateKeys) {
-                // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
-                iof = Group.Filters.iterator();
-                while(!UpdateKeys && iof.hasNext())
-                    if(iof.next().ObjectUpdated(Group)) UpdateKeys = true;
-                ioo = Group.Orders.listIterator();
-                while(!UpdateKeys && ioo.hasNext())
-                    if(ioo.next().ObjectUpdated(Group)) UpdateKeys = true;
+                for(Filter Filt : Group.Filters)
+                    if(Filt.ObjectUpdated(Group)) {
+                        UpdateKeys = true;
+                        break;
+                    }
             }
+            if(!UpdateKeys) {
+                for(PropertyObjectImplement Order : Group.Orders)
+                    if(Order.ObjectUpdated(Group)) {
+                        UpdateKeys = true;
+                        break;
+                    }
+            }
+
             if(!UpdateKeys && Group.GridClassView) {
                 Map<ObjectImplement,Integer> GroupKey = null;
                 if((Group.Updated & ((1<<4)+(1<<0)))!=0) {
                     GroupKey = new HashMap();
-                    Iterator<ObjectImplement> i = Group.iterator();
-                    while(i.hasNext()) {
-                        ObjectImplement Object = i.next();
+                    for(ObjectImplement Object : Group)
                         GroupKey.put(Object,Object.idObject);
-                    }
                 }
 
                 if((Group.Updated & (1<<4))!=0) {
@@ -555,12 +506,9 @@ class FormBeanView {
                 Map<PropertyObjectImplement,Object> OrderValues = null;
                 if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
 
-                iof = Group.Filters.iterator();
-                while(iof.hasNext()) iof.next().FillSelect(JoinKeys,Group,KeySources);
-                ioo = Group.Orders.listIterator();
-                while(ioo.hasNext()) {
-                    PropertyObjectImplement ToOrder = ioo.next();
-
+                for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources);
+                int OrderNum = 0;
+                for(PropertyObjectImplement ToOrder : Group.Orders) {
                     SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,false);
                     SelectKeys.Orders.add(OrderExpr);
                     // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
@@ -570,13 +518,12 @@ class FormBeanView {
                     }
                     
                     // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.put("order"+((Integer)(ioo.nextIndex()-1)).toString(),OrderExpr);
+                    SelectKeys.Expressions.put("order"+(OrderNum++),OrderExpr);
                 }
 
                 // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
-                ListIterator<ObjectImplement> igo = Group.listIterator();
-                while(igo.hasNext()) {
-                    ObjectImplement Object = igo.next();
+                int ObjectNum = 0;
+                for(ObjectImplement Object : Group) {
                     SourceExpr KeyExpr = KeySources.get(Object);
                     FromTable KeySelectTable = null;
                     if(KeyExpr==null) {
@@ -599,7 +546,7 @@ class FormBeanView {
                     }
                     
                     // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.put("key"+((Integer)(igo.nextIndex()-1)).toString(),KeyExpr);
+                    SelectKeys.Expressions.put("key"+(ObjectNum++),KeyExpr);
                 }
                 
                 // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
@@ -628,14 +575,13 @@ class FormBeanView {
                 }
                 Group.Keys = new ArrayList();
                 Group.KeyOrders = new HashMap();
-                ListIterator<Map<String,Object>> ikr = KeyResult.listIterator();
 
                 // параллельно будем обновлять ключи чтобы Join'ить
                 ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
                 InsertTable.DropViewID(Adapter, Group.GID);
 
-                while(ikr.hasNext()) {
-                    Map<String,Object> ResultRow = ikr.next();
+                ListIterator<Map<String,Object>> ikr = KeyResult.listIterator();
+                for(Map<String,Object> ResultRow : KeyResult) {
                     GroupObjectValue KeyRow = new GroupObjectValue();
                     Map<PropertyObjectImplement,Object> OrderRow = new HashMap();
                     
@@ -643,21 +589,18 @@ class FormBeanView {
                     Map<KeyField,Integer> ViewKeyInsert = new HashMap();
                     ViewKeyInsert.put(InsertTable.View,Group.GID);
                     ListIterator<KeyField> ivk = InsertTable.Objects.listIterator();
-                    igo = Group.listIterator();
-                    while(igo.hasNext()) {
-                        ObjectImplement Object = igo.next();                    
-                        Integer KeyValue = (Integer)ResultRow.get("key"+((Integer)(igo.nextIndex()-1)));
+                    ObjectNum = 0;
+                    for(ObjectImplement Object : Group) {
+                        Integer KeyValue = (Integer)ResultRow.get("key"+(ObjectNum++));
                         KeyRow.put(Object,KeyValue);
                         
                         ViewKeyInsert.put(ivk.next(), KeyValue);
                     }
                     Adapter.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
 
-                    ioo = Group.Orders.listIterator();
-                    while(ioo.hasNext()) {
-                        PropertyObjectImplement ToOrder = ioo.next();
-                        OrderRow.put(ToOrder,ResultRow.get("order"+((Integer)(ioo.nextIndex()-1))));
-                    }
+                    OrderNum = 0;
+                    for(PropertyObjectImplement ToOrder : Group.Orders)
+                        OrderRow.put(ToOrder,ResultRow.get("order"+(OrderNum++)));
                     
                     Group.Keys.add(KeyRow);
                     Group.KeyOrders.put(KeyRow, OrderRow);
@@ -680,10 +623,7 @@ class FormBeanView {
         
 //        PanelProps.
 
-        Iterator<PropertyView> ipv = Properties.iterator();
-        while(ipv.hasNext()) {
-            PropertyView DrawProp = ipv.next();
-            
+        for(PropertyView DrawProp : Properties) {
             // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
             boolean Read = false;
             boolean CheckClass = false;
@@ -697,9 +637,7 @@ class FormBeanView {
                 InInterface = (PrevPool==null?0:(PrevPool?2:1));
             }
 
-            Iterator<ObjectImplement> iov = DrawProp.View.Mapping.values().iterator();
-            while(iov.hasNext())  {
-                ObjectImplement Object = iov.next();
+            for(ObjectImplement Object : DrawProp.View.Mapping.values())  {
                 if(Object.GroupTo!=DrawProp.ToDraw) {
                     // "верхние" объекты интересует только изменение объектов\классов
                     if((Object.Updated & 1<<0)!=0) {
@@ -768,32 +706,23 @@ class FormBeanView {
 
             Integer SelectFields = 0;
             Map<PropertyView,String> ToFields = new HashMap();
-            ipv = PanelProps.iterator();
-            while(ipv.hasNext()) {
+            for(PropertyView DrawProp : PanelProps) {
                 SelectFields++;
-                PropertyView DrawProp = ipv.next();
                 String SelectField = "prop"+SelectFields;
                 SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
-            ListIterator<From> isj = JoinProps.listIterator();
-            while(isj.hasNext())
-                SelectProps.From.Joins.add(isj.next());
+            for(From Join : JoinProps)
+                SelectProps.From.Joins.add(Join);
         
             Map<String,Object> ResultProps = Adapter.ExecuteSelect(SelectProps).get(0);
 
-            ipv = PanelProps.iterator();
-            while(ipv.hasNext()) {
-                PropertyView DrawProp = ipv.next();
+            for(PropertyView DrawProp : PanelProps)
                 Result.PanelProperties.put(DrawProp,ResultProps.get(ToFields.get(DrawProp)));
-            }
         }
         
-        Iterator<GroupObjectImplement> igo = GroupProps.keySet().iterator();
-        while(igo.hasNext()) {
-            GroupObjectImplement Group = igo.next();
-                                        
+        for(GroupObjectImplement Group : GroupProps.keySet()) {
             Collection<PropertyView> GroupList = GroupProps.get(Group);
             JoinProps = new JoinList();
             
@@ -801,50 +730,39 @@ class FormBeanView {
             FromTable SelectKeyTable = new FromTable(KeyTable.Name);
             SelectProps = new SelectQuery(SelectKeyTable);
 
-            ListIterator<ObjectImplement> lgo = Group.listIterator();
-            ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
-            
             Map<ObjectImplement,SourceExpr> MapKeys = new HashMap();
-            while(lgo.hasNext()) {
+
+            int ObjectNum = 0;
+            ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
+            for(ObjectImplement Object : Group) {
                 SourceExpr KeyExpr = new FieldSourceExpr(SelectKeyTable,ikt.next().Name);
-                MapKeys.put(lgo.next(),KeyExpr);
+                MapKeys.put(Object,KeyExpr);
                 // также в запрос надо ключи закинуть
-                SelectProps.Expressions.put("key"+(Integer)(lgo.nextIndex()-1),KeyExpr);
+                SelectProps.Expressions.put("key"+(ObjectNum++),KeyExpr);
             }
 
             Integer SelectFields = 0;
             Map<PropertyView,String> ToFields = new HashMap();
-            ipv = GroupList.iterator();
-            while(ipv.hasNext()) {
+            for(PropertyView DrawProp : GroupList) {
                 SelectFields++;
-                PropertyView DrawProp = ipv.next();
                 String SelectField = "prop"+SelectFields;
                 SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
-            ListIterator<From> isj = JoinProps.listIterator();
-            while(isj.hasNext())
-                SelectProps.From.Joins.add(isj.next());
+            for(From Join : JoinProps) SelectProps.From.Joins.add(Join);
         
             List<Map<String,Object>> ResultProps = Adapter.ExecuteSelect(SelectProps);
 
-            ipv = GroupList.iterator();
-            while(ipv.hasNext()) {
-                PropertyView DrawProp = ipv.next();
-
+            for(PropertyView DrawProp : GroupList) {
                 Map<GroupObjectValue,Object> PropResult = new HashMap();
                 Result.GridProperties.put(DrawProp,PropResult);
 
-                ListIterator<Map<String,Object>> irp = ResultProps.listIterator();
-                while(irp.hasNext()) {
-                    Map<String,Object> ResultRow = irp.next();
+                for(Map<String,Object> ResultRow : ResultProps) {
                     GroupObjectValue ResultKeys = new GroupObjectValue();
-                    lgo = Group.listIterator();
-                    while(lgo.hasNext()) {
-                        ObjectImplement ObjectImp = lgo.next();
-                        ResultKeys.put(ObjectImp,(Integer)ResultRow.get("key"+(Integer)(lgo.nextIndex()-1)));
-                    }
+                    ObjectNum = 0;
+                    for(ObjectImplement ObjectImp : Group)
+                        ResultKeys.put(ObjectImp,(Integer)ResultRow.get("key"+(ObjectNum++)));
 
                     PropResult.put(ResultKeys,ResultRow.get(ToFields.get(DrawProp)));
                 }
@@ -853,9 +771,7 @@ class FormBeanView {
 
         // сбрасываем все пометки
         StructUpdated = false;
-        ig = Groups.listIterator();
-        while(ig.hasNext()) {
-            GroupObjectImplement Group = ig.next();
+        for(GroupObjectImplement Group : Groups) {
             Iterator<ObjectImplement> io = Group.iterator();
             while(io.hasNext()) io.next().Updated=0;
             Group.Updated = 0;

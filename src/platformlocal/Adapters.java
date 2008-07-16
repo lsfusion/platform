@@ -39,17 +39,15 @@ class DataAdapter {
     void CreateTable(Table Table) throws SQLException {
         String CreateString = "";
         String KeyString = "";
-        Iterator<KeyField> ik = Table.KeyFields.iterator();
-        while(ik.hasNext()) {
-            KeyField Key = ik.next();
+        for(KeyField Key : Table.KeyFields) {
             CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare();
             KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
         }
-        Iterator<Field> it = Table.PropFields.iterator();
-        while(it.hasNext()) 
-            CreateString = CreateString+',' + it.next().GetDeclare();
+        for(Field Prop : Table.PropFields)
+            CreateString = CreateString+',' + Prop.GetDeclare();
         CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY CLUSTERED (" + KeyString + ")";
 
+//        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         Execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
     }
     
@@ -68,17 +66,13 @@ class DataAdapter {
         String ValueString = "";
         
         // пробежим по KeyFields'ам
-        Iterator<KeyField> ik = Table.KeyFields.iterator();
-        while(ik.hasNext()) {
-            KeyField Key = ik.next();
+        for(KeyField Key : Table.KeyFields) {
             InsertString = (InsertString.length()==0?"":InsertString+',') + Key.Name;
             ValueString = (ValueString.length()==0?"":ValueString+',') + KeyFields.get(Key);
         }
         
         // пробежим по Fields'ам
-        Iterator<Field> i = PropFields.keySet().iterator();
-        while(i.hasNext()) {
-            Field Prop = i.next();
+        for(Field Prop : PropFields.keySet()) {
             Object Value = PropFields.get(Prop);
             InsertString = InsertString+","+Prop.Name;
             ValueString = ValueString+","+(Value instanceof String?"'"+(String)Value+"'":Value.toString());
@@ -92,20 +86,15 @@ class DataAdapter {
         FromTable From = new FromTable(Table.Name);
         SelectQuery Select = new SelectQuery(From);
         // сначала закинем KeyField'ы и прогоним Select
-        Iterator<KeyField> ik = Table.KeyFields.iterator();
-        while(ik.hasNext())  {
-            KeyField Key = ik.next();
+        for(KeyField Key : Table.KeyFields)
             Select.From.Wheres.add(new FieldValueWhere(KeyFields.get(Key),Key.Name));
-        }
         
         Select.Expressions.put("isrec",new ValueSourceExpr(1));
 
         if(ExecuteSelect(Select).size()>0) {
             // есть запись нужно Update лупить
             Select.Expressions.clear();
-            Iterator<Field> ip = PropFields.keySet().iterator();
-            while(ip.hasNext()) {
-                Field Prop = ip.next();
+            for(Field Prop : PropFields.keySet()) {
                 Object PropValue = PropFields.get(Prop);
                 if(PropValue!=null) Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropValue));
             }
@@ -128,8 +117,7 @@ class DataAdapter {
         Collection<String> ResultFields = new ArrayList();
         String SelectString = Select.GetSelect(ResultFields);
         String InsertString = "";
-        Iterator<String> i = ResultFields.iterator();
-        while(i.hasNext()) InsertString = (InsertString.length()==0?"":InsertString+",") + i.next();
+        for(String Field : ResultFields) InsertString = (InsertString.length()==0?"":InsertString+",") + Field;
 //        System.out.println("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
         Execute("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
     }
@@ -143,12 +131,9 @@ class DataAdapter {
             ResultSet Result = Statement.executeQuery(SelectString);
             try {
                 while(Result.next()) {
-                    Iterator<String> is = ResultFields.iterator();
                     Map<String,Object> RowMap = new HashMap<String,Object>();
-                    while(is.hasNext()) {
-                        String SelectExpr = is.next();
+                    for(String SelectExpr : ResultFields)
                         RowMap.put(SelectExpr,Result.getObject(SelectExpr));
-                    }
                     ExecResult.add(RowMap);
                 }
             } finally {
@@ -167,12 +152,9 @@ class DataAdapter {
         System.out.println(Select.GetSelect(ResultFields));
 
         List<Map<String,Object>> Result = ExecuteSelect(Select);
-        ListIterator<Map<String,Object>> ir = Result.listIterator();
-        while(ir.hasNext()) {
-            Map<String,Object> RowMap = ir.next();
-            Iterator<String> is = ResultFields.iterator();
-            while(is.hasNext()) {
-                System.out.print(RowMap.get(is.next()));
+        for(Map<String,Object> RowMap : Result) {
+            for(String Field : ResultFields) {
+                System.out.print(RowMap.get(Field));
                 System.out.print(" ");
             }
             System.out.println("");
@@ -215,123 +197,3 @@ class Table {
     Collection<Field> PropFields;
 }
 
-
-/*
-   void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
-        // алгоритм пока такой :
-        // 1. берем GROUPPROPERTY(изм на +) по аналогии с реляционными
-        // G = SS(с пуст.) 1 SUM(+)
-        // 2. для новых св-в делаем GROUPPROPERTY(все) так же как и для реляционных св-в FULL JOIN'ы - JOIN'ов с "перегр." подмн-вами (единственный способ сразу несколько изменений "засечь") (и GROUP BY по ISNULL справо налево ключей)
-        // A = SS(без пуст.) 1 SUM(+)
-        // 3. для старых св-в GROUPPROPERTY(все) FULL JOIN (JOIN "перегр." измененных с LEFT JOIN'ами старых) (без подмн-в) (и GROUP BY по ISNULL(обычных JOIN'ов,LEFT JOIN'a изм.))
-        // A P (без SS/без пуст.) -1 SUM(+)
-        // все UNION ALL и GROUP BY или же каждый GROUP BY а затем FULL JOIN на +
-
-        Iterator<GroupPropertyInterface> im = Interfaces.iterator();
-        
-        List<GroupPropertyInterface> ChangedProperties = new ArrayList();
-        while(im.hasNext()) {
-            GroupPropertyInterface Interface = im.next();
-            // должен вернуть null если нету изменений (или просто транслирует интерфейс) иначе возвращает AggregateProperty
-            if(Interface.Implement.MapHasChanges(Session)) ChangedProperties.add(Interface);
-        }
-        
-        // ничего не изменилось вываливаемся
-        if(ChangedProperties.size()==0 && !GroupProperty.HasChanges(Session)) return;
-
-        ChangeTable Table = StartChangeTable(Adapter,Session);
-        // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Table,Session);
-
-        for(int ij=(GroupProperty.HasChanges(Session)?1:2);ij<=(ChangedProperties.size()==0?1:3);ij++) {
-            UnionQuery DataQuery = new UnionQuery();
-                    
-            // заполняем ключи и значения
-            int DataKeysNum = 1;
-            Map<PropertyInterface,String> DataKeysMap = new HashMap();
-            Iterator<PropertyInterface> in = GroupProperty.Interfaces.iterator();
-            while(in.hasNext()) {
-                String Field = "dkey" + DataKeysNum++;
-                DataKeysMap.put(in.next(), Field);
-                DataQuery.Keys.add(Field);
-            }
-            im = Interfaces.iterator();
-            while (im.hasNext()) DataQuery.Values.add(ChangeTableMap.get(im.next()).Name);
-            DataQuery.Values.add(Table.Value.Name);
-            
-            boolean GroupChanged = (ij==1);
-            Integer Coeff = 0;
-            Integer GroupType = 0;
-            ListIterator<List<GroupPropertyInterface>> il = null;
-            // Subsets
-            if(ij<=2) {
-                il = (new SetBuilder<GroupPropertyInterface>()).BuildSubSetList(ChangedProperties).listIterator();
-                GroupType = 0;
-                Coeff = 1;
-                // пустое при 2 не рассматриваем
-                if(ij==2) il.next();
-            }
-            else {
-                List<List<GroupPropertyInterface>> ChangedList = new ArrayList();
-                im = ChangedProperties.iterator();
-                while(im.hasNext()) {
-                    List<GroupPropertyInterface> SingleList = new ArrayList();
-                    SingleList.add(im.next());
-                    ChangedList.add(SingleList);
-                }
-                il = ChangedList.listIterator();
-                GroupType = 2;
-                Coeff = -1;
-            }
-            
-            while(il.hasNext()) {
-                List<GroupPropertyInterface> ChangeProps = il.next();
-                SelectQuery SubQuery = new SelectQuery(null);
-                JoinList Joins = new JoinList();
-
-                // обнуляем, закидываем GroupProperty,
-                Map<PropertyInterface,SourceExpr> GroupImplement = new HashMap();
-                
-                // значение
-                SubQuery.Expressions.put(Table.Value.Name,(GroupChanged?GroupProperty.ChangedJoinSelect(Joins,GroupImplement,Session,1):GroupProperty.JoinSelect(Joins,GroupImplement,false)));
-
-                // значения интерфейсов
-                im = Interfaces.iterator();
-                while (im.hasNext()) {
-                    GroupPropertyInterface Interface = im.next();
-                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,Interface.Implement.MapJoinSelect(Joins,GroupImplement,false,(ChangeProps.contains(Interface)?Session:null),GroupType));
-                }
-                
-                // значения ключей базовые
-                in = GroupProperty.Interfaces.iterator();
-                while (in.hasNext()) {
-                    PropertyInterface Interface = in.next();
-                    SubQuery.Expressions.put(DataKeysMap.get(Interface),GroupImplement.get(Interface));
-                }
-
-                // закинем Join'ы как обычно
-                Iterator<From> is = Joins.iterator();
-                SubQuery.From = is.next();
-                while(is.hasNext()) SubQuery.From.Joins.add(is.next());
-
-                DataQuery.Unions.add(SubQuery);
-            }
-            
-            FromQuery FromDataQuery = new FromQuery(DataQuery);
-            GroupQuery GroupQuery = new GroupQuery(FromDataQuery);
-            im = Interfaces.iterator();
-            while (im.hasNext()) {
-                String KeyField = ChangeTableMap.get(im.next()).Name;
-                GroupQuery.GroupBy.put(KeyField,new FieldSourceExpr(FromDataQuery,KeyField));
-            }
-            GroupQuery.AggrExprs.put(Table.Value.Name,new GroupExpression(new FieldSourceExpr(FromDataQuery,Table.Value.Name),"SUM"));
-
-            ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.SumCoeffs.put(GroupQuery,Coeff);
-        }
-
-        Adapter.InsertSelect(Table,ResultQuery);
-        // помечаем изменение в сессии
-        SessionChanged.put(Session,1);
-     }
-}*/

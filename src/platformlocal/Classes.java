@@ -38,9 +38,8 @@ abstract class Class {
     boolean IsParent(Class Class) {
         if(Class==this) return true;
 
-        Iterator<Class> i = Parents.iterator();
-        while (i.hasNext())
-            if (i.next().IsParent(Class)) return true;
+        for(Class Parent : Parents)
+            if (Parent.IsParent(Class)) return true;
         
         return false;
     }
@@ -48,9 +47,8 @@ abstract class Class {
     Class FindClassID(Integer idClass) {
         if(ID.equals(idClass)) return this;
 
-        Iterator<Class> i = Childs.iterator();
-        while (i.hasNext()) {
-            Class FindClass = i.next().FindClassID(idClass);
+        for(Class Child : Childs) {
+            Class FindClass = Child.FindClassID(idClass);
             if(FindClass!=null) return FindClass;
         }
         
@@ -69,17 +67,15 @@ abstract class Class {
     private void CommonParent1(int SetCheck) {
         if(Check==SetCheck) return;
         Check = SetCheck;
-        Iterator<Class> i = Parents.iterator();
-        while (i.hasNext()) i.next().CommonParent1(SetCheck);
+        for(Class Parent : Parents) Parent.CommonParent1(SetCheck);
     }
 
     // 2-й шаг выводит в Set, и сбрасывает пометки
     private Class CommonParent2() {
         if(Check==1) return this;
         
-        Iterator<Class> i = Parents.iterator();
-        while (i.hasNext()) {
-            Class ParentClass = i.next().CommonParent2();
+        for(Class Parent : Parents) {
+            Class ParentClass = Parent.CommonParent2();
             if(ParentClass!=null) return ParentClass;
         }
         
@@ -92,9 +88,8 @@ abstract class Class {
         
         SetID.add(ID);
         
-        Iterator<Class> i = Childs.iterator();
-        while(i.hasNext())
-            i.next().FillSetID(SetID);
+        for(Class Child : Childs)
+            Child.FillSetID(SetID);
     }
 
     // заполняет список классов
@@ -104,9 +99,8 @@ abstract class Class {
         
         ClassList.add(this);
         
-        Iterator<Class> i = Childs.iterator();
-        while(i.hasNext())
-            i.next().FillClassList(ClassList);
+        for(Class Child : Childs)
+            Child.FillClassList(ClassList);
     }
 
     // получает классы у которого есть оба интерфейса
@@ -124,8 +118,8 @@ abstract class Class {
     private void CommonClassSet1() {
         if(Check==1) return;
         Check = 1;
-        Iterator<Class> i = Childs.iterator();
-        while (i.hasNext()) i.next().CommonClassSet1();
+        for(Class Child : Childs)
+            Child.CommonClassSet1();
     }
     
     // 2-й шаг пометки 2, 3
@@ -145,8 +139,8 @@ abstract class Class {
             Check = 3;
         }
             
-        Iterator<Class> i = Childs.iterator();
-        while (i.hasNext()) i.next().CommonClassSet2(Set);
+        for(Class Child : Childs)
+            Child.CommonClassSet2(Set);
     }
     
     // 3-й шаг выводит в Set, и сбрасывает пометки
@@ -155,8 +149,8 @@ abstract class Class {
         if(Check==2) Out.add(this);
         Check = 0;
 
-        Iterator<Class> i = Childs.iterator();
-        while (i.hasNext()) i.next().CommonClassSet3(Out);
+        for(Class Child : Childs)
+            Child.CommonClassSet3(Out);
     }
     
     String GetDBType() {
@@ -190,7 +184,7 @@ class IntegralClass extends Class {
     IntegralClass(Integer iID) {super(iID);}
     
     Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        return Randomizer.nextInt(Diap*Diap);
+        return Randomizer.nextInt(Diap*Diap+1);
     }
 }
 

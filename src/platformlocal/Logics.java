@@ -37,20 +37,23 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
     Set<TableImplement> Childs;
     Set<TableImplement> Parents;
 
-    boolean RecCompare(boolean ToParent,Collection<DataPropertyInterface> ToCompare,ListIterator<DataPropertyInterface> iRec,Map<DataPropertyInterface,DataPropertyInterface> MapTo) {
+    // Operation на что сравниваем
+    // 0 - не ToParent
+    // 1 - ToParent
+    // 2 - равно
+    
+    boolean RecCompare(int Operation,Collection<DataPropertyInterface> ToCompare,ListIterator<DataPropertyInterface> iRec,Map<DataPropertyInterface,DataPropertyInterface> MapTo) {
         if(!iRec.hasNext()) return true;
 
         DataPropertyInterface ProceedItem = iRec.next();
-        Iterator<DataPropertyInterface> iToC = ToCompare.iterator();
-        while(iToC.hasNext()) {
-            DataPropertyInterface PairItem = iToC.next();
-            if((ToParent && ProceedItem.Class.IsParent(PairItem.Class) || (!ToParent && PairItem.Class.IsParent(ProceedItem.Class)))) {
+        for(DataPropertyInterface PairItem : ToCompare) {
+            if((Operation==1 && ProceedItem.Class.IsParent(PairItem.Class) || (Operation==0 && PairItem.Class.IsParent(ProceedItem.Class))) || (Operation==2 && PairItem.Class == ProceedItem.Class)) {
                 if(!MapTo.containsKey(PairItem)) {
-                // если parent - есть связь и нету ключа, гоним рекурсию дальше
-                MapTo.put(PairItem, ProceedItem);
-                // если нашли карту выходим
-                if(RecCompare(ToParent,ToCompare,iRec,MapTo)) return true;
-                MapTo.remove(PairItem);
+                    // если parent - есть связь и нету ключа, гоним рекурсию дальше
+                    MapTo.put(PairItem, ProceedItem);
+                    // если нашли карту выходим
+                    if(RecCompare(Operation,ToCompare,iRec,MapTo)) return true;
+                    MapTo.remove(PairItem);
                 }
             }
         }
@@ -58,7 +61,7 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         iRec.previous();
         return false;
     }
-    // 0 никак не связаны, 1 - параметр снизу в дереве, 2 - параметр сверху в дереве или равно
+    // 0 никак не связаны, 1 - параметр снизу в дереве, 2 - параметр сверху в дереве, 3 - равно
     // также возвращает карту если 2
     int Compare(Collection<DataPropertyInterface> ToCompare,Map<KeyField,DataPropertyInterface> MapTo) {
         
@@ -67,28 +70,27 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         // перебором и не будем страдать фигней
         // сначала что не 1 проверим
     
-        HashMap<DataPropertyInterface,DataPropertyInterface> MapProceed = new HashMap<DataPropertyInterface,DataPropertyInterface>();
+        HashMap<DataPropertyInterface,DataPropertyInterface> MapProceed = new HashMap();
         
         ListIterator<DataPropertyInterface> iRec = (new ArrayList<DataPropertyInterface>(this)).listIterator();
-        if(RecCompare(false,ToCompare,iRec,MapProceed)) {
+        int Relation = 0;
+        if(RecCompare(2,ToCompare,iRec,MapProceed)) Relation = 3;
+        if(Relation==0 && RecCompare(0,ToCompare,iRec,MapProceed)) Relation = 2;
+        if(Relation>0) {
             if(MapTo!=null) {
                 MapTo.clear();
-                Iterator<DataPropertyInterface> it = ToCompare.iterator();
-                while(it.hasNext()) {
-                    DataPropertyInterface DataInterface = it.next();
+                for(DataPropertyInterface DataInterface : ToCompare)
                     MapTo.put(MapFields.get(MapProceed.get(DataInterface)),DataInterface);
-                }
             }
             
-            return 2;
+            return Relation;
         }
 
         // MapProceed и так чистый и iRec также в начале
-        if(RecCompare(true,ToCompare,iRec,MapProceed))
-            return 1;
+        if(RecCompare(1,ToCompare,iRec,MapProceed)) Relation = 1;
         
         // !!!! должна заполнять MapTo только если уже нашла
-        return 0;
+        return Relation;
     }
 
     void RecIncludeIntoGraph(TableImplement IncludeItem,boolean ToAdd,Set<TableImplement> Checks) {
@@ -112,8 +114,8 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
             } else {
                 // сверху в дереве или никак не связаны
                 // передаем дальше
-                Item.RecIncludeIntoGraph(IncludeItem,Relation==2,Checks);
-                if(Relation==2) ToAdd = false;
+                if(Relation!=3) Item.RecIncludeIntoGraph(IncludeItem,Relation==2,Checks);
+                if(Relation==2 || Relation==3) ToAdd = false;
             }
         }
         
@@ -125,10 +127,9 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
     }
 
     Table GetTable(Collection<DataPropertyInterface> FindItem,Map<KeyField,DataPropertyInterface> MapTo) {
-        Iterator<TableImplement> i = Parents.iterator();
-        while(i.hasNext()) {
-            TableImplement Item = i.next();
-            if(Item.Compare(FindItem,MapTo)==2) 
+        for(TableImplement Item : Parents) {
+            int Relation = Item.Compare(FindItem,MapTo);
+            if(Relation==2 || Relation==3)
                 return Item.GetTable(FindItem,MapTo);
         }
         
@@ -137,14 +138,12 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
     
     void FillSet(Set<TableImplement> TableImplements) {
         if(!TableImplements.add(this)) return;
-        Iterator<TableImplement> i = Parents.iterator();
-        while(i.hasNext()) i.next().FillSet(TableImplements);
+        for(TableImplement Parent : Parents) Parent.FillSet(TableImplements);
     }
 
     void OutClasses() {
-        Iterator<DataPropertyInterface> i = iterator();
-        while(i.hasNext()) 
-            System.out.print(i.next().Class.ID.toString()+" ");
+        for(DataPropertyInterface Interface : this)
+            System.out.print(Interface.Class.ID.toString()+" ");
     }
     void Out() {
         //выводим себя
@@ -152,22 +151,19 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         OutClasses();
         System.out.println("");
         
-        Iterator<TableImplement> i = Childs.iterator();
-        while(i.hasNext()) {
+        for(TableImplement Child : Childs) {
             System.out.print("childs - ");
-            i.next().OutClasses();
+            Child.OutClasses();
             System.out.println();
         }
 
-        i = Parents.iterator();
-        while(i.hasNext()) {
+        for(TableImplement Parent : Parents) {
             System.out.print("parents - ");
-            i.next().OutClasses();
+            Parent.OutClasses();
             System.out.println();
         }
         
-        i = Parents.iterator();
-        while(i.hasNext()) i.next().Out();
+        for(TableImplement Parent : Parents) Parent.Out();
     }
 }
 
@@ -342,32 +338,26 @@ class TableFactory extends TableImplement{
         Set<TableImplement> TableImplements = new HashSet<TableImplement>();
         FillSet(TableImplements);
         
-        Iterator<TableImplement> i = TableImplements.iterator();
-        while(i.hasNext()) {
-            TableImplement Node = i.next();
+        for(TableImplement Node : TableImplements) {
             TableNum++;
             Node.Table = new Table("table"+TableNum.toString());
             Node.MapFields = new HashMap<DataPropertyInterface,KeyField>();
             Integer FieldNum = 0;
-            Iterator<DataPropertyInterface> it = Node.iterator();
-            while(it.hasNext()) {
+            for(DataPropertyInterface Interface : Node) {
                 FieldNum++;
                 KeyField Field = new KeyField("key"+FieldNum.toString(),"integer");
                 Node.Table.KeyFields.add(Field);
-                Node.MapFields.put(it.next(),Field);
+                Node.MapFields.put(Interface,Field);
             }
         }
         
         Adapter.CreateTable(ObjectTable);
         Adapter.CreateTable(IDTable);
-        Iterator<ViewTable> iv = ViewTables.iterator();
-        while(iv.hasNext()) Adapter.CreateTable(iv.next());
+        for(ViewTable ViewTable : ViewTables) Adapter.CreateTable(ViewTable);
 
         Iterator<List<ChangeTable>> ilc = ChangeTables.iterator();
-        while(ilc.hasNext()) {
-            Iterator<ChangeTable> ic = ilc.next().iterator();
-            while(ic.hasNext()) Adapter.CreateTable(ic.next());
-        }
+        for(List<ChangeTable> ListTables : ChangeTables)
+            for(ChangeTable ChangeTable : ListTables) Adapter.CreateTable(ChangeTable);
 
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
@@ -387,7 +377,7 @@ class BusinessLogics {
         BaseClass = new ObjectClass(0);
         
         StringClass = new StringClass(1);
-        StringClass.AddParent(BaseClass);
+//        StringClass.AddParent(BaseClass);
         IntegerClass = new QuantityClass(2);
         IntegerClass.AddParent(BaseClass);
     }
@@ -417,8 +407,7 @@ class BusinessLogics {
         
         // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         List<AggregateProperty> UpdateList = new ArrayList();
-        Iterator<AggregateProperty> i = Properties.iterator();
-        while(i.hasNext()) i.next().FillAggregateList(UpdateList,Session.Properties);
+        for(AggregateProperty Property : Properties) Property.FillAggregateList(UpdateList,Session.Properties);
         
         // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
         // потом реализуем
@@ -431,11 +420,9 @@ class BusinessLogics {
             Property.SessionChanged.put(Session,null);
         }
         // пробежим по которым надо поставим 0
-        i = Properties.iterator();
-        while(i.hasNext()) i.next().SetChangeType(Session,0);
+        for(AggregateProperty AggrProperty : Properties) AggrProperty.SetChangeType(Session,0);
         // прогоним DataProperty также им 0 поставим чтобы 1 не появлялись
-        Iterator<DataProperty> id = Session.Properties.iterator();
-        while(id.hasNext()) id.next().SetChangeType(Session,0);
+        for(DataProperty DataProperty : Session.Properties) DataProperty.SetChangeType(Session,0);
 
         // бежим по списку (в обратном порядке) заполняем требования, 
         while(Property!=null) {
@@ -448,24 +435,18 @@ class BusinessLogics {
         }
         
         // прогоним DataProperty предыдущие значения докинуть
-        id = Session.Properties.iterator();
-        while(id.hasNext()) id.next().UpdateIncrementChanges(Adapter,Session);
+        for(DataProperty DataProperty : Session.Properties) DataProperty.UpdateIncrementChanges(Adapter,Session);
         
         // запускаем IncrementChanges для этого списка
-        il = UpdateList.listIterator();
-        while(il.hasNext()) 
-            il.next().IncrementChanges(Adapter, Session);
+        for(AggregateProperty AggrProperty : UpdateList) AggrProperty.IncrementChanges(Adapter,Session);
         
         // дропнем изменения (пока, потом для FormBean'ов понадобится по другому)
-        il = UpdateList.listIterator();
-        while(il.hasNext())
-            il.next().SessionChanged.remove(Session);
+        for(AggregateProperty AggrProperty : UpdateList) AggrProperty.SessionChanged.remove(Session);
     }
     
     // сохраняет из Changes в базу
     void SaveProperties(DataAdapter Adapter,Collection<? extends ObjectProperty> Properties, ChangesSession Session) throws SQLException {
-        Iterator<ObjectProperty> i = (Iterator<ObjectProperty>) Properties.iterator();
-        while(i.hasNext()) i.next().SaveChanges(Adapter, Session);
+        for(ObjectProperty Property : Properties) Property.SaveChanges(Adapter, Session);
     }
     
     boolean Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
@@ -485,18 +466,14 @@ class BusinessLogics {
 
         // запишем ID'ки
         int IDPropNum = 0;
-        Iterator<Property> ip = Properties.iterator();
-        while(ip.hasNext())
-            ip.next().ID = IDPropNum++;
+        for(Property Property : Properties)
+            Property.ID = IDPropNum++;
         
         Set<DataProperty> DataProperties = new HashSet();
         Collection<AggregateProperty> AggrProperties = new ArrayList();
         Map<Table,Integer> Tables = new HashMap<Table,Integer>();
         // закинем в таблицы(создав там все что надо) св-ва
-        Iterator<Property> i = Properties.iterator();
-        while(i.hasNext()) {
-            Property Property = i.next();
-            
+        for(Property Property : Properties) {
             // ChangeTable'ы заполним
             if(Property instanceof ObjectProperty)
                 ((ObjectProperty)Property).FillChangeTable();;
@@ -509,7 +486,7 @@ class BusinessLogics {
 
             if(Property instanceof DataProperty || (Property instanceof AggregateProperty && PersistentProperties.contains(Property))) {
                 Table Table = ((ObjectProperty)Property).GetTable(null);
-
+  
                 Integer PropNum = Tables.get(Table);
                 if(PropNum==null) PropNum = 1;
                 PropNum = PropNum + 1;
@@ -521,17 +498,13 @@ class BusinessLogics {
             }
         }
 
-        Iterator<Table> it = Tables.keySet().iterator();
-        while(it.hasNext()) Adapter.CreateTable(it.next());
+        for(Table Table : Tables.keySet()) Adapter.CreateTable(Table);
 
         // построим в нужном порядке AggregateProperty и будем заполнять их
         List<AggregateProperty> UpdateList = new ArrayList();
-        Iterator<AggregateProperty> ia = AggrProperties.iterator();
-        while(ia.hasNext()) ia.next().FillAggregateList(UpdateList,DataProperties);
-        ia = UpdateList.iterator();
+        for(AggregateProperty Property : AggrProperties) Property.FillAggregateList(UpdateList,DataProperties);
         Integer ViewNum = 0;
-        while(ia.hasNext()) {
-            AggregateProperty Property = ia.next();
+        for(AggregateProperty Property : UpdateList) {
             if(Property instanceof GroupProperty)
                 ((GroupProperty)Property).FillDB(Adapter,ViewNum++);
         }
@@ -544,11 +517,8 @@ class BusinessLogics {
     }
     
     void CheckPersistent(DataAdapter Adapter) throws SQLException {
-        Iterator<AggregateProperty> i = PersistentProperties.iterator();
-        while(i.hasNext()) {
-            AggregateProperty Property = i.next();
+        for(AggregateProperty Property : PersistentProperties)
             Property.CheckAggregation(Adapter,Property.OutName);
-        }        
     }
 
     // функционал по заполнению св-в по номерам, нужен для BL
@@ -598,7 +568,7 @@ class BusinessLogics {
             } else {
                // имплементация, типа LP
                PropRead = (LP)P;
-               MapRead = new PropertyMapImplement(PropRead.Property);
+               MapRead = new PropertyMapImplement((ObjectProperty)PropRead.Property);
                WaitInterfaces = PropRead.ListInterfaces.size();
                Result.add(MapRead);
             }
@@ -612,9 +582,8 @@ class BusinessLogics {
         LRP ListProperty = new LRP(Property,IntNum);
         int MainInt = 0;
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(ListProperty,Params);
-        ListIterator<PropertyInterfaceImplement> i = PropImpl.listIterator();
-        while(i.hasNext()) {
-            Property.Implements.Mapping.put(MainProp.ListInterfaces.get(MainInt), i.next());
+        for(PropertyInterfaceImplement Implement : PropImpl) {
+            Property.Implements.Mapping.put(MainProp.ListInterfaces.get(MainInt),Implement);
             MainInt++;
         }
         Properties.add(Property);
@@ -630,8 +599,7 @@ class BusinessLogics {
             Property = new MaxGroupProperty(TableFactory,(ObjectProperty)GroupProp.Property);
         LGP ListProperty = new LGP(Property,GroupProp);
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(GroupProp,Params);
-        ListIterator<PropertyInterfaceImplement> i = PropImpl.listIterator();
-        while(i.hasNext()) ListProperty.AddInterface(i.next());
+        for(PropertyInterfaceImplement Implement : PropImpl) ListProperty.AddInterface(Implement);
         Properties.add(Property);
         
         return ListProperty;
@@ -656,7 +624,7 @@ class BusinessLogics {
         for(int i=0;i<IntNum;i++) {
             Integer Offs = i*(IntNum+2);
             LP OpImplement = (LP)Params[Offs+1];
-            PropertyMapImplement Operand = new PropertyMapImplement(OpImplement.Property);
+            PropertyMapImplement Operand = new PropertyMapImplement((ObjectProperty)OpImplement.Property);
             for(int j=0;j<IntNum;j++)
                 Operand.Mapping.put(OpImplement.ListInterfaces.get(((Integer)Params[Offs+2+j])-1),ListProperty.ListInterfaces.get(j));
             Property.Operands.add(Operand);
@@ -681,8 +649,10 @@ class BusinessLogics {
         }        
     }
     
+    int MaxInterface = 4;
+    
     // генерирует белую БЛ
-    void OpenBL(boolean Implements,boolean Persistent) {
+    void OpenTest(boolean Properties,boolean Implements,boolean Persistent) {
 
         Class Base = new ObjectClass(3);
         Base.AddParent(BaseClass);
@@ -698,78 +668,101 @@ class BusinessLogics {
         RashDocument.AddParent(Document);
         Class ArticleGroup = new ObjectClass(9);
         ArticleGroup.AddParent(Base);
+        Class Supplier = new ObjectClass(10);
+        Supplier.AddParent(Base);
         
-        LDP Name = AddDProp(StringClass,Base);
-        LDP DocStore = AddDProp(Store,Document);
-        LDP Quantity = AddDProp(IntegerClass,Document,Article);
-        LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
-        LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
-        LDP ArtToGroup = AddDProp(ArticleGroup,Article);
-        LDP DocDate = AddDProp(IntegerClass,Document);
+        if(Properties) {
+            LDP Name = AddDProp(StringClass,Base);
+            LDP DocStore = AddDProp(Store,Document);
+            LDP Quantity = AddDProp(IntegerClass,Document,Article);
+            LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
+            LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
+            LDP ArtToGroup = AddDProp(ArticleGroup,Article);
+            LDP DocDate = AddDProp(IntegerClass,Document);
+            LDP ArtSupplier = AddDProp(Supplier,Article,Store);
+            LDP PriceSupp = AddDProp(IntegerClass,Article,Supplier);
 
-        LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
-        LMFP Multiply = AddMFProp(2);
+            LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
+            LMFP Multiply = AddMFProp(2);
 
-        Name.Property.OutName = "имя";
-        DocStore.Property.OutName = "склад";
-        Quantity.Property.OutName = "кол-во";
-        PrihQuantity.Property.OutName = "кол-во прих.";
-        RashQuantity.Property.OutName = "кол-во расх.";
-        ArtToGroup.Property.OutName = "гр. тов";
-        DocDate.Property.OutName = "дата док.";
+            Name.Property.OutName = "имя";
+            DocStore.Property.OutName = "склад";
+            Quantity.Property.OutName = "кол-во";
+            PrihQuantity.Property.OutName = "кол-во прих.";
+            RashQuantity.Property.OutName = "кол-во расх.";
+            ArtToGroup.Property.OutName = "гр. тов";
+            DocDate.Property.OutName = "дата док.";
+            ArtSupplier.Property.OutName = "тек. пост.";
+            PriceSupp.Property.OutName = "цена пост.";
 
-        LRP StoreName = AddRProp(Name,1,DocStore,1);
-        StoreName.Property.OutName = "имя склада";
-        LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
-        ArtGroupName.Property.OutName = "имя гр. тов.";
+            LRP OstPrice = AddRProp(PriceSupp,2,1,ArtSupplier,1,2);
+            OstPrice.Property.OutName = "цена на складе";
 
-        LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
-        DDep.Property.OutName = "предш. док.";
+            LRP StoreName = AddRProp(Name,1,DocStore,1);
+            StoreName.Property.OutName = "имя склада";
+            LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
+            ArtGroupName.Property.OutName = "имя гр. тов.";
 
-        LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
-        QDep.Property.OutName = "изм. баланса";
+            LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
+            DDep.Property.OutName = "предш. док.";
 
-        LGP GSum = AddGProp(QDep,true,2,3);
-        GSum.Property.OutName = "остаток до операции";
+            LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
+            QDep.Property.OutName = "изм. баланса";
 
-        LGP GP = AddGProp(Quantity,true,DocStore,1,2);
-        GP.Property.OutName = "сумм кол-во док. тов.";
-        LGP GAP = AddGProp(GP,true,2);
-        GAP.Property.OutName = "сумм кол-во тов.";
-        LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
-        G2P.Property.OutName = "скл-гр. тов";
+            LGP GSum = AddGProp(QDep,true,2,3);
+            GSum.Property.OutName = "остаток до операции";
 
-        LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
-        PrihArtStore.Property.OutName = "приход по складу";
+            LGP GP = AddGProp(Quantity,true,DocStore,1,2);
+            GP.Property.OutName = "сумм кол-во док. тов.";
+            LGP GAP = AddGProp(GP,true,2);
+            GAP.Property.OutName = "сумм кол-во тов.";
+            LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
+            G2P.Property.OutName = "скл-гр. тов";
 
-        LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
-        RashArtStore.Property.OutName = "расход по складу";
+            LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
+            PrihArtStore.Property.OutName = "приход по складу";
 
-        LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-        OstArtStore.Property.OutName = "остаток по складу";
+            LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
+            RashArtStore.Property.OutName = "расход по складу";
 
-        LGP OstArt = AddGProp(OstArtStore,true,2);
-        OstArt.Property.OutName = "остаток по товару";
+            LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+            OstArtStore.Property.OutName = "остаток по складу";
 
-        LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
-        MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+            LGP OstArt = AddGProp(OstArtStore,true,2);
+            OstArt.Property.OutName = "остаток по товару";
+            
+            LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
+            MaxPrih.Property.OutName = "макс. приход по гр. тов.";
 
-        LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
-        MaxOpStore.Property.OutName = "макс. операция";
+            LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+            MaxOpStore.Property.OutName = "макс. операция";
         
-        LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
-        SumMaxArt.Property.OutName = "сумма макс. операция";
-
+            LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
+            SumMaxArt.Property.OutName = "сумма макс. операция";
+            
+            if(Persistent) {
+/*                PersistentProperties.add((AggregateProperty)GP.Property);
+                PersistentProperties.add((AggregateProperty)GAP.Property);
+                PersistentProperties.add((AggregateProperty)G2P.Property);
+                PersistentProperties.add((AggregateProperty)GSum.Property);
+                PersistentProperties.add((AggregateProperty)OstArtStore.Property);
+                PersistentProperties.add((AggregateProperty)OstArt.Property);
+                PersistentProperties.add((AggregateProperty)MaxPrih.Property);
+                PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
+                PersistentProperties.add((AggregateProperty)SumMaxArt.Property);*/
+                PersistentProperties.add((AggregateProperty)OstPrice.Property);
+            }
+        }
+        
         TableImplement Include;
-        Include = new TableImplement();
-        Include.add(new DataPropertyInterface(Base));
-        Include.add(new DataPropertyInterface(Base));
-        TableFactory.IncludeIntoGraph(Include);
+        for(int i=0;i<MaxInterface;i++) {
+            Include = new TableImplement();
+            for(int j=0;j<=i;j++)
+                Include.add(new DataPropertyInterface(BaseClass));
+            TableFactory.IncludeIntoGraph(Include);
+        }            
 
         if(Implements) {
-            Include = new TableImplement();
-            Include.add(new DataPropertyInterface(Base));
-            TableFactory.IncludeIntoGraph(Include);
             Include = new TableImplement();
             Include.add(new DataPropertyInterface(Article));
             TableFactory.IncludeIntoGraph(Include);
@@ -788,48 +781,274 @@ class BusinessLogics {
             Include.add(new DataPropertyInterface(Store));
             TableFactory.IncludeIntoGraph(Include);
         }
-
-        if(Persistent) {
-            PersistentProperties.add((AggregateProperty)GP.Property);
-            PersistentProperties.add((AggregateProperty)GAP.Property);
-            PersistentProperties.add((AggregateProperty)G2P.Property);
-            PersistentProperties.add((AggregateProperty)GSum.Property);
-            PersistentProperties.add((AggregateProperty)OstArtStore.Property);
-            PersistentProperties.add((AggregateProperty)OstArt.Property);
-            PersistentProperties.add((AggregateProperty)MaxPrih.Property);
-            PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
-            PersistentProperties.add((AggregateProperty)SumMaxArt.Property);
-        }
+    }
+    
+    // случайным образом генерирует классы
+    void RandomClasses(Random Randomizer) {
+        int CustomClasses = 1;//
     }
 
+    // случайным образом генерирует св-ва
+    void RandomProperties(Random Randomizer) {
+        
+        List<Class> Classes = new ArrayList();
+        BaseClass.FillClassList(Classes);
+        
+        List<Property> RandProps = new ArrayList();
+        List<ObjectProperty> RandObjProps = new ArrayList();
+        
+        StringFormulaProperty Dirihle = new StringFormulaProperty("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)");
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(BaseClass,"prm1"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(BaseClass,"prm2"));
+        RandProps.add(Dirihle);
+
+        MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty();
+        Multiply.Interfaces.add(new FormulaPropertyInterface(BaseClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(BaseClass));
+        RandProps.add(Multiply);
+
+        int DataPropCount = Randomizer.nextInt(20)+1;
+        for(int i=0;i<DataPropCount;i++) {
+            // DataProperty
+            DataProperty DataProp = new DataProperty(TableFactory,Classes.get(Randomizer.nextInt(Classes.size())));
+            // генерируем классы
+            int IntCount = Randomizer.nextInt(MaxInterface)+1;
+            for(int j=0;j<IntCount;j++)
+                DataProp.Interfaces.add(new DataPropertyInterface(Classes.get(Randomizer.nextInt(Classes.size()))));
+
+            RandProps.add(DataProp);
+            RandObjProps.add(DataProp);
+        }
+
+        System.out.print("Создание аггрег. св-в ");
+                
+        int PropCount = Randomizer.nextInt(1000)+1;
+        for(int i=0;i<PropCount;i++) {
+//            int RandClass = Randomizer.nextInt(10);
+//            int PropClass = (RandClass>7?0:(RandClass==8?1:2));
+            int PropClass = Randomizer.nextInt(6);
+//            int PropClass = 5;
+            ObjectProperty GenProp = null;
+            String ResType = "";
+            if(PropClass==0) {
+                // RelationProperty
+                RelationProperty RelProp = new RelationProperty(TableFactory,RandProps.get(Randomizer.nextInt(RandProps.size())));
+                
+                // генерируем случайно кол-во интерфейсов
+                List<PropertyInterface> RelPropInt = new ArrayList();
+                int IntCount = Randomizer.nextInt(MaxInterface)+1;
+                for(int j=0;j<IntCount;j++) {
+                    PropertyInterface Interface = new PropertyInterface();
+                    RelProp.Interfaces.add(Interface);
+                    RelPropInt.add(Interface);
+                }
+                
+                // чтобы 2 раза на одну и ту же ветку не натыкаться
+                List<PropertyInterface> AvailRelInt = new ArrayList(RelPropInt);
+                boolean Correct = true;
+                
+                for(PropertyInterface Interface : (Collection<PropertyInterface>)RelProp.Implements.Property.Interfaces) {
+                    // генерируем случайно map'ы на эти интерфейсы
+                    if(RelProp.Implements.Property instanceof ObjectProperty && Randomizer.nextBoolean()) {
+                        if(AvailRelInt.size()==0) {
+                            Correct = false;
+                            break;
+                        }
+                        PropertyInterface MapInterface = AvailRelInt.get(Randomizer.nextInt(AvailRelInt.size()));
+                        RelProp.Implements.Mapping.put(Interface,MapInterface);
+                        AvailRelInt.remove(MapInterface);
+                    } else {
+                        // другое property пока сгенерим на 1
+                        PropertyMapImplement ImpProp = new PropertyMapImplement(RandObjProps.get(Randomizer.nextInt(RandObjProps.size())));
+                        if(ImpProp.Property.Interfaces.size()>RelPropInt.size()) {
+                            Correct = false;
+                            break;
+                        }
+                        
+                        List<PropertyInterface> MapRelInt = new ArrayList(RelPropInt);
+                        for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)ImpProp.Property.Interfaces) {
+                            PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
+                            ImpProp.Mapping.put(ImpInterface,MapInterface);
+                            MapRelInt.remove(MapInterface);
+                        }
+                        RelProp.Implements.Mapping.put(Interface,ImpProp);
+                    }
+                }
+
+                if(Correct) {
+                    GenProp = RelProp;
+                    ResType = "R";
+                }
+            }
+            
+            if(PropClass==1 || PropClass==2) {
+                // группировочное
+                ObjectProperty GroupProp = RandObjProps.get(Randomizer.nextInt(RandObjProps.size()));
+                GroupProperty Property = null;
+                if(PropClass==1) {
+                    Property = new SumGroupProperty(TableFactory,GroupProp);
+                    ResType = "SG";
+                } else {
+                    Property = new MaxGroupProperty(TableFactory,GroupProp);
+                    ResType = "MG";
+                }
+                
+                boolean Correct = true;                
+                List<PropertyInterface> GroupInt = new ArrayList(GroupProp.Interfaces);
+                int GroupCount = Randomizer.nextInt(MaxInterface)+1;
+                for(int j=0;j<GroupCount;j++) {
+                    PropertyInterfaceImplement Implement;
+                    // генерируем случайно map'ы на эти интерфейсы
+                    if(Randomizer.nextBoolean()) {
+                        Implement = GroupInt.get(Randomizer.nextInt(GroupInt.size()));
+                    } else {
+                        // другое property пока сгенерим на 1
+                        PropertyMapImplement ImpProp = new PropertyMapImplement(RandObjProps.get(Randomizer.nextInt(RandObjProps.size())));
+                        if(ImpProp.Property.Interfaces.size()>GroupInt.size()) {
+                            Correct = false;
+                            break;
+                        }
+
+                        List<PropertyInterface> MapRelInt = new ArrayList(GroupInt);
+                        for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)ImpProp.Property.Interfaces) {
+                            PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
+                            ImpProp.Mapping.put(ImpInterface,MapInterface);
+                            MapRelInt.remove(MapInterface);
+                        }
+                        Implement = ImpProp;
+                    }
+                    
+                    Property.Interfaces.add(new GroupPropertyInterface(Implement));
+                }
+                
+                if(Correct)
+                    GenProp = Property;
+            }
+
+            if(PropClass==3 || PropClass==4 || PropClass==5) {
+                ListProperty Property = null;
+                if(PropClass==3) {
+                    Property = new SumListProperty(TableFactory);
+                    ResType = "SL";
+                } else {
+                if(PropClass==4) {
+                    Property = new MaxListProperty(TableFactory);
+                    ResType = "ML";
+                } else {
+                    Property = new OverrideListProperty(TableFactory);
+                    ResType = "OL";
+                }
+                }
+                
+                int OpIntCount = Randomizer.nextInt(MaxInterface)+1;
+                for(int j=0;j<OpIntCount;j++)
+                    Property.Interfaces.add(new PropertyInterface());
+        
+                boolean Correct = true;
+                List<PropertyInterface> OpInt = new ArrayList(Property.Interfaces);
+                int OpCount = Randomizer.nextInt(4)+1;
+                for(int j=0;j<OpCount;j++) {
+                    PropertyMapImplement Operand = new PropertyMapImplement(RandObjProps.get(Randomizer.nextInt(RandObjProps.size())));
+                    if(Operand.Property.Interfaces.size()!=OpInt.size()) {
+                        Correct = false;
+                        break;
+                    }
+
+                    List<PropertyInterface> MapRelInt = new ArrayList(OpInt);
+                    for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)Operand.Property.Interfaces) {
+                        PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
+                        Operand.Mapping.put(ImpInterface,MapInterface);
+                        MapRelInt.remove(MapInterface);
+                    }
+                    Property.Operands.add(Operand);
+                }
+                
+                if(Correct)
+                    GenProp = Property;
+            }
+                       
+
+            if(GenProp!=null) {
+                // проверим что есть в интерфейсе и покрыты все ключи
+                Iterator<InterfaceClass> ic = GenProp.GetClassSet(null).iterator();
+                if(ic.hasNext() && ic.next().keySet().size()==GenProp.Interfaces.size()) {
+                    System.out.print(ResType+"-");
+                    RandProps.add(GenProp);
+                    RandObjProps.add(GenProp);
+                }
+            }
+        }
+        
+        Properties.addAll(RandProps);
+        
+        System.out.println();
+    }
+    
+    // случайным образом генерирует имплементацию
+    void RandomImplement(Random Randomizer) {
+        List<Class> Classes = new ArrayList();
+        BaseClass.FillClassList(Classes);
+
+        // заполнение физ модели
+        int ImplementCount = Randomizer.nextInt(8);
+        for(int i=0;i<ImplementCount;i++) {
+            TableImplement Include = new TableImplement();
+            int ObjCount = Randomizer.nextInt(3)+1;
+            for(int ioc=0;ioc<ObjCount;ioc++)
+                Include.add(new DataPropertyInterface(Classes.get(Randomizer.nextInt(Classes.size()))));
+            TableFactory.IncludeIntoGraph(Include);               
+        }        
+    }
+    
+    // случайным образом генерирует постоянные аггрегации
+    void RandomPersistent(Random Randomizer) {
+        
+        // сначала список получим
+        List<AggregateProperty> AggrProperties = new ArrayList();
+        for(Property Property : Properties) {
+            if(Property instanceof AggregateProperty)
+                AggrProperties.add((AggregateProperty)Property);
+        }
+        
+        int PersistentNum = Randomizer.nextInt(AggrProperties.size())+1;
+        for(int i=0;i<PersistentNum;i++)
+            PersistentProperties.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
+    }
+    
     void FullDBTest()  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         
-        // сгенерить БЛ
+        // сгенерить классы
+        // сгенерить св-ва
         // сгенерить физ. модель
         // сгенерить persistent аггрегации
-        OpenBL(true,false);
+        OpenTest(false,false,false);
 
-        
+        Random Randomizer = new Random();
+        Randomizer.setSeed(1000);
+
+
         while(true) {
+            RandomProperties(Randomizer);
+            
+            RandomImplement(Randomizer);
+
+            RandomPersistent(Randomizer);
+
             DataAdapter Adapter = new DataAdapter();
             Adapter.Connect("");
-        
+
             FillDB(Adapter);
 
             // сгенерить объекты (их пока тестить не надо)
             List<Class> Classes = new ArrayList();
             BaseClass.FillClassList(Classes);
-            Iterator<Class> i = Classes.iterator();
-            while(i.hasNext()) {
-                Class ObjectClass = i.next();
+            for(Class ObjectClass : Classes)
                 for(int j=0;j<6;j++)
                     ObjectClass.AddObject(Adapter,TableFactory);
-            }
 
-            Random Randomizer = new Random();
             // запустить ChangeDBTest
             ChangeDBTest(Adapter,20,Randomizer);
-        
+
             Adapter.Disconnect();
         }
     }
@@ -839,9 +1058,7 @@ class BusinessLogics {
         
         // сначала список получим
         List<DataProperty> DataProperties = new ArrayList();
-        Iterator<Property> i = Properties.iterator();
-        while(i.hasNext()) {
-            Property Property = i.next();
+        for(Property Property : Properties) {
             if(Property instanceof DataProperty)
                 DataProperties.add((DataProperty)Property);
         }
@@ -852,11 +1069,11 @@ class BusinessLogics {
             ChangesSession Session = new ChangesSession(Iterations++);
             System.out.println(Iterations);
 
-            int PropertiesChanged = Randomizer.nextInt(7)+1;
+            int PropertiesChanged = Randomizer.nextInt(10)+1;
             for(int ip=0;ip<PropertiesChanged;ip++) {
                 // берем случайные n св-в
                 DataProperty ChangeProp = DataProperties.get(Randomizer.nextInt(DataProperties.size()));
-                int NumChanges = Randomizer.nextInt(4)+1;
+                int NumChanges = Randomizer.nextInt(20)+1;
                 for(int in=0;in<NumChanges;in++) {
                     Object ValueObject = ChangeProp.Value.GetRandomObject(Adapter,TableFactory,Randomizer,Iterations);
 /*                    // теперь определяем класс найденного объекта
@@ -871,11 +1088,8 @@ class BusinessLogics {
                     InterfaceClass Classes = InterfaceSet.get(Randomizer.nextInt(InterfaceSet.size()));
                     // генерим рандомные объекты этих классов
                     Map<DataPropertyInterface,Integer> Keys = new HashMap();
-                    Iterator<DataPropertyInterface> ii = ChangeProp.Interfaces.iterator();
-                    while(ii.hasNext()) {
-                        DataPropertyInterface Interface = ii.next();
+                    for(DataPropertyInterface Interface : ChangeProp.Interfaces)
                         Keys.put(Interface,(Integer)Classes.get(Interface).GetRandomObject(Adapter,TableFactory,Randomizer,0));
-                    }
                     
                     ChangeProp.ChangeProperty(Adapter,Keys,ValueObject,Session);
                 }

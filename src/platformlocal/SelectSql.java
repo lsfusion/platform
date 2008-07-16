@@ -42,14 +42,12 @@ abstract class From {
         
         //получаем все Join строки
         String JoinFrom = "";
-        Iterator<From> j = Joins.iterator();
-        while (j.hasNext())
-            JoinFrom = JoinFrom + j.next().GetFrom(Counter,false);
+        for(From Join : Joins)
+            JoinFrom = JoinFrom + Join.GetFrom(Counter,false);
 
         String WhereFrom="";
-        Iterator<Where> w = Wheres.iterator();
-        while (w.hasNext())
-            WhereFrom = (WhereFrom.length()==0?(First?" WHERE ":" ON "):WhereFrom+" AND ") + w.next().GetSelect(this);
+        for(Where Where : Wheres)
+            WhereFrom = (WhereFrom.length()==0?(First?" WHERE ":" ON "):WhereFrom+" AND ") + Where.GetSelect(this);
 
         String SourceFrom = GetSource() + " " + Alias;
 
@@ -150,19 +148,16 @@ class UnionQuery extends Query {
         Fields.addAll(Values);
 
         SelectQuery ResultQuery = null;
-        if(Unions.size()==1 && Unions.get(0) instanceof SelectQuery && (Coeffs.size()==0 || Coeffs.get(Unions.get(0))==1)) {
+        if(Unions.size()==1 && Unions.get(0) instanceof SelectQuery && (Coeffs.size()==0 || Coeffs.get(Unions.get(0))==null || Coeffs.get(Unions.get(0))==1)) {
             // если один запрос его и возвращаем и коэффициент не 1
             ResultQuery = (SelectQuery)Unions.get(0);
         } else {
             // иначе строим UnionQuery
-            ListIterator<Query> i = Unions.listIterator();
             // сольем в один collection
-
             ResultQuery = new SelectQuery(null);
         
             From LastQuery=null;
-            while(i.hasNext()) {
-                Query SelectQuery = i.next();
+            for(Query SelectQuery : Unions) {
                 From Query = new FromQuery(SelectQuery);
 
                 if(LastQuery==null)
@@ -171,16 +166,11 @@ class UnionQuery extends Query {
                     LastQuery.Joins.add(Query);
                     Query.JoinType = "FULL";
 
-                    Iterator<String> ik = Keys.iterator();
-                    while(ik.hasNext()) {
-                        String Field = ik.next();
+                    for(String Field : Keys)
                         Query.Wheres.add(new FieldWhere(ResultQuery.Expressions.get(Field),Field));
-                    }
                 }
 
-                Iterator<String> ifi = Fields.iterator();
-                while(ifi.hasNext()) {
-                    String Field = ifi.next();
+                for(String Field : Fields) {
                     if(SelectQuery.containsField(Field)) {
                        SourceExpr NewValue = new FieldSourceExpr(Query,Field);
                        if(Values.contains(Field)) {
@@ -208,11 +198,8 @@ class UnionQuery extends Query {
             }
         }
 
-        Iterator<String> ivs = ValueKeys.keySet().iterator();
-        while(ivs.hasNext()) {
-            String ValueField = ivs.next();
+        for(String ValueField : ValueKeys.keySet())
             ResultQuery.ValueKeys.put(ValueField,ValueKeys.get(ValueField));
-        }
 
         return ResultQuery.GetSelect(GetFields);
     }
@@ -245,27 +232,21 @@ class GroupQuery extends DataQuery {
         String FromString = From.GetFrom(new AliasCounter(),true);
         String ExprString = "", GroupString = "";
 
-        Iterator<String> i = GroupBy.keySet().iterator();
-        while (i.hasNext()) {
-            String Field = i.next();
+        for(String Field : GroupBy.keySet()) {
             String Source = GroupBy.get(Field).GetSource();
             ExprString = (ExprString.length()==0?"":ExprString+',') + Source + " AS " + Field;
             GroupString = (GroupString.length()==0?"":GroupString+',') + Source;
             GetFields.add(Field);
         }
 
-        Iterator<String> ivs = ValueKeys.keySet().iterator();
-        while(ivs.hasNext()) {
-            String Field = ivs.next();
+        for(String Field : ValueKeys.keySet()) {
             String Source = (new ValueSourceExpr(ValueKeys.get(Field))).GetSource();
             ExprString = (ExprString.length()==0?"":ExprString+',') + Source + " AS " + Field;
             GroupString = (GroupString.length()==0?"":GroupString+',') + Source;
             GetFields.add(Field);
         }
        
-        Iterator<String> j = AggrExprs.keySet().iterator();
-        while (j.hasNext()) {
-            String Field = j.next();
+        for(String Field : AggrExprs.keySet()) {
             ExprString = (ExprString.length()==0?"":ExprString+',') + AggrExprs.get(Field).GetSelect() + " AS " + Field;
             GetFields.add(Field);
         }
@@ -292,16 +273,12 @@ class SelectQuery extends DataQuery {
         String FromString = From.GetFrom(new AliasCounter(),true);
         String ExprString = "";
 
-        Iterator<String> j = Expressions.keySet().iterator();
-        while (j.hasNext()) {
-            String Field = j.next();
+        for(String Field : Expressions.keySet()) {
             ExprString = (ExprString.length()==0?"":ExprString+',') + Expressions.get(Field).GetSource() + " AS " + Field;
             GetFields.add(Field);
         }
 
-        Iterator<String> ivs = ValueKeys.keySet().iterator();
-        while(ivs.hasNext()) {
-            String Field = ivs.next();
+        for(String Field : ValueKeys.keySet()) {
             ExprString = (ExprString.length()==0?"":ExprString+',') + (new ValueSourceExpr(ValueKeys.get(Field))).GetSource() + " AS " + Field;
             GetFields.add(Field);
         }
@@ -314,11 +291,8 @@ class SelectQuery extends DataQuery {
         String FromString  = From.GetFrom(new AliasCounter(),true);
         String ExprString = "";
 
-        Iterator<String> j = Expressions.keySet().iterator();
-        while (j.hasNext()) {
-            String Field = j.next();
+        for(String Field : Expressions.keySet())
             ExprString = (ExprString.length()==0?"":ExprString+',') + Field + " = " + Expressions.get(Field).GetSource();
-        }
         
         return "UPDATE " + From.Alias + " SET " + ExprString + FromString;
     }
@@ -342,9 +316,8 @@ class OrderedSelectQuery extends SelectQuery {
         String Select = super.GetSelect(GetFields);
         
         String OrderString="";
-        Iterator<SourceExpr> o = Orders.iterator();
-        while(o.hasNext())
-            OrderString = (OrderString.length()==0?" ORDER BY ":OrderString+',') + o.next().GetSource();
+        for(SourceExpr Order : Orders)
+            OrderString = (OrderString.length()==0?" ORDER BY ":OrderString+',') + Order.GetSource();
 
         return Select+OrderString+(Descending?" DESC":" ASC");
     }
@@ -359,7 +332,10 @@ abstract class Where {
 
 class FieldWhere extends Where {
     
-    FieldWhere(SourceExpr iSource,String iField) {Field = iField; Source = iSource;};
+    FieldWhere(SourceExpr iSource,String iField) {
+        Field = iField; 
+        Source = iSource;
+    }
     
     String Field;
     // можно было бы номер в дереве но это не очень удобно
@@ -403,10 +379,9 @@ class FieldSetValueWhere extends Where {
 
     public String GetSelect(From From) {
         String ListString = "";
-        Iterator<Integer> i = SetValues.iterator();
-        while(i.hasNext()) {
-            ListString = (ListString.length()==0?"":ListString+',') + i.next().toString();
-        }
+        for(Integer Value : SetValues)
+            ListString = (ListString.length()==0?"":ListString+',') + Value;
+
         return From.Alias + '.' + Field + " IN (" + ListString + ")";
     }
 
@@ -619,10 +594,8 @@ class ListSourceExpr extends SourceExpr {
     }
 
     public String GetSource() {
-        ListIterator<SourceExpr> i = Operands.listIterator();
         String Result = "";
-        while(i.hasNext()) {
-            SourceExpr Operand = i.next();
+        for(SourceExpr Operand : Operands) {
             Integer Coeff = Coeffs.get(Operand);
             if(Coeff==null) Coeff = 1;
             String OperandString = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString()));
