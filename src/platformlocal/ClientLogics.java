@@ -182,7 +182,7 @@ class ClientFormBean {
         
     }
 
-    ClientFormChanges ConvertFormChangesToClient (FormChanges formChanges)
+    ClientFormChanges convertFormChangesToClient (FormChanges formChanges)
     {
         ClientFormChanges clientChanges = new ClientFormChanges();
 
@@ -282,7 +282,7 @@ class ClientFormBean {
 
     // Здесь тестинг, заглушка на простую перекачку FormChanges в ClientFormChanges
     
-    ClientFormChanges ChangeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
+    ClientFormChanges changeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
         
         MapUtils<GroupObjectImplement, ClientGroupObjectImplement> mgu = new MapUtils();
         GroupObjectImplement GroupObject = mgu.getKey(groupObjects, groupObject);
@@ -305,8 +305,32 @@ class ClientFormBean {
         
         formChanges.Out(formBean);
 
-        return ConvertFormChangesToClient(formChanges);
+        return convertFormChangesToClient(formChanges);
         
     }
 
+    ClientFormChanges changeProperty(ClientPropertyView clientProperty, Object value) {
+        
+        MapUtils<PropertyView, ClientPropertyView> pvu = new MapUtils();
+        PropertyView property = pvu.getKey(properties, clientProperty);
+        
+        try {
+//            formBean.ChangeProperty(property, value);
+        } catch(Exception e) {
+            
+        }
+        
+        FormChanges formChanges = null;
+        try {
+            formChanges = formBean.EndApply();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
+        formChanges.Out(formBean);
+
+        return convertFormChangesToClient(formChanges);
+        
+    }
+    
 }

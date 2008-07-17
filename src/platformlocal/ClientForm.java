@@ -6,25 +6,34 @@
 package platformlocal;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractCellEditor;
 import javax.swing.BoxLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -33,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
@@ -41,6 +51,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.jdesktop.application.FrameView;
@@ -78,7 +89,7 @@ public class ClientForm extends FrameView {
 
     Map<ClientGroupObjectImplement, View> views;
     
-    public void InitializeForm() {
+    public void initializeForm() {
 
         formInit = clientBean.getClientFormInit();
         
@@ -103,7 +114,7 @@ public class ClientForm extends FrameView {
     }
     
 
-    void ApplyFormChanges(ClientFormChanges formChanges) {
+    void applyFormChanges(ClientFormChanges formChanges) {
         
         // Сначала меняем виды объектов
     
@@ -147,12 +158,16 @@ public class ClientForm extends FrameView {
        
     }
     
-    void ChangeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
+    void changeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
         
         views.get(groupObject).setCurrentObject(objectValue);
 
-        ApplyFormChanges(clientBean.ChangeObject(groupObject, objectValue));
+        applyFormChanges(clientBean.changeObject(groupObject, objectValue));
         
+    }
+    
+    void changeProperty(ClientPropertyView property, Object value) {
+        applyFormChanges(clientBean.changeProperty(property, value));
     }
     
     class View extends JPanel {
@@ -176,13 +191,13 @@ public class ClientForm extends FrameView {
             
             groupObject = igroupObject;
 
-            panel = new Panel();
-            c.weighty = 0.3;
-            add(panel, c);
-            
             grid = new Grid();
             c.weighty = 0.7;
             add(grid, c);
+
+            panel = new Panel();
+            c.weighty = 0.3;
+            add(panel, c);
             
         }
 
@@ -224,6 +239,38 @@ public class ClientForm extends FrameView {
             grid.setPropertyValues(property, values);
         }
         
+        class PropertyCellEditor extends AbstractCellEditor
+                                 implements TableCellEditor {
+
+            Object value;
+            
+            JTextField comp;
+            
+            public PropertyCellEditor() {
+                
+                comp = new JTextField();
+                
+            }
+
+            public Object getCellEditorValue() {
+                
+                if (value instanceof Integer) return Integer.parseInt(comp.getText());
+                return comp.getText();
+            }
+
+            public Component getTableCellEditorComponent(JTable table, 
+                                                         Object ivalue, 
+                                                         boolean isSelected, 
+                                                         int row, 
+                                                         int column) {
+
+                value = ivalue;
+
+                comp.setText(value.toString());
+                return comp;
+            }
+
+        }
         
         class Panel extends JPanel {
             
@@ -235,6 +282,8 @@ public class ClientForm extends FrameView {
 //                setPreferredSize(new Dimension(500, 200));
                 
                 properties = new HashMap();
+                
+//                this.setBackground(new Color(100,0,231));
                 
 /*                final Panel pan = this;
                 
@@ -272,7 +321,7 @@ public class ClientForm extends FrameView {
                     remove(propview);
                     properties.remove(property);
                 }
-
+                
             }
             
             public void setPropertyValue(ClientPropertyView property, Object value) {
@@ -296,7 +345,7 @@ public class ClientForm extends FrameView {
                     property = iproperty;
                     
                     setLayout(new FlowLayout());
-                    
+
                     label = new JLabel(property.caption);
                     add(label);
                     
@@ -321,6 +370,36 @@ public class ClientForm extends FrameView {
                         setModel(model);
                         
                         setPreferredSize(property.getPreferredSize());
+                        
+                        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                        addFocusListener(new FocusListener() {
+
+                            public void focusGained(FocusEvent e) {
+                                requestFocusInWindow();
+                                changeSelection(0, 0, false, false);
+//                                getSelectionModel().setLeadSelectionIndex(0);
+                            }
+
+                            public void focusLost(FocusEvent e) {
+                                getSelectionModel().clearSelection();
+                            }
+
+                        });
+                       
+                        SwingUtils.addFocusTraversalKey(this, 
+                                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
+
+                        SwingUtils.addFocusTraversalKey(this, 
+                                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+                        
+                        SwingUtils.addFocusTraversalKey(this, 
+                                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
+                       
+                        setDefaultEditor(Object.class, new PropertyCellEditor());
+                        
                     }
 
                     class PropertyModel extends AbstractTableModel {
@@ -331,6 +410,10 @@ public class ClientForm extends FrameView {
 
                         public int getColumnCount() {
                             return 1;
+                        }
+                        
+                        public boolean isCellEditable(int row, int col) {
+                            return true;
                         }
 
                         public Object getValueAt(int row, int col) {
@@ -455,9 +538,11 @@ public class ClientForm extends FrameView {
                     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
-                            ChangeObject(groupObject, model.getSelectedObject());
+                            changeObject(groupObject, model.getSelectedObject());
                         }
                     });
+                    
+                    setDefaultEditor(Object.class, new PropertyCellEditor());
 
                 }
                 
@@ -500,6 +585,12 @@ public class ClientForm extends FrameView {
                             return (String)"";
                         else
                             return val;
+                    }
+                    
+                    public void setValueAt(Object value, int row, int col) {
+
+                        changeProperty(gridProperties.get(col),value);
+//                        gridValues.get(gridProperties.get(col)).put(gridObjects.get(row),value);
                     }
                     
                     public ClientGroupObjectValue getSelectedObject() {
