@@ -380,6 +380,13 @@ class BusinessLogics {
 //        StringClass.AddParent(BaseClass);
         IntegerClass = new QuantityClass(2);
         IntegerClass.AddParent(BaseClass);
+        
+        for(int i=0;i<MaxInterface;i++) {
+            TableImplement Include = new TableImplement();
+            for(int j=0;j<=i;j++)
+                Include.add(new DataPropertyInterface(BaseClass));
+            TableFactory.IncludeIntoGraph(Include);
+        }         
     }
     
     void AddDataProperty(DataProperty Property) {
@@ -390,6 +397,12 @@ class BusinessLogics {
     Class GetClass(DataAdapter Adapter,Integer idObject) throws SQLException {
         // сначала получаем idClass
         return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Adapter,idObject));
+    }
+    
+    // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
+    int SessionCounter = 0;
+    ChangesSession CreateSession() {
+        return new ChangesSession(SessionCounter++);
     }
 
     Class BaseClass;
@@ -402,7 +415,7 @@ class BusinessLogics {
     Set<AggregateProperty> PersistentProperties;
     
         
-    void UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
+    List<AggregateProperty> UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
         
         // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
@@ -441,7 +454,9 @@ class BusinessLogics {
         for(AggregateProperty AggrProperty : UpdateList) AggrProperty.IncrementChanges(Adapter,Session);
         
         // дропнем изменения (пока, потом для FormBean'ов понадобится по другому)
-        for(AggregateProperty AggrProperty : UpdateList) AggrProperty.SessionChanged.remove(Session);
+//        for(AggregateProperty AggrProperty : UpdateList) AggrProperty.SessionChanged.remove(Session);
+        
+        return UpdateList;
     }
     
     // сохраняет из Changes в базу
@@ -652,140 +667,146 @@ class BusinessLogics {
     int MaxInterface = 4;
     
     // генерирует белую БЛ
-    void OpenTest(boolean Properties,boolean Implements,boolean Persistent) {
+    void OpenTest(boolean Classes,boolean Properties,boolean Implements,boolean Persistent) {
 
-        Class Base = new ObjectClass(3);
-        Base.AddParent(BaseClass);
-        Class Article = new ObjectClass(4);
-        Article.AddParent(Base);
-        Class Store = new ObjectClass(5);
-        Store.AddParent(Base);
-        Class Document = new ObjectClass(6);
-        Document.AddParent(Base);
-        Class PrihDocument = new ObjectClass(7);
-        PrihDocument.AddParent(Document);
-        Class RashDocument = new ObjectClass(8);
-        RashDocument.AddParent(Document);
-        Class ArticleGroup = new ObjectClass(9);
-        ArticleGroup.AddParent(Base);
-        Class Supplier = new ObjectClass(10);
-        Supplier.AddParent(Base);
-        
-        if(Properties) {
-            LDP Name = AddDProp(StringClass,Base);
-            LDP DocStore = AddDProp(Store,Document);
-            LDP Quantity = AddDProp(IntegerClass,Document,Article);
-            LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
-            LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
-            LDP ArtToGroup = AddDProp(ArticleGroup,Article);
-            LDP DocDate = AddDProp(IntegerClass,Document);
-            LDP ArtSupplier = AddDProp(Supplier,Article,Store);
-            LDP PriceSupp = AddDProp(IntegerClass,Article,Supplier);
+        if(Classes) {
+            Class Base = new ObjectClass(3);
+            Base.AddParent(BaseClass);
+            Class Article = new ObjectClass(4);
+            Article.AddParent(Base);
+            Class Store = new ObjectClass(5);
+            Store.AddParent(Base);
+            Class Document = new ObjectClass(6);
+            Document.AddParent(Base);
+            Class PrihDocument = new ObjectClass(7);
+            PrihDocument.AddParent(Document);
+            Class RashDocument = new ObjectClass(8);
+            RashDocument.AddParent(Document);
+            Class ArticleGroup = new ObjectClass(9);
+            ArticleGroup.AddParent(Base);
+            Class Supplier = new ObjectClass(10);
+            Supplier.AddParent(Base);
 
-            LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
-            LMFP Multiply = AddMFProp(2);
+            if(Properties) {
+                LDP Name = AddDProp(StringClass,Base);
+                LDP DocStore = AddDProp(Store,Document);
+                LDP Quantity = AddDProp(IntegerClass,Document,Article);
+                LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
+                LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
+                LDP ArtToGroup = AddDProp(ArticleGroup,Article);
+                LDP DocDate = AddDProp(IntegerClass,Document);
+                LDP ArtSupplier = AddDProp(Supplier,Article,Store);
+                LDP PriceSupp = AddDProp(IntegerClass,Article,Supplier);
 
-            Name.Property.OutName = "имя";
-            DocStore.Property.OutName = "склад";
-            Quantity.Property.OutName = "кол-во";
-            PrihQuantity.Property.OutName = "кол-во прих.";
-            RashQuantity.Property.OutName = "кол-во расх.";
-            ArtToGroup.Property.OutName = "гр. тов";
-            DocDate.Property.OutName = "дата док.";
-            ArtSupplier.Property.OutName = "тек. пост.";
-            PriceSupp.Property.OutName = "цена пост.";
+                LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
+                LMFP Multiply = AddMFProp(2);
 
-            LRP OstPrice = AddRProp(PriceSupp,2,1,ArtSupplier,1,2);
-            OstPrice.Property.OutName = "цена на складе";
+                Name.Property.OutName = "имя";
+                DocStore.Property.OutName = "склад";
+                Quantity.Property.OutName = "кол-во";
+                PrihQuantity.Property.OutName = "кол-во прих.";
+                RashQuantity.Property.OutName = "кол-во расх.";
+                ArtToGroup.Property.OutName = "гр. тов";
+                DocDate.Property.OutName = "дата док.";
+                ArtSupplier.Property.OutName = "тек. пост.";
+                PriceSupp.Property.OutName = "цена пост.";
 
-            LRP StoreName = AddRProp(Name,1,DocStore,1);
-            StoreName.Property.OutName = "имя склада";
-            LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
-            ArtGroupName.Property.OutName = "имя гр. тов.";
+                LRP OstPrice = AddRProp(PriceSupp,2,1,ArtSupplier,1,2);
+                OstPrice.Property.OutName = "цена на складе";
 
-            LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
-            DDep.Property.OutName = "предш. док.";
+                LRP StoreName = AddRProp(Name,1,DocStore,1);
+                StoreName.Property.OutName = "имя склада";
+                LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
+                ArtGroupName.Property.OutName = "имя гр. тов.";
 
-            LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
-            QDep.Property.OutName = "изм. баланса";
+                LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
+                DDep.Property.OutName = "предш. док.";
 
-            LGP GSum = AddGProp(QDep,true,2,3);
-            GSum.Property.OutName = "остаток до операции";
+                LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
+                QDep.Property.OutName = "изм. баланса";
 
-            LGP GP = AddGProp(Quantity,true,DocStore,1,2);
-            GP.Property.OutName = "сумм кол-во док. тов.";
-            LGP GAP = AddGProp(GP,true,2);
-            GAP.Property.OutName = "сумм кол-во тов.";
-            LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
-            G2P.Property.OutName = "скл-гр. тов";
+                LGP GSum = AddGProp(QDep,true,2,3);
+                GSum.Property.OutName = "остаток до операции";
 
-            LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
-            PrihArtStore.Property.OutName = "приход по складу";
+                LGP GP = AddGProp(Quantity,true,DocStore,1,2);
+                GP.Property.OutName = "сумм кол-во док. тов.";
+                LGP GAP = AddGProp(GP,true,2);
+                GAP.Property.OutName = "сумм кол-во тов.";
+                LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
+                G2P.Property.OutName = "скл-гр. тов";
 
-            LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
-            RashArtStore.Property.OutName = "расход по складу";
+                LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
+                PrihArtStore.Property.OutName = "приход по складу";
 
-            LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-            OstArtStore.Property.OutName = "остаток по складу";
+                LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
+                RashArtStore.Property.OutName = "расход по складу";
 
-            LGP OstArt = AddGProp(OstArtStore,true,2);
-            OstArt.Property.OutName = "остаток по товару";
-            
-            LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
-            MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+                LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+                OstArtStore.Property.OutName = "остаток по складу";
 
-            LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
-            MaxOpStore.Property.OutName = "макс. операция";
-        
-            LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
-            SumMaxArt.Property.OutName = "сумма макс. операция";
-            
-            if(Persistent) {
-/*                PersistentProperties.add((AggregateProperty)GP.Property);
-                PersistentProperties.add((AggregateProperty)GAP.Property);
-                PersistentProperties.add((AggregateProperty)G2P.Property);
-                PersistentProperties.add((AggregateProperty)GSum.Property);
-                PersistentProperties.add((AggregateProperty)OstArtStore.Property);
-                PersistentProperties.add((AggregateProperty)OstArt.Property);
-                PersistentProperties.add((AggregateProperty)MaxPrih.Property);
-                PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
-                PersistentProperties.add((AggregateProperty)SumMaxArt.Property);*/
-                PersistentProperties.add((AggregateProperty)OstPrice.Property);
+                LGP OstArt = AddGProp(OstArtStore,true,2);
+                OstArt.Property.OutName = "остаток по товару";
+
+                LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
+                MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+
+                LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+                MaxOpStore.Property.OutName = "макс. операция";
+
+                LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
+                SumMaxArt.Property.OutName = "сумма макс. операция";
+
+                if(Persistent) {
+    /*                PersistentProperties.add((AggregateProperty)GP.Property);
+                    PersistentProperties.add((AggregateProperty)GAP.Property);
+                    PersistentProperties.add((AggregateProperty)G2P.Property);
+                    PersistentProperties.add((AggregateProperty)GSum.Property);
+                    PersistentProperties.add((AggregateProperty)OstArtStore.Property);
+                    PersistentProperties.add((AggregateProperty)OstArt.Property);
+                    PersistentProperties.add((AggregateProperty)MaxPrih.Property);
+                    PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
+                    PersistentProperties.add((AggregateProperty)SumMaxArt.Property);*/
+                    PersistentProperties.add((AggregateProperty)OstPrice.Property);
+                }
             }
-        }
-        
-        TableImplement Include;
-        for(int i=0;i<MaxInterface;i++) {
-            Include = new TableImplement();
-            for(int j=0;j<=i;j++)
-                Include.add(new DataPropertyInterface(BaseClass));
-            TableFactory.IncludeIntoGraph(Include);
-        }            
 
-        if(Implements) {
-            Include = new TableImplement();
-            Include.add(new DataPropertyInterface(Article));
-            TableFactory.IncludeIntoGraph(Include);
-            Include = new TableImplement();
-            Include.add(new DataPropertyInterface(Store));
-            TableFactory.IncludeIntoGraph(Include);
-            Include = new TableImplement();
-            Include.add(new DataPropertyInterface(ArticleGroup));
-            TableFactory.IncludeIntoGraph(Include);
-            Include = new TableImplement();
-            Include.add(new DataPropertyInterface(Article));
-            Include.add(new DataPropertyInterface(Document));
-            TableFactory.IncludeIntoGraph(Include);
-            Include = new TableImplement();
-            Include.add(new DataPropertyInterface(Article));
-            Include.add(new DataPropertyInterface(Store));
-            TableFactory.IncludeIntoGraph(Include);
+            TableImplement Include;
+            
+            if(Implements) {
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Article));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Store));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(ArticleGroup));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Article));
+                Include.add(new DataPropertyInterface(Document));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Article));
+                Include.add(new DataPropertyInterface(Store));
+                TableFactory.IncludeIntoGraph(Include);
+            }
         }
     }
     
     // случайным образом генерирует классы
     void RandomClasses(Random Randomizer) {
-        int CustomClasses = 1;//
+        int CustomClasses = Randomizer.nextInt(20);//
+        List<Class> ObjClasses = new ArrayList();
+        ObjClasses.add(BaseClass);
+        for(int i=0;i<CustomClasses;i++) {
+            Class Class = new ObjectClass(i+3);
+            int Parents = Randomizer.nextInt(6) + 1;
+            for(int j=0;j<Parents;j++) {
+                Class.AddParent(ObjClasses.get(Randomizer.nextInt(ObjClasses.size())));
+            }
+            ObjClasses.add(Class);
+        }
     }
 
     // случайным образом генерирует св-ва
@@ -1021,13 +1042,14 @@ class BusinessLogics {
         // сгенерить св-ва
         // сгенерить физ. модель
         // сгенерить persistent аггрегации
-        OpenTest(false,false,false);
+        OpenTest(false,false,false,false);
 
         Random Randomizer = new Random();
-        Randomizer.setSeed(1000);
-
+//        Randomizer.setSeed(1000);
 
         while(true) {
+            RandomClasses(Randomizer);
+
             RandomProperties(Randomizer);
             
             RandomImplement(Randomizer);

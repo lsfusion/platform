@@ -56,11 +56,11 @@ class PropertyInterface implements PropertyInterfaceImplement {
 
     public InterfaceClassSet MapGetClassSet(Class ReqValue) {
         InterfaceClassSet Result = new InterfaceClassSet();
-        if(ReqValue!=null) {
-            InterfaceClass ResultClass = new InterfaceClass();
-            ResultClass.put(this,ReqValue);
-            Result.add(ResultClass);
-        }
+        InterfaceClass ResultClass = new InterfaceClass();
+        if(ReqValue!=null)
+           ResultClass.put(this,ReqValue);
+        Result.add(ResultClass);
+
 
         return Result;
     }
@@ -255,7 +255,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     
     // связывает именно измененные записи из сессии
     // Value - что получать, 0 - новые значения, 1 - +(увеличение), 2 - старые значения
-    SourceExpr ChangedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session,int Value) {
+    SourceExpr ChangedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session,int Value,boolean Left) {
         Map<KeyField,SourceExpr> MapJoins = new HashMap();
         for(T Interface : Interfaces)
             MapJoins.put(ChangeTableMap.get(Interface),JoinImplement.get(Interface));
@@ -284,7 +284,11 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             
             CacheTable.put(MapJoins,SelectChanges);
             Joins.add(SelectChanges);
-        }
+            
+            if(Left) SelectChanges.JoinType = "LEFT";
+        } 
+
+        if(!Left) SelectChanges.JoinType = "";
         
         FieldSourceExpr NewValue = new FieldSourceExpr(SelectChanges,ChangeTable.Value.Name);
         FieldSourceExpr PrevValue = new FieldSourceExpr(SelectChanges,ChangeTable.PrevValue.Name);
@@ -512,20 +516,6 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         return Value.GetDBType();
     }
 
-    void ChangeProperty(DataAdapter Adapter,Map<DataPropertyInterface,Integer> Keys,Object NewValue) throws SQLException {
-        Map<KeyField,DataPropertyInterface> MapJoins = new HashMap<KeyField,DataPropertyInterface>();
-        Table SourceTable = TableFactory.GetTable(Interfaces,MapJoins);
-        Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-        for(KeyField Key : SourceTable.KeyFields)
-            InsertKeys.put(Key,Keys.get(MapJoins.get(Key)));
-
-        Map<Field,Object> InsertValues = new HashMap<Field,Object>();
-        InsertValues.put(Field,NewValue);
-
-        Adapter.UpdateInsertRecord(SourceTable,InsertKeys,InsertValues);
-    }
-
-    // пока оставим и старый метод
     void ChangeProperty(DataAdapter Adapter,Map<DataPropertyInterface,Integer> Keys,Object NewValue,ChangesSession Session) throws SQLException {
         // записываем в таблицу изменений
         Map<KeyField,Integer> InsertKeys = new HashMap();
@@ -622,8 +612,8 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
     Table GetTable(Map<KeyField,T> MapJoins) {
         if(AggregateMap==null) {
             AggregateMap = new HashMap();
-//            if(GetClassSet(null).size()>0 && GetClassSet(null).get(0).containsValue(null))
-//                AggregateMap = AggregateMap;
+            if(GetClassSet(null).size()==0 || GetClassSet(null).get(0).containsValue(null))
+                GetClassSet(null);
             InterfaceClass Parent = GetClassSet(null).GetCommonParent();
             for(T Interface : Interfaces) {
                 AggregateMap.put(new DataPropertyInterface(Parent.get(Interface)),Interface);
@@ -720,7 +710,7 @@ class PropertyMapImplement extends PropertyImplement<ObjectProperty,PropertyInte
                 MapImplement.put(ImplementInterface,JoinExpr);
         }
         
-        SourceExpr JoinSource = (Session!=null?((ObjectProperty)Property).ChangedJoinSelect(Joins,MapImplement,Session,Value):Property.JoinSelect(Joins,MapImplement,Left));
+        SourceExpr JoinSource = (Session!=null?((ObjectProperty)Property).ChangedJoinSelect(Joins,MapImplement,Session,Value,Left):Property.JoinSelect(Joins,MapImplement,Left));
         
         // прогоним и проверим если кто-то изменил с null себе закинем JoinExprs
         for(PropertyInterface ImplementInterface : NullInterfaces)
@@ -919,11 +909,11 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
                 if(ij==0) 
                     ValueExpr = Implements.Property.JoinSelect(Joins,MapJoinImplement,false);
                 else {
-                    ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,QueryIncrementType);
+                    ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,QueryIncrementType,false);
                     if(QueryIncrementType==2) {
                         // если и предыдущее надо, то закидываем предыдущее, а потом новое 
                         SubQuery.Expressions.put(ChangeTable.PrevValue.Name,ValueExpr);
-                        ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,0);
+                        ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,0,false);
                     }
                 }
                 SubQuery.Expressions.put(ChangeTable.Value.Name,ValueExpr);
@@ -1171,7 +1161,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
                 Map<PropertyInterface,SourceExpr> GroupImplement = new HashMap();
                 
                 // значение
-                SubQuery.Expressions.put(ValueName,(GroupOp==1?GroupProperty.ChangedJoinSelect(Joins,GroupImplement,Session,(ValueType?Operator:2)):GroupProperty.JoinSelect(Joins,GroupImplement,false)));
+                SubQuery.Expressions.put(ValueName,(GroupOp==1?GroupProperty.ChangedJoinSelect(Joins,GroupImplement,Session,(ValueType?Operator:2),false):GroupProperty.JoinSelect(Joins,GroupImplement,false)));
 
                 // значения интерфейсов
                 for(GroupPropertyInterface Interface : Interfaces)

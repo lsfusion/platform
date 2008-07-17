@@ -127,7 +127,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         return false;
     }
 
-    SourceExpr JoinSelect(JoinList Joins,GroupObjectImplement ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,boolean Left) {
+    SourceExpr JoinSelect(JoinList Joins,GroupObjectImplement ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps,boolean Left) {
 
         Collection<PropertyInterface> NullInterfaces = new ArrayList();
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
@@ -145,6 +145,12 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
 
         for(PropertyInterface Interface : NullInterfaces)
             ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
+        
+        // есди св-во изменилось закинем сюда 
+        if(ChangedProps.contains(Property)) {
+            SourceExpr NewResult = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,true);
+            Result = new IsNullSourceExpr(NewResult,Result);
+        }
         
         return Result;
     }
@@ -255,9 +261,13 @@ class Filter {
         return Property.ObjectUpdated(ClassGroup);
     }
     
+    boolean DataUpdated(Set<ObjectProperty> ChangedProps) {
+        return ChangedProps.contains(Property);
+    }
+    
     // для полиморфизма сюда
-    void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource) {
-        Property.JoinSelect(Joins,ClassGroup,ClassSource,false);
+    void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+        Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
     }
 }
 
@@ -274,6 +284,10 @@ class NotNullFilter extends Filter {
 
 class FormBeanView {
 
+    ChangesSession Session;
+    
+    Set<ObjectProperty> ChangedProps;
+    
     FormBeanView(DataAdapter iAdapter,BusinessLogics iBL) {
         Adapter = iAdapter;
         BL = iBL;
@@ -283,7 +297,10 @@ class FormBeanView {
         Filters = new HashSet();
         Orders = new ArrayList();
         InterfacePool = new HashMap();
-        
+
+        Session = BL.CreateSession();
+        ChangedProps = new HashSet();
+
         StructUpdated = true;
     }
     
@@ -358,6 +375,29 @@ class FormBeanView {
         
         StructUpdated = true;
     }
+    
+    // пометка что изменилось св-во
+    boolean DataChanged = false;
+    
+    public void ChangeProperty(PropertyObjectImplement Property,Object Value) throws SQLException {
+        
+        if(Property.Property instanceof DataProperty) {
+            DataProperty DataProperty = (DataProperty)Property.Property;
+            Map<DataPropertyInterface,Integer> Keys = new HashMap();
+            for(DataPropertyInterface Interface : DataProperty.Interfaces)
+                Keys.put(Interface,Property.Mapping.get(Interface).idObject);
+
+            // изменяем св-во
+            DataProperty.ChangeProperty(Adapter,Keys,Value,Session);
+            
+            DataChanged = true;
+        }
+    }
+    
+    public void AddObject(ObjectImplement Object) throws SQLException {
+        // пока тупо в базу 
+        Object.GridClass.AddObject(Adapter,BL.TableFactory);
+    }   
 
     // рекурсия для генерации порядка
     Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {
@@ -373,10 +413,36 @@ class FormBeanView {
         } else
             return OrderWhere;
     }
+
+    // применяет изменения
+    public void UpdateChanges(boolean Cancel) throws SQLException {
+
+        if(!Cancel)
+            BL.Apply(Adapter,Session);
+
+        Session = BL.CreateSession();
+    }
+    
+    // получаем все аггрегированные св-ва задействованные на форме
+    Set<AggregateProperty> GetAggrProperties() {
+
+        Set<AggregateProperty> Result = new HashSet();
+        for(PropertyView PropView : Properties)
+            if(PropView.View.Property instanceof AggregateProperty)
+                Result.add((AggregateProperty)PropView.View.Property);
+        return Result;
+    }
+
     
     public FormChanges EndApply() throws SQLException {
 
         FormChanges Result = new FormChanges();
+
+        // если изменились данные, применяем изменения
+        if(DataChanged) {
+            ChangedProps.addAll(BL.UpdateAggregations(Adapter,GetAggrProperties(),Session));
+            ChangedProps.addAll(Session.Properties);
+        }
 
         // бежим по списку вниз
         Map<GroupObjectImplement,Set<Filter>> MapGroupFilters = null;
@@ -434,20 +500,19 @@ class FormBeanView {
             }        
 
             // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
-            if(!UpdateKeys) {
+            if(!UpdateKeys)
                 for(Filter Filt : Group.Filters)
-                    if(Filt.ObjectUpdated(Group)) {
-                        UpdateKeys = true;
-                        break;
-                    }
-            }
-            if(!UpdateKeys) {
+                    if(Filt.ObjectUpdated(Group)) {UpdateKeys = true; break;}
+            if(!UpdateKeys)
                 for(PropertyObjectImplement Order : Group.Orders)
-                    if(Order.ObjectUpdated(Group)) {
-                        UpdateKeys = true;
-                        break;
-                    }
-            }
+                    if(Order.ObjectUpdated(Group)) {UpdateKeys = true; break;}
+            // проверим на изменение данных
+            if(!UpdateKeys)
+                for(Filter Filt : Group.Filters)
+                    if(Filt.DataUpdated(ChangedProps)) {UpdateKeys = true; break;}
+            if(!UpdateKeys)
+                for(PropertyObjectImplement Order : Group.Orders)
+                    if(ChangedProps.contains(Order.Property)) {UpdateKeys = true; break;}
 
             if(!UpdateKeys && Group.GridClassView) {
                 Map<ObjectImplement,Integer> GroupKey = null;
@@ -506,10 +571,10 @@ class FormBeanView {
                 Map<PropertyObjectImplement,Object> OrderValues = null;
                 if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
 
-                for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources);
+                for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources,Session,ChangedProps);
                 int OrderNum = 0;
                 for(PropertyObjectImplement ToOrder : Group.Orders) {
-                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,false);
+                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Session,ChangedProps,false);
                     SelectKeys.Orders.add(OrderExpr);
                     // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                     if(OrderValues!=null) {
@@ -682,6 +747,9 @@ class FormBeanView {
                 }
             }
 
+            if(!Read && (DataChanged && ChangedProps.contains(DrawProp.View.Property)))
+                Read = true;                
+
             if(InInterface>0 && Read) {
                 if(InInterface==2 && DrawProp.ToDraw.GridClassView) {
                     Collection<PropertyView> PropList = GroupProps.get(DrawProp.ToDraw);
@@ -709,7 +777,7 @@ class FormBeanView {
             for(PropertyView DrawProp : PanelProps) {
                 SelectFields++;
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,true));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,Session,ChangedProps,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
@@ -746,7 +814,7 @@ class FormBeanView {
             for(PropertyView DrawProp : GroupList) {
                 SelectFields++;
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys,true));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys,Session,ChangedProps,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
@@ -776,6 +844,7 @@ class FormBeanView {
             while(io.hasNext()) io.next().Updated=0;
             Group.Updated = 0;
         }
+        DataChanged = false;
 
         return Result;
     }

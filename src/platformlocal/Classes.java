@@ -31,6 +31,14 @@ abstract class Class {
     }
 
     void AddParent(Class ParentClass) {
+        // проверим что в Parent'ах нету этого класса
+        for(Class Parent:Parents) 
+            if(Parent.IsParent(ParentClass)) return;
+        
+        Iterator<Class> i = Parents.iterator();
+        while(i.hasNext())
+            if(ParentClass.IsParent(i.next())) i.remove();
+            
         Parents.add(ParentClass);
         ParentClass.Childs.add(this);        
     }
