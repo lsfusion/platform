@@ -379,13 +379,13 @@ class FormBeanView {
     // пометка что изменилось св-во
     boolean DataChanged = false;
     
-    public void ChangeProperty(PropertyView Property,Object Value) throws SQLException {
+    public void ChangeProperty(PropertyObjectImplement Property,Object Value) throws SQLException {
         
-        if(Property.View.Property instanceof DataProperty) {
-            DataProperty DataProperty = (DataProperty)Property.View.Property;
+        if(Property.Property instanceof DataProperty) {
+            DataProperty DataProperty = (DataProperty)Property.Property;
             Map<DataPropertyInterface,Integer> Keys = new HashMap();
             for(DataPropertyInterface Interface : DataProperty.Interfaces)
-                Keys.put(Interface,Property.View.Mapping.get(Interface).idObject);
+                Keys.put(Interface,Property.Mapping.get(Interface).idObject);
 
             // изменяем св-во
             DataProperty.ChangeProperty(Adapter,Keys,Value,Session);
@@ -393,7 +393,11 @@ class FormBeanView {
             DataChanged = true;
         }
     }
-    
+
+    public void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
+        ChangeProperty(Property.View,Value);
+    }
+
     public void AddObject(ObjectImplement Object) throws SQLException {
         // пока тупо в базу 
         Object.GridClass.AddObject(Adapter,BL.TableFactory);
