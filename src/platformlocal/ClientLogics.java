@@ -133,6 +133,10 @@ class ClientFormBean {
     Map<ObjectImplement, ClientObjectImplement> objects = new HashMap();
     Map<PropertyView, ClientPropertyView> properties = new HashMap();
     Map<GroupObjectValue, ClientGroupObjectValue> objectValues = new HashMap();
+
+    List<ClientGroupObjectImplement> listGroups = new ArrayList();
+    List<ClientObjectImplement> listObjects = new ArrayList();
+    List<ClientPropertyView> listProperties = new ArrayList();
     
     public ClientGroupObjectImplement client(GroupObjectImplement groupObject) {
         return groupObjects.get(groupObject);
@@ -150,14 +154,11 @@ class ClientFormBean {
         
         formBean = iformBean;
 
-        groupObjects = new HashMap();
-        objects = new HashMap();
-        properties = new HashMap();
-        
         for (GroupObjectImplement group : formBean.Groups) {
             
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             groupObjects.put(group, clientGroup);
+            listGroups.add(clientGroup);
 
             for (ObjectImplement object : group) {
 
@@ -165,6 +166,7 @@ class ClientFormBean {
                 clientObject.groupObject = clientGroup;
                 
                 objects.put(object, clientObject);
+                listObjects.add(clientObject);
             }
         }
         
@@ -178,6 +180,7 @@ class ClientFormBean {
             clientProperty.type = property.View.Property.GetDBType();
             
             properties.put(property, clientProperty);
+            listProperties.add(clientProperty);
         }
         
     }
@@ -267,14 +270,14 @@ class ClientFormBean {
         
         ClientFormInit formInit = new ClientFormInit();
   
-        for (GroupObjectImplement groupObject : groupObjects.keySet())
-            formInit.GroupObjects.add(groupObjects.get(groupObject));
+        for (ClientGroupObjectImplement groupObject : listGroups)
+            formInit.GroupObjects.add(groupObject);
         
-        for (ObjectImplement object : objects.keySet())
-            formInit.Objects.add(objects.get(object));
+        for (ClientObjectImplement object : listObjects)
+            formInit.Objects.add(object);
             
-        for (PropertyView property : properties.keySet())
-            formInit.Properties.add(properties.get(property));
+        for (ClientPropertyView property : listProperties)
+            formInit.Properties.add(property);
         
         return formInit;
         

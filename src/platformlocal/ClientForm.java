@@ -35,12 +35,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultCellEditor;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -239,23 +242,21 @@ public class ClientForm extends FrameView {
             grid.setPropertyValues(property, values);
         }
         
-        class PropertyCellEditor extends AbstractCellEditor
-                                 implements TableCellEditor {
+        class PropertyCellEditor extends DefaultCellEditor {
 
             Object value;
             
-            JTextField comp;
-            
             public PropertyCellEditor() {
-                
-                comp = new JTextField();
+                super (new JTextField());
                 
             }
 
             public Object getCellEditorValue() {
                 
-                if (value instanceof Integer) return Integer.parseInt(comp.getText());
-                return comp.getText();
+                JTextField tft = (JTextField)getComponent();
+                if (value instanceof Integer) return Integer.parseInt(tft.getText());
+                return tft.getText();
+                
             }
 
             public Component getTableCellEditorComponent(JTable table, 
@@ -265,9 +266,12 @@ public class ClientForm extends FrameView {
                                                          int column) {
 
                 value = ivalue;
-
-                comp.setText(value.toString());
-                return comp;
+                
+                JTextField tft =
+                    (JTextField)super.getTableCellEditorComponent(
+                        table, value, isSelected, row, column);
+                tft.setText(value.toString());
+                return tft;
             }
 
         }
@@ -558,7 +562,7 @@ public class ClientForm extends FrameView {
                 
                 class Model extends AbstractTableModel {
 
-                     public java.lang.Class getColumnClass(int c) {
+                    public java.lang.Class getColumnClass(int c) {
                         return getValueAt(0, c).getClass();
                     }
 
