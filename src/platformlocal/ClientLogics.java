@@ -315,7 +315,7 @@ class ClientFormBean {
         PropertyView property = pvu.getKey(properties, clientProperty);
         
         try {
-//            formBean.ChangeProperty(property, value);
+            formBean.ChangePropertyView(property, value);
         } catch(Exception e) {
             
         }

@@ -5,6 +5,7 @@
 
 package platformlocal;
 
+import java.awt.GridBagConstraints;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -16,13 +17,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import org.jdesktop.application.SingleFrameApplication;
 
-public class Main  {
+
+public class Main extends SingleFrameApplication {
     
     Class[] ClassList;
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
   
+        launch(Main.class, args);
+        
         System.out.print(1<<0);
 //          java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver"); 
 //        java.lang.Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -32,18 +37,23 @@ public class Main  {
 //        BusinessLogics t = new BusinessLogics();
 //        t.FullDBTest();
         
-        Test t = new Test();
-        t.SimpleTest();
+//        Test t = new Test();
+//        t.SimpleTest();
+    }
+
+    @Override
+    protected void startup() {
+        
+        show(new ClientForm(this));
     }
 }
-
 /**
  *
  * @author ME
  */
 class Test extends BusinessLogics  {
     
-    void SimpleTest() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    void SimpleTest(ClientForm Form) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         
         Class Base = new ObjectClass(3);
         Base.AddParent(BaseClass);
@@ -348,8 +358,8 @@ class Test extends BusinessLogics  {
 //        ChangeDBTest(ad);
 
 //        if(true) return;
-        // потестим FormBeanView
-        // пока один вид потестим
+        // РїРѕС‚РµСЃС‚РёРј FormBeanView
+        // РїРѕРєР° РѕРґРёРЅ РІРёРґ РїРѕС‚РµСЃС‚РёРј
         FormBeanView fbv  = new FormBeanView(ad,this);
         ObjectImplement obj1 = new ObjectImplement();                
         ObjectImplement obj2 = new ObjectImplement();
@@ -367,20 +377,20 @@ class Test extends BusinessLogics  {
         PropertyObjectImplement GrTovImpl=null;
         PropertyObjectImplement NameImpl=null;
         
-        // закинем все одиночные
+        // Р·Р°РєРёРЅРµРј РІСЃРµ РѕРґРёРЅРѕС‡РЅС‹Рµ
         Iterator<Property> ipr = Properties.iterator();
         while(ipr.hasNext()) {
             Property DrawProp = ipr.next();
             if(DrawProp.Interfaces.size() == 1 && DrawProp instanceof ObjectProperty) {
                 PropertyObjectImplement PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj1);
-                if(DrawProp.OutName.equals("имя"))
+                if(DrawProp.OutName.equals("РёРјСЏ"))
                     NameImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv));
                 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
-                if(DrawProp.OutName.equals("гр. тов"))
+                if(DrawProp.OutName.equals("РіСЂ. С‚РѕРІ"))
                     GrTovImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv2));
             }
@@ -390,47 +400,37 @@ class Test extends BusinessLogics  {
         AddPropView(fbv,GP,gv2,obj2,obj1);
 
         GroupObjectValue ChangeValue;
-        
-        obj1.OutName = "товар";
+
+        obj1.OutName = "";
         fbv.ChangeClass(obj1,Base.ID);
-        obj2.OutName = "док";
+        obj2.OutName = "";
         fbv.ChangeClass(obj2,Document.ID);
-        fbv.AddFilter(new NotNullFilter(QImpl));
+//        fbv.AddFilter(new NotNullFilter(QImpl));
 //        fbv.AddOrder(NameImpl);
         
-        fbv.EndApply().Out(fbv);
         
-        fbv.ChangeProperty(QImpl, 10);
-        fbv.EndApply().Out(fbv);
-/*
-        ChangeValue = new GroupObjectValue();
-        ChangeValue.put(obj1,8);
- //       ChangeValue.put(obj2,13);
-        fbv.ChangeObject(gv,ChangeValue);
-        
-        fbv.EndApply().Out(fbv);
-*/
-/*        ChangeValue = new GroupObjectValue();
-        ChangeValue.put(obj1,3);
-        ChangeValue.put(obj2,7);
-        fbv.ChangeObject(gv,ChangeValue);
-        
-        fbv.EndApply().Out(fbv);
-*/
-/*
-        fbv.ChangeClass(obj1,Article.ID);
-        fbv.ChangeClassView(gv, false);
-        fbv.EndApply().Out(fbv);
+//        fbv.ChangeProperty(QImpl, 10);
+//        fbv.EndApply().Out(fbv);
 
-        fbv.ChangeClassView(gv, true);
-        fbv.EndApply().Out(fbv);
-*/
-//        DataPropertyInterface[] ToDraw = new DataPropertyInterface[1];
-//        ToDraw[0] = new DataPropertyInterface(Article);
-//        ToDraw[1] = new DataPropertyInterface(Store);
-//        DisplayClasses(ad,ToDraw);
+        FormChanges fc;
+        
+        fc = fbv.EndApply();
+        fc.Out(fbv);
+        
+        ClientFormBean cfc = new ClientFormBean(fbv);
+        Form.clientBean = cfc;
+        
+        List<PropertyView> ps;
+        
+        ps = GetPropViews(fbv, Name.Property);
+//        for (PropertyView p : ps) cfc.client(p).maxWidth = 50;
+        
+        
+        Form.initializeForm();
+        
+        Form.applyFormChanges(cfc.convertFormChangesToClient(fc)); 
 
-        ad.Disconnect();
+//        ad.Disconnect();
     }
     
     PropertyObjectImplement AddPropView(FormBeanView fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
@@ -444,7 +444,17 @@ class Test extends BusinessLogics  {
         return PropImpl;
     }
     
-    // "рисует" класс, со всеми св-вами
+    List<PropertyView> GetPropViews(FormBeanView fbv, Property prop) {
+        
+        List<PropertyView> result = new ArrayList();
+        
+        for (PropertyView propview : fbv.Properties)
+            if (propview.View.Property == prop) result.add(propview);
+       
+        return result;        
+    }
+    
+    // "СЂРёСЃСѓРµС‚" РєР»Р°СЃСЃ, СЃРѕ РІСЃРµРјРё СЃРІ-РІР°РјРё
     void DisplayClasses(DataAdapter Adapter, DataPropertyInterface[] ToDraw) throws SQLException {
 
         Map<DataPropertyInterface,SourceExpr> JoinSources = new HashMap<DataPropertyInterface,SourceExpr>();
@@ -471,7 +481,7 @@ class Test extends BusinessLogics  {
             
             MapBuilder<PropertyInterface,DataPropertyInterface> mb= new MapBuilder<PropertyInterface,DataPropertyInterface>();
             List<Map<PropertyInterface,DataPropertyInterface>> Maps = mb.BuildMap((PropertyInterface[])Prop.Interfaces.toArray(new PropertyInterface[0]), ToDraw);
-            // попробуем все варианты отображения
+            // РїРѕРїСЂРѕР±СѓРµРј РІСЃРµ РІР°СЂРёР°РЅС‚С‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
             Iterator<Map<PropertyInterface,DataPropertyInterface>> im = Maps.iterator();
             while(im.hasNext()) {
                 Map<PropertyInterface,DataPropertyInterface> Impl = im.next();
@@ -487,7 +497,7 @@ class Test extends BusinessLogics  {
                 }
                 
                 if(Prop.GetValueClass(ClassImplement)!=null) {
-                    // то есть актуальное св-во
+                    // С‚Рѕ РµСЃС‚СЊ Р°РєС‚СѓР°Р»СЊРЅРѕРµ СЃРІ-РІРѕ
                     SimpleSelect.Expressions.put("test"+(SelFields++).toString(),Prop.JoinSelect(Joins,JoinImplement,false));
                 }
             }
@@ -504,7 +514,7 @@ class Test extends BusinessLogics  {
     }
 }
 
-// для упрощенного создания св-в со списками интерфейсов, по сути как фасад
+// РґР»СЏ СѓРїСЂРѕС‰РµРЅРЅРѕРіРѕ СЃРѕР·РґР°РЅРёСЏ СЃРІ-РІ СЃРѕ СЃРїРёСЃРєР°РјРё РёРЅС‚РµСЂС„РµР№СЃРѕРІ, РїРѕ СЃСѓС‚Рё РєР°Рє С„Р°СЃР°Рґ
 
 class LP {
     LP(Property iProperty) {
