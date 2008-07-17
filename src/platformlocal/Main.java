@@ -77,7 +77,9 @@ class Test extends BusinessLogics  {
         LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
         LDP ArtToGroup = AddDProp(ArticleGroup,Article);
         LDP DocDate = AddDProp(IntegerClass,Document);
-
+        
+//        LRP Quantity = AddLProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+//
         LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
         LMFP Multiply = AddMFProp(2);
 
@@ -261,7 +263,7 @@ class Test extends BusinessLogics  {
         RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[2],Articles[4]);
         RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[3],Articles[4]);
 
-        Quantity.ChangeProperty(Session,ad,8,PrihDocuments[1],Articles[4]);
+/*        Quantity.ChangeProperty(Session,ad,8,PrihDocuments[1],Articles[4]);
         Quantity.ChangeProperty(Session,ad,10,PrihDocuments[1],Articles[2]);
         Quantity.ChangeProperty(Session,ad,20,PrihDocuments[1],Articles[3]);
         Quantity.ChangeProperty(Session,ad,28,PrihDocuments[1],Articles[4]);
@@ -269,7 +271,7 @@ class Test extends BusinessLogics  {
         Quantity.ChangeProperty(Session,ad,40,PrihDocuments[2],Articles[2]);
         Quantity.ChangeProperty(Session,ad,50,PrihDocuments[2],Articles[3]);
         Quantity.ChangeProperty(Session,ad,68,PrihDocuments[2],Articles[4]);
-
+*/
 //        List<AggregateProperty> UpdateProps = new ArrayList();
 //        UpdateProps.add((AggregateProperty)QDep.Property);
 //        UpdateAggregations(ad, UpdateProps, Session);
@@ -377,20 +379,19 @@ class Test extends BusinessLogics  {
         PropertyObjectImplement GrTovImpl=null;
         PropertyObjectImplement NameImpl=null;
         
-        // Р·Р°РєРёРЅРµРј РІСЃРµ РѕРґРёРЅРѕС‡РЅС‹Рµ
         Iterator<Property> ipr = Properties.iterator();
         while(ipr.hasNext()) {
             Property DrawProp = ipr.next();
             if(DrawProp.Interfaces.size() == 1 && DrawProp instanceof ObjectProperty) {
                 PropertyObjectImplement PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj1);
-                if(DrawProp.OutName.equals("РёРјСЏ"))
+                if(DrawProp.OutName.equals("имя"))
                     NameImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv));
                 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
-                if(DrawProp.OutName.equals("РіСЂ. С‚РѕРІ"))
+                if(DrawProp.OutName.equals("гр. тов"))
                     GrTovImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv2));
             }
@@ -399,14 +400,17 @@ class Test extends BusinessLogics  {
         PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv2,obj2,obj1);
         AddPropView(fbv,GP,gv2,obj2,obj1);
 
+        AddPropView(fbv,PrihQuantity,gv2,obj2,obj1);
+        AddPropView(fbv,RashQuantity,gv2,obj2,obj1);
+        
         GroupObjectValue ChangeValue;
 
         obj1.OutName = "";
-        fbv.ChangeClass(obj1,Base.ID);
+        fbv.ChangeClass(obj1,Article.ID);
         obj2.OutName = "";
-        fbv.ChangeClass(obj2,Document.ID);
+        fbv.ChangeClass(obj2,PrihDocument.ID);
 //        fbv.AddFilter(new NotNullFilter(QImpl));
-//        fbv.AddOrder(NameImpl);
+        fbv.AddOrder(NameImpl);
         
         
 //        fbv.ChangeProperty(QImpl, 10);
