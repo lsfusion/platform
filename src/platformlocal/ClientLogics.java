@@ -306,7 +306,7 @@ class ClientFormBean {
             System.out.println(e);
         }
         
-        formChanges.Out(formBean);
+//        formChanges.Out(formBean);
 
         return convertFormChangesToClient(formChanges);
         
@@ -330,7 +330,7 @@ class ClientFormBean {
             System.out.println(e);
         }
         
-        formChanges.Out(formBean);
+//        formChanges.Out(formBean);
 
         return convertFormChangesToClient(formChanges);
         
