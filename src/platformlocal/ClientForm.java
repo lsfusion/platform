@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
@@ -226,10 +227,13 @@ public class ClientForm extends FrameView {
         }
         
         public void setCurrentObject(ClientGroupObjectValue value) {
-            
+    
+            boolean change = value.equals(currentObject);
+                
             currentObject = value;
             
-            grid.selectObject(currentObject);
+            if (change)
+                grid.selectObject(currentObject);
         }
         
         public void setPanelPropertyValue(ClientPropertyView property, Object value) {
@@ -474,18 +478,22 @@ public class ClientForm extends FrameView {
 
                     gridProperties.add(ins, property);
 
+                    table.createColumnsFromModel();
                 }
 
-                table.createColumnsFromModel();
                  
             }
             
             public void removeProperty(ClientPropertyView property) {
                 
-                gridProperties.remove(property);
-                gridValues.remove(property);
+                if (gridProperties.remove(property)) {
+                    
+                    gridValues.remove(property);
+
+                    table.createColumnsFromModel();
+                    
+                }
                 
-                table.createColumnsFromModel();
 
             }
             
@@ -500,7 +508,7 @@ public class ClientForm extends FrameView {
                 
                 //надо сдвинуть ViewPort - иначе дергаться будет
                 
-                if (newindex != -1 && oldindex != -1) {
+                if (newindex != -1 && oldindex != -1 && newindex != oldindex) {
                     
                     table.getSelectionModel().setLeadSelectionIndex(newindex);
                     
@@ -520,7 +528,10 @@ public class ClientForm extends FrameView {
 
             public void selectObject(ClientGroupObjectValue value) {
                 
-                table.getSelectionModel().setLeadSelectionIndex(gridObjects.indexOf(value));
+                int oldindex = table.getSelectionModel().getLeadSelectionIndex();
+                int newindex = gridObjects.indexOf(value);
+                if (newindex != -1 && newindex != oldindex)
+                    table.getSelectionModel().setLeadSelectionIndex(newindex);
                 
             }
 
@@ -535,23 +546,25 @@ public class ClientForm extends FrameView {
                 Model model;
                 
                 public Table() {
-
+                    
                     model = new Model();
                     setModel(model);
                     
                     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
+                            System.out.println("changeSel");
                             changeObject(groupObject, model.getSelectedObject());
                         }
                     });
                     
-                    setDefaultEditor(Object.class, new PropertyCellEditor());
+//                    setDefaultEditor(Object.class, new PropertyCellEditor());
 
                 }
                 
                 public void createColumnsFromModel () {
                     
+                    System.out.println("CreateColumns");
                     createDefaultColumnsFromModel();
                     
                     for (ClientPropertyView property : gridProperties) {
@@ -592,9 +605,8 @@ public class ClientForm extends FrameView {
                     }
                     
                     public void setValueAt(Object value, int row, int col) {
-
+                        System.out.println("setValueAt");
                         changeProperty(gridProperties.get(col),value);
-//                        gridValues.get(gridProperties.get(col)).put(gridObjects.get(row),value);
                     }
                     
                     public ClientGroupObjectValue getSelectedObject() {
