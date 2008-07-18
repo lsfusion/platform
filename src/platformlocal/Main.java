@@ -77,7 +77,15 @@ class Test extends BusinessLogics  {
         LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
         LDP ArtToGroup = AddDProp(ArticleGroup,Article);
         LDP DocDate = AddDProp(IntegerClass,Document);
-        
+        LDP GrAddV = AddDProp(IntegerClass,ArticleGroup);
+        LDP ArtAddV = AddDProp(IntegerClass,Article);
+
+        LRP RGrAddV = AddRProp(GrAddV,1,ArtToGroup,1);
+        RGrAddV.Property.OutName = "наценка по товару (гр.)";
+
+        LRP ArtActAddV = AddLProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
+        ArtActAddV.Property.OutName = "наценка по товару";
+
 //        LRP Quantity = AddLProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
         LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
@@ -90,6 +98,8 @@ class Test extends BusinessLogics  {
         RashQuantity.Property.OutName = "кол-во расх.";
         ArtToGroup.Property.OutName = "гр. тов";
         DocDate.Property.OutName = "дата док.";
+        GrAddV.Property.OutName = "нац. по гр.";
+        ArtAddV.Property.OutName = "нац. перегр.";
 
         LRP StoreName = AddRProp(Name,1,DocStore,1);
         StoreName.Property.OutName = "имя склада";
@@ -406,9 +416,9 @@ class Test extends BusinessLogics  {
         GroupObjectValue ChangeValue;
 
         obj1.OutName = "";
-        fbv.ChangeClass(obj1,Article.ID);
+        fbv.ChangeClass(obj1,ArticleGroup.ID);
         obj2.OutName = "";
-        fbv.ChangeClass(obj2,PrihDocument.ID);
+        fbv.ChangeClass(obj2,Article.ID);
 //        fbv.AddFilter(new NotNullFilter(QImpl));
         fbv.AddOrder(NameImpl);
         
