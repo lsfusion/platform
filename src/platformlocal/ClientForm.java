@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
@@ -248,18 +249,40 @@ public class ClientForm extends FrameView {
         
         class PropertyCellEditor extends DefaultCellEditor {
 
+            JFormattedTextField ftf;
             Object value;
             
             public PropertyCellEditor() {
-                super (new JTextField());
+                super (new JFormattedTextField());
+                
+                ftf = (JFormattedTextField)getComponent();
+
+                ftf.setFocusLostBehavior(JFormattedTextField.PERSIST);
+                
+                //React when the user presses Enter while the editor is
+                //active.  (Tab is handled as specified by
+                //JFormattedTextField's focusLostBehavior property.)
+                ftf.getInputMap().put(KeyStroke.getKeyStroke(
+                                                KeyEvent.VK_ENTER, 0),
+                                                "check");
+                ftf.getActionMap().put("check", new AbstractAction() {
+                    public void actionPerformed(ActionEvent e) {
+                        System.out.println("actionPerformed");
+                        try {
+                            ftf.commitEdit();
+                        } catch (java.text.ParseException exc) { }
+                        ftf.postActionEvent(); //stop editing
+                    }
+                });
                 
             }
 
             public Object getCellEditorValue() {
                 
-                JTextField tft = (JTextField)getComponent();
-                if (value instanceof Integer) return Integer.parseInt(tft.getText());
-                return tft.getText();
+                JFormattedTextField ftf = (JFormattedTextField)getComponent();
+                return ftf.getValue();
+//                if (value instanceof Integer) return Integer.parseInt(tft.getText());
+//                return tft.getText();
                 
             }
 
@@ -271,10 +294,12 @@ public class ClientForm extends FrameView {
 
                 value = ivalue;
                 
-                JTextField tft =
-                    (JTextField)super.getTableCellEditorComponent(
+                JFormattedTextField tft =
+                    (JFormattedTextField)super.getTableCellEditorComponent(
                         table, value, isSelected, row, column);
-                tft.setText(value.toString());
+                tft.setValue(value);
+                tft.selectAll();
+                
                 return tft;
             }
 
@@ -398,9 +423,9 @@ public class ClientForm extends FrameView {
                                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
                                 KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
 
-                        SwingUtils.addFocusTraversalKey(this, 
+/*                        SwingUtils.addFocusTraversalKey(this, 
                                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+                                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
                         
                         SwingUtils.addFocusTraversalKey(this, 
                                 KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
@@ -420,6 +445,12 @@ public class ClientForm extends FrameView {
                             return 1;
                         }
                         
+                        public java.lang.Class getColumnClass(int c) {
+                            if (value != null)
+                                return value.getClass(); else
+                                    return Object.class;
+                        }
+                        
                         public boolean isCellEditable(int row, int col) {
                             return true;
                         }
@@ -428,6 +459,11 @@ public class ClientForm extends FrameView {
                             return value;
                         }
 
+                        public void setValueAt(Object value, int row, int col) {
+                            System.out.println("setValueAt");
+                            changeProperty(property,value);
+                        }
+                        
                     }
                     
                 }
@@ -558,7 +594,7 @@ public class ClientForm extends FrameView {
                         }
                     });
                     
-//                    setDefaultEditor(Object.class, new PropertyCellEditor());
+                    setDefaultEditor(Object.class, new PropertyCellEditor());
 
                 }
                 
