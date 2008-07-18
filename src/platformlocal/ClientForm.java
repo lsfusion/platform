@@ -574,7 +574,8 @@ public class ClientForm extends FrameView {
             public void setPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue,Object> values) {
 
                 gridValues.put(property, values);
-
+                table.repaint();
+                
             }
             
             public class Table extends JTable {
@@ -595,6 +596,7 @@ public class ClientForm extends FrameView {
                     });
                     
                     setDefaultEditor(Object.class, new PropertyCellEditor());
+                    setDefaultEditor(Integer.class, new PropertyCellEditor());
 
                 }
                 
