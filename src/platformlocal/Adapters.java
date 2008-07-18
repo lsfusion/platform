@@ -75,7 +75,7 @@ class DataAdapter {
         for(Field Prop : PropFields.keySet()) {
             Object Value = PropFields.get(Prop);
             InsertString = InsertString+","+Prop.Name;
-            ValueString = ValueString+","+(Value instanceof String?"'"+(String)Value+"'":Value.toString());
+            ValueString = ValueString+","+(Value==null?"NULL":(Value instanceof String?"'"+(String)Value+"'":Value.toString()));
         }
 
         Execute("INSERT INTO "+Table.Name+" ("+InsertString+") VALUES ("+ValueString+")");
@@ -96,7 +96,7 @@ class DataAdapter {
             Select.Expressions.clear();
             for(Field Prop : PropFields.keySet()) {
                 Object PropValue = PropFields.get(Prop);
-                if(PropValue!=null) Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropValue));
+                Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropValue));
             }
             UpdateRecords(Select);
         } else

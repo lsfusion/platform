@@ -225,7 +225,7 @@ class IDTable extends Table {
         // замещаем
         SelectID.Expressions.put("lastid",new ValueSourceExpr(FreeID+1));
         Adapter.UpdateRecords(SelectID);
-        return FreeID;
+        return FreeID+1;
     }
 }
 
@@ -300,6 +300,7 @@ class TableFactory extends TableImplement{
     
     // для отладки
     boolean ReCalculateAggr = false;
+    boolean Crash = false;
     
     ChangeTable GetChangeTable(Integer Objects, String DBType) {
         return ChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
@@ -420,7 +421,7 @@ class BusinessLogics {
         
         // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         List<AggregateProperty> UpdateList = new ArrayList();
-        for(AggregateProperty Property : Properties) Property.FillAggregateList(UpdateList,Session.Properties);
+        for(AggregateProperty Property : Properties) Property.FillAggregateList(UpdateList,Session);
         
         // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
         // потом реализуем
@@ -466,13 +467,18 @@ class BusinessLogics {
     
     boolean Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
+        Adapter.Execute("BEGIN TRANSACTION");
+        
         UpdateAggregations(Adapter,PersistentProperties,Session);
 
         // записываем Data, затем PersistentProperties в таблицы из сессии
         SaveProperties(Adapter,PersistentProperties,Session);
         SaveProperties(Adapter,Session.Properties,Session);
         
-        return true;
+        Adapter.Execute("COMMIT TRANSACTION");
+        
+        return false;       
+        
     }
 
     void FillDB(DataAdapter Adapter) throws SQLException {
@@ -517,7 +523,7 @@ class BusinessLogics {
 
         // построим в нужном порядке AggregateProperty и будем заполнять их
         List<AggregateProperty> UpdateList = new ArrayList();
-        for(AggregateProperty Property : AggrProperties) Property.FillAggregateList(UpdateList,DataProperties);
+        for(AggregateProperty Property : AggrProperties) Property.FillAggregateList(UpdateList,null);
         Integer ViewNum = 0;
         for(AggregateProperty Property : UpdateList) {
             if(Property instanceof GroupProperty)
@@ -531,9 +537,14 @@ class BusinessLogics {
         Adapter.Execute("INSERT INTO dumb (dumb) VALUES (1)");
     }
     
-    void CheckPersistent(DataAdapter Adapter) throws SQLException {
-        for(AggregateProperty Property : PersistentProperties)
-            Property.CheckAggregation(Adapter,Property.OutName);
+    boolean CheckPersistent(DataAdapter Adapter) throws SQLException {
+        for(AggregateProperty Property : PersistentProperties) {
+            if(!Property.CheckAggregation(Adapter,Property.OutName))
+                return false;
+//            Property.Out(Adapter);
+        }
+        
+        return true;
     }
 
     // функционал по заполнению св-в по номерам, нужен для BL
@@ -636,7 +647,7 @@ class BusinessLogics {
         
         LRP ListProperty = new LRP(Property,IntNum);
 
-        for(int i=0;i<IntNum;i++) {
+        for(int i=0;i<Params.length/(IntNum+2);i++) {
             Integer Offs = i*(IntNum+2);
             LP OpImplement = (LP)Params[Offs+1];
             PropertyMapImplement Operand = new PropertyMapImplement((ObjectProperty)OpImplement.Property);
@@ -667,7 +678,7 @@ class BusinessLogics {
     int MaxInterface = 4;
     
     // генерирует белую БЛ
-    void OpenTest(boolean Classes,boolean Properties,boolean Implements,boolean Persistent) {
+    void OpenTest(boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
 
         if(Classes) {
             Class Base = new ObjectClass(3);
@@ -687,6 +698,28 @@ class BusinessLogics {
             Class Supplier = new ObjectClass(10);
             Supplier.AddParent(Base);
 
+            TableImplement Include;
+            
+            if(Implements) {
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Article));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Store));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(ArticleGroup));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Article));
+                Include.add(new DataPropertyInterface(Document));
+                TableFactory.IncludeIntoGraph(Include);
+                Include = new TableImplement();
+                Include.add(new DataPropertyInterface(Article));
+                Include.add(new DataPropertyInterface(Store));
+                TableFactory.IncludeIntoGraph(Include);
+            }
+            
             if(Properties) {
                 LDP Name = AddDProp(StringClass,Base);
                 LDP DocStore = AddDProp(Store,Document);
@@ -697,6 +730,7 @@ class BusinessLogics {
                 LDP DocDate = AddDProp(IntegerClass,Document);
                 LDP ArtSupplier = AddDProp(Supplier,Article,Store);
                 LDP PriceSupp = AddDProp(IntegerClass,Article,Supplier);
+                LDP GrStQty = AddDProp(IntegerClass,ArticleGroup,Store);
 
                 LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
                 LMFP Multiply = AddMFProp(2);
@@ -710,6 +744,10 @@ class BusinessLogics {
                 DocDate.Property.OutName = "дата док.";
                 ArtSupplier.Property.OutName = "тек. пост.";
                 PriceSupp.Property.OutName = "цена пост.";
+                GrStQty.Property.OutName = "грт на скл.";
+
+                LRP QtyGrSt = AddRProp(GrStQty,2,ArtToGroup,1,DocStore,2);
+                QtyGrSt.Property.OutName = "тдок - кол-во гр. ск.";
 
                 LRP OstPrice = AddRProp(PriceSupp,2,1,ArtSupplier,1,2);
                 OstPrice.Property.OutName = "цена на складе";
@@ -765,32 +803,126 @@ class BusinessLogics {
                     PersistentProperties.add((AggregateProperty)OstArt.Property);
                     PersistentProperties.add((AggregateProperty)MaxPrih.Property);
                     PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
-                    PersistentProperties.add((AggregateProperty)SumMaxArt.Property);*/
-                    PersistentProperties.add((AggregateProperty)OstPrice.Property);
+                    PersistentProperties.add((AggregateProperty)SumMaxArt.Property);
+                    PersistentProperties.add((AggregateProperty)OstPrice.Property);*/
+                    PersistentProperties.add((AggregateProperty)QtyGrSt.Property);
+                }
+                
+                if(Changes) {
+                    DataAdapter ad = new DataAdapter();
+                    ad.Connect("");
+
+                    FillDB(ad);
+
+                    ChangesSession Session = CreateSession();
+
+                    Integer i;
+                    Integer[] Articles = new Integer[6];
+                    for(i=0;i<Articles.length;i++) Articles[i]=Article.AddObject(ad, TableFactory);
+
+                    Integer[] Stores = new Integer[2];
+                    for(i=0;i<Stores.length;i++) Stores[i]=Store.AddObject(ad, TableFactory);
+
+                    Integer[] PrihDocuments = new Integer[6];
+                    for(i=0;i<PrihDocuments.length;i++) {
+                        PrihDocuments[i]=PrihDocument.AddObject(ad, TableFactory);
+                        Name.ChangeProperty(Session,ad,"ПР ДОК "+i.toString(), PrihDocuments[i]);
+                    }
+
+                    Integer[] RashDocuments = new Integer[6];
+                    for(i=0;i<RashDocuments.length;i++) {
+                        RashDocuments[i]=RashDocument.AddObject(ad, TableFactory);
+                        Name.ChangeProperty(Session,ad,"РАСХ ДОК "+i.toString(), RashDocuments[i]);
+                    }
+
+                    Integer[] ArticleGroups = new Integer[2];
+                    for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i]=ArticleGroup.AddObject(ad, TableFactory);
+
+                    Name.ChangeProperty(Session,ad,"КОЛБАСА", Articles[0]);
+                    Name.ChangeProperty(Session,ad,"ТВОРОГ", Articles[1]);
+                    Name.ChangeProperty(Session,ad,"МОЛОКО", Articles[2]);
+                    Name.ChangeProperty(Session,ad,"ОБУВЬ", Articles[3]);
+                    Name.ChangeProperty(Session,ad,"ДЖЕМПЕР", Articles[4]);
+                    Name.ChangeProperty(Session,ad,"МАЙКА", Articles[5]);
+
+                    Name.ChangeProperty(Session,ad,"СКЛАД", Stores[0]);
+                    Name.ChangeProperty(Session,ad,"ТЗАЛ", Stores[1]);
+
+                    Name.ChangeProperty(Session,ad,"ПРОДУКТЫ", ArticleGroups[0]);
+                    Name.ChangeProperty(Session,ad,"ОДЕЖДА", ArticleGroups[1]);
+
+                    DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[0]);
+                    DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[1]);
+                    DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[2]);
+                    DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[3]);
+                    DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[4]);
+
+                    DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[0]);
+                    DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[1]);
+                    DocStore.ChangeProperty(Session,ad,Stores[0],RashDocuments[2]);
+                    DocStore.ChangeProperty(Session,ad,Stores[0],RashDocuments[3]);
+                    DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[4]);
+
+            //        DocStore.ChangeProperty(ad,Stores[1],Documents[5]);
+
+                    DocDate.ChangeProperty(Session,ad,1001,PrihDocuments[0]);
+                    DocDate.ChangeProperty(Session,ad,1001,RashDocuments[0]);
+                    DocDate.ChangeProperty(Session,ad,1008,PrihDocuments[1]);
+                    DocDate.ChangeProperty(Session,ad,1009,RashDocuments[1]);
+                    DocDate.ChangeProperty(Session,ad,1010,RashDocuments[2]);
+                    DocDate.ChangeProperty(Session,ad,1011,RashDocuments[3]);
+                    DocDate.ChangeProperty(Session,ad,1012,PrihDocuments[2]);
+                    DocDate.ChangeProperty(Session,ad,1014,PrihDocuments[3]);
+                    DocDate.ChangeProperty(Session,ad,1016,RashDocuments[4]);
+                    DocDate.ChangeProperty(Session,ad,1018,PrihDocuments[4]);
+
+                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[0]);
+                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[1]);
+                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[2]);
+                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[3]);
+                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[4]);
+
+                    // Quantity
+                    PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[0],Articles[0]);
+                    RashQuantity.ChangeProperty(Session,ad,5,RashDocuments[0],Articles[0]);
+                    RashQuantity.ChangeProperty(Session,ad,3,RashDocuments[1],Articles[0]);
+
+                    PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[0],Articles[1]);
+                    PrihQuantity.ChangeProperty(Session,ad,2,PrihDocuments[1],Articles[1]);
+                    PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[3],Articles[1]);
+                    RashQuantity.ChangeProperty(Session,ad,14,RashDocuments[2],Articles[1]);
+
+                    PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[3],Articles[2]);
+                    RashQuantity.ChangeProperty(Session,ad,2,RashDocuments[1],Articles[2]);
+                    RashQuantity.ChangeProperty(Session,ad,10,RashDocuments[3],Articles[2]);
+                    PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[4],Articles[2]);
+
+                    PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[3],Articles[3]);
+
+                    RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[2],Articles[4]);
+                    RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[3],Articles[4]);
+
+                    GrStQty.ChangeProperty(Session,ad,5,ArticleGroups[0],Stores[0]);
+                    GrStQty.ChangeProperty(Session,ad,4,ArticleGroups[0],Stores[1]);
+                    GrStQty.ChangeProperty(Session,ad,3,ArticleGroups[1],Stores[0]);
+
+                    Apply(ad,Session);
+
+                    Session = CreateSession();
+
+                    DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[0]);
+                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[0]);
+                    
+                    Apply(ad,Session);
+
+//                    TableFactory.ReCalculateAggr = true;
+//                    QtyGrSt.Property.Out(ad);
+//                    TableFactory.ReCalculateAggr = false;
+//                    QtyGrSt.Property.Out(ad);
+                    CheckPersistent(ad);
                 }
             }
 
-            TableImplement Include;
-            
-            if(Implements) {
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Article));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Store));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(ArticleGroup));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Article));
-                Include.add(new DataPropertyInterface(Document));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Article));
-                Include.add(new DataPropertyInterface(Store));
-                TableFactory.IncludeIntoGraph(Include);
-            }
         }
     }
     
@@ -828,7 +960,7 @@ class BusinessLogics {
         Multiply.Interfaces.add(new FormulaPropertyInterface(BaseClass));
         RandProps.add(Multiply);
 
-        int DataPropCount = Randomizer.nextInt(20)+1;
+        int DataPropCount = Randomizer.nextInt(15)+1;
         for(int i=0;i<DataPropCount;i++) {
             // DataProperty
             DataProperty DataProp = new DataProperty(TableFactory,Classes.get(Randomizer.nextInt(Classes.size())));
@@ -1042,20 +1174,23 @@ class BusinessLogics {
         // сгенерить св-ва
         // сгенерить физ. модель
         // сгенерить persistent аггрегации
-        OpenTest(false,false,false,false);
+//        OpenTest(false,false,false,false,false);
+        
+        OpenTest(true,true,false,false,false);
+//        if(true) return;
 
         Random Randomizer = new Random();
 //        Randomizer.setSeed(1000);
 
         while(true) {
-            RandomClasses(Randomizer);
+//            RandomClasses(Randomizer);
 
-            RandomProperties(Randomizer);
+//            RandomProperties(Randomizer);
             
             RandomImplement(Randomizer);
 
             RandomPersistent(Randomizer);
-
+            
             DataAdapter Adapter = new DataAdapter();
             Adapter.Connect("");
 
@@ -1091,13 +1226,12 @@ class BusinessLogics {
             ChangesSession Session = new ChangesSession(Iterations++);
             System.out.println(Iterations);
 
-            int PropertiesChanged = Randomizer.nextInt(10)+1;
+            int PropertiesChanged = Randomizer.nextInt(8)+1;
             for(int ip=0;ip<PropertiesChanged;ip++) {
                 // берем случайные n св-в
                 DataProperty ChangeProp = DataProperties.get(Randomizer.nextInt(DataProperties.size()));
-                int NumChanges = Randomizer.nextInt(20)+1;
-                for(int in=0;in<NumChanges;in++) {
-                    Object ValueObject = ChangeProp.Value.GetRandomObject(Adapter,TableFactory,Randomizer,Iterations);
+                int NumChanges = Randomizer.nextInt(3)+1;
+                for(int in=0;in<NumChanges;in++) {                    
 /*                    // теперь определяем класс найденного объекта
                     Class ValueClass = null;
                     if(ChangeProp.Value instanceof ObjectClass)
@@ -1113,12 +1247,47 @@ class BusinessLogics {
                     for(DataPropertyInterface Interface : ChangeProp.Interfaces)
                         Keys.put(Interface,(Integer)Classes.get(Interface).GetRandomObject(Adapter,TableFactory,Randomizer,0));
                     
+                    Object ValueObject = null;
+                    if(Randomizer.nextInt(10)<8)
+                        ValueObject = ChangeProp.Value.GetRandomObject(Adapter,TableFactory,Randomizer,Iterations);
+                    
                     ChangeProp.ChangeProperty(Adapter,Keys,ValueObject,Session);
                 }
             }
             
+/*            for(DataProperty Property : Session.Properties) {
+                Property.OutChangesTable(Adapter, Session);
+            }*/
+                
+                
             Apply(Adapter,Session);
             CheckPersistent(Adapter);
         }
     }
 }
+
+
+/*
+ *             if(!TableFactory.Crash) {
+                for(AggregateProperty Prop : PersistentProperties)
+                    if(Prop.OutName.equals("макс. операция")) {
+                        System.out.println("-макс. операция--AFTER PERS ----");
+                        Prop.Out(Adapter);
+                        System.out.println("-макс. операция--AFTER RECA ----");
+                        TableFactory.ReCalculateAggr = true;
+                        Prop.Out(Adapter);
+                        TableFactory.ReCalculateAggr = false;
+                    }
+
+                for(AggregateProperty Prop : PersistentProperties)
+                    if(Prop.OutName.equals("приход по складу")) {
+                        System.out.println("-приход по складу--AFTER PERS ----");
+                        Prop.Out(Adapter);
+                        System.out.println("-приход по складу--AFTER RECA ----");
+                        TableFactory.ReCalculateAggr = true;
+                        Prop.Out(Adapter);
+                        TableFactory.ReCalculateAggr = false;
+                    }
+
+                TableFactory.Crash = true;
+*/

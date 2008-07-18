@@ -177,15 +177,27 @@ class UnionQuery extends Query {
                             // значение применяем оператор
                             Integer FieldCoeff = Coeffs.get(SelectQuery);
                             
-                            ListSourceExpr OldValue = null;
-                            if(ResultQuery.Expressions.containsKey(Field))
-                                OldValue = (ListSourceExpr)ResultQuery.Expressions.get(Field);
-                            else {
-                                OldValue = new ListSourceExpr(Operator);
-                                ResultQuery.Expressions.put(Field,OldValue);
-                            }
+                            if(Operator<=2) {
+                                ListSourceExpr OldValue = null;
+                                if(ResultQuery.Expressions.containsKey(Field))
+                                    OldValue = (ListSourceExpr)ResultQuery.Expressions.get(Field);
+                                else {
+                                    OldValue = new ListSourceExpr(Operator);
+                                    ResultQuery.Expressions.put(Field,OldValue);
+                                }
                         
-                            OldValue.AddOperand(NewValue,FieldCoeff);
+                                OldValue.AddOperand(NewValue,FieldCoeff);
+                            } else {
+                                // 3 - если ключ есть то значение иначе то что было
+                                SourceExpr OldValue = ResultQuery.Expressions.get(Field);
+                                if(OldValue!=null) {
+                                    List<SourceExpr> NullKeys = new ArrayList();
+                                    // первый попавшийся ключ
+                                    NullKeys.add(new FieldSourceExpr(Query,Keys.iterator().next()));
+                                    NewValue = new NullValueSourceExpr(NullKeys,OldValue,NewValue);
+                                }
+                                ResultQuery.Expressions.put(Field,NewValue);
+                            }
                         } else {
                             // ключ всегда на IsNull
                             if(LastQuery!=null)
@@ -430,6 +442,8 @@ class ValueSourceExpr extends SourceExpr {
     Object Value;
 
     public String GetSource() {
+        if(Value==null) return "NULL";
+                
         if(Value instanceof String) 
             return "'" + Value + "'";
         else
@@ -511,32 +525,43 @@ class IsNullSourceExpr extends SourceExpr {
 }
 
 
-class NullZeroSourceExpr extends SourceExpr {
+
+
+class NullValueSourceExpr extends SourceExpr {
     
-    NullZeroSourceExpr(SourceExpr iExpr) {Expr=iExpr;};
+    NullValueSourceExpr(Collection<SourceExpr> iExprs,SourceExpr iTrueExpr,SourceExpr iFalseExpr) {Exprs=iExprs; TrueExpr=iTrueExpr; FalseExpr=iFalseExpr;};
     
-    SourceExpr Expr;
+    Collection<SourceExpr> Exprs;
+    SourceExpr TrueExpr;
+    SourceExpr FalseExpr;
 
     public String GetSource() {
-        return "(CASE WHEN " + Expr.GetSource() + " IS NULL THEN NULL ELSE 0 END)";
+        
+        String Filter = "";
+        for(SourceExpr Expr : Exprs) 
+            Filter = (Filter.length()==0?"":Filter+" OR ") + Expr.GetSource() + " IS NULL ";
+        
+        return "(CASE WHEN " + Filter + " THEN " + TrueExpr.GetSource() + " ELSE " + FalseExpr.GetSource() + " END)";
     }
     
     @Override
     public boolean equals(Object o) {
         if(this==o) return true;
-        if(!(o instanceof NullZeroSourceExpr)) return false;
+        if(!(o instanceof NullValueSourceExpr)) return false;
         
-        return Expr.equals(((NullZeroSourceExpr)o).Expr);
+        return Exprs.equals(((NullValueSourceExpr)o).Exprs) && TrueExpr.equals(((NullValueSourceExpr)o).TrueExpr) && FalseExpr.equals(((NullValueSourceExpr)o).FalseExpr);
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.Expr != null ? this.Expr.hashCode() : 0);
+        int hash = 5;
+        hash = 73 * hash + (this.Exprs != null ? this.Exprs.hashCode() : 0);
+        hash = 73 * hash + (this.TrueExpr != null ? this.TrueExpr.hashCode() : 0);
+        hash = 73 * hash + (this.FalseExpr != null ? this.FalseExpr.hashCode() : 0);
         return hash;
     }
-}
 
+}
 class FormulaSourceExpr extends SourceExpr {
    
    FormulaSourceExpr(String iFormula) {Formula=iFormula; Params=new HashMap<String,SourceExpr>();};

@@ -38,7 +38,7 @@ interface PropertyInterfaceImplement {
     // для increment'ного обновления
     public boolean MapHasChanges(ChangesSession Session);
     
-    abstract boolean MapFillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet);
+    abstract boolean MapFillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session);
 
 }
         
@@ -70,7 +70,7 @@ class PropertyInterface implements PropertyInterfaceImplement {
     }
 
     // заполняет список, возвращает есть ли изменения
-    public boolean MapFillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet) {
+    public boolean MapFillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
         return false;
     }
 }
@@ -159,7 +159,7 @@ abstract class Property<T extends PropertyInterface> {
     abstract boolean HasChanges(ChangesSession Session);
 
     // заполняет список, возвращает есть ли изменения
-    abstract boolean FillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet);
+    abstract boolean FillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session);
     
     SelectQuery GetOutSelect(DataAdapter Adapter) {
         JoinList Joins = new JoinList();
@@ -398,12 +398,12 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     abstract Table GetTable(Map<KeyField,T> MapJoins);
     
     boolean IsPersistent() {
-        return Field!=null;
+        return Field!=null && !(this instanceof AggregateProperty && TableFactory.ReCalculateAggr); // для тестирования 2-е условие
     }
             
     // при текущей реализации проше предполагать что не имплементнутые Interface имеют null Select !!!!!
     SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
-        if(IsPersistent() && !(this instanceof AggregateProperty && TableFactory.ReCalculateAggr)) { // для тестирования 2-е условие
+        if(IsPersistent()) { 
             Map<KeyField,T> MapJoins = new HashMap();
             Table SourceTable = GetTable(MapJoins);
 
@@ -524,6 +524,12 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         
         InsertKeys.put(ChangeTable.Property,ID);
         InsertKeys.put(ChangeTable.Session,Session.ID);
+        
+        if(NewValue instanceof Integer && ((Integer)NewValue).equals(0))
+            NewValue = null;
+
+        if(NewValue instanceof String && ((String)NewValue).equals("0"))
+            NewValue = null;
 
         Map<Field,Object> InsertValues = new HashMap();
         InsertValues.put(ChangeTable.Value,NewValue);
@@ -536,8 +542,8 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
     }
     
     // заполняет список, возвращает есть ли изменения
-    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet) {
-        return ChangedSet.contains(this);
+    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
+        return Session==null || Session.Properties.contains(this);
     }
     
     // заполним старыми значениями (LEFT JOIN'ом)
@@ -551,6 +557,11 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
             Update.From.Wheres.add(new FieldWhere(new ValueSourceExpr(ID),ChangeTable.Property.Name));
 
             Adapter.UpdateRecords(Update);
+        }
+        
+        if(TableFactory.Crash) {
+            System.out.println(OutName);
+            OutChangesTable(Adapter, Session);
         }
     }
 }
@@ -597,7 +608,10 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
         ResultQuery.ValueKeys.put(ChangeTable.Session.Name,Session.ID);
         ResultQuery.ValueKeys.put(ChangeTable.Property.Name,ID);
 
-//        Adapter.OutSelect(ResultQuery);
+        if(TableFactory.Crash) {
+           System.out.println(OutName);
+           Adapter.OutSelect(ResultQuery);
+        }
         Adapter.InsertSelect(ChangeTable,ResultQuery);
     }
 
@@ -635,7 +649,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
     abstract SourceExpr CalculateJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left);
     
     // проверяет аггрегацию для отладки
-    void CheckAggregation(DataAdapter Adapter,String Caption) throws SQLException {
+    boolean CheckAggregation(DataAdapter Adapter,String Caption) throws SQLException {
         SelectQuery AggrSelect;
         AggrSelect = GetOutSelect(Adapter);
         List<Map<String,Object>> AggrResult = Adapter.ExecuteSelect(AggrSelect);
@@ -649,8 +663,11 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             Map<String,Object> Row = i.next();
             
             boolean ToRemove = false;
-            for(int j=0;!ToRemove && j<Interfaces.size();j++)
-                if(Row.get("key"+(j+1))==null) ToRemove = true;
+            for(Object Value : Row.values())
+                if(Value==null) {
+                    ToRemove = true;
+                    break;
+                }
             
             if(ToRemove || CalcResult.remove(Row))
                 i.remove();
@@ -666,8 +683,11 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             Map<String,Object> Row = i.next();
 
             boolean ToRemove = false;
-            for(int j=0;!ToRemove && j<Interfaces.size();j++)
-                if(Row.get("key"+(j+1))==null) ToRemove = true;
+            for(Object Value : Row.values())
+                if(Value==null) {
+                    ToRemove = true;
+                    break;
+                }
 
             if(ToRemove)
                 i.remove();
@@ -688,7 +708,94 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             i = CalcResult.iterator();
             while(i.hasNext()) 
                 System.out.println(i.next());
+            
+            return false;
         }
+        
+        return true;
+    }
+}
+
+class ValueProperty extends AggregateProperty<DataPropertyInterface> {
+
+    Class ValueClass;
+    Object Value;
+    
+    ValueProperty(TableFactory iTableFactory, Class iValueClass, Object iValue) {
+        super(iTableFactory);
+        ValueClass = iValueClass;
+        Value = iValue;
+    }
+    
+    void FillRequiredChanges(ChangesSession Session) {
+        // этому св-ву чужого не надо
+    }
+
+    boolean FillAggregateList(List<AggregateProperty> ChangedProperties, ChangesSession Session) {
+        return false;
+    }
+
+    Query QueryIncrementChanged(ChangesSession Session) {
+        return null;
+    }
+
+    SourceExpr CalculateJoinSelect(JoinList Joins, Map<PropertyInterface, SourceExpr> JoinImplement, boolean Left) {
+        
+        List<SourceExpr> KeyList = new ArrayList();
+                
+        for(DataPropertyInterface ValueInterface : Interfaces) {
+            FromTable JoinTable = TableFactory.ObjectTable.ClassSelect(ValueInterface.Class);
+            // нужно также проверить кэш, но пока не будем
+
+            SourceExpr JoinExpr = JoinImplement.get(ValueInterface);
+            if(JoinExpr==null) {
+                JoinExpr = new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name);
+                JoinImplement.put(ValueInterface,JoinExpr);
+            } else 
+                JoinTable.Wheres.add(new FieldWhere(JoinExpr,TableFactory.ObjectTable.Key.Name));
+            KeyList.add(JoinExpr);
+            
+            if(Left) JoinTable.JoinType = "LEFT";
+            Joins.add(JoinTable);
+        }
+
+        if(Left)
+            return new NullValueSourceExpr(KeyList,new ValueSourceExpr(null),new ValueSourceExpr(Value));
+        else
+            return new ValueSourceExpr(Value);
+    }
+
+    public Class GetValueClass(InterfaceClass ClassImplement) {
+        // аналогично DataProperty\только без перегрузки классов
+        for(DataPropertyInterface ValueInterface : Interfaces)
+            if(!ClassImplement.get(ValueInterface).IsParent(ValueInterface.Class))
+                return null;
+
+        return ValueClass;
+    }
+
+    public InterfaceClassSet GetClassSet(Class ReqValue) {
+        // аналогично DataProperty\только без перегрузки классов
+        InterfaceClassSet Result = new InterfaceClassSet();
+
+        if(ReqValue==null || ValueClass.IsParent(ReqValue)) {
+            InterfaceClass ResultInterface = new InterfaceClass();
+            for(DataPropertyInterface ValueInterface : Interfaces)
+                ResultInterface.put(ValueInterface, ValueInterface.Class);
+            Result.add(ResultInterface);
+        }
+
+        return Result;
+    }
+
+    public String GetDBType() {
+        if(Value instanceof Integer)
+            return "integer";
+
+        if(Value instanceof String)
+            return "char(50)";
+        
+        return null;
     }
 }
 
@@ -749,8 +856,8 @@ class PropertyMapImplement extends PropertyImplement<ObjectProperty,PropertyInte
     }
     
     // заполняет список, возвращает есть ли изменения
-    public boolean MapFillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet) {
-        return Property.FillAggregateList(ChangedProperties,ChangedSet);
+    public boolean MapFillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
+        return Property.FillAggregateList(ChangedProperties,Session);
     }
 }
 
@@ -882,7 +989,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
            QueryIncrementType = 0;
         
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Session,(MultiplyRelation?1:2)); // по умолчанию на ISNULL (но если Multiply то 1 на сумму)
+        UnionQuery ResultQuery = GetChangeUnion(Session,(MultiplyRelation?1:3)); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
         if(QueryIncrementType==2) ResultQuery.Values.add(ChangeTable.PrevValue.Name);
 
         // строим все подмножества св-в в лексикографическом порядке
@@ -907,7 +1014,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
 
                 SourceExpr ValueExpr = null;
                 if(ij==0) 
-                    ValueExpr = Implements.Property.JoinSelect(Joins,MapJoinImplement,false);
+                    ValueExpr = Implements.Property.JoinSelect(Joins,MapJoinImplement,true);
                 else {
                     ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,QueryIncrementType,false);
                     if(QueryIncrementType==2) {
@@ -944,13 +1051,13 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
     }
     
     // заполняет список, возвращает есть ли изменения
-    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet) {
+    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
         if(ChangedProperties.contains(this)) return true;
 
-        boolean Changed = Implements.Property.FillAggregateList(ChangedProperties,ChangedSet);
+        boolean Changed = Implements.Property.FillAggregateList(ChangedProperties,Session);
 
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Implements.Property.Interfaces)
-            Changed = Implements.Mapping.get(Interface).MapFillAggregateList(ChangedProperties,ChangedSet) || Changed;
+            Changed = Implements.Mapping.get(Interface).MapFillAggregateList(ChangedProperties,Session) || Changed;
 
         if(Changed)
             ChangedProperties.add(this);
@@ -1094,13 +1201,13 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     }
     
     // заполняет список, возвращает есть ли изменения
-    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet) {
+    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
         if(ChangedProperties.contains(this)) return true;
 
-        boolean Changed = GroupProperty.FillAggregateList(ChangedProperties,ChangedSet);
+        boolean Changed = GroupProperty.FillAggregateList(ChangedProperties,Session);
 
         for(GroupPropertyInterface Interface : Interfaces)
-            Changed = Interface.Implement.MapFillAggregateList(ChangedProperties,ChangedSet) || Changed;
+            Changed = Interface.Implement.MapFillAggregateList(ChangedProperties,Session) || Changed;
 
         if(Changed)
             ChangedProperties.add(this);
@@ -1118,7 +1225,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         // InterfaceEmptySet -> true - включать пустое подмн-во, false - не включать
         // P GroupValue -> чтобы знать на какое значение считать =(0)/+(1)/prev(2), Operand определяет SUM\MAX
 
-        UnionQuery DataQuery = new UnionQuery(2);
+        UnionQuery DataQuery = new UnionQuery(3);
                     
         // заполняем ключи и значения для DataQuery
         int DataKeysNum = 1;
@@ -1293,7 +1400,7 @@ class MaxGroupProperty extends GroupProperty {
 
         StartChangeTable(Adapter,Session);
         // конечный результат, с ключами и выражением 
-        UnionQuery ChangeQuery = new UnionQuery(2);
+        UnionQuery ChangeQuery = new UnionQuery(3);
         FromQuery FromChangeQuery = new FromQuery(ChangeQuery);
         SelectQuery ResultQuery = new SelectQuery(FromChangeQuery);
 
@@ -1413,7 +1520,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
             Map<KeyField,PropertyInterface> CommonJoins = null;
             for(PropertyMapImplement Operand : Operands) {
                 ObjectProperty OpProperty = (ObjectProperty)Operand.Property;
-                if(OpProperty.Field!=null) {
+                if(OpProperty.IsPersistent()) {
                     Map<KeyField,PropertyInterface> MapJoins = new HashMap();
                     Table SourceTable = OpProperty.GetTable(MapJoins);
                     // дальше придется Map'нуть на базовый интерфейс 
@@ -1432,7 +1539,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
                 } else
                     IsCommon = false;
                 
-                if(IsCommon)
+                if(!IsCommon)
                     break;
             }
         }
@@ -1521,13 +1628,13 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
         return Operands.iterator().next().Property.GetDBType();        
     }
 
-    boolean FillAggregateList(List<AggregateProperty> ChangedProperties, Set<DataProperty> ChangedSet) {
+    boolean FillAggregateList(List<AggregateProperty> ChangedProperties, ChangesSession Session) {
         if(ChangedProperties.contains(this)) return true;
 
         boolean Changed = false;
 
         for(PropertyMapImplement Operand : Operands)
-            Changed = Operand.MapFillAggregateList(ChangedProperties,ChangedSet) || Changed;
+            Changed = Operand.MapFillAggregateList(ChangedProperties,Session) || Changed;
 
         if(Changed)
             ChangedProperties.add(this);
@@ -1557,7 +1664,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
         boolean SumList = (Operator==1 && ValueType==1);
         
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Session,SumList?1:2);
+        UnionQuery ResultQuery = GetChangeUnion(Session,SumList?1:3);
         if(ValueType==2) ResultQuery.Values.add(ChangeTable.PrevValue.Name);
 
         ListIterator<List<PropertyMapImplement>> il = null;
@@ -1597,8 +1704,11 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
                 for(PropertyMapImplement Operand : Operands) {
                     if(!ChangedProps.contains(Operand)) {
                         SourceExpr OperandExpr = Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,0);
-                        if(Operator==2 && ValueType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение)
-                            OperandExpr = new NullZeroSourceExpr(OperandExpr);
+                        if(Operator==2 && ValueType==1) { // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
+                            List<SourceExpr> NullValues = new ArrayList();
+                            NullValues.add(OperandExpr);
+                            OperandExpr = new NullValueSourceExpr(NullValues,new ValueSourceExpr(null),new ValueSourceExpr(0));
+                        }
 
                         ResultExpr.AddOperand(OperandExpr,Coeffs.get(Operand));
                         if(ValueType==2) PrevExpr.AddOperand(Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,2),Coeffs.get(Operand));
@@ -1690,6 +1800,7 @@ class OverrideListProperty extends ListProperty {
     }
 }
 
+
 // ФОРМУЛЫ
 
 class FormulaPropertyInterface extends PropertyInterface {
@@ -1730,7 +1841,7 @@ abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Prope
     }
     
     // заполняет список, возвращает есть ли изменения
-    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,Set<DataProperty> ChangedSet) {
+    public boolean FillAggregateList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
         return false;
     }
 }
