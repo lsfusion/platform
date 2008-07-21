@@ -191,6 +191,10 @@ class ClientFormBean {
                 ClientObjectImplement clientObject = new ClientObjectImplement();
                 clientObject.groupObject = clientGroup;
                 
+                clientObject.caption = object.OutName;
+                
+                clientGroup.add(clientObject);
+                
                 objects.put(object, clientObject);
                 listObjects.add(clientObject);
             }
@@ -359,6 +363,56 @@ class ClientFormBean {
         }
         
         System.out.println("Change : " + value.toString());
+//        formChanges.Out(formBean);
+
+        return convertFormChangesToClient(formChanges);
+        
+    }
+
+    ClientFormChanges addObject(ClientObjectImplement clientObject) {
+        
+        MapUtils<ObjectImplement, ClientObjectImplement> mou = new MapUtils();
+        ObjectImplement object = mou.getKey(objects, clientObject);
+        
+        try {
+            formBean.AddObject(object);
+        } catch(Exception e) {
+            
+        }
+        
+        FormChanges formChanges = null;
+        try {
+            formChanges = formBean.EndApply();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
+//        System.out.println("Change : " + value.toString());
+//        formChanges.Out(formBean);
+
+        return convertFormChangesToClient(formChanges);
+        
+    }
+
+    ClientFormChanges changeClass(ClientObjectImplement clientObject) {
+        
+        MapUtils<ObjectImplement, ClientObjectImplement> mou = new MapUtils();
+        ObjectImplement object = mou.getKey(objects, clientObject);
+        
+        try {
+            formBean.ChangeClass(object, null);
+        } catch(Exception e) {
+            
+        }
+        
+        FormChanges formChanges = null;
+        try {
+            formChanges = formBean.EndApply();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
+//        System.out.println("Change : " + value.toString());
 //        formChanges.Out(formBean);
 
         return convertFormChangesToClient(formChanges);

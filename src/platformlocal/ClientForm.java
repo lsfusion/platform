@@ -189,6 +189,14 @@ public class ClientForm extends FrameView {
         applyFormChanges(clientBean.changeProperty(property, value));
     }
     
+    void addObject(ClientObjectImplement object) {
+        applyFormChanges(clientBean.addObject(object));
+    }
+    
+    void changeClass(ClientObjectImplement object) {
+        applyFormChanges(clientBean.changeClass(object));
+    }
+    
     class View extends JPanel {
         
         ClientGroupObjectImplement groupObject;
@@ -209,6 +217,7 @@ public class ClientForm extends FrameView {
             c.fill = GridBagConstraints.BOTH;
             c.weightx = 1;
             c.gridx = 0;
+            c.gridwidth = 2;
             
             groupObject = igroupObject;
 
@@ -220,6 +229,37 @@ public class ClientForm extends FrameView {
             c.weighty = 0.3;
             add(panel, c);
             
+            for (final ClientObjectImplement object : groupObject) {
+                
+                c.gridwidth = 1;
+                c.weighty = 0;
+                c.gridy = 2;
+                
+                c.gridx = 0;
+                JButton buttonAdd = new JButton("Добавить(" + object.caption + ")");
+                buttonAdd.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        addObject(object);
+                    }
+                    
+                });
+                
+                add(buttonAdd, c);
+                
+                c.gridx = 1;
+                JButton buttonDel = new JButton("Удалить(" + object.caption + ")");
+                buttonDel.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        changeClass(object);
+                    }
+                    
+                });
+                
+                add(buttonDel, c);
+            }
+            
 /*            JButton test = new JButton("Test");
             test.addActionListener(new ActionListener() {
 
@@ -230,6 +270,8 @@ public class ClientForm extends FrameView {
             });
             
             add(test, c); */
+            
+            
             
         }
         
@@ -501,7 +543,7 @@ public class ClientForm extends FrameView {
             
             public void addGroupObjectID() {
                 
-                for (ClientObjectImplement object : currentObject.keySet()) {
+                for (ClientObjectImplement object : groupObject) {
                     
                     ObjectIDGrid idview = new ObjectIDGrid(object);
                     
