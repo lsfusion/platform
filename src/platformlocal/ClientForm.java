@@ -51,6 +51,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -61,6 +62,12 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.jdesktop.application.FrameView;
 import org.jdesktop.application.SingleFrameApplication;
+
+interface ViewPropertyTable {
+    
+    ClientPropertyView getPropertyView(int row, int col);
+    
+}
 
 public class ClientForm extends FrameView {
 
@@ -145,7 +152,7 @@ public class ClientForm extends FrameView {
         }
        
         for (ClientGroupObjectImplement groupObject : formChanges.Objects.keySet()) {
-            views.get(groupObject).setCurrentObject(formChanges.Objects.get(groupObject));
+            views.get(groupObject).setCurrentObject(formChanges.Objects.get(groupObject),false);
         }
        
         // Затем их свойства
@@ -165,9 +172,14 @@ public class ClientForm extends FrameView {
     
     void changeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
         
-        views.get(groupObject).setCurrentObject(objectValue);
+        if (!objectValue.equals(views.get(groupObject).getCurrentObject())) {
+            
+            System.out.println("oldval : " + views.get(groupObject).getCurrentObject().toString());
+            views.get(groupObject).setCurrentObject(objectValue, true);
+            System.out.println("newval : " + objectValue.toString());
 
-        applyFormChanges(clientBean.changeObject(groupObject, objectValue));
+            applyFormChanges(clientBean.changeObject(groupObject, objectValue));
+        }
         
     }
     
@@ -227,13 +239,22 @@ public class ClientForm extends FrameView {
             
         }
         
-        public void setCurrentObject(ClientGroupObjectValue value) {
+        public ClientGroupObjectValue getCurrentObject() {
+            return currentObject;
+        }
+        
+        public void setCurrentObject(ClientGroupObjectValue value, Boolean userChange) {
     
-            boolean change = value.equals(currentObject);
-                
+            boolean realChange = value.equals(currentObject);
+
+            if (currentObject != null)
+                System.out.println("view - oldval : " + currentObject.toString() + " ; userChange " + userChange.toString() );
+            if (value != null)
+                System.out.println("view - newval : " + value.toString() + " ; userChange " + userChange.toString());
+            
             currentObject = value;
             
-            if (change)
+            if (!userChange && realChange)
                 grid.selectObject(currentObject);
         }
         
@@ -247,42 +268,19 @@ public class ClientForm extends FrameView {
             grid.setPropertyValues(property, values);
         }
         
-        class PropertyCellEditor extends DefaultCellEditor {
+        class PropertyCellEditor extends AbstractCellEditor 
+                                 implements TableCellEditor {
 
-            JFormattedTextField ftf;
+            PropertyEditorComponent currentComp;
             Object value;
             
             public PropertyCellEditor() {
-                super (new JFormattedTextField());
-                
-                ftf = (JFormattedTextField)getComponent();
-
-                ftf.setFocusLostBehavior(JFormattedTextField.PERSIST);
-                
-                //React when the user presses Enter while the editor is
-                //active.  (Tab is handled as specified by
-                //JFormattedTextField's focusLostBehavior property.)
-                ftf.getInputMap().put(KeyStroke.getKeyStroke(
-                                                KeyEvent.VK_ENTER, 0),
-                                                "check");
-                ftf.getActionMap().put("check", new AbstractAction() {
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println("actionPerformed");
-                        try {
-                            ftf.commitEdit();
-                        } catch (java.text.ParseException exc) { }
-                        ftf.postActionEvent(); //stop editing
-                    }
-                });
-                
+             
             }
 
             public Object getCellEditorValue() {
                 
-                JFormattedTextField ftf = (JFormattedTextField)getComponent();
-                return ftf.getValue();
-//                if (value instanceof Integer) return Integer.parseInt(tft.getText());
-//                return tft.getText();
+                return currentComp.getValue();
                 
             }
 
@@ -294,13 +292,11 @@ public class ClientForm extends FrameView {
 
                 value = ivalue;
                 
-                JFormattedTextField tft =
-                    (JFormattedTextField)super.getTableCellEditorComponent(
-                        table, value, isSelected, row, column);
-                tft.setValue(value);
-                tft.selectAll();
+                ClientPropertyView property = ((ViewPropertyTable)table).getPropertyView(row, column);
+                currentComp = property.getEditorComponent();
+                currentComp.setValue(value);
                 
-                return tft;
+                return currentComp.getComponent();
             }
 
         }
@@ -393,7 +389,8 @@ public class ClientForm extends FrameView {
                     repaint();
                 }
                 
-                class PropertyTable extends JTable {
+                class PropertyTable extends JTable 
+                                    implements ViewPropertyTable {
 
                     PropertyModel model;
 
@@ -464,6 +461,10 @@ public class ClientForm extends FrameView {
                             changeProperty(property,value);
                         }
                         
+                    }
+
+                    public ClientPropertyView getPropertyView(int row, int col) {
+                        return property;
                     }
                     
                 }
@@ -546,6 +547,7 @@ public class ClientForm extends FrameView {
                 
                 if (newindex != -1 && oldindex != -1 && newindex != oldindex) {
                     
+                    System.out.println("setgridobjects + leadselection");
                     table.getSelectionModel().setLeadSelectionIndex(newindex);
                     
                     final Point ViewPos = pane.getViewport().getViewPosition();
@@ -578,7 +580,8 @@ public class ClientForm extends FrameView {
                 
             }
             
-            public class Table extends JTable {
+            public class Table extends JTable
+                               implements ViewPropertyTable {
                 
                 Model model;
                 
@@ -596,7 +599,6 @@ public class ClientForm extends FrameView {
                     });
                     
                     setDefaultEditor(Object.class, new PropertyCellEditor());
-                    setDefaultEditor(Integer.class, new PropertyCellEditor());
 
                 }
                 
@@ -613,9 +615,9 @@ public class ClientForm extends FrameView {
                 
                 class Model extends AbstractTableModel {
 
-                    public java.lang.Class getColumnClass(int c) {
+/*                    public java.lang.Class getColumnClass(int c) {
                         return getValueAt(0, c).getClass();
-                    }
+                    }*/
 
                     public String getColumnName(int col) {
                         return gridProperties.get(col).caption;
@@ -652,10 +654,72 @@ public class ClientForm extends FrameView {
                     }
 
                 }
+
+                public ClientPropertyView getPropertyView(int row, int col) {
+                    return gridProperties.get(col);
+                }
             }
             
         }
         
+    }
+    
+}
+
+interface PropertyEditorComponent {
+
+    Component getComponent();
+    
+    void setValue(Object value);
+    Object getValue();
+    
+}
+
+
+class TextFieldPropertyEditor extends JTextField {
+
+    public TextFieldPropertyEditor() {
+        setBorder(new EmptyBorder(0, 1, 0, 0));
+    }
+    
+}
+
+class IntegerPropertyEditor extends TextFieldPropertyEditor 
+                            implements PropertyEditorComponent {
+
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value) {
+        setText(value.toString());
+        selectAll();
+    }
+
+    public Object getValue() {
+        try {
+            return Integer.parseInt(this.getText());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+    
+}
+
+class StringPropertyEditor extends TextFieldPropertyEditor 
+                           implements PropertyEditorComponent {
+
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value) {
+        setText(value.toString());
+        selectAll();
+    }
+
+    public Object getValue() {
+        return (String)getText();
     }
     
 }

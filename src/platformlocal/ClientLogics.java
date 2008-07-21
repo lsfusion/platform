@@ -98,6 +98,15 @@ class ClientPropertyView {
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
     
+    public PropertyEditorComponent getEditorComponent() {
+        
+        if (type.equals("integer")) return new IntegerPropertyEditor();
+        if (type.equals("char(50)")) return new StringPropertyEditor();
+        
+        return new StringPropertyEditor();
+        
+    }
+    
     String caption;
 
 }
@@ -306,8 +315,10 @@ class ClientFormBean {
             System.out.println(e);
         }
         
-        formChanges.Out(formBean);
+//        formChanges.Out(formBean);
 
+        System.out.println(objectValue.toString());
+        
         return convertFormChangesToClient(formChanges);
         
     }
@@ -330,7 +341,8 @@ class ClientFormBean {
             System.out.println(e);
         }
         
-        formChanges.Out(formBean);
+        System.out.println("Change : " + value.toString());
+//        formChanges.Out(formBean);
 
         return convertFormChangesToClient(formChanges);
         
