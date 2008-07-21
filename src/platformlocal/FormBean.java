@@ -400,7 +400,7 @@ class FormBeanView {
 
     public void AddObject(ObjectImplement Object) throws SQLException {
         // пока тупо в базу 
-        Object.GridClass.AddObject(Adapter,BL.TableFactory);
+        BL.AddObject(Session,Adapter,Object.GridClass);
     }   
 
     // рекурсия для генерации порядка
@@ -513,10 +513,10 @@ class FormBeanView {
             // проверим на изменение данных
             if(!UpdateKeys)
                 for(Filter Filt : Group.Filters)
-                    if(Filt.DataUpdated(ChangedProps)) {UpdateKeys = true; break;}
+                    if(DataChanged && Filt.DataUpdated(ChangedProps)) {UpdateKeys = true; break;}
             if(!UpdateKeys)
                 for(PropertyObjectImplement Order : Group.Orders)
-                    if(ChangedProps.contains(Order.Property)) {UpdateKeys = true; break;}
+                    if(DataChanged && ChangedProps.contains(Order.Property)) {UpdateKeys = true; break;}
 
             if(!UpdateKeys && Group.GridClassView) {
                 Map<ObjectImplement,Integer> GroupKey = null;
@@ -787,7 +787,8 @@ class FormBeanView {
         
             for(From Join : JoinProps)
                 SelectProps.From.Joins.add(Join);
-        
+
+            Adapter.OutSelect(SelectProps);
             Map<String,Object> ResultProps = Adapter.ExecuteSelect(SelectProps).get(0);
 
             for(PropertyView DrawProp : PanelProps)
