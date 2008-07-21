@@ -629,17 +629,23 @@ class ListSourceExpr extends SourceExpr {
             else
                 OperandString += Operand.GetSource();
 
-            if(Operator==0 || Operator==1) {
-                if(Result.length()==0) {
-                    Result = OperandString;
-                } else {
-                    if(Operator==1)
+            if(Result.length()==0) {
+                Result = OperandString;
+            } else {
+                switch(Operator) {
+                    case 2:
+                        Result = "CASE WHEN "+OperandString+" IS NULL THEN "+Result+" ELSE "+OperandString+" END";
+//                        Result = "ISNULL(" + OperandString + "," + Result + ")";
+                        break;
+                    case 1:
                         Result = Result+(Coeff>=0?"+":"") + OperandString;
-                    else
+                        break;
+                    case 0:
                         Result = "CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END";
+                        break;
                 }
-            } else
-                Result = (Result.length()==0?OperandString:"ISNULL(" + OperandString + "," + Result + ")");
+            }
+//                Result = (Result.length()==0?OperandString:"ISNULL(" + OperandString + "," + Result + ")");
         }
 
         return "("+Result+")";

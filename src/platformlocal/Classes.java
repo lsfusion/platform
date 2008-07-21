@@ -114,10 +114,10 @@ abstract class Class {
     // получает классы у которого есть оба интерфейса
     Collection<Class> CommonClassSet(Class ToCommon) {
         CommonClassSet1();
-        ToCommon.CommonClassSet2(false);
+        ToCommon.CommonClassSet2(false,null);
         
         Collection<Class> Result = new ArrayList<Class>();
-        CommonClassSet3(Result);
+        CommonClassSet3(Result,null);
         return Result;
     }
     
@@ -130,14 +130,18 @@ abstract class Class {
             Child.CommonClassSet1();
     }
     
-    // 2-й шаг пометки 2, 3
-    private void CommonClassSet2(boolean Set) {
+    // 2-й шаг пометки 
+    // 2 - верхний общий класс
+    // 3 - просто общий класс
+    private void CommonClassSet2(boolean Set,Collection<Class> Free) {
         if(!Set) {
             if(Check>0) {
                 if(Check!=1) return;
                 Check = 2;
                 Set = true;
             }
+            
+            if(Free!=null) Free.add(this);
         } else {
             if(Check==3 || Check==2) {
                 Check = 3;
@@ -148,38 +152,38 @@ abstract class Class {
         }
             
         for(Class Child : Childs)
-            Child.CommonClassSet2(Set);
+            Child.CommonClassSet2(Set,Free);
     }
     
     // 3-й шаг выводит в Set, и сбрасывает пометки
-    private void CommonClassSet3(Collection<Class> Out) {
+    private void CommonClassSet3(Collection<Class> Common,Collection<Class> Free) {
         if(Check==0) return;
-        if(Check==2) Out.add(this);
+        if(Common!=null && Check==2) Common.add(this);
+        if(Free!=null && Check==1) Free.add(this);
+               
         Check = 0;
 
         for(Class Child : Childs)
-            Child.CommonClassSet3(Out);
+            Child.CommonClassSet3(Common,Free);
     }
     
+    void GetDiffSet(Class DiffClass,Collection<Class> AddClasses,Collection<Class> RemoveClasses) {
+        CommonClassSet1();
+        if(DiffClass!=null) DiffClass.CommonClassSet2(false,RemoveClasses);
+
+        CommonClassSet3(null,AddClasses);
+    }
+    
+    // 1-й шаг расставляем пометки 1
+    private void GetDiffSet1() {
+        if(Check==1) return;
+        Check = 1;
+        for(Class Child : Childs)
+            Child.CommonClassSet1();
+    }
+
     String GetDBType() {
         return "integer";
-    }
-    
-    // пока все в параметры кинем, добавляет класс 
-    Integer AddObject(DataAdapter Adapter, TableFactory Factory) throws SQLException {
-
-        Integer FreeID = Factory.IDTable.GenerateID(Adapter);
-        
-        Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-        InsertKeys.put(Factory.ObjectTable.Key, FreeID);
-        Map<Field,Object> InsertProps = new HashMap<Field,Object>();
-        InsertProps.put(Factory.ObjectTable.Class, ID);
-        try {
-        Adapter.InsertRecord(Factory.ObjectTable,InsertKeys,InsertProps);
-        } catch (Exception e) {            
-        }
-        
-        return FreeID;
     }
     
     // получает рандомный объект

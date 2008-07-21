@@ -201,7 +201,11 @@ class ObjectTable extends Table {
         SelectQuery Query = new SelectQuery(new FromTable(Name));
         Query.From.Wheres.add(new FieldValueWhere(idObject,Key.Name));
         Query.Expressions.put("classid",new FieldSourceExpr(Query.From,Class.Name));
-        return (Integer)Adapter.ExecuteSelect(Query).get(0).get("classid");
+        List<Map<String,Object>> Result = Adapter.ExecuteSelect(Query);
+        if(Result.size()>0)
+            return (Integer)Result.get(0).get("classid");
+        else
+            return null;        
     }
   
 }
@@ -291,12 +295,69 @@ class ChangeTable extends Table {
     }
 }
 
+// таблица изменений классов
+// хранит добавляение\удаление классов
+class ChangeClassTable extends Table {
+
+    KeyField Session;
+    KeyField Class;
+    KeyField Object;
+
+    ChangeClassTable(String iTable) {
+        super(iTable);
+
+        Session = new KeyField("session","integer");
+        KeyFields.add(Session);
+        
+        Class = new KeyField("class","integer");
+        KeyFields.add(Class);
+        
+        Object = new KeyField("object","integer");
+        KeyFields.add(Object);
+    }
+    
+    void ChangeClass(DataAdapter Adapter,ChangesSession ChangeSession,Integer idObject,Collection<Class> Classes) throws SQLException {
+
+        for(Class Change : Classes) {
+            Map<KeyField,Integer> InsertKeys = new HashMap();
+            InsertKeys.put(Session,ChangeSession.ID);
+            InsertKeys.put(Object,idObject);
+            InsertKeys.put(Class,Change.ID);
+            Adapter.InsertRecord(this,InsertKeys,new HashMap());
+        }
+    }
+    
+    void DropSession(DataAdapter Adapter,ChangesSession ChangeSession) throws SQLException {
+
+        FromTable DropTable = new FromTable(Name);
+        DropTable.Wheres.add(new FieldValueWhere(ChangeSession.ID,Session.Name));
+        Adapter.DeleteRecords(DropTable);
+    }
+}
+
+class AddClassTable extends ChangeClassTable {
+
+    AddClassTable() {
+        super("addchange");
+    }
+}
+
+class RemoveClassTable extends ChangeClassTable {
+
+    RemoveClassTable() {
+        super("removechange");
+    }
+}
+
 class TableFactory extends TableImplement{
     
     ObjectTable ObjectTable;
     IDTable IDTable;
     List<ViewTable> ViewTables;
     List<List<ChangeTable>> ChangeTables;
+    
+    AddClassTable AddClassTable;
+    RemoveClassTable RemoveClassTable;
     
     // для отладки
     boolean ReCalculateAggr = false;
@@ -313,6 +374,9 @@ class TableFactory extends TableImplement{
         IDTable = new IDTable();
         ViewTables = new ArrayList();
         ChangeTables = new ArrayList();
+        
+        AddClassTable = new AddClassTable();
+        RemoveClassTable = new RemoveClassTable();
         
         for(int i=1;i<5;i++)
             ViewTables.add(new ViewTable(i));
@@ -351,7 +415,10 @@ class TableFactory extends TableImplement{
                 Node.MapFields.put(Interface,Field);
             }
         }
-        
+
+        Adapter.CreateTable(AddClassTable);
+        Adapter.CreateTable(RemoveClassTable);
+
         Adapter.CreateTable(ObjectTable);
         Adapter.CreateTable(IDTable);
         for(ViewTable ViewTable : ViewTables) Adapter.CreateTable(ViewTable);
@@ -400,6 +467,56 @@ class BusinessLogics {
         return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Adapter,idObject));
     }
     
+    Integer AddObject(ChangesSession Session,DataAdapter Adapter,Class Class) throws SQLException {
+
+        Integer FreeID = TableFactory.IDTable.GenerateID(Adapter);
+
+        ChangeClass(Session,Adapter,FreeID,Class);
+        
+        return FreeID;
+    }
+    
+    void ChangeClass(ChangesSession Session,DataAdapter Adapter,Integer idObject,Class Class) throws SQLException {
+        
+        // запишем объекты, которые надо будет сохранять
+        Session.ChangeClasses.put(idObject,Class);
+    }
+    
+    void UpdateClassChanges(ChangesSession Session,DataAdapter Adapter) throws SQLException {
+
+        // дропнем старую сессию
+        TableFactory.AddClassTable.DropSession(Adapter,Session);
+        TableFactory.RemoveClassTable.DropSession(Adapter,Session);
+        
+        for(Integer idObject : Session.ChangeClasses.keySet()) {
+            // узнаем старый класс
+            Class PrevClass = GetClass(Adapter,idObject);
+        
+            // дальше нужно построить "разницу" какие классы ушли и записать в соответствующую таблицу
+            Collection<Class> AddClasses = new ArrayList();
+            Collection<Class> RemoveClasses = new ArrayList();
+            Session.ChangeClasses.get(idObject).GetDiffSet(PrevClass,AddClasses,RemoveClasses);
+            Session.AddClasses.addAll(AddClasses);
+            Session.RemoveClasses.addAll(RemoveClasses);
+
+            // собсно в сессию надо записать все изм. объекты
+            TableFactory.AddClassTable.ChangeClass(Adapter,Session,idObject,AddClasses);
+            TableFactory.RemoveClassTable.ChangeClass(Adapter,Session,idObject,RemoveClasses);
+        }
+    }
+    
+    void SaveClassChanges(ChangesSession Session,DataAdapter Adapter) throws SQLException {
+    
+        for(Integer idObject : Session.ChangeClasses.keySet()) {
+            Map<KeyField,Integer> InsertKeys = new HashMap();
+            InsertKeys.put(TableFactory.ObjectTable.Key, idObject);
+            Map<Field,Object> InsertProps = new HashMap();
+            InsertProps.put(TableFactory.ObjectTable.Class,Session.ChangeClasses.get(idObject).ID);
+        
+            Adapter.UpdateInsertRecord(TableFactory.ObjectTable,InsertKeys,InsertProps);
+        }        
+    }
+    
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
     int SessionCounter = 0;
     ChangesSession CreateSession() {
@@ -418,7 +535,10 @@ class BusinessLogics {
         
     List<AggregateProperty> UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
-        
+
+        // update'им изменения классов
+        UpdateClassChanges(Session,Adapter);
+
         // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         List<AggregateProperty> UpdateList = new ArrayList();
         for(AggregateProperty Property : Properties) Property.FillAggregateList(UpdateList,Session);
@@ -472,6 +592,8 @@ class BusinessLogics {
         UpdateAggregations(Adapter,PersistentProperties,Session);
 
         // записываем Data, затем PersistentProperties в таблицы из сессии
+        SaveClassChanges(Session,Adapter);
+        
         SaveProperties(Adapter,PersistentProperties,Session);
         SaveProperties(Adapter,Session.Properties,Session);
         
@@ -556,6 +678,16 @@ class BusinessLogics {
             ListProperty.AddInterface(Int);
         }
         AddDataProperty(Property);
+        return ListProperty;
+    }
+
+    LDP AddVProp(Object Value,Class ValueClass,Class ...Params) {
+        ValueProperty Property = new ValueProperty(TableFactory,ValueClass,Value);
+        LDP ListProperty = new LDP(Property);
+        for(Class Int : Params) {
+            ListProperty.AddInterface(Int);
+        }
+        Properties.add(Property);
         return ListProperty;
     }
 
@@ -818,25 +950,25 @@ class BusinessLogics {
 
                     Integer i;
                     Integer[] Articles = new Integer[6];
-                    for(i=0;i<Articles.length;i++) Articles[i]=Article.AddObject(ad, TableFactory);
+                    for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session,ad,Article);
 
                     Integer[] Stores = new Integer[2];
-                    for(i=0;i<Stores.length;i++) Stores[i]=Store.AddObject(ad, TableFactory);
+                    for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session,ad,Store);
 
                     Integer[] PrihDocuments = new Integer[6];
                     for(i=0;i<PrihDocuments.length;i++) {
-                        PrihDocuments[i]=PrihDocument.AddObject(ad, TableFactory);
+                        PrihDocuments[i] = AddObject(Session,ad,PrihDocument);
                         Name.ChangeProperty(Session,ad,"ПР ДОК "+i.toString(), PrihDocuments[i]);
                     }
 
                     Integer[] RashDocuments = new Integer[6];
                     for(i=0;i<RashDocuments.length;i++) {
-                        RashDocuments[i]=RashDocument.AddObject(ad, TableFactory);
+                        RashDocuments[i] = AddObject(Session,ad,RashDocument);
                         Name.ChangeProperty(Session,ad,"РАСХ ДОК "+i.toString(), RashDocuments[i]);
                     }
 
                     Integer[] ArticleGroups = new Integer[2];
-                    for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i]=ArticleGroup.AddObject(ad, TableFactory);
+                    for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session,ad,ArticleGroup);
 
                     Name.ChangeProperty(Session,ad,"КОЛБАСА", Articles[0]);
                     Name.ChangeProperty(Session,ad,"ТВОРОГ", Articles[1]);
@@ -1196,13 +1328,6 @@ class BusinessLogics {
 
             FillDB(Adapter);
 
-            // сгенерить объекты (их пока тестить не надо)
-            List<Class> Classes = new ArrayList();
-            BaseClass.FillClassList(Classes);
-            for(Class ObjectClass : Classes)
-                for(int j=0;j<6;j++)
-                    ObjectClass.AddObject(Adapter,TableFactory);
-
             // запустить ChangeDBTest
             ChangeDBTest(Adapter,20,Randomizer);
 
@@ -1223,8 +1348,20 @@ class BusinessLogics {
 //        Randomizer.setSeed(1);
         int Iterations = 2;
         while(Iterations<MaxIterations) {
-            ChangesSession Session = new ChangesSession(Iterations++);
             System.out.println(Iterations);
+
+            ChangesSession Session = CreateSession();
+
+            // будем также рандомно создавать объекты
+            List<Class> AddClasses = new ArrayList();
+            BaseClass.FillClassList(AddClasses);
+            int ObjectAdd = Randomizer.nextInt(2)+1;
+            for(int ia=0;ia<ObjectAdd;ia++) {
+                Class AddClass = AddClasses.get(Randomizer.nextInt(AddClasses.size()));
+                if(AddClass instanceof ObjectClass) {
+                    AddObject(Session,Adapter,AddClass);
+                }
+            }
 
             int PropertiesChanged = Randomizer.nextInt(8)+1;
             for(int ip=0;ip<PropertiesChanged;ip++) {

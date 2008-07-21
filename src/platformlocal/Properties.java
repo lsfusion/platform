@@ -732,11 +732,71 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
     }
 
     boolean FillAggregateList(List<AggregateProperty> ChangedProperties, ChangesSession Session) {
+        if(ChangedProperties.contains(this)) return true;
+        
+        for(DataPropertyInterface ValueInterface : Interfaces)
+            if(Session==null || Session.AddClasses.contains(ValueInterface.Class) || Session.RemoveClasses.contains(ValueInterface.Class)) {
+                ChangedProperties.add(this);
+                return true;
+            }
+        
         return false;
     }
 
     Query QueryIncrementChanged(ChangesSession Session) {
-        return null;
+
+        // работает на = и на + ему собсно пофигу, то есть сразу на 2
+        
+        // для любого изменения объекта на NEW можно определить PREV и соответственно 
+        // Set<Class> пришедшие, Set<Class> ушедшие
+        // соответственно алгоритм бежим по всем интерфейсам делаем UnionQuery из SS изменений + старых объектов
+        
+        // конечный результат, с ключами и выражением 
+        UnionQuery ResultQuery = GetChangeUnion(Session,3); // по сути неважно на что 
+
+        List<DataPropertyInterface> ChangedProperties = new ArrayList();
+        for(DataPropertyInterface ValueInterface : Interfaces)
+            if(Session.AddClasses.contains(ValueInterface.Class))
+                ChangedProperties.add(ValueInterface);
+        
+        ListIterator<List<DataPropertyInterface>> il = (new SetBuilder<DataPropertyInterface>()).BuildSubSetList(ChangedProperties).listIterator();
+        // пустое подмн-во не надо (как и в любой инкрементности)
+        il.next();
+        while(il.hasNext()) {
+            List<DataPropertyInterface> ChangeProps = il.next();
+
+            SelectQuery Query = new SelectQuery(null);
+            JoinList Joins = new JoinList();
+
+            for(DataPropertyInterface ValueInterface : Interfaces) {
+                FromTable JoinTable;
+                SourceExpr JoinExpr;
+                if(ChangeProps.contains(ValueInterface)) {
+                    JoinTable = new FromTable(TableFactory.AddClassTable.Name);
+                    JoinTable.Wheres.add(new FieldValueWhere(Session.ID,TableFactory.AddClassTable.Session.Name));
+                    JoinTable.Wheres.add(new FieldValueWhere(ValueInterface.Class.ID,TableFactory.AddClassTable.Class.Name));
+                    JoinExpr = new FieldSourceExpr(JoinTable,TableFactory.AddClassTable.Object.Name);
+                } else {
+                    JoinTable = TableFactory.ObjectTable.ClassSelect(ValueInterface.Class);
+                    JoinExpr = new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name);
+                }
+
+                Query.Expressions.put(ChangeTableMap.get(ValueInterface).Name,JoinExpr);
+                Joins.add(JoinTable);
+            }
+            
+            ListIterator<From> i = Joins.listIterator();
+            Query.From = i.next();
+            while(i.hasNext()) Query.From.Joins.add(i.next());
+            
+            ResultQuery.Unions.add(Query);
+        }
+        
+        QueryIncrementType = 2;
+        ResultQuery.ValueKeys.put(ChangeTable.Value.Name,(Integer)Value);
+        ResultQuery.ValueKeys.put(ChangeTable.PrevValue.Name,null);
+        
+        return ResultQuery;
     }
 
     SourceExpr CalculateJoinSelect(JoinList Joins, Map<PropertyInterface, SourceExpr> JoinImplement, boolean Left) {
@@ -747,13 +807,14 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
             FromTable JoinTable = TableFactory.ObjectTable.ClassSelect(ValueInterface.Class);
             // нужно также проверить кэш, но пока не будем
 
+            SourceExpr JoinKeyExpr = new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name);
+            KeyList.add(JoinKeyExpr);
+
             SourceExpr JoinExpr = JoinImplement.get(ValueInterface);
-            if(JoinExpr==null) {
-                JoinExpr = new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name);
-                JoinImplement.put(ValueInterface,JoinExpr);
-            } else 
+            if(JoinExpr==null)
+                JoinImplement.put(ValueInterface,JoinKeyExpr);
+            else 
                 JoinTable.Wheres.add(new FieldWhere(JoinExpr,TableFactory.ObjectTable.Key.Name));
-            KeyList.add(JoinExpr);
             
             if(Left) JoinTable.JoinType = "LEFT";
             Joins.add(JoinTable);
@@ -2067,9 +2128,19 @@ class ChangesSession {
     ChangesSession(Integer iID) {
         ID = iID;
         Properties = new HashSet();
+        
+        AddClasses = new HashSet();
+        RemoveClasses = new HashSet();
+        
+        ChangeClasses = new HashMap();
     }
 
     Integer ID;
     
     Set<DataProperty> Properties;
+    
+    Set<Class> AddClasses;
+    Set<Class> RemoveClasses;
+    
+    Map<Integer,Class> ChangeClasses;
 }
