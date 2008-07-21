@@ -345,7 +345,7 @@ class FormBeanView {
             }
         }
     }
-    public void ChangeClass(ObjectImplement Object,Integer idClass) throws SQLException {    
+    public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {    
         Class GridClass = BL.BaseClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
         Object.GridClass = GridClass;
@@ -402,6 +402,10 @@ class FormBeanView {
         // пока тупо в базу 
         BL.AddObject(Session,Adapter,Object.GridClass);
     }   
+    
+    public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
+        BL.ChangeClass(Session,Adapter,Object.idObject,Class);
+    }
 
     // рекурсия для генерации порядка
     Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {

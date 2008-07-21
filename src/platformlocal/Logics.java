@@ -333,6 +333,14 @@ class ChangeClassTable extends Table {
         DropTable.Wheres.add(new FieldValueWhere(ChangeSession.ID,Session.Name));
         Adapter.DeleteRecords(DropTable);
     }
+    
+    FromTable ClassSelect(ChangesSession ChangeSession,Class ChangeClass) {
+        FromTable JoinTable = new FromTable(Name);
+        JoinTable.Wheres.add(new FieldValueWhere(ChangeSession.ID,Session.Name));
+        JoinTable.Wheres.add(new FieldValueWhere(ChangeClass.ID,Class.Name));
+
+        return JoinTable;
+    }
 }
 
 class AddClassTable extends ChangeClassTable {
@@ -541,7 +549,7 @@ class BusinessLogics {
 
         // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         List<AggregateProperty> UpdateList = new ArrayList();
-        for(AggregateProperty Property : Properties) Property.FillAggregateList(UpdateList,Session);
+        for(AggregateProperty Property : Properties) Property.FillChangedList(UpdateList,Session);
         
         // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
         // потом реализуем
@@ -645,7 +653,7 @@ class BusinessLogics {
 
         // построим в нужном порядке AggregateProperty и будем заполнять их
         List<AggregateProperty> UpdateList = new ArrayList();
-        for(AggregateProperty Property : AggrProperties) Property.FillAggregateList(UpdateList,null);
+        for(AggregateProperty Property : AggrProperties) Property.FillChangedList(UpdateList,null);
         Integer ViewNum = 0;
         for(AggregateProperty Property : UpdateList) {
             if(Property instanceof GroupProperty)
