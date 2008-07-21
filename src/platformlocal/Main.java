@@ -38,7 +38,7 @@ public class Main extends SingleFrameApplication {
 //        t.FullDBTest();
         
 //        Test t = new Test();
-//        t.SimpleTest();
+//        t.SimpleTest(null);
     }
 
     @Override
@@ -79,6 +79,15 @@ class Test extends BusinessLogics  {
         LDP DocDate = AddDProp(IntegerClass,Document);
         LDP GrAddV = AddDProp(IntegerClass,ArticleGroup);
         LDP ArtAddV = AddDProp(IntegerClass,Article);
+        
+        LDP RashValue = AddVProp(-1,IntegerClass,RashDocument);
+        RashValue.Property.OutName = "призн. расхода";
+
+        LDP PrihValue = AddVProp(1,IntegerClass,PrihDocument);
+        PrihValue.Property.OutName = "призн. прихода";
+
+        LRP OpValue = AddLProp(2,1,1,RashValue,1,1,PrihValue,1);
+        OpValue.Property.OutName = "общ. призн.";
 
         LRP RGrAddV = AddRProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.OutName = "наценка по товару (гр.)";
@@ -179,35 +188,36 @@ class Test extends BusinessLogics  {
         PersistentProperties.add((AggregateProperty)MaxPrih.Property);
         PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
         PersistentProperties.add((AggregateProperty)SumMaxArt.Property);
+        PersistentProperties.add((AggregateProperty)OpValue.Property);
         
         DataAdapter ad = new DataAdapter();
         ad.Connect("");
 
         FillDB(ad);
         
-        ChangesSession Session = new ChangesSession(0);
+        ChangesSession Session = CreateSession();
         
         Integer i;
         Integer[] Articles = new Integer[6];
-        for(i=0;i<Articles.length;i++) Articles[i]=Article.AddObject(ad, TableFactory);
+        for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session,ad,Article);
 
         Integer[] Stores = new Integer[2];
-        for(i=0;i<Stores.length;i++) Stores[i]=Store.AddObject(ad, TableFactory);
+        for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session,ad,Store);
         
         Integer[] PrihDocuments = new Integer[6];
         for(i=0;i<PrihDocuments.length;i++) {
-            PrihDocuments[i]=PrihDocument.AddObject(ad, TableFactory);
+            PrihDocuments[i] = AddObject(Session,ad,PrihDocument);
             Name.ChangeProperty(Session,ad,"ПР ДОК "+i.toString(), PrihDocuments[i]);
         }
 
         Integer[] RashDocuments = new Integer[6];
         for(i=0;i<RashDocuments.length;i++) {
-            RashDocuments[i]=RashDocument.AddObject(ad, TableFactory);
+            RashDocuments[i] = AddObject(Session,ad,RashDocument);
             Name.ChangeProperty(Session,ad,"РАСХ ДОК "+i.toString(), RashDocuments[i]);
         }
 
         Integer[] ArticleGroups = new Integer[2];
-        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i]=ArticleGroup.AddObject(ad, TableFactory);
+        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session,ad,ArticleGroup);
 
         Name.ChangeProperty(Session,ad,"КОЛБАСА", Articles[0]);
         Name.ChangeProperty(Session,ad,"ТВОРОГ", Articles[1]);
@@ -290,7 +300,8 @@ class Test extends BusinessLogics  {
 
         Apply(ad,Session);
         
-//        GSum.Property.Out(ad);
+//       OpValue.Property.Out(ad);
+//        if(true) return;
 //        Quantity.Property.Out(ad);
 
 //        OstArtStore.Property.Out(ad);
@@ -416,9 +427,9 @@ class Test extends BusinessLogics  {
         GroupObjectValue ChangeValue;
 
         obj1.OutName = "";
-        fbv.ChangeClass(obj1,ArticleGroup.ID);
+        fbv.ChangeClass(obj1,Article.ID);
         obj2.OutName = "";
-        fbv.ChangeClass(obj2,Article.ID);
+        fbv.ChangeClass(obj2,Document.ID);
 //        fbv.AddFilter(new NotNullFilter(QImpl));
         fbv.AddOrder(NameImpl);
         
