@@ -427,9 +427,9 @@ class Test extends BusinessLogics  {
         GroupObjectValue ChangeValue;
 
         obj1.OutName = "";
-        fbv.ChangeClass(obj1,Article.ID);
+        fbv.ChangeGridClass(obj1,Article.ID);
         obj2.OutName = "";
-        fbv.ChangeClass(obj2,Document.ID);
+        fbv.ChangeGridClass(obj2,Document.ID);
 //        fbv.AddFilter(new NotNullFilter(QImpl));
         fbv.AddOrder(NameImpl);
         
