@@ -23,8 +23,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,6 +60,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.jdesktop.application.FrameView;
@@ -165,7 +168,6 @@ public class ClientForm extends FrameView {
             views.get(property.groupObject).setGridPropertyValues(property, formChanges.GridProperties.get(property));
         }
        
-        mainPanel.doLayout();
         mainPanel.validate();
        
     }
@@ -196,6 +198,8 @@ public class ClientForm extends FrameView {
         
         ClientGroupObjectValue currentObject;
         ClientPropertyView currentProperty;
+        
+        Boolean classView = false;
  
         public View(ClientGroupObjectImplement igroupObject) {
             
@@ -215,6 +219,31 @@ public class ClientForm extends FrameView {
             panel = new Panel();
             c.weighty = 0.3;
             add(panel, c);
+            
+/*            JButton test = new JButton("Test");
+            test.addActionListener(new ActionListener() {
+
+                public void actionPerformed(ActionEvent e) {
+                    setClassView(!classView);
+                }
+                
+            });
+            
+            add(test, c); */
+            
+        }
+        
+        public void setClassView(Boolean iclassView) {
+            
+            if (classView != iclassView) {
+                
+                classView = iclassView;
+                if (classView)
+                    panel.addGroupObjectID();
+                else
+                    panel.removeGroupObjectID();
+                
+            }
             
         }
 
@@ -254,8 +283,10 @@ public class ClientForm extends FrameView {
             
             currentObject = value;
             
+            panel.repaint();
             if (!userChange && realChange)
                 grid.selectObject(currentObject);
+            
         }
         
         public void setPanelPropertyValue(ClientPropertyView property, Object value) {
@@ -268,28 +299,47 @@ public class ClientForm extends FrameView {
             grid.setPropertyValues(property, values);
         }
         
+        class PropertyCellRenderer implements TableCellRenderer {
+
+            public Component getTableCellRendererComponent(JTable table, 
+                                                           Object value, 
+                                                           boolean isSelected, 
+                                                           boolean hasFocus, 
+                                                           int row, 
+                                                           int column) {
+                
+                ClientPropertyView property = ((ViewPropertyTable)table).getPropertyView(row, column);
+                PropertyRendererComponent currentComp = property.getRendererComponent();
+                currentComp.setValue(value, isSelected, hasFocus);
+
+                return currentComp.getComponent();
+            }
+            
+        }
+        
         class PropertyCellEditor extends AbstractCellEditor 
                                  implements TableCellEditor {
 
             PropertyEditorComponent currentComp;
             Object value;
             
-            public PropertyCellEditor() {
-             
-            }
-
             public Object getCellEditorValue() {
                 
                 return currentComp.getValue();
                 
             }
 
+            public boolean isCellEditable(EventObject e) {
+                return !(e instanceof MouseEvent)
+                        || ((MouseEvent)e).getClickCount()>=2;
+            }
+            
             public Component getTableCellEditorComponent(JTable table, 
                                                          Object ivalue, 
                                                          boolean isSelected, 
                                                          int row, 
                                                          int column) {
-
+                
                 value = ivalue;
                 
                 ClientPropertyView property = ((ViewPropertyTable)table).getPropertyView(row, column);
@@ -304,6 +354,7 @@ public class ClientForm extends FrameView {
         class Panel extends JPanel {
             
             Map<ClientPropertyView, PropertyGrid> properties;
+            Map<ClientObjectImplement, ObjectIDGrid> objects;
             
             public Panel() {
                 setLayout(new FlowLayout());
@@ -311,6 +362,7 @@ public class ClientForm extends FrameView {
 //                setPreferredSize(new Dimension(500, 200));
                 
                 properties = new HashMap();
+                objects = new HashMap();
                 
 //                this.setBackground(new Color(100,0,231));
                 
@@ -349,6 +401,7 @@ public class ClientForm extends FrameView {
                 {
                     remove(propview);
                     properties.remove(property);
+                    repaint();
                 }
                 
             }
@@ -389,45 +442,20 @@ public class ClientForm extends FrameView {
                     repaint();
                 }
                 
-                class PropertyTable extends JTable 
+                class PropertyTable extends SingleCellTable 
                                     implements ViewPropertyTable {
 
                     PropertyModel model;
 
                     public PropertyTable() {
+                        super();
 
                         model = new PropertyModel();
                         setModel(model);
                         
                         setPreferredSize(property.getPreferredSize());
                         
-                        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                        addFocusListener(new FocusListener() {
-
-                            public void focusGained(FocusEvent e) {
-                                requestFocusInWindow();
-                                changeSelection(0, 0, false, false);
-//                                getSelectionModel().setLeadSelectionIndex(0);
-                            }
-
-                            public void focusLost(FocusEvent e) {
-                                getSelectionModel().clearSelection();
-                            }
-
-                        });
-                       
-                        SwingUtils.addFocusTraversalKey(this, 
-                                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
-
-/*                        SwingUtils.addFocusTraversalKey(this, 
-                                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
-                        
-                        SwingUtils.addFocusTraversalKey(this, 
-                                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
-                       
+                        setDefaultRenderer(Object.class, new PropertyCellRenderer());
                         setDefaultEditor(Object.class, new PropertyCellEditor());
                         
                     }
@@ -442,11 +470,11 @@ public class ClientForm extends FrameView {
                             return 1;
                         }
                         
-                        public java.lang.Class getColumnClass(int c) {
+/*                        public java.lang.Class getColumnClass(int c) {
                             if (value != null)
                                 return value.getClass(); else
                                     return Object.class;
-                        }
+                        }*/
                         
                         public boolean isCellEditable(int row, int col) {
                             return true;
@@ -470,6 +498,95 @@ public class ClientForm extends FrameView {
                 }
 
             }            
+            
+            public void addGroupObjectID() {
+                
+                for (ClientObjectImplement object : currentObject.keySet()) {
+                    
+                    ObjectIDGrid idview = new ObjectIDGrid(object);
+                    
+                    add(idview);
+                    objects.put(object, idview);
+                }
+                
+                validate();
+                
+            }
+            
+            public void removeGroupObjectID() {
+                
+                for (ClientObjectImplement object : objects.keySet()) {
+                    
+                    remove(objects.get(object));
+                    objects.remove(object);
+                }
+                repaint();
+                
+            }
+            
+            class ObjectIDGrid extends JPanel {
+                
+                ClientObjectImplement object;
+                
+                JLabel label;
+                ObjectIDTable table;
+
+                public ObjectIDGrid(ClientObjectImplement iobject) {
+                    
+                    object = iobject;
+                    
+                    setLayout(new FlowLayout());
+
+                    label = new JLabel(object.caption);
+                    add(label);
+                    
+                    table = new ObjectIDTable();
+                    add(table);
+                }
+
+                class ObjectIDTable extends SingleCellTable {
+
+                    ObjectIDModel model;
+
+                    public ObjectIDTable() {
+                        super();
+
+                        model = new ObjectIDModel();
+                        setModel(model);
+
+                        setPreferredSize(new Dimension(20,15));
+
+//                            setDefaultRenderer(Object.class, new PropertyCellRenderer());
+//                            setDefaultEditor(Object.class, new PropertyCellEditor());
+
+                    }
+
+                    class ObjectIDModel extends AbstractTableModel {
+
+                        public int getRowCount() {
+                            return 1;
+                        }
+
+                        public int getColumnCount() {
+                            return 1;
+                        }
+
+                        public boolean isCellEditable(int row, int col) {
+                            return true;
+                        }
+
+                        public Object getValueAt(int row, int col) {
+                            if (currentObject != null)
+                                return currentObject.get(object);
+                            else
+                                return null;
+                        }
+
+                    }
+
+                }
+                
+            }
         }
         
         class Grid extends JPanel {
@@ -598,6 +715,7 @@ public class ClientForm extends FrameView {
                         }
                     });
                     
+                    setDefaultRenderer(Object.class, new PropertyCellRenderer());
                     setDefaultEditor(Object.class, new PropertyCellEditor());
 
                 }
@@ -666,6 +784,79 @@ public class ClientForm extends FrameView {
     
 }
 
+interface PropertyRendererComponent {
+
+    Component getComponent();
+    
+    void setValue(Object value, boolean isSelected, boolean hasFocus);
+    
+}
+
+class LabelPropertyRenderer extends JLabel {
+
+    public LabelPropertyRenderer() {
+        setBorder(new EmptyBorder(1, 1, 2, 2));
+        setOpaque(true);
+    }
+
+    public void setSelected(boolean isSelected, boolean hasFocus) {
+        if (isSelected) {
+            if (hasFocus)
+                setBackground(new Color(128,128,255)); 
+            else
+                setBackground(new Color(192,192,255));
+           
+        } else
+            setBackground(Color.white);
+    }
+    
+}
+
+
+class IntegerPropertyRenderer extends LabelPropertyRenderer
+                              implements PropertyRendererComponent {
+
+    public IntegerPropertyRenderer() {
+        super();
+
+        setHorizontalAlignment(JLabel.RIGHT);
+        
+    }
+    
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (value != null)
+            setText(value.toString());
+        setSelected(isSelected, hasFocus);
+    }
+    
+    
+}
+class StringPropertyRenderer extends LabelPropertyRenderer 
+                             implements PropertyRendererComponent {
+
+    public StringPropertyRenderer() {
+        super();
+
+//        setHorizontalAlignment(JLabel.LEFT);
+        
+    }
+    
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (value != null)
+            setText(value.toString());
+        setSelected(isSelected, hasFocus);
+    }
+    
+}
+
 interface PropertyEditorComponent {
 
     Component getComponent();
@@ -680,6 +871,8 @@ class TextFieldPropertyEditor extends JTextField {
 
     public TextFieldPropertyEditor() {
         setBorder(new EmptyBorder(0, 1, 0, 0));
+        setOpaque(true);
+        setBackground(new Color(128,128,255));
     }
     
 }
@@ -687,6 +880,10 @@ class TextFieldPropertyEditor extends JTextField {
 class IntegerPropertyEditor extends TextFieldPropertyEditor 
                             implements PropertyEditorComponent {
 
+    public IntegerPropertyEditor() {
+        this.setHorizontalAlignment(JTextField.RIGHT);
+    }
+    
     public Component getComponent() {
         return this;
     }
@@ -721,5 +918,41 @@ class StringPropertyEditor extends TextFieldPropertyEditor
     public Object getValue() {
         return (String)getText();
     }
+    
+}
+
+
+class SingleCellTable extends JTable {
+    
+    public SingleCellTable() {
+       
+        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        addFocusListener(new FocusListener() {
+
+            public void focusGained(FocusEvent e) {
+                requestFocusInWindow();
+                changeSelection(0, 0, false, false);
+//                                getSelectionModel().setLeadSelectionIndex(0);
+            }
+
+            public void focusLost(FocusEvent e) {
+                getSelectionModel().clearSelection();
+            }
+
+        });
+
+        SwingUtils.addFocusTraversalKey(this, 
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
+
+/*                        SwingUtils.addFocusTraversalKey(this, 
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
+
+        SwingUtils.addFocusTraversalKey(this, 
+                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
+                        
+   }
     
 }

@@ -58,7 +58,8 @@ class ClientObjectImplement {
     Integer GID = 0;
     
     ClientGroupObjectImplement groupObject;
-    
+ 
+    String caption = "";
 }
 
 class ClientGroupPropertyView {
@@ -98,6 +99,22 @@ class ClientPropertyView {
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
     
+    private PropertyRendererComponent renderer;
+    public PropertyRendererComponent getRendererComponent() {
+        
+        if (renderer == null) {
+            
+            if (type.equals("integer")) renderer = new IntegerPropertyRenderer();
+            if (type.equals("char(50)")) renderer = new StringPropertyRenderer();
+
+            if (renderer == null) renderer = new StringPropertyRenderer();
+            
+        }
+        
+        return renderer;
+        
+    }
+    
     public PropertyEditorComponent getEditorComponent() {
         
         if (type.equals("integer")) return new IntegerPropertyEditor();
@@ -106,7 +123,7 @@ class ClientPropertyView {
         return new StringPropertyEditor();
         
     }
-    
+
     String caption;
 
 }
