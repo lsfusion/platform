@@ -143,18 +143,76 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
 
         // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
         // иначе как и было
-        SourceExpr Result = Property.JoinSelect(Joins,JoinImplement,Left);
+        if(NullInterfaces.size()>0 && ChangedProps.contains(Property)) {
+            // заполним названия полей в которые будем Select'ать
+            String Value = "joinvalue";
+            Map<PropertyInterface,String> MapFields = new HashMap();
+            Integer KeyNum = 1;
+            UnionQuery ResultQuery = new UnionQuery(3);
+            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
+                String KeyField = "key"+(KeyNum++);
+                MapFields.put(Interface,KeyField);
+                ResultQuery.Keys.add(KeyField);
+            }
+            ResultQuery.Values.add(Value);
 
-        for(PropertyInterface Interface : NullInterfaces)
-            ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
-        
-        // есди св-во изменилось закинем сюда 
-        if(ChangedProps.contains(Property)) {
-            SourceExpr NewResult = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,true);
-            Result = new IsNullSourceExpr(NewResult,Result);
+            SelectQuery SubQuery = new SelectQuery(null);
+            JoinList SubList = new JoinList();
+            Map<PropertyInterface,SourceExpr> SubImplement = new HashMap();
+            SubQuery.Expressions.put(Value,Property.JoinSelect(SubList,SubImplement,false));
+            
+            Iterator<From> is = SubList.iterator();
+            SubQuery.From = is.next();
+            while(is.hasNext())
+                SubQuery.From.Joins.add(is.next());
+            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
+                SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
+            ResultQuery.Unions.add(SubQuery);
+            
+            SubQuery = new SelectQuery(null);
+            SubList = new JoinList();
+            SubImplement = new HashMap();
+            SubQuery.Expressions.put(Value,Property.ChangedJoinSelect(Joins,SubImplement,Session,0,false));
+            is = SubList.iterator();
+            SubQuery.From = is.next();
+            while(is.hasNext())
+                SubQuery.From.Joins.add(is.next());
+            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
+                SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
+            ResultQuery.Unions.add(SubQuery);
+            
+            FromQuery FromResultQuery = new FromQuery(ResultQuery);
+            
+            // надо за Join'ить
+            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
+                SourceExpr JoinExpr = JoinImplement.get(Interface);
+                String ResultField = MapFields.get(Interface);
+                if(JoinExpr==null)
+                    ClassSource.put(Mapping.get(Interface),new FieldSourceExpr(FromResultQuery,ResultField));
+                else
+                    FromResultQuery.Wheres.add(new FieldWhere(JoinExpr,ResultField));
+            }
+
+            Joins.add(FromResultQuery);
+            
+            return new FieldSourceExpr(FromResultQuery,Value);
+        } else {
+            SourceExpr Result = Property.JoinSelect(Joins,JoinImplement,Left);
+
+            for(PropertyInterface Interface : NullInterfaces)
+                ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
+
+            // если св-во изменилось закинем сюда 
+            if(ChangedProps.contains(Property)) {
+                SourceExpr NewResult = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,true);
+                // пока так по идиотски
+                Collection<SourceExpr> KeyExpr = new ArrayList();
+                KeyExpr.add(new FieldSourceExpr(Joins.get(Joins.size()-1),Property.ChangeTable.Objects.iterator().next().Name));
+                Result = new NullValueSourceExpr(KeyExpr,Result,NewResult);
+            }
+            
+            return Result;
         }
-        
-        return Result;
     }
 }
 
