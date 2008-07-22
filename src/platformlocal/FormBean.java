@@ -141,6 +141,8 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
                 JoinImplement.put(Interface,JoinExpr);
         }
 
+        // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
+        // иначе как и было
         SourceExpr Result = Property.JoinSelect(Joins,JoinImplement,Left);
 
         for(PropertyInterface Interface : NullInterfaces)
@@ -267,7 +269,7 @@ class Filter {
     
     // для полиморфизма сюда
     void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
+        Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,true);
     }
 }
 
@@ -579,10 +581,52 @@ class FormBeanView {
                 Map<PropertyObjectImplement,Object> OrderValues = null;
                 if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
 
+                // фильтры первыми потому как ограничивают ключи
                 for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources,Session,ChangedProps);
+
+                // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
+                int ObjectNum = 0;
+                for(ObjectImplement Object : Group) {
+                    SourceExpr KeyExpr = KeySources.get(Object);
+                    From KeySelect = null;
+                    if(KeyExpr==null) {
+                        KeySelect = BL.TableFactory.ObjectTable.ClassSelect(Object.GridClass);
+                        KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
+                        
+                        // не было в фильтре
+                        // если есть remove'классы или новые объекты их надо докинуть                        
+                        if(Session.AddClasses.contains(Object.GridClass)) {
+                            // и FULL JOIN (UNION ALL) на Add
+                            SelectQuery SubQuery = new SelectQuery(KeySelect);
+                            From AddSelect = BL.TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass);
+                            AddSelect.JoinType = "FULL";
+                            SubQuery.From.Joins.add(AddSelect);
+                            AddSelect.Wheres.add(new FieldWhere(KeyExpr,BL.TableFactory.AddClassTable.Object.Name));
+                            SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,new IsNullSourceExpr(KeyExpr,new FieldSourceExpr(AddSelect,BL.TableFactory.AddClassTable.Object.Name)));
+                            
+                            KeySelect = new FromQuery(SubQuery);
+                            KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
+                        }
+                        
+                        KeySources.put(Object,KeyExpr);
+                        JoinKeys.add(KeySelect);
+
+                        // надо сделать LEFT JOIN remove' классов
+                        if(Session.RemoveClasses.contains(Object.GridClass))
+                            BL.TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
+                    } else {
+                        KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
+                        JoinKeys.add(KeySelect);
+                    }                    
+
+                    // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
+                    SelectKeys.Expressions.put("key"+(ObjectNum++),KeyExpr);
+                }
+
+                // закинем порядки (с LEFT JOIN'ом)
                 int OrderNum = 0;
                 for(PropertyObjectImplement ToOrder : Group.Orders) {
-                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Session,ChangedProps,false);
+                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Session,ChangedProps,true);
                     SelectKeys.Orders.add(OrderExpr);
                     // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                     if(OrderValues!=null) {
@@ -594,34 +638,18 @@ class FormBeanView {
                     SelectKeys.Expressions.put("order"+(OrderNum++),OrderExpr);
                 }
 
-                // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
-                int ObjectNum = 0;
+                // закинем объекты в порядок
                 for(ObjectImplement Object : Group) {
                     SourceExpr KeyExpr = KeySources.get(Object);
-                    FromTable KeySelectTable = null;
-                    if(KeyExpr==null) {
-                        KeySelectTable = BL.TableFactory.ObjectTable.ClassSelect(Object.GridClass);
-                        KeyExpr = new FieldSourceExpr(KeySelectTable,BL.TableFactory.ObjectTable.Key.Name);
-                        
-                        // вставляем слева (если справа то null'ы кидает при ORDER BY)
-                        JoinKeys.add(0,KeySelectTable);
-                        if(JoinKeys.size()>1) JoinKeys.get(1).JoinType = "FULL";
-                    } else {
-                        KeySelectTable = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
-                        JoinKeys.add(KeySelectTable);
-                    }
-
+                    
                     // также закинем их в порядок и в запрос
                     SelectKeys.Orders.add(KeyExpr);
                     if(KeyOrder!=null) {
                         OrderSources.add(KeyExpr);
                         OrderWheres.add(KeyOrder.get(Object));
                     }
-                    
-                    // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.put("key"+(ObjectNum++),KeyExpr);
                 }
-                
+
                 // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
                 ListIterator<From> ijk = JoinKeys.listIterator();
                 SelectKeys.From = ijk.next();
