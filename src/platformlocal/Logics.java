@@ -355,6 +355,16 @@ class RemoveClassTable extends ChangeClassTable {
     RemoveClassTable() {
         super("removechange");
     }
+
+    void ExcludeJoin(ChangesSession Session,JoinList Joins,Class Class,SourceExpr KeyExpr) {
+        From RemoveSelect = ClassSelect(Session,Class);
+        RemoveSelect.Wheres.add(new FieldWhere(KeyExpr,Object.Name));
+        RemoveSelect.JoinType = "LEFT";
+        Joins.add(RemoveSelect);
+                        
+        Joins.get(0).Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(RemoveSelect,Object.Name),true));
+    }
+
 }
 
 class TableFactory extends TableImplement{
