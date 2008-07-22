@@ -603,6 +603,7 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
             // INSERT
             SelectQuery Insert = new SelectQuery(new FromQuery(ResultQuery));
             FromTable ChangedJoin = GetChangedFrom(Session);
+            Insert.From.Joins.add(ChangedJoin);
             String KeyField = null;
             for(DataPropertyInterface Interface : Interfaces) {
                 KeyField = ChangeTableMap.get(Interface).Name;
@@ -619,6 +620,7 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
             SelectQuery Update = new SelectQuery(GetChangedFrom(Session));
             // за Join'им в обратную сторону
             FromQuery UpdateJoin = new FromQuery(ResultQuery);
+            Update.From.Joins.add(UpdateJoin);
             for(DataPropertyInterface Interface : Interfaces) {
                 KeyField = ChangeTableMap.get(Interface).Name;
                 UpdateJoin.Wheres.add(new FieldWhere(new FieldSourceExpr(Update.From,KeyField),KeyField));
@@ -882,13 +884,8 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
                     Joins.add(JoinTable);
                     
                     // здесь также надо проверить что не из RemoveClasses (то есть LEFT JOIN на null)
-                    if(Session.RemoveClasses.contains(ValueInterface.Class)) {
-                        FromTable RemoveTable = TableFactory.RemoveClassTable.ClassSelect(Session,ValueInterface.Class);
-                        RemoveTable.JoinType = "LEFT";
-                        Joins.add(RemoveTable);
-                        
-                        Joins.get(0).Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(RemoveTable,TableFactory.RemoveClassTable.Object.Name),true));
-                    }
+                    if(Session.RemoveClasses.contains(ValueInterface.Class))
+                        TableFactory.RemoveClassTable.ExcludeJoin(Session,Joins,ValueInterface.Class,JoinExpr);
                 }
                 
                 Query.Expressions.put(ChangeTableMap.get(ValueInterface).Name,JoinExpr);
