@@ -471,9 +471,6 @@ class FormBeanView {
         BL.ChangeClass(Session,Adapter,Object.idObject,Class);
         DataChanged = true;
     }
-    
-    public void UpdateChanges(boolean Save) {        
-    }
 
     // рекурсия для генерации порядка
     Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {
