@@ -462,7 +462,11 @@ public class ClientForm extends FrameView {
                     
                     PanelAbstractGrid idview = new PanelAbstractGrid(object.objectIDView);
                     
-                    add(idview);
+                    int ord = formInit.order.indexOf(idview), ind = 0;
+                    for (ClientAbstractView view : views.keySet())
+                        if (formInit.order.indexOf(view) < ord) ind++;
+                    add(idview, ind);
+                    
                     views.put(object.objectIDView, idview);
                 }
                 setGroupObjectIDValue(currentObject);
@@ -503,13 +507,15 @@ public class ClientForm extends FrameView {
             
             public void addProperty(ClientPropertyView property) {
          
-                if (views.get(property) == null)
-                {
+                if (views.get(property) == null) {
+                    
                     PanelAbstractGrid propview = new PanelAbstractGrid(property);
 
-                    add(propview);
+                    int ord = formInit.order.indexOf(property), ind = 0;
+                    for (ClientAbstractView view : views.keySet())
+                        if (formInit.order.indexOf(view) < ord) ind++;
+                    add(propview, ind);
                     views.put(property, propview);
-
                 }
                 
             }
@@ -764,7 +770,7 @@ public class ClientForm extends FrameView {
                         Iterator<ClientAbstractView> icp = gridColumns.iterator();
 
                         // конечно кривова-то определять порядок по номеру в листе, но потом надо будет сделать по другому
-                        int ind = formInit.properties.indexOf(property), ins = 0;
+                        int ind = formInit.order.indexOf(property), ins = 0;
 
                         while (icp.hasNext() && formInit.properties.indexOf(icp.next()) < ind) { ins++; }
 

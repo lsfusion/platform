@@ -203,6 +203,8 @@ class ClientFormBean {
     List<ClientObjectImplement> listObjects = new ArrayList();
     List<ClientPropertyView> listProperties = new ArrayList();
     
+    List<ClientAbstractView> listOrder = new ArrayList();
+    
     public ClientGroupObjectImplement client(GroupObjectImplement groupObject) {
         return groupObjects.get(groupObject);
     }
@@ -239,6 +241,8 @@ class ClientFormBean {
                 
                 objects.put(object, clientObject);
                 listObjects.add(clientObject);
+
+                listOrder.add(clientObject.objectIDView);
             }
         }
         
@@ -253,6 +257,8 @@ class ClientFormBean {
             
             properties.put(property, clientProperty);
             listProperties.add(clientProperty);
+            
+            listOrder.add(clientProperty);
         }
         
     }
@@ -350,6 +356,9 @@ class ClientFormBean {
             
         for (ClientPropertyView property : listProperties)
             formInit.properties.add(property);
+        
+        for (ClientAbstractView view : listOrder)
+            formInit.order.add(view);
         
         return formInit;
         
