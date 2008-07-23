@@ -225,8 +225,8 @@ public class ClientForm extends FrameView {
     void switchClassView(ClientGroupObjectImplement groupObject) {
         Boolean classView;
         classView = !views.get(groupObject).classView;
-        views.get(groupObject).setClassView(classView);
         applyFormChanges(clientBean.changeClassView(groupObject,classView));
+        views.get(groupObject).setClassView(classView);
     }
     
     void saveChanges() {
@@ -324,9 +324,11 @@ public class ClientForm extends FrameView {
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
+                    grid.table.requestFocusInWindow();
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
+                    panel.requestFocusInWindow();
                 }
                 
             }
@@ -452,6 +454,8 @@ public class ClientForm extends FrameView {
             
             public Panel() {
                 setLayout(new FlowLayout());
+
+                setFocusable(false);
                 
                 views = new HashMap();
             }
@@ -639,6 +643,8 @@ public class ClientForm extends FrameView {
             public Grid() {
 
                 setLayout(new GridBagLayout());
+
+                setFocusable(false);
                 
                 table = new Table();
                 
