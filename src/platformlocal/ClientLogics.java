@@ -96,8 +96,8 @@ abstract class ClientAbstractView {
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
     
-    abstract public PropertyRendererComponent getRendererComponent();
-    abstract public PropertyEditorComponent getEditorComponent();
+    abstract public PropertyRendererComponent getRendererComponent(ClientForm form);
+    abstract public PropertyEditorComponent getEditorComponent(ClientForm form);
 
 }
 
@@ -116,7 +116,7 @@ class ClientPropertyView extends ClientAbstractView {
     }
     
     private PropertyRendererComponent renderer;
-    public PropertyRendererComponent getRendererComponent() {
+    public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
         if (renderer == null) {
             
@@ -131,7 +131,7 @@ class ClientPropertyView extends ClientAbstractView {
         
     }
     
-    public PropertyEditorComponent getEditorComponent() {
+    public PropertyEditorComponent getEditorComponent(ClientForm form) {
         
         if (type.equals("integer")) return new IntegerPropertyEditor();
         if (type.equals("char(50)")) return new StringPropertyEditor();
@@ -145,7 +145,7 @@ class ClientPropertyView extends ClientAbstractView {
 class ClientObjectView extends ClientAbstractView {
 
     private PropertyRendererComponent renderer;
-    public PropertyRendererComponent getRendererComponent() {
+    public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
         if (renderer == null) {
             renderer = new IntegerPropertyRenderer();
@@ -155,9 +155,10 @@ class ClientObjectView extends ClientAbstractView {
         
     }
     
-    public PropertyEditorComponent getEditorComponent() {
+    public PropertyEditorComponent getEditorComponent(ClientForm form) {
         
-        return new IntegerPropertyEditor();
+        form.switchClassView(groupObject);
+        return null;
     }
     
 }
@@ -227,6 +228,7 @@ class ClientFormBean {
                 
                 clientObject.caption = object.OutName;
                 clientObject.objectIDView = new ClientObjectView();
+                clientObject.objectIDView.groupObject = clientGroup;
                 clientObject.objectIDView.caption = object.OutName;
                 
                 clientGroup.add(clientObject);
@@ -361,7 +363,7 @@ class ClientFormBean {
         
         try {
             formBean.ChangeObject(GroupObject, GroupVal);
-        } catch(Exception e) {
+        } catch(SQLException e) {
             
         }
         
@@ -387,7 +389,7 @@ class ClientFormBean {
         
         try {
             formBean.ChangePropertyView(property, value);
-        } catch(Exception e) {
+        } catch(SQLException e) {
             
         }
         
@@ -412,7 +414,7 @@ class ClientFormBean {
         
         try {
             formBean.AddObject(object);
-        } catch(Exception e) {
+        } catch(SQLException e) {
             
         }
         
@@ -437,7 +439,7 @@ class ClientFormBean {
         
         try {
             formBean.ChangeClass(object, null);
-        } catch(Exception e) {
+        } catch(SQLException e) {
             
         }
         
@@ -449,6 +451,47 @@ class ClientFormBean {
         }
         
 //        System.out.println("Change : " + value.toString());
+//        formChanges.Out(formBean);
+
+        return convertFormChangesToClient(formChanges);
+        
+    }
+
+    ClientFormChanges changeClassView(ClientGroupObjectImplement groupObject, Boolean classView) {
+ 
+        MapUtils<GroupObjectImplement, ClientGroupObjectImplement> mgu = new MapUtils();
+        GroupObjectImplement GroupObject = mgu.getKey(groupObjects, groupObject);
+
+        formBean.ChangeClassView(GroupObject, classView);
+        
+        FormChanges formChanges = null;
+        try {
+            formChanges = formBean.EndApply();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
+//        formChanges.Out(formBean);
+
+        return convertFormChangesToClient(formChanges);
+        
+    }
+
+    ClientFormChanges saveChanges() {
+ 
+        try {
+            formBean.SaveChanges();
+        } catch(SQLException e) {
+            
+        }
+        
+        FormChanges formChanges = null;
+        try {
+            formChanges = formBean.EndApply();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
 //        formChanges.Out(formBean);
 
         return convertFormChangesToClient(formChanges);

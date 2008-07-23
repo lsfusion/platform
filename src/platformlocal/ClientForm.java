@@ -77,12 +77,15 @@ public class ClientForm extends FrameView {
 
     String caption = "Hello World";
 
+    ClientForm thisForm;
     ClientFormInit formInit;
     
     ClientFormBean clientBean;
             
     public ClientForm(SingleFrameApplication app) {
         super(app);
+        
+        thisForm = this;
         
         getFrame().setTitle(caption);
 
@@ -127,6 +130,16 @@ public class ClientForm extends FrameView {
             
         }
         
+        JButton buttonApply = new JButton("Применить");
+        buttonApply.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                saveChanges();
+            }
+            
+        });
+
+        mainPanel.add(buttonApply);
     }
     
 
@@ -197,6 +210,17 @@ public class ClientForm extends FrameView {
     
     void changeClass(ClientObjectImplement object) {
         applyFormChanges(clientBean.changeClass(object));
+    }
+    
+    void switchClassView(ClientGroupObjectImplement groupObject) {
+        Boolean classView;
+        classView = !views.get(groupObject).classView;
+        views.get(groupObject).setClassView(classView);
+        applyFormChanges(clientBean.changeClassView(groupObject,classView));
+    }
+    
+    void saveChanges() {
+        applyFormChanges(clientBean.saveChanges());
     }
     
     class View extends JPanel {
@@ -360,7 +384,7 @@ public class ClientForm extends FrameView {
                                                            int column) {
                 
                 ClientAbstractView property = ((ClientAbstractViewTable)table).getAbstractView(row, column);
-                PropertyRendererComponent currentComp = property.getRendererComponent();
+                PropertyRendererComponent currentComp = property.getRendererComponent(thisForm);
                 currentComp.setValue(value, isSelected, hasFocus);
 
                 return currentComp.getComponent();
@@ -394,10 +418,16 @@ public class ClientForm extends FrameView {
                 value = ivalue;
                 
                 ClientAbstractView property = ((ClientAbstractViewTable)table).getAbstractView(row, column);
-                currentComp = property.getEditorComponent();
-                currentComp.setValue(value);
+                currentComp = property.getEditorComponent(thisForm);
                 
-                return currentComp.getComponent();
+                if (currentComp != null) {
+                    currentComp.setValue(value);
+                
+                    return currentComp.getComponent();
+                } else {                   
+                    this.stopCellEditing();
+                    return null;
+                }
             }
 
         }
@@ -421,6 +451,7 @@ public class ClientForm extends FrameView {
                     add(idview);
                     views.put(object.objectIDView, idview);
                 }
+                setGroupObjectIDValue(currentObject);
                 
                 validate();
                 
@@ -439,15 +470,21 @@ public class ClientForm extends FrameView {
                 repaint();
                 
             }
+            
+            private void setGroupObjectIDValue(ClientGroupObjectValue value) {
 
-            private void selectObject(ClientGroupObjectValue value) {
-                
                 for (ClientObjectImplement object : groupObject) {
                     
                     PanelAbstractGrid idview = views.get(object.objectIDView);
                     if (idview != null)
                         idview.setValue(value.get(object));
                 }
+                
+            }
+
+            private void selectObject(ClientGroupObjectValue value) {
+                
+                setGroupObjectIDValue(value);
             }
             
             public void addProperty(ClientPropertyView property) {
@@ -576,6 +613,7 @@ public class ClientForm extends FrameView {
         class Grid extends JPanel {
 
             JScrollPane pane;
+            GridBagConstraints paneConstraints;
             Table table;
 
             public Grid() {
@@ -587,36 +625,45 @@ public class ClientForm extends FrameView {
                 pane = new JScrollPane(table);
                 pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
                 
-                GridBagConstraints c = new GridBagConstraints();
-                c.fill = GridBagConstraints.BOTH;
-                c.weightx = 1;
-                c.weighty = 1;
-                c.insets = new Insets(4,4,4,4); 
+                paneConstraints = new GridBagConstraints();
+                paneConstraints.fill = GridBagConstraints.BOTH;
+                paneConstraints.weightx = 1;
+                paneConstraints.weighty = 1;
+                paneConstraints.insets = new Insets(4,4,4,4); 
                 
-                add(pane, c);
+//                add(pane, paneConstraints);
             }
 
             private void addGroupObjectID() {
+                System.out.println("addGroupObjectID");
                 for (ClientObjectImplement object : groupObject) {
                     table.addColumn(object.objectIDView);
                 }
                 
                 // здесь еще добавить значения идентификаторов
                 fillTableObjectID();
+                
+                updateTable();
             }
 
             private void removeGroupObjectID() {
+                System.out.println("removeGroupObjectID");
                 for (ClientObjectImplement object : groupObject) {
                     table.removeColumn(object.objectIDView);
                 }
+                updateTable();
             }
 
             private void addProperty(ClientPropertyView property) {
+                System.out.println("addProperty " + property.toString());
                 table.addColumn(property);
+                updateTable();
             }
             
             private void removeProperty(ClientPropertyView property) {
-                table.removeColumn(property);
+                System.out.println("removeProperty " + property.toString());
+                if (table.removeColumn(property))
+                    updateTable();
             }
 
             private void setGridObjects(List<ClientGroupObjectValue> igridObjects) {
@@ -641,6 +688,29 @@ public class ClientForm extends FrameView {
                         values.put(value, value.get(object));
                     table.setColumnValues(object.objectIDView, values);
                 }
+            }
+            
+            private void updateTable() {
+
+                System.out.println("CreateColumns");
+                table.createDefaultColumnsFromModel();
+                for (ClientAbstractView property : table.gridColumns) {
+                    table.getColumnModel().getColumn(table.gridColumns.indexOf(property)).setPreferredWidth(property.getPreferredWidth());
+                }
+
+                if (table.gridColumns.size() != 0) {
+                    if (!isAncestorOf(pane))
+                        add(pane, paneConstraints);
+
+                    validate();
+
+                } else {
+                    remove(pane);
+//                    table = new Table();
+//                    pane = new JScrollPane(table);
+                    validate();
+                }
+                
             }
             
             public class Table extends JTable
@@ -686,20 +756,21 @@ public class ClientForm extends FrameView {
 
                         gridColumns.add(ins, property);
 
-                        table.createColumnsFromModel();
                     }
 
 
                 }
 
-                public void removeColumn(ClientAbstractView property) {
+                public boolean removeColumn(ClientAbstractView property) {
 
                     if (gridColumns.remove(property)) {
 
                         gridValues.remove(property);
-
-                        table.createColumnsFromModel();
+                        
+                        return true;
                     }
+                    
+                    return false;
 
                 }
 
@@ -714,20 +785,26 @@ public class ClientForm extends FrameView {
 
                     //надо сдвинуть ViewPort - иначе дергаться будет
 
-                    if (newindex != -1 && oldindex != -1 && newindex != oldindex) {
+                    System.out.println("setGridObjects" + oldindex + " - " + newindex);
+                    if (newindex != -1) {
 
                         System.out.println("setgridobjects + leadselection");
                         getSelectionModel().setLeadSelectionIndex(newindex);
 
-                        final Point ViewPos = pane.getViewport().getViewPosition();
-                        final int dltpos = (newindex-oldindex) * getRowHeight();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                ViewPos.y += dltpos;
-                                pane.getViewport().setViewPosition(ViewPos);
-                                scrollRectToVisible(getCellRect(newindex, 0, true));
-                            }
-                        });                
+                        if (oldindex != -1 && newindex != oldindex) {
+                        
+                            final Point ViewPos = pane.getViewport().getViewPosition();
+                            final int dltpos = (newindex-oldindex) * getRowHeight();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    ViewPos.y += dltpos;
+                                    pane.getViewport().setViewPosition(ViewPos);
+                                    scrollRectToVisible(getCellRect(newindex, 0, true));
+                                    pane.validate();
+                                }
+                            });
+                        } else
+                            getSelectionModel().clearSelection();
 
                     }
 
@@ -747,17 +824,6 @@ public class ClientForm extends FrameView {
                     gridValues.put(property, values);
                     repaint();
 
-                }
-                
-                public void createColumnsFromModel () {
-                    
-                    System.out.println("CreateColumns");
-                    createDefaultColumnsFromModel();
-                    
-                    for (ClientAbstractView property : gridColumns) {
-                        getColumnModel().getColumn(gridColumns.indexOf(property)).setPreferredWidth(property.getPreferredWidth());
-                    }
-                    
                 }
                 
                 class Model extends AbstractTableModel {
@@ -790,9 +856,9 @@ public class ClientForm extends FrameView {
 
                     public Object getValueAt(int row, int col) {
 
-                        Object val;
+                        Object val = null;
 //                        if (col < gridColumns.size())
-                            val = gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
+                          val = gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
 //                        else
 //                            val = gridRows.get(row).get(groupObject.get(col-gridColumns.size()));
                             
