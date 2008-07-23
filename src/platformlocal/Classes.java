@@ -113,27 +113,27 @@ abstract class Class {
 
     // получает классы у которого есть оба интерфейса
     Collection<Class> CommonClassSet(Class ToCommon) {
-        CommonClassSet1();
-        ToCommon.CommonClassSet2(false,null);
+        CommonClassSet1(false);
+        ToCommon.CommonClassSet2(false,null,false);
         
         Collection<Class> Result = new ArrayList<Class>();
-        CommonClassSet3(Result,null);
+        CommonClassSet3(Result,null,false);
         return Result;
     }
     
     int Check = 0;
     // 1-й шаг расставляем пометки 1
-    private void CommonClassSet1() {
+    private void CommonClassSet1(boolean Up) {
         if(Check==1) return;
         Check = 1;
-        for(Class Child : Childs)
-            Child.CommonClassSet1();
+        for(Class Child : (Up?Parents:Childs))
+            Child.CommonClassSet1(Up);
     }
     
     // 2-й шаг пометки 
     // 2 - верхний общий класс
     // 3 - просто общий класс
-    private void CommonClassSet2(boolean Set,Collection<Class> Free) {
+    private void CommonClassSet2(boolean Set,Collection<Class> Free,boolean Up) {
         if(!Set) {
             if(Check>0) {
                 if(Check!=1) return;
@@ -151,37 +151,29 @@ abstract class Class {
             Check = 3;
         }
             
-        for(Class Child : Childs)
-            Child.CommonClassSet2(Set,Free);
+        for(Class Child : (Up?Parents:Childs))
+            Child.CommonClassSet2(Set,Free,Up);
     }
     
     // 3-й шаг выводит в Set, и сбрасывает пометки
-    private void CommonClassSet3(Collection<Class> Common,Collection<Class> Free) {
+    private void CommonClassSet3(Collection<Class> Common,Collection<Class> Free,boolean Up) {
         if(Check==0) return;
         if(Common!=null && Check==2) Common.add(this);
         if(Free!=null && Check==1) Free.add(this);
                
         Check = 0;
 
-        for(Class Child : Childs)
-            Child.CommonClassSet3(Common,Free);
+        for(Class Child : (Up?Parents:Childs))
+            Child.CommonClassSet3(Common,Free,Up);
     }
     
     void GetDiffSet(Class DiffClass,Collection<Class> AddClasses,Collection<Class> RemoveClasses) {
-        CommonClassSet1();
-        if(DiffClass!=null) DiffClass.CommonClassSet2(false,RemoveClasses);
+        CommonClassSet1(true);
+        if(DiffClass!=null) DiffClass.CommonClassSet2(false,RemoveClasses,true);
 
-        CommonClassSet3(null,AddClasses);
+        CommonClassSet3(null,AddClasses,true);
     }
     
-    // 1-й шаг расставляем пометки 1
-    private void GetDiffSet1() {
-        if(Check==1) return;
-        Check = 1;
-        for(Class Child : Childs)
-            Child.CommonClassSet1();
-    }
-
     String GetDBType() {
         return "integer";
     }

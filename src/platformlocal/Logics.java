@@ -362,7 +362,7 @@ class RemoveClassTable extends ChangeClassTable {
         RemoveSelect.JoinType = "LEFT";
         Joins.add(RemoveSelect);
                         
-        Joins.get(0).Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(RemoveSelect,Object.Name),true));
+        Joins.get(0).Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(RemoveSelect,Object.Name),false));
     }
 
 }
@@ -480,8 +480,9 @@ class BusinessLogics {
     }
 
     // получает класс по ID объекта
-    Class GetClass(DataAdapter Adapter,Integer idObject) throws SQLException {
+    Class GetClass(ChangesSession Session,DataAdapter Adapter,Integer idObject) throws SQLException {
         // сначала получаем idClass
+        if(Session!=null && Session.ChangeClasses.containsKey(idObject)) return Session.ChangeClasses.get(idObject);
         return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Adapter,idObject));
     }
     
@@ -508,12 +509,14 @@ class BusinessLogics {
         
         for(Integer idObject : Session.ChangeClasses.keySet()) {
             // узнаем старый класс
-            Class PrevClass = GetClass(Adapter,idObject);
+            Class PrevClass = GetClass(null,Adapter,idObject);
+            Class NewClass = Session.ChangeClasses.get(idObject);
+            if(NewClass==null) NewClass = BaseClass;
         
             // дальше нужно построить "разницу" какие классы ушли и записать в соответствующую таблицу
             Collection<Class> AddClasses = new ArrayList();
             Collection<Class> RemoveClasses = new ArrayList();
-            Session.ChangeClasses.get(idObject).GetDiffSet(PrevClass,AddClasses,RemoveClasses);
+            NewClass.GetDiffSet(PrevClass,AddClasses,RemoveClasses);
             Session.AddClasses.addAll(AddClasses);
             Session.RemoveClasses.addAll(RemoveClasses);
 
@@ -551,7 +554,7 @@ class BusinessLogics {
     Set<AggregateProperty> PersistentProperties;
     
         
-    List<AggregateProperty> UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> Properties, ChangesSession Session) throws SQLException {
+    List<AggregateProperty> UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> AggrProperties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         // update'им изменения классов
@@ -559,7 +562,12 @@ class BusinessLogics {
 
         // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         List<AggregateProperty> UpdateList = new ArrayList();
-        for(AggregateProperty Property : Properties) Property.FillChangedList(UpdateList,Session);
+        for(AggregateProperty Property : AggrProperties) Property.FillChangedList(UpdateList,Session);
+        // если удалились придется по всем св-вам пробежать (для Bean'a строго говоря не надо)
+        if(Session.RemoveClasses.size()>0) 
+            for(Property Property : Properties) 
+                if(Property instanceof DataProperty)
+                    Property.FillChangedList(UpdateList,Session);
         
         // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
         // потом реализуем
@@ -572,7 +580,7 @@ class BusinessLogics {
             Property.SessionChanged.put(Session,null);
         }
         // пробежим по которым надо поставим 0
-        for(AggregateProperty AggrProperty : Properties) AggrProperty.SetChangeType(Session,0);
+        for(AggregateProperty AggrProperty : AggrProperties) AggrProperty.SetChangeType(Session,0);
         // прогоним DataProperty также им 0 поставим чтобы 1 не появлялись
         for(DataProperty DataProperty : Session.Properties) DataProperty.SetChangeType(Session,0);
 
@@ -1398,9 +1406,9 @@ class BusinessLogics {
                     // определяем входные классы
                     InterfaceClass Classes = InterfaceSet.get(Randomizer.nextInt(InterfaceSet.size()));
                     // генерим рандомные объекты этих классов
-                    Map<DataPropertyInterface,Integer> Keys = new HashMap();
+                    Map<PropertyInterface,ObjectValue> Keys = new HashMap();
                     for(DataPropertyInterface Interface : ChangeProp.Interfaces)
-                        Keys.put(Interface,(Integer)Classes.get(Interface).GetRandomObject(Adapter,TableFactory,Randomizer,0));
+                        Keys.put(Interface,new ObjectValue((Integer)Classes.get(Interface).GetRandomObject(Adapter,TableFactory,Randomizer,0),Classes.get(Interface)));
                     
                     Object ValueObject = null;
                     if(Randomizer.nextInt(10)<8)

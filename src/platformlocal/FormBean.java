@@ -395,7 +395,9 @@ class FormBeanView {
                 Object.Updated = Object.Updated | (1<<0);
 
                 // запишем класс объекта
-                Class ObjectClass = BL.GetClass(Adapter, idObject);
+                Class ObjectClass = BL.GetClass(Session, Adapter, idObject);
+                if(ObjectClass==null) throw new RuntimeException();
+
                 if(Object.Class!=ObjectClass) {
                     Object.Class = ObjectClass;
                     Object.Updated = Object.Updated | (1<<1);
@@ -408,6 +410,7 @@ class FormBeanView {
     public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {    
         Class GridClass = BL.BaseClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
+        if(GridClass==null) throw new RuntimeException();
         Object.GridClass = GridClass;
         Object.Updated = Object.Updated | (1<<3);
         // помечаем что в группе изменися класс одного из объектов
@@ -441,17 +444,17 @@ class FormBeanView {
     
     public void ChangeProperty(PropertyObjectImplement Property,Object Value) throws SQLException {
         
-        if(Property.Property instanceof DataProperty) {
-            DataProperty DataProperty = (DataProperty)Property.Property;
-            Map<DataPropertyInterface,Integer> Keys = new HashMap();
-            for(DataPropertyInterface Interface : DataProperty.Interfaces)
-                Keys.put(Interface,Property.Mapping.get(Interface).idObject);
-
-            // изменяем св-во
-            DataProperty.ChangeProperty(Adapter,Keys,Value,Session);
-            
-            DataChanged = true;
+        ObjectProperty ChangeProperty = Property.Property;
+        Map<PropertyInterface,ObjectValue> Keys = new HashMap();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
+            ObjectImplement Object = Property.Mapping.get(Interface);
+            Keys.put(Interface,new ObjectValue(Object.idObject,Object.Class));
         }
+
+        // изменяем св-во
+        ChangeProperty.ChangeProperty(Adapter,Keys,Value,Session);
+            
+        DataChanged = true;
     }
 
     public void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
@@ -461,10 +464,12 @@ class FormBeanView {
     public void AddObject(ObjectImplement Object) throws SQLException {
         // пока тупо в базу 
         BL.AddObject(Session,Adapter,Object.GridClass);
+        DataChanged = true;
     }   
     
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
         BL.ChangeClass(Session,Adapter,Object.idObject,Class);
+        DataChanged = true;
     }
 
     // рекурсия для генерации порядка
@@ -581,6 +586,11 @@ class FormBeanView {
             if(!UpdateKeys)
                 for(PropertyObjectImplement Order : Group.Orders)
                     if(DataChanged && ChangedProps.contains(Order.Property)) {UpdateKeys = true; break;}
+            // классы удалились\добавились
+            if(!UpdateKeys && DataChanged) {
+                for(ObjectImplement Object : Group)
+                    if(Session.AddClasses.contains(Object.GridClass) || Session.RemoveClasses.contains(Object.GridClass)) {UpdateKeys = true; break;}
+            }
 
             if(!UpdateKeys && Group.GridClassView) {
                 Map<ObjectImplement,Integer> GroupKey = null;
@@ -654,15 +664,19 @@ class FormBeanView {
                         // не было в фильтре
                         // если есть remove'классы или новые объекты их надо докинуть                        
                         if(Session.AddClasses.contains(Object.GridClass)) {
-                            // и FULL JOIN (UNION ALL) на Add
+                            // придется UnionQuery делать
+                            UnionQuery ResultQuery = new UnionQuery(2);
+                            ResultQuery.Keys.add(BL.TableFactory.ObjectTable.Key.Name);
+
                             SelectQuery SubQuery = new SelectQuery(KeySelect);
-                            From AddSelect = BL.TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass);
-                            AddSelect.JoinType = "FULL";
-                            SubQuery.From.Joins.add(AddSelect);
-                            AddSelect.Wheres.add(new FieldWhere(KeyExpr,BL.TableFactory.AddClassTable.Object.Name));
-                            SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,new IsNullSourceExpr(KeyExpr,new FieldSourceExpr(AddSelect,BL.TableFactory.AddClassTable.Object.Name)));
+                            SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,KeyExpr);
+                            ResultQuery.Unions.add(SubQuery);
                             
-                            KeySelect = new FromQuery(SubQuery);
+                            SubQuery = new SelectQuery(BL.TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
+                            SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,BL.TableFactory.AddClassTable.Object.Name));
+                            ResultQuery.Unions.add(SubQuery);
+                            
+                            KeySelect = new FromQuery(ResultQuery);
                             KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
                         }
                         
@@ -940,6 +954,8 @@ class FormBeanView {
             Group.Updated = 0;
         }
         DataChanged = false;
+        
+        Result.Out(this);
 
         return Result;
     }

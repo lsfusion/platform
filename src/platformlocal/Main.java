@@ -72,14 +72,16 @@ class Test extends BusinessLogics  {
         
         LDP Name = AddDProp(StringClass,Base);
         LDP DocStore = AddDProp(Store,Document);
-        LDP Quantity = AddDProp(IntegerClass,Document,Article);
         LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
         LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
         LDP ArtToGroup = AddDProp(ArticleGroup,Article);
         LDP DocDate = AddDProp(IntegerClass,Document);
         LDP GrAddV = AddDProp(IntegerClass,ArticleGroup);
         LDP ArtAddV = AddDProp(IntegerClass,Article);
-        
+
+        // сделаем Quantity перегрузкой
+        LRP Quantity = AddLProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+
         LDP RashValue = AddVProp(-1,IntegerClass,RashDocument);
         RashValue.Property.OutName = "призн. расхода";
 
@@ -88,7 +90,10 @@ class Test extends BusinessLogics  {
 
         LRP OpValue = AddLProp(2,1,1,RashValue,1,1,PrihValue,1);
         OpValue.Property.OutName = "общ. призн.";
-
+        
+        LGP RaznSValue = AddGProp(OpValue,true,DocStore,1);
+        RaznSValue.Property.OutName = "разн. пр-рас.";
+        
         LRP RGrAddV = AddRProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.OutName = "наценка по товару (гр.)";
 
@@ -561,10 +566,11 @@ class LDP extends LP {
     }
     
     void ChangeProperty(ChangesSession Session,DataAdapter Adapter,Object Value,Integer ...iParams) throws SQLException {
-        Map<DataPropertyInterface,Integer> Keys = new HashMap<DataPropertyInterface,Integer>();
+        Map<PropertyInterface,ObjectValue> Keys = new HashMap();
         Integer IntNum = 0;
         for(int i : iParams) {
-            Keys.put((DataPropertyInterface)ListInterfaces.get(IntNum),i);
+            DataPropertyInterface Interface = (DataPropertyInterface)ListInterfaces.get(IntNum);
+            Keys.put(Interface,new ObjectValue(i,Interface.Class));
             IntNum++;
         }
         

@@ -17,6 +17,12 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.TreeMap;
 
+class ObjectValue {
+    Integer idObject;
+    Class Class;
+    
+    ObjectValue(Integer iObject,Class iClass) {idObject=iObject;Class=iClass;}
+}
 
 class PropertyImplement<P extends Property,T> {
     
@@ -462,6 +468,9 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         
         return ChangedFrom;
     }
+
+    // базовый метод - ничего не делать, его перегружают только Override и Data
+    void ChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {}
 }
     
 class DataPropertyInterface extends PropertyInterface {
@@ -513,11 +522,11 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         return Value.GetDBType();
     }
 
-    void ChangeProperty(DataAdapter Adapter,Map<DataPropertyInterface,Integer> Keys,Object NewValue,ChangesSession Session) throws SQLException {
+    void ChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {
         // записываем в таблицу изменений
         Map<KeyField,Integer> InsertKeys = new HashMap();
         for(DataPropertyInterface Interface : Interfaces)
-            InsertKeys.put(ChangeTableMap.get(Interface),Keys.get(Interface));
+            InsertKeys.put(ChangeTableMap.get(Interface),Keys.get(Interface).idObject);
         
         InsertKeys.put(ChangeTable.Property,ID);
         InsertKeys.put(ChangeTable.Session,Session.ID);
@@ -563,6 +572,13 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         
         for(DataPropertyInterface RemoveInterface : Interfaces) {
             if(Session.RemoveClasses.contains(RemoveInterface.Class)) {
+                // те изменения которые были скинем в null
+                FromTable ChangedFrom = GetChangedFrom(Session);
+                From RemoveFrom = TableFactory.RemoveClassTable.ClassSelect(Session,RemoveInterface.Class);
+                RemoveFrom.Wheres.add(new FieldWhere(new FieldSourceExpr(ChangedFrom,ChangeTableMap.get(RemoveInterface).Name),TableFactory.RemoveClassTable.Object.Name));
+                ChangedFrom.Joins.add(RemoveFrom);
+                Adapter.DeleteRecords(ChangedFrom);
+                
                 // интерфейсу св-ва нужна эта проверка, Join'им со старой таблицей
                 SelectQuery SubQuery = new SelectQuery(TableFactory.RemoveClassTable.ClassSelect(Session,RemoveInterface.Class));
                 JoinList Joins = new JoinList();
@@ -576,20 +592,32 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
                 // закинем JoinImplement
                 for(DataPropertyInterface Interface : Interfaces)
                     SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
-                
+
                 ResultQuery.Unions.add(SubQuery);
             }
         }
 
         if(Session.RemoveClasses.contains(Value)) {
+            // те изменения которые были скинем в null
+            FromTable ChangedFrom = GetChangedFrom(Session);
+            From RemoveFrom = TableFactory.RemoveClassTable.ClassSelect(Session,Value);
+            RemoveFrom.Wheres.add(new FieldWhere(new FieldSourceExpr(ChangedFrom,ChangeTable.Value.Name),TableFactory.RemoveClassTable.Object.Name));
+            ChangedFrom.Joins.add(RemoveFrom);
+            Adapter.DeleteRecords(ChangedFrom);
+
             JoinList Joins = new JoinList();
             Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-            JoinSelect(Joins,JoinImplement,false);
+            SourceExpr ValueExpr = JoinSelect(Joins,JoinImplement,false);
+
+            // докинем последнюю таблицу
+            RemoveFrom = TableFactory.RemoveClassTable.ClassSelect(Session,Value);
+            RemoveFrom.Wheres.add(new FieldWhere(ValueExpr,TableFactory.RemoveClassTable.Object.Name));
+            Joins.add(RemoveFrom);
             
             Iterator<From> ij = Joins.iterator();
             SelectQuery SubQuery = new SelectQuery(ij.next());
             while(ij.hasNext()) SubQuery.From.Joins.add(ij.next());
-
+            
             // закинем JoinImplement
             for(DataPropertyInterface Interface : Interfaces)
                 SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
@@ -613,9 +641,13 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
             ChangedJoin.JoinType = "LEFT";
 
             Insert.From.Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(ChangedJoin,KeyField),false));
+            Insert.ValueKeys.put(ChangeTable.Session.Name,Session.ID);
+            Insert.ValueKeys.put(ChangeTable.Property.Name,ID);
+            
+            Insert.Expressions.put(ChangeTable.Value.Name,new ValueSourceExpr(null));
             
             Adapter.InsertSelect(ChangeTable,Insert);
-            
+/*            
             // UPDATE            
             SelectQuery Update = new SelectQuery(GetChangedFrom(Session));
             // за Join'им в обратную сторону
@@ -624,10 +656,18 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
             for(DataPropertyInterface Interface : Interfaces) {
                 KeyField = ChangeTableMap.get(Interface).Name;
                 UpdateJoin.Wheres.add(new FieldWhere(new FieldSourceExpr(Update.From,KeyField),KeyField));
+                
+                Update.Expressions.put(KeyField,new FieldSourceExpr(Update.From,KeyField));
             }
             Update.Expressions.put(ChangeTable.Value.Name,new ValueSourceExpr(null));
 
+            OutChangesTable(Adapter,Session);
+            System.out.println("outselect" + Interfaces.size());
+            Adapter.OutSelect(Update);
+            
             Adapter.UpdateRecords(Update);
+            
+            OutChangesTable(Adapter,Session);*/
         }
 
         int ChangeType = GetChangeType(Session);
@@ -1027,6 +1067,16 @@ class PropertyMapImplement extends PropertyImplement<ObjectProperty,PropertyInte
     public boolean MapFillChangedList(List<AggregateProperty> ChangedProperties,ChangesSession Session) {
         return Property.FillChangedList(ChangedProperties,Session);
     }
+ 
+    // для OverrideList'а по сути
+    void MapChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {
+        Map<PropertyInterface,ObjectValue> MapKeys = new HashMap();
+        for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Property.Interfaces)
+            MapKeys.put(ImplementInterface,Keys.get(Mapping.get(ImplementInterface)));
+
+        Property.ChangeProperty(Adapter,MapKeys,NewValue,Session);
+    }
+
 }
 
 class RelationProperty extends AggregateProperty<PropertyInterface> {
@@ -1664,7 +1714,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
     }
 
     // имплементации св-в (полные)
-    Collection<PropertyMapImplement> Operands;
+    List<PropertyMapImplement> Operands;
     
     int Operator;
     // коэффициенты
@@ -1963,6 +2013,20 @@ class OverrideListProperty extends ListProperty {
 
         QueryIncrementType = GetChangeType(Session);
         return IncrementQuery(Session,QueryIncrementType);
+    }
+    
+    @Override
+    void ChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {
+        // нужно бежать в обратном порядке, там где появится первый 
+        InterfaceClass ChangeClass = new InterfaceClass();
+        for(PropertyInterface Interface : Interfaces)
+            ChangeClass.put(Interface,Keys.get(Interface).Class);
+        
+        for(int i=Operands.size()-1;i>=0;i--) {
+            PropertyMapImplement Operand = Operands.get(i);
+            if(Operand.MapGetValueClass(ChangeClass)!=null)
+                Operand.MapChangeProperty(Adapter,Keys,NewValue,Session);
+        }
     }
 }
 
