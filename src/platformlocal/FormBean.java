@@ -488,12 +488,18 @@ class FormBeanView {
     }
 
     // применяет изменения
-    public void UpdateChanges(boolean Cancel) throws SQLException {
+    public String SaveChanges() throws SQLException {
 
-        if(!Cancel)
-            BL.Apply(Adapter,Session);
+        BL.Apply(Adapter,Session);
 
         Session = BL.CreateSession();
+        
+        return "";
+    }
+
+    boolean Cancel = false;
+    public void CancelChanges() {
+        Cancel = true;
     }
     
     // получаем все аггрегированные св-ва задействованные на форме
