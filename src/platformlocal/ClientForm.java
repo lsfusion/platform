@@ -550,7 +550,10 @@ public class ClientForm extends FrameView {
                         }
 
                         public Object getValueAt(int row, int col) {
-                            return value;
+                            if (value != null)
+                                return value;
+                            else
+                                return (String)"";
                         }
 
                         public void setValueAt(Object value, int row, int col) {
@@ -927,7 +930,8 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
     }
 
     public void setValue(Object value) {
-        setText(value.toString());
+        if (value != null)
+            setText(value.toString());
         selectAll();
     }
 
@@ -949,7 +953,8 @@ class StringPropertyEditor extends TextFieldPropertyEditor
     }
 
     public void setValue(Object value) {
-        setText(value.toString());
+        if (value != null)
+            setText(value.toString());
         selectAll();
     }
 
