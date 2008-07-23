@@ -60,24 +60,50 @@ class ClientObjectImplement {
     ClientGroupObjectImplement groupObject;
  
     String caption = "";
+    
+    ClientObjectView objectIDView;
+    
 }
 
 class ClientGroupPropertyView {
     
 }
 
-class ClientPropertyView {
+abstract class ClientAbstractView {
     
     Integer GID = 0;
 
     ClientGroupPropertyView groupProperty;
     ClientGroupObjectImplement groupObject;
 
-    String type;
-    
     Dimension minimumSize;
     Dimension maximumSize;
     Dimension preferredSize;
+
+    String caption;
+
+    public int getPreferredWidth() {
+        return 50;
+    }
+    
+    public int getPreferredHeight() {
+        return 15;
+    }
+    
+    public Dimension getPreferredSize() {
+        
+        if (preferredSize != null) return preferredSize;
+        return new Dimension(getPreferredWidth(), getPreferredHeight());
+    }
+    
+    abstract public PropertyRendererComponent getRendererComponent();
+    abstract public PropertyEditorComponent getEditorComponent();
+
+}
+
+class ClientPropertyView extends ClientAbstractView {
+    
+    String type;
     
     public int getPreferredWidth() {
         
@@ -87,16 +113,6 @@ class ClientPropertyView {
         if (type.equals("char(50)")) res = 50;
         
         return res * 5;
-    }
-    
-    public int getPreferredHeight() {
-        return 15;        
-    }
-    
-    public Dimension getPreferredSize() {
-        
-        if (preferredSize != null) return preferredSize;
-        return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
     
     private PropertyRendererComponent renderer;
@@ -124,8 +140,26 @@ class ClientPropertyView {
         
     }
 
-    String caption;
+}
 
+class ClientObjectView extends ClientAbstractView {
+
+    private PropertyRendererComponent renderer;
+    public PropertyRendererComponent getRendererComponent() {
+        
+        if (renderer == null) {
+            renderer = new IntegerPropertyRenderer();
+        }
+        
+        return renderer;
+        
+    }
+    
+    public PropertyEditorComponent getEditorComponent() {
+        
+        return new IntegerPropertyEditor();
+    }
+    
 }
 
 class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,ClientGroupObjectValue,ClientPropertyView> {
@@ -192,6 +226,8 @@ class ClientFormBean {
                 clientObject.groupObject = clientGroup;
                 
                 clientObject.caption = object.OutName;
+                clientObject.objectIDView = new ClientObjectView();
+                clientObject.objectIDView.caption = object.OutName;
                 
                 clientGroup.add(clientObject);
                 
