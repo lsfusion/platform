@@ -139,7 +139,6 @@ class UniqueConstraint extends Constraint {
         Changed.From.Wheres.add(OrDiffKeys);
         Changed.Expressions.put("value",ChangedExpr);
 
-        Adapter.OutSelect(Changed);
         List<Map<String,Object>> Result = Adapter.ExecuteSelect(Changed);
         if(Result.size()>0) {
             System.out.println("Уникальное ограничение на св-во "+Property.OutName+" нарушено");
