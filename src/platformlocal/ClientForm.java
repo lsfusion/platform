@@ -120,7 +120,7 @@ public class ClientForm extends FrameView {
 
         views = new HashMap();
         
-        for (ClientGroupObjectImplement groupObject : formInit.GroupObjects) {
+        for (ClientGroupObjectImplement groupObject : formInit.groupObjects) {
             
             View view = new View(groupObject);
   
@@ -130,8 +130,8 @@ public class ClientForm extends FrameView {
             
         }
         
-        JButton buttonApply = new JButton("Применить");
-        buttonApply.addActionListener(new ActionListener() {
+        JButton buttonSave = new JButton("Применить");
+        buttonSave.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 saveChanges();
@@ -139,7 +139,17 @@ public class ClientForm extends FrameView {
             
         });
 
-        mainPanel.add(buttonApply);
+        JButton buttonCancel = new JButton("Отменить");
+        buttonCancel.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                cancelChanges();
+            }
+            
+        });
+        
+        mainPanel.add(buttonSave);
+        mainPanel.add(buttonCancel);
     }
     
 
@@ -221,6 +231,10 @@ public class ClientForm extends FrameView {
     
     void saveChanges() {
         applyFormChanges(clientBean.saveChanges());
+    }
+
+    void cancelChanges() {
+        applyFormChanges(clientBean.cancelChanges());
     }
     
     class View extends JPanel {
@@ -750,9 +764,9 @@ public class ClientForm extends FrameView {
                         Iterator<ClientAbstractView> icp = gridColumns.iterator();
 
                         // конечно кривова-то определять порядок по номеру в листе, но потом надо будет сделать по другому
-                        int ind = formInit.Properties.indexOf(property), ins = 0;
+                        int ind = formInit.properties.indexOf(property), ins = 0;
 
-                        while (icp.hasNext() && formInit.Properties.indexOf(icp.next()) < ind) { ins++; }
+                        while (icp.hasNext() && formInit.properties.indexOf(icp.next()) < ind) { ins++; }
 
                         gridColumns.add(ins, property);
 
@@ -803,8 +817,8 @@ public class ClientForm extends FrameView {
                                     pane.validate();
                                 }
                             });
-                        } else
-                            getSelectionModel().clearSelection();
+                        } //else
+//                            getSelectionModel().clearSelection();
 
                     }
 

@@ -170,17 +170,21 @@ class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,C
 
 class ClientFormInit {
     
-    List<ClientGroupObjectImplement> GroupObjects;
-    List<ClientObjectImplement> Objects;
-    List<ClientGroupPropertyView> GroupProperties;
-    List<ClientPropertyView> Properties;
+    List<ClientGroupObjectImplement> groupObjects;
+    List<ClientObjectImplement> objects;
+    List<ClientGroupPropertyView> groupProperties;
+    List<ClientPropertyView> properties;
+    
+    List<ClientAbstractView> order;
     
     public ClientFormInit() {
         
-        GroupObjects = new ArrayList();
-        Objects = new ArrayList();
-        GroupProperties = new ArrayList();
-        Properties = new ArrayList();
+        groupObjects = new ArrayList();
+        objects = new ArrayList();
+        groupProperties = new ArrayList();
+        properties = new ArrayList();
+        
+        order = new ArrayList();
         
     }
 
@@ -339,13 +343,13 @@ class ClientFormBean {
         ClientFormInit formInit = new ClientFormInit();
   
         for (ClientGroupObjectImplement groupObject : listGroups)
-            formInit.GroupObjects.add(groupObject);
+            formInit.groupObjects.add(groupObject);
         
         for (ClientObjectImplement object : listObjects)
-            formInit.Objects.add(object);
+            formInit.objects.add(object);
             
         for (ClientPropertyView property : listProperties)
-            formInit.Properties.add(property);
+            formInit.properties.add(property);
         
         return formInit;
         
@@ -480,10 +484,27 @@ class ClientFormBean {
     ClientFormChanges saveChanges() {
  
         try {
-            formBean.SaveChanges();
+            System.out.println("Save changes : " + formBean.SaveChanges());
         } catch(SQLException e) {
             
         }
+        
+        FormChanges formChanges = null;
+        try {
+            formChanges = formBean.EndApply();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        
+//        formChanges.Out(formBean);
+
+        return convertFormChangesToClient(formChanges);
+        
+    }
+    
+    ClientFormChanges cancelChanges() {
+ 
+        formBean.CancelChanges();
         
         FormChanges formChanges = null;
         try {
