@@ -79,8 +79,20 @@ class Test extends BusinessLogics  {
         LDP GrAddV = AddDProp(IntegerClass,ArticleGroup);
         LDP ArtAddV = AddDProp(IntegerClass,Article);
 
+        LDP BarCode = AddDProp(IntegerClass,Article);
+        BarCode.Property.OutName = "штрих-код";
+
+        LDP AbsQuantity = AddVProp(0,IntegerClass,Document,Article);
+        AbsQuantity.Property.OutName = "абст. кол-во";
+
+        LDP IsGrmat = AddVProp(0,IntegerClass,Article);
+        IsGrmat.Property.OutName = "признак товара";
+
+        LRP FilledProperty = AddLProp(0,1,1,IsGrmat,1,1,ArtToGroup,1);
+        FilledProperty.Property.OutName = "заполнение гр. тов.";
+
         // сделаем Quantity перегрузкой
-        LRP Quantity = AddLProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+        LRP Quantity = AddLProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
         LDP RashValue = AddVProp(-1,IntegerClass,RashDocument);
         RashValue.Property.OutName = "призн. расхода";
@@ -184,16 +196,20 @@ class Test extends BusinessLogics  {
         Include.add(new DataPropertyInterface(Store));
         TableFactory.IncludeIntoGraph(Include);
         
-        PersistentProperties.add((AggregateProperty)GP.Property);
-        PersistentProperties.add((AggregateProperty)GAP.Property);
-        PersistentProperties.add((AggregateProperty)G2P.Property);
-        PersistentProperties.add((AggregateProperty)GSum.Property);
-        PersistentProperties.add((AggregateProperty)OstArtStore.Property);
-        PersistentProperties.add((AggregateProperty)OstArt.Property);
-        PersistentProperties.add((AggregateProperty)MaxPrih.Property);
-        PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
-        PersistentProperties.add((AggregateProperty)SumMaxArt.Property);
-        PersistentProperties.add((AggregateProperty)OpValue.Property);
+        Persistents.add((AggregateProperty)GP.Property);
+        Persistents.add((AggregateProperty)GAP.Property);
+        Persistents.add((AggregateProperty)G2P.Property);
+        Persistents.add((AggregateProperty)GSum.Property);
+        Persistents.add((AggregateProperty)OstArtStore.Property);
+        Persistents.add((AggregateProperty)OstArt.Property);
+        Persistents.add((AggregateProperty)MaxPrih.Property);
+        Persistents.add((AggregateProperty)MaxOpStore.Property);
+        Persistents.add((AggregateProperty)SumMaxArt.Property);
+        Persistents.add((AggregateProperty)OpValue.Property);
+        
+        Constraints.put((ObjectProperty)OstArtStore.Property,new PositiveConstraint());
+        Constraints.put((ObjectProperty)FilledProperty.Property,new NotEmptyConstraint());
+        Constraints.put((ObjectProperty)BarCode.Property,new UniqueConstraint());
         
         DataAdapter ad = new DataAdapter();
         ad.Connect("");
@@ -267,9 +283,11 @@ class Test extends BusinessLogics  {
         ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[2]);
         ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[3]);
         ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[4]);
+        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[5]);
 
         // Quantity
         PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[0],Articles[0]);
+        PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[2],Articles[0]);
         RashQuantity.ChangeProperty(Session,ad,5,RashDocuments[0],Articles[0]);
         RashQuantity.ChangeProperty(Session,ad,3,RashDocuments[1],Articles[0]);
         
@@ -278,13 +296,15 @@ class Test extends BusinessLogics  {
         PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[3],Articles[1]);
         RashQuantity.ChangeProperty(Session,ad,14,RashDocuments[2],Articles[1]);
 
-        PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[3],Articles[2]);
+        PrihQuantity.ChangeProperty(Session,ad,32,PrihDocuments[2],Articles[2]);
+        PrihQuantity.ChangeProperty(Session,ad,18,PrihDocuments[3],Articles[2]);
         RashQuantity.ChangeProperty(Session,ad,2,RashDocuments[1],Articles[2]);
         RashQuantity.ChangeProperty(Session,ad,10,RashDocuments[3],Articles[2]);
         PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[4],Articles[2]);
 
         PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[3],Articles[3]);
-        
+
+        PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[0],Articles[4]);
         RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[2],Articles[4]);
         RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[3],Articles[4]);
 
@@ -391,16 +411,21 @@ class Test extends BusinessLogics  {
         FormBeanView fbv  = new FormBeanView(ad,this);
         ObjectImplement obj1 = new ObjectImplement();                
         ObjectImplement obj2 = new ObjectImplement();
+        ObjectImplement obj3 = new ObjectImplement();
         
         GroupObjectImplement gv = new GroupObjectImplement();
         GroupObjectImplement gv2 = new GroupObjectImplement();
+        GroupObjectImplement gv3 = new GroupObjectImplement();
 
         gv.add(obj1);
         gv2.add(obj2);
+        gv3.add(obj3);
         fbv.AddGroup(gv);
         fbv.AddGroup(gv2);
+        fbv.AddGroup(gv3);
         gv.GID = 1;
         gv2.GID = 2;
+        gv2.GID = 3;
 
         PropertyObjectImplement GrTovImpl=null;
         PropertyObjectImplement NameImpl=null;
@@ -420,6 +445,10 @@ class Test extends BusinessLogics  {
                 if(DrawProp.OutName.equals("гр. тов"))
                     GrTovImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv2));
+
+                PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
+                PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj3);
+                fbv.Properties.add(new PropertyView(PropImpl,gv3));
             }
         }
         
@@ -435,6 +464,8 @@ class Test extends BusinessLogics  {
         fbv.ChangeGridClass(obj1,Article.ID);
         obj2.OutName = "";
         fbv.ChangeGridClass(obj2,Document.ID);
+        obj3.OutName = "";
+        fbv.ChangeGridClass(obj3,ArticleGroup.ID);
 //        fbv.AddFilter(new NotNullFilter(QImpl));
         fbv.AddOrder(NameImpl);
         

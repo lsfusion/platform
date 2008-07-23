@@ -371,12 +371,12 @@ class SourceIsNullWhere extends Where {
 
 class FieldValueWhere extends Where {
     
-    FieldValueWhere(Integer iValue,String iField) {
+    FieldValueWhere(Object iValue,String iField) {
         Value = iValue;
         Field = iField;
     }
             
-    Integer Value;
+    Object Value;
     String Field;
 
     public String GetSelect(From From) {
@@ -410,7 +410,7 @@ class FieldExprCompareWhere extends Where {
 
     @Override
     public String GetSelect(From From) {
-        return Source.GetSource() + (Compare==0?"=":(Compare==1?">":(Compare==2?"<":(Compare==3?">=":"<=")))) + (Value instanceof String?"'"+Value+"'":(Value instanceof SourceExpr?((SourceExpr)Value).GetSource():Value.toString()));
+        return Source.GetSource() + (Compare==0?"=":(Compare==1?">":(Compare==2?"<":(Compare==3?">=":(Compare==4?"<=":"<>"))))) + (Value instanceof String?"'"+Value+"'":(Value instanceof SourceExpr?((SourceExpr)Value).GetSource():Value.toString()));
     }
 }
 
@@ -424,6 +424,16 @@ class FieldOPWhere extends Where {
 
     public String GetSelect(From From) {
         return "(" + Op1.GetSelect(From) + " " + (And?"AND":"OR") + " " + Op2.GetSelect(From) + ")";
+    }
+}
+
+class FieldNotWhere extends Where {
+    FieldNotWhere(Where iOp) {Op=iOp;}
+
+    Where Op;
+
+    public String GetSelect(From From) {
+        return "NOT (" + Op.GetSelect(From) + ")";
     }
 }
 

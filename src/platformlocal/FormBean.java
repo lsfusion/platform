@@ -147,41 +147,8 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
             // заполним названия полей в которые будем Select'ать
             String Value = "joinvalue";
             Map<PropertyInterface,String> MapFields = new HashMap();
-            Integer KeyNum = 1;
-            UnionQuery ResultQuery = new UnionQuery(3);
-            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-                String KeyField = "key"+(KeyNum++);
-                MapFields.put(Interface,KeyField);
-                ResultQuery.Keys.add(KeyField);
-            }
-            ResultQuery.Values.add(Value);
-
-            SelectQuery SubQuery = new SelectQuery(null);
-            JoinList SubList = new JoinList();
-            Map<PropertyInterface,SourceExpr> SubImplement = new HashMap();
-            SubQuery.Expressions.put(Value,Property.JoinSelect(SubList,SubImplement,false));
             
-            Iterator<From> is = SubList.iterator();
-            SubQuery.From = is.next();
-            while(is.hasNext())
-                SubQuery.From.Joins.add(is.next());
-            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-                SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
-            ResultQuery.Unions.add(SubQuery);
-            
-            SubQuery = new SelectQuery(null);
-            SubList = new JoinList();
-            SubImplement = new HashMap();
-            SubQuery.Expressions.put(Value,Property.ChangedJoinSelect(Joins,SubImplement,Session,0,false));
-            is = SubList.iterator();
-            SubQuery.From = is.next();
-            while(is.hasNext())
-                SubQuery.From.Joins.add(is.next());
-            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-                SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
-            ResultQuery.Unions.add(SubQuery);
-            
-            FromQuery FromResultQuery = new FromQuery(ResultQuery);
+            FromQuery FromResultQuery = new FromQuery(Property.UpdateUnionQuery(Session,Value,MapFields));
             
             // надо за Join'ить
             for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
@@ -490,11 +457,13 @@ class FormBeanView {
     // применяет изменения
     public String SaveChanges() throws SQLException {
 
-        BL.Apply(Adapter,Session);
-
-        Session = BL.CreateSession();
-        
-        return "";
+        if(BL.Apply(Adapter,Session)) {
+            ChangedProps.clear();
+            Session = BL.CreateSession();
+            
+            return "pass";
+        }        
+            return "failed";
     }
 
     boolean Cancel = false;
@@ -720,7 +689,7 @@ class FormBeanView {
                 for(ObjectImplement Object : Group) {
                     SourceExpr KeyExpr = KeySources.get(Object);
                     
-                    // также закинем их в порядок и в запрос
+                    // также закинем их в порядок и в запрос6
                     SelectKeys.Orders.add(KeyExpr);
                     if(KeyOrder!=null) {
                         OrderSources.add(KeyExpr);

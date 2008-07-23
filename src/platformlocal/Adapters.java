@@ -94,10 +94,8 @@ class DataAdapter {
         if(ExecuteSelect(Select).size()>0) {
             // есть запись нужно Update лупить
             Select.Expressions.clear();
-            for(Field Prop : PropFields.keySet()) {
-                Object PropValue = PropFields.get(Prop);
-                Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropValue));
-            }
+            for(Field Prop : PropFields.keySet())
+                Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropFields.get(Prop)));
             UpdateRecords(Select);
         } else
             // делаем Insert

@@ -314,6 +314,46 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
 
         return null;
     }
+    
+    // делает UnionQuery с новыми значениеми (возвр.) Map сгенеренных ключей
+    UnionQuery UpdateUnionQuery(ChangesSession Session,String Value,Map<PropertyInterface,String> MapFields) {
+
+        Integer KeyNum = 1;
+        UnionQuery ResultQuery = new UnionQuery(3);
+        for(PropertyInterface Interface : Interfaces) {
+            String KeyField = "key"+(KeyNum++);
+            MapFields.put(Interface,KeyField);
+            ResultQuery.Keys.add(KeyField);
+        }
+        ResultQuery.Values.add(Value);
+
+        SelectQuery SubQuery = new SelectQuery(null);
+        JoinList SubList = new JoinList();
+        Map<PropertyInterface,SourceExpr> SubImplement = new HashMap();
+        SubQuery.Expressions.put(Value,JoinSelect(SubList,SubImplement,false));
+
+        Iterator<From> is = SubList.iterator();
+        SubQuery.From = is.next();
+        while(is.hasNext())
+            SubQuery.From.Joins.add(is.next());
+        for(PropertyInterface Interface : Interfaces)
+            SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
+        ResultQuery.Unions.add(SubQuery);
+
+        SubQuery = new SelectQuery(null);
+        SubList = new JoinList();
+        SubImplement = new HashMap();
+        SubQuery.Expressions.put(Value,ChangedJoinSelect(SubList,SubImplement,Session,0,false));
+        is = SubList.iterator();
+        SubQuery.From = is.next();
+        while(is.hasNext())
+            SubQuery.From.Joins.add(is.next());
+        for(PropertyInterface Interface : Interfaces)
+            SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
+        ResultQuery.Unions.add(SubQuery);
+
+        return ResultQuery;
+    }
 
     void OutChangesTable(DataAdapter Adapter, ChangesSession Session) throws SQLException {
         SelectQuery SelectChanges = new SelectQuery(GetChangedFrom(Session));
@@ -332,8 +372,8 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     // сохраняет изменения в таблицу
     void SaveChanges(DataAdapter Adapter,ChangesSession Session) throws SQLException {
 
-//        Integer ChangeType = SessionChanged.get(Session);
-//        if(ChangeType==null) return;
+        // если не изменились ничего не делаем
+        if(!HasChanges(Session)) return;
         
         Map<KeyField,T> MapKeys = new HashMap();
         Table SourceTable = GetTable(MapKeys);
@@ -468,7 +508,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         
         return ChangedFrom;
     }
-
+    
     // базовый метод - ничего не делать, его перегружают только Override и Data
     void ChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {}
 }
@@ -1910,14 +1950,18 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
 
             Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
             // так как делается LEFT JOIN важен порядок сначала закидываем ChangedProps ChangedJoinSelect
+            // сначала бежим по Join'ам, затем по LEFT JOIN, но ResultExpr именно в нужном порядке
+            Map<PropertyMapImplement,SourceExpr> ResultValues = new HashMap();
+            Map<PropertyMapImplement,SourceExpr> PrevValues = new HashMap();
+            
             for(PropertyMapImplement Operand : ChangedProps) {
-                ResultExpr.AddOperand(Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,ValueType==1?1:0),Coeffs.get(Operand));
-                if(ValueType==2) PrevExpr.AddOperand(Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,2),Coeffs.get(Operand));
+                ResultValues.put(Operand,Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,ValueType==1?1:0));
+                if(ValueType==2) PrevValues.put(Operand,Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,2));
             }
-
+            
             if(!SumList) {
-                // здесь надо отрезать только те которые могут в принципе пересекаться по классам
                 for(PropertyMapImplement Operand : Operands) {
+                    // здесь надо отрезать только те которые могут в принципе пересекаться по классам
                     if(!ChangedProps.contains(Operand)) {
                         SourceExpr OperandExpr = Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,0);
                         if(Operator==2 && ValueType==1) { // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
@@ -1925,12 +1969,18 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
                             NullValues.add(OperandExpr);
                             OperandExpr = new NullValueSourceExpr(NullValues,new ValueSourceExpr(null),new ValueSourceExpr(0));
                         }
-
-                        ResultExpr.AddOperand(OperandExpr,Coeffs.get(Operand));
-                        if(ValueType==2) PrevExpr.AddOperand(Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,2),Coeffs.get(Operand));
+                        ResultValues.put(Operand,OperandExpr);
+                        if(ValueType==2) PrevValues.put(Operand,Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,2));
                     }
                 }
             }
+
+            // так хитро бежим потому как важен порядок
+            for(PropertyMapImplement Operand : Operands)
+                if(ResultValues.containsKey(Operand)) {
+                    ResultExpr.AddOperand(ResultValues.get(Operand),Coeffs.get(Operand));
+                    if(ValueType==2) PrevExpr.AddOperand(PrevValues.get(Operand),Coeffs.get(Operand));
+                } 
 
             ListIterator<From> ij = SetJoins.listIterator();
             SelectQuery SubQuery = new SelectQuery(ij.next());

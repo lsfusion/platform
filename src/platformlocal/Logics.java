@@ -458,7 +458,8 @@ class BusinessLogics {
         BaseClass = new ObjectClass(0);
         TableFactory = new TableFactory();
         Properties = new ArrayList();
-        PersistentProperties = new HashSet();
+        Persistents = new HashSet();
+        Constraints = new HashMap();
         
         BaseClass = new ObjectClass(0);
         
@@ -532,7 +533,10 @@ class BusinessLogics {
             Map<KeyField,Integer> InsertKeys = new HashMap();
             InsertKeys.put(TableFactory.ObjectTable.Key, idObject);
             Map<Field,Object> InsertProps = new HashMap();
-            InsertProps.put(TableFactory.ObjectTable.Class,Session.ChangeClasses.get(idObject).ID);
+            Class ChangeClass = Session.ChangeClasses.get(idObject);
+            Object Value = null;
+            if(ChangeClass!=null) Value = ChangeClass.ID;
+            InsertProps.put(TableFactory.ObjectTable.Class,Value);
         
             Adapter.UpdateInsertRecord(TableFactory.ObjectTable,InsertKeys,InsertProps);
         }        
@@ -551,7 +555,8 @@ class BusinessLogics {
     TableFactory TableFactory;
     Collection<Property> Properties;
     
-    Set<AggregateProperty> PersistentProperties;
+    Set<AggregateProperty> Persistents;
+    Map<ObjectProperty,Constraint> Constraints;
     
         
     List<AggregateProperty> UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> AggrProperties, ChangesSession Session) throws SQLException {
@@ -611,21 +616,43 @@ class BusinessLogics {
         for(ObjectProperty Property : Properties) Property.SaveChanges(Adapter, Session);
     }
     
+    // проверяет Constraints
+    boolean CheckConstraints(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+
+        for(ObjectProperty Property : Constraints.keySet())
+            if(Property.HasChanges(Session) && !Constraints.get(Property).Check(Adapter,Session,Property))
+                return false;
+
+        return true;
+    }
+    
     boolean Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
         Adapter.Execute("BEGIN TRANSACTION");
         
-        UpdateAggregations(Adapter,PersistentProperties,Session);
+        // создадим общий список из Persistents + Constraints с AggregateProperty's
+        Collection<AggregateProperty> UpdateList = new ArrayList(Persistents);
+        for(ObjectProperty Constraint : Constraints.keySet())
+            if(Constraint instanceof AggregateProperty)
+                UpdateList.add((AggregateProperty)Constraint);
 
-        // записываем Data, затем PersistentProperties в таблицы из сессии
+        UpdateAggregations(Adapter,UpdateList,Session);
+
+        // проверим Constraints
+        if(!CheckConstraints(Adapter,Session)) {
+            Adapter.Execute("ROLLBACK");
+            return false;
+        }            
+        
+        // записываем Data, затем Persistents в таблицы из сессии
         SaveClassChanges(Session,Adapter);
         
-        SaveProperties(Adapter,PersistentProperties,Session);
+        SaveProperties(Adapter,Persistents,Session);
         SaveProperties(Adapter,Session.Properties,Session);
         
         Adapter.Execute("COMMIT TRANSACTION");
         
-        return false;       
+        return true;       
         
     }
 
@@ -653,7 +680,7 @@ class BusinessLogics {
             if(Property instanceof AggregateProperty)
                 AggrProperties.add((AggregateProperty)Property);
 
-            if(Property instanceof DataProperty || (Property instanceof AggregateProperty && PersistentProperties.contains(Property))) {
+            if(Property instanceof DataProperty || (Property instanceof AggregateProperty && Persistents.contains(Property))) {
                 Table Table = ((ObjectProperty)Property).GetTable(null);
   
                 Integer PropNum = Tables.get(Table);
@@ -686,7 +713,7 @@ class BusinessLogics {
     }
     
     boolean CheckPersistent(DataAdapter Adapter) throws SQLException {
-        for(AggregateProperty Property : PersistentProperties) {
+        for(AggregateProperty Property : Persistents) {
             if(!Property.CheckAggregation(Adapter,Property.OutName))
                 return false;
 //            Property.Out(Adapter);
@@ -953,17 +980,17 @@ class BusinessLogics {
                 SumMaxArt.Property.OutName = "сумма макс. операция";
 
                 if(Persistent) {
-    /*                PersistentProperties.add((AggregateProperty)GP.Property);
-                    PersistentProperties.add((AggregateProperty)GAP.Property);
-                    PersistentProperties.add((AggregateProperty)G2P.Property);
-                    PersistentProperties.add((AggregateProperty)GSum.Property);
-                    PersistentProperties.add((AggregateProperty)OstArtStore.Property);
-                    PersistentProperties.add((AggregateProperty)OstArt.Property);
-                    PersistentProperties.add((AggregateProperty)MaxPrih.Property);
-                    PersistentProperties.add((AggregateProperty)MaxOpStore.Property);
-                    PersistentProperties.add((AggregateProperty)SumMaxArt.Property);
-                    PersistentProperties.add((AggregateProperty)OstPrice.Property);*/
-                    PersistentProperties.add((AggregateProperty)QtyGrSt.Property);
+    /*                Persistents.add((AggregateProperty)GP.Property);
+                    Persistents.add((AggregateProperty)GAP.Property);
+                    Persistents.add((AggregateProperty)G2P.Property);
+                    Persistents.add((AggregateProperty)GSum.Property);
+                    Persistents.add((AggregateProperty)OstArtStore.Property);
+                    Persistents.add((AggregateProperty)OstArt.Property);
+                    Persistents.add((AggregateProperty)MaxPrih.Property);
+                    Persistents.add((AggregateProperty)MaxOpStore.Property);
+                    Persistents.add((AggregateProperty)SumMaxArt.Property);
+                    Persistents.add((AggregateProperty)OstPrice.Property);*/
+                    Persistents.add((AggregateProperty)QtyGrSt.Property);
                 }
                 
                 if(Changes) {
@@ -1323,7 +1350,7 @@ class BusinessLogics {
         
         int PersistentNum = Randomizer.nextInt(AggrProperties.size())+1;
         for(int i=0;i<PersistentNum;i++)
-            PersistentProperties.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
+            Persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
     }
     
     void FullDBTest()  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
@@ -1432,7 +1459,7 @@ class BusinessLogics {
 
 /*
  *             if(!TableFactory.Crash) {
-                for(AggregateProperty Prop : PersistentProperties)
+                for(AggregateProperty Prop : Persistents)
                     if(Prop.OutName.equals("макс. операция")) {
                         System.out.println("-макс. операция--AFTER PERS ----");
                         Prop.Out(Adapter);
@@ -1442,7 +1469,7 @@ class BusinessLogics {
                         TableFactory.ReCalculateAggr = false;
                     }
 
-                for(AggregateProperty Prop : PersistentProperties)
+                for(AggregateProperty Prop : Persistents)
                     if(Prop.OutName.equals("приход по складу")) {
                         System.out.println("-приход по складу--AFTER PERS ----");
                         Prop.Out(Adapter);
