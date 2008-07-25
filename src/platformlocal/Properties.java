@@ -768,6 +768,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
            System.out.println(OutName);
            Adapter.OutSelect(ResultQuery);
         }
+        
         Adapter.InsertSelect(ChangeTable,ResultQuery);
     }
 
@@ -1037,7 +1038,7 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
     }
 
     public String GetDBType() {
-        if(Value instanceof Integer)
+        if(Value==null || Value instanceof Integer)
             return "integer";
 
         if(Value instanceof String)
@@ -2144,16 +2145,38 @@ class StringFormulaProperty extends FormulaProperty<StringFormulaPropertyInterfa
         Formula = iFormula;
     }
     
-    SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
-        FormulaSourceExpr Source = new FormulaSourceExpr(Formula);
+    SourceExpr GetSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,String SourceFormula) {
+        FormulaSourceExpr Source = new FormulaSourceExpr(SourceFormula);
                 
         for(StringFormulaPropertyInterface Interface : Interfaces)
             Source.Params.put(Interface.Param,JoinImplement.get(Interface));
 
         return Source;
     }
+    
+    SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
+        return GetSourceExpr(JoinImplement,Formula);
+    }
 }
 
+class FilterFormulaProperty extends StringFormulaProperty {
+
+    FilterFormulaProperty(String iFormula) {super(iFormula);}
+    
+    @Override
+    SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
+        if(Left)
+            return GetSourceExpr(JoinImplement,"(CASE WHEN "+Formula+" THEN 1 ELSE NULL END)");
+        else {
+            FormulaWhere Source = new FormulaWhere(Formula);
+            for(StringFormulaPropertyInterface Interface : Interfaces)
+                Source.Params.put(Interface.Param,JoinImplement.get(Interface));
+
+            Joins.get(0).Wheres.add(Source);
+            return new ValueSourceExpr(1);
+        }
+    }
+}
 
 class MultiplyFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
 

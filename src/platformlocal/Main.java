@@ -82,7 +82,7 @@ class Test extends BusinessLogics  {
         LDP BarCode = AddDProp(IntegerClass,Article);
         BarCode.Property.OutName = "штрих-код";
 
-        LDP AbsQuantity = AddVProp(0,IntegerClass,Document,Article);
+        LDP AbsQuantity = AddVProp(null,IntegerClass,Document,Article);
         AbsQuantity.Property.OutName = "абст. кол-во";
 
         LDP IsGrmat = AddVProp(0,IntegerClass,Article);
@@ -114,7 +114,7 @@ class Test extends BusinessLogics  {
 
 //        LRP Quantity = AddLProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
+        LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
         LMFP Multiply = AddMFProp(2);
 
         Name.Property.OutName = "имя";
@@ -308,6 +308,8 @@ class Test extends BusinessLogics  {
         RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[2],Articles[4]);
         RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[3],Articles[4]);
 
+        PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[3],Articles[5]);
+
 /*        Quantity.ChangeProperty(Session,ad,8,PrihDocuments[1],Articles[4]);
         Quantity.ChangeProperty(Session,ad,10,PrihDocuments[1],Articles[2]);
         Quantity.ChangeProperty(Session,ad,20,PrihDocuments[1],Articles[3]);
@@ -429,6 +431,7 @@ class Test extends BusinessLogics  {
 
         PropertyObjectImplement GrTovImpl=null;
         PropertyObjectImplement NameImpl=null;
+        PropertyObjectImplement DateImpl=null;
         
         Iterator<Property> ipr = Properties.iterator();
         while(ipr.hasNext()) {
@@ -444,6 +447,8 @@ class Test extends BusinessLogics  {
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
                 if(DrawProp.OutName.equals("гр. тов"))
                     GrTovImpl = PropImpl;
+                if(DrawProp.OutName.equals("дата док."))
+                    DateImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv2));
 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
@@ -457,6 +462,7 @@ class Test extends BusinessLogics  {
 
         AddPropView(fbv,PrihQuantity,gv2,obj2,obj1);
         AddPropView(fbv,RashQuantity,gv2,obj2,obj1);
+        AddPropView(fbv,GSum,gv2,obj2,obj1);
         
         GroupObjectValue ChangeValue;
 
@@ -468,6 +474,7 @@ class Test extends BusinessLogics  {
         fbv.ChangeGridClass(obj3,ArticleGroup.ID);
 //        fbv.AddFilter(new NotNullFilter(QImpl));
         fbv.AddOrder(NameImpl);
+        fbv.AddOrder(DateImpl);
         
         
 //        fbv.ChangeProperty(QImpl, 10);

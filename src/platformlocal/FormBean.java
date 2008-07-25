@@ -141,9 +141,11 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
                 JoinImplement.put(Interface,JoinExpr);
         }
 
+        boolean Changed = (Session!=null && ChangedProps.contains(Property));
+        
         // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
         // иначе как и было
-        if(NullInterfaces.size()>0 && ChangedProps.contains(Property)) {
+        if(NullInterfaces.size()>0 && Changed) {
             // заполним названия полей в которые будем Select'ать
             String Value = "joinvalue";
             Map<PropertyInterface,String> MapFields = new HashMap();
@@ -170,7 +172,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
                 ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
 
             // если св-во изменилось закинем сюда 
-            if(ChangedProps.contains(Property)) {
+            if(Changed) {
                 SourceExpr NewResult = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,true);
                 // пока так по идиотски
                 Collection<SourceExpr> KeyExpr = new ArrayList();
@@ -294,7 +296,7 @@ class Filter {
     
     // для полиморфизма сюда
     void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,true);
+        Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
     }
 }
 
@@ -302,6 +304,12 @@ class NotNullFilter extends Filter {
     
     NotNullFilter(PropertyObjectImplement iProperty) {
         super(iProperty);
+    }
+    
+    @Override
+    void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+        SourceExpr ValueExpr = Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
+        Joins.get(0).Wheres.add(new SourceIsNullWhere(ValueExpr,true));
     }
 }
 
@@ -458,8 +466,7 @@ class FormBeanView {
     public String SaveChanges() throws SQLException {
 
         if(BL.Apply(Adapter,Session)) {
-            ChangedProps.clear();
-            Session = BL.CreateSession();
+            StartNewSession();
             
             return "pass";
         }        
@@ -469,6 +476,8 @@ class FormBeanView {
     boolean Cancel = false;
     public void CancelChanges() {
         Cancel = true;
+        
+        DataChanged = true;
     }
     
     // получаем все аггрегированные св-ва задействованные на форме
@@ -480,7 +489,12 @@ class FormBeanView {
                 Result.add((AggregateProperty)PropView.View.Property);
         return Result;
     }
+    
+    public void StartNewSession() {
 
+        ChangedProps.clear();
+        Session = BL.CreateSession();
+    }
     
     public FormChanges EndApply() throws SQLException {
 
@@ -625,7 +639,7 @@ class FormBeanView {
                 if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
 
                 // фильтры первыми потому как ограничивают ключи
-                for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources,Session,ChangedProps);
+                for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources,Cancel?null:Session,ChangedProps);
 
                 // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
                 int ObjectNum = 0;
@@ -635,10 +649,10 @@ class FormBeanView {
                     if(KeyExpr==null) {
                         KeySelect = BL.TableFactory.ObjectTable.ClassSelect(Object.GridClass);
                         KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
-                        
+
                         // не было в фильтре
                         // если есть remove'классы или новые объекты их надо докинуть                        
-                        if(Session.AddClasses.contains(Object.GridClass)) {
+                        if(!Cancel && Session.AddClasses.contains(Object.GridClass)) {
                             // придется UnionQuery делать
                             UnionQuery ResultQuery = new UnionQuery(2);
                             ResultQuery.Keys.add(BL.TableFactory.ObjectTable.Key.Name);
@@ -646,20 +660,20 @@ class FormBeanView {
                             SelectQuery SubQuery = new SelectQuery(KeySelect);
                             SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,KeyExpr);
                             ResultQuery.Unions.add(SubQuery);
-                            
+
                             SubQuery = new SelectQuery(BL.TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
                             SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,BL.TableFactory.AddClassTable.Object.Name));
                             ResultQuery.Unions.add(SubQuery);
-                            
+
                             KeySelect = new FromQuery(ResultQuery);
                             KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
                         }
-                        
+
                         KeySources.put(Object,KeyExpr);
                         JoinKeys.add(KeySelect);
 
                         // надо сделать LEFT JOIN remove' классов
-                        if(Session.RemoveClasses.contains(Object.GridClass))
+                        if(!Cancel && Session.RemoveClasses.contains(Object.GridClass))
                             BL.TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
                     } else {
                         KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
@@ -673,7 +687,7 @@ class FormBeanView {
                 // закинем порядки (с LEFT JOIN'ом)
                 int OrderNum = 0;
                 for(PropertyObjectImplement ToOrder : Group.Orders) {
-                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Session,ChangedProps,true);
+                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Cancel?null:Session,ChangedProps,true);
                     SelectKeys.Orders.add(OrderExpr);
                     // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                     if(OrderValues!=null) {
@@ -860,7 +874,7 @@ class FormBeanView {
             for(PropertyView DrawProp : PanelProps) {
                 SelectFields++;
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,Session,ChangedProps,true));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,Cancel?null:Session,ChangedProps,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
@@ -898,7 +912,7 @@ class FormBeanView {
             for(PropertyView DrawProp : GroupList) {
                 SelectFields++;
                 String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys,Session,ChangedProps,true));
+                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group,MapKeys,Cancel?null:Session,ChangedProps,true));
                 ToFields.put(DrawProp, SelectField);
             }
         
@@ -919,7 +933,7 @@ class FormBeanView {
                     PropResult.put(ResultKeys,ResultRow.get(ToFields.get(DrawProp)));
                 }
             }
-        }   
+        }
 
         // сбрасываем все пометки
         StructUpdated = false;
@@ -929,6 +943,10 @@ class FormBeanView {
             Group.Updated = 0;
         }
         DataChanged = false;
+        if(Cancel) {
+            StartNewSession();            
+            Cancel = false;
+        }        
         
         Result.Out(this);
 

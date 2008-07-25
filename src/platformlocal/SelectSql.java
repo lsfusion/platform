@@ -369,6 +369,29 @@ class SourceIsNullWhere extends Where {
     }
 }
 
+class FormulaWhere extends Where {
+    
+    FormulaWhere(String iFormula) {
+        Formula = iFormula; 
+        Params = new HashMap();
+    }
+
+    String Formula;
+    Map<String,SourceExpr> Params;
+
+    public String GetSelect(From From) {
+        
+        String SourceString = Formula;
+        Iterator<String> i = Params.keySet().iterator();
+        while (i.hasNext()) {
+            String Prm = i.next();
+            SourceString = SourceString.replace(Prm,Params.get(Prm).GetSource());
+        }
+       
+        return SourceString;
+    }
+}
+
 class FieldValueWhere extends Where {
     
     FieldValueWhere(Object iValue,String iField) {
@@ -551,7 +574,13 @@ class NullValueSourceExpr extends SourceExpr {
         for(SourceExpr Expr : Exprs) 
             Filter = (Filter.length()==0?"":Filter+" OR ") + Expr.GetSource() + " IS NULL ";
         
-        return "(CASE WHEN " + Filter + " THEN " + TrueExpr.GetSource() + " ELSE " + FalseExpr.GetSource() + " END)";
+        String TrueSource = TrueExpr.GetSource();
+        String FalseSource = FalseExpr.GetSource();
+        
+        if(TrueSource.equals("NULL") && FalseSource.equals("NULL")) 
+            return "NULL";
+        else
+            return "(CASE WHEN " + Filter + " THEN " + TrueSource + " ELSE " + FalseSource + " END)";
     }
     
     @Override
@@ -644,14 +673,16 @@ class ListSourceExpr extends SourceExpr {
             } else {
                 switch(Operator) {
                     case 2:
-                        Result = "CASE WHEN "+OperandString+" IS NULL THEN "+Result+" ELSE "+OperandString+" END";
+                        if(!OperandString.equals("NULL"))
+                            Result = "CASE WHEN "+OperandString+" IS NULL THEN "+Result+" ELSE "+OperandString+" END";
 //                        Result = "ISNULL(" + OperandString + "," + Result + ")";
                         break;
                     case 1:
                         Result = Result+(Coeff>=0?"+":"") + OperandString;
                         break;
                     case 0:
-                        Result = "CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END";
+                        if(!OperandString.equals("NULL"))
+                            Result = "CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END";
                         break;
                 }
             }

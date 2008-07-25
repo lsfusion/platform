@@ -744,8 +744,13 @@ class BusinessLogics {
         return ListProperty;
     }
 
-    LSFP AddSFProp(String Formula,Integer Params) {
-        StringFormulaProperty Property = new StringFormulaProperty(Formula);
+    LSFP AddSFProp(String Formula,boolean Filter,Integer Params) {
+
+        StringFormulaProperty Property = null;
+        if(Filter)
+            Property = new FilterFormulaProperty(Formula);
+        else
+            Property = new StringFormulaProperty(Formula);
         LSFP ListProperty = new LSFP(Property,IntegerClass,Params);
         Properties.add(Property);
         return ListProperty;
@@ -917,7 +922,7 @@ class BusinessLogics {
                 LDP PriceSupp = AddDProp(IntegerClass,Article,Supplier);
                 LDP GrStQty = AddDProp(IntegerClass,ArticleGroup,Store);
 
-                LSFP Dirihle = AddSFProp("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)",2);
+                LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
                 LMFP Multiply = AddMFProp(2);
 
                 Name.Property.OutName = "имя";
