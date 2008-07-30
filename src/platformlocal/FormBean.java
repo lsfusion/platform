@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -36,6 +37,10 @@ class ObjectImplement {
 
     // чисто для отладки
     String OutName = "";
+    
+    SourceExpr GetJoinExpr(GroupObjectImplement ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
+        return (GroupTo==ClassGroup?ClassSource.get(this):new ValueSourceExpr(idObject));
+    }
 }
 
 class GroupObjectMap<T> extends HashMap<ObjectImplement,T> {
@@ -58,7 +63,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
     // глобальный идентификатор чтобы писать во ViewTable
     Integer GID = 0;
-
+    
     // классовый вид включен или нет
     Boolean GridClassView = true;
 
@@ -91,6 +96,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImplement> {
     PropertyObjectImplement(ObjectProperty iProperty) {super(iProperty);}
     
+    // получает Grid в котором рисоваться
     GroupObjectImplement GetApplyObject() {
         GroupObjectImplement ApplyObject=null;
         for(ObjectImplement IntObject : Mapping.values())
@@ -99,20 +105,25 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         return ApplyObject;
     }
     
+    // получает класс значения
     Class GetValueClass(GroupObjectImplement ClassGroup) {
         InterfaceClass ClassImplement = new InterfaceClass();
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
-            ClassImplement.put(Interface,(IntObject.GroupTo==ClassGroup?IntObject.GridClass:IntObject.Class));
+            Class ImpClass = (IntObject.GroupTo==ClassGroup?IntObject.GridClass:IntObject.Class);
+            if(ImpClass==null) return null;
+            ClassImplement.put(Interface,ImpClass);
         }
 
         return Property.GetValueClass(ClassImplement);
     }
 
+    // в интерфейсе
     boolean IsInInterface(GroupObjectImplement ClassGroup) {
         return GetValueClass(ClassGroup)!=null;
     }
 
+    // проверяет на то что изменился верхний объект
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : Mapping.values())
             if(IntObject.GroupTo!=ClassGroup && ((IntObject.Updated & (1<<0))!=0)) return true;
@@ -120,6 +131,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         return false;
     }
 
+    // изменился хоть один из классов интерфейса (могло повлиять на вхождение в интерфейс)
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : Mapping.values())
             if(((IntObject.Updated & (1<<(IntObject.GroupTo==ClassGroup?3:1))))!=0) return true;
@@ -134,7 +146,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
-            SourceExpr JoinExpr = (IntObject.GroupTo==ClassGroup?ClassSource.get(IntObject):new ValueSourceExpr(IntObject.idObject));
+            SourceExpr JoinExpr = IntObject.GetJoinExpr(ClassGroup,ClassSource);
             if(JoinExpr==null) 
                 NullInterfaces.add(Interface);
             else
@@ -145,43 +157,12 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         
         // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
         // иначе как и было
-        if(NullInterfaces.size()>0 && Changed) {
-            // заполним названия полей в которые будем Select'ать
-            String Value = "joinvalue";
-            Map<PropertyInterface,String> MapFields = new HashMap();
-            
-            FromQuery FromResultQuery = new FromQuery(Property.UpdateUnionQuery(Session,Value,MapFields));
-            
-            // надо за Join'ить
-            for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-                SourceExpr JoinExpr = JoinImplement.get(Interface);
-                String ResultField = MapFields.get(Interface);
-                if(JoinExpr==null)
-                    ClassSource.put(Mapping.get(Interface),new FieldSourceExpr(FromResultQuery,ResultField));
-                else
-                    FromResultQuery.Wheres.add(new FieldWhere(JoinExpr,ResultField));
-            }
+        SourceExpr Result = Property.UpdatedJoinSelect(Joins,JoinImplement,Left,Session);
+        
+        for(PropertyInterface Interface : NullInterfaces)
+            ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
 
-            Joins.add(FromResultQuery);
-            
-            return new FieldSourceExpr(FromResultQuery,Value);
-        } else {
-            SourceExpr Result = Property.JoinSelect(Joins,JoinImplement,Left);
-
-            for(PropertyInterface Interface : NullInterfaces)
-                ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
-
-            // если св-во изменилось закинем сюда 
-            if(Changed) {
-                SourceExpr NewResult = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,true);
-                // пока так по идиотски
-                Collection<SourceExpr> KeyExpr = new ArrayList();
-                KeyExpr.add(new FieldSourceExpr(Joins.get(Joins.size()-1),Property.ChangeTable.Objects.iterator().next().Name));
-                Result = new NullValueSourceExpr(KeyExpr,Result,NewResult);
-            }
-            
-            return Result;
-        }
+        return Result;
     }
 }
 
@@ -269,7 +250,7 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
     }
 }
 
-class Filter {
+abstract class Filter {
     
     Filter(PropertyObjectImplement iProperty) {Property=iProperty;}
     PropertyObjectImplement Property;
@@ -291,7 +272,7 @@ class Filter {
     }
     
     boolean DataUpdated(Set<ObjectProperty> ChangedProps) {
-        return ChangedProps.contains(Property);
+        return ChangedProps.contains(Property.Property);
     }
     
     // для полиморфизма сюда
@@ -312,6 +293,125 @@ class NotNullFilter extends Filter {
         Joins.get(0).Wheres.add(new SourceIsNullWhere(ValueExpr,true));
     }
 }
+
+class CompareFilter extends Filter {
+    
+    ValueLink Value;
+    int Compare;
+    
+    CompareFilter(PropertyObjectImplement iProperty,int iCompare,ValueLink iValue) {
+        super(iProperty);
+        Compare = iCompare;
+        Value = iValue;
+    }
+    
+    @Override
+    boolean IsInInterface(GroupObjectImplement ClassGroup) {
+        Class ValueClass = Value.GetValueClass(ClassGroup);
+        if(ValueClass==null) 
+            return Property.IsInInterface(ClassGroup);
+        else
+            return ValueClass.IsParent(Property.GetValueClass(ClassGroup));
+    }
+
+    @Override
+    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
+        if(super.ClassUpdated(ClassGroup)) return true;
+        
+        return Value.ClassUpdated(ClassGroup);
+    }
+
+    @Override
+    boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
+        if(super.ObjectUpdated(ClassGroup)) return true;
+
+        return Value.ObjectUpdated(ClassGroup);
+    }
+
+    @Override
+    void FillSelect(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+        SourceExpr ValueExpr = Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
+        Joins.get(0).Wheres.add(new FieldExprCompareWhere(ValueExpr,Value.GetValueExpr(Joins,ClassGroup,ClassSource,Session,ChangedProps),Compare));
+    }
+
+}
+
+abstract class ValueLink {
+
+    Class GetValueClass(GroupObjectImplement ClassGroup) {return null;}
+    
+    boolean ClassUpdated(GroupObjectImplement ClassGroup) {return false;}
+    
+    boolean ObjectUpdated(GroupObjectImplement ClassGroup) {return false;}
+
+    abstract SourceExpr GetValueExpr(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps);
+}
+
+
+class UserValueLink extends ValueLink {
+    
+    Object Value;
+    
+    UserValueLink(Object iValue) {Value=iValue;}
+
+    SourceExpr GetValueExpr(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+        return new ValueSourceExpr(Value);
+    }
+}
+
+class ObjectValueLink extends ValueLink {
+
+    ObjectValueLink(ObjectImplement iObject) {Object=iObject;} 
+    
+    ObjectImplement Object;
+
+    @Override
+    Class GetValueClass(GroupObjectImplement ClassGroup) {
+        return Object.Class;
+    }
+
+    @Override
+    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
+        return ((Object.Updated & (1<<1))!=0);
+    }
+
+    @Override
+    boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
+        return ((Object.Updated & (1<<0))!=0);
+    }
+
+    SourceExpr GetValueExpr(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+        return Object.GetJoinExpr(ClassGroup,ClassSource);
+    }
+}
+
+
+class PropertyValueLink extends ValueLink {
+
+    PropertyValueLink(PropertyObjectImplement iProperty) {Property=iProperty;} 
+    
+    PropertyObjectImplement Property;
+
+    @Override
+    Class GetValueClass(GroupObjectImplement ClassGroup) {
+        return Property.GetValueClass(ClassGroup);
+    }
+
+    @Override
+    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
+        return Property.ClassUpdated(ClassGroup);
+    }
+
+    @Override
+    boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
+        return Property.ObjectUpdated(ClassGroup);
+    }
+
+    SourceExpr GetValueExpr(JoinList Joins, GroupObjectImplement ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+        return Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
+    }
+}
+
 
 // нужен какой-то объект который разделит клиента и серверную часть кинув каждому свои данные
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
@@ -371,8 +471,6 @@ class FormBeanView {
 
                 // запишем класс объекта
                 Class ObjectClass = BL.GetClass(Session, Adapter, idObject);
-                if(ObjectClass==null) throw new RuntimeException();
-
                 if(Object.Class!=ObjectClass) {
                     Object.Class = ObjectClass;
                     Object.Updated = Object.Updated | (1<<1);
@@ -437,23 +535,74 @@ class FormBeanView {
     }
 
     public void AddObject(ObjectImplement Object) throws SQLException {
-        // пока тупо в базу 
-        BL.AddObject(Session,Adapter,Object.GridClass);
+        // пока тупо в базу
+        Integer AddID = BL.AddObject(Session,Adapter,Object.GridClass);
+        
+        // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
+        // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
+        for(Filter Filter : Object.GroupTo.Filters) {
+            if(Filter instanceof CompareFilter && ((CompareFilter)Filter).Compare==0) {
+                SelectQuery SubQuery = new SelectQuery(null);
+                JoinList Joins = new JoinList();
+                Map<ObjectImplement,SourceExpr> ClassSource = new HashMap();
+                Map<ObjectImplement,String> MapFields = new HashMap();
+                int FieldNum = 0;
+                for(ObjectImplement SibObject : Filter.Property.Mapping.values()) {
+                    SourceExpr KeyExpr = null;
+                    if(SibObject.GroupTo!=Object.GroupTo) {
+                        KeyExpr = new ValueSourceExpr(SibObject.idObject);
+                    } else {
+                        if(SibObject!=Object) {
+                            FromTable FromSib = BL.TableFactory.ObjectTable.ClassSelect(SibObject.GridClass);
+                            KeyExpr = new FieldSourceExpr(FromSib,BL.TableFactory.ObjectTable.Key.Name);
+                            Joins.add(FromSib);
+                        } else
+                            KeyExpr = new ValueSourceExpr(AddID);
+                    }
+
+                    ClassSource.put(SibObject,KeyExpr);
+
+                    String KeyField = "key" + (FieldNum++);
+                    MapFields.put(SibObject,KeyField);
+                    SubQuery.Expressions.put(KeyField,KeyExpr);
+                }
+
+                SubQuery.Expressions.put("newvalue",((CompareFilter)Filter).Value.GetValueExpr(Joins,Object.GroupTo,ClassSource,Session,ChangedProps));
+                
+                if(Joins.size()==0) Joins.add(new FromTable("dumb"));
+                Iterator<From> ij = Joins.iterator();
+                SubQuery.From = ij.next();
+                while(ij.hasNext()) SubQuery.From.Joins.add(ij.next());
+                
+                List<Map<String,Object>> Result = Adapter.ExecuteSelect(SubQuery);
+                // изменяем св-ва
+                for(Map<String,Object> Row : Result) {
+                    ObjectProperty ChangeProperty = Filter.Property.Property;
+                    Map<PropertyInterface,ObjectValue> Keys = new HashMap();
+                    for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
+                        ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
+                        Keys.put(Interface,new ObjectValue((Integer)Row.get(MapFields.get(ChangeObject)),ChangeObject.GridClass));
+                    }
+                    ChangeProperty.ChangeProperty(Adapter,Keys,Row.get("newvalue"),Session);
+                }                
+            }
+        }
         DataChanged = true;
     }   
-    
+
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
         BL.ChangeClass(Session,Adapter,Object.idObject,Class);
         DataChanged = true;
     }
-
+    
     // рекурсия для генерации порядка
     Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {
         
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
-        Where OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,More?1:2);
-        if(Index+1<OrderSources.size()) {
+        boolean Last = !(Index+1<OrderSources.size());
+        Where OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(More?1:2)+(Last?2:0));
+        if(!Last) {
             Where NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,More,Index+1);
             
             // >A OR (=A AND >B)
@@ -481,30 +630,37 @@ class FormBeanView {
     }
     
     // получаем все аггрегированные св-ва задействованные на форме
-    Set<AggregateProperty> GetAggrProperties() {
+    Set<ObjectProperty> GetProperties() {
 
-        Set<AggregateProperty> Result = new HashSet();
+        Set<ObjectProperty> Result = new HashSet();
         for(PropertyView PropView : Properties)
-            if(PropView.View.Property instanceof AggregateProperty)
-                Result.add((AggregateProperty)PropView.View.Property);
+            Result.add(PropView.View.Property);
         return Result;
     }
     
-    public void StartNewSession() {
+    public void StartNewSession() throws SQLException {
 
         ChangedProps.clear();
+        BL.DropSession(Adapter, Session);
         Session = BL.CreateSession();
     }
+    
+    void Close() throws SQLException {
+        
+        for(GroupObjectImplement Group : Groups) {
+            ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
+            DropTable.DropViewID(Adapter, Group.GID);
+        }        
+    }
+
     
     public FormChanges EndApply() throws SQLException {
 
         FormChanges Result = new FormChanges();
 
         // если изменились данные, применяем изменения
-        if(DataChanged) {
-            ChangedProps.addAll(BL.UpdateAggregations(Adapter,GetAggrProperties(),Session));
-            ChangedProps.addAll(Session.Properties);
-        }
+        if(DataChanged)
+            ChangedProps.addAll(BL.UpdateAggregations(Adapter,GetProperties(),Session));
 
         // бежим по списку вниз
         Map<GroupObjectImplement,Set<Filter>> MapGroupFilters = null;
@@ -629,14 +785,7 @@ class FormBeanView {
                 // докидываем Join'ами (INNER) фильтры, порядки
                 JoinList JoinKeys = new JoinList();
                 
-                // складываются источники и значения
-                List<SourceExpr> OrderSources = new ArrayList();
-                List<Object> OrderWheres = new ArrayList();
-                
                 Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
-
-                Map<PropertyObjectImplement,Object> OrderValues = null;
-                if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
 
                 // фильтры первыми потому как ограничивают ключи
                 for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources,Cancel?null:Session,ChangedProps);
@@ -675,15 +824,23 @@ class FormBeanView {
                         // надо сделать LEFT JOIN remove' классов
                         if(!Cancel && Session.RemoveClasses.contains(Object.GridClass))
                             BL.TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
-                    } else {
-                        KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
-                        JoinKeys.add(KeySelect);
-                    }                    
+                    }
+//                    else {
+//                        по идее не надо, так как фильтр по определению имеет нужный класс 
+//                        KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
+//                        JoinKeys.add(KeySelect);
+//                    }                    
 
                     // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
                     SelectKeys.Expressions.put("key"+(ObjectNum++),KeyExpr);
                 }
 
+                // складываются источники и значения
+                List<SourceExpr> OrderSources = new ArrayList();
+                List<Object> OrderWheres = new ArrayList();
+
+                Map<PropertyObjectImplement,Object> OrderValues = null;
+                if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
                 // закинем порядки (с LEFT JOIN'ом)
                 int OrderNum = 0;
                 for(PropertyObjectImplement ToOrder : Group.Orders) {
@@ -723,9 +880,16 @@ class FormBeanView {
                 
                 SelectKeys.Descending = DescOrder;
                 SelectKeys.Top = (Group.GridClassView?Group.PageSize*3:1);
-                
+
                 // выполняем запрос
                 List<Map<String,Object>> KeyResult = Adapter.ExecuteSelect(SelectKeys);
+                if(DescOrder) { // перевернем список, если был убывающий порядок
+                    List<Map<String,Object>> ReverseList = new ArrayList();
+                    ListIterator<Map<String,Object>> ik = KeyResult.listIterator();
+                    while(ik.hasNext()) ik.next();
+                    while(ik.hasPrevious()) ReverseList.add(ik.previous());
+                    KeyResult = ReverseList;
+                }
                                 
                 // нужно заполнить UpKeys, DownKeys, Keys, KeyOrders
                 if(DescOrder) {
@@ -774,8 +938,11 @@ class FormBeanView {
                 
                 // --- помечаем изменение объекта - если не скроллинг или чистое изменение вида
                 if(GoTop) {
-                    Result.Objects.put(Group, Group.Keys.get(0));
-                    ChangeObject(Group,Group.Keys.get(0));
+                    if(Group.Keys.size()>0) {
+                        Result.Objects.put(Group, Group.Keys.get(0));
+                        ChangeObject(Group,Group.Keys.get(0));
+                    } else
+                        ChangeObject(Group,new GroupObjectValue());
                 }
             }
         }

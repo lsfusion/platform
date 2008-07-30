@@ -129,8 +129,13 @@ class Test extends BusinessLogics  {
 
         LRP StoreName = AddRProp(Name,1,DocStore,1);
         StoreName.Property.OutName = "имя склада";
+        
         LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
         ArtGroupName.Property.OutName = "имя гр. тов.";
+
+        LDP ArtGName = AddDProp(StringClass,Article);
+        ArtGName.Property.OutName = "при доб. гр. тов.";
+        SetDefProp(ArtGName,ArtGroupName,true);
 
         LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
         DDep.Property.OutName = "предш. док.";
@@ -439,42 +444,45 @@ class Test extends BusinessLogics  {
             if(DrawProp.Interfaces.size() == 1 && DrawProp instanceof ObjectProperty) {
                 PropertyObjectImplement PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj1);
-                if(DrawProp.OutName.equals("имя"))
-                    NameImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv));
                 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
+                if(DrawProp.OutName.equals("имя"))
+                    NameImpl = PropImpl;
                 if(DrawProp.OutName.equals("гр. тов"))
                     GrTovImpl = PropImpl;
-                if(DrawProp.OutName.equals("дата док."))
-                    DateImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv2));
 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj3);
+                if(DrawProp.OutName.equals("дата док."))
+                    DateImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv3));
+
             }
         }
         
-        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv2,obj2,obj1);
-        AddPropView(fbv,GP,gv2,obj2,obj1);
+        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv3,obj3,obj2);
+        AddPropView(fbv,GP,gv3,obj3,obj2);
 
-        AddPropView(fbv,PrihQuantity,gv2,obj2,obj1);
-        AddPropView(fbv,RashQuantity,gv2,obj2,obj1);
-        AddPropView(fbv,GSum,gv2,obj2,obj1);
+        AddPropView(fbv,PrihQuantity,gv3,obj3,obj2);
+        AddPropView(fbv,RashQuantity,gv3,obj3,obj2);
+        AddPropView(fbv,GSum,gv3,obj3,obj2);
         
         GroupObjectValue ChangeValue;
 
         obj1.OutName = "";
-        fbv.ChangeGridClass(obj1,Article.ID);
+        fbv.ChangeGridClass(obj1,ArticleGroup.ID);
         obj2.OutName = "";
-        fbv.ChangeGridClass(obj2,Document.ID);
+        fbv.ChangeGridClass(obj2,Article.ID);
         obj3.OutName = "";
-        fbv.ChangeGridClass(obj3,ArticleGroup.ID);
+        fbv.ChangeGridClass(obj3,Base.ID);
+
 //        fbv.AddFilter(new NotNullFilter(QImpl));
-        fbv.AddOrder(NameImpl);
-        fbv.AddOrder(DateImpl);
+//        fbv.AddFilter(new CompareFilter(GrTovImpl,0,new ObjectValueLink(obj1)));
+//        fbv.AddOrder(NameImpl);
+//        fbv.AddOrder(DateImpl);
         
         
 //        fbv.ChangeProperty(QImpl, 10);

@@ -601,6 +601,37 @@ class NullValueSourceExpr extends SourceExpr {
     }
 
 }
+
+
+class NullEmptySourceExpr extends SourceExpr {
+    
+    NullEmptySourceExpr(SourceExpr iExpr,String iDBType) {Expr=iExpr;DBType=iDBType;}
+    
+    SourceExpr Expr;
+    String DBType;
+
+    public String GetSource() {
+        
+        return "ISNULL("+Expr.GetSource()+","+(DBType.equals("integer")?0:"''")+")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this==o) return true;
+        if(!(o instanceof NullEmptySourceExpr)) return false;
+        
+        return Expr.equals(((NullEmptySourceExpr)o).Expr) && DBType.equals(((NullEmptySourceExpr)o).DBType);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 43 * hash + (this.Expr != null ? this.Expr.hashCode() : 0);
+        hash = 43 * hash + (this.DBType != null ? this.DBType.hashCode() : 0);
+        return hash;
+    }
+
+}
 class FormulaSourceExpr extends SourceExpr {
    
    FormulaSourceExpr(String iFormula) {Formula=iFormula; Params=new HashMap<String,SourceExpr>();};

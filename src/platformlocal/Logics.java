@@ -198,6 +198,7 @@ class ObjectTable extends Table {
     }
     
     Integer GetClassID(DataAdapter Adapter,Integer idObject) throws SQLException {
+        if(idObject==null) return null;        
         SelectQuery Query = new SelectQuery(new FromTable(Name));
         Query.From.Wheres.add(new FieldValueWhere(idObject,Key.Name));
         Query.Expressions.put("classid",new FieldSourceExpr(Query.From,Class.Name));
@@ -264,12 +265,9 @@ class ChangeTable extends Table {
     KeyField Session;
     KeyField Property;
     Field Value;
-    Field PrevValue;
-    // системное поля, по сути для MaxGroupProperty
-    Field SysValue;
     
-    ChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
-        super("changetable"+iObjects+"t"+iDBType);
+    ChangeTable(String TablePrefix,Integer iObjects,Integer iDBType,List<String> DBTypes) {
+        super(TablePrefix+"changetable"+iObjects+"t"+iDBType);
 
         Objects = new ArrayList();
         for(Integer i=0;i<iObjects;i++) {
@@ -286,6 +284,24 @@ class ChangeTable extends Table {
         
         Value = new Field("value",DBTypes.get(iDBType));
         PropFields.add(Value);
+    }
+}
+
+class DataChangeTable extends ChangeTable {
+
+    DataChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
+        super("data",iObjects,iDBType,DBTypes);
+    }
+}
+
+class IncrementChangeTable extends ChangeTable {
+
+    Field PrevValue;
+    // системное поля, по сути для MaxGroupProperty
+    Field SysValue;
+    
+    IncrementChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
+        super("inc",iObjects,iDBType,DBTypes);
 
         PrevValue = new Field("prevvalue",DBTypes.get(iDBType));
         PropFields.add(PrevValue);
@@ -372,7 +388,8 @@ class TableFactory extends TableImplement{
     ObjectTable ObjectTable;
     IDTable IDTable;
     List<ViewTable> ViewTables;
-    List<List<ChangeTable>> ChangeTables;
+    List<List<DataChangeTable>> DataChangeTables;
+    List<List<IncrementChangeTable>> ChangeTables;
     
     AddClassTable AddClassTable;
     RemoveClassTable RemoveClassTable;
@@ -381,33 +398,48 @@ class TableFactory extends TableImplement{
     boolean ReCalculateAggr = false;
     boolean Crash = false;
     
-    ChangeTable GetChangeTable(Integer Objects, String DBType) {
+    IncrementChangeTable GetChangeTable(Integer Objects, String DBType) {
         return ChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
+    }
+    
+    DataChangeTable GetDataChangeTable(Integer Objects, String DBType) {
+        return DataChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
     }
 
     List<String> DBTypes;
+
+    int MaxBeanObjects = 3;
+    int MaxInterface = 4;
     
     TableFactory() {
         ObjectTable = new ObjectTable();
         IDTable = new IDTable();
         ViewTables = new ArrayList();
         ChangeTables = new ArrayList();
+        DataChangeTables = new ArrayList();
         
         AddClassTable = new AddClassTable();
         RemoveClassTable = new RemoveClassTable();
         
-        for(int i=1;i<5;i++)
+        for(int i=1;i<=MaxBeanObjects;i++)
             ViewTables.add(new ViewTable(i));
 
         DBTypes = new ArrayList();
         DBTypes.add("integer");
         DBTypes.add("char(50)");
         
-        for(int i=1;i<5;i++) {
-            List<ChangeTable> ObjChangeTables = new ArrayList();
+        for(int i=1;i<=MaxInterface;i++) {
+            List<IncrementChangeTable> ObjChangeTables = new ArrayList();
             ChangeTables.add(ObjChangeTables);
             for(int j=0;j<DBTypes.size();j++)
-                ObjChangeTables.add(new ChangeTable(i,j,DBTypes));
+                ObjChangeTables.add(new IncrementChangeTable(i,j,DBTypes));
+        }
+
+        for(int i=1;i<=MaxInterface;i++) {
+            List<DataChangeTable> ObjChangeTables = new ArrayList();
+            DataChangeTables.add(ObjChangeTables);
+            for(int j=0;j<DBTypes.size();j++)
+                ObjChangeTables.add(new DataChangeTable(i,j,DBTypes));
         }
     }
 
@@ -441,9 +473,10 @@ class TableFactory extends TableImplement{
         Adapter.CreateTable(IDTable);
         for(ViewTable ViewTable : ViewTables) Adapter.CreateTable(ViewTable);
 
-        Iterator<List<ChangeTable>> ilc = ChangeTables.iterator();
-        for(List<ChangeTable> ListTables : ChangeTables)
+        for(List<IncrementChangeTable> ListTables : ChangeTables)
             for(ChangeTable ChangeTable : ListTables) Adapter.CreateTable(ChangeTable);
+        for(List<DataChangeTable> ListTables : DataChangeTables)
+            for(ChangeTable DataChangeTable : ListTables) Adapter.CreateTable(DataChangeTable);
 
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
@@ -468,7 +501,7 @@ class BusinessLogics {
         IntegerClass = new QuantityClass(2);
         IntegerClass.AddParent(BaseClass);
         
-        for(int i=0;i<MaxInterface;i++) {
+        for(int i=0;i<TableFactory.MaxInterface;i++) {
             TableImplement Include = new TableImplement();
             for(int j=0;j<=i;j++)
                 Include.add(new DataPropertyInterface(BaseClass));
@@ -483,7 +516,10 @@ class BusinessLogics {
     // получает класс по ID объекта
     Class GetClass(ChangesSession Session,DataAdapter Adapter,Integer idObject) throws SQLException {
         // сначала получаем idClass
-        if(Session!=null && Session.ChangeClasses.containsKey(idObject)) return Session.ChangeClasses.get(idObject);
+        if(Session!=null && Session.NewClasses.containsKey(idObject)) {
+            List<Class> ChangeClasses = Session.NewClasses.get(idObject);
+            return ChangeClasses.get(ChangeClasses.size()-1);
+        }
         return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Adapter,idObject));
     }
     
@@ -499,7 +535,7 @@ class BusinessLogics {
     void ChangeClass(ChangesSession Session,DataAdapter Adapter,Integer idObject,Class Class) throws SQLException {
         
         // запишем объекты, которые надо будет сохранять
-        Session.ChangeClasses.put(idObject,Class);
+        Session.ChangeClass(idObject,Class);
     }
     
     void UpdateClassChanges(ChangesSession Session,DataAdapter Adapter) throws SQLException {
@@ -507,18 +543,33 @@ class BusinessLogics {
         // дропнем старую сессию
         TableFactory.AddClassTable.DropSession(Adapter,Session);
         TableFactory.RemoveClassTable.DropSession(Adapter,Session);
+        Session.AddClasses.clear();
+        Session.RemoveClasses.clear();
         
-        for(Integer idObject : Session.ChangeClasses.keySet()) {
-            // узнаем старый класс
-            Class PrevClass = GetClass(null,Adapter,idObject);
-            Class NewClass = Session.ChangeClasses.get(idObject);
-            if(NewClass==null) NewClass = BaseClass;
-        
+        for(Integer idObject : Session.NewClasses.keySet()) {
             // дальше нужно построить "разницу" какие классы ушли и записать в соответствующую таблицу
+            
+            Collection<Class> TempRemoveClasses = new ArrayList();
+            
+            ListIterator<Class> ic = Session.NewClasses.get(idObject).listIterator();
+            Class NewClass = ic.next();
+            if(NewClass==null) NewClass = BaseClass;
+            while(ic.hasNext()) {
+                Class NextClass = ic.next();
+                if(NextClass==null) NextClass = BaseClass;
+                NextClass.GetDiffSet(NewClass,null,TempRemoveClasses);
+                NewClass = NextClass;
+            }
+
+            // узнаем старый класс
             Collection<Class> AddClasses = new ArrayList();
             Collection<Class> RemoveClasses = new ArrayList();
-            NewClass.GetDiffSet(PrevClass,AddClasses,RemoveClasses);
+            NewClass.GetDiffSet(GetClass(null,Adapter,idObject),AddClasses,RemoveClasses);
             Session.AddClasses.addAll(AddClasses);
+            
+            // вырежем все из AddClasses
+            TempRemoveClasses.removeAll(AddClasses);
+            RemoveClasses.addAll(TempRemoveClasses);
             Session.RemoveClasses.addAll(RemoveClasses);
 
             // собсно в сессию надо записать все изм. объекты
@@ -529,11 +580,12 @@ class BusinessLogics {
     
     void SaveClassChanges(ChangesSession Session,DataAdapter Adapter) throws SQLException {
     
-        for(Integer idObject : Session.ChangeClasses.keySet()) {
+        for(Integer idObject : Session.NewClasses.keySet()) {
             Map<KeyField,Integer> InsertKeys = new HashMap();
             InsertKeys.put(TableFactory.ObjectTable.Key, idObject);
             Map<Field,Object> InsertProps = new HashMap();
-            Class ChangeClass = Session.ChangeClasses.get(idObject);
+            List<Class> ChangeClasses = Session.NewClasses.get(idObject);
+            Class ChangeClass = ChangeClasses.get(ChangeClasses.size()-1);
             Object Value = null;
             if(ChangeClass!=null) Value = ChangeClass.ID;
             InsertProps.put(TableFactory.ObjectTable.Class,Value);
@@ -547,6 +599,37 @@ class BusinessLogics {
     ChangesSession CreateSession() {
         return new ChangesSession(SessionCounter++);
     }
+    void DropSession(DataAdapter Adapter, ChangesSession Session) throws SQLException {
+        // дропает сессию 
+        // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
+        for(Property Property : Properties)
+            if(Property instanceof ObjectProperty)
+                ((ObjectProperty)Property).SessionChanged.remove(Session);
+
+        // удаляет из всех таблиц свои данные        
+        // AddClassTable, RemoveClassTable, ChangeTables
+        FromTable Drop;
+        Drop = new FromTable(TableFactory.AddClassTable.Name);
+        Drop.Wheres.add(new FieldValueWhere(Session.ID,TableFactory.AddClassTable.Session.Name));
+        Adapter.DeleteRecords(Drop);
+        
+        Drop = new FromTable(TableFactory.RemoveClassTable.Name);
+        Drop.Wheres.add(new FieldValueWhere(Session.ID,TableFactory.RemoveClassTable.Session.Name));
+        Adapter.DeleteRecords(Drop);
+
+        for(List<IncrementChangeTable> TypeTables : TableFactory.ChangeTables)
+            for(ChangeTable Table : TypeTables) {
+                Drop = new FromTable(Table.Name);
+                Drop.Wheres.add(new FieldValueWhere(Session.ID,Table.Session.Name));
+                Adapter.DeleteRecords(Drop);
+            }
+        for(List<DataChangeTable> TypeTables : TableFactory.DataChangeTables)
+            for(ChangeTable Table : TypeTables) {
+                Drop = new FromTable(Table.Name);
+                Drop.Wheres.add(new FieldValueWhere(Session.ID,Table.Session.Name));
+                Adapter.DeleteRecords(Drop);
+            }
+    }
 
     Class BaseClass;
     Class StringClass;
@@ -559,35 +642,33 @@ class BusinessLogics {
     Map<ObjectProperty,Constraint> Constraints;
     
         
-    List<AggregateProperty> UpdateAggregations(DataAdapter Adapter,Collection<AggregateProperty> AggrProperties, ChangesSession Session) throws SQLException {
+    List<ObjectProperty> UpdateAggregations(DataAdapter Adapter,Collection<ObjectProperty> ToUpdateProperties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         // update'им изменения классов
         UpdateClassChanges(Session,Adapter);
 
-        // нужно из графа зависимостей выделить направленный список аггрегированных св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
-        List<AggregateProperty> UpdateList = new ArrayList();
-        for(AggregateProperty Property : AggrProperties) Property.FillChangedList(UpdateList,Session);
-        // если удалились придется по всем св-вам пробежать (для Bean'a строго говоря не надо)
-        if(Session.RemoveClasses.size()>0) 
-            for(Property Property : Properties) 
-                if(Property instanceof DataProperty)
-                    Property.FillChangedList(UpdateList,Session);
-        
+        // нужно из графа зависимостей выделить направленный список object св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
+        // все необходимые AggregateProperty - Apply (Persistents+Constraints), Bean (AggregateProperty в бине)
+        // все необходимые DataProperty - Apply (все DataProperty), а для Bean'а (DataProperty в бине)
+        // DataProperty (при изм. - новые зн.) ObjectProperty   (только в бине, в Apply не актуально - не факт при расчете себестоимости может иметь смысл)
+        // DataProperty (при AddClasses - новые(если были)+ст.зн.) ObjectProperty
+        // DataProperty (при RemoveClasses)
+        List<ObjectProperty> UpdateList = new ArrayList();
+        for(ObjectProperty Property : ToUpdateProperties) Property.FillChangedList(UpdateList,Session);
+
         // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
         // потом реализуем
 
         // пробежим вперед пометим свойства которые изменились, но неясно на что
-        ListIterator<AggregateProperty> il = UpdateList.listIterator();
-        AggregateProperty Property = null;
-        while(il.hasNext()) { 
+        ListIterator<ObjectProperty> il = UpdateList.listIterator();
+        ObjectProperty Property = null;
+        while(il.hasNext()) {
             Property = il.next();
             Property.SessionChanged.put(Session,null);
         }
         // пробежим по которым надо поставим 0
-        for(AggregateProperty AggrProperty : AggrProperties) AggrProperty.SetChangeType(Session,0);
-        // прогоним DataProperty также им 0 поставим чтобы 1 не появлялись
-        for(DataProperty DataProperty : Session.Properties) DataProperty.SetChangeType(Session,0);
+        for(ObjectProperty UpdateProperty : ToUpdateProperties) UpdateProperty.SetChangeType(Session,0);
 
         // бежим по списку (в обратном порядке) заполняем требования, 
         while(Property!=null) {
@@ -599,21 +680,10 @@ class BusinessLogics {
                 Property = null;
         }
         
-        // прогоним DataProperty предыдущие значения докинуть
-        for(DataProperty DataProperty : Session.Properties) DataProperty.UpdateIncrementChanges(Adapter,Session);
-        
         // запускаем IncrementChanges для этого списка
-        for(AggregateProperty AggrProperty : UpdateList) AggrProperty.IncrementChanges(Adapter,Session);
-        
-        // дропнем изменения (пока, потом для FormBean'ов понадобится по другому)
-//        for(AggregateProperty AggrProperty : UpdateList) AggrProperty.SessionChanged.remove(Session);
+        for(ObjectProperty UpdateProperty : UpdateList) UpdateProperty.IncrementChanges(Adapter,Session);
         
         return UpdateList;
-    }
-    
-    // сохраняет из Changes в базу
-    void SaveProperties(DataAdapter Adapter,Collection<? extends ObjectProperty> Properties, ChangesSession Session) throws SQLException {
-        for(ObjectProperty Property : Properties) Property.SaveChanges(Adapter, Session);
     }
     
     // проверяет Constraints
@@ -630,13 +700,13 @@ class BusinessLogics {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
         Adapter.Execute("BEGIN TRANSACTION");
         
-        // создадим общий список из Persistents + Constraints с AggregateProperty's
-        Collection<AggregateProperty> UpdateList = new ArrayList(Persistents);
-        for(ObjectProperty Constraint : Constraints.keySet())
-            if(Constraint instanceof AggregateProperty)
-                UpdateList.add((AggregateProperty)Constraint);
+        // создадим общий список из Persistents + Constraints с AggregateProperty's + DataProperties
+        Collection<ObjectProperty> UpdateList = new HashSet(Persistents);
+        UpdateList.addAll(Constraints.keySet());
+        for(Property Property : Properties)
+            if(Property instanceof DataProperty) UpdateList.add((DataProperty)Property);
 
-        UpdateAggregations(Adapter,UpdateList,Session);
+        List<ObjectProperty> ChangedList = UpdateAggregations(Adapter,UpdateList,Session);
 
         // проверим Constraints
         if(!CheckConstraints(Adapter,Session)) {
@@ -647,13 +717,14 @@ class BusinessLogics {
         // записываем Data, затем Persistents в таблицы из сессии
         SaveClassChanges(Session,Adapter);
         
-        SaveProperties(Adapter,Persistents,Session);
-        SaveProperties(Adapter,Session.Properties,Session);
+        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
+        for(ObjectProperty Property : ChangedList)
+            if(Property instanceof DataProperty || Persistents.contains(Property))
+                Property.SaveChanges(Adapter,Session);
         
         Adapter.Execute("COMMIT TRANSACTION");
         
-        return true;       
-        
+        return true;        
     }
 
     void FillDB(DataAdapter Adapter) throws SQLException {
@@ -672,10 +743,12 @@ class BusinessLogics {
         for(Property Property : Properties) {
             // ChangeTable'ы заполним
             if(Property instanceof ObjectProperty)
-                ((ObjectProperty)Property).FillChangeTable();;
+                ((ObjectProperty)Property).FillChangeTable();
 
-            if(Property instanceof DataProperty)
+            if(Property instanceof DataProperty) {
                 DataProperties.add((DataProperty)Property);
+                ((DataProperty)Property).FillDataTable();
+            }
             
             if(Property instanceof AggregateProperty)
                 AggrProperties.add((AggregateProperty)Property);
@@ -732,6 +805,15 @@ class BusinessLogics {
         }
         AddDataProperty(Property);
         return ListProperty;
+    }
+    
+    void SetDefProp(LDP Data,LP Default,boolean OnChange) {
+        DataProperty Property = ((DataProperty)Data.Property);
+        Property.DefaultProperty = (ObjectProperty)Default.Property;
+        for(int i=0;i<Data.ListInterfaces.size();i++)
+            Property.DefaultMap.put((DataPropertyInterface)Data.ListInterfaces.get(i),Default.ListInterfaces.get(i));
+        
+        Property.OnDefaultChange = OnChange;
     }
 
     LDP AddVProp(Object Value,Class ValueClass,Class ...Params) {
@@ -864,8 +946,6 @@ class BusinessLogics {
             }
         }        
     }
-    
-    int MaxInterface = 4;
     
     // генерирует белую БЛ
     void OpenTest(boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
@@ -1155,7 +1235,7 @@ class BusinessLogics {
             // DataProperty
             DataProperty DataProp = new DataProperty(TableFactory,Classes.get(Randomizer.nextInt(Classes.size())));
             // генерируем классы
-            int IntCount = Randomizer.nextInt(MaxInterface)+1;
+            int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
             for(int j=0;j<IntCount;j++)
                 DataProp.Interfaces.add(new DataPropertyInterface(Classes.get(Randomizer.nextInt(Classes.size()))));
 
@@ -1179,7 +1259,7 @@ class BusinessLogics {
                 
                 // генерируем случайно кол-во интерфейсов
                 List<PropertyInterface> RelPropInt = new ArrayList();
-                int IntCount = Randomizer.nextInt(MaxInterface)+1;
+                int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<IntCount;j++) {
                     PropertyInterface Interface = new PropertyInterface();
                     RelProp.Interfaces.add(Interface);
@@ -1238,7 +1318,7 @@ class BusinessLogics {
                 
                 boolean Correct = true;                
                 List<PropertyInterface> GroupInt = new ArrayList(GroupProp.Interfaces);
-                int GroupCount = Randomizer.nextInt(MaxInterface)+1;
+                int GroupCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<GroupCount;j++) {
                     PropertyInterfaceImplement Implement;
                     // генерируем случайно map'ы на эти интерфейсы
@@ -1283,7 +1363,7 @@ class BusinessLogics {
                 }
                 }
                 
-                int OpIntCount = Randomizer.nextInt(MaxInterface)+1;
+                int OpIntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<OpIntCount;j++)
                     Property.Interfaces.add(new PropertyInterface());
         
