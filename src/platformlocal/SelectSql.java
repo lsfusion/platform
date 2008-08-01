@@ -329,9 +329,9 @@ class OrderedSelectQuery extends SelectQuery {
         
         String OrderString="";
         for(SourceExpr Order : Orders)
-            OrderString = (OrderString.length()==0?" ORDER BY ":OrderString+',') + Order.GetSource();
+            OrderString = (OrderString.length()==0?" ORDER BY ":OrderString+',') + Order.GetSource()+(Descending?" DESC":" ASC");
 
-        return Select+OrderString+(Descending?" DESC":" ASC");
+        return Select+OrderString;
     }
 }      
 

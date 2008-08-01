@@ -421,18 +421,18 @@ class Test extends BusinessLogics  {
         ObjectImplement obj3 = new ObjectImplement();
         
         GroupObjectImplement gv = new GroupObjectImplement();
-        GroupObjectImplement gv2 = new GroupObjectImplement();
+//        GroupObjectImplement gv2 = new GroupObjectImplement();
         GroupObjectImplement gv3 = new GroupObjectImplement();
 
         gv.add(obj1);
-        gv2.add(obj2);
+        gv3.add(obj2);
         gv3.add(obj3);
         fbv.AddGroup(gv);
-        fbv.AddGroup(gv2);
+ //       fbv.AddGroup(gv2);
         fbv.AddGroup(gv3);
         gv.GID = 1;
-        gv2.GID = 2;
-        gv2.GID = 3;
+//        gv2.GID = 2;
+        gv3.GID = 3;
 
         PropertyObjectImplement GrTovImpl=null;
         PropertyObjectImplement NameImpl=null;
@@ -448,23 +448,22 @@ class Test extends BusinessLogics  {
                 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
-                if(DrawProp.OutName.equals("имя"))
-                    NameImpl = PropImpl;
                 if(DrawProp.OutName.equals("гр. тов"))
                     GrTovImpl = PropImpl;
-                fbv.Properties.add(new PropertyView(PropImpl,gv2));
+                fbv.Properties.add(new PropertyView(PropImpl,gv3));
 
                 PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
                 PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj3);
+                if(DrawProp.OutName.equals("имя"))
+                    NameImpl = PropImpl;
                 if(DrawProp.OutName.equals("дата док."))
                     DateImpl = PropImpl;
                 fbv.Properties.add(new PropertyView(PropImpl,gv3));
-
             }
         }
         
-        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv3,obj3,obj2);
-        AddPropView(fbv,GP,gv3,obj3,obj2);
+        PropertyObjectImplement QImpl = AddPropView(fbv,Quantity,gv,obj3,obj2);
+        AddPropView(fbv,GP,gv,obj3,obj2);
 
         AddPropView(fbv,PrihQuantity,gv3,obj3,obj2);
         AddPropView(fbv,RashQuantity,gv3,obj3,obj2);
@@ -477,13 +476,14 @@ class Test extends BusinessLogics  {
         obj2.OutName = "";
         fbv.ChangeGridClass(obj2,Article.ID);
         obj3.OutName = "";
-        fbv.ChangeGridClass(obj3,Base.ID);
+        fbv.ChangeGridClass(obj3,Document.ID);
+//        fbv.AddObjectSeek(obj3,13);
+//        fbv.AddPropertySeek(NameImpl,"ПРОДУКТЫ");
 
-//        fbv.AddFilter(new NotNullFilter(QImpl));
-//        fbv.AddFilter(new CompareFilter(GrTovImpl,0,new ObjectValueLink(obj1)));
+        fbv.AddFilter(new NotNullFilter(QImpl));
+        fbv.AddFilter(new CompareFilter(GrTovImpl,0,new ObjectValueLink(obj1)));
 //        fbv.AddOrder(NameImpl);
 //        fbv.AddOrder(DateImpl);
-        
         
 //        fbv.ChangeProperty(QImpl, 10);
 //        fbv.EndApply().Out(fbv);

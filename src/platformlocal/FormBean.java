@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
@@ -43,7 +44,7 @@ class ObjectImplement {
     }
 }
 
-class GroupObjectMap<T> extends HashMap<ObjectImplement,T> {
+class GroupObjectMap<T> extends LinkedHashMap<ObjectImplement,T> {
     
 }
 
@@ -90,6 +91,64 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     void Out(GroupObjectValue Value) {
         for(ObjectImplement Object : this)
             System.out.print(" "+Object.OutName+" = "+Value.get(Object));
+    }
+    
+    GroupObjectValue GetObjectValue() {
+        GroupObjectValue Result = new GroupObjectValue();
+        for(ObjectImplement Object : this)
+            Result.put(Object,Object.idObject);
+        
+        return Result;
+    }
+    
+    Map<ObjectImplement,SourceExpr> GetSourceSelect(JoinList JoinKeys,TableFactory TableFactory,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+        
+        Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
+        // фильтры первыми потому как ограничивают ключи
+        for(Filter Filt : Filters) Filt.FillSelect(JoinKeys,this,KeySources,Session,ChangedProps);
+
+        // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
+        for(ObjectImplement Object : this) {
+            SourceExpr KeyExpr = KeySources.get(Object);
+            From KeySelect = null;
+            if(KeyExpr==null) {
+                KeySelect = TableFactory.ObjectTable.ClassSelect(Object.GridClass);
+                KeyExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
+
+                // не было в фильтре
+                // если есть remove'классы или новые объекты их надо докинуть                        
+                if(Session!=null && Session.AddClasses.contains(Object.GridClass)) {
+                    // придется UnionQuery делать
+                    UnionQuery ResultQuery = new UnionQuery(2);
+                    ResultQuery.Keys.add(TableFactory.ObjectTable.Key.Name);
+
+                    SelectQuery SubQuery = new SelectQuery(KeySelect);
+                    SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,KeyExpr);
+                    ResultQuery.Unions.add(SubQuery);
+
+                    SubQuery = new SelectQuery(TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
+                    SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,TableFactory.AddClassTable.Object.Name));
+                    ResultQuery.Unions.add(SubQuery);
+
+                    KeySelect = new FromQuery(ResultQuery);
+                    KeyExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
+                }
+
+                KeySources.put(Object,KeyExpr);
+                JoinKeys.add(KeySelect);
+
+                // надо сделать LEFT JOIN remove' классов
+                if(Session!=null && Session.RemoveClasses.contains(Object.GridClass))
+                    TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
+            }
+//                    по идее не надо, так как фильтр по определению имеет нужный класс 
+//                    else {
+//                        KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
+//                        JoinKeys.add(KeySelect);
+//                    } 
+        }
+        
+        return KeySources;
     }
 }
 
@@ -435,6 +494,9 @@ class FormBeanView {
 
         Session = BL.CreateSession();
         ChangedProps = new HashSet();
+        
+        UserPropertySeeks = new HashMap();
+        UserObjectSeeks = new HashMap();
 
         StructUpdated = true;
     }
@@ -460,7 +522,7 @@ class FormBeanView {
     DataAdapter Adapter;
 
     // это будут Bean'овские интерфейсы
-    public void ChangeObject(GroupObjectImplement Group,GroupObjectValue Value) throws SQLException {    
+    public void ChangeObject(GroupObjectImplement Group,GroupObjectValue Value) throws SQLException {
         // проставим все объектам метки изменений
         for(ObjectImplement Object : Group) {
             Integer idObject = Value.get(Object);
@@ -601,7 +663,7 @@ class FormBeanView {
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
         boolean Last = !(Index+1<OrderSources.size());
-        Where OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(More?1:2)+(Last?2:0));
+        Where OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(More?(Last?3:1):2));
         if(!Last) {
             Where NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,More,Index+1);
             
@@ -653,7 +715,18 @@ class FormBeanView {
         }        
     }
 
+    // поиски по свойствам\объектам
+    Map<PropertyObjectImplement,Object> UserPropertySeeks;
+    Map<ObjectImplement,Integer> UserObjectSeeks;
     
+    void AddPropertySeek(PropertyObjectImplement Property, Object Value) {
+        UserPropertySeeks.put(Property,Value);
+    }
+
+    void AddObjectSeek(ObjectImplement Object, Integer Value) {
+        UserObjectSeeks.put(Object,Value);
+    }
+
     public FormChanges EndApply() throws SQLException {
 
         FormChanges Result = new FormChanges();
@@ -682,15 +755,8 @@ class FormBeanView {
         }
 
         for(GroupObjectImplement Group : Groups) {
-            // флаг меняется ли объект (по сути делать GO TOP)
-            boolean GoTop = true;
-            
-            // по возврастанию, убыванию и откуда начинать
-            boolean DescOrder = false;
-            Map<ObjectImplement,Integer> KeyOrder = null;
-
             // если изменились :
-            // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3), изменился "классовый" вид с false на true - (флаг Updated - 4)
+            // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3)
             boolean UpdateKeys = ((Group.Updated & (1<<3))!=0);
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
             // фильтры
@@ -737,41 +803,54 @@ class FormBeanView {
                     if(Session.AddClasses.contains(Object.GridClass) || Session.RemoveClasses.contains(Object.GridClass)) {UpdateKeys = true; break;}
             }
 
-            if(!UpdateKeys && Group.GridClassView) {
-                Map<ObjectImplement,Integer> GroupKey = null;
-                if((Group.Updated & ((1<<4)+(1<<0)))!=0) {
-                    GroupKey = new HashMap();
-                    for(ObjectImplement Object : Group)
-                        GroupKey.put(Object,Object.idObject);
-                }
-
-                if((Group.Updated & (1<<4))!=0) {
-                    // изменился "классовый" вид
-                    KeyOrder = GroupKey;
+            // по возврастанию (0), убыванию (1), центру (2) и откуда начинать
+            int Direction = 0;
+            Map<PropertyObjectImplement,Object> PropertySeeks = new HashMap();
+            GroupObjectValue ObjectSeeks = new GroupObjectValue();
+            // один раз читаем не так часто делается, поэтому не будем как с фильтрами
+            for(PropertyObjectImplement Property : UserPropertySeeks.keySet()) {
+                if(Property.GetApplyObject()==Group) {
+                    PropertySeeks.put(Property,UserPropertySeeks.get(Property));
                     UpdateKeys = true;
-                    GoTop = false;
-                } else {
-                if((Group.Updated & (1<<0))!=0) {
-                    // объекты стали близки к краю (idObject не далеко от края - надо хранить список не базу же дергать) - изменился объект
-                    int KeyNum = Group.Keys.indexOf(GroupKey);
-                    // если меньше PageSize осталось и сверху есть ключи
-                    if(KeyNum<Group.PageSize && Group.UpKeys) {
-                        DescOrder = true;
-                        UpdateKeys = true;
-                        GoTop = false;
-                    
-                        if (Group.PageSize*2<Group.Keys.size())
-                            KeyOrder = Group.Keys.get(Group.PageSize*2);
-                    } else {
-                    // наоборот вниз
-                    if(KeyNum>Group.Keys.size()-Group.PageSize && Group.DownKeys) {
-                        DescOrder = false;
-                        UpdateKeys = true;
-                        GoTop = false;
+                    Direction = 2;
+                }
+            }
+            for(ObjectImplement Object : UserObjectSeeks.keySet()) {
+                if(Object.GroupTo==Group) {
+                    ObjectSeeks.put(Object,UserObjectSeeks.get(Object));
+                    UpdateKeys = true;
+                    Direction = 2;
+                }
+            }
 
-                        if (Group.Keys.size()-2*Group.PageSize>=0)
-                            KeyOrder = Group.Keys.get(Group.Keys.size()-2*Group.PageSize);
+            if(!UpdateKeys && (Group.Updated & (1<<4))!=0) {
+               // изменился "классовый" вид перечитываем св-ва
+                ObjectSeeks = Group.GetObjectValue();
+                UpdateKeys = true;
+                Direction = 2;
+            }
+                
+            if(!UpdateKeys && Group.GridClassView && (Group.Updated & (1<<0))!=0) {
+                // листание - объекты стали близки к краю (idObject не далеко от края - надо хранить список не базу же дергать) - изменился объект
+                int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
+                // если меньше PageSize осталось и сверху есть ключи
+                if(KeyNum<Group.PageSize && Group.UpKeys) {
+                    Direction = 1;
+                    UpdateKeys = true;
+                    
+                    if(Group.PageSize*2<Group.Keys.size()) {
+                        ObjectSeeks = Group.Keys.get(Group.PageSize*2);
+                        PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
+                } else {
+                // наоборот вниз
+                if(KeyNum>Group.Keys.size()-Group.PageSize && Group.DownKeys) {
+                    Direction = 0;
+                    UpdateKeys = true;
+                    
+                    if(Group.Keys.size()-2*Group.PageSize>=0) {
+                        ObjectSeeks = Group.Keys.get(Group.Keys.size()-2*Group.PageSize);
+                        PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
                 }
                 }
@@ -779,169 +858,212 @@ class FormBeanView {
             
             if(UpdateKeys) {
                 // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
-                // добавим новые
-                OrderedSelectQuery SelectKeys = new OrderedSelectQuery(null);
 
-                // докидываем Join'ами (INNER) фильтры, порядки
-                JoinList JoinKeys = new JoinList();
-                
-                Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
-
-                // фильтры первыми потому как ограничивают ключи
-                for(Filter Filt : Group.Filters) Filt.FillSelect(JoinKeys,Group,KeySources,Cancel?null:Session,ChangedProps);
-
-                // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
+                // сделаем Map названий ключей
                 int ObjectNum = 0;
-                for(ObjectImplement Object : Group) {
-                    SourceExpr KeyExpr = KeySources.get(Object);
-                    From KeySelect = null;
-                    if(KeyExpr==null) {
-                        KeySelect = BL.TableFactory.ObjectTable.ClassSelect(Object.GridClass);
-                        KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
+                Map<ObjectImplement,String> KeyNames = new HashMap();
+                for(ObjectImplement ObjectKey : Group)
+                    KeyNames.put(ObjectKey,"key"+(ObjectNum++));
+                int OrderNum = 0;
+                Map<PropertyObjectImplement,String> OrderNames = new HashMap();
+                for(PropertyObjectImplement Order : Orders)
+                    OrderNames.put(Order,"order"+(OrderNum++));
+                
+                // докидываем Join'ами (INNER) фильтры, порядки
+                
+                // уберем все некорректности в Seekах :
+                // корректно если : PropertySeeks = Orders или (Orders.sublist(PropertySeeks.size) = PropertySeeks и ObjectSeeks - пустое)
+                // если Orders.sublist(PropertySeeks.size) != Orders, тогда дочитываем ObjectSeeks полностью
+                // выкидываем лишние PropertySeeks, дочитываем недостающие Orders в PropertySeeks
+                // также если панель то тупо прочитаем объект
+                boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(new HashSet(Orders)) || ((PropertySeeks.size()<Orders.size() && (new HashSet(Orders.subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
+                if((NotEnoughOrders || !Group.GridClassView) && ObjectSeeks.size()<Group.size()) {
+                    // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
+                    JoinList JoinKeys = new JoinList();
+                    Map<ObjectImplement,SourceExpr> KeySources = Group.GetSourceSelect(JoinKeys,BL.TableFactory,Session,ChangedProps);
+                    for(Entry<PropertyObjectImplement,Object> Property : PropertySeeks.entrySet())
+                        JoinKeys.get(0).Wheres.add(new FieldExprCompareWhere(Property.getKey().JoinSelect(JoinKeys,Group,KeySources,Session,ChangedProps,false),Property.getValue(),0));
+                    for(Entry<ObjectImplement,Integer> ObjectValue : ObjectSeeks.entrySet())
+                        JoinKeys.get(0).Wheres.add(new FieldExprCompareWhere(KeySources.get(ObjectValue.getKey()),ObjectValue.getValue(),0));
 
-                        // не было в фильтре
-                        // если есть remove'классы или новые объекты их надо докинуть                        
-                        if(!Cancel && Session.AddClasses.contains(Object.GridClass)) {
-                            // придется UnionQuery делать
-                            UnionQuery ResultQuery = new UnionQuery(2);
-                            ResultQuery.Keys.add(BL.TableFactory.ObjectTable.Key.Name);
+                    Iterator<From> ij = JoinKeys.iterator();
+                    SelectQuery SelectKeys = new SelectQuery(ij.next());
+                    while(ij.hasNext()) SelectKeys.From.Joins.add(ij.next());
 
-                            SelectQuery SubQuery = new SelectQuery(KeySelect);
-                            SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,KeyExpr);
-                            ResultQuery.Unions.add(SubQuery);
+                    for(ObjectImplement ObjectKey : Group)
+                        SelectKeys.Expressions.put(KeyNames.get(ObjectKey),KeySources.get(ObjectKey));
 
-                            SubQuery = new SelectQuery(BL.TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
-                            SubQuery.Expressions.put(BL.TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,BL.TableFactory.AddClassTable.Object.Name));
-                            ResultQuery.Unions.add(SubQuery);
+                    SelectKeys.Top = 1;
+                    Adapter.OutSelect(SelectKeys);
+                    List<Map<String,Object>> ResultKeys = Adapter.ExecuteSelect(SelectKeys);
+                    if(ResultKeys.size()>0)
+                        for(ObjectImplement ObjectKey : Group)
+                            ObjectSeeks.put(ObjectKey,(Integer)ResultKeys.get(0).get(KeyNames.get(ObjectKey)));
+                }
 
-                            KeySelect = new FromQuery(ResultQuery);
-                            KeyExpr = new FieldSourceExpr(KeySelect,BL.TableFactory.ObjectTable.Key.Name);
+                if(!Group.GridClassView) {
+                    // если панель и ObjectSeeks "полный", то просто меняем объект и ничего не читаем
+                    Result.Objects.put(Group,ObjectSeeks);
+                    ChangeObject(Group,ObjectSeeks);
+                } else {
+                    // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
+                    if(NotEnoughOrders && ObjectSeeks.size()==Group.size() && Orders.size() > 0) {
+                        SelectQuery OrderQuery = new SelectQuery(null);
+                        JoinList JoinKeys = new JoinList();
+                        JoinKeys.add(new FromTable("dumb"));
+                        // придется создавать KeySources
+                        Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
+                        for(Entry<ObjectImplement,Integer> ObjectSeek : ObjectSeeks.entrySet())
+                            KeySources.put(ObjectSeek.getKey(),new ValueSourceExpr(ObjectSeek.getValue()));
+                        for(PropertyObjectImplement Order : Orders)
+                            OrderQuery.Expressions.put(OrderNames.get(Order),Order.JoinSelect(JoinKeys,Group,KeySources,Session,ChangedProps,true));
+                        Iterator<From> ij = JoinKeys.iterator();
+                        OrderQuery.From = ij.next();
+                        while(ij.hasNext()) OrderQuery.From.Joins.add(ij.next());
+                        Adapter.OutSelect(OrderQuery);
+                        List<Map<String,Object>> ResultOrders = Adapter.ExecuteSelect(OrderQuery);
+                        for(PropertyObjectImplement Order : Orders)
+                            PropertySeeks.put(Order,ResultOrders.get(0).get(OrderNames.get(Order)));
+                    }
+                
+                    JoinList JoinKeys = new JoinList();
+                    Map<ObjectImplement,SourceExpr> KeySources = Group.GetSourceSelect(JoinKeys,BL.TableFactory,Cancel?null:Session,ChangedProps);
+
+                    OrderedSelectQuery SelectKeys = new OrderedSelectQuery(null);
+
+                    // складываются источники и значения
+                    List<SourceExpr> OrderSources = new ArrayList();
+                    List<Object> OrderWheres = new ArrayList();
+
+                    // закинем порядки (с LEFT JOIN'ом)
+                    for(PropertyObjectImplement ToOrder : Group.Orders) {
+                        SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Cancel?null:Session,ChangedProps,true);
+                        SelectKeys.Orders.add(OrderExpr);
+                        // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
+                        if(PropertySeeks.containsKey(ToOrder)) {
+                            OrderSources.add(OrderExpr);
+                            OrderWheres.add(PropertySeeks.get(ToOrder));
+                        }                    
+                        // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
+                        SelectKeys.Expressions.put(OrderNames.get(ToOrder),OrderExpr);
+                    }
+
+                    // докинем в ObjectSeeks недостающие группы
+                    for(ObjectImplement ObjectKey : Group)
+                        if(!ObjectSeeks.containsKey(ObjectKey))
+                            ObjectSeeks.put(ObjectKey,null);
+                    
+                    // закинем объекты в порядок
+                    for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
+                        SourceExpr KeyExpr = KeySources.get(ObjectKey);
+                        // также закинем их в порядок и в запрос6
+                        SelectKeys.Orders.add(KeyExpr);
+                        Integer SeekValue = ObjectSeeks.get(ObjectKey);
+                        if(SeekValue!=null) {
+                            OrderSources.add(KeyExpr);
+                            OrderWheres.add(SeekValue);
+                        }
+                        // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
+                        SelectKeys.Expressions.put(KeyNames.get(ObjectKey),KeyExpr);
+                    }
+                    
+                    // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
+                    ListIterator<From> ijk = JoinKeys.listIterator();
+                    SelectKeys.From = ijk.next();
+                    while(ijk.hasNext()) SelectKeys.From.Joins.add(ijk.next());
+
+                    // выполняем запрос
+
+                    // какой ряд выбранным будем считать
+                    int ActiveRow = -1;
+                    // результат
+                    List<Map<String,Object>> KeyResult = new ArrayList();
+
+                    SelectKeys.Top = Group.PageSize*3/(Direction==2?2:1);
+
+                    // сначала Descending загоним
+                    Group.DownKeys = false;
+                    Group.UpKeys = false;
+                    if(Direction==1 || Direction==2) {
+                        Where OrderWhere = null;
+                        if(OrderSources.size()>0) {
+                            OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,false,0);
+                            SelectKeys.From.Wheres.add(OrderWhere);
+                            Group.DownKeys = true;
                         }
 
-                        KeySources.put(Object,KeyExpr);
-                        JoinKeys.add(KeySelect);
+                        SelectKeys.Descending = true;
+                        Adapter.OutSelect(SelectKeys);
+                        ListIterator<Map<String,Object>> ik = Adapter.ExecuteSelect(SelectKeys).listIterator();
+                        while(ik.hasNext()) ik.next();
+                        while(ik.hasPrevious()) KeyResult.add(ik.previous());
+                        Group.UpKeys = (KeyResult.size()==SelectKeys.Top);
 
-                        // надо сделать LEFT JOIN remove' классов
-                        if(!Cancel && Session.RemoveClasses.contains(Object.GridClass))
-                            BL.TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
+                        if(OrderSources.size()>0)
+                            SelectKeys.From.Wheres.remove(OrderWhere);
+                        else
+                            ActiveRow = KeyResult.size()-1;
                     }
-//                    else {
-//                        по идее не надо, так как фильтр по определению имеет нужный класс 
-//                        KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
-//                        JoinKeys.add(KeySelect);
-//                    }                    
+                    // потом Ascending
+                    if(Direction==0 || Direction==2) {
+                        if(OrderSources.size()>0) {
+                            Where OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,true,0);
+                            SelectKeys.From.Wheres.add(OrderWhere);
+                            if(Direction!=2) Group.UpKeys = true;
+                        }
 
-                    // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.put("key"+(ObjectNum++),KeyExpr);
-                }
-
-                // складываются источники и значения
-                List<SourceExpr> OrderSources = new ArrayList();
-                List<Object> OrderWheres = new ArrayList();
-
-                Map<PropertyObjectImplement,Object> OrderValues = null;
-                if(KeyOrder!=null) OrderValues = Group.KeyOrders.get(KeyOrder);
-                // закинем порядки (с LEFT JOIN'ом)
-                int OrderNum = 0;
-                for(PropertyObjectImplement ToOrder : Group.Orders) {
-                    SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group,KeySources,Cancel?null:Session,ChangedProps,true);
-                    SelectKeys.Orders.add(OrderExpr);
-                    // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
-                    if(OrderValues!=null) {
-                        OrderSources.add(OrderExpr);
-                        OrderWheres.add(OrderValues.get(ToOrder));
+                        SelectKeys.Descending = false;
+                        Adapter.OutSelect(SelectKeys);
+                        List<Map<String,Object>> ExecuteList = Adapter.ExecuteSelect(SelectKeys);
+                        if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
+                        KeyResult.addAll(ExecuteList);
+                        Group.DownKeys = (ExecuteList.size()==SelectKeys.Top);
                     }
                     
-                    // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                    SelectKeys.Expressions.put("order"+(OrderNum++),OrderExpr);
-                }
+                    Group.Keys = new ArrayList();
+                    Group.KeyOrders = new HashMap();
 
-                // закинем объекты в порядок
-                for(ObjectImplement Object : Group) {
-                    SourceExpr KeyExpr = KeySources.get(Object);
+                    // параллельно будем обновлять ключи чтобы Join'ить
+                    ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
+                    InsertTable.DropViewID(Adapter, Group.GID);
                     
-                    // также закинем их в порядок и в запрос6
-                    SelectKeys.Orders.add(KeyExpr);
-                    if(KeyOrder!=null) {
-                        OrderSources.add(KeyExpr);
-                        OrderWheres.add(KeyOrder.get(Object));
+                    for(Map<String,Object> ResultRow : KeyResult) {
+                        GroupObjectValue KeyRow = new GroupObjectValue();
+                        Map<PropertyObjectImplement,Object> OrderRow = new HashMap();
+
+                        // закинем сразу ключи для св-в чтобы Join'ить
+                        Map<KeyField,Integer> ViewKeyInsert = new HashMap();
+                        ViewKeyInsert.put(InsertTable.View,Group.GID);
+                        ListIterator<KeyField> ivk = InsertTable.Objects.listIterator();
+                        // !!!! важно в Keys сохранить порядок ObjectSeeks
+                        for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
+                            Integer KeyValue = (Integer)ResultRow.get(KeyNames.get(ObjectKey));
+                            KeyRow.put(ObjectKey,KeyValue);
+                            ViewKeyInsert.put(ivk.next(), KeyValue);
+                        }
+                        Adapter.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
+
+                        OrderNum = 0;
+                        for(PropertyObjectImplement ToOrder : Group.Orders)
+                            OrderRow.put(ToOrder,ResultRow.get(OrderNames.get(ToOrder)));
+
+                        Group.Keys.add(KeyRow);
+                        Group.KeyOrders.put(KeyRow, OrderRow);
                     }
-                }
 
-                // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
-                ListIterator<From> ijk = JoinKeys.listIterator();
-                SelectKeys.From = ijk.next();
-                while(ijk.hasNext()) SelectKeys.From.Joins.add(ijk.next());
+                    Result.GridObjects.put(Group,Group.Keys);
 
-                if(OrderSources.size()>0) {
-                    Where OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,!DescOrder,0);
-                    SelectKeys.From.Wheres.add(OrderWhere);
-                }
-                
-                SelectKeys.Descending = DescOrder;
-                SelectKeys.Top = (Group.GridClassView?Group.PageSize*3:1);
+                    Group.Updated = (Group.Updated | (1<<2));
 
-                // выполняем запрос
-                List<Map<String,Object>> KeyResult = Adapter.ExecuteSelect(SelectKeys);
-                if(DescOrder) { // перевернем список, если был убывающий порядок
-                    List<Map<String,Object>> ReverseList = new ArrayList();
-                    ListIterator<Map<String,Object>> ik = KeyResult.listIterator();
-                    while(ik.hasNext()) ik.next();
-                    while(ik.hasPrevious()) ReverseList.add(ik.previous());
-                    KeyResult = ReverseList;
-                }
-                                
-                // нужно заполнить UpKeys, DownKeys, Keys, KeyOrders
-                if(DescOrder) {
-                    Group.DownKeys = (KeyOrder!=null);
-                    Group.UpKeys = (KeyResult.size()==SelectKeys.Top);
-                } else {
-                    Group.UpKeys = (KeyOrder!=null);
-                    Group.DownKeys = (KeyResult.size()==SelectKeys.Top);
-                }
-                Group.Keys = new ArrayList();
-                Group.KeyOrders = new HashMap();
+                    // если ряд никто не подставил и ключи есть пробуем старый найти
+                    if(ActiveRow<0 && Group.Keys.size()>0)
+                        ActiveRow = Group.Keys.indexOf(Group.GetObjectValue());
 
-                // параллельно будем обновлять ключи чтобы Join'ить
-                ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-                InsertTable.DropViewID(Adapter, Group.GID);
-
-                ListIterator<Map<String,Object>> ikr = KeyResult.listIterator();
-                for(Map<String,Object> ResultRow : KeyResult) {
-                    GroupObjectValue KeyRow = new GroupObjectValue();
-                    Map<PropertyObjectImplement,Object> OrderRow = new HashMap();
-                    
-                    // закинем сразу ключи для св-в чтобы Join'ить
-                    Map<KeyField,Integer> ViewKeyInsert = new HashMap();
-                    ViewKeyInsert.put(InsertTable.View,Group.GID);
-                    ListIterator<KeyField> ivk = InsertTable.Objects.listIterator();
-                    ObjectNum = 0;
-                    for(ObjectImplement Object : Group) {
-                        Integer KeyValue = (Integer)ResultRow.get("key"+(ObjectNum++));
-                        KeyRow.put(Object,KeyValue);
-                        
-                        ViewKeyInsert.put(ivk.next(), KeyValue);
-                    }
-                    Adapter.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
-
-                    OrderNum = 0;
-                    for(PropertyObjectImplement ToOrder : Group.Orders)
-                        OrderRow.put(ToOrder,ResultRow.get("order"+(OrderNum++)));
-                    
-                    Group.Keys.add(KeyRow);
-                    Group.KeyOrders.put(KeyRow, OrderRow);
-                }
-
-                Result.GridObjects.put(Group,Group.Keys);
-
-                Group.Updated = (Group.Updated | (1<<2));
-                
-                // --- помечаем изменение объекта - если не скроллинг или чистое изменение вида
-                if(GoTop) {
-                    if(Group.Keys.size()>0) {
-                        Result.Objects.put(Group, Group.Keys.get(0));
-                        ChangeObject(Group,Group.Keys.get(0));
-                    } else
+                    if(ActiveRow>=0) {
+                        // нашли ряд его выбираем
+                        Result.Objects.put(Group,Group.Keys.get(ActiveRow));
+                        ChangeObject(Group,Group.Keys.get(ActiveRow));
+                    } else 
                         ChangeObject(Group,new GroupObjectValue());
                 }
             }
@@ -1102,6 +1224,9 @@ class FormBeanView {
             }
         }
 
+        UserPropertySeeks.clear();
+        UserObjectSeeks.clear();
+        
         // сбрасываем все пометки
         StructUpdated = false;
         for(GroupObjectImplement Group : Groups) {
