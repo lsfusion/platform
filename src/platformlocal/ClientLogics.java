@@ -7,6 +7,7 @@ package platformlocal;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.LayoutManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,10 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
 
     Integer GID = 0;
     
+    ClientGridView gridView;
+    ClientFunctionView addView;
+    ClientFunctionView delView;
+    
     @Override
     public boolean equals(Object o) {
         return this == o;
@@ -28,6 +33,12 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
         int hash = 3;
         hash = 23 * hash + (this.GID != null ? this.GID.hashCode() : 0);
         return hash;
+    }
+    
+    public ClientGroupObjectImplement() {
+        gridView = new ClientGridView();
+        addView = new ClientFunctionView();
+        delView = new ClientFunctionView();
     }
 }
 
@@ -63,19 +74,37 @@ class ClientObjectImplement {
     
     ClientObjectView objectIDView;
     
+    public ClientObjectImplement() {
+        objectIDView = new ClientObjectView();
+    }
 }
 
-class ClientGroupPropertyView {
+class ClientComponentView {
+    
+    ClientContainerView container;
+    Object constraints;
     
 }
 
-abstract class ClientAbstractView {
+class ClientContainerView extends ClientComponentView {
+    
+    LayoutManager layout;
+}
+
+class ClientGridView extends ClientComponentView {
+    
+}
+
+class ClientFunctionView extends ClientComponentView {
+    
+}
+
+abstract class ClientCellView extends ClientComponentView {
     
     Integer GID = 0;
 
-    ClientGroupPropertyView groupProperty;
     ClientGroupObjectImplement groupObject;
-
+    
     Dimension minimumSize;
     Dimension maximumSize;
     Dimension preferredSize;
@@ -101,8 +130,8 @@ abstract class ClientAbstractView {
 
 }
 
-class ClientPropertyView extends ClientAbstractView {
-    
+class ClientPropertyView extends ClientCellView {
+
     String type;
     
     public int getPreferredWidth() {
@@ -142,7 +171,7 @@ class ClientPropertyView extends ClientAbstractView {
 
 }
 
-class ClientObjectView extends ClientAbstractView {
+class ClientObjectView extends ClientCellView {
 
     private PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
@@ -161,7 +190,7 @@ class ClientObjectView extends ClientAbstractView {
         return null;
     }
     
-}
+} 
 
 class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,ClientGroupObjectValue,ClientPropertyView> {
     
@@ -172,17 +201,19 @@ class ClientFormInit {
     
     List<ClientGroupObjectImplement> groupObjects;
     List<ClientObjectImplement> objects;
-    List<ClientGroupPropertyView> groupProperties;
     List<ClientPropertyView> properties;
     
-    List<ClientAbstractView> order;
+    List<ClientContainerView> containers;
+    
+    List<ClientCellView> order;
     
     public ClientFormInit() {
         
         groupObjects = new ArrayList();
         objects = new ArrayList();
-        groupProperties = new ArrayList();
         properties = new ArrayList();
+        
+        containers = new ArrayList();
         
         order = new ArrayList();
         
@@ -203,7 +234,13 @@ class ClientFormBean {
     List<ClientObjectImplement> listObjects = new ArrayList();
     List<ClientPropertyView> listProperties = new ArrayList();
     
-    List<ClientAbstractView> listOrder = new ArrayList();
+    List<ClientContainerView> listContainers = new ArrayList();
+    
+    ClientContainerView mainContainer;
+    Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
+    Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
+    
+    List<ClientCellView> listOrder = new ArrayList();
     
     public ClientGroupObjectImplement client(GroupObjectImplement groupObject) {
         return groupObjects.get(groupObject);
@@ -220,21 +257,35 @@ class ClientFormBean {
     public ClientFormBean(FormBeanView iformBean) {
         
         formBean = iformBean;
+        
+        mainContainer = new ClientContainerView();
+        listContainers.add(mainContainer);
 
         for (GroupObjectImplement group : formBean.Groups) {
             
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             groupObjects.put(group, clientGroup);
             listGroups.add(clientGroup);
+            
+            ClientContainerView groupContainer = new ClientContainerView();
+            groupContainer.container = mainContainer;
+            groupContainers.put(clientGroup, groupContainer);
+            listContainers.add(groupContainer);
+            
+            clientGroup.gridView.container = groupContainer;
 
+            ClientContainerView panelContainer = new ClientContainerView();
+            panelContainer.container = groupContainer;
+            panelContainers.put(clientGroup, panelContainer);
+            listContainers.add(panelContainer);
+            
             for (ObjectImplement object : group) {
 
                 ClientObjectImplement clientObject = new ClientObjectImplement();
                 clientObject.groupObject = clientGroup;
+                clientObject.objectIDView.groupObject = clientGroup;
                 
                 clientObject.caption = object.OutName;
-                clientObject.objectIDView = new ClientObjectView();
-                clientObject.objectIDView.groupObject = clientGroup;
                 clientObject.objectIDView.caption = object.OutName;
                 
                 clientGroup.add(clientObject);
@@ -257,6 +308,8 @@ class ClientFormBean {
             
             properties.put(property, clientProperty);
             listProperties.add(clientProperty);
+            
+            clientProperty.container = panelContainers.get(clientProperty.groupObject);
             
             listOrder.add(clientProperty);
         }
@@ -356,8 +409,11 @@ class ClientFormBean {
             
         for (ClientPropertyView property : listProperties)
             formInit.properties.add(property);
-        
-        for (ClientAbstractView view : listOrder)
+
+        for (ClientContainerView container : listContainers)
+            formInit.containers.add(container);
+            
+        for (ClientCellView view : listOrder)
             formInit.order.add(view);
         
         return formInit;
