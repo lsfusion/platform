@@ -91,26 +91,29 @@ public class ClientForm extends FrameView {
     
     ClientFormBean clientBean;
             
-    public ClientForm(SingleFrameApplication app) {
+    public ClientForm(SingleFrameApplication app,RemoteForm RemoteForm) {
         super(app);
         
         thisForm = this;
         
         getFrame().setTitle(caption);
 
-        Test t = new Test();
-        try {
-            t.SimpleTest(this);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
         
+        try {
+            
+            FormChanges StartChanges;        
+            StartChanges = RemoteForm.EndApply();
+            StartChanges.Out(RemoteForm);
+            
+            clientBean = RemoteForm.GetRichDesign();
+        
+            initializeForm();
+        
+            applyFormChanges(clientBean.convertFormChangesToClient(StartChanges)); 
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);        
+        }
     }
 
     FormLayout formLayout;

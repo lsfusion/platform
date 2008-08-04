@@ -223,7 +223,7 @@ class ClientFormInit {
 
 class ClientFormBean {
     
-    FormBeanView formBean;
+    RemoteForm formBean;
     
     Map<GroupObjectImplement, ClientGroupObjectImplement> groupObjects = new HashMap();
     Map<ObjectImplement, ClientObjectImplement> objects = new HashMap();
@@ -233,9 +233,9 @@ class ClientFormBean {
     List<ClientGroupObjectImplement> listGroups = new ArrayList();
     List<ClientObjectImplement> listObjects = new ArrayList();
     List<ClientPropertyView> listProperties = new ArrayList();
-    
+
     List<ClientContainerView> listContainers = new ArrayList();
-    
+
     ClientContainerView mainContainer;
     Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
     Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
@@ -254,14 +254,14 @@ class ClientFormBean {
         return properties.get(property);
     }
     
-    public ClientFormBean(FormBeanView iformBean) {
+    public ClientFormBean(RemoteForm iformBean) {
         
         formBean = iformBean;
         
         mainContainer = new ClientContainerView();
         listContainers.add(mainContainer);
-
-        for (GroupObjectImplement group : formBean.Groups) {
+        
+        for (GroupObjectImplement group : (List<GroupObjectImplement>)formBean.Groups) {
             
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             groupObjects.put(group, clientGroup);
@@ -297,7 +297,7 @@ class ClientFormBean {
             }
         }
         
-        for (PropertyView property : formBean.Properties) {
+        for (PropertyView property : (List<PropertyView>)formBean.Properties) {
             
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.groupObject = groupObjects.get(property.ToDraw);

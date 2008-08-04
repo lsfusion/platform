@@ -231,7 +231,7 @@ class PropertyView {
 
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     GroupObjectImplement ToDraw;
-    
+
     PropertyView(PropertyObjectImplement iView,GroupObjectImplement iToDraw) {
         View = iView;
         ToDraw = iToDraw;
@@ -263,9 +263,9 @@ class AbstractFormChanges<T,V,Z> {
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue,PropertyView> {
    
-    void Out(FormBeanView bv) {
+    void Out(RemoteForm bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
-        for(GroupObjectImplement Group : bv.Groups) {
+        for(GroupObjectImplement Group : (List<GroupObjectImplement>)bv.Groups) {
             List<GroupObjectValue> GroupGridObjects = GridObjects.get(Group);
             if(GroupGridObjects!=null) {
                 System.out.println(Group.GID+" - Grid Changes");
@@ -476,13 +476,15 @@ class PropertyValueLink extends ValueLink {
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-class FormBeanView {
+abstract class RemoteForm<T extends BusinessLogics> {
+
+    T BL;
 
     ChangesSession Session;
     
     Set<ObjectProperty> ChangedProps;
     
-    FormBeanView(DataAdapter iAdapter,BusinessLogics iBL) {
+    RemoteForm(DataAdapter iAdapter,T iBL) {
         Adapter = iAdapter;
         BL = iBL;
         
@@ -518,7 +520,6 @@ class FormBeanView {
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
     Map<PropertyView,Boolean> InterfacePool;    
 
-    BusinessLogics BL;
     DataAdapter Adapter;
 
     // это будут Bean'овские интерфейсы
@@ -1244,4 +1245,33 @@ class FormBeanView {
 
         return Result;
     }
+    
+    abstract ClientFormBean GetRichDesign();
+
+    // считывает все данные (для отчета)
+    FormData ReadData() {
+        
+        Set<ObjectImplement> FilterObjects = GetReportObjects();
+                
+        return null;
+    }
+
+    // возвращает какие объекты фиксируются
+    Set<ObjectImplement> GetReportObjects() {
+        return null;
+    }
+    
+    // получает XML отчета
+    abstract String GetReportDesign();
+    
+    RemoteNavigator<T> CreateNavigator() {
+        return new RemoteNavigator(Adapter,BL,new HashMap());
+    }
+}
+
+// считанные данные (должен быть интерфейс Serialize)
+class FormData {
+    
+    
+    
 }

@@ -485,7 +485,7 @@ class TableFactory extends TableImplement{
     }
 }
 
-class BusinessLogics {
+abstract class BusinessLogics {
     
     BusinessLogics() {
         BaseClass = new ObjectClass(0);
@@ -507,7 +507,38 @@ class BusinessLogics {
                 Include.add(new DataPropertyInterface(BaseClass));
             TableFactory.IncludeIntoGraph(Include);
         }         
+        
+        BaseGroup = new NavigatorGroup();
+        
+        InitLogics();
+        InitImplements();
+        InitNavigators();
     }
+    
+    abstract void InitClasses();
+    abstract void InitProperties();
+    abstract void InitConstraints();
+    
+    // инициализируется логика
+    void InitLogics() {
+        InitClasses();
+        InitProperties();
+        InitConstraints();
+    }
+    
+    abstract void InitPersistents();
+    abstract void InitTables();
+    abstract void InitIndexes();
+    
+    void InitImplements() {
+        InitPersistents();
+        InitTables();
+        InitIndexes();
+    }
+
+    NavigatorGroup BaseGroup;
+    
+    abstract void InitNavigators();
     
     void AddDataProperty(DataProperty Property) {
         Properties.add(Property);
@@ -1079,8 +1110,7 @@ class BusinessLogics {
                 }
                 
                 if(Changes) {
-                    DataAdapter ad = new DataAdapter();
-                    ad.Connect("");
+                    DataAdapter ad = new DataAdapter("");
 
                     FillDB(ad);
 
@@ -1445,7 +1475,8 @@ class BusinessLogics {
         // сгенерить физ. модель
         // сгенерить persistent аггрегации
 //        OpenTest(false,false,false,false,false);
-        
+
+        DataAdapter Adapter = new DataAdapter("");
         OpenTest(true,true,false,false,false);
 //        if(true) return;
 
@@ -1461,9 +1492,6 @@ class BusinessLogics {
 
             RandomPersistent(Randomizer);
             
-            DataAdapter Adapter = new DataAdapter();
-            Adapter.Connect("");
-
             FillDB(Adapter);
 
             // запустить ChangeDBTest

@@ -22,8 +22,8 @@ class DataAdapter {
     
     Connection Connection;
 
-    void Connect(String ConnectionString) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-
+    DataAdapter(String ConnectionString) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        
         java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver"); 
         Connection = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
 
