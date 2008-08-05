@@ -5,6 +5,10 @@
 
 package platformlocal;
 
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.view.JRViewer;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -41,9 +45,9 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
 interface ClientCellViewTable {
-    
+
     ClientCellView getCellView(int row, int col);
-    
+
 }
 
 class SingleViewable<ViewClass> {
@@ -56,55 +60,55 @@ public class ClientForm extends JFrame {
 
     ClientForm thisForm;
     ClientFormView formView;
-    
+
     ClientFormBean clientBean;
-            
+
     public ClientForm(RemoteForm RemoteForm) {
 //        super(app);
-        
+
         thisForm = this;
 
 //        getFrame().setTitle(caption);
 
-        
+
         try {
-            
-            FormChanges StartChanges;        
+
+            FormChanges StartChanges;
             StartChanges = RemoteForm.EndApply();
             StartChanges.Out(RemoteForm);
-            
+
             clientBean = RemoteForm.GetRichDesign();
-        
+
             initializeForm();
-        
-            applyFormChanges(clientBean.convertFormChangesToClient(StartChanges)); 
+
+            applyFormChanges(clientBean.convertFormChangesToClient(StartChanges));
 
         } catch (SQLException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);        
+            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     FormLayout formLayout;
 
     Map<ClientGroupObjectImplement, GroupObjectModel> models;
-    
+
     public void initializeForm() {
 
         formView = clientBean.getClientFormView();
-        
+
         formLayout = new FormLayout(formView.containers);
 
         setContentPane(formLayout.getComponent());
 //        setComponent(formLayout.getComponent());
 
         models = new HashMap();
-        
+
         for (ClientGroupObjectImplement groupObject : formView.groupObjects) {
-            
+
             GroupObjectModel model = new GroupObjectModel(groupObject);
-  
+
             models.put(groupObject, model);
-            
+
         }
 
         JButton buttonPrint = new JButton("Печать");
@@ -124,29 +128,29 @@ public class ClientForm extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 saveChanges();
             }
-            
+
         });
 
         formLayout.add(formView.applyView, buttonApply);
-                
+
         JButton buttonCancel = new JButton("Отменить");
         buttonCancel.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 cancelChanges();
             }
-            
+
         });
-        
+
         formLayout.add(formView.cancelView, buttonCancel);
-        
+
     }
-    
+
 
     void applyFormChanges(ClientFormChanges formChanges) {
-        
+
         // Сначала меняем виды объектов
-    
+
         for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
             models.get(property.groupObject).addPanelProperty(property);
         }
@@ -158,40 +162,40 @@ public class ClientForm extends JFrame {
         for (ClientPropertyView property : formChanges.DropProperties) {
             models.get(property.groupObject).dropProperty(property);
         }
-       
-        
+
+
         // Затем подгружаем новые данные
-       
+
         // Сначала новые объекты
-        
+
         for (ClientGroupObjectImplement groupObject : formChanges.GridObjects.keySet()) {
             models.get(groupObject).grid.setGridObjects(formChanges.GridObjects.get(groupObject));
         }
-       
+
         for (ClientGroupObjectImplement groupObject : formChanges.Objects.keySet()) {
             models.get(groupObject).setCurrentObject(formChanges.Objects.get(groupObject),false);
         }
-       
+
         // Затем их свойства
-        
+
         for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
             models.get(property.groupObject).setPanelPropertyValue(property, formChanges.PanelProperties.get(property));
         }
-       
+
         for (ClientPropertyView property : formChanges.GridProperties.keySet()) {
             models.get(property.groupObject).setGridPropertyValues(property, formChanges.GridProperties.get(property));
         }
-       
+
         formLayout.getComponent().validate();
-       
+
     }
-    
+
     void changeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
 
         long st = System.currentTimeMillis();
-        
+
         if (!objectValue.equals(models.get(groupObject).getCurrentObject())) {
-            
+
 //            System.out.println("oldval : " + models.get(groupObject).getCurrentObject().toString());
             models.get(groupObject).setCurrentObject(objectValue, true);
             System.out.println("Change Object - setCurrentObject : " + (System.currentTimeMillis()-st));
@@ -202,20 +206,20 @@ public class ClientForm extends JFrame {
         System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
 
     }
-    
+
     void changeProperty(ClientCellView property, Object value) {
         if (property instanceof ClientPropertyView) // типа только если меняется свойство
             applyFormChanges(clientBean.changeProperty((ClientPropertyView)property, value));
     }
-    
+
     void addObject(ClientObjectImplement object) {
         applyFormChanges(clientBean.addObject(object));
     }
-    
+
     void changeClass(ClientObjectImplement object) {
         applyFormChanges(clientBean.changeClass(object));
     }
-    
+
     void switchClassView(ClientGroupObjectImplement groupObject) {
         Boolean classView;
         classView = !models.get(groupObject).classView;
@@ -224,7 +228,34 @@ public class ClientForm extends JFrame {
     }
 
     void print() {
-        
+
+
+        JasperDesign Design = clientBean.formBean.GetReportDesign();
+        JasperReport Report = null;
+        try {
+            Report = JasperCompileManager.compileReport(Design);
+            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),clientBean.formBean.ReadData());
+
+            JRViewer Viewer = new JRViewer(Print);
+            JFrame DrawPrint = new JFrame("Report");
+            DrawPrint.getContentPane().add(Viewer);
+            DrawPrint.setSize(800,600);
+            DrawPrint.setVisible(true);
+            DrawPrint.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+/*
+            JRXlsExporter ToExcel = new JRXlsExporter();
+            ToExcel.setParameter(JRExporterParameter.JASPER_PRINT, Print);
+            ToExcel.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, "report.xls");
+            ToExcel.exportReport();
+*/
+        } catch (JRException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+//        JasperCompileManager.writeReportToXmlFile(Report,"report.xml");
+//        JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
     }
 
     void saveChanges() {

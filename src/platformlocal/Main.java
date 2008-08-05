@@ -389,8 +389,8 @@ class TestBusinessLogics extends BusinessLogics {
     }
 
     void InitNavigators() {
-        BaseGroup.AddChild(new TestNavigatorForm());
         BaseGroup.AddChild(new SimpleNavigatorForm());
+        BaseGroup.AddChild(new TestNavigatorForm());
     }
 }
 

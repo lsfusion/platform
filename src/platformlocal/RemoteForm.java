@@ -1330,7 +1330,6 @@ abstract class RemoteForm<T extends BusinessLogics> {
         Query.From = ij.next();
         while(ij.hasNext()) Query.From.Joins.add(ij.next());
 
-        Adapter.OutSelect(Query);
         List<Map<String,Object>> ResultSelect = Adapter.ExecuteSelect(Query);
         
         for(Map<String,Object> Row : ResultSelect) {
