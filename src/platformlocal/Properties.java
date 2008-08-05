@@ -542,7 +542,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         FromTable ChangedFrom = new FromTable(ChangeTable.Name);
         ChangedFrom.Wheres.add(new FieldValueWhere(Session.ID,ChangeTable.Session.Name));
         ChangedFrom.Wheres.add(new FieldValueWhere(ID,ChangeTable.Property.Name));
-        
+
         return ChangedFrom;
     }
     
