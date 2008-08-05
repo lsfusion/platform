@@ -202,10 +202,11 @@ class ClientFormView {
     List<ClientPropertyView> properties = new ArrayList();
     
     List<ClientContainerView> containers = new ArrayList();
-    
+
+    ClientFunctionView printView = new ClientFunctionView();
     ClientFunctionView applyView = new ClientFunctionView();
     ClientFunctionView cancelView = new ClientFunctionView();
-    
+
     List<ClientCellView> order = new ArrayList();
     
     public ClientFormView() {
@@ -233,7 +234,8 @@ class ClientFormBean {
     Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
     
     List<ClientCellView> listOrder = new ArrayList();
-    
+
+    ClientFunctionView printView;
     ClientFunctionView applyView;
     ClientFunctionView cancelView;
     
@@ -347,15 +349,20 @@ class ClientFormBean {
         formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         listContainers.add(formButtonContainer);
-        
+
+        printView = new ClientFunctionView();
+        printView.container = formButtonContainer;
+        printView.constraints.order = 0;
+        printView.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
+
         applyView = new ClientFunctionView();
         applyView.container = formButtonContainer;
-        applyView.constraints.order = 0;
+        applyView.constraints.order = 1;
         applyView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
 
         cancelView = new ClientFunctionView();
         cancelView.container = formButtonContainer;
-        cancelView.constraints.order = 1;
+        cancelView.constraints.order = 2;
         cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         
     }
@@ -459,7 +466,8 @@ class ClientFormBean {
             
         for (ClientCellView view : listOrder)
             formView.order.add(view);
-        
+
+        formView.printView = printView;
         formView.applyView = applyView;
         formView.cancelView = cancelView;
         

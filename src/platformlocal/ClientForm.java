@@ -39,27 +39,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -85,7 +66,7 @@ class SingleViewable<ViewClass> {
     ViewClass view;
 }
 
-public class ClientForm extends FrameView {
+public class ClientForm extends JFrame {
 
     String caption = "Hello World";
 
@@ -94,12 +75,12 @@ public class ClientForm extends FrameView {
     
     ClientFormBean clientBean;
             
-    public ClientForm(SingleFrameApplication app,RemoteForm RemoteForm) {
-        super(app);
+    public ClientForm(RemoteForm RemoteForm) {
+//        super(app);
         
         thisForm = this;
-        
-        getFrame().setTitle(caption);
+
+//        getFrame().setTitle(caption);
 
         
         try {
@@ -128,8 +109,9 @@ public class ClientForm extends FrameView {
         formView = clientBean.getClientFormView();
         
         formLayout = new FormLayout(formView.containers);
-        
-        setComponent(formLayout.getComponent());
+
+        setContentPane(formLayout.getComponent());
+//        setComponent(formLayout.getComponent());
 
         models = new HashMap();
         
@@ -140,7 +122,18 @@ public class ClientForm extends FrameView {
             models.put(groupObject, model);
             
         }
-        
+
+        JButton buttonPrint = new JButton("Печать");
+        buttonPrint.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                print();
+            }
+
+        });
+
+        formLayout.add(formView.printView, buttonPrint);
+
         JButton buttonApply = new JButton("Применить");
         buttonApply.addActionListener(new ActionListener() {
 
@@ -245,7 +238,11 @@ public class ClientForm extends FrameView {
         applyFormChanges(clientBean.changeClassView(groupObject,classView));
         models.get(groupObject).setClassView(classView);
     }
-    
+
+    void print() {
+        
+    }
+
     void saveChanges() {
         applyFormChanges(clientBean.saveChanges());
     }
