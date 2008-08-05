@@ -6,12 +6,10 @@
 package platformlocal;
 
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
 import java.awt.LayoutManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -261,7 +259,7 @@ class ClientFormBean {
         
         listContainers.add(mainContainer);
         
-        for (GroupObjectImplement group : (List<GroupObjectImplement>)formBean.Groups) {
+        for (GroupObjectImplement group : formBean.Groups) {
             
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             groupObjects.put(group, clientGroup);
@@ -325,7 +323,7 @@ class ClientFormBean {
             }
         }
         
-        for (PropertyView property : (List<PropertyView>)formBean.Properties) {
+        for (PropertyView property : formBean.Properties) {
             
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.groupObject = groupObjects.get(property.ToDraw);

@@ -30,30 +30,14 @@ import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import org.jdesktop.application.SingleFrameApplication;
 
+import javax.swing.*;
 
-public class Main extends SingleFrameApplication {
+
+public class Main {
     
     Class[] ClassList;
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-  
-        launch(Main.class, args);
-        
-        System.out.print(1<<0);
-//          java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver"); 
-//        java.lang.Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-//          Connection cn = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
-//        Connection cn = DriverManager.getConnection("jdbc:sqlserver://server:1433;User=sa;Password=");
-
-//        BusinessLogics t = new BusinessLogics();
-//        t.FullDBTest();
-        
-//        Test t = new Test();
-//        t.SimpleTest(null);
-    }
-
-    @Override
-    protected void startup() {
 
         try {
 
@@ -65,18 +49,23 @@ public class Main extends SingleFrameApplication {
 
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
             RemoteForm<TestBusinessLogics> Form = Navigator.CreateForm((NavigatorForm)Navigator.GetElements(null).get(0));
-            
+
 /*            Form.EndApply();
             FormData ReportData = Form.ReadData();
             ReportData.Out();
-            
+
             JasperDesign Design = Form.GetReportDesign();
             JasperReport Report = JasperCompileManager.compileReport(Design);
             JasperCompileManager.writeReportToXmlFile(Report,"report.xml");
             JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),ReportData);
             JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
 */
-           show(new ClientForm(this, Form));
+            JFrame form = new ClientForm(Form);
+            form.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            form.setSize(800, 600);
+            form.setVisible(true);
+            
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -88,7 +77,19 @@ public class Main extends SingleFrameApplication {
 //        } catch (JRException ex) {
 //            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+//          java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver");
+//        java.lang.Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+//          Connection cn = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+//        Connection cn = DriverManager.getConnection("jdbc:sqlserver://server:1433;User=sa;Password=");
+
+//        BusinessLogics t = new BusinessLogics();
+//        t.FullDBTest();
+        
+//        Test t = new Test();
+//        t.SimpleTest(null);
     }
+
 }
 
 
