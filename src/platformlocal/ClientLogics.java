@@ -259,7 +259,7 @@ class ClientFormBean {
         
         listContainers.add(mainContainer);
         
-        for (GroupObjectImplement group : formBean.Groups) {
+        for (GroupObjectImplement group : (List<GroupObjectImplement>)formBean.Groups) {
             
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             groupObjects.put(group, clientGroup);
@@ -323,7 +323,7 @@ class ClientFormBean {
             }
         }
         
-        for (PropertyView property : formBean.Properties) {
+        for (PropertyView property : (List<PropertyView>)formBean.Properties) {
             
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.groupObject = groupObjects.get(property.ToDraw);
