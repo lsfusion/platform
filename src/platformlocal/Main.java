@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -20,6 +21,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import org.jdesktop.application.SingleFrameApplication;
 
 
@@ -58,10 +66,17 @@ public class Main extends SingleFrameApplication {
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
             RemoteForm<TestBusinessLogics> Form = Navigator.CreateForm((NavigatorForm)Navigator.GetElements(null).get(0));
             
-            RemoteNavigator<TestBusinessLogics> SwitchNavigator = Form.CreateNavigator();
-            RemoteForm<TestBusinessLogics> SubForm = SwitchNavigator.CreateForm((NavigatorForm)SwitchNavigator.GetElements(null).get(0));
-
-            show(new ClientForm(this, SubForm));
+/*            Form.EndApply();
+            FormData ReportData = Form.ReadData();
+            ReportData.Out();
+            
+            JasperDesign Design = Form.GetReportDesign();
+            JasperReport Report = JasperCompileManager.compileReport(Design);
+            JasperCompileManager.writeReportToXmlFile(Report,"report.xml");
+            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),ReportData);
+            JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
+*/
+           show(new ClientForm(this, Form));
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -70,6 +85,8 @@ public class Main extends SingleFrameApplication {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (JRException ex) {
+//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
@@ -185,7 +202,7 @@ class TestBusinessLogics extends BusinessLogics {
         for(ObjectImplement Object : Params) {
             PropImpl.Mapping.put(i.next(),Object);
         }
-        fbv.Properties.add(new PropertyView(PropImpl,gv));
+        fbv.Properties.add(new PropertyView(fbv.IDShift(1),PropImpl,gv));
         return PropImpl;
     }
 
@@ -372,6 +389,7 @@ class TestBusinessLogics extends BusinessLogics {
 
     void InitNavigators() {
         BaseGroup.AddChild(new TestNavigatorForm());
+        BaseGroup.AddChild(new SimpleNavigatorForm());
     }
 }
 
@@ -383,16 +401,18 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     
 }
 
-
 class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
 
     // в EJB кто-то должен сказать где брать Adapter, а где BusinessLogics
     TestRemoteForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
         super(Adapter,BL);
 
-        ObjectImplement obj1 = new ObjectImplement();
-        ObjectImplement obj2 = new ObjectImplement();
-        ObjectImplement obj3 = new ObjectImplement();
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.ArticleGroup);
+        obj1.OutName = "группа товаров";
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
+        obj2.OutName = "товар";
+        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
+        obj3.OutName = "документ";
         
         GroupObjectImplement gv = new GroupObjectImplement();
         GroupObjectImplement gv2 = new GroupObjectImplement();
@@ -407,79 +427,85 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
         gv.GID = 1;
         gv2.GID = 2;
         gv3.GID = 3;
-
-        PropertyObjectImplement GrTovImpl=null;
-        PropertyObjectImplement NameImpl=null;
-        PropertyObjectImplement DateImpl=null;
         
-        Iterator<Property> ipr = BL.Properties.iterator();
-        while(ipr.hasNext()) {
-            Property DrawProp = ipr.next();
-            if(DrawProp.Interfaces.size() == 1 && DrawProp instanceof ObjectProperty) {
-                PropertyObjectImplement PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
-                PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj1);
-                Properties.add(new PropertyView(PropImpl,gv));
-                
-                PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
-                PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj2);
-                if(DrawProp.OutName.equals("гр. тов"))
-                    GrTovImpl = PropImpl;
-                Properties.add(new PropertyView(PropImpl,gv2));
-
-                PropImpl = new PropertyObjectImplement((ObjectProperty)DrawProp);
-                PropImpl.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),obj3);
-                if(DrawProp.OutName.equals("имя"))
-                    NameImpl = PropImpl;
-                if(DrawProp.OutName.equals("дата док."))
-                    DateImpl = PropImpl;
-                Properties.add(new PropertyView(PropImpl,gv3));
-            }
-        }
+        Set<String> Obj2Set = new HashSet();
+        Obj2Set.add("гр. тов");
+        Set<String> Obj3Set = new HashSet();
+        Obj3Set.add("имя");
+        Obj3Set.add("дата док.");
+        
+        BL.FillSingleViews(obj1,this,null);
+        Map<String,PropertyObjectImplement> Obj2Props = BL.FillSingleViews(obj2,this,Obj2Set);
+        Map<String,PropertyObjectImplement> Obj3Props = BL.FillSingleViews(obj3,this,Obj3Set);
         
         PropertyObjectImplement QImpl = BL.AddPropView(this,BL.Quantity,gv3,obj3,obj2);
         BL.AddPropView(this,BL.GP,gv3,obj3,obj2);
-
         BL.AddPropView(this,BL.PrihQuantity,gv3,obj3,obj2);
         BL.AddPropView(this,BL.RashQuantity,gv3,obj3,obj2);
         BL.AddPropView(this,BL.GSum,gv3,obj3,obj2);
         
-        GroupObjectValue ChangeValue;
-
-        obj1.OutName = "";
-        ChangeGridClass(obj1,BL.ArticleGroup.ID);
-        obj2.OutName = "";
-        ChangeGridClass(obj2,BL.Article.ID);
-        obj3.OutName = "";
-        ChangeGridClass(obj3,BL.Document.ID);
 //        fbv.AddObjectSeek(obj3,13);
-//        fbv.AddPropertySeek(NameImpl,"ПРОДУКТЫ");
+//        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
 
         AddFilter(new NotNullFilter(QImpl));
-        AddFilter(new CompareFilter(GrTovImpl,0,new ObjectValueLink(obj1)));
+        AddFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
         
 //        fbv.AddObjectSeek(obj3,13);
-//        fbv.AddPropertySeek(NameImpl,"ПРОДУКТЫ");
+//        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
 
-//        fbv.AddOrder(NameImpl);
-//        fbv.AddOrder(DateImpl);
+//        fbv.AddOrder(Obj3Props.get("имя"));
+//        fbv.AddOrder(Obj3Props.get("дата док."));
 
     }
 
 
     @Override
-    String GetReportDesign() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    Set<ObjectImplement> GetReportObjects() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    Set<GroupObjectImplement> GetReportObjects() {
+        return new HashSet();
     }
 
     ClientFormBean GetRichDesign() {
         return new ClientFormBean(this);
     }
 }
+
+class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
+    
+    RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
+        return new SimpleRemoteForm(Adapter,BL);
+    }
+    
+}
+
+class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
+
+    // в EJB кто-то должен сказать где брать Adapter, а где BusinessLogics
+    SimpleRemoteForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
+        super(Adapter,BL);
+
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
+        obj1.OutName = "товар";
+        
+        GroupObjectImplement gv = new GroupObjectImplement();
+
+        gv.add(obj1);
+        AddGroup(gv);
+        gv.GID = 1;
+
+        BL.FillSingleViews(obj1,this,null);
+    }
+
+
+    @Override
+    Set<GroupObjectImplement> GetReportObjects() {
+        return new HashSet();
+    }
+
+    ClientFormBean GetRichDesign() {
+        return new ClientFormBean(this);
+    }
+}
+
 class LP {
     LP(Property iProperty) {
         Property=iProperty;

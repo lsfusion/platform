@@ -826,6 +826,29 @@ abstract class BusinessLogics {
         return true;
     }
 
+    Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,RemoteForm Form,Set<String> Names) {
+        
+        Map<String,PropertyObjectImplement> Result = new HashMap();
+        
+        for(Property DrawProp : Properties) {
+            if(DrawProp.Interfaces.size() == 1 && DrawProp instanceof ObjectProperty) {
+                // проверим что дает хоть одно значение
+                InterfaceClass InterfaceClass = new InterfaceClass();
+                InterfaceClass.put(((Collection<PropertyInterface>)DrawProp.Interfaces).iterator().next(),Object.BaseClass);
+                if(DrawProp.GetValueClass(InterfaceClass)!=null) {
+                    PropertyObjectImplement PropertyImplement = new PropertyObjectImplement((ObjectProperty)DrawProp);
+                    PropertyImplement.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),Object);
+                    Form.Properties.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.GroupTo));
+                    
+                    if(Names!=null && Names.contains(DrawProp.OutName))
+                        Result.put(DrawProp.OutName,PropertyImplement);
+                }
+            }
+        }
+        
+        return Result;
+    }
+    
     // функционал по заполнению св-в по номерам, нужен для BL
     
     LDP AddDProp(Class Value,Class ...Params) {
