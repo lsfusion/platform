@@ -41,6 +41,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListSelectionModel;
@@ -58,6 +60,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -87,7 +90,7 @@ public class ClientForm extends FrameView {
     String caption = "Hello World";
 
     ClientForm thisForm;
-    ClientFormInit formInit;
+    ClientFormView formView;
     
     ClientFormBean clientBean;
             
@@ -122,15 +125,15 @@ public class ClientForm extends FrameView {
     
     public void initializeForm() {
 
-        formInit = clientBean.getClientFormInit();
+        formView = clientBean.getClientFormView();
         
-        formLayout = new FormLayout(formInit.containers);
+        formLayout = new FormLayout(formView.containers);
         
         setComponent(formLayout.getComponent());
 
         models = new HashMap();
         
-        for (ClientGroupObjectImplement groupObject : formInit.groupObjects) {
+        for (ClientGroupObjectImplement groupObject : formView.groupObjects) {
             
             GroupObjectModel model = new GroupObjectModel(groupObject);
   
@@ -138,8 +141,8 @@ public class ClientForm extends FrameView {
             
         }
         
-        JButton buttonSave = new JButton("Применить");
-        buttonSave.addActionListener(new ActionListener() {
+        JButton buttonApply = new JButton("Применить");
+        buttonApply.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 saveChanges();
@@ -147,6 +150,8 @@ public class ClientForm extends FrameView {
             
         });
 
+        formLayout.add(formView.applyView, buttonApply);
+                
         JButton buttonCancel = new JButton("Отменить");
         buttonCancel.addActionListener(new ActionListener() {
 
@@ -156,13 +161,8 @@ public class ClientForm extends FrameView {
             
         });
         
-        SimplexConstraints c = new SimplexConstraints();
-        c.order = 100001;
-        formLayout.getComponent().add(buttonSave, c);
+        formLayout.add(formView.cancelView, buttonCancel);
         
-        c = new SimplexConstraints();
-        c.order = 100002;
-        formLayout.getComponent().add(buttonCancel, c);
     }
     
 
@@ -210,16 +210,20 @@ public class ClientForm extends FrameView {
     }
     
     void changeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
+
+        long st = System.currentTimeMillis();
         
         if (!objectValue.equals(models.get(groupObject).getCurrentObject())) {
             
-            System.out.println("oldval : " + models.get(groupObject).getCurrentObject().toString());
+//            System.out.println("oldval : " + models.get(groupObject).getCurrentObject().toString());
             models.get(groupObject).setCurrentObject(objectValue, true);
-            System.out.println("newval : " + objectValue.toString());
+            System.out.println("Change Object - setCurrentObject : " + (System.currentTimeMillis()-st));
+//            System.out.println("newval : " + objectValue.toString());
 
             applyFormChanges(clientBean.changeObject(groupObject, objectValue));
         }
-        
+        System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
+
     }
     
     void changeProperty(ClientCellView property, Object value) {
@@ -264,45 +268,16 @@ public class ClientForm extends FrameView {
  
         public GroupObjectModel(ClientGroupObjectImplement igroupObject) {
             
-/*            setLayout(new GridBagLayout());
-            
-            GridBagConstraints c = new GridBagConstraints();
-            c.fill = GridBagConstraints.BOTH;
-            c.weightx = 1;
-            c.gridx = 0;
-            c.gridwidth = 2; */
-            
             groupObject = igroupObject;
 
             grid = new GridModel(groupObject.gridView);
             
-/*            c.weighty = 0.7;
-            add(grid, c);*/
-
             panel = new PanelModel();
-/*            c.weighty = 0.3;
-            add(panel, c);*/
 
             setClassView(true);
             
-/*            JButton test = new JButton("Test");
-            test.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    setClassView(!classView);
-                }
+            for (final ClientObjectImplement object : groupObject) {
                 
-            });
-            
-            add(test, c);*/
-            
-/*            for (final ClientObjectImplement object : groupObject) {
-                
-                c.gridwidth = 1;
-                c.weighty = 0;
-                c.gridy = 2;
-                
-                c.gridx = 0;
                 JButton buttonAdd = new JButton("Добавить(" + object.caption + ")");
                 buttonAdd.addActionListener(new ActionListener() {
 
@@ -312,9 +287,8 @@ public class ClientForm extends FrameView {
                     
                 });
                 
-                add(buttonAdd, c);
+                formLayout.add(groupObject.addView, buttonAdd);
                 
-                c.gridx = 1;
                 JButton buttonDel = new JButton("Удалить(" + object.caption + ")");
                 buttonDel.addActionListener(new ActionListener() {
 
@@ -324,8 +298,9 @@ public class ClientForm extends FrameView {
                     
                 });
                 
-                add(buttonDel, c);
-            }*/
+                formLayout.add(groupObject.delView, buttonDel);
+                
+            }
             
             
         }
@@ -575,10 +550,7 @@ public class ClientForm extends FrameView {
                     
                     view = new CellView();
                     
-                    SimplexConstraints c = new SimplexConstraints();
-                    c.order = formInit.order.indexOf(key);
-                    
-                    formLayout.add(key.container, view, c);
+                    formLayout.add(key, view);
                     
                 }
 
@@ -589,7 +561,7 @@ public class ClientForm extends FrameView {
                 }
 
                 private void removeView() {
-                    formLayout.remove(key.container, view);
+                    formLayout.remove(key, view);
                 }
 
                 class CellView extends JPanel {
@@ -608,9 +580,14 @@ public class ClientForm extends FrameView {
                         label = new JLabel(key.caption);
                         add(label);
 
+                        add(Box.createRigidArea(new Dimension(5,0)));
+                        
                         table = new CellTable();
+                        table.setBorder(BorderFactory.createLineBorder(Color.gray));
+                        
                         add(table);
 
+                        add(Box.createRigidArea(new Dimension(10,0)));
                     }
 
                     class CellTable extends SingleCellTable 
@@ -728,13 +705,13 @@ public class ClientForm extends FrameView {
             }
 
             private void addProperty(ClientPropertyView property) {
-                System.out.println("addProperty " + property.toString());
-                table.addColumn(property);
-                updateTable();
+//                System.out.println("addProperty " + property.toString());
+                if (table.addColumn(property))
+                    updateTable();
             }
             
             private void removeProperty(ClientPropertyView property) {
-                System.out.println("removeProperty " + property.toString());
+//                System.out.println("removeProperty " + property.toString());
                 if (table.removeColumn(property))
                     updateTable();
             }
@@ -773,25 +750,20 @@ public class ClientForm extends FrameView {
 
                 if (table.gridColumns.size() != 0) {
                     
-                    SimplexConstraints c = new SimplexConstraints();
-                    c.order = formInit.groupObjects.indexOf(groupObject);
-                    c.fillVertical = SimplexConstraints.MAXIMUM;
-                    c.fillHorizontal = SimplexConstraints.MAXIMUM;
-
-                    formLayout.add(view.container, pane, c);
+                    formLayout.add(view, pane);
 //                    if (!isAncestorOf(pane))
 //                        add(pane, paneConstraints);
 
-                    formLayout.getComponent().validate();
+//                    formLayout.getComponent().validate();
 //                    validate();
 
                 } else {
-                    formLayout.remove(view.container, pane);
+                    formLayout.remove(view, pane);
 //                    remove(pane);
 //                    table = new Table();
 //                    pane = new JScrollPane(table);
 //                    validate();
-                    formLayout.getComponent().validate();
+//                    formLayout.getComponent().validate();
                 }
                 
             }
@@ -827,19 +799,22 @@ public class ClientForm extends FrameView {
 
                 }
 
-                public void addColumn(ClientCellView property) {
+                public boolean addColumn(ClientCellView property) {
 
                     if (gridColumns.indexOf(property) == -1) {
                         Iterator<ClientCellView> icp = gridColumns.iterator();
 
                         // конечно кривова-то определять порядок по номеру в листе, но потом надо будет сделать по другому
-                        int ind = formInit.order.indexOf(property), ins = 0;
+                        int ind = formView.order.indexOf(property), ins = 0;
 
-                        while (icp.hasNext() && formInit.properties.indexOf(icp.next()) < ind) { ins++; }
+                        while (icp.hasNext() && formView.properties.indexOf(icp.next()) < ind) { ins++; }
 
                         gridColumns.add(ins, property);
 
-                    }
+                        return true;
+                        
+                    } else
+                        return false;
 
 
                 }
@@ -1002,27 +977,16 @@ public class ClientForm extends FrameView {
                 for (ClientContainerView container : containers) {
                     if ((container.container == null || contviews.containsKey(container.container)) && !contviews.containsKey(container)) {
                         
-                        ContainerView contview = new ContainerView();
+                        ContainerView contview = new ContainerView(container);
                         if (container.container == null) {
                             
                             mainContainer = contview;
                             
-                            SimplexConstraints c = new SimplexConstraints();
-                            c.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-                            
-                            globalLayout = new SimplexLayout(mainContainer, c);
+                            globalLayout = new SimplexLayout(mainContainer, container.constraints);
                             mainContainer.setLayout(globalLayout);
                         }
                         else {
-                            SimplexConstraints c = new SimplexConstraints();
-                            c.order = containers.indexOf(container);
-                            if (contviews.get(container.container) == mainContainer)
-                                c.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-                            else
-                                c.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
-                            c.fillHorizontal = SimplexConstraints.MAXIMUM;
-                            
-                            contviews.get(container.container).add(contview, c);
+                            contviews.get(container.container).add(contview, container.constraints);
                         }
                         contviews.put(container, contview);
                         found = true;
@@ -1039,23 +1003,29 @@ public class ClientForm extends FrameView {
             return mainContainer;
         }
 
-        private void add(ClientContainerView container, Component view, SimplexConstraints constraint) {
-/*            if (container == null)
-                add(view);
-            else*/
-            contviews.get(container).add(view, constraint);
+        private boolean add(ClientComponentView component, Component view) {
+            if (!contviews.get(component.container).isAncestorOf(view)) {
+                contviews.get(component.container).add(view, component.constraints);
+                return true;
+            } else
+                return false;
         }
 
-        private void remove(ClientContainerView container, Component view) {
-/*            if (container == null)
-                remove(view);
-            else*/
-            contviews.get(container).remove(view);
+        private boolean remove(ClientComponentView component, Component view) {
+           if (contviews.get(component.container).isAncestorOf(view)) {
+                contviews.get(component.container).remove(view);
+                return true;
+           } else
+                return false;
         }
         
         class ContainerView extends JPanel {
             
-            public ContainerView() {
+            ClientContainerView view;
+            
+            public ContainerView(ClientContainerView iview) {
+                
+                view = iview;
                 
                 setLayout(globalLayout);
                 
@@ -1063,6 +1033,7 @@ public class ClientForm extends FrameView {
 //                this.setBackground(new Color(rnd.nextInt(255),rnd.nextInt(255),rnd.nextInt(255)));
 //                setLayout(new SimplexLayout());
 //                setLayout(new FlowLayout());
+                setPreferredSize(new Dimension(10000, 10000));
             }
         }
     }

@@ -8,11 +8,16 @@ package platformlocal;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.LayoutManager2;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JScrollPane;
@@ -51,11 +56,13 @@ public class SimplexLayout implements LayoutManager2 {
             constraints.put(comp, (SimplexConstraints)constr);
         else
             constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
+        System.out.println("addLayoutComp");
     }
     
     public void removeLayoutComponent(Component comp) {
         components.remove(comp);
         constraints.remove(comp);
+        System.out.println("removeLayoutComp");
     }
 
     public Dimension preferredLayoutSize(Container parent) {
@@ -96,11 +103,16 @@ public class SimplexLayout implements LayoutManager2 {
 
             solver.setOutputfile("");
             
+//            solver.setBbDepthlimit(9);
+//           solver.setBbFloorfirst(0);
+//            solver.setBbRule(2);
+//            solver.setMipGap(true, 1000000);
+            int res = solver.solve();
             if (solver.solve() < 2) {
             
-                System.out.println("LP Solved : " + (System.currentTimeMillis()-st));
                 setComponentsBounds(solver.getPtrVariables());
             }
+            System.out.println("LP Solved - " + res + " : " + (System.currentTimeMillis()-st));
 
         } catch (LpSolveException ex) {
             Logger.getLogger(SimplexLayout.class.getName()).log(Level.SEVERE, null, ex);
@@ -182,31 +194,90 @@ public class SimplexLayout implements LayoutManager2 {
     private void fillInsideConstraint(LpSolve solver, Component comp) throws LpSolveException {
         
         if (components.indexOf(comp.getParent()) != -1)
-            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), infos.get(comp.getParent()));
+            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), infos.get(comp.getParent()), constraints.get(comp), constraints.get(comp.getParent()));
         else
-            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), targetInfo);
+            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), targetInfo, constraints.get(comp), constraints.get(targetInfo));
     }
 
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
 
         SimplexConstraints parentConstraints = constraints.get(parent);
+        
+        int maxVar = parentConstraints.maxVariables;
+        
+        int compCount = 0;
+        //упорядочиваем компоненты по их order'у
+        TreeMap<Integer, ArrayList<Component>> comporder = new TreeMap();
+        for (Component comp : components) 
+            if (comp.getParent() == parent) {
+                Integer order = constraints.get(comp).order;
+                ArrayList<Component> alc = comporder.get(order);
+                if (alc == null) alc = new ArrayList();
+                alc.add(comp);
+                comporder.put(order, alc);
+                compCount++;
+            }
+        
+        if (compCount < 2) return;
 
+        List<Component> order = new ArrayList();
+        
+        Map<Component, SimplexSolverDirections> vars = new HashMap();
+        
+        //бъем все компоненты на группы
+        int maxCol = (maxVar < 3) ? 1 : ((compCount - 1) / (maxVar - 1) + 1);
+
+        SimplexSolverDirections curDir = null;
+        int curRow = 0;
+        int curCol = 0;
+        
+        Iterator<Integer> it = comporder.navigableKeySet().iterator();
+        int curCount = 0;
+        while (it.hasNext()) {
+            
+            ArrayList<Component> complist = comporder.get(it.next());
+            
+            for (Component comp : complist) {
+                
+                if (curCol == 0 && maxCol > 1 && compCount - curCount > 1) 
+                    curDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
+                
+                order.add(comp);
+                vars.put(comp, curDir);
+                
+                curCount++;
+                curCol++;
+                if (curCol == maxCol) {
+                    curCol = 0;
+                    curRow++;
+                }
+            }
+        }
+        
+        SimplexSolverDirections globalDir = new SimplexSolverDirections(solver, parentConstraints.childConstraints.forbDir);
+        
         for (Component comp1 : components) 
             if (comp1.getParent() == parent)
                 for (Component comp2 : components)
-                    if (comp2.getParent() == parent && comp1 != comp2) {
+                    if (comp2.getParent() == parent && comp1 != comp2 && !constraints.get(comp2).containsKey(comp1)) {
                         
                         if (constraints.get(comp1).containsKey(comp2)) {
-                            constraints.get(comp1).get(comp2).fillConstraint(solver, infos.get(comp1), infos.get(comp2), null);
+                            constraints.get(comp1).get(comp2).fillConstraint(solver, infos.get(comp1), infos.get(comp2), constraints.get(comp1), constraints.get(comp2), null);
                         } else {
                             
-                            int order1 = constraints.get(comp1).order;
-                            int order2 = constraints.get(comp2).order;
+                            int order1 = order.indexOf(comp1);
+                            int order2 = order.indexOf(comp2);
+                            
+                            if (order1 > order2)
+                                continue;
 
-                            SimplexComponentInfo info1 = (order1 < order2) ? infos.get(comp1) : infos.get(comp2);
-                            SimplexComponentInfo info2 = (order1 < order2) ? infos.get(comp2) : infos.get(comp1);
+                            SimplexComponentInfo info1 = infos.get(comp1); //(order1 < order2) ? infos.get(comp1) : infos.get(comp2);
+                            SimplexComponentInfo info2 = infos.get(comp2); //(order1 < order2) ? infos.get(comp2) : infos.get(comp1);
 
-                            parentConstraints.childConstraints.fillConstraint(solver, info1, info2, null);
+                            SimplexSolverDirections dir = globalDir;
+                            if (vars.get(comp1) == vars.get(comp2) && vars.get(comp1) != null) dir = vars.get(comp1);
+                            
+                            parentConstraints.childConstraints.fillConstraint(solver, info1, info2, constraints.get(comp1), constraints.get(comp2), dir);
                         }
 
                     }
@@ -283,13 +354,15 @@ public class SimplexLayout implements LayoutManager2 {
                 objFnc.add(1.0);
             }
             
-//            objFnc.set(info.T, -0.01);
+            objFnc.set(info.T, -constraint.directions.T);
+            objFnc.set(info.L, -constraint.directions.L);
+            objFnc.set(info.B, constraint.directions.B);
+            objFnc.set(info.R, constraint.directions.R);
                     
-//            solver.setObjFnex(1, new double[] {-1}, new int[] {components.size()*4});
         }
         
-        objFnc.set(colmaxw, 10.0);
-        objFnc.set(colmaxh, 10.0);
+        objFnc.set(colmaxw, 5.0);
+        objFnc.set(colmaxh, 5.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)
@@ -339,12 +412,18 @@ class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstra
     public static final SimplexConstraints DEFAULT_CONSTRAINT = new SimplexConstraints();
     
     public DoNotIntersectSimplexConstraint childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+    public int maxVariables = 3;
 
     public static int MAXIMUM = 1;
     public static int PREFERRED = 0;
     
     public int fillVertical = PREFERRED;
     public int fillHorizontal = PREFERRED;
+
+    public Insets insetsSibling = new Insets(4,4,4,4);
+    public Insets insetsInside = new Insets(2,2,2,2);
+    
+    public SimplexComponentDirections directions = new SimplexComponentDirections(0.01,0.01,0,0);
     
     public SimplexConstraints() {
     }
@@ -355,7 +434,7 @@ abstract class SingleSimplexConstraint {
     
     public static final DoNotIntersectSimplexConstraint DO_NOT_INTERSECT = new DoNotIntersectSimplexConstraint();
     public static final IsInsideSimplexConstraint IS_INSIDE = new IsInsideSimplexConstraint();
-
+    
     public static final DoNotIntersectSimplexConstraint TOTHE_RIGHTBOTTOM = new DoNotIntersectSimplexConstraint(
                                                                    DoNotIntersectSimplexConstraint.LEFT |
                                                                    DoNotIntersectSimplexConstraint.TOP);
@@ -392,7 +471,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
         forbDir = iforbDir;
     }
     
-    public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexSolverDirections vars) throws LpSolveException {
+    public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2, SimplexSolverDirections vars) throws LpSolveException {
   
         if (vars == null)
             vars = new SimplexSolverDirections(solver, forbDir);
@@ -402,7 +481,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.L, comp1.L, comp2.R},
-                                    LpSolve.LE, MAXVALUE);
+                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.left);
         }
         
         //или находится правее
@@ -410,7 +489,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.R, comp2.L, comp1.R},
-                                    LpSolve.LE, MAXVALUE);
+                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.right);
         }
         
         //или находится выше
@@ -418,7 +497,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.T, comp1.T, comp2.B},
-                                    LpSolve.LE, MAXVALUE);
+                                    LpSolve.LE, MAXVALUE  - cons1.insetsSibling.top);
         }
         
         //или находится ниже
@@ -426,7 +505,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.B, comp2.T, comp1.B},
-                                    LpSolve.LE, MAXVALUE);
+                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.bottom);
         }
 
     }
@@ -453,7 +532,7 @@ class SimplexSolverDirections {
             varCount++;
             varList.add(startColumn + varCount);
             solver.addColumn(new double[0]);
-            solver.setInt(startColumn + varCount, true);
+            solver.setBinary(startColumn + varCount, true);
             L = startColumn + varCount;
         }
         
@@ -463,7 +542,7 @@ class SimplexSolverDirections {
             varCount++;
             varList.add(startColumn + varCount);
             solver.addColumn(new double[0]);
-            solver.setInt(startColumn + varCount, true);
+            solver.setBinary(startColumn + varCount, true);
             R = startColumn + varCount;
         }
         
@@ -473,7 +552,7 @@ class SimplexSolverDirections {
             varCount++;
             varList.add(startColumn + varCount);
             solver.addColumn(new double[0]);
-            solver.setInt(startColumn + varCount, true);
+            solver.setBinary(startColumn + varCount, true);
             T = startColumn + varCount;
         }
         
@@ -483,10 +562,13 @@ class SimplexSolverDirections {
             varCount++;
             varList.add(startColumn + varCount);
             solver.addColumn(new double[0]);
-            solver.setInt(startColumn + varCount, true);
+            solver.setBinary(startColumn + varCount, true);
             B = startColumn + varCount;
         }
 
+        if (varCount > 1)
+            System.out.println("LPSolve : addVariables - " + varCount);
+        
         //задаем базовое ограничение
         double[] coeffs = new double[varCount];
         int[] colns = new int[varCount];
@@ -503,19 +585,19 @@ class SimplexSolverDirections {
 class IsInsideSimplexConstraint extends SingleSimplexConstraint {
     
     
-    public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2) throws LpSolveException {
+    public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2) throws LpSolveException {
         
         // левый край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.L, comp2.L}, LpSolve.GE, 0);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.L, comp2.L}, LpSolve.GE, cons1.insetsInside.left);
 
         // правый край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.R, comp1.R}, LpSolve.GE, 0);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.R, comp1.R}, LpSolve.GE, cons1.insetsInside.right);
 
         // верхний край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.T, comp2.T}, LpSolve.GE, 0);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.T, comp2.T}, LpSolve.GE, cons1.insetsInside.top);
 
-        // правый край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.B, comp1.B}, LpSolve.GE, 0);
+        // нижний край
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.B, comp1.B}, LpSolve.GE, cons1.insetsInside.bottom);
         
     }
     
@@ -525,9 +607,27 @@ class IsInsideSimplexConstraint extends SingleSimplexConstraint {
 
 class SimplexComponentInfo {
 
-    int L;
     int T;
-    int R;
+    int L;
     int B;
+    int R;
 
+}
+
+class SimplexComponentDirections {
+    
+    double T;
+    double L;
+    double B;
+    double R;
+    
+    public SimplexComponentDirections(double iT, double iL, double iB, double iR) {
+        
+        T = iT;
+        L = iL;
+        B = iB;
+        R = iR;
+        
+    }
+    
 }

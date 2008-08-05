@@ -19,9 +19,9 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
 
     Integer GID = 0;
     
-    ClientGridView gridView;
-    ClientFunctionView addView;
-    ClientFunctionView delView;
+    ClientGridView gridView = new ClientGridView();
+    ClientFunctionView addView = new ClientFunctionView();
+    ClientFunctionView delView = new ClientFunctionView();
     
     @Override
     public boolean equals(Object o) {
@@ -36,9 +36,6 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
     }
     
     public ClientGroupObjectImplement() {
-        gridView = new ClientGridView();
-        addView = new ClientFunctionView();
-        delView = new ClientFunctionView();
     }
 }
 
@@ -72,17 +69,18 @@ class ClientObjectImplement {
  
     String caption = "";
     
-    ClientObjectView objectIDView;
+    ClientObjectView objectIDView = new ClientObjectView();
     
     public ClientObjectImplement() {
-        objectIDView = new ClientObjectView();
     }
 }
 
 class ClientComponentView {
     
     ClientContainerView container;
-    Object constraints;
+    SimplexConstraints constraints = new SimplexConstraints();
+ 
+    String outName = "";
     
 }
 
@@ -197,26 +195,20 @@ class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,C
 }
 
 
-class ClientFormInit {
+class ClientFormView {
     
-    List<ClientGroupObjectImplement> groupObjects;
-    List<ClientObjectImplement> objects;
-    List<ClientPropertyView> properties;
+    List<ClientGroupObjectImplement> groupObjects = new ArrayList();
+    List<ClientObjectImplement> objects = new ArrayList();
+    List<ClientPropertyView> properties = new ArrayList();
     
-    List<ClientContainerView> containers;
+    List<ClientContainerView> containers = new ArrayList();
     
-    List<ClientCellView> order;
+    ClientFunctionView applyView = new ClientFunctionView();
+    ClientFunctionView cancelView = new ClientFunctionView();
     
-    public ClientFormInit() {
-        
-        groupObjects = new ArrayList();
-        objects = new ArrayList();
-        properties = new ArrayList();
-        
-        containers = new ArrayList();
-        
-        order = new ArrayList();
-        
+    List<ClientCellView> order = new ArrayList();
+    
+    public ClientFormView() {
     }
 
 }
@@ -242,6 +234,9 @@ class ClientFormBean {
     
     List<ClientCellView> listOrder = new ArrayList();
     
+    ClientFunctionView applyView;
+    ClientFunctionView cancelView;
+    
     public ClientGroupObjectImplement client(GroupObjectImplement groupObject) {
         return groupObjects.get(groupObject);
     }
@@ -259,6 +254,9 @@ class ClientFormBean {
         formBean = iformBean;
         
         mainContainer = new ClientContainerView();
+        mainContainer.outName = "mainContainer";
+        mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+        
         listContainers.add(mainContainer);
         
         for (GroupObjectImplement group : (List<GroupObjectImplement>)formBean.Groups) {
@@ -268,22 +266,50 @@ class ClientFormBean {
             listGroups.add(clientGroup);
             
             ClientContainerView groupContainer = new ClientContainerView();
+            groupContainer.outName = "groupContainer " + group.get(0).OutName;
             groupContainer.container = mainContainer;
+            groupContainer.constraints.order = formBean.Groups.indexOf(group);
+            groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+            
             groupContainers.put(clientGroup, groupContainer);
             listContainers.add(groupContainer);
-            
-            clientGroup.gridView.container = groupContainer;
 
             ClientContainerView panelContainer = new ClientContainerView();
+            panelContainer.outName = "panelContainer " + group.get(0).OutName;
             panelContainer.container = groupContainer;
+            panelContainer.constraints.order = 1;
+            panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+      
             panelContainers.put(clientGroup, panelContainer);
             listContainers.add(panelContainer);
+            
+            ClientContainerView buttonContainer = new ClientContainerView();
+            buttonContainer.outName = "buttonContainer " + group.get(0).OutName;
+            buttonContainer.container = groupContainer;
+            buttonContainer.constraints.order = 2;
+            buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+            listContainers.add(buttonContainer);
+
+            clientGroup.gridView.container = groupContainer;
+            clientGroup.gridView.constraints.order = 0;
+            clientGroup.gridView.constraints.fillVertical = SimplexConstraints.MAXIMUM;
+            clientGroup.gridView.constraints.fillHorizontal = SimplexConstraints.MAXIMUM;
+
+            clientGroup.addView.container = buttonContainer;
+            clientGroup.addView.constraints.order = 0;
+            
+            clientGroup.delView.container = buttonContainer;
+            clientGroup.delView.constraints.order = 1;
             
             for (ObjectImplement object : group) {
 
                 ClientObjectImplement clientObject = new ClientObjectImplement();
                 clientObject.groupObject = clientGroup;
                 clientObject.objectIDView.groupObject = clientGroup;
+                
+                clientObject.objectIDView.container = panelContainer;
+                clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
                 
                 clientObject.caption = object.OutName;
                 clientObject.objectIDView.caption = object.OutName;
@@ -301,6 +327,7 @@ class ClientFormBean {
             
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.groupObject = groupObjects.get(property.ToDraw);
+            clientProperty.constraints.order = formBean.Properties.indexOf(property);
             
             //временно
             clientProperty.caption = property.View.Property.OutName;
@@ -313,6 +340,23 @@ class ClientFormBean {
             
             listOrder.add(clientProperty);
         }
+        
+        ClientContainerView formButtonContainer = new ClientContainerView();
+        formButtonContainer.container = mainContainer;
+        formButtonContainer.constraints.order = formBean.Groups.size();
+        formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+        listContainers.add(formButtonContainer);
+        
+        applyView = new ClientFunctionView();
+        applyView.container = formButtonContainer;
+        applyView.constraints.order = 0;
+        applyView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
+        cancelView = new ClientFunctionView();
+        cancelView.container = formButtonContainer;
+        cancelView.constraints.order = 1;
+        cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         
     }
 
@@ -397,26 +441,29 @@ class ClientFormBean {
     
     }
     
-    public ClientFormInit getClientFormInit() {
+    public ClientFormView getClientFormView() {
         
-        ClientFormInit formInit = new ClientFormInit();
+        ClientFormView formView = new ClientFormView();
   
         for (ClientGroupObjectImplement groupObject : listGroups)
-            formInit.groupObjects.add(groupObject);
+            formView.groupObjects.add(groupObject);
         
         for (ClientObjectImplement object : listObjects)
-            formInit.objects.add(object);
+            formView.objects.add(object);
             
         for (ClientPropertyView property : listProperties)
-            formInit.properties.add(property);
+            formView.properties.add(property);
 
         for (ClientContainerView container : listContainers)
-            formInit.containers.add(container);
+            formView.containers.add(container);
             
         for (ClientCellView view : listOrder)
-            formInit.order.add(view);
+            formView.order.add(view);
         
-        return formInit;
+        formView.applyView = applyView;
+        formView.cancelView = cancelView;
+        
+        return formView;
         
     }
 
