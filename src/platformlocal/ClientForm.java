@@ -44,6 +44,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
+import bibliothek.gui.dock.DefaultDockable;
+
 interface ClientCellViewTable {
 
     ClientCellView getCellView(int row, int col);
@@ -237,11 +239,12 @@ public class ClientForm extends JFrame {
             JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),clientBean.formBean.ReadData());
 
             JRViewer Viewer = new JRViewer(Print);
-            JFrame DrawPrint = new JFrame("Report");
+            Main.Layout.DefaultStation.drop(new DefaultDockable(Viewer,"Report"));
+/*            JFrame DrawPrint = new JFrame("Report");
             DrawPrint.getContentPane().add(Viewer);
             DrawPrint.setSize(800,600);
             DrawPrint.setVisible(true);
-            DrawPrint.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            DrawPrint.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);*/
 
 /*
             JRXlsExporter ToExcel = new JRXlsExporter();

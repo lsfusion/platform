@@ -5,7 +5,9 @@
 
 package platformlocal;
 
-import java.awt.GridBagConstraints;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -32,10 +34,22 @@ import org.jdesktop.application.SingleFrameApplication;
 
 import javax.swing.*;
 
+import bibliothek.gui.*;
+import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
+import bibliothek.gui.dock.*;
+import bibliothek.gui.dock.control.SingleParentRemover;
+import bibliothek.gui.dock.station.stack.StackDockProperty;
+import bibliothek.gui.dock.layout.DockableProperty;
+import bibliothek.gui.dock.themes.ThemeFactory;
+
 
 public class Main {
     
     Class[] ClassList;
+
+    static RemoteNavigator Navigator;
+
+    static Layout Layout;
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
@@ -47,25 +61,24 @@ public class Main {
             BL.FillDB(Adapter);
             BL.FillData(Adapter);
 
+            // базовый навигатор
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
-            RemoteForm<TestBusinessLogics> Form = Navigator.CreateForm((NavigatorForm)Navigator.GetElements(null).get(0));
 
-/*            Form.EndApply();
-            FormData ReportData = Form.ReadData();
-            ReportData.Out();
+            Layout = new Layout(Navigator);
 
-            JasperDesign Design = Form.GetReportDesign();
-            JasperReport Report = JasperCompileManager.compileReport(Design);
-            JasperCompileManager.writeReportToXmlFile(Report,"report.xml");
-            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),ReportData);
-            JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
-*/
-            JFrame form = new ClientForm(Form);
-            form.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            if(!Layout.Loaded) {
+                RemoteForm<TestBusinessLogics> Form;
+                Form = Navigator.CreateForm(((NavigatorForm)Navigator.GetElements(null).get(0)).ID);
+                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 1"));
 
-            form.setSize(800, 600);
-            form.setVisible(true);
-            
+                Form = Navigator.CreateForm(((NavigatorForm)Navigator.GetElements(null).get(1)).ID);
+                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"));
+            }
+//            Frontend.add(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),"Forn 2");
+//            Rectangle Bounds = new Rectangle(300,400);
+//            ScreenStation.addDockable(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),Bounds);
+
+            Layout.setVisible(true);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -89,11 +102,9 @@ public class Main {
 //        Test t = new Test();
 //        t.SimpleTest(null);
     }
-
 }
 
-
-class TestBusinessLogics extends BusinessLogics {
+class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     // заполняет тестовую базу
     void FillData(DataAdapter ad) throws SQLException {
@@ -389,13 +400,15 @@ class TestBusinessLogics extends BusinessLogics {
     }
 
     void InitNavigators() {
-        BaseGroup.AddChild(new SimpleNavigatorForm());
-        BaseGroup.AddChild(new TestNavigatorForm());
+        BaseGroup.AddChild(new TestNavigatorForm(1));
+        BaseGroup.AddChild(new SimpleNavigatorForm(2));
     }
 }
 
 class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
-    
+
+    TestNavigatorForm(int iID) {super(iID);}
+
     RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
         return new TestRemoteForm(Adapter,BL);
     }
@@ -471,7 +484,9 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
 }
 
 class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
-    
+
+    SimpleNavigatorForm(int iID) {super(iID);}
+
     RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
         return new SimpleRemoteForm(Adapter,BL);
     }

@@ -509,7 +509,7 @@ class PropertyValueLink extends ValueLink {
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-abstract class RemoteForm<T extends BusinessLogics> {
+abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     T BL;
 

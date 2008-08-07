@@ -485,7 +485,7 @@ class TableFactory extends TableImplement{
     }
 }
 
-abstract class BusinessLogics {
+abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     BusinessLogics() {
         BaseClass = new ObjectClass(0);
@@ -508,7 +508,7 @@ abstract class BusinessLogics {
             TableFactory.IncludeIntoGraph(Include);
         }         
         
-        BaseGroup = new NavigatorGroup();
+        BaseGroup = new NavigatorGroup<T>();
         
         InitLogics();
         InitImplements();
@@ -536,7 +536,7 @@ abstract class BusinessLogics {
         InitIndexes();
     }
 
-    NavigatorGroup BaseGroup;
+    NavigatorGroup<T> BaseGroup;
     
     abstract void InitNavigators();
     

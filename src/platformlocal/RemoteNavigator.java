@@ -15,7 +15,7 @@ import java.util.Map;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics> {
+public class RemoteNavigator<T extends BusinessLogics<T>> {
     
     DataAdapter Adapter;
     T BL;
@@ -35,31 +35,54 @@ public class RemoteNavigator<T extends BusinessLogics> {
         return new ArrayList(Group.Childs);
     }
     
-    RemoteForm<T> CreateForm(NavigatorForm<T> Form) throws SQLException {
-        // инстанцирует форму (нужна ), проставляет объекты, но неясно
+    RemoteForm<T> CreateForm(int FormID) throws SQLException {
 
-        return Form.CreateForm(Adapter,BL);
+        // инстанцирует форму
+        return BL.BaseGroup.CreateFormID(FormID,Adapter,BL);
     }
 }
 
 // создаются в бизнес-логике
 
-abstract class NavigatorElement {
+abstract class NavigatorElement<T extends BusinessLogics<T>> {
+
+    // пока так потом может через Map
+    abstract RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException;
 }
 
-class NavigatorGroup extends NavigatorElement {
+class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     
     NavigatorGroup() {
         Childs = new ArrayList();
     }
     
-    void AddChild(NavigatorElement Child) {
+    void AddChild(NavigatorElement<T> Child) {
         Childs.add(Child);
     }
     
-    Collection<NavigatorElement> Childs;
+    Collection<NavigatorElement<T>> Childs;
+
+    RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException {
+        for(NavigatorElement<T> Child : Childs) {
+            RemoteForm<T> Form = Child.CreateFormID(FormID,Adapter,BL);
+            if(Form!=null) return Form;
+        }
+
+        return null;
+    }
 }
 
-abstract class NavigatorForm<T extends BusinessLogics> extends NavigatorElement {
+abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
+
+    int ID;
+    NavigatorForm(int iID) {ID=iID;}
+
+    RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException {
+        if(FormID==ID)
+            return CreateForm(Adapter,BL);
+        else
+            return null;
+    }
+
     abstract RemoteForm<T> CreateForm(DataAdapter Adapter,T BL) throws SQLException;
 }
