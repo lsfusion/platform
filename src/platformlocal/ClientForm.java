@@ -61,33 +61,24 @@ public class ClientForm extends JFrame {
     String caption = "Hello World";
 
     ClientForm thisForm;
+
     ClientFormView formView;
 
-    ClientFormBean clientBean;
+    RemoteForm remoteForm;
 
-    public ClientForm(RemoteForm RemoteForm) {
+    public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
+
+        remoteForm = iremoteForm;
 
         thisForm = this;
 
 //        getFrame().setTitle(caption);
 
+        formView = remoteForm.GetRichDesign();
+        initializeForm();
 
-        try {
-
-            FormChanges StartChanges;
-            StartChanges = RemoteForm.EndApply();
-            StartChanges.Out(RemoteForm);
-
-            clientBean = RemoteForm.GetRichDesign();
-
-            initializeForm();
-
-            applyFormChanges(clientBean.convertFormChangesToClient(StartChanges));
-
-        } catch (SQLException ex) {
-            Logger.getLogger(ClientForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        applyFormChanges();
     }
 
     FormLayout formLayout;
@@ -95,8 +86,6 @@ public class ClientForm extends JFrame {
     Map<ClientGroupObjectImplement, GroupObjectModel> models;
 
     public void initializeForm() {
-
-        formView = clientBean.getClientFormView();
 
         formLayout = new FormLayout(formView.containers);
 
@@ -148,6 +137,15 @@ public class ClientForm extends JFrame {
 
     }
 
+    void applyFormChanges() {
+
+        try {
+            applyFormChanges(ByteArraySerializer.deserializeClientFormChanges(remoteForm.EndApply().serialize(), formView));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     void applyFormChanges(ClientFormChanges formChanges) {
 
@@ -203,40 +201,71 @@ public class ClientForm extends JFrame {
             System.out.println("Change Object - setCurrentObject : " + (System.currentTimeMillis()-st));
 //            System.out.println("newval : " + objectValue.toString());
 
-            applyFormChanges(clientBean.changeObject(groupObject, objectValue));
+            try {
+                remoteForm.ChangeObject(groupObject.GID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            applyFormChanges();
         }
         System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
 
     }
 
     void changeProperty(ClientCellView property, Object value) {
-        if (property instanceof ClientPropertyView) // типа только если меняется свойство
-            applyFormChanges(clientBean.changeProperty((ClientPropertyView)property, value));
+        if (property instanceof ClientPropertyView) {
+            // типа только если меняется свойство
+            try {
+                remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObjectValue(value));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            applyFormChanges();
+        }
     }
 
     void addObject(ClientObjectImplement object) {
-        applyFormChanges(clientBean.addObject(object));
+        try {
+            remoteForm.AddObject(object.ID);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        applyFormChanges();
     }
 
-    void changeClass(ClientObjectImplement object) {
-        applyFormChanges(clientBean.changeClass(object));
+    void changeGridClass(ClientObjectImplement object) {
+        try {
+            remoteForm.ChangeGridClass(object.ID, null);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        applyFormChanges();
     }
 
     void switchClassView(ClientGroupObjectImplement groupObject) {
+
         Boolean classView;
         classView = !models.get(groupObject).classView;
-        applyFormChanges(clientBean.changeClassView(groupObject,classView));
+
+        try {
+            remoteForm.ChangeClassView(groupObject.GID, classView);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        applyFormChanges();
+
         models.get(groupObject).setClassView(classView);
     }
 
     void print() {
 
 
-        JasperDesign Design = clientBean.formBean.GetReportDesign();
+        JasperDesign Design = remoteForm.GetReportDesign();
         JasperReport Report = null;
         try {
             Report = JasperCompileManager.compileReport(Design);
-            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),clientBean.formBean.ReadData());
+            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),remoteForm.ReadData());
 
             JRViewer Viewer = new JRViewer(Print);
             Main.Layout.DefaultStation.drop(new DefaultDockable(Viewer,"Report"));
@@ -262,53 +291,59 @@ public class ClientForm extends JFrame {
     }
 
     void saveChanges() {
-        applyFormChanges(clientBean.saveChanges());
+        try {
+            remoteForm.SaveChanges();
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        applyFormChanges();
     }
 
     void cancelChanges() {
-        applyFormChanges(clientBean.cancelChanges());
+        remoteForm.CancelChanges();
+        applyFormChanges();
     }
-    
+
     class GroupObjectModel {
-        
+
         ClientGroupObjectImplement groupObject;
-        
+
         PanelModel panel;
         GridModel grid;
-        
+
         ClientGroupObjectValue currentObject;
         ClientPropertyView currentProperty;
-        
+
         Boolean classView = false;
- 
+
         public GroupObjectModel(ClientGroupObjectImplement igroupObject) {
-            
+
             groupObject = igroupObject;
 
             grid = new GridModel(groupObject.gridView);
-            
+
             panel = new PanelModel();
 
             setClassView(true);
-            
+
             for (final ClientObjectImplement object : groupObject) {
-                
+
                 JButton buttonAdd = new JButton("Добавить(" + object.caption + ")");
                 buttonAdd.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
                         addObject(object);
                     }
-                    
+
                 });
-                
+
                 formLayout.add(groupObject.addView, buttonAdd);
-                
+
                 JButton buttonDel = new JButton("Удалить(" + object.caption + ")");
                 buttonDel.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        changeClass(object);
+                        changeGridClass(object);
                     }
                     
                 });

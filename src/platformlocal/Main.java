@@ -23,6 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperExportManager;
@@ -52,6 +56,15 @@ public class Main {
     static Layout Layout;
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+
+/*        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        try {
+            outStream.write(new byte[] {-32, 34, 32, 13});
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray());*/
+
 
         try {
 
@@ -478,9 +491,6 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
         return new HashSet();
     }
 
-    ClientFormBean GetRichDesign() {
-        return new ClientFormBean(this);
-    }
 }
 
 class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
@@ -517,9 +527,6 @@ class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
         return new HashSet();
     }
 
-    ClientFormBean GetRichDesign() {
-        return new ClientFormBean(this);
-    }
 }
 
 class LP {

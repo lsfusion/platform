@@ -21,6 +21,7 @@ import java.util.Set;
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -295,7 +296,13 @@ class AbstractFormChanges<T,V,Z> {
 // класс в котором лежит какие изменения произошли
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue,PropertyView> {
-   
+
+    byte[] serialize() {
+
+        return ByteArraySerializer.serializeFormChanges(this);
+
+    }
+
     void Out(RemoteForm bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
         for(GroupObjectImplement Group : (List<GroupObjectImplement>)bv.Groups) {
@@ -558,6 +565,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     DataAdapter Adapter;
 
     // это будут Bean'овские интерфейсы
+
+    //сначала фасад
+    public void ChangeObject(Integer groupID, byte[] value) throws SQLException {
+        for (GroupObjectImplement groupObject : Groups)
+            if (groupObject.GID == groupID) {
+                ChangeObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
+            }
+    }
+
     public void ChangeObject(GroupObjectImplement Group,GroupObjectValue Value) throws SQLException {
         // проставим все объектам метки изменений
         for(ObjectImplement Object : Group) {
@@ -578,6 +594,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             }
         }
     }
+
+    public void ChangeGridClass(Integer objectID, Integer idClass) throws SQLException {
+        for (GroupObjectImplement groupObject : Groups)
+            for (ObjectImplement object : groupObject)
+                if (object.ID == objectID)
+                    ChangeGridClass(object, idClass);
+    }
+
     public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {    
         Class GridClass = BL.BaseClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
@@ -587,7 +611,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         // помечаем что в группе изменися класс одного из объектов
         Object.GroupTo.Updated = Object.GroupTo.Updated | (1<<3);
     }
-    
+
+    public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
+        for (GroupObjectImplement groupObject : Groups)
+            if (groupObject.GID == groupID) {
+                ChangeClassView(groupObject, show);
+            }
+    }
+
     public void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
         if(Group.GridClassView==Show) return;
         Group.GridClassView = Show;
@@ -612,7 +643,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     
     // пометка что изменилось св-во
     boolean DataChanged = false;
-    
+
     public void ChangeProperty(PropertyObjectImplement Property,Object Value) throws SQLException {
         
         ObjectProperty ChangeProperty = Property.Property;
@@ -628,8 +659,22 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         DataChanged = true;
     }
 
+    public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
+        for (PropertyView property : Properties)
+            if (property.ID == propertyID) {
+                ChangePropertyView(property, ByteArraySerializer.deserializeObjectValue(object));
+            }
+    }
+
     public void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
         ChangeProperty(Property.View,Value);
+    }
+
+    public void AddObject(Integer objectID) throws SQLException {
+        for (GroupObjectImplement groupObject : Groups)
+            for (ObjectImplement object : groupObject)
+                if (object.ID == objectID)
+                    AddObject(object);
     }
 
     public void AddObject(ObjectImplement Object) throws SQLException {
@@ -1283,7 +1328,143 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         return Result;
     }
 
-    abstract ClientFormBean GetRichDesign();
+    public ClientFormView GetRichDesign() {
+        return createDefaultClientForm();
+    }
+
+    protected ClientFormView createDefaultClientForm() {
+
+        ClientFormView formView = new ClientFormView();
+
+        ClientContainerView mainContainer = new ClientContainerView();
+        mainContainer.outName = "mainContainer";
+        mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+
+        formView.containers.add(mainContainer);
+
+        Map<GroupObjectImplement, ClientGroupObjectImplement> groupObjects = new HashMap();
+        Map<ObjectImplement, ClientObjectImplement> objects = new HashMap();
+        Map<PropertyView, ClientPropertyView> properties = new HashMap();
+        Map<GroupObjectValue, ClientGroupObjectValue> objectValues = new HashMap();
+
+        Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
+        Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
+
+        for (GroupObjectImplement group : (List<GroupObjectImplement>)Groups) {
+
+            ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
+            clientGroup.GID = group.GID;
+
+            groupObjects.put(group, clientGroup);
+            formView.groupObjects.add(clientGroup);
+
+            ClientContainerView groupContainer = new ClientContainerView();
+            groupContainer.outName = "groupContainer " + group.get(0).OutName;
+            groupContainer.container = mainContainer;
+            groupContainer.constraints.order = Groups.indexOf(group);
+            groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+
+            groupContainers.put(clientGroup, groupContainer);
+            formView.containers.add(groupContainer);
+
+            ClientContainerView panelContainer = new ClientContainerView();
+            panelContainer.outName = "panelContainer " + group.get(0).OutName;
+            panelContainer.container = groupContainer;
+            panelContainer.constraints.order = 1;
+            panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+
+            panelContainers.put(clientGroup, panelContainer);
+            formView.containers.add(panelContainer);
+
+            ClientContainerView buttonContainer = new ClientContainerView();
+            buttonContainer.outName = "buttonContainer " + group.get(0).OutName;
+            buttonContainer.container = groupContainer;
+            buttonContainer.constraints.order = 2;
+            buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+            formView.containers.add(buttonContainer);
+
+            clientGroup.gridView.container = groupContainer;
+            clientGroup.gridView.constraints.order = 0;
+            clientGroup.gridView.constraints.fillVertical = SimplexConstraints.MAXIMUM;
+            clientGroup.gridView.constraints.fillHorizontal = SimplexConstraints.MAXIMUM;
+
+            clientGroup.addView.container = buttonContainer;
+            clientGroup.addView.constraints.order = 0;
+
+            clientGroup.delView.container = buttonContainer;
+            clientGroup.delView.constraints.order = 1;
+
+            for (ObjectImplement object : group) {
+
+                ClientObjectImplement clientObject = new ClientObjectImplement();
+                clientObject.ID = object.ID;
+                clientObject.groupObject = clientGroup;
+                clientObject.objectIDView.groupObject = clientGroup;
+
+                clientObject.objectIDView.container = panelContainer;
+                clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
+
+                clientObject.caption = object.OutName;
+                clientObject.objectIDView.caption = object.OutName;
+
+                clientGroup.add(clientObject);
+
+                objects.put(object, clientObject);
+                formView.objects.add(clientObject);
+
+                formView.order.add(clientObject.objectIDView);
+            }
+        }
+
+        for (PropertyView property : (List<PropertyView>)Properties) {
+
+            ClientPropertyView clientProperty = new ClientPropertyView();
+            clientProperty.ID = property.ID;
+            
+            clientProperty.groupObject = groupObjects.get(property.ToDraw);
+            clientProperty.constraints.order = Properties.indexOf(property);
+
+            //временно
+            clientProperty.caption = property.View.Property.OutName;
+            clientProperty.type = property.View.Property.GetDBType();
+
+            properties.put(property, clientProperty);
+            formView.properties.add(clientProperty);
+
+            clientProperty.container = panelContainers.get(clientProperty.groupObject);
+
+            formView.order.add(clientProperty);
+        }
+
+        ClientContainerView formButtonContainer = new ClientContainerView();
+        formButtonContainer.container = mainContainer;
+        formButtonContainer.constraints.order = Groups.size();
+        formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+        formView.containers.add(formButtonContainer);
+
+        ClientFunctionView printView = new ClientFunctionView();
+        printView.container = formButtonContainer;
+        printView.constraints.order = 0;
+        printView.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
+        formView.printView = printView;
+
+        ClientFunctionView applyView = new ClientFunctionView();
+        applyView.container = formButtonContainer;
+        applyView.constraints.order = 1;
+        applyView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+        formView.applyView = applyView;
+
+        ClientFunctionView cancelView = new ClientFunctionView();
+        cancelView.container = formButtonContainer;
+        cancelView.constraints.order = 2;
+        cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+        formView.cancelView = cancelView;
+
+        return formView;
+        
+    }
 
     // считывает все данные (для отчета)
     FormData ReadData() throws SQLException {
