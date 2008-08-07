@@ -9,13 +9,7 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.view.JRViewer;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -56,7 +50,7 @@ class SingleViewable<ViewClass> {
     ViewClass view;
 }
 
-public class ClientForm extends JFrame {
+public class ClientForm extends Container {
 
     String caption = "Hello World";
 
@@ -89,7 +83,9 @@ public class ClientForm extends JFrame {
 
         formLayout = new FormLayout(formView.containers);
 
-        setContentPane(formLayout.getComponent());
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(formLayout.getComponent());
+//        setContentPane(formLayout.getComponent());
 //        setComponent(formLayout.getComponent());
 
         models = new HashMap();

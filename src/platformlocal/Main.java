@@ -82,10 +82,10 @@ public class Main {
             if(!Layout.Loaded) {
                 RemoteForm<TestBusinessLogics> Form;
                 Form = Navigator.CreateForm(((NavigatorForm)Navigator.GetElements(null).get(0)).ID);
-                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 1"));
+                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)),"Form 1"));
 
                 Form = Navigator.CreateForm(((NavigatorForm)Navigator.GetElements(null).get(1)).ID);
-                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"));
+                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)),"Form 2"));
             }
 //            Frontend.add(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),"Forn 2");
 //            Rectangle Bounds = new Rectangle(300,400);

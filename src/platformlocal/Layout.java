@@ -135,7 +135,7 @@ class ClientFormDockable extends DefaultDockable {
     void setFormID(int iFormID) throws SQLException {
 
         if(ActiveComponent!=null) remove(ActiveComponent);
-        ActiveComponent = (new ClientForm(Navigator.CreateForm(FormID))).getContentPane();
+        ActiveComponent = (new ClientForm(Navigator.CreateForm(FormID)));
         add(ActiveComponent);
     }
 }
