@@ -1,10 +1,9 @@
 package platformlocal;
 
-import bibliothek.gui.DockStation;
-import bibliothek.gui.DockController;
-import bibliothek.gui.Dockable;
-import bibliothek.gui.DockFrontend;
+import bibliothek.gui.*;
 import bibliothek.gui.dock.*;
+import bibliothek.gui.dock.themes.ThemeFactory;
+import bibliothek.gui.dock.util.IconManager;
 import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
 import bibliothek.gui.dock.action.actions.SimpleButtonAction;
 import bibliothek.gui.dock.action.LocationHint;
@@ -18,13 +17,14 @@ import bibliothek.util.xml.XElement;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowAdapter;
+import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.*;
+
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.view.JRViewer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,6 +39,7 @@ class Layout extends JFrame {
 
     Map<String,DockStation> RootStations = new HashMap();
 
+    DockFrontend Frontend;
     PredefinedDockSituation Situation;
 
     Layout(RemoteNavigator Navigator) {
@@ -46,7 +47,9 @@ class Layout extends JFrame {
         setSize(800, 600);
         setVisible(true);
 
-        DockController Controller = new DockController();
+        Frontend = new DockFrontend();
+        DockController Controller = Frontend.getController();
+//        DockController Controller = new DockController();
 
         // делает чтобы не удалялась основная StackForm'а
         Controller.setSingleParentRemover(new SingleParentRemover() {
@@ -62,6 +65,8 @@ class Layout extends JFrame {
                 return super.react(dockable);
             }
         });
+        // добавим закрытие форм
+        Controller.addActionGuard(new LayoutActionGuard(Controller));
 
         SplitDockStation SplitStation = new SplitDockStation();
         FlapDockStation FlapStation = new FlapDockStation();
@@ -69,31 +74,40 @@ class Layout extends JFrame {
         // the station has to be registered
         add(SplitStation, BorderLayout.CENTER);
         add(FlapStation.getComponent(),BorderLayout.NORTH);
-        Controller.add(FlapStation);
-        Controller.add(SplitStation);
+
+//        Controller.add(FlapStation);
+//        Controller.add(SplitStation);
+//        RootStations.put("Flap",FlapStation);
+//        RootStations.put("Split",SplitStation);
+        Frontend.addRoot(FlapStation,"Flap");
+        Frontend.addRoot(SplitStation,"Split");
 
         DefaultStation = StackStation;
+        
         NavigatorDockable NavigatorForm = new NavigatorDockable(Navigator);
+        // нужно обязательно до Drop чтобы появились крестики
+        Frontend.add(NavigatorForm,"Navigator");
         SplitStation.drop(NavigatorForm);
+        // нужно включить в FrontEnd чтобы была predefined и новые формы могли бы туда же попадать
+        Frontend.add(StackStation,"Stack");
+        Frontend.setHideable(StackStation,false);
         SplitStation.drop(StackStation);
 
-        RootStations.put("Flap",FlapStation);
-        RootStations.put("Split",SplitStation);
-
-        Situation = new PredefinedDockSituation();
+        Frontend.registerFactory(new ClientFormFactory(Navigator));
+/*        Situation = new PredefinedDockSituation();
         Situation.add(new ClientFormFactory(Navigator));
 
         Situation.put("Flap",FlapStation);
         Situation.put("Split",SplitStation);
         Situation.put("Stack",StackStation);
         Situation.put("Navigator",NavigatorForm);
-
-
+  */
         try {
             FileInputStream Source = new FileInputStream("layout.txt");
             DataInputStream in = new DataInputStream(Source);
 
-            Situation.read(in);
+//            Situation.read(in);
+            Frontend.read(in);
             Source.close();
         } catch (IOException e) {
             Loaded = false;
@@ -106,32 +120,26 @@ class Layout extends JFrame {
                 try {
                     FileOutputStream Source = new FileOutputStream("layout.txt");
                     DataOutputStream out = new DataOutputStream(Source);
-                    Situation.write(RootStations,out);
+//                    Situation.write(RootStations,out);
+                    Frontend.write(out);
                     Source.close();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
         });
-
-        // создадим действие закрытия Dockable'а
-//        CloseAction Close = new CloseAction();
-//        DefaultDockActionSource Source = new DefaultDockActionSource(
-//                new LocationHint(LocationHint.DOCKABLE,LocationHint.RIGHT_OF_ALL));
-//        Source.add(Close);
-
     }
 
     // для теста
     boolean Loaded = true;
-
 }
 
 class CloseAction extends SimpleButtonAction {
 
-    CloseAction() {
+    CloseAction(DockController Controller) {
         setText("Close");
-        setIcon(new ImageIcon("close.png"));
+        setIcon(Controller.getIcons().getIcon("close"));
+//        setIcon(new ImageIcon(ClassLoader.getSystemResource("data/close.png")));
     }
 
     public void action(Dockable Form) {
@@ -139,11 +147,22 @@ class CloseAction extends SimpleButtonAction {
         DockStation Parent = Form.getDockParent();
         if(Parent!=null)
             Parent.drag(Form);
+
+        // говорим о том что закрылись
+        ((FormDockable)Form).closed();
     }
 }
 
 // подкидывает действия стандартные типа закрытия
 class LayoutActionGuard implements ActionGuard {
+
+    DefaultDockActionSource Source;
+
+    LayoutActionGuard(DockController Controller) {
+        Source = new DefaultDockActionSource(
+                new LocationHint( LocationHint.ACTION_GUARD, LocationHint.RIGHT_OF_ALL));
+        Source.add(new CloseAction(Controller));
+    }
 
     public boolean react(Dockable dockable) {
         // заинтересованы в своих
@@ -151,20 +170,36 @@ class LayoutActionGuard implements ActionGuard {
     }
 
     public DockActionSource getSource(Dockable dockable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return Source;
     }
 }
 
-class FormDockable extends DefaultDockable {
-
-    FormDockable(String Caption) {super(Caption);}
-    FormDockable(Component Component,String Caption) {super(Component,Caption);}
-}
-
-class NavigatorDockable extends FormDockable {
+class NavigatorDockable extends DefaultDockable {
 
     NavigatorDockable(RemoteNavigator Navigator) {
         super(new ClientNavigator(Navigator),"Navigator");
+    }
+}
+
+// уничтожаемые формы
+abstract class FormDockable extends DefaultDockable {
+
+    FormDockable(String Caption) {super(Caption);}
+    FormDockable(Component Component,String Caption) {super(Component,Caption);}
+
+    // закрываются пользователем
+    abstract void closed();
+}
+
+class ReportDockable extends FormDockable {
+
+    ReportDockable(JasperPrint Print) {
+        super(new JRViewer(Print),"Report");
+    }
+
+    // закрываются пользователем
+    void closed() {
+        // пока ничего не делаем
     }
 }
 
@@ -189,6 +224,11 @@ class ClientFormDockable extends FormDockable {
         if(ActiveComponent!=null) remove(ActiveComponent);
         ActiveComponent = (new ClientForm(Navigator.CreateForm(FormID)));
         add(ActiveComponent);
+    }
+
+    // закрываются пользователем
+    void closed() {
+        // надо удалить RemoteForm
     }
 }
 
