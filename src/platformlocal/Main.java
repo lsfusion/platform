@@ -57,14 +57,17 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-/*        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            outStream.write(new byte[] {-32, 34, 32, 13});
-        } catch (IOException e) {
+            UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (InstantiationException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray());*/
-
 
         try {
 
@@ -80,12 +83,8 @@ public class Main {
             Layout = new Layout(Navigator);
 
             if(!Layout.Loaded) {
-                RemoteForm<TestBusinessLogics> Form;
-                Form = Navigator.CreateForm(((NavigatorForm)Navigator.GetElements(null).get(0)).ID);
-                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)),"Form 1"));
-
-                Form = Navigator.CreateForm(((NavigatorForm)Navigator.GetElements(null).get(1)).ID);
-                Layout.DefaultStation.drop(new DefaultDockable((new ClientForm(Form)),"Form 2"));
+                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(0)).ID,Navigator));
+                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(1)).ID,Navigator));
             }
 //            Frontend.add(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),"Forn 2");
 //            Rectangle Bounds = new Rectangle(300,400);

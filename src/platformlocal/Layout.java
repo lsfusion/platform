@@ -3,8 +3,16 @@ package platformlocal;
 import bibliothek.gui.DockStation;
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
+import bibliothek.gui.DockFrontend;
 import bibliothek.gui.dock.*;
+import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
+import bibliothek.gui.dock.action.actions.SimpleButtonAction;
+import bibliothek.gui.dock.action.LocationHint;
+import bibliothek.gui.dock.action.DefaultDockActionSource;
+import bibliothek.gui.dock.action.ActionGuard;
+import bibliothek.gui.dock.action.DockActionSource;
 import bibliothek.gui.dock.layout.PredefinedDockSituation;
+import bibliothek.gui.dock.layout.DockSituation;
 import bibliothek.gui.dock.control.SingleParentRemover;
 import bibliothek.util.xml.XElement;
 
@@ -12,6 +20,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowAdapter;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.HashMap;
@@ -24,7 +33,7 @@ import java.io.*;
  * Time: 14:45:12
  * To change this template use File | Settings | File Templates.
  */
-class Layout extends JFrame implements WindowListener {
+class Layout extends JFrame {
 
     DockStation DefaultStation;
 
@@ -37,36 +46,8 @@ class Layout extends JFrame implements WindowListener {
         setSize(800, 600);
         setVisible(true);
 
-        // the controller manages all operations
         DockController Controller = new DockController();
 
-        // Add an action "replace station by child" to the controller.
-        // This action allows to remove unnecessary stations by the user.
-//            Controller.addActionGuard(new ReplaceActionGuard(Controller));
-
-        // a station that shows some panels
-        SplitDockStation SplitStation = new SplitDockStation();
-        FlapDockStation FlapStation = new FlapDockStation();
-        StackDockStation StackStation = new StackDockStation();
-
-//        ScreenStation = new ScreenDockStation(MainFrame);
-
-        // the station has to be registered
-        add(SplitStation, BorderLayout.CENTER);
-//            MainFrame.add(StackStation.getStackComponent(),BorderLayout.CENTER);
-        add(FlapStation.getComponent(),BorderLayout.NORTH);
-//            SplitDockStation DefaultSplitStation = new SplitDockStation();
-
-        Controller.add(FlapStation);
-//        Controller.add(ScreenStation);
-//            Frontend.add(StackStation);
-        Controller.add(SplitStation);
-//            Frontend.setDefaultStation(SplitStation);
-
-        RootStations.put("Flap",FlapStation);
-        RootStations.put("Split",SplitStation);
-
-        DefaultStation = StackStation;
         // делает чтобы не удалялась основная StackForm'а
         Controller.setSingleParentRemover(new SingleParentRemover() {
             protected boolean shouldTest(DockStation dockStation) {
@@ -74,10 +55,37 @@ class Layout extends JFrame implements WindowListener {
             }
         });
 
+        // можно удалять ненужные контейнеры (кроме DefaultStation)
+        Controller.addActionGuard(new ReplaceActionGuard(Controller) {
+            public boolean react(Dockable dockable) {
+                if(dockable==DefaultStation) return false;
+                return super.react(dockable);
+            }
+        });
+
+        SplitDockStation SplitStation = new SplitDockStation();
+        FlapDockStation FlapStation = new FlapDockStation();
+        StackDockStation StackStation = new StackDockStation();
+        // the station has to be registered
+        add(SplitStation, BorderLayout.CENTER);
+        add(FlapStation.getComponent(),BorderLayout.NORTH);
+        Controller.add(FlapStation);
+        Controller.add(SplitStation);
+
+        DefaultStation = StackStation;
+        SplitStation.drop(new NavigatorDockable(Navigator));
         SplitStation.drop(StackStation);
 
-        PredefinedDockSituation Situation = new PredefinedDockSituation();
+        RootStations.put("Flap",FlapStation);
+        RootStations.put("Split",SplitStation);
+
+        Situation = new PredefinedDockSituation();
         Situation.add(new ClientFormFactory(Navigator));
+
+        Situation.put("Flap",FlapStation);
+        Situation.put("Split",SplitStation);
+        Situation.put("Stack",StackStation);
+
 
         try {
             FileInputStream Source = new FileInputStream("layout.txt");
@@ -89,41 +97,83 @@ class Layout extends JFrame implements WindowListener {
             Loaded = false;
         }
 
+        addWindowListener(new WindowAdapter()
+        {
+            public void windowClosing(WindowEvent e)
+            {
+                try {
+                    FileOutputStream Source = new FileOutputStream("layout.txt");
+                    DataOutputStream out = new DataOutputStream(Source);
+                    Situation.write(RootStations,out);
+                    Source.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        // создадим действие закрытия Dockable'а
+//        CloseAction Close = new CloseAction();
+//        DefaultDockActionSource Source = new DefaultDockActionSource(
+//                new LocationHint(LocationHint.DOCKABLE,LocationHint.RIGHT_OF_ALL));
+//        Source.add(Close);
+
     }
 
     // для теста
     boolean Loaded = true;
 
-    public void windowOpened(WindowEvent e) {
+}
+
+class CloseAction extends SimpleButtonAction {
+
+    CloseAction() {
+        setText("Close");
+        setIcon(new ImageIcon("close.png"));
     }
-    public void windowClosing(WindowEvent e) {
-    }
-    public void windowClosed(WindowEvent e) {
-        try {
-            FileOutputStream Source = new FileOutputStream("layout.txt");
-            DataOutputStream out = new DataOutputStream(Source);
-            Situation.write(RootStations,out);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-    public void windowIconified(WindowEvent e) {
-    }
-    public void windowDeiconified(WindowEvent e) {
-    }
-    public void windowActivated(WindowEvent e) {
-    }
-    public void windowDeactivated(WindowEvent e) {
+
+    public void action(Dockable Form) {
+        super.action(Form);
+        DockStation Parent = Form.getDockParent();
+        if(Parent!=null)
+            Parent.drag(Form);
     }
 }
 
-class ClientFormDockable extends DefaultDockable {
+// подкидывает действия стандартные типа закрытия
+class LayoutActionGuard implements ActionGuard {
+
+    public boolean react(Dockable dockable) {
+        // заинтересованы в своих
+        return (dockable instanceof FormDockable);
+    }
+
+    public DockActionSource getSource(Dockable dockable) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+}
+
+class FormDockable extends DefaultDockable {
+
+    FormDockable(String Caption) {super(Caption);}
+    FormDockable(Component Component,String Caption) {super(Component,Caption);}
+}
+
+class NavigatorDockable extends FormDockable {
+
+    NavigatorDockable(RemoteNavigator Navigator) {
+        super(new ClientNavigator(Navigator),"Navigator");
+    }
+}
+
+class ClientFormDockable extends FormDockable {
 
     int FormID;
     RemoteNavigator Navigator;
 
     ClientFormDockable(int iFormID,RemoteNavigator iNavigator) throws SQLException {
         super("Form");
+        FormID = iFormID;
         Navigator = iNavigator;
         setFactoryID(ClientFormFactory.FACTORY_ID);
 
