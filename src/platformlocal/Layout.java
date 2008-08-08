@@ -73,7 +73,8 @@ class Layout extends JFrame {
         Controller.add(SplitStation);
 
         DefaultStation = StackStation;
-        SplitStation.drop(new NavigatorDockable(Navigator));
+        NavigatorDockable NavigatorForm = new NavigatorDockable(Navigator);
+        SplitStation.drop(NavigatorForm);
         SplitStation.drop(StackStation);
 
         RootStations.put("Flap",FlapStation);
@@ -85,6 +86,7 @@ class Layout extends JFrame {
         Situation.put("Flap",FlapStation);
         Situation.put("Split",SplitStation);
         Situation.put("Stack",StackStation);
+        Situation.put("Navigator",NavigatorForm);
 
 
         try {
