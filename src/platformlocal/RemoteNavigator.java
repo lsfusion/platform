@@ -46,13 +46,22 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
 abstract class NavigatorElement<T extends BusinessLogics<T>> {
 
+    String caption = "";
+    public NavigatorElement(String icaption) { caption = icaption; }
+    
     // пока так потом может через Map
     abstract RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException;
+
+    abstract boolean allowChildren();
+
+    @Override
+    public String toString() { return caption; }
 }
 
 class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     
-    NavigatorGroup() {
+    NavigatorGroup(String caption) {
+        super(caption);
         Childs = new ArrayList();
     }
     
@@ -70,12 +79,17 @@ class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
         return null;
     }
+
+    boolean allowChildren() {
+        return true;
+    }
+
 }
 
 abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
     int ID;
-    NavigatorForm(int iID) {ID=iID;}
+    NavigatorForm(int iID, String caption) {super(caption); ID=iID;}
 
     RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException {
         if(FormID==ID)
@@ -85,4 +99,9 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     }
 
     abstract RemoteForm<T> CreateForm(DataAdapter Adapter,T BL) throws SQLException;
+
+    boolean allowChildren() {
+        return false;
+    }
+    
 }

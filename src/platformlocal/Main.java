@@ -82,10 +82,10 @@ public class Main {
 
             Layout = new Layout(Navigator);
 
-            if(!Layout.Loaded) {
+/*            if(!Layout.Loaded) {
                 Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(0)).ID,Navigator));
                 Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(1)).ID,Navigator));
-            }
+            }*/
 //            Frontend.add(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),"Forn 2");
 //            Rectangle Bounds = new Rectangle(300,400);
 //            ScreenStation.addDockable(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),Bounds);
@@ -412,14 +412,21 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     void InitNavigators() {
-        BaseGroup.AddChild(new TestNavigatorForm(1));
-        BaseGroup.AddChild(new SimpleNavigatorForm(2));
+
+        NavigatorGroup group1 = new NavigatorGroup<TestBusinessLogics>("Group 1");
+        NavigatorGroup group2 = new NavigatorGroup<TestBusinessLogics>("Group 2");
+
+        BaseGroup.AddChild(group1);
+        BaseGroup.AddChild(group2);
+
+        group1.AddChild(new TestNavigatorForm(1,"Test Form 1"));
+        group2.AddChild(new SimpleNavigatorForm(2,"Test Form 2"));
     }
 }
 
 class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
-    TestNavigatorForm(int iID) {super(iID);}
+    TestNavigatorForm(int iID, String caption) {super(iID, caption);}
 
     RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
         return new TestRemoteForm(Adapter,BL);
@@ -494,7 +501,7 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
 
 class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
-    SimpleNavigatorForm(int iID) {super(iID);}
+    SimpleNavigatorForm(int iID, String caption) {super(iID, caption);}
 
     RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
         return new SimpleRemoteForm(Adapter,BL);
