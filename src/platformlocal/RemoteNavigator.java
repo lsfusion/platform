@@ -16,12 +16,12 @@ import java.util.Map;
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
 public class RemoteNavigator<T extends BusinessLogics<T>> {
-    
+
     DataAdapter Adapter;
     T BL;
     Map<Class,Integer> MapObjects;
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
-    
+
     RemoteNavigator(DataAdapter iAdapter,T iBL,Map<Class,Integer> iMapObjects) {
         Adapter = iAdapter;
         BL = iBL;
@@ -31,15 +31,22 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     List<NavigatorElement> GetElements(NavigatorGroup Group) {
         // пока без релевантностей
         if(Group==null) Group = BL.BaseGroup;
- 
+
         return new ArrayList(Group.Childs);
     }
-    
+
     RemoteForm<T> CreateForm(int FormID) throws SQLException {
 
         // инстанцирует форму
-        return BL.BaseGroup.CreateFormID(FormID,Adapter,BL);
+        return BL.BaseGroup.getNavigatorForm(FormID).CreateForm(Adapter,BL);
     }
+
+    String getCaption(int FormID){
+
+        // инстанцирует форму
+        return BL.BaseGroup.getNavigatorForm(FormID).caption;
+    }
+
 }
 
 // создаются в бизнес-логике
@@ -48,9 +55,9 @@ abstract class NavigatorElement<T extends BusinessLogics<T>> {
 
     String caption = "";
     public NavigatorElement(String icaption) { caption = icaption; }
-    
+
     // пока так потом может через Map
-    abstract RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException;
+    abstract NavigatorForm<T> getNavigatorForm(int FormID);
 
     abstract boolean allowChildren();
 
@@ -66,14 +73,15 @@ class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     }
     
     void AddChild(NavigatorElement<T> Child) {
+
         Childs.add(Child);
     }
     
     Collection<NavigatorElement<T>> Childs;
 
-    RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException {
+    NavigatorForm<T> getNavigatorForm(int FormID) {
         for(NavigatorElement<T> Child : Childs) {
-            RemoteForm<T> Form = Child.CreateFormID(FormID,Adapter,BL);
+            NavigatorForm<T> Form = Child.getNavigatorForm(FormID);
             if(Form!=null) return Form;
         }
 
@@ -91,9 +99,9 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     int ID;
     NavigatorForm(int iID, String caption) {super(caption); ID=iID;}
 
-    RemoteForm<T> CreateFormID(int FormID,DataAdapter Adapter,T BL) throws SQLException {
+    NavigatorForm<T> getNavigatorForm(int FormID) {
         if(FormID==ID)
-            return CreateForm(Adapter,BL);
+            return this;
         else
             return null;
     }

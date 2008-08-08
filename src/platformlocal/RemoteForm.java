@@ -523,7 +523,6 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     ChangesSession Session;
     
     Set<ObjectProperty> ChangedProps = new HashSet();
-    
     RemoteForm(DataAdapter iAdapter,T iBL) {
         Adapter = iAdapter;
         BL = iBL;

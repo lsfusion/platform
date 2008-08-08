@@ -2,8 +2,14 @@ package platformlocal;
 
 import bibliothek.gui.*;
 import bibliothek.gui.dock.*;
+import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
+import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
+import bibliothek.gui.dock.title.*;
 import bibliothek.gui.dock.themes.ThemeFactory;
+import bibliothek.gui.dock.themes.BasicTheme;
+import bibliothek.gui.dock.themes.nostack.NoStackTitleFactory;
 import bibliothek.gui.dock.util.IconManager;
+import bibliothek.gui.dock.util.Priority;
 import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
 import bibliothek.gui.dock.action.actions.SimpleButtonAction;
 import bibliothek.gui.dock.action.LocationHint;
@@ -14,6 +20,8 @@ import bibliothek.gui.dock.layout.PredefinedDockSituation;
 import bibliothek.gui.dock.layout.DockSituation;
 import bibliothek.gui.dock.control.SingleParentRemover;
 import bibliothek.util.xml.XElement;
+import bibliothek.notes.view.menu.ThemeMenu;
+import bibliothek.demonstration.util.LookAndFeelMenu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +29,8 @@ import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
+import java.util.ArrayList;
 import java.io.*;
 
 import net.sf.jasperreports.engine.JasperPrint;
@@ -33,14 +43,13 @@ import net.sf.jasperreports.view.JRViewer;
  * Time: 14:45:12
  * To change this template use File | Settings | File Templates.
  */
-class Layout extends JFrame {
+class Layout extends JFrame implements ComponentCollector {
 
-    DockStation DefaultStation;
+    StackDockStation DefaultStation;
 
     Map<String,DockStation> RootStations = new HashMap();
 
     DockFrontend Frontend;
-    PredefinedDockSituation Situation;
 
     Layout(RemoteNavigator Navigator) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -49,7 +58,6 @@ class Layout extends JFrame {
 
         Frontend = new DockFrontend();
         DockController Controller = Frontend.getController();
-//        DockController Controller = new DockController();
 
         // делает чтобы не удалялась основная StackForm'а
         Controller.setSingleParentRemover(new SingleParentRemover() {
@@ -69,17 +77,22 @@ class Layout extends JFrame {
         Controller.addActionGuard(new LayoutActionGuard(Controller));
 
         SplitDockStation SplitStation = new SplitDockStation();
-        FlapDockStation FlapStation = new FlapDockStation();
+
+        Map<FlapDockStation,String> Flaps = new HashMap();
+        Flaps.put(new FlapDockStation(),BorderLayout.NORTH);
+        Flaps.put(new FlapDockStation(),BorderLayout.EAST);
+        Flaps.put(new FlapDockStation(),BorderLayout.SOUTH);
+        Flaps.put(new FlapDockStation(),BorderLayout.WEST);
+
         StackDockStation StackStation = new StackDockStation();
         // the station has to be registered
         add(SplitStation, BorderLayout.CENTER);
-        add(FlapStation.getComponent(),BorderLayout.NORTH);
 
-//        Controller.add(FlapStation);
-//        Controller.add(SplitStation);
-//        RootStations.put("Flap",FlapStation);
-//        RootStations.put("Split",SplitStation);
-        Frontend.addRoot(FlapStation,"Flap");
+        for(Map.Entry<FlapDockStation,String> Flap : Flaps.entrySet()) {
+            add(Flap.getKey().getComponent(),Flap.getValue());
+            Frontend.addRoot(Flap.getKey(),Flap.getValue()+"Flap");
+        }
+
         Frontend.addRoot(SplitStation,"Split");
 
         DefaultStation = StackStation;
@@ -93,20 +106,17 @@ class Layout extends JFrame {
         Frontend.setHideable(StackStation,false);
         SplitStation.drop(StackStation);
 
+/*        // сделаем чтобы Page'и шли без title'ов
+        DockTitleFactory Factory = new NoStackTitleFactory(Controller.getTheme().getTitleFactory(Controller));
+        Controller.getDockTitleManager().registerClient(StackDockStation.TITLE_ID,Factory);
+        Controller.getDockTitleManager().registerClient(SplitDockStation.TITLE_ID,Factory);
+        Controller.getDockTitleManager().registerClient(FlapDockStation.WINDOW_TITLE_ID,Factory);
+*/
         Frontend.registerFactory(new ClientFormFactory(Navigator));
-/*        Situation = new PredefinedDockSituation();
-        Situation.add(new ClientFormFactory(Navigator));
-
-        Situation.put("Flap",FlapStation);
-        Situation.put("Split",SplitStation);
-        Situation.put("Stack",StackStation);
-        Situation.put("Navigator",NavigatorForm);
-  */
         try {
             FileInputStream Source = new FileInputStream("layout.txt");
             DataInputStream in = new DataInputStream(Source);
 
-//            Situation.read(in);
             Frontend.read(in);
             Source.close();
         } catch (IOException e) {
@@ -120,7 +130,6 @@ class Layout extends JFrame {
                 try {
                     FileOutputStream Source = new FileOutputStream("layout.txt");
                     DataOutputStream out = new DataOutputStream(Source);
-//                    Situation.write(RootStations,out);
                     Frontend.write(out);
                     Source.close();
                 } catch (IOException ex) {
@@ -128,10 +137,48 @@ class Layout extends JFrame {
                 }
             }
         });
+
+        setupMenu();
     }
 
     // для теста
     boolean Loaded = true;
+
+    // настраивает меню
+    void setupMenu() {
+        JMenuBar Menubar = new JMenuBar();
+        LookAndFeelList LookAndFeels = LookAndFeelList.getDefaultList();
+        // пометим что мы сами будем следить за изменение Layout'а
+        LookAndFeels.addComponentCollector(this);
+
+        JMenu WindowMenu = new JMenu( "Window" );
+		WindowMenu.add(new LookAndFeelMenu(this,LookAndFeels));
+
+        // темы делаем
+/*        JMenu ThemeMenu = new JMenu("Theme");
+        for(ThemeFactory Factory : DockUI.getDefaultDockUI().getThemes()) {
+            JMenuItem Item = new JMenuItem(Factory.getName());
+            Item.setToolTipText(Factory.getDescription());
+            final DockTheme Theme = Factory.create();
+            Item.addActionListener( new ActionListener(){
+                public void actionPerformed(ActionEvent e) {
+                    Frontend.getController().setTheme(Theme);
+                }
+            });
+            ThemeMenu.add(Item);
+        }*/
+        WindowMenu.add(new ThemeMenu(Frontend));
+		Menubar.add(WindowMenu);
+
+        setJMenuBar(Menubar);
+    }
+
+    // список компонентов которые следят за look&feel
+    public Collection<Component> listComponents() {
+        Collection<Component> Result = new ArrayList();
+        Result.add(this);
+        return Result;
+    }
 }
 
 class CloseAction extends SimpleButtonAction {
@@ -139,7 +186,6 @@ class CloseAction extends SimpleButtonAction {
     CloseAction(DockController Controller) {
         setText("Close");
         setIcon(Controller.getIcons().getIcon("close"));
-//        setIcon(new ImageIcon(ClassLoader.getSystemResource("data/close.png")));
     }
 
     public void action(Dockable Form) {
@@ -222,6 +268,7 @@ class ClientFormDockable extends FormDockable {
     void setFormID(int iFormID) throws SQLException {
 
         if(ActiveComponent!=null) remove(ActiveComponent);
+        setTitleText(Navigator.getCaption(FormID));
         ActiveComponent = (new ClientForm(Navigator.CreateForm(FormID)));
         add(ActiveComponent);
     }
