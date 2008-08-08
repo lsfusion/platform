@@ -1,19 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package platformlocal;
 
-/**
- *
- * @author ME2
- */
-public class ClientNavigator {
+import javax.swing.*;
 
-    RemoteNavigator Navigator;
+public class ClientNavigator extends JTree {
+
+    RemoteNavigator remoteNavigator;
     
-    ClientNavigator(RemoteNavigator iNavigator) {Navigator=iNavigator;}
+    public ClientNavigator(RemoteNavigator iremoteNavigator) {
+
+        remoteNavigator = iremoteNavigator;
+    }
     
     
 }
