@@ -229,9 +229,9 @@ public class ClientForm extends Container {
         applyFormChanges();
     }
 
-    void changeGridClass(ClientObjectImplement object) {
+    void changeClass(ClientObjectImplement object) {
         try {
-            remoteForm.ChangeGridClass(object.ID, null);
+            remoteForm.ChangeClass(object.ID, null);
         } catch (SQLException e) {
             e.printStackTrace();
         }

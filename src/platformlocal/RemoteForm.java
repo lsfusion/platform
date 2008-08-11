@@ -594,14 +594,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         }
     }
 
-    public void ChangeGridClass(Integer objectID, Integer idClass) throws SQLException {
-        for (GroupObjectImplement groupObject : Groups)
-            for (ObjectImplement object : groupObject)
-                if (object.ID == objectID)
-                    ChangeGridClass(object, idClass);
-    }
-
-    public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {    
+    public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
         Class GridClass = BL.BaseClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
         if(GridClass==null) throw new RuntimeException();
@@ -732,6 +725,13 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         DataChanged = true;
     }   
 
+    public void ChangeClass(Integer objectID, Integer idClass) throws SQLException {
+        for (GroupObjectImplement groupObject : Groups)
+            for (ObjectImplement object : groupObject)
+                if (object.ID == objectID)
+                    ChangeClass(objectID, idClass);
+    }
+    
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
         BL.ChangeClass(Session,Adapter,Object.idObject,Class);
         DataChanged = true;
