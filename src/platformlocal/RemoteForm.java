@@ -173,11 +173,11 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
                 if(Session!=null && Session.RemoveClasses.contains(Object.GridClass))
                     TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
             }
-//                    по идее не надо, так как фильтр по определению имеет нужный класс 
-//                    else {
-//                        KeySelect = BL.TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
-//                        JoinKeys.add(KeySelect);
-//                    } 
+//                    по идее не надо, так как фильтр по определению имеет нужный класс - надо фильтр может быть на более конкретные классы
+                    else {
+                       KeySelect = TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
+                       JoinKeys.add(KeySelect);
+                    }
         }
     }
 }
@@ -1187,6 +1187,9 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 //        PanelProps.
 
         for(PropertyView DrawProp : Properties) {
+
+            if(DrawProp.View.Property.OutName.equals("кол-во прих."))
+                    DrawProp = DrawProp;
             // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
             boolean Read = false;
             boolean CheckClass = false;
@@ -1229,7 +1232,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 int NewInInterface=0;
                 if(CheckClass)
                     NewInInterface = (DrawProp.View.IsInInterface(DrawProp.ToDraw)?2:0);
-                if(CheckObject && !(CheckClass && NewInInterface==2))
+                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 && InInterface==2)) // если изменился класс
                     NewInInterface = (DrawProp.View.IsInInterface(null)?1:0);
                 
                 if(InInterface!=NewInInterface) {
