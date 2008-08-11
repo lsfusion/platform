@@ -261,7 +261,22 @@ public class ClientForm extends Container {
         JasperReport Report = null;
         try {
             Report = JasperCompileManager.compileReport(Design);
-            Main.Layout.DefaultStation.drop(new ReportDockable(JasperFillManager.fillReport(Report,new HashMap(),remoteForm.ReadData())));
+            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),remoteForm.ReadData());
+
+            JRViewer Viewer = new JRViewer(Print);
+            Main.Layout.DefaultStation.drop(new DefaultDockable(Viewer,"Report"));
+/*            JFrame DrawPrint = new JFrame("Report");
+            DrawPrint.getContentPane().add(Viewer);
+            DrawPrint.setSize(800,600);
+            DrawPrint.setVisible(true);
+            DrawPrint.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);*/
+
+/*
+            JRXlsExporter ToExcel = new JRXlsExporter();
+            ToExcel.setParameter(JRExporterParameter.JASPER_PRINT, Print);
+            ToExcel.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, "report.xls");
+            ToExcel.exportReport();
+*/
         } catch (JRException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } catch (SQLException e) {

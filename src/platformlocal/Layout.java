@@ -2,6 +2,7 @@ package platformlocal;
 
 import bibliothek.gui.*;
 import bibliothek.gui.dock.*;
+import bibliothek.gui.dock.event.DockFrontendAdapter;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
 import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
 import bibliothek.gui.dock.title.*;
@@ -27,13 +28,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.ArrayList;
+import java.util.*;
 import java.io.*;
 
 import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
 
 /**
@@ -50,14 +51,23 @@ class Layout extends JFrame implements ComponentCollector {
     Map<String,DockStation> RootStations = new HashMap();
 
     DockFrontend Frontend;
+    LookAndFeelList LookAndFeels;
+    ThemeMenu Themes;
 
     Layout(RemoteNavigator Navigator) {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
-        setVisible(true);
 
         Frontend = new DockFrontend();
         DockController Controller = Frontend.getController();
+
+        // дизайн
+        // Look&Feel'ы
+        LookAndFeels = LookAndFeelList.getDefaultList();
+        // пометим что мы сами будем следить за изменение Layout'а
+        LookAndFeels.addComponentCollector(this);
+        // темы
+        Themes = new ThemeMenu(Frontend);
 
         // делает чтобы не удалялась основная StackForm'а
         Controller.setSingleParentRemover(new SingleParentRemover() {
@@ -96,15 +106,13 @@ class Layout extends JFrame implements ComponentCollector {
         Frontend.addRoot(SplitStation,"Split");
 
         DefaultStation = StackStation;
-        
+
         NavigatorDockable NavigatorForm = new NavigatorDockable(Navigator);
         // нужно обязательно до Drop чтобы появились крестики
         Frontend.add(NavigatorForm,"Navigator");
-        SplitStation.drop(NavigatorForm);
         // нужно включить в FrontEnd чтобы была predefined и новые формы могли бы туда же попадать
         Frontend.add(StackStation,"Stack");
         Frontend.setHideable(StackStation,false);
-        SplitStation.drop(StackStation);
 
 /*        // сделаем чтобы Page'и шли без title'ов
         DockTitleFactory Factory = new NoStackTitleFactory(Controller.getTheme().getTitleFactory(Controller));
@@ -112,72 +120,265 @@ class Layout extends JFrame implements ComponentCollector {
         Controller.getDockTitleManager().registerClient(SplitDockStation.TITLE_ID,Factory);
         Controller.getDockTitleManager().registerClient(FlapDockStation.WINDOW_TITLE_ID,Factory);
 */
+        // здесь чтобы сама потом подцепила галочки панелей
+        setupMenu();
+
         Frontend.registerFactory(new ClientFormFactory(Navigator));
         try {
-            FileInputStream Source = new FileInputStream("layout.txt");
-            DataInputStream in = new DataInputStream(Source);
-
-            Frontend.read(in);
-            Source.close();
+            read();
         } catch (IOException e) {
-            Loaded = false;
+            SplitStation.drop(NavigatorForm);
+            SplitStation.drop(StackStation);
         }
 
-        addWindowListener(new WindowAdapter()
-        {
+        addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e)
             {
+                setVisible(false);
                 try {
-                    FileOutputStream Source = new FileOutputStream("layout.txt");
-                    DataOutputStream out = new DataOutputStream(Source);
-                    Frontend.write(out);
-                    Source.close();
+                    write();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
         });
 
-        setupMenu();
+        setVisible(true);
     }
 
-    // для теста
-    boolean Loaded = true;
+    void write() throws IOException {
+        FileOutputStream Source = new FileOutputStream("layout.txt");
+        DataOutputStream out = new DataOutputStream(Source);
+
+        LookAndFeels.write(out);
+        Themes.write(out);
+
+        out.writeInt(getExtendedState());
+        setExtendedState(NORMAL);
+        out.writeInt(getX());
+        out.writeInt(getY());
+        out.writeInt(getWidth());
+        out.writeInt(getHeight());
+
+        Frontend.write(out);
+
+        Source.close();
+    }
+
+    void read() throws IOException{
+        FileInputStream Source = new FileInputStream("layout.txt");
+        DataInputStream in = new DataInputStream(Source);
+
+        LookAndFeels.read(in);
+        Themes.read(in);
+
+        int State = in.readInt();
+		setBounds(in.readInt(),in.readInt(),in.readInt(),in.readInt() );
+		setExtendedState(State);
+
+        Frontend.read(in);
+
+        Source.close();
+    }
 
     // настраивает меню
     void setupMenu() {
         JMenuBar Menubar = new JMenuBar();
-        LookAndFeelList LookAndFeels = LookAndFeelList.getDefaultList();
-        // пометим что мы сами будем следить за изменение Layout'а
-        LookAndFeels.addComponentCollector(this);
 
-        JMenu WindowMenu = new JMenu( "Window" );
-		WindowMenu.add(new LookAndFeelMenu(this,LookAndFeels));
-
-        // темы делаем
-/*        JMenu ThemeMenu = new JMenu("Theme");
-        for(ThemeFactory Factory : DockUI.getDefaultDockUI().getThemes()) {
-            JMenuItem Item = new JMenuItem(Factory.getName());
-            Item.setToolTipText(Factory.getDescription());
-            final DockTheme Theme = Factory.create();
-            Item.addActionListener( new ActionListener(){
-                public void actionPerformed(ActionEvent e) {
-                    Frontend.getController().setTheme(Theme);
-                }
-            });
-            ThemeMenu.add(Item);
-        }*/
-        WindowMenu.add(new ThemeMenu(Frontend));
-		Menubar.add(WindowMenu);
+        Menubar.add(createFileMenu());
+        Menubar.add(createPanelsMenu());
+        Menubar.add(createWindowMenu());
+        Menubar.add(createWorkPlaceMenu());
+        Menubar.add(createHelpMenu());
 
         setJMenuBar(Menubar);
     }
 
     // список компонентов которые следят за look&feel
     public Collection<Component> listComponents() {
-        Collection<Component> Result = new ArrayList();
+
+        Set<Component> Result = new HashSet<Component>();
+        for(Dockable Dockable : Frontend.listDockables())
+            Result.add(Dockable.getComponent());
+
+        for(Dockable Dockable : Frontend.getController().getRegister().listDockables())
+            Result.add(Dockable.getComponent());
+
         Result.add(this);
+
         return Result;
+    }
+
+    JMenu createFileMenu() {
+        // File
+        JMenu Menu = new JMenu( "Файл" );
+        JMenuItem OpenReport = new JMenuItem("Открыть отчет...");
+        OpenReport.setToolTipText("Открывает ранее сохраненный отчет");
+        final JFrame MainFrame = this;
+        OpenReport.addActionListener( new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                FileDialog Chooser = new FileDialog(MainFrame,"Отчет");
+                Chooser.setFilenameFilter(new FilenameFilter(){
+                    public boolean accept(File directory, String file) {
+                        String filename = file.toUpperCase();
+                        return filename.endsWith(".JRPRINT");
+                    }
+                });
+                Chooser.setVisible(true);
+
+                try {
+                    DefaultStation.drop(new ReportDockable(Chooser.getFile(),Chooser.getDirectory()));
+                } catch (JRException e1) {
+                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        });
+        Menu.add(OpenReport);
+        return Menu;
+    }
+
+    JMenu createPanelsMenu() {
+        // панели считаем с Frontendа
+        JMenu Menu = new JMenu("Панели");
+		for(final Dockable Dockable : Frontend.listDockables()){
+            if(Dockable.asDockStation()==null && Frontend.isHideable(Dockable)) {
+                final JCheckBoxMenuItem Item = new JCheckBoxMenuItem(Dockable.getTitleText());
+                Item.setSelected(true);
+                Item.addActionListener(new ActionListener() {
+	        		public void actionPerformed(ActionEvent e) {
+        				if(Item.isSelected())
+		        			Frontend.show(Dockable);
+        				else
+        					Frontend.hide(Dockable);
+           			}
+    		    });
+
+        		Frontend.addFrontendListener(new DockFrontendAdapter(){
+    		        public void hidden(DockFrontend Frontend,Dockable Affected) {
+	    		    	if(Affected==Dockable)
+		    		    	Item.setSelected( false );
+    			    }
+
+    	    		public void shown(DockFrontend Frontend,Dockable Affected) {
+	    	    		if(Affected==Dockable)
+		    	    		Item.setSelected(true);
+			        }
+                });
+
+                Menu.add(Item);
+            }
+        }
+        return Menu;
+    }
+
+    JMenu createWindowMenu() {
+        JMenu Menu = new JMenu( "Окно" );
+		Menu.add(new LookAndFeelMenu(this,LookAndFeels));
+        // темы делаем
+        Menu.add(Themes);
+        return Menu;
+    }
+
+    Map<String,JRadioButtonMenuItem> WorkPlaces = new HashMap();
+    JMenu WorkPlaceMenu = new JMenu("АРМ");
+    Map<String,JMenuItem> RemoveWorkPlaces = new HashMap();
+    JMenu RemoveWorkPlaceMenu = new JMenu("Удалить");
+
+    JMenu createWorkPlaceMenu() {
+        JMenuItem Save = new JMenuItem("Сохранить");
+		Save.addActionListener( new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+                String Name = Frontend.getCurrentSetting();
+                if(Name==null)
+                    Name = "АРМ " + (Frontend.getSettings().size()+1);
+				Frontend.save(Name);
+			}
+		});
+        WorkPlaceMenu.add(Save);
+
+        JMenuItem SaveAs = new JMenuItem("Сохранить как...");
+        SaveAs.addActionListener( new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                String Name = "АРМ " + (Frontend.getSettings().size()+1);
+                Frontend.save(Name);
+            }
+        });
+        WorkPlaceMenu.add(SaveAs);
+        WorkPlaceMenu.add(RemoveWorkPlaceMenu);
+
+        Frontend.addFrontendListener(new DockFrontendAdapter(){
+            public void read(DockFrontend Frontend,String Name) {
+                // считали св-во
+                createWorkPlaceLoadItem(Name);
+                if(Frontend.getCurrentSetting().equals(Name))
+                    selectItem(Name);
+            }
+
+            void selectItem(String Name) {
+                for(Map.Entry<String,JRadioButtonMenuItem> WorkPlace : WorkPlaces.entrySet())
+                    WorkPlace.getValue().setSelected(false);
+                createWorkPlaceLoadItem(Name).setSelected(true);
+            }
+
+            public void saved(DockFrontend Frontend,String Name) {
+                // сохранили св-во
+                createWorkPlaceLoadItem(Name);
+                selectItem(Name);
+            }
+
+            public void loaded(DockFrontend Frontend,String Name) {
+                selectItem(Name);
+            }
+
+            public void deleted(DockFrontend Frontend,String Name) {
+
+                // нужно удалить
+                WorkPlaceMenu.remove(WorkPlaces.get(Name));
+                WorkPlaces.remove(Name);
+                RemoveWorkPlaceMenu.remove(RemoveWorkPlaces.get(Name));
+                RemoveWorkPlaces.remove(Name);
+            }
+        });
+
+        return WorkPlaceMenu;
+    }
+
+	JRadioButtonMenuItem createWorkPlaceLoadItem(final String Name){
+        JRadioButtonMenuItem Item = WorkPlaces.get(Name);
+        if(Item==null) {
+            Item = new JRadioButtonMenuItem(Name);
+            Item.addActionListener( new ActionListener(){
+		    	public void actionPerformed(ActionEvent e) {
+		    		Frontend.load(Name);
+			    }
+    		});
+            if(WorkPlaces.size()==0)
+                WorkPlaceMenu.addSeparator();
+            WorkPlaces.put(Name,Item);
+            WorkPlaceMenu.add(Item);
+
+            JMenuItem RemoveItem = new JMenuItem(Name);
+            RemoveItem.addActionListener( new ActionListener(){
+		    	public void actionPerformed(ActionEvent e) {
+		    		Frontend.delete(Name);
+			    }
+    		});
+
+            RemoveWorkPlaces.put(Name,RemoveItem);
+            RemoveWorkPlaceMenu.add(RemoveItem);
+        }
+        return Item;
+	}
+
+    JMenu createHelpMenu() {
+        JMenu Menu = new JMenu("Справка");
+        final JMenuItem About = new JMenuItem("О программе");
+        About.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               }
+        });
+        Menu.add(About);
+        return Menu;
     }
 }
 
@@ -241,6 +442,11 @@ class ReportDockable extends FormDockable {
 
     ReportDockable(JasperPrint Print) {
         super(new JRViewer(Print),"Report");
+    }
+
+    // из файла
+    ReportDockable(String FileName,String Directory) throws JRException {
+        super(new JRViewer((JasperPrint)JRLoader.loadObject(Directory+FileName)),FileName);
     }
 
     // закрываются пользователем
@@ -338,3 +544,14 @@ class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
         return xElement.getInt("FormID");
     }
 }
+
+/*
+class Log {
+
+    void S
+}
+
+class Status {
+
+}
+*/
