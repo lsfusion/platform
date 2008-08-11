@@ -172,9 +172,12 @@ public class SimplexLayout implements LayoutManager2 {
                     
             solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.GE, min.width);
             solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.GE, min.height);
-            
-            solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.LE, max.width);
-            solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height);
+
+            //приходится убирать ограничение на макс. размер, если растягивается объект, иначе ни один растягиваться не будет
+            if (constraints.get(component).fillHorizontal == 0)
+                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.LE, max.width);
+            if (constraints.get(component).fillVertical == 0)
+                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height);
         }
         
     }
@@ -320,8 +323,8 @@ public class SimplexLayout implements LayoutManager2 {
             
             SimplexConstraints constraint = constraints.get(component);
             
-            if (constraint.fillHorizontal == SimplexConstraints.MAXIMUM) {
-                solver.addConstraintex(3, new double[] {1, -1, -1}, new int[] {info.R, info.L, colmaxw}, LpSolve.GE, 0);
+            if (constraint.fillHorizontal > 0) {
+                solver.addConstraintex(3, new double[] {1, -1, -1 * constraint.fillHorizontal}, new int[] {info.R, info.L, colmaxw}, LpSolve.GE, 0);
             } else {
                 
                 solver.addColumn(new double[0]);
@@ -337,8 +340,8 @@ public class SimplexLayout implements LayoutManager2 {
                 objFnc.add(1.0);
             }
                 
-            if (constraint.fillVertical == SimplexConstraints.MAXIMUM) {
-                solver.addConstraintex(3, new double[] {1, -1, -1}, new int[] {info.B, info.T, colmaxh}, LpSolve.GE, 0);
+            if (constraint.fillVertical > 0) {
+                solver.addConstraintex(3, new double[] {1, -1, -1 * constraint.fillVertical}, new int[] {info.B, info.T, colmaxh}, LpSolve.GE, 0);
             } else {
                 
                 solver.addColumn(new double[0]);
@@ -414,11 +417,11 @@ class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstra
     public DoNotIntersectSimplexConstraint childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
     public int maxVariables = 3;
 
-    public static int MAXIMUM = 1;
-    public static int PREFERRED = 0;
+//    public static int MAXIMUM = 1;
+//    public static int PREFERRED = 0;
     
-    public int fillVertical = PREFERRED;
-    public int fillHorizontal = PREFERRED;
+    public double fillVertical = 0; //PREFERRED;
+    public double fillHorizontal = 0; //PREFERRED;
 
     public Insets insetsSibling = new Insets(4,4,4,4);
     public Insets insetsInside = new Insets(2,2,2,2);

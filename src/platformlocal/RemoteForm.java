@@ -563,14 +563,44 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     DataAdapter Adapter;
 
+    // Методы, которые по ID находят объект
+    public GroupObjectImplement getGroupObjectImplement(int groupID) {
+        for (GroupObjectImplement groupObject : Groups)
+            if (groupObject.GID == groupID)
+                return groupObject;
+        return null;
+    }
+
+    public ObjectImplement getObjectImplement(int objectID) {
+        for (GroupObjectImplement groupObject : Groups)
+            for (ObjectImplement object : groupObject)
+                if (object.ID == objectID)
+                    return object;
+        return null;
+    }
+
+    public PropertyView getPropertyView(int propertyID) {
+        for (PropertyView property : Properties)
+            if (property.ID == propertyID)
+                return property;
+        return null;
+    }
+
+    public Class getFormClass(Class parentClass, int classID) {
+        if (parentClass.ID == classID) return parentClass;
+        for (Class childClass : parentClass.Childs) {
+            Class cls = getFormClass(childClass, classID);
+            if (cls != null) return cls;
+        }
+        return null;
+    }
+
+
     // это будут Bean'овские интерфейсы
 
-    //сначала фасад
     public void ChangeObject(Integer groupID, byte[] value) throws SQLException {
-        for (GroupObjectImplement groupObject : Groups)
-            if (groupObject.GID == groupID) {
-                ChangeObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
-            }
+        GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
+        ChangeObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
     }
 
     public void ChangeObject(GroupObjectImplement Group,GroupObjectValue Value) throws SQLException {
@@ -594,6 +624,18 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         }
     }
 
+    public byte[] getBaseClassByteArray(int objectID) {
+        return ByteArraySerializer.serializeClass(getObjectImplement(objectID).BaseClass);
+    }
+
+    public byte[] getChildClassesByteArray(int objectID, int classID) {
+        return ByteArraySerializer.serializeListClass(getFormClass(getObjectImplement(objectID).BaseClass, classID).Childs);
+    }
+
+    public void ChangeGridClass(int objectID,int idClass) throws SQLException {
+        ChangeGridClass(getObjectImplement(objectID), idClass);
+    }
+
     public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
         Class GridClass = BL.BaseClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
@@ -605,10 +647,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
-        for (GroupObjectImplement groupObject : Groups)
-            if (groupObject.GID == groupID) {
-                ChangeClassView(groupObject, show);
-            }
+        ChangeClassView(getGroupObjectImplement(groupID), show);
     }
 
     public void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
@@ -652,10 +691,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
-        for (PropertyView property : Properties)
-            if (property.ID == propertyID) {
-                ChangePropertyView(property, ByteArraySerializer.deserializeObjectValue(object));
-            }
+        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObjectValue(object));
     }
 
     public void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
@@ -663,10 +699,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     public void AddObject(Integer objectID) throws SQLException {
-        for (GroupObjectImplement groupObject : Groups)
-            for (ObjectImplement object : groupObject)
-                if (object.ID == objectID)
-                    AddObject(object);
+        AddObject(getObjectImplement(objectID));
     }
 
     public void AddObject(ObjectImplement Object) throws SQLException {
@@ -726,10 +759,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }   
 
     public void ChangeClass(Integer objectID, Integer idClass) throws SQLException {
-        for (GroupObjectImplement groupObject : Groups)
-            for (ObjectImplement object : groupObject)
-                if (object.ID == objectID)
-                    ChangeClass(object, null);
+        ChangeClass(getObjectImplement(objectID), null);
     }
     
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
@@ -1366,6 +1396,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             groupContainers.put(clientGroup, groupContainer);
             formView.containers.add(groupContainer);
 
+            ClientContainerView gridContainer = new ClientContainerView();
+            gridContainer.outName = "gridContainer " + group.get(0).OutName;
+            gridContainer.container = groupContainer;
+            gridContainer.constraints.order = 2;
+            gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+            formView.containers.add(gridContainer);
+
             ClientContainerView panelContainer = new ClientContainerView();
             panelContainer.outName = "panelContainer " + group.get(0).OutName;
             panelContainer.container = groupContainer;
@@ -1383,10 +1421,10 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
             formView.containers.add(buttonContainer);
 
-            clientGroup.gridView.container = groupContainer;
-            clientGroup.gridView.constraints.order = 0;
-            clientGroup.gridView.constraints.fillVertical = SimplexConstraints.MAXIMUM;
-            clientGroup.gridView.constraints.fillHorizontal = SimplexConstraints.MAXIMUM;
+            clientGroup.gridView.container = gridContainer;
+            clientGroup.gridView.constraints.order = 1;
+            clientGroup.gridView.constraints.fillVertical = 1;
+            clientGroup.gridView.constraints.fillHorizontal = 1;
 
             clientGroup.addView.container = buttonContainer;
             clientGroup.addView.constraints.order = 0;
@@ -1399,6 +1437,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 ClientObjectImplement clientObject = new ClientObjectImplement();
                 clientObject.ID = object.ID;
                 clientObject.groupObject = clientGroup;
+
                 clientObject.objectIDView.groupObject = clientGroup;
 
                 clientObject.objectIDView.container = panelContainer;
@@ -1406,6 +1445,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                 clientObject.caption = object.OutName;
                 clientObject.objectIDView.caption = object.OutName;
+
+                clientObject.classView.container = gridContainer;
+                clientObject.classView.constraints.order = 0;
+                clientObject.classView.constraints.fillVertical = 1;
+                clientObject.classView.constraints.fillHorizontal = 0.2;
 
                 clientGroup.add(clientObject);
 
@@ -1671,6 +1715,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     RemoteNavigator<T> CreateNavigator() {
         return new RemoteNavigator(Adapter,BL,new HashMap());
     }
+
 }
 
 // поле для отрисовки отчета

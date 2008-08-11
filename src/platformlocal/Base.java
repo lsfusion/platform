@@ -5,6 +5,7 @@
 
 package platformlocal;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,4 +76,9 @@ class MapUtils<T,V> {
         
     }
     
+}
+
+class ExpandingTreeNode extends DefaultMutableTreeNode {
+
+    public String toString() { return "Retreiving data..."; }
 }

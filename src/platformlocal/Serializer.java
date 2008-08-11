@@ -251,6 +251,47 @@ class Serializer {
         throw new IOException();
     }
 
+    // -------------------------------------- Сериализация классов -------------------------------------------- //
+    public static void serializeListClass(DataOutputStream outStream, List<Class> classes) throws IOException {
+
+        outStream.writeInt(classes.size());
+        for (Class cls : classes) {
+            serializeClass(outStream, cls);
+        }
+
+    }
+
+    public static List<ClientClass> deserializeListClientClass(DataInputStream inStream) throws IOException {
+
+        List<ClientClass> classes = new ArrayList();
+
+        int count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientClass cls = deserializeClientClass(inStream);
+            classes.add(cls);
+        }
+
+        return classes;
+    }
+
+    public static void serializeClass(DataOutputStream outStream, Class cls) throws IOException {
+        outStream.writeInt(cls.ID);
+        outStream.writeUTF(cls.caption);
+        outStream.writeBoolean(!cls.Childs.isEmpty());
+    }
+
+    public static ClientClass deserializeClientClass(DataInputStream inStream) throws IOException {
+
+        ClientClass cls = new ClientClass();
+
+        cls.ID = inStream.readInt();
+        cls.caption = inStream.readUTF();
+        cls.hasChilds = inStream.readBoolean();
+
+        return cls;
+    }
+
+
     // -------------------------------------- Сериализация навигатора -------------------------------------------- //
 
     public static void serializeListNavigatorElement(DataOutputStream outStream, List<NavigatorElement> listElements) throws IOException {
@@ -380,6 +421,67 @@ class ByteArraySerializer extends Serializer {
 
         try {
             return deserializeObjectValue(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+    
+    // -------------------------------------- Сериализация классов -------------------------------------------- //
+    public static byte[] serializeListClass(List<Class> classes) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeListClass(dataStream, classes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static List<ClientClass> deserializeListClientClass(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeListClientClass(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public static byte[] serializeClass(Class cls) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeClass(dataStream, cls);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static ClientClass deserializeClientClass(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeClientClass(dataStream);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,13 +10,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.view.JRViewer;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EventObject;
@@ -31,9 +25,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextField;
 import javax.swing.*;
+import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -238,6 +236,17 @@ public class ClientForm extends Container {
         applyFormChanges();
     }
 
+    void changeGridClass(ClientObjectImplement object, ClientClass cls) {
+
+        try {
+            remoteForm.ChangeGridClass(object.ID, cls.ID);
+        } catch (SQLException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        applyFormChanges();
+    }
+
     void switchClassView(ClientGroupObjectImplement groupObject) {
 
         Boolean classView;
@@ -306,6 +315,7 @@ public class ClientForm extends Container {
 
         PanelModel panel;
         GridModel grid;
+        Map<ClientObjectImplement, ObjectModel> objects = new HashMap();
 
         ClientGroupObjectValue currentObject;
         ClientPropertyView currentProperty;
@@ -323,6 +333,8 @@ public class ClientForm extends Container {
             setClassView(true);
 
             for (final ClientObjectImplement object : groupObject) {
+
+                objects.put(object, new ObjectModel(object));
 
                 JButton buttonAdd = new JButton("Добавить(" + object.caption + ")");
                 buttonAdd.addActionListener(new ActionListener() {
@@ -989,6 +1001,152 @@ public class ClientForm extends Container {
                 }
             }
             
+        }
+
+        class ObjectModel {
+
+            ClientObjectImplement object;
+
+            ClientClass currentClass;
+
+            ClassModel classModel;
+
+            public ObjectModel(ClientObjectImplement iobject) {
+
+                object = iobject;
+
+                classModel = new ClassModel(object.classView);
+
+            }
+
+            class ClassModel {
+
+                ClientClassView key;
+
+                ClassTree view;
+
+                public ClassModel(ClientClassView ikey) {
+
+                    key = ikey;
+
+                    view = new ClassTree();
+                    formLayout.add(key, view);
+                }
+                
+                class ClassTree extends JTree {
+
+                    DefaultMutableTreeNode rootNode;
+                    DefaultTreeModel model;
+
+                    public ClassTree() {
+
+                        setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+
+                        ClientClass baseClass = ByteArraySerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
+                        currentClass = baseClass;
+                        
+                        rootNode = new DefaultMutableTreeNode(baseClass);
+                        model = new DefaultTreeModel(rootNode);
+
+                        setModel(model);
+
+                        addTreeExpansionListener(new TreeExpansionListener() {
+
+                            public void treeExpanded(TreeExpansionEvent event) {
+                                addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
+                            }
+
+                            public void treeCollapsed(TreeExpansionEvent event) {};
+
+                        });
+
+                        addMouseListener(new MouseAdapter() {
+
+                            public void mouseReleased(MouseEvent e) {
+                                if (e.getClickCount() == 2) {
+
+                                    TreePath path = getSelectionPath();
+                                    if (path == null) return;
+
+                                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+                                    if (node == null) return;
+
+                                    Object nodeObject = node.getUserObject();
+                                    if (! (nodeObject instanceof ClientClass)) return;
+
+                                    changeGridClass(object, (ClientClass) nodeObject);
+                                    currentClass = (ClientClass) nodeObject;
+                                    view.updateUI();
+                                }
+                            }
+                        });
+
+                        setCellRenderer(new DefaultTreeCellRenderer() {
+
+                            Font defaultFont;
+
+                            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
+                                                                          boolean expanded, boolean leaf, int row,
+                                                                          boolean hasFocus) {
+                                if (defaultFont == null) {
+                                    Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                                    defaultFont = comp.getFont();
+                                }
+
+                                setFont(defaultFont);
+                                
+                                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                                if (node != null) {
+
+                                    Object nodeObject = node.getUserObject();
+                                    if (nodeObject != null && nodeObject instanceof ClientClass && ((ClientClass)nodeObject == currentClass))
+                                        setFont(getFont().deriveFont(Font.BOLD));
+                                }
+
+                                Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+                                return comp;
+
+                            }
+                        });
+
+                        if (baseClass.hasChilds)
+                            rootNode.add(new ExpandingTreeNode());
+                        
+                    }
+
+                    private void addNodeElements(DefaultMutableTreeNode parent) {
+
+                        DefaultMutableTreeNode firstChild = (DefaultMutableTreeNode)parent.getFirstChild();
+
+                        if (! (firstChild instanceof ExpandingTreeNode)) return;
+                        parent.removeAllChildren();
+
+                        Object nodeObject = parent.getUserObject();
+                        if (nodeObject != null && ! (nodeObject instanceof ClientClass) ) return;
+
+                        ClientClass parentClass = (ClientClass) nodeObject;
+
+                        List<ClientClass> classes = ByteArraySerializer.deserializeListClientClass(
+                                                                        remoteForm.getChildClassesByteArray(object.ID,parentClass.ID));
+
+                        for (ClientClass cls : classes) {
+
+                            DefaultMutableTreeNode node;
+                            node = new DefaultMutableTreeNode(cls, cls.hasChilds);
+                            parent.add(node);
+
+                            if (cls.hasChilds)
+                                node.add(new ExpandingTreeNode());
+
+                        }
+
+                        model.reload(parent);
+                    }
+
+                }
+
+            }
+
         }
         
     }

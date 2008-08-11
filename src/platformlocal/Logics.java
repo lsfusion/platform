@@ -488,17 +488,16 @@ class TableFactory extends TableImplement{
 abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     BusinessLogics() {
-        BaseClass = new ObjectClass(0);
         TableFactory = new TableFactory();
         Properties = new ArrayList();
         Persistents = new HashSet();
         Constraints = new HashMap();
         
-        BaseClass = new ObjectClass(0);
+        BaseClass = new ObjectClass(0, "Базовый класс");
         
-        StringClass = new StringClass(1);
+        StringClass = new StringClass(1, "Строка");
 //        StringClass.AddParent(BaseClass);
-        IntegerClass = new QuantityClass(2);
+        IntegerClass = new QuantityClass(2, "Число");
         IntegerClass.AddParent(BaseClass);
         
         for(int i=0;i<TableFactory.MaxInterface;i++) {
@@ -1005,21 +1004,21 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     void OpenTest(boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
 
         if(Classes) {
-            Class Base = new ObjectClass(3);
+            Class Base = new ObjectClass(3, "Базовый объект");
             Base.AddParent(BaseClass);
-            Class Article = new ObjectClass(4);
+            Class Article = new ObjectClass(4, "Товар");
             Article.AddParent(Base);
-            Class Store = new ObjectClass(5);
+            Class Store = new ObjectClass(5, "Склад");
             Store.AddParent(Base);
-            Class Document = new ObjectClass(6);
+            Class Document = new ObjectClass(6, "Документ");
             Document.AddParent(Base);
-            Class PrihDocument = new ObjectClass(7);
+            Class PrihDocument = new ObjectClass(7, "Приходный документ");
             PrihDocument.AddParent(Document);
-            Class RashDocument = new ObjectClass(8);
+            Class RashDocument = new ObjectClass(8, "Расходный документ");
             RashDocument.AddParent(Document);
-            Class ArticleGroup = new ObjectClass(9);
+            Class ArticleGroup = new ObjectClass(9, "Группа товаров");
             ArticleGroup.AddParent(Base);
-            Class Supplier = new ObjectClass(10);
+            Class Supplier = new ObjectClass(10, "Поставщик");
             Supplier.AddParent(Base);
 
             TableImplement Include;
@@ -1255,7 +1254,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<Class> ObjClasses = new ArrayList();
         ObjClasses.add(BaseClass);
         for(int i=0;i<CustomClasses;i++) {
-            Class Class = new ObjectClass(i+3);
+            Class Class = new ObjectClass(i+3, "Случайный класс");
             int Parents = Randomizer.nextInt(6) + 1;
             for(int j=0;j<Parents;j++) {
                 Class.AddParent(ObjClasses.get(Randomizer.nextInt(ObjClasses.size())));

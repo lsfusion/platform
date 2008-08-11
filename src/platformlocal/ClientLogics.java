@@ -18,11 +18,11 @@ import java.io.IOException;
 class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
 
     Integer GID = 0;
-    
+
     ClientGridView gridView = new ClientGridView();
     ClientFunctionView addView = new ClientFunctionView();
     ClientFunctionView delView = new ClientFunctionView();
-    
+
     @Override
     public boolean equals(Object o) {
         return this == o;
@@ -70,9 +70,20 @@ class ClientObjectImplement {
     String caption = "";
     
     ClientObjectView objectIDView = new ClientObjectView();
+    ClientClassView classView = new ClientClassView();
     
     public ClientObjectImplement() {
     }
+}
+
+class ClientClass {
+
+    int ID;
+    String caption;
+
+    boolean hasChilds;
+
+    public String toString() { return caption; }
 }
 
 class ClientComponentView {
@@ -90,6 +101,10 @@ class ClientContainerView extends ClientComponentView {
 }
 
 class ClientGridView extends ClientComponentView {
+    
+}
+
+class ClientClassView extends ClientComponentView {
     
 }
 

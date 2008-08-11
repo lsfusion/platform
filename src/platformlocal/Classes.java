@@ -21,11 +21,13 @@ import java.util.Set;
  */
 abstract class Class {
     Collection<Class> Parents;
-    Collection<Class> Childs;
+    List<Class> Childs;
     
     Integer ID;
-    Class(Integer iID) {
+    String caption;
+    Class(Integer iID, String icaption) {
         ID=iID;
+        caption = icaption;
         Parents = new ArrayList<Class>();
         Childs = new ArrayList<Class>();
     }
@@ -185,7 +187,7 @@ abstract class Class {
 // класс который можно сравнивать
 class IntegralClass extends Class {
     
-    IntegralClass(Integer iID) {super(iID);}
+    IntegralClass(Integer iID, String caption) {super(iID, caption);}
     
     Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         return Randomizer.nextInt(Diap*Diap+1);
@@ -194,16 +196,16 @@ class IntegralClass extends Class {
 
 // класс который можно суммировать
 class QuantityClass extends IntegralClass {    
-    QuantityClass(Integer iID) {super(iID);}
+    QuantityClass(Integer iID, String caption) {super(iID, caption);}
 }
 
 class DateClass extends IntegralClass {
-    DateClass(Integer iID) {super(iID);}
+    DateClass(Integer iID, String caption) {super(iID, caption);}
 }
 
 class StringClass extends Class {    
 
-    StringClass(Integer iID) {super(iID);}
+    StringClass(Integer iID, String caption) {super(iID, caption);}
 
     @Override
     String GetDBType() {
@@ -217,7 +219,7 @@ class StringClass extends Class {
 }
 
 class ObjectClass extends Class {    
-    ObjectClass(Integer iID) {super(iID);}
+    ObjectClass(Integer iID, String caption) {super(iID, caption);}
     
     Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         SelectQuery SelectObjects = new SelectQuery(TableFactory.ObjectTable.ClassSelect(this));

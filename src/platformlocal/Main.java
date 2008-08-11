@@ -239,17 +239,17 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitClasses() {
         
-        Article = new ObjectClass(4);
+        Article = new ObjectClass(4, "Товар");
         Article.AddParent(BaseClass);
-        Store = new ObjectClass(5);
+        Store = new ObjectClass(5, "Склад");
         Store.AddParent(BaseClass);
-        Document = new ObjectClass(6);
+        Document = new ObjectClass(6, "Документ");
         Document.AddParent(BaseClass);
-        PrihDocument = new ObjectClass(7);
+        PrihDocument = new ObjectClass(7, "Приходный документ");
         PrihDocument.AddParent(Document);
-        RashDocument = new ObjectClass(8);
+        RashDocument = new ObjectClass(8, "Расходный документ");
         RashDocument.AddParent(Document);
-        ArticleGroup = new ObjectClass(9);
+        ArticleGroup = new ObjectClass(9, "Группа товаров");
         ArticleGroup.AddParent(BaseClass);
     }
 
@@ -444,7 +444,7 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
         obj1.OutName = "группа товаров";
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
         obj2.OutName = "товар";
-        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
+        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.BaseClass);
         obj3.OutName = "документ";
         
         GroupObjectImplement gv = new GroupObjectImplement();

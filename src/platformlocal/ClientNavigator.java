@@ -114,11 +114,6 @@ public class ClientNavigator extends JPanel {
 
         }
 
-        class ExpandingTreeNode extends DefaultMutableTreeNode {
-
-            public String toString() { return "Retreiving data..."; }
-        }
-
     }
 
 }
