@@ -28,7 +28,7 @@ public class ClientNavigator extends JPanel {
 
     }
 
-    private void openForm(NavigatorForm element) {
+    private void openForm(ClientNavigatorForm element) {
         System.out.println("Open Form");
         try {
             Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, remoteNavigator));
@@ -74,9 +74,9 @@ public class ClientNavigator extends JPanel {
                         if (node == null) return;
 
                         Object nodeObject = node.getUserObject();
-                        if (! (nodeObject instanceof NavigatorForm)) return;
+                        if (! (nodeObject instanceof ClientNavigatorForm)) return;
 
-                        openForm((NavigatorForm) nodeObject);
+                        openForm((ClientNavigatorForm) nodeObject);
                     }
                 }
             });
@@ -91,13 +91,15 @@ public class ClientNavigator extends JPanel {
             parent.removeAllChildren();
 
             Object nodeObject = parent.getUserObject();
-            if (nodeObject != null && ! (nodeObject instanceof NavigatorGroup) ) return;
+            if (nodeObject != null && ! (nodeObject instanceof ClientNavigatorGroup) ) return;
 
-            NavigatorGroup group = (NavigatorGroup) nodeObject;
+            ClientNavigatorGroup group = (ClientNavigatorGroup) nodeObject;
 
-            List<NavigatorElement> elements = remoteNavigator.GetElements(group);
+            int groupID = (group == null) ? -1 : group.ID;
+            List<ClientNavigatorElement> elements = ByteArraySerializer.deserializeListClientNavigatorElement(
+                                                            remoteNavigator.GetElementsByteArray(groupID));
 
-            for (NavigatorElement element : elements) {
+            for (ClientNavigatorElement element : elements) {
 
                 DefaultMutableTreeNode node;
                 node = new DefaultMutableTreeNode(element, element.allowChildren());
@@ -119,4 +121,30 @@ public class ClientNavigator extends JPanel {
 
     }
 
+}
+
+abstract class ClientNavigatorElement {
+
+    int ID;
+    String caption;
+
+    abstract boolean allowChildren();
+
+    public String toString() { return caption; }
+
+}
+
+class ClientNavigatorGroup extends ClientNavigatorElement {
+
+
+    boolean allowChildren() {
+        return true;
+    }
+}
+
+class ClientNavigatorForm extends ClientNavigatorElement {
+
+    boolean allowChildren() {
+        return false;
+    }
 }

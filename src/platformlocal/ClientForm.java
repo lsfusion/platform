@@ -231,7 +231,7 @@ public class ClientForm extends Container {
 
     void changeClass(ClientObjectImplement object) {
         try {
-            remoteForm.ChangeClass(object.ID, null);
+            remoteForm.ChangeClass(object.ID, -1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -339,7 +339,7 @@ public class ClientForm extends Container {
                 buttonDel.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        changeGridClass(object);
+                        changeClass(object);
                     }
                     
                 });

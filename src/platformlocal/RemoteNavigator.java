@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.io.DataInputStream;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -28,11 +29,19 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         MapObjects = iMapObjects;
     }
 
+    List<NavigatorElement> GetElements(int groupID) {
+        return GetElements(BL.BaseGroup.getNavigatorGroup(groupID));
+    }
+
     List<NavigatorElement> GetElements(NavigatorGroup Group) {
         // пока без релевантностей
         if(Group==null) Group = BL.BaseGroup;
 
         return new ArrayList(Group.Childs);
+    }
+
+    public byte[] GetElementsByteArray(int groupID) {
+        return ByteArraySerializer.serializeListNavigatorElement(GetElements(groupID));
     }
 
     RemoteForm<T> CreateForm(int FormID) throws SQLException {
@@ -53,22 +62,20 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
 abstract class NavigatorElement<T extends BusinessLogics<T>> {
 
+    int ID;
     String caption = "";
-    public NavigatorElement(String icaption) { caption = icaption; }
+
+    public NavigatorElement(int iID, String icaption) { ID = iID; caption = icaption; }
 
     // пока так потом может через Map
     abstract NavigatorForm<T> getNavigatorForm(int FormID);
 
-    abstract boolean allowChildren();
-
-    @Override
-    public String toString() { return caption; }
 }
 
 class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     
-    NavigatorGroup(String caption) {
-        super(caption);
+    NavigatorGroup(int iID, String caption) {
+        super(iID, caption);
         Childs = new ArrayList();
     }
     
@@ -79,6 +86,18 @@ class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
     
     Collection<NavigatorElement<T>> Childs;
 
+    NavigatorGroup<T> getNavigatorGroup(int groupID) {
+        for(NavigatorElement<T> child : Childs) {
+            if (child instanceof NavigatorGroup) {
+                if (child.ID == groupID) return (NavigatorGroup)child;
+                NavigatorGroup<T> group = ((NavigatorGroup)child).getNavigatorGroup(groupID);
+                if(group!=null) return group;
+            }
+        }
+
+        return null;
+    }
+
     NavigatorForm<T> getNavigatorForm(int FormID) {
         for(NavigatorElement<T> Child : Childs) {
             NavigatorForm<T> Form = Child.getNavigatorForm(FormID);
@@ -88,16 +107,11 @@ class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
         return null;
     }
 
-    boolean allowChildren() {
-        return true;
-    }
-
 }
 
 abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
-    int ID;
-    NavigatorForm(int iID, String caption) {super(caption); ID=iID;}
+    NavigatorForm(int iID, String caption) {super(iID, caption); }
 
     NavigatorForm<T> getNavigatorForm(int FormID) {
         if(FormID==ID)
@@ -108,8 +122,4 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     abstract RemoteForm<T> CreateForm(DataAdapter Adapter,T BL) throws SQLException;
 
-    boolean allowChildren() {
-        return false;
-    }
-    
 }

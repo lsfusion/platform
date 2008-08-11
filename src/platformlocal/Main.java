@@ -413,8 +413,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitNavigators() {
 
-        NavigatorGroup group1 = new NavigatorGroup<TestBusinessLogics>("Group 1");
-        NavigatorGroup group2 = new NavigatorGroup<TestBusinessLogics>("Group 2");
+        NavigatorGroup group1 = new NavigatorGroup<TestBusinessLogics>(1,"Group 1");
+        NavigatorGroup group2 = new NavigatorGroup<TestBusinessLogics>(2,"Group 2");
 
         BaseGroup.AddChild(group1);
         BaseGroup.AddChild(group2);

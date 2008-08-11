@@ -5,6 +5,8 @@ import java.util.*;
 
 class Serializer {
 
+    // -------------------------------------- Сериализация самой формы -------------------------------------------- //
+
     public static void serializeFormChanges(DataOutputStream outStream, FormChanges formChanges) throws IOException {
 
         //Objects
@@ -249,9 +251,53 @@ class Serializer {
         throw new IOException();
     }
 
+    // -------------------------------------- Сериализация навигатора -------------------------------------------- //
+
+    public static void serializeListNavigatorElement(DataOutputStream outStream, List<NavigatorElement> listElements) throws IOException {
+
+        outStream.writeInt(listElements.size());
+
+        for (NavigatorElement element : listElements) {
+            if (element instanceof NavigatorGroup)
+                outStream.writeByte(0);
+            else
+                outStream.writeByte(1);
+            outStream.writeInt(element.ID);
+            outStream.writeUTF(element.caption);
+        }
+
+    }
+
+    public static List<ClientNavigatorElement> deserializeListClientNavigatorElement(DataInputStream inStream) throws IOException {
+
+        List<ClientNavigatorElement> listElements = new ArrayList();
+
+        int count = inStream.readInt();
+
+        for (int i = 0; i < count; i++) {
+
+            int type = inStream.readByte();
+
+            ClientNavigatorElement element;
+            if (type == 0)
+                element = new ClientNavigatorGroup();
+            else
+                element = new ClientNavigatorForm();
+
+            element.ID = inStream.readInt();
+            element.caption = inStream.readUTF();
+
+            listElements.add(element);
+        }
+
+        return listElements;
+    }
+
 }
 
 class ByteArraySerializer extends Serializer {
+
+    // -------------------------------------- Сериализация самой формы -------------------------------------------- //
 
     public static byte[] serializeFormChanges(FormChanges formChanges) {
 
@@ -334,6 +380,38 @@ class ByteArraySerializer extends Serializer {
 
         try {
             return deserializeObjectValue(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    // -------------------------------------- Сериализация навигатора -------------------------------------------- //
+
+    public static byte[] serializeListNavigatorElement(List<NavigatorElement> listElements) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeListNavigatorElement(dataStream, listElements);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static List<ClientNavigatorElement> deserializeListClientNavigatorElement(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeListClientNavigatorElement(dataStream);
         } catch (IOException e) {
             e.printStackTrace();
         }

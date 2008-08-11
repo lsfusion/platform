@@ -508,7 +508,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             TableFactory.IncludeIntoGraph(Include);
         }         
         
-        BaseGroup = new NavigatorGroup<T>("Base Group");
+        BaseGroup = new NavigatorGroup<T>(0, "Base Group");
         
         InitLogics();
         InitImplements();

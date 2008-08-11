@@ -729,7 +729,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         for (GroupObjectImplement groupObject : Groups)
             for (ObjectImplement object : groupObject)
                 if (object.ID == objectID)
-                    ChangeClass(objectID, idClass);
+                    ChangeClass(object, null);
     }
     
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
