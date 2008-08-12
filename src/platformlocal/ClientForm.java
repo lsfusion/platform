@@ -129,7 +129,7 @@ public class ClientForm extends Container {
 
         formLayout.add(formView.cancelView, buttonCancel);
 
-        JButton test = new JButton("Test");
+/*        JButton test = new JButton("Test");
 
         test.addActionListener(new ActionListener() {
 
@@ -138,7 +138,7 @@ public class ClientForm extends Container {
             }
         });
 
-        add(test);
+        add(test);*/
     }
 
     void applyFormChanges() {
@@ -1046,6 +1046,7 @@ public class ClientForm extends Container {
 
                 ClientClassView key;
 
+                JScrollPane pane;
                 ClassTree view;
 
                 public ClassModel(ClientClassView ikey) {
@@ -1053,14 +1054,15 @@ public class ClientForm extends Container {
                     key = ikey;
 
                     view = new ClassTree();
+                    pane = new JScrollPane(view);
                 }
 
                 public void addClassTree() {
-                    formLayout.add(key, view);
+                    formLayout.add(key, pane);
                 }
 
                 public void removeClassTree() {
-                    formLayout.remove(key, view);
+                    formLayout.remove(key, pane);
                 }
 
                 class ClassTree extends JTree {

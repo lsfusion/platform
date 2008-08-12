@@ -85,6 +85,8 @@ public class SimplexLayout implements LayoutManager2 {
 
     public void layoutContainer(final Container parent) {
 
+        if (disableLayout) return;
+
         long stl = System.currentTimeMillis();
 
         if (parent != mainContainer) return;
@@ -124,13 +126,10 @@ public class SimplexLayout implements LayoutManager2 {
             solver.setVerbose(LpSolve.IMPORTANT);
             solver.setOutputfile("");
 
-            if (disableLayout) return;
-
             int res = solver.solve();
             if (res < 2) {
 
-                final double[] coords = solver.getPtrVariables();
-                setComponentsBounds(coords);
+                setComponentsBounds(solver.getPtrVariables());
 
                 Map<Component,Rectangle> cachedCoords = new HashMap();
                 for (Component comp : components)
@@ -313,18 +312,6 @@ public class SimplexLayout implements LayoutManager2 {
 
                     }
         
-/*        for (Component comp2 : components) 
-            if (comp1 != comp2 && !constraints.get(comp1).containsKey(comp2) && comp1.getParent() == comp2.getParent()) {
-
-                int order1 = constraints.get(comp1).order;
-                int order2 = constraints.get(comp2).order;
-
-                SimplexComponentInfo info1 = (order1 < order2) ? infos.get(comp1) : infos.get(comp2);
-                SimplexComponentInfo info2 = (order1 < order2) ? infos.get(comp2) : infos.get(comp1);
-
-                SimplexConstraints parentConstraints = constraints.get(comp1.getParent());
-                parentConstraints.childConstraints.fillConstraint(solver, info1, info2);
-            }*/
     }
     
     private void fillObjFunction(LpSolve solver) throws LpSolveException {
