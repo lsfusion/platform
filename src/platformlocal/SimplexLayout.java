@@ -5,12 +5,7 @@
 
 package platformlocal;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.LayoutManager2;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,7 +15,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JScrollPane;
+import javax.swing.*;
+
 import lpsolve.*;
 
 
@@ -29,6 +25,12 @@ import lpsolve.*;
  * @author NewUser
  */
 public class SimplexLayout implements LayoutManager2 {
+
+    public boolean disableLayout = false;
+
+    public boolean hasChanged = true;
+    Dimension oldDimension;
+    Map<List<Component>,Map<Component, Rectangle>> cache = new HashMap();
 
     List<Component> components = new ArrayList();
     Map<Component,SimplexConstraints> constraints = new HashMap();
@@ -48,6 +50,7 @@ public class SimplexLayout implements LayoutManager2 {
     public void addLayoutComponent(String name, Component comp) {
         if (components.indexOf(comp) == -1) components.add(comp);
         constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
+        hasChanged = true;
     }
 
     public void addLayoutComponent(Component comp, Object constr) {
@@ -57,12 +60,14 @@ public class SimplexLayout implements LayoutManager2 {
         else
             constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
         System.out.println("addLayoutComp");
+        hasChanged = true;
     }
     
     public void removeLayoutComponent(Component comp) {
         components.remove(comp);
         constraints.remove(comp);
         System.out.println("removeLayoutComp");
+        hasChanged = true;
     }
 
     public Dimension preferredLayoutSize(Container parent) {
@@ -77,42 +82,62 @@ public class SimplexLayout implements LayoutManager2 {
         return new Dimension(10000,10000);
     }
     
-    
-    int layoutnum = 0;
-    
-    public void layoutContainer(Container parent) {
-        
+
+    public void layoutContainer(final Container parent) {
+
+        long stl = System.currentTimeMillis();
+
         if (parent != mainContainer) return;
         if (components.isEmpty()) return;
+
+        if (parent.getSize().equals(oldDimension)) {
+
+            if (!hasChanged) return;
+            Map<Component,Rectangle> cachedCoords = cache.get(components);
+            if (cachedCoords != null) {
+                for (Component comp : components)
+                    comp.setBounds(cachedCoords.get(comp));
+                return;
+            }
+        } else {
+            oldDimension = parent.getSize();
+            cache.clear();
+        }
+
         
         LpSolve solver = null;
-        
+
         try {
 
             solver = LpSolve.makeLp(0, 0);
-            
+
             fillComponentVariables(solver, parent);
             fillComponentConstraints(solver, parent);
             fillConstraints(solver);
 
             fillObjFunction(solver);
-            
-            solver.setTimeout(1);
+
+//            solver.setTimeout(1);
             // solve the problem
             long st = System.currentTimeMillis();
 
+            solver.setVerbose(LpSolve.IMPORTANT);
             solver.setOutputfile("");
-            
-//            solver.setBbDepthlimit(9);
-//           solver.setBbFloorfirst(0);
-//            solver.setBbRule(2);
-//            solver.setMipGap(true, 1000000);
+
+            if (disableLayout) return;
+
             int res = solver.solve();
-            if (solver.solve() < 2) {
-            
-                setComponentsBounds(solver.getPtrVariables());
+            if (res < 2) {
+
+                final double[] coords = solver.getPtrVariables();
+                setComponentsBounds(coords);
+
+                Map<Component,Rectangle> cachedCoords = new HashMap();
+                for (Component comp : components)
+                    cachedCoords.put(comp, comp.getBounds());
+
+                cache.put(components, cachedCoords);
             }
-            System.out.println("LP Solved - " + res + " : " + (System.currentTimeMillis()-st));
 
         } catch (LpSolveException ex) {
             Logger.getLogger(SimplexLayout.class.getName()).log(Level.SEVERE, null, ex);
@@ -121,7 +146,10 @@ public class SimplexLayout implements LayoutManager2 {
             if (solver != null)
                 solver.deleteLp();
         }
+
+        hasChanged = false;
         
+        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
     }
 
     private Map<Component,SimplexComponentInfo> infos;

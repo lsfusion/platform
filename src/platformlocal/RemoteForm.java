@@ -1402,7 +1402,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             ClientContainerView gridContainer = new ClientContainerView();
             gridContainer.outName = "gridContainer " + group.get(0).OutName;
             gridContainer.container = groupContainer;
-            gridContainer.constraints.order = 2;
+            gridContainer.constraints.order = 0;
             gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
             formView.containers.add(gridContainer);
@@ -1441,6 +1441,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 clientObject.ID = object.ID;
                 clientObject.groupObject = clientGroup;
 
+                clientObject.objectIDView.ID = object.ID;
                 clientObject.objectIDView.groupObject = clientGroup;
 
                 clientObject.objectIDView.container = panelContainer;

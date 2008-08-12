@@ -129,6 +129,16 @@ public class ClientForm extends Container {
 
         formLayout.add(formView.cancelView, buttonCancel);
 
+        JButton test = new JButton("Test");
+
+        test.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                formLayout.globalLayout.disableLayout = true;
+            }
+        });
+
+        add(test);
     }
 
     void applyFormChanges() {
@@ -258,9 +268,9 @@ public class ClientForm extends Container {
             e.printStackTrace();
         }
 
-        applyFormChanges();
-
         models.get(groupObject).setClassView(classView);
+
+        applyFormChanges();
     }
 
     void print() {
@@ -330,37 +340,14 @@ public class ClientForm extends Container {
 
             panel = new PanelModel();
 
-            setClassView(true);
-
-            for (final ClientObjectImplement object : groupObject) {
+            for (ClientObjectImplement object : groupObject) {
 
                 objects.put(object, new ObjectModel(object));
 
-                JButton buttonAdd = new JButton("Добавить(" + object.caption + ")");
-                buttonAdd.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        addObject(object);
-                    }
-
-                });
-
-                formLayout.add(groupObject.addView, buttonAdd);
-
-                JButton buttonDel = new JButton("Удалить(" + object.caption + ")");
-                buttonDel.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        changeClass(object);
-                    }
-                    
-                });
-                
-                formLayout.add(groupObject.delView, buttonDel);
-                
             }
             
-            
+            setClassView(true);
+
         }
         
         public void setClassView(Boolean iclassView) {
@@ -371,10 +358,14 @@ public class ClientForm extends Container {
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
+                    for (ClientObjectImplement object : groupObject)
+                        objects.get(object).classModel.addClassTree();
                     grid.table.requestFocusInWindow();
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
+                    for (ClientObjectImplement object : groupObject)
+                        objects.get(object).classModel.removeClassTree();
                     panel.getObjectIDView(0).requestFocusInWindow();
 //                    panel.requestFocusInWindow();
                 }
@@ -627,8 +618,23 @@ public class ClientForm extends Container {
                     JLabel label;
                     CellTable table;
 
+                    int ID;
+
+                    @Override
+                    public int hashCode() {
+                        return ID;
+                    }
+
+                    @Override
+                    public boolean equals(Object o) {
+                        if (!(o instanceof CellView))
+                            return false;
+                        return ((CellView)o).ID == this.ID;
+                    }
+
                     public CellView() {
 
+                        ID = key.ID;
 //                        setLayout(new FlowLayout());
                         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
@@ -724,10 +730,6 @@ public class ClientForm extends Container {
 
                 view = iview;
                 
-//                setLayout(new GridBagLayout());
-
-//                setFocusable(false);
-                
                 table = new Table();
                 
                 pane = new JScrollPane(table);
@@ -739,7 +741,6 @@ public class ClientForm extends Container {
                 paneConstraints.weighty = 1;
                 paneConstraints.insets = new Insets(4,4,4,4); 
                 
-//                add(pane, paneConstraints);
             }
 
             private void addGroupObjectID() {
@@ -809,19 +810,9 @@ public class ClientForm extends Container {
                 if (table.gridColumns.size() != 0) {
                     
                     formLayout.add(view, pane);
-//                    if (!isAncestorOf(pane))
-//                        add(pane, paneConstraints);
-
-//                    formLayout.getComponent().validate();
-//                    validate();
 
                 } else {
                     formLayout.remove(view, pane);
-//                    remove(pane);
-//                    table = new Table();
-//                    pane = new JScrollPane(table);
-//                    validate();
-//                    formLayout.getComponent().validate();
                 }
                 
             }
@@ -834,8 +825,24 @@ public class ClientForm extends Container {
                 Map<ClientCellView,Map<ClientGroupObjectValue,Object>> gridValues;
                 
                 Model model;
-                
+
+                int ID;
+
+                @Override
+                public int hashCode() {
+                    return ID;
+                }
+
+                @Override
+                public boolean equals(Object o) {
+                    if (!(o instanceof Table))
+                        return false;
+                    return ((Table)o).ID == this.ID;
+                }
+
                 public Table() {
+
+                    ID = groupObject.GID;
 
                     gridColumns = new ArrayList();
                     gridRows = new ArrayList();
@@ -895,7 +902,7 @@ public class ClientForm extends Container {
                     int oldindex = gridRows.indexOf(currentObject);
 
                     gridRows = igridObjects;
-                    table.validate();
+//                    table.validate();
 
                     final int newindex = gridRows.indexOf(currentObject);
 
@@ -944,18 +951,8 @@ public class ClientForm extends Container {
                 
                 class Model extends AbstractTableModel {
 
-/*                    public java.lang.Class getColumnClass(int c) {
-                        if (c < gridColumns.size())
-                            return Object.class;
-                        else
-                            return Integer.class;
-                    }*/
-
                     public String getColumnName(int col) {
-//                        if (col < gridColumns.size())
-                            return gridColumns.get(col).caption;
-//                        else
-//                            return groupObject.get(col-gridColumns.size()).caption;
+                          return gridColumns.get(col).caption;
                     }
 
                     public int getRowCount() {
@@ -963,7 +960,7 @@ public class ClientForm extends Container {
                     }
 
                     public int getColumnCount() {
-                        return gridColumns.size(); // + (classView ? groupObject.size() : 0);
+                        return gridColumns.size();
                     }
 
                     public boolean isCellEditable(int row, int col) {
@@ -973,10 +970,7 @@ public class ClientForm extends Container {
                     public Object getValueAt(int row, int col) {
 
                         Object val = null;
-//                        if (col < gridColumns.size())
-                          val = gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
-//                        else
-//                            val = gridRows.get(row).get(groupObject.get(col-gridColumns.size()));
+                        val = gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
                             
                         if (val == null)
                             return (String)"";
@@ -985,9 +979,8 @@ public class ClientForm extends Container {
                     }
                     
                     public void setValueAt(Object value, int row, int col) {
-                        System.out.println("setValueAt");
-//                        if (col < gridColumns.size())
-                            changeProperty(gridColumns.get(col),value);
+//                        System.out.println("setValueAt");
+                        changeProperty(gridColumns.get(col),value);
                     }
                     
                     public ClientGroupObjectValue getSelectedObject() {
@@ -1007,6 +1000,10 @@ public class ClientForm extends Container {
 
             ClientObjectImplement object;
 
+            JButton buttonAdd;
+            JButton buttonDel;
+
+            ClientClass baseClass;
             ClientClass currentClass;
 
             ClassModel classModel;
@@ -1014,6 +1011,32 @@ public class ClientForm extends Container {
             public ObjectModel(ClientObjectImplement iobject) {
 
                 object = iobject;
+
+                buttonAdd = new JButton("Добавить(" + object.caption + ")");
+                buttonAdd.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        addObject(object);
+                    }
+
+                });
+
+                formLayout.add(groupObject.addView, buttonAdd);
+
+                buttonDel = new JButton("Удалить(" + object.caption + ")");
+                buttonDel.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        changeClass(object);
+                    }
+
+                });
+
+                formLayout.add(groupObject.delView, buttonDel);
+
+                
+                baseClass = ByteArraySerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
+                currentClass = baseClass;
 
                 classModel = new ClassModel(object.classView);
 
@@ -1030,21 +1053,41 @@ public class ClientForm extends Container {
                     key = ikey;
 
                     view = new ClassTree();
+                }
+
+                public void addClassTree() {
                     formLayout.add(key, view);
                 }
-                
+
+                public void removeClassTree() {
+                    formLayout.remove(key, view);
+                }
+
                 class ClassTree extends JTree {
 
                     DefaultMutableTreeNode rootNode;
                     DefaultTreeModel model;
 
+                    int ID;
+
+                    @Override
+                    public int hashCode() {
+                        return ID;
+                    }
+
+                    @Override
+                    public boolean equals(Object o) {
+                        if (!(o instanceof ClassTree))
+                            return false;
+                        return ((ClassTree)o).ID == this.ID;
+                    }
+
                     public ClassTree() {
+
+                        ID = object.ID;
 
                         setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 
-                        ClientClass baseClass = ByteArraySerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
-                        currentClass = baseClass;
-                        
                         rootNode = new DefaultMutableTreeNode(baseClass);
                         model = new DefaultTreeModel(rootNode);
 
@@ -1109,9 +1152,12 @@ public class ClientForm extends Container {
                             }
                         });
 
-                        if (baseClass.hasChilds)
+                        if (baseClass.hasChilds) {
                             rootNode.add(new ExpandingTreeNode());
-                        
+                            expandPath(new TreePath(rootNode));
+                        }
+
+
                     }
 
                     private void addNodeElements(DefaultMutableTreeNode parent) {
