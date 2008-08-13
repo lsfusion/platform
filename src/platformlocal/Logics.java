@@ -579,7 +579,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(Integer idObject : Session.NewClasses.keySet()) {
             // дальше нужно построить "разницу" какие классы ушли и записать в соответствующую таблицу
             
-            Collection<Class> TempRemoveClasses = new ArrayList();
+            Set<Class> TempRemoveClasses = new HashSet();
             
             ListIterator<Class> ic = Session.NewClasses.get(idObject).listIterator();
             Class NewClass = ic.next();
@@ -593,7 +593,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
             // узнаем старый класс
             Collection<Class> AddClasses = new ArrayList();
-            Collection<Class> RemoveClasses = new ArrayList();
+            Set<Class> RemoveClasses = new HashSet();
             NewClass.GetDiffSet(GetClass(null,Adapter,idObject),AddClasses,RemoveClasses);
             Session.AddClasses.addAll(AddClasses);
             

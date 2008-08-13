@@ -141,43 +141,39 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
         // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
         for(ObjectImplement Object : this) {
+            From KeySelect = TableFactory.ObjectTable.ClassSelect(Object.GridClass);
+            SourceExpr ClassExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
+
+            // не было в фильтре
+            // если есть remove'классы или новые объекты их надо докинуть
+            if(Session!=null && Session.AddClasses.contains(Object.GridClass)) {
+                // придется UnionQuery делать
+                UnionQuery ResultQuery = new UnionQuery(2);
+                ResultQuery.Keys.add(TableFactory.ObjectTable.Key.Name);
+
+                SelectQuery SubQuery = new SelectQuery(KeySelect);
+                SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,ClassExpr);
+                ResultQuery.Unions.add(SubQuery);
+
+                SubQuery = new SelectQuery(TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
+                SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,TableFactory.AddClassTable.Object.Name));
+                ResultQuery.Unions.add(SubQuery);
+
+                KeySelect = new FromQuery(ResultQuery);
+                ClassExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
+            }
+            JoinKeys.add(KeySelect);
+
             SourceExpr KeyExpr = KeySources.get(Object);
-            From KeySelect = null;
             if(KeyExpr==null) {
-                KeySelect = TableFactory.ObjectTable.ClassSelect(Object.GridClass);
-                KeyExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
-
-                // не было в фильтре
-                // если есть remove'классы или новые объекты их надо докинуть                        
-                if(Session!=null && Session.AddClasses.contains(Object.GridClass)) {
-                    // придется UnionQuery делать
-                    UnionQuery ResultQuery = new UnionQuery(2);
-                    ResultQuery.Keys.add(TableFactory.ObjectTable.Key.Name);
-
-                    SelectQuery SubQuery = new SelectQuery(KeySelect);
-                    SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,KeyExpr);
-                    ResultQuery.Unions.add(SubQuery);
-
-                    SubQuery = new SelectQuery(TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
-                    SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,TableFactory.AddClassTable.Object.Name));
-                    ResultQuery.Unions.add(SubQuery);
-
-                    KeySelect = new FromQuery(ResultQuery);
-                    KeyExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
-                }
-
-                KeySources.put(Object,KeyExpr);
-                JoinKeys.add(KeySelect);
-
+                KeySources.put(Object,ClassExpr);
                 // надо сделать LEFT JOIN remove' классов
                 if(Session!=null && Session.RemoveClasses.contains(Object.GridClass))
-                    TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,KeyExpr);
+                    TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,ClassExpr);
+            } else {
+//              надо так как фильтр может быть на более конкретные классы
+                KeySelect.Wheres.add(new FieldWhere(KeyExpr,TableFactory.ObjectTable.Key.Name));
             }
-//                    по идее не надо, так как фильтр по определению имеет нужный класс - надо фильтр может быть на более конкретные классы
-                    else {
-                       KeySelect = TableFactory.ObjectTable.ClassJoinSelect(Object.GridClass,KeyExpr);
-                       JoinKeys.add(KeySelect);
-                    }
         }
     }
 }
@@ -1236,7 +1232,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 int NewInInterface=0;
                 if(CheckClass)
                     NewInInterface = (DrawProp.View.IsInInterface(DrawProp.ToDraw)?2:0);
-                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 && InInterface==2)) // если изменился класс
+                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 && InInterface==2))
                     NewInInterface = (DrawProp.View.IsInInterface(null)?1:0);
                 
                 if(InInterface!=NewInInterface) {

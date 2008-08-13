@@ -141,9 +141,8 @@ abstract class Class {
                 if(Check!=1) return;
                 Check = 2;
                 Set = true;
-            }
-            
-            if(Free!=null) Free.add(this);
+            } else
+                if(Free!=null) Free.add(this);
         } else {
             if(Check==3 || Check==2) {
                 Check = 3;
