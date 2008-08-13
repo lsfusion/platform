@@ -32,9 +32,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.*;
 
 import bibliothek.gui.dock.DefaultDockable;
 
@@ -270,6 +268,13 @@ public class ClientForm extends Container {
 
         models.get(groupObject).setClassView(classView);
 
+        applyFormChanges();
+    }
+
+    void changeOrder(ClientPropertyView property, int modiType) {
+
+        remoteForm.ChangeOrder(property.ID, modiType);
+        
         applyFormChanges();
     }
 
@@ -820,11 +825,15 @@ public class ClientForm extends Container {
             public class Table extends JTable
                                implements ClientCellViewTable {
 
-                List<ClientCellView> gridColumns;
-                List<ClientGroupObjectValue> gridRows;
-                Map<ClientCellView,Map<ClientGroupObjectValue,Object>> gridValues;
+                List<ClientCellView> gridColumns = new ArrayList();
+                List<ClientGroupObjectValue> gridRows = new ArrayList();
+                Map<ClientCellView,Map<ClientGroupObjectValue,Object>> gridValues = new HashMap();
+
+                List<ClientPropertyView> orders = new ArrayList();
+                List<Boolean> orderDirections = new ArrayList();
                 
                 Model model;
+                JTableHeader header;
 
                 int ID;
 
@@ -844,12 +853,10 @@ public class ClientForm extends Container {
 
                     ID = groupObject.GID;
 
-                    gridColumns = new ArrayList();
-                    gridRows = new ArrayList();
-                    gridValues = new HashMap();
-                    
                     model = new Model();
                     setModel(model);
+
+                    header = getTableHeader();
                     
                     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -858,7 +865,10 @@ public class ClientForm extends Container {
                             changeObject(groupObject, model.getSelectedObject());
                         }
                     });
-                    
+
+                    header.setDefaultRenderer(new GridHeaderRenderer(header.getDefaultRenderer()));
+                    header.addMouseListener(new GridHeaderMouseListener());
+
                     setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
                     setDefaultEditor(Object.class, new ClientAbstractCellEditor());
 
@@ -948,7 +958,90 @@ public class ClientForm extends Container {
                     repaint();
 
                 }
-                
+
+
+                private class GridHeaderRenderer implements TableCellRenderer {
+
+                    private TableCellRenderer tableCellRenderer;
+
+                    public GridHeaderRenderer(TableCellRenderer tableCellRenderer) {
+                        this.tableCellRenderer = tableCellRenderer;
+                    }
+
+                    public Component getTableCellRendererComponent(JTable itable,
+                                                                   Object value,
+                                                                   boolean isSelected,
+                                                                   boolean hasFocus,
+                                                                   int row,
+                                                                   int column) {
+
+                        Component comp = tableCellRenderer.getTableCellRendererComponent(itable,
+                                value, isSelected, hasFocus, row, column);
+                        if (comp instanceof JLabel) {
+
+                            JLabel label = (JLabel) comp;
+                            label.setHorizontalAlignment(JLabel.CENTER);
+
+                            ClientPropertyView property = table.getPropertyView(row, column);
+                            if (property != null) {
+
+                                int ordNum = orders.indexOf(property);
+                                if (ordNum != -1) {
+
+                                    label.setFont(label.getFont().deriveFont(Font.BOLD));
+                                    label.setHorizontalAlignment((orderDirections.get(ordNum)) ? JLabel.LEFT : JLabel.RIGHT);
+                                }
+
+                            }
+
+                       }
+                        return comp;
+                    }
+                }
+
+                private class GridHeaderMouseListener extends MouseAdapter {
+                    
+                    public void mouseClicked(MouseEvent e) {
+
+                        if (e.getClickCount() != 2) return;
+                        if (!(e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON3)) return;
+
+                        TableColumnModel columnModel = table.getColumnModel();
+                        int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+                        int column = columnModel.getColumn(viewColumn).getModelIndex();
+
+                        if (column != -1) {
+
+                            ClientPropertyView property = table.getPropertyView(0, column);
+                            if (property != null) {
+
+                                int ordNum = orders.indexOf(property);
+                                if (ordNum == -1) {
+                                    if (e.getButton() == MouseEvent.BUTTON1) {
+                                        changeOrder(property, RemoteForm.ORDER_REPLACE);
+                                        orders.clear();
+                                    } else
+                                        changeOrder(property, RemoteForm.ORDER_ADD);
+
+                                    orders.add(property);
+                                    orderDirections.add(true);
+
+                                } else {
+                                    if (e.getButton() == MouseEvent.BUTTON1) {
+                                        orderDirections.set(ordNum, !orderDirections.get(ordNum));
+                                    } else {
+                                        changeOrder(property, RemoteForm.ORDER_REMOVE);
+                                        orders.remove(ordNum);
+                                        orderDirections.remove(ordNum);
+                                    }
+                                }
+
+                                header.repaint();
+                            }
+                        }
+                    }
+                }
+
                 class Model extends AbstractTableModel {
 
                     public String getColumnName(int col) {
@@ -992,6 +1085,15 @@ public class ClientForm extends Container {
                 public ClientCellView getCellView(int row, int col) {
                     return gridColumns.get(col);
                 }
+
+                public ClientPropertyView getPropertyView(int row, int col) {
+                    ClientCellView cell = getCellView(row, col);
+                    if (cell instanceof ClientPropertyView)
+                        return (ClientPropertyView) cell;
+                    else
+                        return null;
+                }
+
             }
             
         }

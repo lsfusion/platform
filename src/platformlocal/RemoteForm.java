@@ -660,7 +660,31 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         StructUpdated = true;
     }
-    
+
+
+    public static int ORDER_REPLACE = 1;
+    public static int ORDER_ADD = 2;
+    public static int ORDER_REMOVE = 3;
+
+    public void ChangeOrder(int propertyID, int modiType) {
+        ChangeOrder(getPropertyView(propertyID), modiType);
+    }
+
+    public void ChangeOrder(PropertyView propertyView, int modiType) {
+
+        PropertyObjectImplement property = propertyView.View;
+
+        if (modiType == ORDER_REMOVE) {
+            Orders.remove(property);
+        } else {
+            if (modiType == ORDER_REPLACE)
+                Orders.clear();
+            Orders.add(property);
+        }
+
+        StructUpdated = true;
+    }
+
     // собсно скорее все-таки будет PropertyView передаваться
     public void AddOrder(PropertyObjectImplement Property) {
         Orders.add(Property);
