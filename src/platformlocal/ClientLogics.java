@@ -240,3 +240,149 @@ class ClientFormView {
         return null;
     }
 }
+
+class DefaultClientFormView extends ClientFormView {
+
+    public DefaultClientFormView(RemoteForm remoteForm) {
+
+        ClientContainerView mainContainer = new ClientContainerView();
+        mainContainer.outName = "mainContainer";
+        mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+
+        containers.add(mainContainer);
+
+        Map<GroupObjectImplement, ClientGroupObjectImplement> mgroupObjects = new HashMap();
+        Map<ObjectImplement, ClientObjectImplement> mobjects = new HashMap();
+        Map<PropertyView, ClientPropertyView> mproperties = new HashMap();
+        Map<GroupObjectValue, ClientGroupObjectValue> mobjectValues = new HashMap();
+
+        Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
+        Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
+
+        for (GroupObjectImplement group : (List<GroupObjectImplement>)remoteForm.Groups) {
+
+            ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
+            clientGroup.GID = group.GID;
+
+            mgroupObjects.put(group, clientGroup);
+            groupObjects.add(clientGroup);
+
+            ClientContainerView groupContainer = new ClientContainerView();
+            groupContainer.outName = "groupContainer " + group.get(0).OutName;
+            groupContainer.container = mainContainer;
+            groupContainer.constraints.order = remoteForm.Groups.indexOf(group);
+            groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+
+            groupContainers.put(clientGroup, groupContainer);
+            containers.add(groupContainer);
+
+            ClientContainerView gridContainer = new ClientContainerView();
+            gridContainer.outName = "gridContainer " + group.get(0).OutName;
+            gridContainer.container = groupContainer;
+            gridContainer.constraints.order = 0;
+            gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+            containers.add(gridContainer);
+
+            ClientContainerView panelContainer = new ClientContainerView();
+            panelContainer.outName = "panelContainer " + group.get(0).OutName;
+            panelContainer.container = groupContainer;
+            panelContainer.constraints.order = 1;
+            panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+
+            panelContainers.put(clientGroup, panelContainer);
+            containers.add(panelContainer);
+
+            ClientContainerView buttonContainer = new ClientContainerView();
+            buttonContainer.outName = "buttonContainer " + group.get(0).OutName;
+            buttonContainer.container = groupContainer;
+            buttonContainer.constraints.order = 2;
+            buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+            containers.add(buttonContainer);
+
+            clientGroup.gridView.container = gridContainer;
+            clientGroup.gridView.constraints.order = 1;
+            clientGroup.gridView.constraints.fillVertical = 1;
+            clientGroup.gridView.constraints.fillHorizontal = 1;
+
+            clientGroup.addView.container = buttonContainer;
+            clientGroup.addView.constraints.order = 0;
+
+            clientGroup.delView.container = buttonContainer;
+            clientGroup.delView.constraints.order = 1;
+
+            clientGroup.changeClassView.container = buttonContainer;
+            clientGroup.changeClassView.constraints.order = 2;
+
+            for (ObjectImplement object : group) {
+
+                ClientObjectImplement clientObject = new ClientObjectImplement();
+                clientObject.ID = object.ID;
+                clientObject.groupObject = clientGroup;
+
+                clientObject.objectIDView.ID = object.ID;
+                clientObject.objectIDView.groupObject = clientGroup;
+
+                clientObject.objectIDView.container = panelContainer;
+                clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
+
+                clientObject.caption = object.OutName;
+                clientObject.objectIDView.caption = object.OutName;
+
+                clientObject.classView.container = gridContainer;
+                clientObject.classView.constraints.order = 0;
+                clientObject.classView.constraints.fillVertical = 1;
+                clientObject.classView.constraints.fillHorizontal = 0.2;
+
+                clientGroup.add(clientObject);
+
+                mobjects.put(object, clientObject);
+                objects.add(clientObject);
+
+                order.add(clientObject.objectIDView);
+            }
+        }
+
+        for (PropertyView property : (List<PropertyView>)remoteForm.Properties) {
+
+            ClientPropertyView clientProperty = new ClientPropertyView();
+            clientProperty.ID = property.ID;
+
+            clientProperty.groupObject = mgroupObjects.get(property.ToDraw);
+            clientProperty.constraints.order = remoteForm.Properties.indexOf(property);
+
+            //временно
+            clientProperty.caption = property.View.Property.OutName;
+            clientProperty.type = property.View.Property.GetDBType();
+
+            mproperties.put(property, clientProperty);
+            properties.add(clientProperty);
+
+            clientProperty.container = panelContainers.get(clientProperty.groupObject);
+
+            order.add(clientProperty);
+        }
+
+        ClientContainerView formButtonContainer = new ClientContainerView();
+        formButtonContainer.container = mainContainer;
+        formButtonContainer.constraints.order = remoteForm.Groups.size();
+        formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+        containers.add(formButtonContainer);
+
+        printView.container = formButtonContainer;
+        printView.constraints.order = 0;
+        printView.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
+
+        applyView.container = formButtonContainer;
+        applyView.constraints.order = 1;
+        applyView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
+        cancelView.container = formButtonContainer;
+        cancelView.constraints.order = 2;
+        cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
+    }
+
+}

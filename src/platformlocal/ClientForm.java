@@ -1087,15 +1087,21 @@ public class ClientForm extends Container {
 
                 public ClientClass getDerivedClass() {
 
-                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode)view.getSelectionModel().getLeadSelectionPath().getLastPathComponent();
+                    TreePath path = view.getSelectionModel().getLeadSelectionPath();
+                    if (path == null) return currentClass;
+
+                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode) path.getLastPathComponent();
                     if (selNode == null || !currentNode.isNodeChild(selNode)) return currentClass;
 
                     return (ClientClass) selNode.getUserObject();
                 }
 
                 public ClientClass getSelectedClass() {
-                    
-                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode)view.getSelectionModel().getLeadSelectionPath().getLastPathComponent();
+
+                    TreePath path = view.getSelectionModel().getLeadSelectionPath();
+                    if (path == null) return currentClass;
+
+                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode) path.getLastPathComponent();
                     if (selNode == null) return currentClass;
 
                     return (ClientClass) selNode.getUserObject();

@@ -371,11 +371,10 @@ public class SimplexLayout implements LayoutManager2 {
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.LE, 0);
                 objFnc.add(1.0);
             }
-            
-            objFnc.set(info.T, -constraint.directions.T);
-            objFnc.set(info.L, -constraint.directions.L);
-            objFnc.set(info.B, constraint.directions.B);
-            objFnc.set(info.R, constraint.directions.R);
+            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -0.5 : 0.0));
+            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -0.5 : 0.0));
+            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 0.5 : 0.0));
+            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 0.5 : 0.0));
                     
         }
         
