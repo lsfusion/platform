@@ -21,6 +21,7 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
 
     ClientGridView gridView = new ClientGridView();
     ClientFunctionView addView = new ClientFunctionView();
+    ClientFunctionView changeClassView = new ClientFunctionView();
     ClientFunctionView delView = new ClientFunctionView();
 
     @Override

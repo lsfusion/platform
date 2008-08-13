@@ -228,18 +228,18 @@ public class ClientForm extends Container {
         }
     }
 
-    void addObject(ClientObjectImplement object) {
+    void addObject(ClientObjectImplement object, ClientClass cls) {
         try {
-            remoteForm.AddObject(object.ID);
+            remoteForm.AddObject(object.ID, cls.ID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         applyFormChanges();
     }
 
-    void changeClass(ClientObjectImplement object) {
+    void changeClass(ClientObjectImplement object, ClientClass cls) {
         try {
-            remoteForm.ChangeClass(object.ID, -1);
+            remoteForm.ChangeClass(object.ID, (cls == null) ? -1 : cls.ID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1001,10 +1001,8 @@ public class ClientForm extends Container {
             ClientObjectImplement object;
 
             JButton buttonAdd;
+            JButton buttonChangeClass;
             JButton buttonDel;
-
-            ClientClass baseClass;
-            ClientClass currentClass;
 
             ClassModel classModel;
 
@@ -1016,7 +1014,7 @@ public class ClientForm extends Container {
                 buttonAdd.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        addObject(object);
+                        addObject(object, classModel.getDerivedClass());
                     }
 
                 });
@@ -1027,24 +1025,39 @@ public class ClientForm extends Container {
                 buttonDel.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
-                        changeClass(object);
+                        changeClass(object, null);
                     }
 
                 });
 
                 formLayout.add(groupObject.delView, buttonDel);
 
-                
-                baseClass = ByteArraySerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
-                currentClass = baseClass;
-
                 classModel = new ClassModel(object.classView);
+
+                if (classModel.rootClass.hasChilds) {
+                    buttonChangeClass = new JButton("Изменить класс(" + object.caption + ")");
+                    buttonChangeClass.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            changeClass(object, classModel.getSelectedClass());
+                        }
+
+                    });
+
+                    formLayout.add(groupObject.changeClassView, buttonChangeClass);
+                }
 
             }
 
             class ClassModel {
 
                 ClientClassView key;
+
+                DefaultMutableTreeNode rootNode;
+                ClientClass rootClass;
+
+                DefaultMutableTreeNode currentNode;
+                ClientClass currentClass;
 
                 JScrollPane pane;
                 ClassTree view;
@@ -1053,21 +1066,43 @@ public class ClientForm extends Container {
 
                     key = ikey;
 
+                    rootClass = ByteArraySerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
+                    currentClass = rootClass;
+
+                    rootNode = new DefaultMutableTreeNode(rootClass);
+                    currentNode = rootNode;
+
                     view = new ClassTree();
                     pane = new JScrollPane(view);
                 }
 
                 public void addClassTree() {
-                    formLayout.add(key, pane);
+                    if (rootClass.hasChilds)
+                        formLayout.add(key, pane);
                 }
 
                 public void removeClassTree() {
                     formLayout.remove(key, pane);
                 }
 
+                public ClientClass getDerivedClass() {
+
+                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode)view.getSelectionModel().getLeadSelectionPath().getLastPathComponent();
+                    if (selNode == null || !currentNode.isNodeChild(selNode)) return currentClass;
+
+                    return (ClientClass) selNode.getUserObject();
+                }
+
+                public ClientClass getSelectedClass() {
+                    
+                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode)view.getSelectionModel().getLeadSelectionPath().getLastPathComponent();
+                    if (selNode == null) return currentClass;
+
+                    return (ClientClass) selNode.getUserObject();
+                }
+
                 class ClassTree extends JTree {
 
-                    DefaultMutableTreeNode rootNode;
                     DefaultTreeModel model;
 
                     int ID;
@@ -1090,7 +1125,6 @@ public class ClientForm extends Container {
 
                         setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 
-                        rootNode = new DefaultMutableTreeNode(baseClass);
                         model = new DefaultTreeModel(rootNode);
 
                         setModel(model);
@@ -1120,6 +1154,7 @@ public class ClientForm extends Container {
                                     if (! (nodeObject instanceof ClientClass)) return;
 
                                     changeGridClass(object, (ClientClass) nodeObject);
+                                    currentNode = node;
                                     currentClass = (ClientClass) nodeObject;
                                     view.updateUI();
                                 }
@@ -1143,8 +1178,9 @@ public class ClientForm extends Container {
                                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                                 if (node != null) {
 
-                                    Object nodeObject = node.getUserObject();
-                                    if (nodeObject != null && nodeObject instanceof ClientClass && ((ClientClass)nodeObject == currentClass))
+//                                    Object nodeObject = node.getUserObject();
+//                                    if (nodeObject != null && nodeObject instanceof ClientClass && ((ClientClass)nodeObject == currentClass))
+                                    if (node == currentNode)
                                         setFont(getFont().deriveFont(Font.BOLD));
                                 }
 
@@ -1154,7 +1190,7 @@ public class ClientForm extends Container {
                             }
                         });
 
-                        if (baseClass.hasChilds) {
+                        if (rootClass.hasChilds) {
                             rootNode.add(new ExpandingTreeNode());
                             expandPath(new TreePath(rootNode));
                         }

@@ -698,13 +698,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         ChangeProperty(Property.View,Value);
     }
 
-    public void AddObject(Integer objectID) throws SQLException {
-        AddObject(getObjectImplement(objectID));
+    public void AddObject(int objectID, int classID) throws SQLException {
+        ObjectImplement object = getObjectImplement(objectID);
+        AddObject(object, (classID == -1) ? null : getFormClass(object.BaseClass, classID));
     }
 
-    public void AddObject(ObjectImplement Object) throws SQLException {
+    public void AddObject(ObjectImplement Object, Class cls) throws SQLException {
         // пока тупо в базу
-        Integer AddID = BL.AddObject(Session,Adapter,Object.GridClass);
+        Integer AddID = BL.AddObject(Session,Adapter,cls);
         
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
@@ -758,8 +759,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         DataChanged = true;
     }   
 
-    public void ChangeClass(Integer objectID, Integer idClass) throws SQLException {
-        ChangeClass(getObjectImplement(objectID), null);
+    public void ChangeClass(int objectID, int classID) throws SQLException {
+
+        ObjectImplement object = getObjectImplement(objectID);
+        ChangeClass(object, (classID == -1) ? null : getFormClass(object.BaseClass, classID));
+
     }
     
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
@@ -1434,6 +1438,9 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
             clientGroup.delView.container = buttonContainer;
             clientGroup.delView.constraints.order = 1;
+
+            clientGroup.changeClassView.container = buttonContainer;
+            clientGroup.changeClassView.constraints.order = 2;
 
             for (ObjectImplement object : group) {
 
