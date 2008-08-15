@@ -291,6 +291,58 @@ class Serializer {
         return cls;
     }
 
+    // -------------------------------------- Сериализация фильтров -------------------------------------------- //
+    public static void serializeClientFilter(DataOutputStream outStream, ClientFilter filter) throws IOException {
+
+        outStream.writeInt(filter.property.ID);
+
+        outStream.writeInt(filter.compare);
+
+        if (filter.value instanceof ClientUserValueLink) {
+
+            outStream.writeByte(0);
+            serializeObjectValue(outStream, ((ClientUserValueLink)filter.value).value);
+        }
+
+        if (filter.value instanceof ClientObjectValueLink) {
+
+            outStream.writeByte(1);
+            outStream.writeInt(((ClientObjectValueLink)filter.value).object.ID);
+        }
+
+        if (filter.value instanceof ClientPropertyValueLink) {
+
+            outStream.writeByte(2);
+            outStream.writeInt(((ClientPropertyValueLink)filter.value).property.ID);
+        }
+
+    }
+
+    public static Filter deserializeFilter(DataInputStream inStream, RemoteForm remoteForm) throws IOException {
+
+        PropertyObjectImplement property = remoteForm.getPropertyView(inStream.readInt()).View;
+
+        int compare = inStream.readInt();
+
+        int classValueLink = inStream.readByte();
+
+        ValueLink valueLink = null;
+
+        if (classValueLink == 0) {
+            valueLink = new UserValueLink(deserializeObjectValue(inStream));
+        }
+
+        if (classValueLink == 1) {
+            valueLink = new ObjectValueLink(remoteForm.getObjectImplement(inStream.readInt()));
+        }
+
+        if (classValueLink == 2) {
+            valueLink = new PropertyValueLink(remoteForm.getPropertyView(inStream.readInt()).View);
+        }
+
+        return new CompareFilter(property, compare, valueLink);
+
+    }
 
     // -------------------------------------- Сериализация навигатора -------------------------------------------- //
 
@@ -482,6 +534,37 @@ class ByteArraySerializer extends Serializer {
 
         try {
             return deserializeClientClass(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    // -------------------------------------- Сериализация фильтров -------------------------------------------- //
+    public static byte[] serializeClientFilter(ClientFilter filter) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeClientFilter(dataStream, filter);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static Filter deserializeFilter(byte[] state, RemoteForm remoteForm) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeFilter(dataStream, remoteForm);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -75,14 +75,6 @@ class ClientObjectImplement {
     
     public ClientObjectImplement() {
     }
-}
-
-class ClientClass {
-
-    int ID;
-    String caption;
-
-    boolean hasChilds;
 
     public String toString() { return caption; }
 }
@@ -102,7 +94,7 @@ class ClientContainerView extends ClientComponentView {
 }
 
 class ClientGridView extends ClientComponentView {
-    
+
 }
 
 class ClientClassView extends ClientComponentView {
@@ -141,6 +133,8 @@ abstract class ClientCellView extends ClientComponentView {
     
     abstract public PropertyRendererComponent getRendererComponent(ClientForm form);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form);
+
+    public String toString() { return caption; }
 
 }
 
@@ -385,4 +379,52 @@ class DefaultClientFormView extends ClientFormView {
 
     }
 
+}
+
+// -------------------------------------- Классы ------------------------------ //
+
+class ClientClass {
+
+    int ID;
+    String caption;
+
+    boolean hasChilds;
+
+    public String toString() { return caption; }
+}
+
+// -------------------------------------- Фильтры ------------------------------ //
+
+class ClientFilter {
+
+    ClientPropertyView property;
+    ClientValueLink value;
+
+    int compare;
+    
+}
+
+abstract class ClientValueLink {
+
+}
+
+class ClientUserValueLink extends ClientValueLink {
+
+    Object value;
+
+    public String toString() { return "Значение"; }
+}
+
+class ClientObjectValueLink extends ClientValueLink {
+
+    ClientObjectImplement object;
+
+    public String toString() { return "Объект"; }
+}
+
+class ClientPropertyValueLink extends ClientValueLink {
+
+    ClientPropertyView property;
+
+    public String toString() { return "Свойство"; }
 }

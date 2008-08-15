@@ -481,7 +481,7 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
 
 //        AddFilter(new NotNullFilter(QImpl));
-        AddFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
+        addFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
         
 //        fbv.AddObjectSeek(obj3,13);
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");

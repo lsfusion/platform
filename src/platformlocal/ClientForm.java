@@ -12,15 +12,8 @@ import net.sf.jasperreports.view.JRViewer;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextField;
@@ -39,7 +32,6 @@ import bibliothek.gui.dock.DefaultDockable;
 interface ClientCellViewTable {
 
     ClientCellView getCellView(int row, int col);
-
 }
 
 class SingleViewable<ViewClass> {
@@ -278,6 +270,20 @@ public class ClientForm extends Container {
         applyFormChanges();
     }
 
+    private void changeFind(List<ClientFilter> conditions) {
+    }
+
+
+    private void changeFilter(List<ClientFilter> conditions) {
+
+        remoteForm.clearFilter();
+        for (ClientFilter filter : conditions) {
+            remoteForm.addFilter(ByteArraySerializer.serializeClientFilter(filter));
+        }
+
+        applyFormChanges();
+    }
+
     void print() {
 
 
@@ -333,7 +339,9 @@ public class ClientForm extends Container {
         Map<ClientObjectImplement, ObjectModel> objects = new HashMap();
 
         ClientGroupObjectValue currentObject;
-        ClientPropertyView currentProperty;
+
+        ClientCellView currentCell;
+        Object currentValue;
 
         Boolean classView = false;
 
@@ -491,10 +499,158 @@ public class ClientForm extends Container {
             }
 
         }
-        
+
+        class CellModel {
+
+            ClientCellView key;
+            Object value;
+
+            CellView view;
+
+            public CellModel(ClientCellView ikey) {
+
+                view = new CellView();
+
+                setKey(ikey);
+            }
+
+            public void setKey(ClientCellView ikey) {
+
+                key = ikey;
+
+                view.keyChanged();
+
+                view.repaint();
+            }
+
+            public void setValue(Object ivalue) {
+                value = ivalue;
+
+                view.repaint();
+            }
+
+            protected void cellValueChanged(Object ivalue) {
+                value = ivalue;
+            }
+
+            class CellView extends JPanel {
+
+                JLabel label;
+                CellTable table;
+
+                int ID;
+
+                @Override
+                public int hashCode() {
+                    return ID;
+                }
+
+                @Override
+                public boolean equals(Object o) {
+                    if (!(o instanceof CellView))
+                        return false;
+                    return ((CellView)o).ID == this.ID;
+                }
+
+                public CellView() {
+
+//                        setLayout(new FlowLayout());
+                    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+                    Random rnd = new Random();
+//                        this.setBackground(new Color(rnd.nextInt(255),rnd.nextInt(255),rnd.nextInt(255)));
+
+                    label = new JLabel();
+                    add(label);
+
+                    add(Box.createRigidArea(new Dimension(5,0)));
+
+                    table = new CellTable();
+                    table.setBorder(BorderFactory.createLineBorder(Color.gray));
+
+                    add(table);
+
+                    add(Box.createRigidArea(new Dimension(10,0)));
+
+                }
+
+                public void keyChanged() {
+
+                    ID = key.ID;
+
+                    label.setText(key.caption);
+
+                    table.keyChanged();
+                }
+
+                class CellTable extends SingleCellTable
+                                    implements ClientCellViewTable {
+
+                    PropertyModel model;
+
+                    public CellTable() {
+                        super();
+
+                        model = new PropertyModel();
+                        setModel(model);
+
+                        setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
+                        setDefaultEditor(Object.class, new ClientAbstractCellEditor());
+
+                    }
+
+                    public void keyChanged() {
+
+                        setPreferredSize(key.getPreferredSize());
+                    }
+
+                    class PropertyModel extends AbstractTableModel {
+
+                        public int getRowCount() {
+                            return 1;
+                        }
+
+                        public int getColumnCount() {
+                            return 1;
+                        }
+
+/*                        public java.lang.Class getColumnClass(int c) {
+                            if (value != null)
+                                return value.getClass(); else
+                                    return Object.class;
+                        }*/
+
+                        public boolean isCellEditable(int row, int col) {
+                            return true;
+                        }
+
+                        public Object getValueAt(int row, int col) {
+                            if (value != null)
+                                return value;
+                            else
+                                return (String)"";
+                        }
+
+                        public void setValueAt(Object value, int row, int col) {
+//                            System.out.println("setValueAt");
+                            cellValueChanged(value);
+                        }
+
+                    }
+
+                    public ClientCellView getCellView(int row, int col) {
+                        return key;
+                    }
+
+                }
+
+            }
+
+        }
+
         class PanelModel {
             
-            Map<ClientCellView, CellModel> models;
+            Map<ClientCellView, PanelCellModel> models;
             
             public PanelModel() {
 //                setLayout(new FlowLayout());
@@ -506,15 +662,11 @@ public class ClientForm extends Container {
                 
                 for (ClientObjectImplement object : groupObject) {
                     
-                    CellModel idmodel = new CellModel(object.objectIDView);
-                    
-/*                    int ord = formInit.order.indexOf(idview), ind = 0;
-                    for (ClientCellView view : views.keySet())
-                        if (formInit.order.indexOf(view) < ord) ind++;
-                    
-                    add(idview, ind); */
-                    
+                    PanelCellModel idmodel = new PanelCellModel(object.objectIDView);
+                    formLayout.add(idmodel.key, idmodel.view);
+
                     models.put(object.objectIDView, idmodel);
+
                 }
                 setGroupObjectIDValue(currentObject);
                 
@@ -526,9 +678,9 @@ public class ClientForm extends Container {
                 
                 for (ClientObjectImplement object : groupObject) {
                     
-                    CellModel idmodel = models.get(object.objectIDView);
+                    PanelCellModel idmodel = models.get(object.objectIDView);
                     if (idmodel != null) {
-                        idmodel.removeView();
+                        formLayout.remove(idmodel.key, idmodel.view);
                         models.remove(object.objectIDView);
                     }
                 }
@@ -544,7 +696,7 @@ public class ClientForm extends Container {
 
                 for (ClientObjectImplement object : groupObject) {
                     
-                    CellModel idmodel = models.get(object.objectIDView);
+                    PanelCellModel idmodel = models.get(object.objectIDView);
                     if (idmodel != null)
                         idmodel.setValue(value.get(object));
                 }
@@ -560,12 +712,9 @@ public class ClientForm extends Container {
          
                 if (models.get(property) == null) {
                     
-                    CellModel propmodel = new CellModel(property);
+                    PanelCellModel propmodel = new PanelCellModel(property);
+                    formLayout.add(propmodel.key, propmodel.view);
 
-/*                    int ord = formInit.order.indexOf(property), ind = 0;
-                    for (ClientCellView view : views.keySet())
-                        if (formInit.order.indexOf(view) < ord) ind++;
-                    add(propview, ind);*/
                     models.put(property, propmodel);
                 }
                 
@@ -573,152 +722,31 @@ public class ClientForm extends Container {
             
             public void removeProperty(ClientPropertyView property) {
                 
-                CellModel propmodel = models.get(property);
-                if (propmodel != null)
-                {
-//                    remove(propview);
-                    propmodel.removeView();
+                PanelCellModel propmodel = models.get(property);
+                if (propmodel != null) {
+                    formLayout.remove(propmodel.key, propmodel.view);
                     models.remove(property);
-//                    repaint();
                 }
                 
             }
             
             public void setPropertyValue(ClientPropertyView property, Object value) {
                 
-                CellModel propmodel = models.get(property);
+                PanelCellModel propmodel = models.get(property);
                 propmodel.setValue(value);
                 
             }
-            
-            class CellModel {
+
+            class PanelCellModel extends CellModel {
                 
-                ClientCellView key;
-                Object value;
-                
-                CellView view;
-                
-                public CellModel(ClientCellView ikey) {
-                    
-                    key = ikey;
-                    
-                    view = new CellView();
-                    
-                    formLayout.add(key, view);
-                    
+                public PanelCellModel(ClientCellView ikey) {
+                    super(ikey);
                 }
 
-                public void setValue(Object ivalue) {
-                    value = ivalue;
-
-                    view.repaint();
+                protected void cellValueChanged(Object ivalue) {
+                    changeProperty(key,ivalue);
                 }
 
-                private void removeView() {
-                    formLayout.remove(key, view);
-                }
-
-                class CellView extends JPanel {
-
-                    JLabel label;
-                    CellTable table;
-
-                    int ID;
-
-                    @Override
-                    public int hashCode() {
-                        return ID;
-                    }
-
-                    @Override
-                    public boolean equals(Object o) {
-                        if (!(o instanceof CellView))
-                            return false;
-                        return ((CellView)o).ID == this.ID;
-                    }
-
-                    public CellView() {
-
-                        ID = key.ID;
-//                        setLayout(new FlowLayout());
-                        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-                        Random rnd = new Random();
-//                        this.setBackground(new Color(rnd.nextInt(255),rnd.nextInt(255),rnd.nextInt(255)));
-                        
-                        label = new JLabel(key.caption);
-                        add(label);
-
-                        add(Box.createRigidArea(new Dimension(5,0)));
-                        
-                        table = new CellTable();
-                        table.setBorder(BorderFactory.createLineBorder(Color.gray));
-                        
-                        add(table);
-
-                        add(Box.createRigidArea(new Dimension(10,0)));
-                    }
-
-                    class CellTable extends SingleCellTable 
-                                        implements ClientCellViewTable {
-
-                        PropertyModel model;
-
-                        public CellTable() {
-                            super();
-
-                            model = new PropertyModel();
-                            setModel(model);
-
-                            setPreferredSize(key.getPreferredSize());
-
-                            setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
-                            setDefaultEditor(Object.class, new ClientAbstractCellEditor());
-
-                        }
-
-                        class PropertyModel extends AbstractTableModel {
-
-                            public int getRowCount() {
-                                return 1;
-                            }
-
-                            public int getColumnCount() {
-                                return 1;
-                            }
-
-    /*                        public java.lang.Class getColumnClass(int c) {
-                                if (value != null)
-                                    return value.getClass(); else
-                                        return Object.class;
-                            }*/
-
-                            public boolean isCellEditable(int row, int col) {
-                                return true;
-                            }
-
-                            public Object getValueAt(int row, int col) {
-                                if (value != null)
-                                    return value;
-                                else
-                                    return (String)"";
-                            }
-
-                            public void setValueAt(Object value, int row, int col) {
-                                System.out.println("setValueAt");
-                                changeProperty(key,value);
-                            }
-
-                        }
-
-                        public ClientCellView getCellView(int row, int col) {
-                            return key;
-                        }
-
-                    }
-
-                }            
-                
             }
             
         }
@@ -726,7 +754,11 @@ public class ClientForm extends Container {
         class GridModel {
 
             ClientGridView view;
-            
+
+            JPanel container;
+
+            JPanel queriesContainer;
+
             JScrollPane pane;
             GridBagConstraints paneConstraints;
             Table table;
@@ -745,7 +777,20 @@ public class ClientForm extends Container {
                 paneConstraints.weightx = 1;
                 paneConstraints.weighty = 1;
                 paneConstraints.insets = new Insets(4,4,4,4); 
-                
+
+                queriesContainer = new JPanel();
+                queriesContainer.setLayout(new FlowLayout(FlowLayout.LEFT));
+//                queriesContainer.setLayout(new FlowLayout());
+//                queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
+
+                queriesContainer.add(table.findModel.queryView, BorderLayout.LINE_START);
+                queriesContainer.add(table.filterModel.queryView, BorderLayout.LINE_END);
+
+                container = new JPanel();
+                container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+
+                container.add(pane);
+                container.add(queriesContainer);
             }
 
             private void addGroupObjectID() {
@@ -814,14 +859,14 @@ public class ClientForm extends Container {
 
                 if (table.gridColumns.size() != 0) {
                     
-                    formLayout.add(view, pane);
+                    formLayout.add(view, container);
 
                 } else {
-                    formLayout.remove(view, pane);
+                    formLayout.remove(view, container);
                 }
                 
             }
-            
+
             public class Table extends JTable
                                implements ClientCellViewTable {
 
@@ -834,6 +879,9 @@ public class ClientForm extends Container {
                 
                 Model model;
                 JTableHeader header;
+
+                FindModel findModel;
+                FilterModel filterModel;
 
                 int ID;
 
@@ -857,12 +905,16 @@ public class ClientForm extends Container {
                     setModel(model);
 
                     header = getTableHeader();
+
+                    findModel = new FindModel();
+                    filterModel = new FilterModel();
                     
                     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
                             System.out.println("changeSel");
                             changeObject(groupObject, model.getSelectedObject());
+                            currentCell = model.getSelectedCell();
                         }
                     });
 
@@ -899,7 +951,6 @@ public class ClientForm extends Container {
                     if (gridColumns.remove(property)) {
 
                         gridValues.remove(property);
-                        
                         return true;
                     }
                     
@@ -959,6 +1010,335 @@ public class ClientForm extends Container {
 
                 }
 
+                // ---------------------------------------------------------------------------------------------- //
+                // -------------------------------------- Поиски и отборы --------------------------------------- //
+                // ---------------------------------------------------------------------------------------------- //
+
+                private abstract class QueryModel {
+
+                    public QueryView queryView;
+
+                    List<ClientFilter> conditions;
+                    Map<ClientFilter, QueryConditionView> conditionViews;
+
+                    public QueryModel() {
+
+                        conditions = new ArrayList();
+                        conditionViews = new HashMap();
+
+                        queryView = new QueryView();
+                    }
+
+                    abstract public void applyQuery();
+
+                    public void addCondition() {
+
+                        ClientFilter condition = new ClientFilter();
+                        conditions.add(condition);
+
+                        QueryConditionView conditionView = new QueryConditionView(condition);
+                        queryView.add(conditionView);
+
+                        conditionViews.put(condition, conditionView);
+
+                        container.validate();
+                    }
+
+                    public void removeCondition(ClientFilter condition) {
+
+                        conditions.remove(condition);
+
+                        queryView.remove(conditionViews.get(condition));
+                        conditionViews.remove(condition);
+                        
+                        container.validate();
+                    }
+
+                    protected class QueryConditionView extends JPanel {
+
+                        ClientFilter filter;
+
+                        JComboBox propertyView;
+                        JComboBox classValueLinkView;
+
+                        JComboBox compareView;
+
+                        ClientValueLinkView valueView;
+                        Map<ClientValueLink, ClientValueLinkView> valueViews;
+
+                        JButton delButton;
+
+                        public QueryConditionView(ClientFilter ifilter) {
+
+                            filter = ifilter;
+
+                            setBorder(new EmptyBorder(4,4,0,0));
+                            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+
+                            Vector<ClientPropertyView> sources = new Vector();
+                            for (ClientPropertyView property : formView.properties)
+                                if (property.groupObject == groupObject) {
+                                    sources.add(property);
+                                }
+
+                            propertyView = new JComboBox(sources);
+                            add(propertyView);
+
+                            if (currentCell instanceof ClientPropertyView)
+                                propertyView.setSelectedItem((ClientPropertyView)currentCell);
+                            
+                            filter.property = (ClientPropertyView) propertyView.getSelectedItem();
+
+                            propertyView.addItemListener(new ItemListener() {
+
+                                public void itemStateChanged(ItemEvent e) {
+
+                                    filter.property = (ClientPropertyView)e.getItem();
+                                    filterChanged();
+                                }
+                            });
+
+                            add(Box.createHorizontalStrut(4));
+
+                            valueViews = new HashMap();
+                            
+                            ClientUserValueLink userValue = new ClientUserValueLink();
+                            ClientUserValueLinkView userView = new ClientUserValueLinkView(userValue, filter.property);
+                            valueViews.put(userValue, userView);
+
+                            ClientObjectValueLink objectValue = new ClientObjectValueLink();
+                            ClientObjectValueLinkView objectView = new ClientObjectValueLinkView(objectValue);
+                            valueViews.put(objectValue, objectView);
+
+                            ClientPropertyValueLink propertyValue = new ClientPropertyValueLink();
+                            ClientPropertyValueLinkView propertyView = new ClientPropertyValueLinkView(propertyValue);
+                            valueViews.put(propertyValue, propertyView);
+
+                            ClientValueLink[] classes = new ClientValueLink[] {userValue, objectValue, propertyValue};
+                            classValueLinkView = new JComboBox(classes);
+                            add(classValueLinkView);
+
+                            filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
+
+                            classValueLinkView.addItemListener(new ItemListener() {
+
+                                public void itemStateChanged(ItemEvent e) {
+                                    filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
+                                    filterChanged();
+                                }
+                            });
+
+                            add(Box.createHorizontalStrut(4));
+
+                            delButton = new JButton("-");
+                            delButton.addActionListener(new ActionListener() {
+
+                                public void actionPerformed(ActionEvent e) {
+                                    removeCondition(filter);
+                                }
+                            });
+
+                            add(delButton);
+
+                            filterChanged();
+                        }
+
+                        public void filterChanged() {
+
+                            if (valueView != null)
+                                remove(valueView);
+
+                            valueView = valueViews.get(filter.value);
+                            valueView.propertyChanged(filter.property);
+
+                            if (valueView != null)
+                                add(valueView);
+
+                            add(delButton);
+
+                            container.validate();
+                        }
+
+                        private abstract class ClientValueLinkView extends JPanel {
+
+                            public ClientValueLinkView() {
+
+                                setLayout(new FlowLayout());
+                            }
+
+                            abstract public void propertyChanged(ClientPropertyView property);
+
+                        }
+
+                        private class ClientUserValueLinkView extends ClientValueLinkView {
+
+                            ClientUserValueLink valueLink;
+
+                            CellModel cell;
+
+                            public ClientUserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty) {
+                                super();
+
+                                valueLink = ivalueLink;
+
+                                cell = new CellModel(iproperty) {
+
+                                    protected void cellValueChanged(Object ivalue) {
+                                        super.cellValueChanged(ivalue);
+                                        
+                                        valueLink.value = ivalue;
+                                    }
+
+                                };
+                                cell.view.remove(cell.view.label);
+
+                                add(cell.view);
+                            }
+
+                            public void propertyChanged(ClientPropertyView property) {
+                                cell.setKey(property);
+                            }
+                        }
+
+                        private class ClientObjectValueLinkView extends ClientValueLinkView {
+
+                            ClientObjectValueLink valueLink;
+
+                            JComboBox objectView;
+
+                            public ClientObjectValueLinkView(ClientObjectValueLink ivalueLink) {
+
+                                valueLink = ivalueLink;
+
+                                Vector<ClientObjectImplement> objects = new Vector();
+                                for (ClientObjectImplement object : formView.objects)
+                                    objects.add(object);
+
+                                objectView = new JComboBox(objects);
+
+                                valueLink.object = (ClientObjectImplement) objectView.getSelectedItem();
+
+                                objectView.addItemListener(new ItemListener() {
+
+                                    public void itemStateChanged(ItemEvent e) {
+                                        valueLink.object = (ClientObjectImplement)e.getItem();
+                                    }
+                                });
+
+                                add(objectView);
+
+                            }
+
+                            public void propertyChanged(ClientPropertyView property) {
+                            }
+                        }
+
+                        private class ClientPropertyValueLinkView extends ClientValueLinkView {
+
+                            ClientPropertyValueLink valueLink;
+
+                            JComboBox propertyView;
+
+                            public ClientPropertyValueLinkView(ClientPropertyValueLink ivalueLink) {
+
+                                valueLink = ivalueLink;
+
+                                Vector<ClientPropertyView> properties = new Vector();
+                                for (ClientPropertyView property : formView.properties)
+                                    properties.add(property);
+
+                                propertyView = new JComboBox(properties);
+
+                                valueLink.property = (ClientPropertyView) propertyView.getSelectedItem();
+
+                                propertyView.addItemListener(new ItemListener() {
+
+                                    public void itemStateChanged(ItemEvent e) {
+                                        valueLink.property = (ClientPropertyView)e.getItem();
+                                    }
+                                });
+
+                                add(propertyView);
+                            }
+
+                            public void propertyChanged(ClientPropertyView property) {
+                            }
+                        }
+
+                    }
+
+                    protected class QueryView extends JPanel {
+
+                        protected JPanel buttons;
+
+                        protected JButton applyButton;
+                        protected JButton addCondition;
+                                                         
+                        public QueryView() {
+
+                            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+                            buttons = new JPanel();
+                            buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+
+                            add(buttons);
+
+                            applyButton = new JButton("!");
+                            applyButton.addActionListener(new ActionListener() {
+
+                                public void actionPerformed(ActionEvent e) {
+                                    applyQuery();
+                                }
+                            });
+
+                            buttons.add(applyButton);
+
+                            addCondition = new JButton("+");
+                            addCondition.addActionListener(new ActionListener() {
+
+                                public void actionPerformed(ActionEvent e) {
+                                    addCondition();
+                                }
+                            });
+                            buttons.add(addCondition);
+
+                        }
+
+                    }
+
+                }
+
+                private class FindModel extends QueryModel {
+
+                    public FindModel() {
+                        super();
+
+                    }
+
+                    public void applyQuery() {
+                        changeFind(conditions);
+                    }
+
+                }
+
+
+                private class FilterModel extends QueryModel {
+
+                    public FilterModel() {
+                        super();                        
+
+                    }
+
+                    public void applyQuery() {
+                        changeFilter(conditions);
+                    }
+
+                }
+
+
+                // ---------------------------------------------------------------------------------------------- //
+                // -------------------------------------- Сортировка -------------------------------------------- //
+                // ---------------------------------------------------------------------------------------------- //
 
                 private class GridHeaderRenderer implements TableCellRenderer {
 
@@ -1042,6 +1422,11 @@ public class ClientForm extends Container {
                     }
                 }
 
+
+                // ---------------------------------------------------------------------------------------------- //
+                // ------------------------------------------- Модель данных ------------------------------------ //
+                // ---------------------------------------------------------------------------------------------- //
+
                 class Model extends AbstractTableModel {
 
                     public String getColumnName(int col) {
@@ -1080,6 +1465,9 @@ public class ClientForm extends Container {
                         return gridRows.get(convertRowIndexToModel(getSelectedRow()));
                     }
 
+                    public ClientCellView getSelectedCell() {
+                        return gridColumns.get(convertColumnIndexToModel(getSelectedColumn()));
+                    }
                 }
 
                 public ClientCellView getCellView(int row, int col) {
@@ -1342,7 +1730,7 @@ public class ClientForm extends Container {
         }
         
     }
-    
+
     class ComponentView<ComponentState extends ClientComponentView, DrawComponent extends Component> {
         
         ComponentState state;

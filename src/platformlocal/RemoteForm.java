@@ -654,9 +654,20 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     
     // флаги изменения фильтров\порядков чисто для ускорения
     boolean StructUpdated = false;
-    // фильтры !null (св-во), св-во - св-во, св-во - объект, класс св-ва (для < > в том числе)?, 
-    public void AddFilter(Filter AddFilter) {
-        Filters.add(AddFilter);
+    // фильтры !null (св-во), св-во - св-во, св-во - объект, класс св-ва (для < > в том числе)?,
+
+    public void clearFilter() {
+        Filters.clear();
+
+        StructUpdated = true;
+    }
+
+    public void addFilter(byte[] state) {
+        addFilter(ByteArraySerializer.deserializeFilter(state, this));
+    }
+
+    public void addFilter(Filter addFilter) {
+        Filters.add(addFilter);
 
         StructUpdated = true;
     }
