@@ -48,6 +48,12 @@ public class ClientForm extends Container {
 
     RemoteForm remoteForm;
 
+    // Icons - загружаем один раз, для экономии
+    final ImageIcon filtIcon = new ImageIcon(getClass().getResource("images/filt.gif"));
+    final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("images/filtadd.gif"));
+    final ImageIcon findIcon = new ImageIcon(getClass().getResource("images/find.gif"));
+    final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("images/findadd.gif"));
+
     public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
 
@@ -554,23 +560,17 @@ public class ClientForm extends Container {
 
                 public CellView() {
 
-//                        setLayout(new FlowLayout());
                     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-                    Random rnd = new Random();
-//                        this.setBackground(new Color(rnd.nextInt(255),rnd.nextInt(255),rnd.nextInt(255)));
 
                     label = new JLabel();
                     add(label);
 
-                    add(Box.createRigidArea(new Dimension(5,0)));
+//                    add(Box.createRigidArea(new Dimension(4,0)));
 
                     table = new CellTable();
                     table.setBorder(BorderFactory.createLineBorder(Color.gray));
 
                     add(table);
-
-                    add(Box.createRigidArea(new Dimension(10,0)));
 
                 }
 
@@ -613,12 +613,6 @@ public class ClientForm extends Container {
                         public int getColumnCount() {
                             return 1;
                         }
-
-/*                        public java.lang.Class getColumnClass(int c) {
-                            if (value != null)
-                                return value.getClass(); else
-                                    return Object.class;
-                        }*/
 
                         public boolean isCellEditable(int row, int col) {
                             return true;
@@ -766,7 +760,10 @@ public class ClientForm extends Container {
             public GridModel(ClientGridView iview) {
 
                 view = iview;
-                
+
+                container = new JPanel();
+                container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+
                 table = new Table();
                 
                 pane = new JScrollPane(table);
@@ -779,15 +776,13 @@ public class ClientForm extends Container {
                 paneConstraints.insets = new Insets(4,4,4,4); 
 
                 queriesContainer = new JPanel();
-                queriesContainer.setLayout(new FlowLayout(FlowLayout.LEFT));
+//                queriesContainer.setLayout(new FlowLayout(FlowLayout.LEFT));
 //                queriesContainer.setLayout(new FlowLayout());
-//                queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
+                queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
-                queriesContainer.add(table.findModel.queryView, BorderLayout.LINE_START);
-                queriesContainer.add(table.filterModel.queryView, BorderLayout.LINE_END);
-
-                container = new JPanel();
-                container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+                queriesContainer.add(table.findModel.queryView);
+                queriesContainer.add(table.filterModel.queryView);
+                queriesContainer.add(Box.createHorizontalGlue());
 
                 container.add(pane);
                 container.add(queriesContainer);
@@ -1037,21 +1032,25 @@ public class ClientForm extends Container {
                         conditions.add(condition);
 
                         QueryConditionView conditionView = new QueryConditionView(condition);
-                        queryView.add(conditionView);
+                        queryView.condviews.add(conditionView);
 
                         conditionViews.put(condition, conditionView);
 
-                        container.validate();
+                        queryView.conditionsChanged();
+
+//                        container.validate();
                     }
 
                     public void removeCondition(ClientFilter condition) {
 
                         conditions.remove(condition);
 
-                        queryView.remove(conditionViews.get(condition));
+                        queryView.condviews.remove(conditionViews.get(condition));
                         conditionViews.remove(condition);
                         
-                        container.validate();
+                        queryView.conditionsChanged();
+
+//                        container.validate();
                     }
 
                     protected class QueryConditionView extends JPanel {
@@ -1059,9 +1058,10 @@ public class ClientForm extends Container {
                         ClientFilter filter;
 
                         JComboBox propertyView;
-                        JComboBox classValueLinkView;
 
                         JComboBox compareView;
+
+                        JComboBox classValueLinkView;
 
                         ClientValueLinkView valueView;
                         Map<ClientValueLink, ClientValueLinkView> valueViews;
@@ -1098,7 +1098,22 @@ public class ClientForm extends Container {
                                 }
                             });
 
-                            add(Box.createHorizontalStrut(4));
+//                            add(Box.createHorizontalStrut(4));
+
+                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=",0), new Pair(">",1), new Pair("<",1),
+                                                                             new Pair(">=",3), new Pair("<=",4), new Pair("<>",5)};
+                            compareView = new JComboBox(comparisons);
+                            add(compareView);
+
+                            filter.compare = ((Pair<String,Integer>)compareView.getSelectedItem()).second; 
+
+                            compareView.addItemListener(new ItemListener() {
+
+                                public void itemStateChanged(ItemEvent e) {
+                                    filter.compare = ((Pair<String,Integer>)e.getItem()).second;
+                                }
+                            });
+//                            add(Box.createHorizontalStrut(4));
 
                             valueViews = new HashMap();
                             
@@ -1111,8 +1126,8 @@ public class ClientForm extends Container {
                             valueViews.put(objectValue, objectView);
 
                             ClientPropertyValueLink propertyValue = new ClientPropertyValueLink();
-                            ClientPropertyValueLinkView propertyView = new ClientPropertyValueLinkView(propertyValue);
-                            valueViews.put(propertyValue, propertyView);
+                            ClientPropertyValueLinkView propertyValueView = new ClientPropertyValueLinkView(propertyValue);
+                            valueViews.put(propertyValue, propertyValueView);
 
                             ClientValueLink[] classes = new ClientValueLink[] {userValue, objectValue, propertyValue};
                             classValueLinkView = new JComboBox(classes);
@@ -1128,7 +1143,7 @@ public class ClientForm extends Container {
                                 }
                             });
 
-                            add(Box.createHorizontalStrut(4));
+//                            add(Box.createHorizontalStrut(4));
 
                             delButton = new JButton("-");
                             delButton.addActionListener(new ActionListener() {
@@ -1138,9 +1153,19 @@ public class ClientForm extends Container {
                                 }
                             });
 
-                            add(delButton);
-
                             filterChanged();
+
+/*                            JButton test = new JButton("Test");
+                            test.addActionListener(new ActionListener() {
+
+                                public void actionPerformed(ActionEvent e) {
+                                    System.out.println(propertyView.getSize());
+                                    System.out.println(compareView.getSize());
+                                    System.out.println(classValueLinkView.getSize());
+                                    System.out.println(valueView.getBounds());
+                                }
+                            });
+                            add(test);*/
                         }
 
                         public void filterChanged() {
@@ -1163,7 +1188,7 @@ public class ClientForm extends Container {
 
                             public ClientValueLinkView() {
 
-                                setLayout(new FlowLayout());
+                                setLayout(new BorderLayout());
                             }
 
                             abstract public void propertyChanged(ClientPropertyView property);
@@ -1192,7 +1217,7 @@ public class ClientForm extends Container {
                                 };
                                 cell.view.remove(cell.view.label);
 
-                                add(cell.view);
+                                add(cell.view, BorderLayout.CENTER);
                             }
 
                             public void propertyChanged(ClientPropertyView property) {
@@ -1270,11 +1295,18 @@ public class ClientForm extends Container {
                     protected class QueryView extends JPanel {
 
                         protected JPanel buttons;
+                        protected JPanel condviews;
+
+                        boolean collapsed = false;
 
                         protected JButton applyButton;
+                        protected Component centerGlue;
                         protected JButton addCondition;
+                        protected JButton collapseButton;
                                                          
                         public QueryView() {
+
+                            setAlignmentY(Component.TOP_ALIGNMENT);
 
                             setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -1283,7 +1315,7 @@ public class ClientForm extends Container {
 
                             add(buttons);
 
-                            applyButton = new JButton("!");
+                            applyButton = new JButton("");
                             applyButton.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
@@ -1291,19 +1323,66 @@ public class ClientForm extends Container {
                                 }
                             });
 
-                            buttons.add(applyButton);
+                            centerGlue = Box.createHorizontalGlue();
 
-                            addCondition = new JButton("+");
+                            addCondition = new JButton("");
                             addCondition.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
+                                    collapsed = false;
                                     addCondition();
                                 }
                             });
-                            buttons.add(addCondition);
+//                            buttons.add(addCondition);
+
+                            collapseButton = new JButton("|");
+                            collapseButton.addActionListener(new ActionListener() {
+
+                                public void actionPerformed(ActionEvent e) {
+                                    collapsed = !collapsed;
+                                    conditionsChanged();
+                                }
+                            });
+//                            buttons.add(collapseButton);
+
+                            condviews = new JPanel();
+                            condviews.setLayout(new BoxLayout(condviews, BoxLayout.Y_AXIS));
+
+//                            add(condviews);
+
+                            conditionsChanged();
 
                         }
 
+                        public Dimension getMaximumSize() {
+                            return getPreferredSize();
+                        }
+
+                        public void conditionsChanged() {
+
+                            if (!conditions.isEmpty()) {
+                                buttons.add(applyButton);
+                            } else {
+                                buttons.remove(applyButton);
+                            }
+
+                            buttons.add(centerGlue);
+                            buttons.add(addCondition);
+
+                            if (!conditions.isEmpty()) {
+                                buttons.add(collapseButton);
+                            } else {
+                                buttons.remove(collapseButton);
+                            }
+
+                            if (!collapsed) {
+                                add(condviews);
+                            } else {
+                                remove(condviews);
+                            }
+
+                            container.validate();
+                        }
                     }
 
                 }
@@ -1313,6 +1392,8 @@ public class ClientForm extends Container {
                     public FindModel() {
                         super();
 
+                        queryView.applyButton.setIcon(findIcon);
+                        queryView.addCondition.setIcon(findAddIcon);
                     }
 
                     public void applyQuery() {
@@ -1325,7 +1406,10 @@ public class ClientForm extends Container {
                 private class FilterModel extends QueryModel {
 
                     public FilterModel() {
-                        super();                        
+                        super();
+                                         
+                        queryView.applyButton.setIcon(filtIcon);
+                        queryView.addCondition.setIcon(filtAddIcon);
 
                     }
 

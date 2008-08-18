@@ -82,3 +82,17 @@ class ExpandingTreeNode extends DefaultMutableTreeNode {
 
     public String toString() { return "Retreiving data..."; }
 }
+
+class Pair<Class1, Class2> {
+
+    Class1 first;
+    Class2 second;
+
+    public Pair(Class1 ifirst, Class2 isecond) {
+        first = ifirst;
+        second = isecond;
+    }
+
+    public String toString() { return first.toString(); }
+
+}
