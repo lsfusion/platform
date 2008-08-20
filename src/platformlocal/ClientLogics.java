@@ -161,6 +161,7 @@ class ClientPropertyView extends ClientCellView {
             if (type.equals("integer")) renderer = new IntegerPropertyRenderer();
             if (type.equals("char(50)")) renderer = new StringPropertyRenderer();
             if (caption == "срок годн.") renderer = new DatePropertyRenderer();
+            if (caption == "вес.") renderer = new BitPropertyRenderer();
 
             if (renderer == null) renderer = new StringPropertyRenderer();
             
@@ -172,6 +173,7 @@ class ClientPropertyView extends ClientCellView {
     
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
         
+        if (caption == "вес.") return new BitPropertyEditor();
         if (caption == "срок годн.") return new DatePropertyEditor();
         if (type.equals("integer")) return new IntegerPropertyEditor();
         if (type.equals("char(50)")) return new StringPropertyEditor();

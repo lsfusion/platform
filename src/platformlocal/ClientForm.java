@@ -2115,6 +2115,39 @@ class DatePropertyRenderer extends LabelPropertyRenderer
 
 }
 
+class BitPropertyRenderer extends JCheckBox
+                          implements PropertyRendererComponent {
+
+    public BitPropertyRenderer() {
+        super();
+
+        setHorizontalAlignment(JCheckBox.CENTER);
+
+        setBorder(new EmptyBorder(1, 1, 2, 2));
+        setOpaque(true);
+    }
+
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (value != null)
+            setSelected((Integer)value != 0);
+        else
+            setSelected(false);
+
+        if (isSelected) {
+            if (hasFocus)
+                setBackground(new Color(128,128,255));
+            else
+                setBackground(new Color(192,192,255));
+
+        } else
+            setBackground(Color.white);
+    }
+}
+
 
 interface PropertyEditorComponent {
 
@@ -2161,6 +2194,25 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
         }
     }
     
+}
+
+class StringPropertyEditor extends TextFieldPropertyEditor
+                           implements PropertyEditorComponent {
+
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value) {
+        if (value != null)
+            setText(value.toString());
+        selectAll();
+    }
+
+    public Object getValue() {
+        return (String)getText();
+    }
+
 }
 
 class DatePropertyEditor extends JDateChooser
@@ -2228,9 +2280,18 @@ class DatePropertyEditorComponent extends JTextFieldDateEditor {
 
 }
 
+class BitPropertyEditor extends JCheckBox
+                        implements PropertyEditorComponent {
 
-class StringPropertyEditor extends TextFieldPropertyEditor
-                           implements PropertyEditorComponent {
+    public BitPropertyEditor() {
+
+        setHorizontalAlignment(JCheckBox.CENTER);
+
+        setBorder(new EmptyBorder(0, 1, 0, 0));
+        setOpaque(true);
+
+        setBackground(Color.white);
+    }
 
     public Component getComponent() {
         return this;
@@ -2238,14 +2299,12 @@ class StringPropertyEditor extends TextFieldPropertyEditor
 
     public void setValue(Object value) {
         if (value != null)
-            setText(value.toString());
-        selectAll();
+            setSelected((Integer) value != 0);
     }
 
     public Object getValue() {
-        return (String)getText();
+        return (isSelected()) ? 1 : 0;
     }
-
 }
 
 class SingleCellTable extends JTable {
