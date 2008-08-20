@@ -148,7 +148,8 @@ class ClientPropertyView extends ClientCellView {
         
         if (type.equals("integer")) res = 9;
         if (type.equals("char(50)")) res = 50;
-        
+        if (caption == "срок годн.") res = 19;
+
         return res * 5;
     }
     
@@ -159,6 +160,7 @@ class ClientPropertyView extends ClientCellView {
             
             if (type.equals("integer")) renderer = new IntegerPropertyRenderer();
             if (type.equals("char(50)")) renderer = new StringPropertyRenderer();
+            if (caption == "срок годн.") renderer = new DatePropertyRenderer();
 
             if (renderer == null) renderer = new StringPropertyRenderer();
             
@@ -170,9 +172,10 @@ class ClientPropertyView extends ClientCellView {
     
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
         
+        if (caption == "срок годн.") return new DatePropertyEditor();
         if (type.equals("integer")) return new IntegerPropertyEditor();
         if (type.equals("char(50)")) return new StringPropertyEditor();
-        
+
         return new StringPropertyEditor();
         
     }

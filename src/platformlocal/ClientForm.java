@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.text.DateFormat;
 import javax.swing.JTextField;
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -28,6 +29,8 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.table.*;
 
 import bibliothek.gui.dock.DefaultDockable;
+import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JTextFieldDateEditor;
 
 interface ClientCellViewTable {
 
@@ -49,13 +52,23 @@ public class ClientForm extends Container {
     RemoteForm remoteForm;
 
     // Icons - загружаем один раз, для экономии
+    final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("images/arrowup.gif"));
+    final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("images/arrowdown.gif"));
     final ImageIcon filtIcon = new ImageIcon(getClass().getResource("images/filt.gif"));
     final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("images/filtadd.gif"));
     final ImageIcon findIcon = new ImageIcon(getClass().getResource("images/find.gif"));
     final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("images/findadd.gif"));
+    final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("images/delete.gif"));
+    final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("images/collapse.gif"));
+    final ImageIcon expandIcon = new ImageIcon(getClass().getResource("images/expand.gif"));
+
+    public final static Dimension iconButtonDimension = new Dimension(22,22);
+
 
     public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
+
+//        FocusOwnerTracer.installFocusTracer();
 
         remoteForm = iremoteForm;
 
@@ -563,6 +576,7 @@ public class ClientForm extends Container {
                     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
                     label = new JLabel();
+                    label.setBorder(BorderFactory.createEmptyBorder(0,4,0,4));
                     add(label);
 
 //                    add(Box.createRigidArea(new Dimension(4,0)));
@@ -591,6 +605,8 @@ public class ClientForm extends Container {
                     public CellTable() {
                         super();
 
+                        setSurrendersFocusOnKeystroke(true);
+                        
                         model = new PropertyModel();
                         setModel(model);
 
@@ -619,10 +635,10 @@ public class ClientForm extends Container {
                         }
 
                         public Object getValueAt(int row, int col) {
-                            if (value != null)
+//                            if (value != null)
                                 return value;
-                            else
-                                return (String)"";
+//                            else
+//                                return (String)"";
                         }
 
                         public void setValueAt(Object value, int row, int col) {
@@ -768,7 +784,9 @@ public class ClientForm extends Container {
                 
                 pane = new JScrollPane(table);
                 pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-                
+
+                table.setFillsViewportHeight(true);
+
                 paneConstraints = new GridBagConstraints();
                 paneConstraints.fill = GridBagConstraints.BOTH;
                 paneConstraints.weightx = 1;
@@ -781,6 +799,7 @@ public class ClientForm extends Container {
                 queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
                 queriesContainer.add(table.findModel.queryView);
+                queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
                 queriesContainer.add(table.filterModel.queryView);
                 queriesContainer.add(Box.createHorizontalGlue());
 
@@ -896,6 +915,8 @@ public class ClientForm extends Container {
 
                     ID = groupObject.GID;
 
+                    setSurrendersFocusOnKeystroke(true);
+                    
                     model = new Model();
                     setModel(model);
 
@@ -1016,6 +1037,8 @@ public class ClientForm extends Container {
                     List<ClientFilter> conditions;
                     Map<ClientFilter, QueryConditionView> conditionViews;
 
+                    boolean hasChanged = false;
+
                     public QueryModel() {
 
                         conditions = new ArrayList();
@@ -1024,9 +1047,15 @@ public class ClientForm extends Container {
                         queryView = new QueryView();
                     }
 
-                    abstract public void applyQuery();
+                    public void applyQuery() {
+                        hasChanged = false;
+
+                        queryView.conditionsChanged();
+                    }
 
                     public void addCondition() {
+
+                        hasChanged = true;
 
                         ClientFilter condition = new ClientFilter();
                         conditions.add(condition);
@@ -1038,11 +1067,15 @@ public class ClientForm extends Container {
 
                         queryView.conditionsChanged();
 
+                        conditionView.valueView.requestFocusInWindow();
+
 //                        container.validate();
                     }
 
                     public void removeCondition(ClientFilter condition) {
 
+                        hasChanged = true;
+                        
                         conditions.remove(condition);
 
                         queryView.condviews.remove(conditionViews.get(condition));
@@ -1068,11 +1101,29 @@ public class ClientForm extends Container {
 
                         JButton delButton;
 
+                        public final int PREFERRED_HEIGHT = 18;
+
+                        class QueryConditionComboBox extends JComboBox {
+
+                            public Dimension getPreferredSize() {
+                                Dimension dim = super.getPreferredSize();
+                                dim.height = PREFERRED_HEIGHT;
+                                return dim;
+                            }
+
+                            public QueryConditionComboBox(Vector<?> objects) {
+                                super(objects);
+                            }
+
+                            public QueryConditionComboBox(Object[] objects) {
+                                super(objects);
+                            }
+                        }
+
                         public QueryConditionView(ClientFilter ifilter) {
 
                             filter = ifilter;
 
-                            setBorder(new EmptyBorder(4,4,0,0));
                             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
                             Vector<ClientPropertyView> sources = new Vector();
@@ -1081,7 +1132,7 @@ public class ClientForm extends Container {
                                     sources.add(property);
                                 }
 
-                            propertyView = new JComboBox(sources);
+                            propertyView = new QueryConditionComboBox(sources);
                             add(propertyView);
 
                             if (currentCell instanceof ClientPropertyView)
@@ -1100,9 +1151,9 @@ public class ClientForm extends Container {
 
 //                            add(Box.createHorizontalStrut(4));
 
-                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=",0), new Pair(">",1), new Pair("<",1),
+                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=",0), new Pair(">",1), new Pair("<",2),
                                                                              new Pair(">=",3), new Pair("<=",4), new Pair("<>",5)};
-                            compareView = new JComboBox(comparisons);
+                            compareView = new QueryConditionComboBox(comparisons);
                             add(compareView);
 
                             filter.compare = ((Pair<String,Integer>)compareView.getSelectedItem()).second; 
@@ -1111,6 +1162,9 @@ public class ClientForm extends Container {
 
                                 public void itemStateChanged(ItemEvent e) {
                                     filter.compare = ((Pair<String,Integer>)e.getItem()).second;
+
+                                    hasChanged = true;
+                                    queryView.dataChanged();
                                 }
                             });
 //                            add(Box.createHorizontalStrut(4));
@@ -1130,7 +1184,7 @@ public class ClientForm extends Container {
                             valueViews.put(propertyValue, propertyValueView);
 
                             ClientValueLink[] classes = new ClientValueLink[] {userValue, objectValue, propertyValue};
-                            classValueLinkView = new JComboBox(classes);
+                            classValueLinkView = new QueryConditionComboBox(classes);
                             add(classValueLinkView);
 
                             filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
@@ -1145,7 +1199,9 @@ public class ClientForm extends Container {
 
 //                            add(Box.createHorizontalStrut(4));
 
-                            delButton = new JButton("-");
+                            delButton = new JButton(deleteIcon);
+                            delButton.setFocusable(false);
+                            delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
                             delButton.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
@@ -1181,7 +1237,11 @@ public class ClientForm extends Container {
 
                             add(delButton);
 
+                            hasChanged = true;
+                            queryView.dataChanged();
+
                             container.validate();
+
                         }
 
                         private abstract class ClientValueLinkView extends JPanel {
@@ -1212,6 +1272,9 @@ public class ClientForm extends Container {
                                         super.cellValueChanged(ivalue);
                                         
                                         valueLink.value = ivalue;
+
+                                        hasChanged = true;
+                                        queryView.dataChanged();
                                     }
 
                                 };
@@ -1219,6 +1282,12 @@ public class ClientForm extends Container {
 
                                 add(cell.view, BorderLayout.CENTER);
                             }
+
+                            public boolean requestFocusInWindow() {
+                                return cell.view.table.requestFocusInWindow();
+                            }
+
+
 
                             public void propertyChanged(ClientPropertyView property) {
                                 cell.setKey(property);
@@ -1239,7 +1308,7 @@ public class ClientForm extends Container {
                                 for (ClientObjectImplement object : formView.objects)
                                     objects.add(object);
 
-                                objectView = new JComboBox(objects);
+                                objectView = new QueryConditionComboBox(objects);
 
                                 valueLink.object = (ClientObjectImplement) objectView.getSelectedItem();
 
@@ -1247,6 +1316,9 @@ public class ClientForm extends Container {
 
                                     public void itemStateChanged(ItemEvent e) {
                                         valueLink.object = (ClientObjectImplement)e.getItem();
+
+                                        hasChanged = true;
+                                        queryView.dataChanged();
                                     }
                                 });
 
@@ -1272,7 +1344,7 @@ public class ClientForm extends Container {
                                 for (ClientPropertyView property : formView.properties)
                                     properties.add(property);
 
-                                propertyView = new JComboBox(properties);
+                                propertyView = new QueryConditionComboBox(properties);
 
                                 valueLink.property = (ClientPropertyView) propertyView.getSelectedItem();
 
@@ -1280,6 +1352,9 @@ public class ClientForm extends Container {
 
                                     public void itemStateChanged(ItemEvent e) {
                                         valueLink.property = (ClientPropertyView)e.getItem();
+
+                                        hasChanged = true;
+                                        queryView.dataChanged();
                                     }
                                 });
 
@@ -1299,6 +1374,8 @@ public class ClientForm extends Container {
 
                         boolean collapsed = false;
 
+                        Color defaultApplyBackground;
+
                         protected JButton applyButton;
                         protected Component centerGlue;
                         protected JButton addCondition;
@@ -1316,16 +1393,23 @@ public class ClientForm extends Container {
                             add(buttons);
 
                             applyButton = new JButton("");
+                            applyButton.setFocusable(false);
+                            applyButton.setPreferredSize(iconButtonDimension);
+                            applyButton.setMaximumSize(iconButtonDimension);
                             applyButton.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
                                     applyQuery();
                                 }
                             });
+                            defaultApplyBackground = applyButton.getBackground();
 
                             centerGlue = Box.createHorizontalGlue();
 
                             addCondition = new JButton("");
+                            addCondition.setFocusable(false);
+                            addCondition.setPreferredSize(iconButtonDimension);
+                            addCondition.setMaximumSize(iconButtonDimension);
                             addCondition.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
@@ -1335,7 +1419,10 @@ public class ClientForm extends Container {
                             });
 //                            buttons.add(addCondition);
 
-                            collapseButton = new JButton("|");
+                            collapseButton = new JButton();
+                            collapseButton.setFocusable(false);
+                            collapseButton.setPreferredSize(iconButtonDimension);
+                            collapseButton.setMaximumSize(iconButtonDimension);
                             collapseButton.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
@@ -1360,13 +1447,14 @@ public class ClientForm extends Container {
 
                         public void conditionsChanged() {
 
-                            if (!conditions.isEmpty()) {
+                            if (!conditions.isEmpty() || hasChanged) {
                                 buttons.add(applyButton);
                             } else {
                                 buttons.remove(applyButton);
                             }
 
                             buttons.add(centerGlue);
+
                             buttons.add(addCondition);
 
                             if (!conditions.isEmpty()) {
@@ -1376,12 +1464,25 @@ public class ClientForm extends Container {
                             }
 
                             if (!collapsed) {
+                                collapseButton.setIcon(collapseIcon);
                                 add(condviews);
                             } else {
+                                collapseButton.setIcon(expandIcon);
                                 remove(condviews);
                             }
 
+                            dataChanged();
+
                             container.validate();
+                        }
+
+                        public void dataChanged() {
+
+                            if (hasChanged)
+                                applyButton.setBackground(Color.green);
+                            else
+                                applyButton.setBackground(defaultApplyBackground);
+                            
                         }
                     }
 
@@ -1398,6 +1499,7 @@ public class ClientForm extends Container {
 
                     public void applyQuery() {
                         changeFind(conditions);
+                        super.applyQuery();
                     }
 
                 }
@@ -1415,6 +1517,7 @@ public class ClientForm extends Container {
 
                     public void applyQuery() {
                         changeFilter(conditions);
+                        super.applyQuery();
                     }
 
                 }
@@ -1452,8 +1555,9 @@ public class ClientForm extends Container {
                                 int ordNum = orders.indexOf(property);
                                 if (ordNum != -1) {
 
-                                    label.setFont(label.getFont().deriveFont(Font.BOLD));
-                                    label.setHorizontalAlignment((orderDirections.get(ordNum)) ? JLabel.LEFT : JLabel.RIGHT);
+                                    label.setIcon((orderDirections.get(ordNum)) ? arrowUpIcon : arrowDownIcon);
+//                                    label.setFont(label.getFont().deriveFont(Font.BOLD));
+//                                    label.setHorizontalAlignment();
                                 }
 
                             }
@@ -1534,9 +1638,9 @@ public class ClientForm extends Container {
                         Object val = null;
                         val = gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
                             
-                        if (val == null)
-                            return (String)"";
-                        else
+//                        if (val == null)
+//                            return (String)"";
+//                        else
                             return val;
                     }
                     
@@ -1911,9 +2015,9 @@ public class ClientForm extends Container {
 interface PropertyRendererComponent {
 
     Component getComponent();
-    
+
     void setValue(Object value, boolean isSelected, boolean hasFocus);
-    
+
 }
 
 class LabelPropertyRenderer extends JLabel {
@@ -1954,6 +2058,8 @@ class IntegerPropertyRenderer extends LabelPropertyRenderer
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null)
             setText(value.toString());
+        else
+            setText("");
         setSelected(isSelected, hasFocus);
     }
     
@@ -1976,10 +2082,39 @@ class StringPropertyRenderer extends LabelPropertyRenderer
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null)
             setText(value.toString());
+        else
+            setText("");
         setSelected(isSelected, hasFocus);
     }
     
 }
+
+class DatePropertyRenderer extends LabelPropertyRenderer
+                           implements PropertyRendererComponent {
+
+    public static final DateFormat dateFormat = DateFormat.getDateInstance();
+
+    public DatePropertyRenderer() {
+        super();
+
+        setHorizontalAlignment(JLabel.RIGHT);
+
+    }
+
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (value != null)
+            setText(dateFormat.format(DateConverter.intToDate((Integer)value)));
+        else
+            setText("");
+        setSelected(isSelected, hasFocus);
+    }
+
+}
+
 
 interface PropertyEditorComponent {
 
@@ -1996,7 +2131,7 @@ class TextFieldPropertyEditor extends JTextField {
     public TextFieldPropertyEditor() {
         setBorder(new EmptyBorder(0, 1, 0, 0));
         setOpaque(true);
-        setBackground(new Color(128,128,255));
+//        setBackground(new Color(128,128,255));
     }
     
 }
@@ -2028,7 +2163,73 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
     
 }
 
-class StringPropertyEditor extends TextFieldPropertyEditor 
+class DatePropertyEditor extends JDateChooser
+                           implements PropertyEditorComponent {
+
+    public DatePropertyEditor() {
+        super(null, null, "dd.MM.yy", new DatePropertyEditorComponent("dd.MM.yy","##.##.##",' '));
+
+    }
+
+/*    @Override
+    public void requestFocus() {
+        super.requestFocus();
+    }*/
+
+    @Override
+    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+        return ((DatePropertyEditorComponent)dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
+    }
+
+/*    @Override
+    public void setNextFocusableComponent(Component comp) {
+        ((JComponent)dateEditor).setNextFocusableComponent(comp);
+    }*/
+
+
+    public Component getComponent() {
+        return this;
+    }
+
+    public void setValue(Object value) {
+        if (value != null)
+            setDate(DateConverter.intToDate((Integer)value));
+        ((JFormattedTextField)dateEditor).selectAll();
+    }
+
+    public Object getValue() {
+        return DateConverter.dateToInt(getDate());
+    }
+
+}
+
+class DatePropertyEditorComponent extends JTextFieldDateEditor {
+
+    public DatePropertyEditorComponent(String datePattern, String maskPattern, char placeholder) {
+        super(datePattern, maskPattern, placeholder);
+
+        setBorder(new EmptyBorder(0, 1, 0, 0));
+
+        SwingUtils.addFocusTraversalKey(this,
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+
+    }
+
+    //а вот так будем дурить их protected метод
+    public boolean publicProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+        return processKeyBinding(ks, ke, condition, pressed);
+    }
+
+    @Override
+    public void focusLost(FocusEvent focusEvent) {
+        super.focusLost(focusEvent);
+    }
+
+}
+
+
+class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
 
     public Component getComponent() {
@@ -2044,9 +2245,8 @@ class StringPropertyEditor extends TextFieldPropertyEditor
     public Object getValue() {
         return (String)getText();
     }
-    
-}
 
+}
 
 class SingleCellTable extends JTable {
     
@@ -2058,7 +2258,6 @@ class SingleCellTable extends JTable {
             public void focusGained(FocusEvent e) {
                 requestFocusInWindow();
                 changeSelection(0, 0, false, false);
-//                                getSelectionModel().setLeadSelectionIndex(0);
             }
 
             public void focusLost(FocusEvent e) {

@@ -254,7 +254,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
-            DocDate,GrAddV,ArtAddV,BarCode;
+            DocDate,GrAddV,ArtAddV,BarCode,ExpireDate;
     LRP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
     LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt;
 
@@ -271,6 +271,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         BarCode = AddDProp(IntegerClass,Article);
         BarCode.Property.OutName = "штрих-код";
+
+        ExpireDate = AddDProp(IntegerClass,Article);
+        ExpireDate.Property.OutName = "срок годн.";
 
         LDP AbsQuantity = AddVProp(null,IntegerClass,Document,Article);
         AbsQuantity.Property.OutName = "абст. кол-во";

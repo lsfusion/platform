@@ -6,11 +6,7 @@
 package platformlocal;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -78,11 +74,6 @@ class MapUtils<T,V> {
     
 }
 
-class ExpandingTreeNode extends DefaultMutableTreeNode {
-
-    public String toString() { return "Retreiving data..."; }
-}
-
 class Pair<Class1, Class2> {
 
     Class1 first;
@@ -94,5 +85,28 @@ class Pair<Class1, Class2> {
     }
 
     public String toString() { return first.toString(); }
+
+}
+
+class DateConverter {
+
+    public static int dateToInt(Date date) {
+
+        if (date == null) return 0;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.YEAR) * 10000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DATE);       
+    }
+
+    public static Date intToDate(int num) {
+
+        if (num == 0) return null;
+        
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(num / 10000, (num / 100) % 100, num % 100);
+        return calendar.getTime();
+    }
+
 
 }

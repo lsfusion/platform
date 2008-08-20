@@ -437,7 +437,7 @@ class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstra
     public double fillVertical = 0; //PREFERRED;
     public double fillHorizontal = 0; //PREFERRED;
 
-    public Insets insetsSibling = new Insets(4,4,4,4);
+    public Insets insetsSibling = new Insets(2,2,2,2);
     public Insets insetsInside = new Insets(2,2,2,2);
     
     public SimplexComponentDirections directions = new SimplexComponentDirections(0.01,0.01,0,0);
