@@ -89,7 +89,9 @@ class ClientComponentView {
 }
 
 class ClientContainerView extends ClientComponentView {
-    
+
+    String title;
+
     LayoutManager layout;
 }
 
@@ -288,6 +290,8 @@ class DefaultClientFormView extends ClientFormView {
             panelContainer.container = groupContainer;
             panelContainer.constraints.order = 1;
             panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+
+            panelContainer.title = group.get(0).OutName;
 
             panelContainers.put(clientGroup, panelContainer);
             containers.add(panelContainer);

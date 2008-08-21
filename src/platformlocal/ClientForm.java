@@ -22,6 +22,7 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionListener;
@@ -80,6 +81,7 @@ public class ClientForm extends Container {
         initializeForm();
 
         applyFormChanges();
+
     }
 
     FormLayout formLayout;
@@ -390,18 +392,18 @@ public class ClientForm extends Container {
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
-                    for (ClientObjectImplement object : groupObject)
-                        objects.get(object).classModel.addClassTree();
                     grid.table.requestFocusInWindow();
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
-                    for (ClientObjectImplement object : groupObject)
-                        objects.get(object).classModel.removeClassTree();
                     panel.getObjectIDView(0).requestFocusInWindow();
 //                    panel.requestFocusInWindow();
                 }
-                
+
+                for (ClientObjectImplement object : groupObject) {
+                    objects.get(object).classViewChanged();
+                }
+
             }
             
         }
@@ -605,8 +607,6 @@ public class ClientForm extends Container {
                     public CellTable() {
                         super();
 
-                        setSurrendersFocusOnKeystroke(true);
-                        
                         model = new PropertyModel();
                         setModel(model);
 
@@ -781,7 +781,7 @@ public class ClientForm extends Container {
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
                 table = new Table();
-                
+
                 pane = new JScrollPane(table);
                 pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
@@ -881,7 +881,7 @@ public class ClientForm extends Container {
                 
             }
 
-            public class Table extends JTable
+            public class Table extends ClientFormTable
                                implements ClientCellViewTable {
 
                 List<ClientCellView> gridColumns = new ArrayList();
@@ -915,8 +915,6 @@ public class ClientForm extends Container {
 
                     ID = groupObject.GID;
 
-                    setSurrendersFocusOnKeystroke(true);
-                    
                     model = new Model();
                     setModel(model);
 
@@ -924,8 +922,7 @@ public class ClientForm extends Container {
 
                     findModel = new FindModel();
                     filterModel = new FilterModel();
-                    
-                    setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
                             System.out.println("changeSel");
@@ -995,14 +992,17 @@ public class ClientForm extends Container {
                         
                             final Point ViewPos = pane.getViewport().getViewPosition();
                             final int dltpos = (newindex-oldindex) * getRowHeight();
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    ViewPos.y += dltpos;
-                                    pane.getViewport().setViewPosition(ViewPos);
-                                    scrollRectToVisible(getCellRect(newindex, 0, true));
-                                    pane.validate();
-                                }
-                            });
+                            ViewPos.y += dltpos;
+                            if (ViewPos.y >= 0) {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        pane.getViewport().setViewPosition(ViewPos);
+//                                        System.out.println("Viewpos : " + ViewPos);
+                                        scrollRectToVisible(getCellRect(newindex, 0, true));
+                                        pane.validate();
+                                    }
+                                });
+                            }
                         } //else
 //                            getSelectionModel().clearSelection();
 
@@ -1278,8 +1278,13 @@ public class ClientForm extends Container {
                                     }
 
                                 };
-                                cell.view.remove(cell.view.label);
 
+                                JComboBox compBorder = new JComboBox();
+                                setBorder(compBorder.getBorder());
+
+                                cell.view.remove(cell.view.label);
+                                cell.view.table.setBorder(new EmptyBorder(0,0,0,0));
+                                
                                 add(cell.view, BorderLayout.CENTER);
                             }
 
@@ -1650,11 +1655,21 @@ public class ClientForm extends Container {
                     }
                     
                     public ClientGroupObjectValue getSelectedObject() {
-                        return gridRows.get(convertRowIndexToModel(getSelectedRow()));
+                        int rowView = getSelectedRow();
+                        int rowModel = convertRowIndexToModel(getSelectedRow());
+                        if (rowModel < 0)
+                            return null;
+
+                        return gridRows.get(rowModel);
                     }
 
                     public ClientCellView getSelectedCell() {
-                        return gridColumns.get(convertColumnIndexToModel(getSelectedColumn()));
+                        int colView = getSelectedColumn();
+                        int colModel = convertColumnIndexToModel(colView);
+                        if (colModel < 0)
+                            return null;
+
+                        return gridColumns.get(colModel);
                     }
                 }
 
@@ -1727,6 +1742,22 @@ public class ClientForm extends Container {
 
             }
 
+            public void classViewChanged() {
+
+                if (classView) {
+
+                    classModel.addClassTree();
+                    if (buttonChangeClass != null)
+                        formLayout.add(groupObject.changeClassView, buttonChangeClass);
+                } else {
+
+                    classModel.removeClassTree();
+                    if (buttonChangeClass != null)
+                        formLayout.remove(groupObject.changeClassView, buttonChangeClass);
+                }
+
+            }
+
             class ClassModel {
 
                 ClientClassView key;
@@ -1785,6 +1816,17 @@ public class ClientForm extends Container {
                     return (ClientClass) selNode.getUserObject();
                 }
 
+                public void changeCurrentClass(ClientClass cls, DefaultMutableTreeNode clsNode) {
+
+                    if (cls == null) return;
+
+                    changeGridClass(object, cls);
+                    currentClass = cls;
+                    currentNode = clsNode;
+                    view.updateUI();
+
+                }
+
                 class ClassTree extends JTree {
 
                     DefaultTreeModel model;
@@ -1807,6 +1849,7 @@ public class ClientForm extends Container {
 
                         ID = object.ID;
 
+                        setToggleClickCount(-1);
                         setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 
                         model = new DefaultTreeModel(rootNode);
@@ -1827,20 +1870,16 @@ public class ClientForm extends Container {
 
                             public void mouseReleased(MouseEvent e) {
                                 if (e.getClickCount() == 2) {
+                                    changeCurrentClass(getSelectedClass(), getSelectedNode());
+                                }
+                            }
+                        });
 
-                                    TreePath path = getSelectionPath();
-                                    if (path == null) return;
+                        addKeyListener(new KeyAdapter() {
 
-                                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-                                    if (node == null) return;
-
-                                    Object nodeObject = node.getUserObject();
-                                    if (! (nodeObject instanceof ClientClass)) return;
-
-                                    changeGridClass(object, (ClientClass) nodeObject);
-                                    currentNode = node;
-                                    currentClass = (ClientClass) nodeObject;
-                                    view.updateUI();
+                            public void keyPressed(KeyEvent e) {
+                                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                                    changeCurrentClass(getSelectedClass(), getSelectedNode());
                                 }
                             }
                         });
@@ -1909,6 +1948,25 @@ public class ClientForm extends Container {
                         }
 
                         model.reload(parent);
+                    }
+
+                    public DefaultMutableTreeNode getSelectedNode() {
+
+                        TreePath path = getSelectionPath();
+                        if (path == null) return null;
+
+                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+                        return node;
+                    }
+
+                    public ClientClass getSelectedClass() {
+
+                        DefaultMutableTreeNode node = getSelectedNode();
+                        if (node == null) return null;
+                        
+                        Object nodeObject = node.getUserObject();
+                        if (! (nodeObject instanceof ClientClass)) return null;
+                        return (ClientClass) nodeObject;
                     }
 
                 }
@@ -2000,12 +2058,20 @@ public class ClientForm extends Container {
                 view = iview;
                 
                 setLayout(globalLayout);
-                
-                Random rnd = new Random();
+
+                if (view.title != null) {
+/*                    TitledBorder border = BorderFactory.createTitledBorder(view.title);
+                    border.setTitlePosition(TitledBorder.ABOVE_TOP);
+                    setBorder(border);
+                    setBackground(Color.red);*/
+                }
+
+
+//                Random rnd = new Random();
 //                this.setBackground(new Color(rnd.nextInt(255),rnd.nextInt(255),rnd.nextInt(255)));
-//                setLayout(new SimplexLayout());
-//                setLayout(new FlowLayout());
+
                 setPreferredSize(new Dimension(10000, 10000));
+
             }
         }
     }
@@ -2218,25 +2284,34 @@ class StringPropertyEditor extends TextFieldPropertyEditor
 class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
 
+    JTable table;
+
     public DatePropertyEditor() {
         super(null, null, "dd.MM.yy", new DatePropertyEditorComponent("dd.MM.yy","##.##.##",' '));
 
     }
 
-/*    @Override
+    @Override
     public void requestFocus() {
-        super.requestFocus();
-    }*/
+        // пересылаем фокус в нужный объект
+        ((JFormattedTextField)dateEditor).requestFocusInWindow();
+    }
 
     @Override
     public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        return ((DatePropertyEditorComponent)dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
-    }
 
-/*    @Override
+        // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
+        if (condition == WHEN_FOCUSED)
+            return ((DatePropertyEditorComponent)dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
+        else
+            return super.processKeyBinding(ks, ke, condition, pressed);
+    }
+    
+    @Override
     public void setNextFocusableComponent(Component comp) {
+        super.setNextFocusableComponent(comp);
         ((JComponent)dateEditor).setNextFocusableComponent(comp);
-    }*/
+    }
 
 
     public Component getComponent() {
@@ -2250,6 +2325,7 @@ class DatePropertyEditor extends JDateChooser
     }
 
     public Object getValue() {
+
         return DateConverter.dateToInt(getDate());
     }
 
@@ -2262,10 +2338,19 @@ class DatePropertyEditorComponent extends JTextFieldDateEditor {
 
         setBorder(new EmptyBorder(0, 1, 0, 0));
 
-        SwingUtils.addFocusTraversalKey(this,
+/*        SwingUtils.addFocusTraversalKey(this,
                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
 
+    }
+
+    @Override
+    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+
+        // не ловим ввод, чтобы его словил сам JTable и обработал
+        if (ke.getKeyCode() == KeyEvent.VK_ENTER)
+            return false;
+        return super.processKeyBinding(ks, ke, condition, pressed);
     }
 
     //а вот так будем дурить их protected метод
@@ -2305,38 +2390,4 @@ class BitPropertyEditor extends JCheckBox
     public Object getValue() {
         return (isSelected()) ? 1 : 0;
     }
-}
-
-class SingleCellTable extends JTable {
-    
-    public SingleCellTable() {
-       
-        setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        addFocusListener(new FocusListener() {
-
-            public void focusGained(FocusEvent e) {
-                requestFocusInWindow();
-                changeSelection(0, 0, false, false);
-            }
-
-            public void focusLost(FocusEvent e) {
-                getSelectionModel().clearSelection();
-            }
-
-        });
-
-        SwingUtils.addFocusTraversalKey(this, 
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
-
-/*                        SwingUtils.addFocusTraversalKey(this, 
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
-
-        SwingUtils.addFocusTraversalKey(this, 
-                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
-                        
-   }
-    
 }

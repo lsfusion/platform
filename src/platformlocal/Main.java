@@ -80,6 +80,9 @@ public class Main {
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
 
+/*            JFrame frame = new JFrame("Hello");
+            frame.add(new ClientForm(Navigator.CreateForm(1)));
+            frame.setVisible(true);*/
             Layout = new Layout(Navigator);
 
 /*            if(!Layout.Loaded) {
