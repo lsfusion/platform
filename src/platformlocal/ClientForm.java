@@ -32,6 +32,7 @@ import javax.swing.table.*;
 import bibliothek.gui.dock.DefaultDockable;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
+import sun.swing.SwingUtilities2;
 
 interface ClientCellViewTable {
 
@@ -993,16 +994,15 @@ public class ClientForm extends Container {
                             final Point ViewPos = pane.getViewport().getViewPosition();
                             final int dltpos = (newindex-oldindex) * getRowHeight();
                             ViewPos.y += dltpos;
-                            if (ViewPos.y >= 0) {
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        pane.getViewport().setViewPosition(ViewPos);
+                            if (ViewPos.y < 0) ViewPos.y = 0;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    pane.getViewport().setViewPosition(ViewPos);
 //                                        System.out.println("Viewpos : " + ViewPos);
-                                        scrollRectToVisible(getCellRect(newindex, 0, true));
-                                        pane.validate();
-                                    }
-                                });
-                            }
+                                    scrollRectToVisible(getCellRect(newindex, 0, true));
+                                    pane.validate();
+                                }
+                            });
                         } //else
 //                            getSelectionModel().clearSelection();
 
@@ -1015,7 +1015,8 @@ public class ClientForm extends Container {
                     int oldindex = getSelectionModel().getLeadSelectionIndex();
                     int newindex = gridRows.indexOf(value);
                     if (newindex != -1 && newindex != oldindex)
-                        getSelectionModel().setLeadSelectionIndex(newindex);
+                        changeSelection(newindex, -1, false, false);
+//                    getSelectionModel().setLeadSelectionIndex(newindex);
 
                 }
 
@@ -2060,10 +2061,8 @@ public class ClientForm extends Container {
                 setLayout(globalLayout);
 
                 if (view.title != null) {
-/*                    TitledBorder border = BorderFactory.createTitledBorder(view.title);
-                    border.setTitlePosition(TitledBorder.ABOVE_TOP);
+                    TitledBorder border = BorderFactory.createTitledBorder(view.title);
                     setBorder(border);
-                    setBackground(Color.red);*/
                 }
 
 
@@ -2189,7 +2188,6 @@ class BitPropertyRenderer extends JCheckBox
 
         setHorizontalAlignment(JCheckBox.CENTER);
 
-        setBorder(new EmptyBorder(1, 1, 2, 2));
         setOpaque(true);
     }
 
@@ -2371,8 +2369,8 @@ class BitPropertyEditor extends JCheckBox
     public BitPropertyEditor() {
 
         setHorizontalAlignment(JCheckBox.CENTER);
+//        setVerticalAlignment(JCheckBox.CENTER);
 
-        setBorder(new EmptyBorder(0, 1, 0, 0));
         setOpaque(true);
 
         setBackground(Color.white);

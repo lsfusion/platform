@@ -44,6 +44,8 @@ class ClientFormTable extends JTable {
 
         setSurrendersFocusOnKeystroke(true);
 
+        System.out.println("rowHeight : " + getRowHeight());
+
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
 

@@ -224,9 +224,9 @@ public class SimplexLayout implements LayoutManager2 {
     private void fillInsideConstraint(LpSolve solver, Component comp) throws LpSolveException {
         
         if (components.indexOf(comp.getParent()) != -1)
-            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), infos.get(comp.getParent()), constraints.get(comp), constraints.get(comp.getParent()));
+            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), infos.get(comp.getParent()), constraints.get(comp), constraints.get(comp.getParent()), comp, comp.getParent());
         else
-            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), targetInfo, constraints.get(comp), constraints.get(targetInfo));
+            SingleSimplexConstraint.IS_INSIDE.fillConstraint(solver, infos.get(comp), targetInfo, constraints.get(comp), constraints.get(comp.getParent()), comp, comp.getParent());
     }
 
     private void fillSiblingsConstraint(LpSolve solver, Component parent) throws LpSolveException {
@@ -437,9 +437,11 @@ class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstra
     public double fillVertical = 0; //PREFERRED;
     public double fillHorizontal = 0; //PREFERRED;
 
-    public Insets insetsSibling = new Insets(2,2,2,2);
-    public Insets insetsInside = new Insets(2,2,2,2);
-    
+    public Insets insetsSibling = new Insets(0,0,0,0);
+
+    //приходится ставить хотя бы один вниз, иначе криво отрисовывает объекты снизу
+    public Insets insetsInside = new Insets(1,0,1,0);
+
     public SimplexComponentDirections directions = new SimplexComponentDirections(0.01,0.01,0,0);
     
     public SimplexConstraints() {
@@ -602,19 +604,23 @@ class SimplexSolverDirections {
 class IsInsideSimplexConstraint extends SingleSimplexConstraint {
     
     
-    public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2) throws LpSolveException {
-        
+    public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2, Component comp, Container cont) throws LpSolveException {
+
+        if (cons2 == null) {
+            int b = 1;
+        }
+
         // левый край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.L, comp2.L}, LpSolve.GE, cons1.insetsInside.left);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.L, comp2.L}, LpSolve.GE, cons2.insetsInside.left + cont.getInsets().left);
 
         // правый край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.R, comp1.R}, LpSolve.GE, cons1.insetsInside.right);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.R, comp1.R}, LpSolve.GE, cons2.insetsInside.right + cont.getInsets().right);
 
         // верхний край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.T, comp2.T}, LpSolve.GE, cons1.insetsInside.top);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.T, comp2.T}, LpSolve.GE, cons2.insetsInside.top + cont.getInsets().top);
 
         // нижний край
-        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.B, comp1.B}, LpSolve.GE, cons1.insetsInside.bottom);
+        solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp2.B, comp1.B}, LpSolve.GE, cons2.insetsInside.bottom + cont.getInsets().bottom);
         
     }
     

@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.awt.Dimension;
-import java.awt.LayoutManager;
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
@@ -273,6 +272,7 @@ class DefaultClientFormView extends ClientFormView {
             groupContainer.container = mainContainer;
             groupContainer.constraints.order = remoteForm.Groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+            groupContainer.constraints.insetsInside = new Insets(0,0,4,0);
 
             groupContainers.put(clientGroup, groupContainer);
             containers.add(groupContainer);
@@ -329,6 +329,7 @@ class DefaultClientFormView extends ClientFormView {
 
                 clientObject.objectIDView.container = panelContainer;
                 clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
+                clientObject.objectIDView.constraints.insetsSibling = new Insets(0,0,2,2);
 
                 clientObject.caption = object.OutName;
                 clientObject.objectIDView.caption = object.OutName;
@@ -354,6 +355,7 @@ class DefaultClientFormView extends ClientFormView {
 
             clientProperty.groupObject = mgroupObjects.get(property.ToDraw);
             clientProperty.constraints.order = remoteForm.Properties.indexOf(property);
+            clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             //временно
             clientProperty.caption = property.View.Property.OutName;
