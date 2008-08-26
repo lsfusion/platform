@@ -16,17 +16,16 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.text.DateFormat;
+import java.text.*;
 import javax.swing.JTextField;
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
+import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.*;
 import javax.swing.table.*;
 
 import bibliothek.gui.dock.DefaultDockable;
@@ -70,7 +69,7 @@ public class ClientForm extends Container {
     public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
 
-//        FocusOwnerTracer.installFocusTracer();
+        FocusOwnerTracer.installFocusTracer();
 
         remoteForm = iremoteForm;
 
@@ -463,8 +462,11 @@ public class ClientForm extends Container {
             
             grid.setPropertyValues(property, values);
         }
-        
-        class ClientAbstractCellRenderer implements TableCellRenderer {
+
+        // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
+        class ClientAbstractCellRenderer extends JComponent
+                                         implements TableCellRenderer {
+
 
             public Component getTableCellRendererComponent(JTable table, 
                                                            Object value, 
@@ -477,9 +479,20 @@ public class ClientForm extends Container {
                 PropertyRendererComponent currentComp = property.getRendererComponent(thisForm);
                 currentComp.setValue(value, isSelected, hasFocus);
 
-                return currentComp.getComponent();
+                JComponent comp = currentComp.getComponent();
+
+                renderers.add(comp);
+
+                return comp;
             }
-            
+
+            List<JComponent> renderers = new ArrayList();
+            @Override
+            public void updateUI() {
+                for (JComponent comp : renderers)
+                    comp.updateUI();
+            }
+                        
         }
         
         class ClientAbstractCellEditor extends AbstractCellEditor 
@@ -490,7 +503,7 @@ public class ClientForm extends Container {
             
             public Object getCellEditorValue() {
                 
-                return currentComp.getValue();
+                return currentComp.getCellEditorValue();
                 
             }
 
@@ -511,7 +524,7 @@ public class ClientForm extends Container {
                 currentComp = property.getEditorComponent(thisForm);
                 
                 if (currentComp != null) {
-                    currentComp.setValue(value);
+                    currentComp.setCellEditorValue(value);
                 
                     return currentComp.getComponent();
                 } else {                   
@@ -1885,6 +1898,18 @@ public class ClientForm extends Container {
                             }
                         });
 
+                        if (rootClass.hasChilds) {
+                            rootNode.add(new ExpandingTreeNode());
+                            expandPath(new TreePath(rootNode));
+                        }
+                        
+                    }
+
+                    @Override
+                    public void updateUI() {
+                        super.updateUI();
+
+                        //приходится в updateUI это засовывать, иначе при изменении UI - нифига не перерисовывает
                         setCellRenderer(new DefaultTreeCellRenderer() {
 
                             Font defaultFont;
@@ -1898,7 +1923,7 @@ public class ClientForm extends Container {
                                 }
 
                                 setFont(defaultFont);
-                                
+
                                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                                 if (node != null) {
 
@@ -1912,14 +1937,8 @@ public class ClientForm extends Container {
                                 return comp;
 
                             }
+
                         });
-
-                        if (rootClass.hasChilds) {
-                            rootNode.add(new ExpandingTreeNode());
-                            expandPath(new TreePath(rootNode));
-                        }
-
-
                     }
 
                     private void addNodeElements(DefaultMutableTreeNode parent) {
@@ -2079,16 +2098,21 @@ public class ClientForm extends Container {
 
 interface PropertyRendererComponent {
 
-    Component getComponent();
+    JComponent getComponent();
 
     void setValue(Object value, boolean isSelected, boolean hasFocus);
 
 }
 
-class LabelPropertyRenderer extends JLabel {
+class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 
-    public LabelPropertyRenderer() {
-        setBorder(new EmptyBorder(1, 1, 2, 2));
+    Format format = null;
+
+    public LabelPropertyRenderer(Format iformat) {
+        super();
+
+        format = iformat;
+        setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
     }
 
@@ -2109,20 +2133,20 @@ class LabelPropertyRenderer extends JLabel {
 class IntegerPropertyRenderer extends LabelPropertyRenderer
                               implements PropertyRendererComponent {
 
-    public IntegerPropertyRenderer() {
-        super();
+    public IntegerPropertyRenderer(Format iformat) {
+        super((iformat == null) ? NumberFormat.getInstance() : iformat);
 
         setHorizontalAlignment(JLabel.RIGHT);
         
     }
     
-    public Component getComponent() {
+    public JComponent getComponent() {
         return this;
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null)
-            setText(value.toString());
+            setText(format.format(value));
         else
             setText("");
         setSelected(isSelected, hasFocus);
@@ -2133,14 +2157,14 @@ class IntegerPropertyRenderer extends LabelPropertyRenderer
 class StringPropertyRenderer extends LabelPropertyRenderer 
                              implements PropertyRendererComponent {
 
-    public StringPropertyRenderer() {
-        super();
+    public StringPropertyRenderer(Format iformat) {
+        super(iformat);
 
 //        setHorizontalAlignment(JLabel.LEFT);
         
     }
     
-    public Component getComponent() {
+    public JComponent getComponent() {
         return this;
     }
 
@@ -2157,22 +2181,20 @@ class StringPropertyRenderer extends LabelPropertyRenderer
 class DatePropertyRenderer extends LabelPropertyRenderer
                            implements PropertyRendererComponent {
 
-    public static final DateFormat dateFormat = DateFormat.getDateInstance();
-
-    public DatePropertyRenderer() {
-        super();
+    public DatePropertyRenderer(Format iformat) {
+        super((iformat == null) ? DateFormat.getDateInstance() : iformat);
 
         setHorizontalAlignment(JLabel.RIGHT);
 
     }
 
-    public Component getComponent() {
+    public JComponent getComponent() {
         return this;
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null)
-            setText(dateFormat.format(DateConverter.intToDate((Integer)value)));
+            setText(format.format(DateConverter.intToDate((Integer)value)));
         else
             setText("");
         setSelected(isSelected, hasFocus);
@@ -2191,7 +2213,7 @@ class BitPropertyRenderer extends JCheckBox
         setOpaque(true);
     }
 
-    public Component getComponent() {
+    public JComponent getComponent() {
         return this;
     }
 
@@ -2217,18 +2239,28 @@ interface PropertyEditorComponent {
 
     Component getComponent();
     
-    void setValue(Object value);
-    Object getValue();
+    void setCellEditorValue(Object value);
+    Object getCellEditorValue();
     
 }
 
 
-class TextFieldPropertyEditor extends JTextField {
+class TextFieldPropertyEditor extends JFormattedTextField {
 
     public TextFieldPropertyEditor() {
-        setBorder(new EmptyBorder(0, 1, 0, 0));
+        super();
+        setBorder(new EmptyBorder(0, 3, 0, 0));
         setOpaque(true);
 //        setBackground(new Color(128,128,255));
+    }
+
+    @Override
+    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+
+        // не ловим ввод, чтобы его словил сам JTable и обработал
+        if (ke.getKeyCode() == KeyEvent.VK_ENTER)
+            return false;
+        return super.processKeyBinding(ks, ke, condition, pressed);
     }
     
 }
@@ -2236,26 +2268,59 @@ class TextFieldPropertyEditor extends JTextField {
 class IntegerPropertyEditor extends TextFieldPropertyEditor 
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor() {
+    public IntegerPropertyEditor(NumberFormat iformat) {
+
+        NumberFormat format = iformat;
+        if (format == null)
+            format = NumberFormat.getInstance();
+        
+/*        if (format instanceof DecimalFormat) {
+            ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
+        }*/
+
+        NumberFormatter formatter = new NumberFormatter((NumberFormat) ((format == null) ? NumberFormat.getInstance() : format)) {
+
+            public Object stringToValue(String text) throws ParseException {
+                if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".")) return null;
+                return super.stringToValue(text);
+            }
+        };
+
+        formatter.setAllowsInvalid(false);
+
         this.setHorizontalAlignment(JTextField.RIGHT);
+
+        setFormatterFactory(new DefaultFormatterFactory(formatter));
+
     }
-    
+
     public Component getComponent() {
         return this;
     }
 
-    public void setValue(Object value) {
+    public void setCellEditorValue(Object value) {
         if (value != null)
-            setText(value.toString());
+            setValue(value);
         selectAll();
     }
 
-    public Object getValue() {
+    public Object getCellEditorValue() {
+
         try {
-            return Integer.parseInt(this.getText());
-        } catch (NumberFormatException e) {
-            return 0;
+            commitEdit();
+        } catch (ParseException e) {
+            return null;
         }
+
+        Object value = this.getValue();
+
+        if (value instanceof Integer)
+            return value;
+
+        if (value instanceof Long)
+            return ((Long) value).intValue();
+
+        return null;
     }
     
 }
@@ -2263,26 +2328,29 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
 class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
 
+    public StringPropertyEditor() {
+        super();
+    }
+
     public Component getComponent() {
         return this;
     }
 
-    public void setValue(Object value) {
+    public void setCellEditorValue(Object value) {
         if (value != null)
             setText(value.toString());
         selectAll();
     }
 
-    public Object getValue() {
-        return (String)getText();
+    public Object getCellEditorValue() {
+        if (getText().isEmpty()) return null;
+        return getText();
     }
 
 }
 
 class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
-
-    JTable table;
 
     public DatePropertyEditor() {
         super(null, null, "dd.MM.yy", new DatePropertyEditorComponent("dd.MM.yy","##.##.##",' '));
@@ -2309,20 +2377,52 @@ class DatePropertyEditor extends JDateChooser
     public void setNextFocusableComponent(Component comp) {
         super.setNextFocusableComponent(comp);
         ((JComponent)dateEditor).setNextFocusableComponent(comp);
-    }
+//        jcalendar.setNextFocusableComponent(dateEditor.getUiComponent());
 
+
+        // вот эту хрень приходится добавлять по той причине, что иначе так как popup вообще говоря не child таблицы,
+        // то при нажатии на что угодно - она тут же делает stopEditing...
+        if (comp instanceof JTable) {
+
+            final JTable table = (JTable) comp;
+
+            popup.addPopupMenuListener(new PopupMenuListener() {
+
+                Boolean oldValue;
+
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    oldValue = (Boolean)table.getClientProperty("terminateEditOnFocusLost");
+                    table.putClientProperty("terminateEditOnFocusLost", Boolean.FALSE);
+                }
+
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    table.putClientProperty("terminateEditOnFocusLost", oldValue);
+                }
+
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+
+        }
+
+        // а вот эту хрень приходится добавлять потому что popupMenuWillBecomeInvisible срабатывает раньше чем
+        // проверяется на изменение фокуса
+        SwingUtils.removeFocusable(jcalendar);
+
+        // к слову все равно это все дело очень хриво работает и все из-за долбанных popup'ов
+    }
 
     public Component getComponent() {
         return this;
     }
 
-    public void setValue(Object value) {
+    public void setCellEditorValue(Object value) {
         if (value != null)
             setDate(DateConverter.intToDate((Integer)value));
         ((JFormattedTextField)dateEditor).selectAll();
     }
 
-    public Object getValue() {
+    public Object getCellEditorValue() {
 
         return DateConverter.dateToInt(getDate());
     }
@@ -2356,10 +2456,10 @@ class DatePropertyEditorComponent extends JTextFieldDateEditor {
         return processKeyBinding(ks, ke, condition, pressed);
     }
 
-    @Override
+/*    @Override
     public void focusLost(FocusEvent focusEvent) {
         super.focusLost(focusEvent);
-    }
+    }*/
 
 }
 
@@ -2380,12 +2480,12 @@ class BitPropertyEditor extends JCheckBox
         return this;
     }
 
-    public void setValue(Object value) {
+    public void setCellEditorValue(Object value) {
         if (value != null)
             setSelected((Integer) value != 0);
     }
 
-    public Object getValue() {
+    public Object getCellEditorValue() {
         return (isSelected()) ? 1 : 0;
     }
 }

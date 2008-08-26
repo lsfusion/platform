@@ -5,8 +5,9 @@
 
 package platformlocal;
 
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
+import com.toedter.calendar.JCalendar;
+
+import java.awt.*;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -28,6 +29,16 @@ public class SwingUtils {
         comp.setFocusTraversalKeys(id, newKeys);
     }
 
+    public static void removeFocusable(Container container) {
+
+        container.setFocusable(false);
+        for (Component comp : container.getComponents()) {
+            comp.setFocusable(false);
+            if (comp instanceof Container) {
+                removeFocusable((Container)comp);
+            }
+        }
+    }
 }
 
 class ExpandingTreeNode extends DefaultMutableTreeNode {
@@ -44,9 +55,10 @@ class ClientFormTable extends JTable {
 
         setSurrendersFocusOnKeystroke(true);
 
-        System.out.println("rowHeight : " + getRowHeight());
-
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
+        getTableHeader().setFocusable(false);
+        getTableHeader().setReorderingAllowed(false);
     }
 
 }
@@ -73,7 +85,7 @@ class SingleCellTable extends ClientFormTable {
                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
                 KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0));
 
-/*                        SwingUtils.addFocusTraversalKey(this,
+/*        SwingUtils.addFocusTraversalKey(this,
                 KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
 
@@ -83,12 +95,25 @@ class SingleCellTable extends ClientFormTable {
 
    }
 
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
+					int condition, boolean pressed) {
+
+        // сами обрабатываем нажатие клавиши Enter
+        if (e.getKeyCode() == KeyEvent.VK_ENTER && pressed) {
+            if (isEditing()) getCellEditor().stopCellEditing();
+            KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
+            return true;
+        } else
+            return super.processKeyBinding(ks, e, condition, pressed);    
+
+    }
+
 }
 
 
 class FocusOwnerTracer implements PropertyChangeListener {
 
-    public static final String FOCUS_OWNER_PROPERTY = "focusOwner";
+    public static final String FOCUS_OWNER_PROPERTY = "permanentFocusOwner";
     protected KeyboardFocusManager focusManager;
 
     protected static void installFocusTracer() {

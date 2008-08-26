@@ -196,15 +196,17 @@ public class SimplexLayout implements LayoutManager2 {
             Dimension max = component.getMaximumSize();
             
             SimplexComponentInfo info = infos.get(component);
-                    
+
+            //добавляем везде 1, иначе на округлении она теряется
             solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.GE, min.width);
             solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.GE, min.height);
 
             //приходится убирать ограничение на макс. размер, если растягивается объект, иначе ни один растягиваться не будет
-            if (constraints.get(component).fillHorizontal == 0)
-                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.LE, max.width);
+            if (constraints.get(component).fillHorizontal == 0) {
+                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.LE, max.width+1.0);
+            }
             if (constraints.get(component).fillVertical == 0)
-                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height);
+                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height+1.0);
         }
         
     }
@@ -344,13 +346,13 @@ public class SimplexLayout implements LayoutManager2 {
                 
                 solver.addColumn(new double[0]);
                 int var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.width);
+                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.width+1.0);
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.GE, 0);
                 objFnc.add(-1.0);
 
                 solver.addColumn(new double[0]);
                 var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.width);
+                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.width+1.0);
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.LE, 0);
                 objFnc.add(1.0);
             }
@@ -361,13 +363,13 @@ public class SimplexLayout implements LayoutManager2 {
                 
                 solver.addColumn(new double[0]);
                 int var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height);
+                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height+1.0);
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.GE, 0);
                 objFnc.add(-1.0);
 
                 solver.addColumn(new double[0]);
                 var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height);
+                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height+1.0);
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.LE, 0);
                 objFnc.add(1.0);
             }
@@ -378,8 +380,8 @@ public class SimplexLayout implements LayoutManager2 {
                     
         }
         
-        objFnc.set(colmaxw, 5.0);
-        objFnc.set(colmaxh, 5.0);
+        objFnc.set(colmaxw, 2.0);
+        objFnc.set(colmaxh, 2.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)
@@ -605,10 +607,6 @@ class IsInsideSimplexConstraint extends SingleSimplexConstraint {
     
     
     public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2, Component comp, Container cont) throws LpSolveException {
-
-        if (cons2 == null) {
-            int b = 1;
-        }
 
         // левый край
         solver.addConstraintex(2, new double[] {1, -1}, new int[] {comp1.L, comp2.L}, LpSolve.GE, cons2.insetsInside.left + cont.getInsets().left);

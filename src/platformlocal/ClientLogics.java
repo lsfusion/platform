@@ -5,6 +5,7 @@
 
 package platformlocal;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +14,9 @@ import java.util.Map;
 import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.text.Format;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 
 class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
 
@@ -132,8 +136,12 @@ abstract class ClientCellView extends ClientComponentView {
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
     
+    protected PropertyRendererComponent renderer;
     abstract public PropertyRendererComponent getRendererComponent(ClientForm form);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form);
+
+    Format format;
+    public Format getFormat() { return format; }
 
     public String toString() { return caption; }
 
@@ -153,18 +161,18 @@ class ClientPropertyView extends ClientCellView {
 
         return res * 5;
     }
-    
+
     private PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
         if (renderer == null) {
             
-            if (type.equals("integer")) renderer = new IntegerPropertyRenderer();
-            if (type.equals("char(50)")) renderer = new StringPropertyRenderer();
-            if (caption == "срок годн.") renderer = new DatePropertyRenderer();
+            if (type.equals("integer")) renderer = new IntegerPropertyRenderer(getFormat());
+            if (type.equals("char(50)")) renderer = new StringPropertyRenderer(getFormat());
+            if (caption == "срок годн.") renderer = new DatePropertyRenderer(getFormat());
             if (caption == "вес.") renderer = new BitPropertyRenderer();
 
-            if (renderer == null) renderer = new StringPropertyRenderer();
+            if (renderer == null) renderer = new StringPropertyRenderer(getFormat());
             
         }
         
@@ -176,7 +184,7 @@ class ClientPropertyView extends ClientCellView {
         
         if (caption == "вес.") return new BitPropertyEditor();
         if (caption == "срок годн.") return new DatePropertyEditor();
-        if (type.equals("integer")) return new IntegerPropertyEditor();
+        if (type.equals("integer")) return new IntegerPropertyEditor((NumberFormat)getFormat());
         if (type.equals("char(50)")) return new StringPropertyEditor();
 
         return new StringPropertyEditor();
@@ -187,11 +195,10 @@ class ClientPropertyView extends ClientCellView {
 
 class ClientObjectView extends ClientCellView {
 
-    private PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
         if (renderer == null) {
-            renderer = new IntegerPropertyRenderer();
+            renderer = new IntegerPropertyRenderer(getFormat());
         }
         
         return renderer;
@@ -204,7 +211,7 @@ class ClientObjectView extends ClientCellView {
         return null;
     }
     
-} 
+}
 
 class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,ClientGroupObjectValue,ClientPropertyView> {
 
