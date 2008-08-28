@@ -59,6 +59,15 @@ class ClientFormTable extends JTable {
 
         getTableHeader().setFocusable(false);
         getTableHeader().setReorderingAllowed(false);
+
+
+        //  Have the enter key work the same as the tab key
+		InputMap im = getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+		KeyStroke tab = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+		KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+		im.put(enter, im.get(tab));
+
     }
 
 }
@@ -99,7 +108,7 @@ class SingleCellTable extends ClientFormTable {
 					int condition, boolean pressed) {
 
         // сами обрабатываем нажатие клавиши Enter
-        if (e.getKeyCode() == KeyEvent.VK_ENTER && pressed) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed) {
             if (isEditing()) getCellEditor().stopCellEditing();
             KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
             return true;

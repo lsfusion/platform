@@ -206,7 +206,7 @@ public class SimplexLayout implements LayoutManager2 {
                 solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.LE, max.width+1.0);
             }
             if (constraints.get(component).fillVertical == 0)
-                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height+1.0);
+                solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height);
         }
         
     }
@@ -363,13 +363,13 @@ public class SimplexLayout implements LayoutManager2 {
                 
                 solver.addColumn(new double[0]);
                 int var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height+1.0);
+                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height);
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.GE, 0);
                 objFnc.add(-1.0);
 
                 solver.addColumn(new double[0]);
                 var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height+1.0);
+                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height);
                 solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.LE, 0);
                 objFnc.add(1.0);
             }
@@ -404,9 +404,10 @@ public class SimplexLayout implements LayoutManager2 {
                 LP = (int) coords[infoP.L-1];
                 TP = (int) coords[infoP.T-1];
             }
-            
-            comp.setBounds((int)coords[info.L-1]-LP, (int)coords[info.T-1]-TP, 
-                           (int)(coords[info.R-1]-coords[info.L-1]), (int)(coords[info.B-1]-coords[info.T-1]));
+
+
+            comp.setBounds((int)Math.round(coords[info.L-1]-LP), (int)Math.round(coords[info.T-1]-TP),
+                           (int)Math.round(coords[info.R-1]-coords[info.L-1]), (int)Math.round(coords[info.B-1]-coords[info.T-1]));
         }
         
     }

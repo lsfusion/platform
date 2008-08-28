@@ -69,7 +69,7 @@ public class ClientForm extends Container {
     public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
 
-        FocusOwnerTracer.installFocusTracer();
+//        FocusOwnerTracer.installFocusTracer();
 
         remoteForm = iremoteForm;
 
@@ -339,7 +339,7 @@ public class ClientForm extends Container {
 
     void saveChanges() {
         try {
-            remoteForm.SaveChanges();
+            Log.printmsg(remoteForm.SaveChanges());
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -392,7 +392,11 @@ public class ClientForm extends Container {
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
-                    grid.table.requestFocusInWindow();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            grid.table.requestFocusInWindow();
+                        }
+                    });
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
@@ -463,6 +467,43 @@ public class ClientForm extends Container {
             grid.setPropertyValues(property, values);
         }
 
+        // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component
+        public void addGroupObjectActions(JComponent comp) {
+
+            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), "switchClassView");
+            comp.getActionMap().put("switchClassView", new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    switchClassView(groupObject);
+                }
+            });
+
+            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK), "addObject");
+            comp.getActionMap().put("addObject", new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    addObject(groupObject.get(0), objects.get(groupObject.get(0)).classModel.getDerivedClass());
+                }
+            });
+
+            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK), "removeObject");
+            comp.getActionMap().put("removeObject", new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    changeClass(groupObject.get(0), null);
+                }
+            });
+
+            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.ALT_DOWN_MASK), "changeObjectClass");
+            comp.getActionMap().put("changeObjectClass", new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    changeClass(groupObject.get(0), objects.get(groupObject.get(0)).classModel.getSelectedClass());
+                }
+            });
+
+        }
+
         // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
         class ClientAbstractCellRenderer extends JComponent
                                          implements TableCellRenderer {
@@ -508,8 +549,27 @@ public class ClientForm extends Container {
             }
 
             public boolean isCellEditable(EventObject e) {
-                return !(e instanceof MouseEvent)
-                        || ((MouseEvent)e).getClickCount()>=2;
+
+                if (e instanceof KeyEvent) {
+
+                    KeyEvent event = (KeyEvent) e;
+
+                    if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
+
+                    //будем считать, что если нажата кнопка ALT то явно пользователь не хочет вводить текст
+                    if ((event.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) return false;
+
+                    return true;
+                }
+
+                if (e instanceof MouseEvent) {
+
+                    MouseEvent event = (MouseEvent) e;
+
+                    return event.getClickCount() >= 2;
+                }
+
+                return false;
             }
             
             public Component getTableCellEditorComponent(JTable table, 
@@ -677,7 +737,6 @@ public class ClientForm extends Container {
             Map<ClientCellView, PanelCellModel> models;
             
             public PanelModel() {
-//                setLayout(new FlowLayout());
 
                 models = new HashMap();
             }
@@ -694,8 +753,6 @@ public class ClientForm extends Container {
                 }
                 setGroupObjectIDValue(currentObject);
                 
-//                validate();
-                
             }
             
             public void removeGroupObjectID() {
@@ -708,8 +765,6 @@ public class ClientForm extends Container {
                         models.remove(object.objectIDView);
                     }
                 }
-//                repaint();
-                
             }
 
             private Component getObjectIDView(int ind) {
@@ -765,6 +820,8 @@ public class ClientForm extends Container {
                 
                 public PanelCellModel(ClientCellView ikey) {
                     super(ikey);
+
+                    addGroupObjectActions(view);
                 }
 
                 protected void cellValueChanged(Object ivalue) {
@@ -808,8 +865,6 @@ public class ClientForm extends Container {
                 paneConstraints.insets = new Insets(4,4,4,4); 
 
                 queriesContainer = new JPanel();
-//                queriesContainer.setLayout(new FlowLayout(FlowLayout.LEFT));
-//                queriesContainer.setLayout(new FlowLayout());
                 queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
                 queriesContainer.add(table.findModel.queryView);
@@ -819,6 +874,25 @@ public class ClientForm extends Container {
 
                 container.add(pane);
                 container.add(queriesContainer);
+
+                addGroupObjectActions(table);
+
+                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "addFind");
+                container.getActionMap().put("addFind", new AbstractAction() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        table.findModel.addCondition();
+                    }
+                });
+
+                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "addFilter");
+                container.getActionMap().put("addFilter", new AbstractAction() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        table.filterModel.addCondition();
+                    }
+                });
+
             }
 
             private void addGroupObjectID() {
@@ -939,8 +1013,13 @@ public class ClientForm extends Container {
 
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
-                            System.out.println("changeSel");
+//                            System.out.println("changeSel");
                             changeObject(groupObject, model.getSelectedObject());
+                        }
+                    });
+
+                    getColumnModel().getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+                        public void valueChanged(ListSelectionEvent e) {
                             currentCell = model.getSelectedCell();
                         }
                     });
@@ -1040,6 +1119,17 @@ public class ClientForm extends Container {
 
                 }
 
+                private Object getSelectedValue() {
+
+                    int row = getSelectedRow();
+                    int col = getSelectedColumn();
+
+                    if (row != -1 && col != -1)
+                        return getValueAt(row, col);
+                    else
+                        return null;
+                }
+
                 // ---------------------------------------------------------------------------------------------- //
                 // -------------------------------------- Поиски и отборы --------------------------------------- //
                 // ---------------------------------------------------------------------------------------------- //
@@ -1062,13 +1152,19 @@ public class ClientForm extends Container {
                     }
 
                     public void applyQuery() {
+
                         hasChanged = false;
 
                         queryView.conditionsChanged();
+
+                        table.requestFocusInWindow();
+
                     }
 
                     public void addCondition() {
 
+                        queryView.collapsed = false;
+                        
                         hasChanged = true;
 
                         ClientFilter condition = new ClientFilter();
@@ -1098,6 +1194,19 @@ public class ClientForm extends Container {
                         queryView.conditionsChanged();
 
 //                        container.validate();
+                    }
+
+                    public void removeAllConditions() {
+
+                        hasChanged = true;
+
+                        conditions.clear();
+                        conditionViews.clear();
+
+                        queryView.condviews.removeAll();
+
+                        queryView.conditionsChanged();
+
                     }
 
                     protected class QueryConditionView extends JPanel {
@@ -1186,6 +1295,7 @@ public class ClientForm extends Container {
                             valueViews = new HashMap();
                             
                             ClientUserValueLink userValue = new ClientUserValueLink();
+                            userValue.value = table.getSelectedValue();
                             ClientUserValueLinkView userView = new ClientUserValueLinkView(userValue, filter.property);
                             valueViews.put(userValue, userView);
 
@@ -1225,17 +1335,24 @@ public class ClientForm extends Container {
 
                             filterChanged();
 
-/*                            JButton test = new JButton("Test");
-                            test.addActionListener(new ActionListener() {
+                            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK), "applyQuery");
+                            getActionMap().put("applyQuery", new AbstractAction() {
 
                                 public void actionPerformed(ActionEvent e) {
-                                    System.out.println(propertyView.getSize());
-                                    System.out.println(compareView.getSize());
-                                    System.out.println(classValueLinkView.getSize());
-                                    System.out.println(valueView.getBounds());
+                                    valueView.stopEditing();
+                                    applyQuery();
                                 }
                             });
-                            add(test);*/
+
+                            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK), "removeAll");
+                            getActionMap().put("removeAll", new AbstractAction() {
+
+                                public void actionPerformed(ActionEvent e) {
+                                    removeAllConditions();
+                                    applyQuery();
+                                }
+                            });
+
                         }
 
                         public void filterChanged() {
@@ -1267,6 +1384,8 @@ public class ClientForm extends Container {
 
                             abstract public void propertyChanged(ClientPropertyView property);
 
+                            public void stopEditing() {};
+
                         }
 
                         private class ClientUserValueLinkView extends ClientValueLinkView {
@@ -1293,6 +1412,8 @@ public class ClientForm extends Container {
 
                                 };
 
+                                cell.setValue(valueLink.value);
+
                                 JComboBox compBorder = new JComboBox();
                                 setBorder(compBorder.getBorder());
 
@@ -1306,11 +1427,16 @@ public class ClientForm extends Container {
                                 return cell.view.table.requestFocusInWindow();
                             }
 
-
-
                             public void propertyChanged(ClientPropertyView property) {
                                 cell.setKey(property);
                             }
+
+                            public void stopEditing() {
+                                CellEditor editor = cell.view.table.getCellEditor();
+                                if (editor != null)
+                                    editor.stopCellEditing();
+                            }
+
                         }
 
                         private class ClientObjectValueLinkView extends ClientValueLinkView {
@@ -1432,7 +1558,6 @@ public class ClientForm extends Container {
                             addCondition.addActionListener(new ActionListener() {
 
                                 public void actionPerformed(ActionEvent e) {
-                                    collapsed = false;
                                     addCondition();
                                 }
                             });
@@ -1462,6 +1587,21 @@ public class ClientForm extends Container {
 
                         public Dimension getMaximumSize() {
                             return getPreferredSize();
+                        }
+
+                        public void updateUI() {
+
+                            if (condviews != null)
+                                condviews.updateUI();
+
+                            if (applyButton != null)
+                                applyButton.updateUI();
+
+                            if (addCondition != null)
+                                addCondition.updateUI();
+
+                            if (collapseButton != null)
+                                collapseButton.updateUI();
                         }
 
                         public void conditionsChanged() {
@@ -1575,8 +1715,6 @@ public class ClientForm extends Container {
                                 if (ordNum != -1) {
 
                                     label.setIcon((orderDirections.get(ordNum)) ? arrowUpIcon : arrowDownIcon);
-//                                    label.setFont(label.getFont().deriveFont(Font.BOLD));
-//                                    label.setHorizontalAlignment();
                                 }
 
                             }
@@ -1654,22 +1792,14 @@ public class ClientForm extends Container {
 
                     public Object getValueAt(int row, int col) {
 
-                        Object val = null;
-                        val = gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
-                            
-//                        if (val == null)
-//                            return (String)"";
-//                        else
-                            return val;
+                        return gridValues.get(gridColumns.get(col)).get(gridRows.get(row));
                     }
                     
                     public void setValueAt(Object value, int row, int col) {
-//                        System.out.println("setValueAt");
                         changeProperty(gridColumns.get(col),value);
                     }
                     
                     public ClientGroupObjectValue getSelectedObject() {
-                        int rowView = getSelectedRow();
                         int rowModel = convertRowIndexToModel(getSelectedRow());
                         if (rowModel < 0)
                             return null;
@@ -1717,7 +1847,8 @@ public class ClientForm extends Container {
 
                 object = iobject;
 
-                buttonAdd = new JButton("Добавить(" + object.caption + ")");
+                buttonAdd = new JButton("Добавить" + ((groupObject.size() > 1) ? ("(" + object.caption + ")") : ""));
+                buttonAdd.setFocusable(false);
                 buttonAdd.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -1728,7 +1859,8 @@ public class ClientForm extends Container {
 
                 formLayout.add(groupObject.addView, buttonAdd);
 
-                buttonDel = new JButton("Удалить(" + object.caption + ")");
+                buttonDel = new JButton("Удалить" + ((groupObject.size() > 1) ? ("(" + object.caption + ")") : ""));
+                buttonDel.setFocusable(false);
                 buttonDel.addActionListener(new ActionListener() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -1742,7 +1874,8 @@ public class ClientForm extends Container {
                 classModel = new ClassModel(object.classView);
 
                 if (classModel.rootClass.hasChilds) {
-                    buttonChangeClass = new JButton("Изменить класс(" + object.caption + ")");
+                    buttonChangeClass = new JButton("Изменить класс" + ((groupObject.size() > 1) ? ("(" + object.caption + ")") : ""));
+                    buttonChangeClass.setFocusable(false);
                     buttonChangeClass.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
@@ -1902,6 +2035,8 @@ public class ClientForm extends Container {
                             rootNode.add(new ExpandingTreeNode());
                             expandPath(new TreePath(rootNode));
                         }
+
+                        this.setSelectionRow(0);
                         
                     }
 

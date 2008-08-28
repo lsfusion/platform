@@ -110,6 +110,10 @@ class Layout extends JFrame implements ComponentCollector {
         NavigatorDockable NavigatorForm = new NavigatorDockable(Navigator);
         // нужно обязательно до Drop чтобы появились крестики
         Frontend.add(NavigatorForm,"Navigator");
+
+        DefaultDockable logPanel = new DefaultDockable(Log.getPanel(), "Log");
+        Frontend.add(logPanel, "Log");
+
         // нужно включить в FrontEnd чтобы была predefined и новые формы могли бы туда же попадать
         Frontend.add(StackStation,"Stack");
         Frontend.setHideable(StackStation,false);
@@ -128,6 +132,7 @@ class Layout extends JFrame implements ComponentCollector {
             read();
         } catch (IOException e) {
             SplitStation.drop(NavigatorForm);
+            SplitStation.drop(logPanel);
             SplitStation.drop(StackStation);
         }
 
