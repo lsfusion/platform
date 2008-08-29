@@ -5,17 +5,12 @@
 
 package platformlocal;
 
-import javax.swing.*;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.text.Format;
-import java.text.DateFormat;
 import java.text.NumberFormat;
 
 class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
@@ -162,7 +157,6 @@ class ClientPropertyView extends ClientCellView {
         return res * 5;
     }
 
-    private PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
         if (renderer == null) {

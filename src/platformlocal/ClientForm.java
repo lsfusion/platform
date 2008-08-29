@@ -14,8 +14,6 @@ import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.text.*;
 import javax.swing.JTextField;
 import javax.swing.*;
@@ -31,7 +29,6 @@ import javax.swing.table.*;
 import bibliothek.gui.dock.DefaultDockable;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
-import sun.swing.SwingUtilities2;
 
 interface ClientCellViewTable {
 
@@ -39,32 +36,24 @@ interface ClientCellViewTable {
 
 }
 
-class SingleViewable<ViewClass> {
-    ViewClass view;
-}
-
 public class ClientForm extends Container {
 
-    String caption = "Hello World";
+    private final ClientFormView formView;
 
-    ClientForm thisForm;
-
-    ClientFormView formView;
-
-    RemoteForm remoteForm;
+    private final RemoteForm remoteForm;
 
     // Icons - загружаем один раз, для экономии
-    final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("images/arrowup.gif"));
-    final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("images/arrowdown.gif"));
-    final ImageIcon filtIcon = new ImageIcon(getClass().getResource("images/filt.gif"));
-    final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("images/filtadd.gif"));
-    final ImageIcon findIcon = new ImageIcon(getClass().getResource("images/find.gif"));
-    final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("images/findadd.gif"));
-    final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("images/delete.gif"));
-    final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("images/collapse.gif"));
-    final ImageIcon expandIcon = new ImageIcon(getClass().getResource("images/expand.gif"));
+    private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("images/arrowup.gif"));
+    private final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("images/arrowdown.gif"));
+    private final ImageIcon filtIcon = new ImageIcon(getClass().getResource("images/filt.gif"));
+    private final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("images/filtadd.gif"));
+    private final ImageIcon findIcon = new ImageIcon(getClass().getResource("images/find.gif"));
+    private final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("images/findadd.gif"));
+    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("images/delete.gif"));
+    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("images/collapse.gif"));
+    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("images/expand.gif"));
 
-    public final static Dimension iconButtonDimension = new Dimension(22,22);
+    private final static Dimension iconButtonDimension = new Dimension(22,22);
 
 
     public ClientForm(RemoteForm iremoteForm) {
@@ -73,8 +62,6 @@ public class ClientForm extends Container {
 //        FocusOwnerTracer.installFocusTracer();
 
         remoteForm = iremoteForm;
-
-        thisForm = this;
 
 //        getFrame().setTitle(caption);
 
@@ -85,15 +72,15 @@ public class ClientForm extends Container {
 
     }
 
-    FormLayout formLayout;
+    private FormLayout formLayout;
 
     Map<ClientGroupObjectImplement, GroupObjectModel> models;
 
-    JButton buttonPrint;
-    JButton buttonApply;
-    JButton buttonCancel;
+    private JButton buttonPrint;
+    private JButton buttonApply;
+    private JButton buttonCancel;
 
-    public void initializeForm() {
+    void initializeForm() {
 
         formLayout = new FormLayout(formView.containers);
 
@@ -273,7 +260,7 @@ public class ClientForm extends Container {
         try {
             remoteForm.ChangeGridClass(object.ID, cls.ID);
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 
         applyFormChanges();
@@ -320,7 +307,7 @@ public class ClientForm extends Container {
 
 
         JasperDesign Design = remoteForm.GetReportDesign();
-        JasperReport Report = null;
+        JasperReport Report;
         try {
             Report = JasperCompileManager.compileReport(Design);
             JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),remoteForm.ReadData());
@@ -340,9 +327,9 @@ public class ClientForm extends Container {
             ToExcel.exportReport();
 */
         } catch (JRException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
 //        JasperCompileManager.writeReportToXmlFile(Report,"report.xml");
 //        JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
@@ -351,7 +338,7 @@ public class ClientForm extends Container {
     void saveChanges() {
         try {
             String message = remoteForm.SaveChanges();
-            if (message == "pass") {
+            if ("pass".equals(message)) {
                 Log.printSuccessMessage(message);
                 dataReset();
             }
@@ -359,7 +346,7 @@ public class ClientForm extends Container {
                 Log.printFailedMessage(message);
             }
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
         }
         applyFormChanges();
     }
@@ -393,16 +380,15 @@ public class ClientForm extends Container {
 
     class GroupObjectModel {
 
-        ClientGroupObjectImplement groupObject;
+        final ClientGroupObjectImplement groupObject;
 
-        PanelModel panel;
-        GridModel grid;
-        Map<ClientObjectImplement, ObjectModel> objects = new HashMap();
+        final PanelModel panel;
+        final GridModel grid;
+        final Map<ClientObjectImplement, ObjectModel> objects = new HashMap();
 
         ClientGroupObjectValue currentObject;
 
         ClientCellView currentCell;
-        Object currentValue;
 
         Boolean classView = false;
 
@@ -557,7 +543,7 @@ public class ClientForm extends Container {
                                                            int column) {
                 
                 ClientCellView property = ((ClientCellViewTable)table).getCellView(row, column);
-                PropertyRendererComponent currentComp = property.getRendererComponent(thisForm);
+                PropertyRendererComponent currentComp = property.getRendererComponent(ClientForm.this);
                 currentComp.setValue(value, isSelected, hasFocus);
 
                 JComponent comp = currentComp.getComponent();
@@ -567,7 +553,7 @@ public class ClientForm extends Container {
                 return comp;
             }
 
-            List<JComponent> renderers = new ArrayList();
+            final List<JComponent> renderers = new ArrayList();
             @Override
             public void updateUI() {
                 for (JComponent comp : renderers)
@@ -621,7 +607,7 @@ public class ClientForm extends Container {
                 value = ivalue;
                 
                 ClientCellView property = ((ClientCellViewTable)table).getCellView(row, column);
-                currentComp = property.getEditorComponent(thisForm);
+                currentComp = property.getEditorComponent(ClientForm.this);
                 
                 if (currentComp != null) {
                     currentComp.setCellEditorValue(value);
@@ -682,9 +668,7 @@ public class ClientForm extends Container {
 
                 @Override
                 public boolean equals(Object o) {
-                    if (!(o instanceof CellView))
-                        return false;
-                    return ((CellView)o).ID == this.ID;
+                    return o instanceof CellView && ((CellView) o).ID == this.ID;
                 }
 
                 public CellView() {
@@ -1298,7 +1282,7 @@ public class ClientForm extends Container {
                             add(propertyView);
 
                             if (currentCell instanceof ClientPropertyView)
-                                propertyView.setSelectedItem((ClientPropertyView)currentCell);
+                                propertyView.setSelectedItem(currentCell);
                             
                             filter.property = (ClientPropertyView) propertyView.getSelectedItem();
 
@@ -1423,7 +1407,7 @@ public class ClientForm extends Container {
 
                             abstract public void propertyChanged(ClientPropertyView property);
 
-                            public void stopEditing() {};
+                            public void stopEditing() {}
 
                         }
 
@@ -1553,17 +1537,17 @@ public class ClientForm extends Container {
 
                     protected class QueryView extends JPanel {
 
-                        protected JPanel buttons;
+                        JPanel buttons;
                         protected JPanel condviews;
 
                         boolean collapsed = false;
 
                         Color defaultApplyBackground;
 
-                        protected JButton applyButton;
-                        protected Component centerGlue;
-                        protected JButton addCondition;
-                        protected JButton collapseButton;
+                        JButton applyButton;
+                        Component centerGlue;
+                        JButton addCondition;
+                        JButton collapseButton;
                                                          
                         public QueryView() {
 
@@ -1886,7 +1870,9 @@ public class ClientForm extends Container {
 
                 object = iobject;
 
-                buttonAdd = new JButton("Добавить" + ((groupObject.size() > 1) ? ("(" + object.caption + ")") : ""));
+                String extraCaption = ((groupObject.size() > 1) ? ("(" + object.caption + ")") : "");
+
+                buttonAdd = new JButton("Добавить" + extraCaption);
                 buttonAdd.setFocusable(false);
                 buttonAdd.addActionListener(new ActionListener() {
 
@@ -1898,7 +1884,7 @@ public class ClientForm extends Container {
 
                 formLayout.add(groupObject.addView, buttonAdd);
 
-                buttonDel = new JButton("Удалить" + ((groupObject.size() > 1) ? ("(" + object.caption + ")") : ""));
+                buttonDel = new JButton("Удалить" + extraCaption);
                 buttonDel.setFocusable(false);
                 buttonDel.addActionListener(new ActionListener() {
 
@@ -1913,7 +1899,7 @@ public class ClientForm extends Container {
                 classModel = new ClassModel(object.classView);
 
                 if (classModel.rootClass.hasChilds) {
-                    buttonChangeClass = new JButton("Изменить класс" + ((groupObject.size() > 1) ? ("(" + object.caption + ")") : ""));
+                    buttonChangeClass = new JButton("Изменить класс" + extraCaption);
                     buttonChangeClass.setFocusable(false);
                     buttonChangeClass.addActionListener(new ActionListener() {
 
@@ -1980,12 +1966,17 @@ public class ClientForm extends Container {
                     formLayout.remove(key, pane);
                 }
 
-                public ClientClass getDerivedClass() {
+                private DefaultMutableTreeNode getSelectedNode() {
 
                     TreePath path = view.getSelectionModel().getLeadSelectionPath();
-                    if (path == null) return currentClass;
+                    if (path == null) return null;
 
-                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+                    return (DefaultMutableTreeNode) path.getLastPathComponent();
+                }
+
+                public ClientClass getDerivedClass() {
+
+                    DefaultMutableTreeNode selNode = getSelectedNode();
                     if (selNode == null || !currentNode.isNodeChild(selNode)) return currentClass;
 
                     return (ClientClass) selNode.getUserObject();
@@ -1993,10 +1984,7 @@ public class ClientForm extends Container {
 
                 public ClientClass getSelectedClass() {
 
-                    TreePath path = view.getSelectionModel().getLeadSelectionPath();
-                    if (path == null) return currentClass;
-
-                    DefaultMutableTreeNode selNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+                    DefaultMutableTreeNode selNode = getSelectedNode();
                     if (selNode == null) return currentClass;
 
                     return (ClientClass) selNode.getUserObject();
@@ -2026,9 +2014,7 @@ public class ClientForm extends Container {
 
                     @Override
                     public boolean equals(Object o) {
-                        if (!(o instanceof ClassTree))
-                            return false;
-                        return ((ClassTree)o).ID == this.ID;
+                        return o instanceof ClassTree && ((ClassTree) o).ID == this.ID;
                     }
 
                     public ClassTree() {
@@ -2048,7 +2034,7 @@ public class ClientForm extends Container {
                                 addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
                             }
 
-                            public void treeCollapsed(TreeExpansionEvent event) {};
+                            public void treeCollapsed(TreeExpansionEvent event) {}
 
                         });
 
@@ -2107,8 +2093,7 @@ public class ClientForm extends Container {
                                         setFont(getFont().deriveFont(Font.BOLD));
                                 }
 
-                                Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-                                return comp;
+                                return super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
                             }
 
@@ -2123,7 +2108,7 @@ public class ClientForm extends Container {
                         parent.removeAllChildren();
 
                         Object nodeObject = parent.getUserObject();
-                        if (nodeObject != null && ! (nodeObject instanceof ClientClass) ) return;
+                        if (nodeObject == null || ! (nodeObject instanceof ClientClass) ) return;
 
                         ClientClass parentClass = (ClientClass) nodeObject;
 
@@ -2149,8 +2134,7 @@ public class ClientForm extends Container {
                         TreePath path = getSelectionPath();
                         if (path == null) return null;
 
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-                        return node;
+                        return (DefaultMutableTreeNode) path.getLastPathComponent();
                     }
 
                     public ClientClass getSelectedClass() {
@@ -2171,16 +2155,6 @@ public class ClientForm extends Container {
         
     }
 
-    class ComponentView<ComponentState extends ClientComponentView, DrawComponent extends Component> {
-        
-        ComponentState state;
-        DrawComponent component;
-        
-        public ComponentView(ComponentState istate) {
-            state = istate;
-        }
-    }
-    
     class FormLayout {
 
         ContainerView mainContainer;
@@ -2268,400 +2242,5 @@ public class ClientForm extends Container {
 
             }
         }
-    }
-}
-
-
-interface PropertyRendererComponent {
-
-    JComponent getComponent();
-
-    void setValue(Object value, boolean isSelected, boolean hasFocus);
-
-}
-
-class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
-
-    Format format = null;
-
-    public LabelPropertyRenderer(Format iformat) {
-        super();
-
-        format = iformat;
-        setBorder(new EmptyBorder(1, 3, 2, 2));
-        setOpaque(true);
-    }
-
-    public void setSelected(boolean isSelected, boolean hasFocus) {
-        if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128,128,255)); 
-            else
-                setBackground(new Color(192,192,255));
-           
-        } else
-            setBackground(Color.white);
-    }
-    
-}
-
-
-class IntegerPropertyRenderer extends LabelPropertyRenderer
-                              implements PropertyRendererComponent {
-
-    public IntegerPropertyRenderer(Format iformat) {
-        super((iformat == null) ? NumberFormat.getInstance() : iformat);
-
-        setHorizontalAlignment(JLabel.RIGHT);
-        
-    }
-    
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null)
-            setText(format.format(value));
-        else
-            setText("");
-        setSelected(isSelected, hasFocus);
-    }
-    
-    
-}
-class StringPropertyRenderer extends LabelPropertyRenderer 
-                             implements PropertyRendererComponent {
-
-    public StringPropertyRenderer(Format iformat) {
-        super(iformat);
-
-//        setHorizontalAlignment(JLabel.LEFT);
-        
-    }
-    
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null)
-            setText(value.toString());
-        else
-            setText("");
-        setSelected(isSelected, hasFocus);
-    }
-    
-}
-
-class DatePropertyRenderer extends LabelPropertyRenderer
-                           implements PropertyRendererComponent {
-
-    public DatePropertyRenderer(Format iformat) {
-        super((iformat == null) ? DateFormat.getDateInstance() : iformat);
-
-        setHorizontalAlignment(JLabel.RIGHT);
-
-    }
-
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null)
-            setText(format.format(DateConverter.intToDate((Integer)value)));
-        else
-            setText("");
-        setSelected(isSelected, hasFocus);
-    }
-
-}
-
-class BitPropertyRenderer extends JCheckBox
-                          implements PropertyRendererComponent {
-
-    public BitPropertyRenderer() {
-        super();
-
-        setHorizontalAlignment(JCheckBox.CENTER);
-
-        setOpaque(true);
-    }
-
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        if (value != null)
-            setSelected((Integer)value != 0);
-        else
-            setSelected(false);
-
-        if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128,128,255));
-            else
-                setBackground(new Color(192,192,255));
-
-        } else
-            setBackground(Color.white);
-    }
-}
-
-
-interface PropertyEditorComponent {
-
-    Component getComponent();
-    
-    void setCellEditorValue(Object value);
-    Object getCellEditorValue();
-    
-}
-
-
-class TextFieldPropertyEditor extends JFormattedTextField {
-
-    public TextFieldPropertyEditor() {
-        super();
-        setBorder(new EmptyBorder(0, 3, 0, 0));
-        setOpaque(true);
-//        setBackground(new Color(128,128,255));
-    }
-
-    @Override
-    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-
-        // не ловим ввод, чтобы его словил сам JTable и обработал
-        if (ke.getKeyCode() == KeyEvent.VK_ENTER)
-            return false;
-        return super.processKeyBinding(ks, ke, condition, pressed);
-    }
-    
-}
-
-class IntegerPropertyEditor extends TextFieldPropertyEditor 
-                            implements PropertyEditorComponent {
-
-    public IntegerPropertyEditor(NumberFormat iformat) {
-
-        NumberFormat format = iformat;
-        if (format == null)
-            format = NumberFormat.getInstance();
-        
-/*        if (format instanceof DecimalFormat) {
-            ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
-        }*/
-
-        NumberFormatter formatter = new NumberFormatter((NumberFormat) ((format == null) ? NumberFormat.getInstance() : format)) {
-
-            public Object stringToValue(String text) throws ParseException {
-                if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".")) return null;
-                return super.stringToValue(text);
-            }
-        };
-
-        formatter.setAllowsInvalid(false);
-
-        this.setHorizontalAlignment(JTextField.RIGHT);
-
-        setFormatterFactory(new DefaultFormatterFactory(formatter));
-
-    }
-
-    public Component getComponent() {
-        return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setValue(value);
-        selectAll();
-    }
-
-    public Object getCellEditorValue() {
-
-        try {
-            commitEdit();
-        } catch (ParseException e) {
-            return null;
-        }
-
-        Object value = this.getValue();
-
-        if (value instanceof Integer)
-            return value;
-
-        if (value instanceof Long)
-            return ((Long) value).intValue();
-
-        return null;
-    }
-    
-}
-
-class StringPropertyEditor extends TextFieldPropertyEditor
-                           implements PropertyEditorComponent {
-
-    public StringPropertyEditor() {
-        super();
-    }
-
-    public Component getComponent() {
-        return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setText(value.toString());
-        selectAll();
-    }
-
-    public Object getCellEditorValue() {
-        if (getText().isEmpty()) return null;
-        return getText();
-    }
-
-}
-
-class DatePropertyEditor extends JDateChooser
-                           implements PropertyEditorComponent {
-
-    public DatePropertyEditor() {
-        super(null, null, "dd.MM.yy", new DatePropertyEditorComponent("dd.MM.yy","##.##.##",' '));
-
-    }
-
-    @Override
-    public void requestFocus() {
-        // пересылаем фокус в нужный объект
-        ((JFormattedTextField)dateEditor).requestFocusInWindow();
-    }
-
-    @Override
-    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-
-        // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
-        if (condition == WHEN_FOCUSED)
-            return ((DatePropertyEditorComponent)dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
-        else
-            return super.processKeyBinding(ks, ke, condition, pressed);
-    }
-    
-    @Override
-    public void setNextFocusableComponent(Component comp) {
-        super.setNextFocusableComponent(comp);
-        ((JComponent)dateEditor).setNextFocusableComponent(comp);
-//        jcalendar.setNextFocusableComponent(dateEditor.getUiComponent());
-
-
-        // вот эту хрень приходится добавлять по той причине, что иначе так как popup вообще говоря не child таблицы,
-        // то при нажатии на что угодно - она тут же делает stopEditing...
-        if (comp instanceof JTable) {
-
-            final JTable table = (JTable) comp;
-
-            popup.addPopupMenuListener(new PopupMenuListener() {
-
-                Boolean oldValue;
-
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    oldValue = (Boolean)table.getClientProperty("terminateEditOnFocusLost");
-                    table.putClientProperty("terminateEditOnFocusLost", Boolean.FALSE);
-                }
-
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    table.putClientProperty("terminateEditOnFocusLost", oldValue);
-                }
-
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                }
-            });
-
-        }
-
-        // а вот эту хрень приходится добавлять потому что popupMenuWillBecomeInvisible срабатывает раньше чем
-        // проверяется на изменение фокуса
-        SwingUtils.removeFocusable(jcalendar);
-
-        // к слову все равно это все дело очень хриво работает и все из-за долбанных popup'ов
-    }
-
-    public Component getComponent() {
-        return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setDate(DateConverter.intToDate((Integer)value));
-        ((JFormattedTextField)dateEditor).selectAll();
-    }
-
-    public Object getCellEditorValue() {
-
-        return DateConverter.dateToInt(getDate());
-    }
-
-}
-
-class DatePropertyEditorComponent extends JTextFieldDateEditor {
-
-    public DatePropertyEditorComponent(String datePattern, String maskPattern, char placeholder) {
-        super(datePattern, maskPattern, placeholder);
-
-        setBorder(new EmptyBorder(0, 1, 0, 0));
-
-/*        SwingUtils.addFocusTraversalKey(this,
-                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
-
-    }
-
-    @Override
-    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-
-        // не ловим ввод, чтобы его словил сам JTable и обработал
-        if (ke.getKeyCode() == KeyEvent.VK_ENTER)
-            return false;
-        return super.processKeyBinding(ks, ke, condition, pressed);
-    }
-
-    //а вот так будем дурить их protected метод
-    public boolean publicProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
-        return processKeyBinding(ks, ke, condition, pressed);
-    }
-
-/*    @Override
-    public void focusLost(FocusEvent focusEvent) {
-        super.focusLost(focusEvent);
-    }*/
-
-}
-
-class BitPropertyEditor extends JCheckBox
-                        implements PropertyEditorComponent {
-
-    public BitPropertyEditor() {
-
-        setHorizontalAlignment(JCheckBox.CENTER);
-//        setVerticalAlignment(JCheckBox.CENTER);
-
-        setOpaque(true);
-
-        setBackground(Color.white);
-    }
-
-    public Component getComponent() {
-        return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setSelected((Integer) value != 0);
-    }
-
-    public Object getCellEditorValue() {
-        return (isSelected()) ? 1 : 0;
     }
 }
