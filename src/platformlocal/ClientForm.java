@@ -36,6 +36,7 @@ import sun.swing.SwingUtilities2;
 interface ClientCellViewTable {
 
     ClientCellView getCellView(int row, int col);
+
 }
 
 class SingleViewable<ViewClass> {
@@ -88,6 +89,10 @@ public class ClientForm extends Container {
 
     Map<ClientGroupObjectImplement, GroupObjectModel> models;
 
+    JButton buttonPrint;
+    JButton buttonApply;
+    JButton buttonCancel;
+
     public void initializeForm() {
 
         formLayout = new FormLayout(formView.containers);
@@ -104,10 +109,9 @@ public class ClientForm extends Container {
             GroupObjectModel model = new GroupObjectModel(groupObject);
 
             models.put(groupObject, model);
-
         }
 
-        JButton buttonPrint = new JButton("Печать");
+        buttonPrint = new JButton("Печать");
         buttonPrint.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -118,7 +122,7 @@ public class ClientForm extends Container {
 
         formLayout.add(formView.printView, buttonPrint);
 
-        JButton buttonApply = new JButton("Применить");
+        buttonApply = new JButton("Применить");
         buttonApply.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -129,7 +133,7 @@ public class ClientForm extends Container {
 
         formLayout.add(formView.applyView, buttonApply);
 
-        JButton buttonCancel = new JButton("Отменить");
+        buttonCancel = new JButton("Отменить");
         buttonCancel.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -140,6 +144,7 @@ public class ClientForm extends Container {
 
         formLayout.add(formView.cancelView, buttonCancel);
 
+        dataReset();
 /*        JButton test = new JButton("Test");
 
         test.addActionListener(new ActionListener() {
@@ -155,7 +160,9 @@ public class ClientForm extends Container {
     void applyFormChanges() {
 
         try {
-            applyFormChanges(ByteArraySerializer.deserializeClientFormChanges(remoteForm.EndApply().serialize(), formView));
+            byte[] formChanges = remoteForm.EndApply().serialize();
+            Log.incrementBytesReceived(formChanges.length);
+            applyFormChanges(ByteArraySerializer.deserializeClientFormChanges(formChanges, formView));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -229,9 +236,11 @@ public class ClientForm extends Container {
 
     void changeProperty(ClientCellView property, Object value) {
         if (property instanceof ClientPropertyView) {
+
             // типа только если меняется свойство
             try {
                 remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObjectValue(value));
+                dataChanged();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -242,6 +251,7 @@ public class ClientForm extends Container {
     void addObject(ClientObjectImplement object, ClientClass cls) {
         try {
             remoteForm.AddObject(object.ID, cls.ID);
+            dataChanged();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -251,6 +261,7 @@ public class ClientForm extends Container {
     void changeClass(ClientObjectImplement object, ClientClass cls) {
         try {
             remoteForm.ChangeClass(object.ID, (cls == null) ? -1 : cls.ID);
+            dataChanged();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -339,7 +350,14 @@ public class ClientForm extends Container {
 
     void saveChanges() {
         try {
-            Log.printmsg(remoteForm.SaveChanges());
+            String message = remoteForm.SaveChanges();
+            if (message == "pass") {
+                Log.printSuccessMessage(message);
+                dataReset();
+            }
+            else {
+                Log.printFailedMessage(message);
+            }
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
@@ -348,7 +366,29 @@ public class ClientForm extends Container {
 
     void cancelChanges() {
         remoteForm.CancelChanges();
+        dataReset();
         applyFormChanges();
+    }
+
+    private Color defaultApplyBackground;
+
+    private void dataChanged() {
+
+        buttonApply.setBackground(Color.green);
+        buttonApply.setEnabled(true);
+        buttonCancel.setEnabled(true);
+
+    }
+
+    private void dataReset() {
+
+        if (defaultApplyBackground != null)
+            buttonApply.setBackground(defaultApplyBackground);
+        else
+            defaultApplyBackground = buttonApply.getBackground();
+
+        buttonApply.setEnabled(false);
+        buttonCancel.setEnabled(false);
     }
 
     class GroupObjectModel {
@@ -1206,7 +1246,6 @@ public class ClientForm extends Container {
                         queryView.condviews.removeAll();
 
                         queryView.conditionsChanged();
-
                     }
 
                     protected class QueryConditionView extends JPanel {
@@ -2191,6 +2230,7 @@ public class ClientForm extends Container {
         private boolean add(ClientComponentView component, Component view) {
             if (!contviews.get(component.container).isAncestorOf(view)) {
                 contviews.get(component.container).add(view, component.constraints);
+                contviews.get(component.container).repaint();
                 return true;
             } else
                 return false;
@@ -2199,6 +2239,7 @@ public class ClientForm extends Container {
         private boolean remove(ClientComponentView component, Component view) {
            if (contviews.get(component.container).isAncestorOf(view)) {
                 contviews.get(component.container).remove(view);
+                contviews.get(component.container).repaint();
                 return true;
            } else
                 return false;
