@@ -15,6 +15,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import javax.swing.*;
 
 import lpsolve.*;
@@ -59,14 +63,14 @@ public class SimplexLayout implements LayoutManager2 {
             constraints.put(comp, (SimplexConstraints)constr);
         else
             constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
-        System.out.println("addLayoutComp");
+//        System.out.println("addLayoutComp");
         hasChanged = true;
     }
     
     public void removeLayoutComponent(Component comp) {
         components.remove(comp);
         constraints.remove(comp);
-        System.out.println("removeLayoutComp");
+//        System.out.println("removeLayoutComp");
         hasChanged = true;
     }
 
@@ -425,7 +429,8 @@ public class SimplexLayout implements LayoutManager2 {
 
     
 }
-class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstraint> {
+class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstraint>
+                         implements Serializable {
 
     public int order = 0;
     
@@ -449,10 +454,10 @@ class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstra
     
     public SimplexConstraints() {
     }
-    
+
 }
 
-abstract class SingleSimplexConstraint {
+abstract class SingleSimplexConstraint implements Serializable {
     
     public static final DoNotIntersectSimplexConstraint DO_NOT_INTERSECT = new DoNotIntersectSimplexConstraint();
     public static final IsInsideSimplexConstraint IS_INSIDE = new IsInsideSimplexConstraint();
@@ -636,7 +641,7 @@ class SimplexComponentInfo {
 
 }
 
-class SimplexComponentDirections {
+class SimplexComponentDirections implements Serializable {
     
     double T;
     double L;

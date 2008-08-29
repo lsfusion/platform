@@ -293,12 +293,6 @@ class AbstractFormChanges<T,V,Z> {
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue,PropertyView> {
 
-    byte[] serialize() {
-
-        return ByteArraySerializer.serializeFormChanges(this);
-
-    }
-
     void Out(RemoteForm bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
         for(GroupObjectImplement Group : (List<GroupObjectImplement>)bv.Groups) {
@@ -872,6 +866,10 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         UserObjectSeeks.put(Object,Value);
     }
 
+    public byte[] getFormChangesByteArray() throws SQLException {
+        return ByteArraySerializer.serializeFormChanges(EndApply());
+    }
+
     public FormChanges EndApply() throws SQLException {
 
         FormChanges Result = new FormChanges();
@@ -1393,6 +1391,10 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         Result.Out(this);
 
         return Result;
+    }
+
+    public byte[] GetRichDesignByteArray() {
+        return ByteArraySerializer.serializeClientFormView(GetRichDesign());
     }
 
     public ClientFormView GetRichDesign() {

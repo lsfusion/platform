@@ -15,6 +15,10 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.text.*;
+import java.io.ObjectOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import javax.swing.JTextField;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -65,7 +69,10 @@ public class ClientForm extends Container {
 
 //        getFrame().setTitle(caption);
 
-        formView = remoteForm.GetRichDesign();
+        byte[] state = remoteForm.GetRichDesignByteArray();
+        Log.incrementBytesReceived(state.length);
+        formView = ByteArraySerializer.deserializeClientFormView(state);
+
         initializeForm();
 
         applyFormChanges();
@@ -147,9 +154,9 @@ public class ClientForm extends Container {
     void applyFormChanges() {
 
         try {
-            byte[] formChanges = remoteForm.EndApply().serialize();
-            Log.incrementBytesReceived(formChanges.length);
-            applyFormChanges(ByteArraySerializer.deserializeClientFormChanges(formChanges, formView));
+            byte[] state = remoteForm.getFormChangesByteArray();
+            Log.incrementBytesReceived(state.length);
+            applyFormChanges(ByteArraySerializer.deserializeClientFormChanges(state, formView));
         } catch (SQLException e) {
             e.printStackTrace();
         }

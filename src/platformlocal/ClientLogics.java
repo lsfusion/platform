@@ -12,8 +12,12 @@ import java.util.Map;
 import java.awt.*;
 import java.text.Format;
 import java.text.NumberFormat;
+import java.io.Serializable;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
-class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
+class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
+                                 implements Serializable {
 
     Integer GID = 0;
 
@@ -38,7 +42,8 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement> {
     }
 }
 
-class ClientGroupObjectMap<T> extends HashMap<ClientObjectImplement,T> {
+class ClientGroupObjectMap<T> extends HashMap<ClientObjectImplement,T>
+                              implements Serializable {
 
    
 /*  На самом деле не надо - так как сравнивать как раз надо именно по значениям
@@ -56,11 +61,12 @@ class ClientGroupObjectMap<T> extends HashMap<ClientObjectImplement,T> {
 
 }
 
-class ClientGroupObjectValue extends ClientGroupObjectMap<Integer> {
+class ClientGroupObjectValue extends ClientGroupObjectMap<Integer>
+                             implements Serializable {
     
 }
 
-class ClientObjectImplement {
+class ClientObjectImplement implements Serializable {
     
     Integer ID = 0;
     
@@ -77,7 +83,7 @@ class ClientObjectImplement {
     public String toString() { return caption; }
 }
 
-class ClientComponentView {
+class ClientComponentView implements Serializable {
     
     ClientContainerView container;
     SimplexConstraints constraints = new SimplexConstraints();
@@ -131,7 +137,7 @@ abstract class ClientCellView extends ClientComponentView {
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
     
-    protected PropertyRendererComponent renderer;
+    transient protected PropertyRendererComponent renderer;
     abstract public PropertyRendererComponent getRendererComponent(ClientForm form);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form);
 
@@ -212,7 +218,7 @@ class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,C
 }
 
 
-class ClientFormView {
+class ClientFormView implements Serializable {
     
     List<ClientGroupObjectImplement> groupObjects = new ArrayList();
     List<ClientObjectImplement> objects = new ArrayList();
@@ -225,7 +231,7 @@ class ClientFormView {
     ClientFunctionView cancelView = new ClientFunctionView();
 
     List<ClientCellView> order = new ArrayList();
-    
+
     public ClientFormView() {
     }
 
@@ -255,7 +261,6 @@ class DefaultClientFormView extends ClientFormView {
         Map<GroupObjectImplement, ClientGroupObjectImplement> mgroupObjects = new HashMap();
         Map<ObjectImplement, ClientObjectImplement> mobjects = new HashMap();
         Map<PropertyView, ClientPropertyView> mproperties = new HashMap();
-        Map<GroupObjectValue, ClientGroupObjectValue> mobjectValues = new HashMap();
 
         Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
         Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
@@ -395,7 +400,7 @@ class DefaultClientFormView extends ClientFormView {
 
 // -------------------------------------- Классы ------------------------------ //
 
-class ClientClass {
+class ClientClass implements Serializable {
 
     int ID;
     String caption;

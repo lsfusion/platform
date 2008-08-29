@@ -41,7 +41,8 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 }
 
 
-class IntegerPropertyRenderer extends LabelPropertyRenderer {
+class IntegerPropertyRenderer extends LabelPropertyRenderer
+                              implements PropertyRendererComponent{
 
     public IntegerPropertyRenderer(Format iformat) {
         super((iformat == null) ? NumberFormat.getInstance() : iformat);
@@ -64,7 +65,8 @@ class IntegerPropertyRenderer extends LabelPropertyRenderer {
 
 
 }
-class StringPropertyRenderer extends LabelPropertyRenderer {
+class StringPropertyRenderer extends LabelPropertyRenderer
+                             implements PropertyRendererComponent {
 
     public StringPropertyRenderer(Format iformat) {
         super(iformat);
@@ -87,7 +89,8 @@ class StringPropertyRenderer extends LabelPropertyRenderer {
 
 }
 
-class DatePropertyRenderer extends LabelPropertyRenderer {
+class DatePropertyRenderer extends LabelPropertyRenderer
+                           implements PropertyRendererComponent {
 
     public DatePropertyRenderer(Format iformat) {
         super((iformat == null) ? DateFormat.getDateInstance() : iformat);
@@ -110,7 +113,8 @@ class DatePropertyRenderer extends LabelPropertyRenderer {
 
 }
 
-class BitPropertyRenderer extends JCheckBox {
+class BitPropertyRenderer extends JCheckBox
+                          implements PropertyRendererComponent {
 
     public BitPropertyRenderer() {
         super();

@@ -5,7 +5,7 @@ import java.util.*;
 
 class Serializer {
 
-    // -------------------------------------- Сериализация самой формы -------------------------------------------- //
+    // -------------------------------------- Сериализация данных формы -------------------------------------------- //
 
     public static void serializeFormChanges(DataOutputStream outStream, FormChanges formChanges) throws IOException {
 
@@ -390,7 +390,39 @@ class Serializer {
 
 class ByteArraySerializer extends Serializer {
 
-    // -------------------------------------- Сериализация самой формы -------------------------------------------- //
+    public static byte[] serializeClientFormView(ClientFormView clientFormView) {
+
+        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
+            objectStream.writeObject(clientFormView);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+    }
+
+    public static ClientFormView deserializeClientFormView(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+
+        try {
+            ObjectInputStream dataStream = new ObjectInputStream(inStream);
+            try {
+                return (ClientFormView)dataStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // -------------------------------------- Сериализация данных формы -------------------------------------------- //
 
     public static byte[] serializeFormChanges(FormChanges formChanges) {
 
