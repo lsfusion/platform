@@ -123,6 +123,20 @@ abstract class ClientCellView extends ClientComponentView {
 
     String caption;
 
+    public int getMinimumWidth() {
+        return getPreferredWidth();
+    }
+
+    public int getMinimumHeight() {
+        return getPreferredHeight();
+    }
+
+    public Dimension getMinimumSize() {
+
+        if (minimumSize != null) return minimumSize;
+        return new Dimension(getMinimumWidth(), getMinimumHeight());
+    }
+
     public int getPreferredWidth() {
         return 50;
     }
@@ -151,14 +165,22 @@ abstract class ClientCellView extends ClientComponentView {
 class ClientPropertyView extends ClientCellView {
 
     String type;
-    
+
+    public int getMinimumWidth() {
+        if (type.equals("char(50)"))
+            return 30;
+        else
+            return super.getMinimumWidth();
+    }
+
     public int getPreferredWidth() {
         
         int res = 15;
         
         if (type.equals("integer")) res = 9;
         if (type.equals("char(50)")) res = 50;
-        if (caption == "срок годн.") res = 19;
+        if ("срок годн.".equals(caption)) res = 14;
+        if ("вес.".equals(caption)) res = 7;
 
         return res * 5;
     }
@@ -169,8 +191,8 @@ class ClientPropertyView extends ClientCellView {
             
             if (type.equals("integer")) renderer = new IntegerPropertyRenderer(getFormat());
             if (type.equals("char(50)")) renderer = new StringPropertyRenderer(getFormat());
-            if (caption == "срок годн.") renderer = new DatePropertyRenderer(getFormat());
-            if (caption == "вес.") renderer = new BitPropertyRenderer();
+            if ("срок годн.".equals(caption)) renderer = new DatePropertyRenderer(getFormat());
+            if ("вес.".equals(caption)) renderer = new BitPropertyRenderer();
 
             if (renderer == null) renderer = new StringPropertyRenderer(getFormat());
             
@@ -182,8 +204,8 @@ class ClientPropertyView extends ClientCellView {
     
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
         
-        if (caption == "вес.") return new BitPropertyEditor();
-        if (caption == "срок годн.") return new DatePropertyEditor();
+        if ("вес.".equals(caption)) return new BitPropertyEditor();
+        if ("срок годн.".equals(caption)) return new DatePropertyEditor();
         if (type.equals("integer")) return new IntegerPropertyEditor((NumberFormat)getFormat());
         if (type.equals("char(50)")) return new StringPropertyEditor();
 

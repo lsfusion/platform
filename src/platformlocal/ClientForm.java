@@ -149,6 +149,7 @@ public class ClientForm extends Container {
         });
 
         add(test);*/
+
     }
 
     void applyFormChanges() {
@@ -722,6 +723,7 @@ public class ClientForm extends Container {
 
                     public void keyChanged() {
 
+                        setMinimumSize(key.getMinimumSize());
                         setPreferredSize(key.getPreferredSize());
                     }
 
@@ -883,9 +885,12 @@ public class ClientForm extends Container {
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
                 table = new Table();
+//                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+//                table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
                 pane = new JScrollPane(table);
                 pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+                pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
                 table.setFillsViewportHeight(true);
 
@@ -987,7 +992,10 @@ public class ClientForm extends Container {
                 System.out.println("CreateColumns");
                 table.createDefaultColumnsFromModel();
                 for (ClientCellView property : table.gridColumns) {
-                    table.getColumnModel().getColumn(table.gridColumns.indexOf(property)).setPreferredWidth(property.getPreferredWidth());
+
+                    TableColumn column = table.getColumnModel().getColumn(table.gridColumns.indexOf(property));
+                    column.setPreferredWidth(property.getPreferredWidth());
+                    column.setMinWidth(property.getMinimumWidth());
                 }
 
                 if (table.gridColumns.size() != 0) {
@@ -1028,6 +1036,39 @@ public class ClientForm extends Container {
                     if (!(o instanceof Table))
                         return false;
                     return ((Table)o).ID == this.ID;
+                }
+
+                private boolean fitWidth() {
+
+                    int minWidth = 0;
+                    int columnCount = getColumnCount();
+                    TableColumnModel columnModel = getColumnModel();
+
+                    for (int i = 0; i < columnCount; i++)
+                        minWidth += columnModel.getColumn(i).getMinWidth();
+
+//                    System.out.println(this + " ~ " + groupObject.toString() + " : " + minWidth + " - " + pane.getWidth());
+
+                    return (minWidth < pane.getWidth());
+                }
+
+                @Override
+                public boolean getScrollableTracksViewportWidth() {
+                    return fitWidth();
+                }
+
+                @Override
+                public void doLayout() {
+
+//                    System.out.println(this + " ~ " + groupObject.toString() + " : " + minWidth + " - " + pane.getWidth());
+
+                    if (fitWidth()) {
+                        autoResizeMode = JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS;
+                    } else {
+                        autoResizeMode = JTable.AUTO_RESIZE_OFF;
+                    }
+
+                    super.doLayout();
                 }
 
                 public Table() {
