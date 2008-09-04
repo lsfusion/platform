@@ -429,7 +429,16 @@ class LayoutActionGuard implements ActionGuard {
 class NavigatorDockable extends DefaultDockable {
 
     NavigatorDockable(RemoteNavigator Navigator) {
-        super(new ClientNavigator(Navigator),"Navigator");
+        super(new ClientNavigator(Navigator) {
+
+            public void openForm(ClientNavigatorForm element) {
+                try {
+                    Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, remoteNavigator));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        },"Navigator");
     }
 }
 

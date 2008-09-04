@@ -264,3 +264,34 @@ class BitPropertyEditor extends JCheckBox
         return (isSelected()) ? 1 : 0;
     }
 }
+
+class ObjectPropertyEditor implements PropertyEditorComponent {
+
+    ClientDialog clientDialog;
+
+    private boolean objectChosen;
+
+    private Object oldValue;
+
+    ObjectPropertyEditor(ClientForm clientForm) {
+
+        clientDialog = new ClientDialog(clientForm);
+    }
+
+    public Component getComponent() {
+
+        objectChosen = clientDialog.showObjectDialog();
+        return null;
+    }
+
+    public void setCellEditorValue(Object value) {
+        oldValue = value;
+    }
+
+    public Object getCellEditorValue() {
+        if (objectChosen)
+            return clientDialog.objectChosen();
+        else
+            return oldValue;
+    }
+}

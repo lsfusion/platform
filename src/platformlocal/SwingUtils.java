@@ -39,6 +39,13 @@ public class SwingUtils {
             }
         }
     }
+
+    public static Window getWindow(Component comp) {
+
+        while (comp != null && !(comp instanceof Window) ) comp = comp.getParent();
+
+        return (Window)comp;
+    }
 }
 
 class ExpandingTreeNode extends DefaultMutableTreeNode {

@@ -8,9 +8,10 @@ import java.util.List;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.*;
 import java.sql.SQLException;
 
-public class ClientNavigator extends JPanel {
+public abstract class ClientNavigator extends JPanel {
 
     RemoteNavigator remoteNavigator;
 
@@ -22,20 +23,15 @@ public class ClientNavigator extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+        setPreferredSize(new Dimension(175, 400));
+
         tree = new NavigatorTree();
         JScrollPane pane = new JScrollPane(tree);
         add(pane);
 
     }
 
-    private void openForm(ClientNavigatorForm element) {
-        System.out.println("Open Form");
-        try {
-            Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, remoteNavigator));
-        } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
-    }
+    public abstract void openForm(ClientNavigatorForm element);
 
     class NavigatorTree extends JTree {
 

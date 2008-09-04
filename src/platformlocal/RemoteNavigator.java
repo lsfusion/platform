@@ -56,6 +56,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         return BL.BaseGroup.getNavigatorForm(FormID).caption;
     }
 
+    public int getDefaultForm() {
+        return 1;
+    }
 }
 
 // создаются в бизнес-логике

@@ -1608,6 +1608,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         return new RemoteNavigator(Adapter,BL,new HashMap());
     }
 
+    RemoteNavigator<T> getNavigator(int propertyID) {
+        return getNavigator(getPropertyView(propertyID).View);
+    }
+
+    RemoteNavigator<T> getNavigator(PropertyObjectImplement property) {
+        return new RemoteNavigator(Adapter,BL,new HashMap());
+    }
+
+
 }
 
 // поле для отрисовки отчета

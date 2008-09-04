@@ -508,7 +508,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.L, comp1.L, comp2.R},
-                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.left);
+                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.left - cons2.insetsSibling.right);
         }
         
         //или находится правее
@@ -516,7 +516,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.R, comp2.L, comp1.R},
-                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.right);
+                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.right - cons2.insetsSibling.left);
         }
         
         //или находится выше
@@ -524,7 +524,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.T, comp1.T, comp2.B},
-                                    LpSolve.LE, MAXVALUE  - cons1.insetsSibling.top);
+                                    LpSolve.LE, MAXVALUE  - cons1.insetsSibling.top - cons2.insetsSibling.bottom);
         }
         
         //или находится ниже
@@ -532,7 +532,7 @@ class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
             
             solver.addConstraintex(3, new double[] {MAXVALUE, -1, 1},
                                     new int[] {vars.B, comp2.T, comp1.B},
-                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.bottom);
+                                    LpSolve.LE, MAXVALUE - cons1.insetsSibling.bottom - cons2.insetsSibling.top);
         }
 
     }

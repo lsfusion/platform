@@ -203,7 +203,8 @@ class ClientPropertyView extends ClientCellView {
     }
     
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
-        
+
+        if ("гр. тов".equals(caption)) return new ObjectPropertyEditor(form);
         if ("вес.".equals(caption)) return new BitPropertyEditor();
         if ("срок годн.".equals(caption)) return new DatePropertyEditor();
         if (type.equals("integer")) return new IntegerPropertyEditor((NumberFormat)getFormat());
@@ -251,6 +252,8 @@ class ClientFormView implements Serializable {
     ClientFunctionView printView = new ClientFunctionView();
     ClientFunctionView applyView = new ClientFunctionView();
     ClientFunctionView cancelView = new ClientFunctionView();
+    ClientFunctionView okView = new ClientFunctionView();
+    ClientFunctionView closeView = new ClientFunctionView();
 
     List<ClientCellView> order = new ArrayList();
 
@@ -415,6 +418,16 @@ class DefaultClientFormView extends ClientFormView {
         cancelView.container = formButtonContainer;
         cancelView.constraints.order = 2;
         cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
+        okView.constraints.insetsSibling = new Insets(0, 8, 0, 0);
+        
+        okView.container = formButtonContainer;
+        okView.constraints.order = 3;
+        okView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
+        closeView.container = formButtonContainer;
+        closeView.constraints.order = 4;
+        closeView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
 
     }
 

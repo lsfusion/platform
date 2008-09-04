@@ -44,7 +44,7 @@ public class ClientForm extends Container {
 
     private final ClientFormView formView;
 
-    private final RemoteForm remoteForm;
+    public final RemoteForm remoteForm;
 
     // Icons - загружаем один раз, для экономии
     private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("images/arrowup.gif"));
@@ -86,6 +86,8 @@ public class ClientForm extends Container {
     private JButton buttonPrint;
     private JButton buttonApply;
     private JButton buttonCancel;
+    private JButton buttonOK;
+    private JButton buttonClose;
 
     void initializeForm() {
 
@@ -111,7 +113,6 @@ public class ClientForm extends Container {
             public void actionPerformed(ActionEvent e) {
                 print();
             }
-
         });
 
         formLayout.add(formView.printView, buttonPrint);
@@ -122,7 +123,6 @@ public class ClientForm extends Container {
             public void actionPerformed(ActionEvent e) {
                 saveChanges();
             }
-
         });
 
         formLayout.add(formView.applyView, buttonApply);
@@ -133,10 +133,29 @@ public class ClientForm extends Container {
             public void actionPerformed(ActionEvent e) {
                 cancelChanges();
             }
-
         });
 
         formLayout.add(formView.cancelView, buttonCancel);
+
+        buttonOK = new JButton("OK");
+        buttonOK.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                okPressed();
+            }
+        });
+
+        formLayout.add(formView.okView, buttonOK);
+
+        buttonClose = new JButton("Закрыть");
+        buttonClose.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                closePressed();
+            }
+        });
+
+        formLayout.add(formView.closeView, buttonClose);
 
         dataReset();
 /*        JButton test = new JButton("Test");
@@ -343,31 +362,58 @@ public class ClientForm extends Container {
 //        JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
     }
 
-    void saveChanges() {
-        try {
-            String message = remoteForm.SaveChanges();
-            if ("pass".equals(message)) {
-                Log.printSuccessMessage(message);
-                dataReset();
+    boolean saveChanges() {
+
+        if (formHasChanged) {
+
+            try {
+                String message = remoteForm.SaveChanges();
+                if ("pass".equals(message)) {
+                    Log.printSuccessMessage(message);
+                    dataReset();
+                }
+                else {
+                    Log.printFailedMessage(message);
+                    return false;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
             }
-            else {
-                Log.printFailedMessage(message);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+            applyFormChanges();
         }
-        applyFormChanges();
+        
+        return true;
     }
 
-    void cancelChanges() {
-        remoteForm.CancelChanges();
-        dataReset();
-        applyFormChanges();
+    boolean cancelChanges() {
+
+        if (formHasChanged) {
+
+            remoteForm.CancelChanges();
+            dataReset();
+            applyFormChanges();
+        }
+
+        return true;
     }
 
+    boolean okPressed() {
+        return saveChanges();
+    }
+
+    boolean closePressed() {
+        return cancelChanges();
+    }
+
+
+    private boolean formHasChanged;
     private Color defaultApplyBackground;
 
     private void dataChanged() {
+
+        formHasChanged = true;
 
         buttonApply.setBackground(Color.green);
         buttonApply.setEnabled(true);
@@ -377,6 +423,8 @@ public class ClientForm extends Container {
 
     private void dataReset() {
 
+        formHasChanged = false;
+
         if (defaultApplyBackground != null)
             buttonApply.setBackground(defaultApplyBackground);
         else
@@ -385,6 +433,8 @@ public class ClientForm extends Container {
         buttonApply.setEnabled(false);
         buttonCancel.setEnabled(false);
     }
+
+    ClientCellView editingCell;
 
     class GroupObjectModel {
 
@@ -411,11 +461,9 @@ public class ClientForm extends Container {
             for (ClientObjectImplement object : groupObject) {
 
                 objects.put(object, new ObjectModel(object));
-
             }
             
             setClassView(true);
-
         }
         
         public void setClassView(Boolean iclassView) {
@@ -615,13 +663,23 @@ public class ClientForm extends Container {
                 value = ivalue;
                 
                 ClientCellView property = ((ClientCellViewTable)table).getCellView(row, column);
+                editingCell = property;
                 currentComp = property.getEditorComponent(ClientForm.this);
                 
                 if (currentComp != null) {
+
                     currentComp.setCellEditorValue(value);
-                
-                    return currentComp.getComponent();
-                } else {                   
+
+                    Component comp = currentComp.getComponent();
+                    if (comp == null) {
+                        Object newValue = getCellEditorValue();
+                        if (! value.equals(newValue))
+                            table.setValueAt(newValue, row, column);
+                    }
+                    return comp;
+
+                } else {
+
                     this.stopCellEditing();
                     return null;
                 }
