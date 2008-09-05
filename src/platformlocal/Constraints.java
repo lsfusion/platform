@@ -6,11 +6,7 @@
 package platformlocal;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -20,7 +16,7 @@ import java.util.Map;
 // constraint
 abstract class Constraint {
     
-    abstract boolean Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException;
+    abstract String Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException;
 
 }
 
@@ -30,44 +26,28 @@ abstract class ValueConstraint extends Constraint {
 
     int Invalid;
 
-    boolean Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException {
+    String Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException {
 
-        JoinList Joins = new JoinList();
-        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-        
-        SourceExpr ValueExpr = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,false);
+        JoinQuery<PropertyInterface,String> Changed = new JoinQuery<PropertyInterface,String>(Property.Interfaces);
 
-        Iterator<From> i = Joins.iterator();
-        SelectQuery Changed = new SelectQuery(i.next());
-        while(i.hasNext()) Changed.From.Joins.add(i.next());
-
+        SourceExpr ValueExpr = Property.getChangedSourceExpr(Changed.MapKeys,Session,0);
         // закинем условие на то что мы ищем
-        Changed.From.Wheres.add(new FieldExprCompareWhere(new FieldSourceExpr(Changed.From,Property.ChangeTable.Value.Name), 
-            (Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
+        Changed.Wheres.add(new FieldExprCompareWhere(ValueExpr,(Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
+        Changed.Properties.put("value",ValueExpr);
 
-        Map<PropertyInterface,String> KeyFields = new HashMap();
-        Integer KeyNum = 0;
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-            String KeyField = "key" + (KeyNum++);
-            Changed.Expressions.put(KeyField,JoinImplement.get(Interface));
-            KeyFields.put(Interface,KeyField);
-        }
-        Changed.Expressions.put("value",ValueExpr);
-        
-        List<Map<String,Object>> Result = Adapter.ExecuteSelect(Changed);
+        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Adapter);
         if(Result.size()>0) {
-            System.out.println("Ограничение на св-во "+Property.OutName+" нарушено");
-            for(Map<String,Object> Row : Result) {
-                System.out.print("Объекты : ");
+            String ResultString = "Ограничение на св-во "+Property.OutName+" нарушено"+'\n';
+            for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : Result.entrySet()) {
+                ResultString += "   Объекты : ";
                 for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-                    System.out.print(Row.get(KeyFields.get(Interface))+" ");
-                System.out.print("Значение : "+Row.get("value"));
-                System.out.println();
+                    ResultString += Row.getKey().get(Interface)+" ";
+                ResultString += "Значение : "+Row.getValue().get("value") + '\n';
             }
             
-            return false;
+            return ResultString;
         } else
-            return true;
+            return null;
     }
 }
 
@@ -89,69 +69,57 @@ class PositiveConstraint extends ValueConstraint {
 // >= 0
 class UniqueConstraint extends Constraint {
     
-    boolean Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException {
+    String Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException {
         
         // надо проверить для каждого что старых нету
         // изменения JOIN'им (ст. запрос FULL JOIN новый) ON изм. зн = новому зн. WHERE код изм. = код нов. и ключи не равны и зн. не null
 
-        JoinList Joins = new JoinList();
-        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-        SourceExpr ChangedExpr = Property.ChangedJoinSelect(Joins,JoinImplement,Session,0,false);
+        // ключи на самом деле состоят из 2-х частей - первые измененные (Property), 2-е - старые (из UpdateUnionQuery)
+        // соответственно надо создать объекты
+        JoinQuery<Object,String> Changed = new JoinQuery<Object,String>();
+        Map<PropertyInterface,SourceExpr> MapChange = new HashMap();
+        Map<PropertyInterface,SourceExpr> MapPrev = new HashMap();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
+            MapChange.put(Interface,Changed.addKey(new Object()));
+            MapPrev.put(Interface,Changed.addKey(new Object()));
+        }
 
-        // заполним названия полей в которые будем Select'ать
-        String Value = "joinvalue";
-        Map<PropertyInterface,String> MapFields = new HashMap();
-        FromQuery FromResultQuery = new FromQuery(Property.UpdateUnionQuery(Session,Value,MapFields));
-        FromResultQuery.Wheres.add(new FieldWhere(ChangedExpr,Value));
-        
-        Joins.add(FromResultQuery);
-        
-        Iterator<From> i = Joins.iterator();
-        SelectQuery Changed = new SelectQuery(i.next());
-        while(i.hasNext()) Changed.From.Joins.add(i.next());
-        
+        SourceExpr ChangedExpr = Property.getChangedSourceExpr(MapChange,Session,0);
+        SourceExpr PrevExpr = Property.getUpdatedSourceExpr(MapPrev,Session,true);
+
         // равны значения
-        Changed.From.Wheres.add(new FieldExprCompareWhere(ChangedExpr,new FieldSourceExpr(FromResultQuery,Value),0));
-        Changed.From.Wheres.add(new SourceIsNullWhere(ChangedExpr,true));
+        Changed.Wheres.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,0));
+        // значения не NULL
+        Changed.Wheres.add(new SourceIsNullWhere(ChangedExpr,true));
 
         // не равны ключи
-        Where OrDiffKeys = null;
+        SourceWhere OrDiffKeys = null;
         
         Map<PropertyInterface,String> KeyFields = new HashMap();
         Integer KeyNum = 0;
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-            String KeyField = "newkey" + (KeyNum++);
-            SourceExpr KeyExpr = JoinImplement.get(Interface);
-            Changed.Expressions.put(KeyField,KeyExpr);
-            KeyFields.put(Interface,KeyField);
-            
-            String MapField = MapFields.get(Interface);
-            SourceExpr MapExpr = new FieldSourceExpr(FromResultQuery,MapField);
-            Changed.Expressions.put(MapField,MapExpr);
-            
             // не равны ключи
-            Where KeyDiff = new FieldExprCompareWhere(KeyExpr,MapExpr,5);
+            SourceWhere KeyDiff = new FieldExprCompareWhere(MapChange.get(Interface),MapPrev.get(Interface),5);
             if(OrDiffKeys==null)
                 OrDiffKeys = KeyDiff;
             else
                 OrDiffKeys = new FieldOPWhere(KeyDiff,OrDiffKeys,false);
         }
-        Changed.From.Wheres.add(OrDiffKeys);
-        Changed.Expressions.put("value",ChangedExpr);
+        Changed.Wheres.add(OrDiffKeys);
+        Changed.Properties.put("value",ChangedExpr);
 
-        List<Map<String,Object>> Result = Adapter.ExecuteSelect(Changed);
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Adapter);
         if(Result.size()>0) {
-            System.out.println("Уникальное ограничение на св-во "+Property.OutName+" нарушено");
-            for(Map<String,Object> Row : Result) {
-                System.out.print("Объекты (1,2) : ");
+            String ResultString = "Уникальное ограничение на св-во "+Property.OutName+" нарушено"+'\n';
+            for(Map.Entry<Map<Object,Integer>,Map<String,Object>> Row : Result.entrySet()) {
+                ResultString += "   Объекты (1,2) : ";
                 for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-                    System.out.print(Row.get(KeyFields.get(Interface))+","+Row.get(MapFields.get(Interface))+" ");
-                System.out.print("Значение : "+Row.get("value"));
-                System.out.println();
+                    ResultString += Row.getKey().get(((KeyExpr<Object>)MapChange.get(Interface)).Key)+","+Row.getKey().get(((KeyExpr<Object>)MapPrev.get(Interface)).Key)+" ";
+                ResultString += "Значение : "+Row.getValue().get("value")+'\n';
             }
             
-            return false;
+            return ResultString;
         } else
-            return true;
+            return null;
     }    
 }

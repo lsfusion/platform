@@ -12,16 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 class TableImplement extends ArrayList<DataPropertyInterface> {
     // заполняются пока автоматически
@@ -171,65 +162,75 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
 class ObjectTable extends Table {
     
     KeyField Key;
-    Field Class;
+    PropertyField Class;
     
     ObjectTable() {
         super("objects");
         Key = new KeyField("object","integer");
-        KeyFields.add(Key);
-        Class = new Field("class","integer");
-        PropFields.add(Class);
+        Keys.add(Key);
+        Class = new PropertyField("class","integer");
+        Properties.add(Class);
     };
     
-    FromTable ClassSelect(Class ToSelect) {
-        Collection<Integer> SetID = new HashSet<Integer>();
-        ToSelect.FillSetID(SetID);
-        
-        FromTable ClassTable = new FromTable(Name);
-        ClassTable.Wheres.add(new FieldSetValueWhere(SetID,Class.Name));
-        
-        return ClassTable;
-    }
-    
-    FromTable ClassJoinSelect(Class ToSelect,SourceExpr JoinImplement) {
-        FromTable JoinTable = ClassSelect(ToSelect);
-        JoinTable.Wheres.add(new FieldWhere(JoinImplement,Key.Name));
-        return JoinTable;
-    }
-    
     Integer GetClassID(DataAdapter Adapter,Integer idObject) throws SQLException {
-        if(idObject==null) return null;        
-        SelectQuery Query = new SelectQuery(new FromTable(Name));
-        Query.From.Wheres.add(new FieldValueWhere(idObject,Key.Name));
-        Query.Expressions.put("classid",new FieldSourceExpr(Query.From,Class.Name));
-        List<Map<String,Object>> Result = Adapter.ExecuteSelect(Query);
+        if(idObject==null) return null;
+
+        JoinQuery<Object,String> Query = new JoinQuery<Object,String>();
+        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
+        JoinTable.Joins.put(Key,new ValueSourceExpr(idObject));
+        Query.Properties.put("classid",new JoinExpr<KeyField,PropertyField>(JoinTable,Class,true));
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Adapter);
         if(Result.size()>0)
-            return (Integer)Result.get(0).get("classid");
+            return (Integer)Result.values().iterator().next().get("classid");
         else
             return null;        
     }
-  
+
+    JoinQuery<KeyField,PropertyField> getClassJoin(Class ChangeClass) {
+
+        Collection<Integer> SetID = new HashSet<Integer>();
+        ChangeClass.FillSetID(SetID);
+
+        JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(Keys);
+        ClassQuery.Wheres.add(new FieldSetValueWhere(new JoinExpr<KeyField,PropertyField>(new UniJoin<KeyField,PropertyField>(this,ClassQuery),Class,true),SetID));
+
+        return ClassQuery;
+    }
 }
 
 // таблица счетчика ID
 class IDTable extends Table {
     KeyField Key;
+    PropertyField Value;
     
     IDTable() {
         super("idtable");
-        Key = new KeyField("lastid","integer");
-        KeyFields.add(Key);
+        Key = new KeyField("id","integer");
+        Keys.add(Key);
+        
+        Value = new PropertyField("value","integer");
+        Properties.add(Value);
     }
+
+    int ObjectID = 1;
     
-    Integer GenerateID(DataAdapter Adapter) throws SQLException { 
-        FromTable From = new FromTable(Name);
-        SelectQuery SelectID = new SelectQuery(From);
+    Integer GenerateID(DataAdapter Adapter) throws SQLException {
         // читаем
-        SelectID.Expressions.put("lastid",new FieldSourceExpr(From,Key.Name));
-        Integer FreeID = (Integer)Adapter.ExecuteSelect(SelectID).get(0).get("lastid");
+        JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
+        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
+        JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
+        Query.Properties.put(Value,new JoinExpr<KeyField,PropertyField>(JoinTable,Value,true));
+
+        Query.Wheres.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,0));
+
+        Integer FreeID = (Integer)Query.executeSelect(Adapter).values().iterator().next().get(Value);
+
         // замещаем
-        SelectID.Expressions.put("lastid",new ValueSourceExpr(FreeID+1));
-        Adapter.UpdateRecords(SelectID);
+        Map<KeyField,Integer> KeyFields = new HashMap();
+        KeyFields.put(Key,ObjectID);
+        Map<PropertyField,Object> PropFields = new HashMap();
+        PropFields.put(Value,FreeID+1);
+        Adapter.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
         return FreeID+1;
     }
 }
@@ -242,20 +243,20 @@ class ViewTable extends Table {
         for(Integer i=0;i<iObjects;i++) {
             KeyField ObjKeyField = new KeyField("object"+i,"integer");
             Objects.add(ObjKeyField);
-            KeyFields.add(ObjKeyField);
+            Keys.add(ObjKeyField);
         }
         
         View = new KeyField("viewid","integer");
-        KeyFields.add(View);
+        Keys.add(View);
     }
             
     List<KeyField> Objects;
     KeyField View;
     
     void DropViewID(DataAdapter Adapter,Integer ViewID) throws SQLException {
-        FromTable Delete = new FromTable(Name);
-        Delete.Wheres.add(new FieldValueWhere(ViewID,View.Name));
-        Adapter.DeleteRecords(Delete);
+        Map<KeyField,Integer> ValueKeys = new HashMap();
+        ValueKeys.put(View,ViewID);
+        Adapter.deleteKeyRecords(this,ValueKeys);
     }
 }
 
@@ -264,7 +265,7 @@ class ChangeTable extends Table {
     Collection<KeyField> Objects;
     KeyField Session;
     KeyField Property;
-    Field Value;
+    PropertyField Value;
     
     ChangeTable(String TablePrefix,Integer iObjects,Integer iDBType,List<String> DBTypes) {
         super(TablePrefix+"changetable"+iObjects+"t"+iDBType);
@@ -273,17 +274,17 @@ class ChangeTable extends Table {
         for(Integer i=0;i<iObjects;i++) {
             KeyField ObjKeyField = new KeyField("object"+i,"integer");
             Objects.add(ObjKeyField);
-            KeyFields.add(ObjKeyField);
+            Keys.add(ObjKeyField);
         }
         
         Session = new KeyField("session","integer");
-        KeyFields.add(Session);
+        Keys.add(Session);
         
         Property = new KeyField("property","integer");
-        KeyFields.add(Property);
+        Keys.add(Property);
         
-        Value = new Field("value",DBTypes.get(iDBType));
-        PropFields.add(Value);
+        Value = new PropertyField("value",DBTypes.get(iDBType));
+        Properties.add(Value);
     }
 }
 
@@ -296,18 +297,18 @@ class DataChangeTable extends ChangeTable {
 
 class IncrementChangeTable extends ChangeTable {
 
-    Field PrevValue;
+    PropertyField PrevValue;
     // системное поля, по сути для MaxGroupProperty
-    Field SysValue;
+    PropertyField SysValue;
     
     IncrementChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
         super("inc",iObjects,iDBType,DBTypes);
 
-        PrevValue = new Field("prevvalue",DBTypes.get(iDBType));
-        PropFields.add(PrevValue);
+        PrevValue = new PropertyField("prevvalue",DBTypes.get(iDBType));
+        Properties.add(PrevValue);
 
-        SysValue = new Field("sysvalue",DBTypes.get(iDBType));
-        PropFields.add(SysValue);
+        SysValue = new PropertyField("sysvalue",DBTypes.get(iDBType));
+        Properties.add(SysValue);
     }
 }
 
@@ -323,13 +324,13 @@ class ChangeClassTable extends Table {
         super(iTable);
 
         Session = new KeyField("session","integer");
-        KeyFields.add(Session);
-        
-        Class = new KeyField("class","integer");
-        KeyFields.add(Class);
+        Keys.add(Session);
         
         Object = new KeyField("object","integer");
-        KeyFields.add(Object);
+        Keys.add(Object);
+
+        Class = new KeyField("class","integer");
+        Keys.add(Class);
     }
     
     void ChangeClass(DataAdapter Adapter,ChangesSession ChangeSession,Integer idObject,Collection<Class> Classes) throws SQLException {
@@ -344,19 +345,27 @@ class ChangeClassTable extends Table {
     }
     
     void DropSession(DataAdapter Adapter,ChangesSession ChangeSession) throws SQLException {
-
-        FromTable DropTable = new FromTable(Name);
-        DropTable.Wheres.add(new FieldValueWhere(ChangeSession.ID,Session.Name));
-        Adapter.DeleteRecords(DropTable);
+        Map<KeyField,Integer> ValueKeys = new HashMap();
+        ValueKeys.put(Session,ChangeSession.ID);
+        Adapter.deleteKeyRecords(this,ValueKeys);
     }
     
-    FromTable ClassSelect(ChangesSession ChangeSession,Class ChangeClass) {
-        FromTable JoinTable = new FromTable(Name);
-        JoinTable.Wheres.add(new FieldValueWhere(ChangeSession.ID,Session.Name));
-        JoinTable.Wheres.add(new FieldValueWhere(ChangeClass.ID,Class.Name));
+    JoinQuery<KeyField,PropertyField> getClassJoin(ChangesSession ChangeSession,Class ChangeClass) {
 
-        return JoinTable;
+        Collection<KeyField> ObjectKeys = new ArrayList();
+        ObjectKeys.add(Object);
+        JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(ObjectKeys);
+
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this);
+        ClassJoin.Joins.put(Session,new ValueSourceExpr(ChangeSession.ID));
+        ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
+        ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID));
+
+        ClassQuery.Wheres.add(new JoinWhere(ClassJoin));
+
+        return ClassQuery;
     }
+
 }
 
 class AddClassTable extends ChangeClassTable {
@@ -372,13 +381,11 @@ class RemoveClassTable extends ChangeClassTable {
         super("removechange");
     }
 
-    void ExcludeJoin(ChangesSession Session,JoinList Joins,Class Class,SourceExpr KeyExpr) {
-        From RemoveSelect = ClassSelect(Session,Class);
-        RemoveSelect.Wheres.add(new FieldWhere(KeyExpr,Object.Name));
-        RemoveSelect.JoinType = "LEFT";
-        Joins.add(RemoveSelect);
-                        
-        Joins.get(0).Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(RemoveSelect,Object.Name),false));
+    void excludeJoin(JoinQuery<?,?> Query,ChangesSession Session,Class ChangeClass,SourceExpr Join) {
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass));
+        ClassJoin.Joins.put(Object,Join);
+
+        Query.Wheres.add(new ExcludeJoinWhere(ClassJoin));
     }
 
 }
@@ -461,7 +468,7 @@ class TableFactory extends TableImplement{
             for(DataPropertyInterface Interface : Node) {
                 FieldNum++;
                 KeyField Field = new KeyField("key"+FieldNum.toString(),"integer");
-                Node.Table.KeyFields.add(Field);
+                Node.Table.Keys.add(Field);
                 Node.MapFields.put(Interface,Field);
             }
         }
@@ -480,8 +487,10 @@ class TableFactory extends TableImplement{
 
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-        InsertKeys.put(IDTable.Key, 0);
-        Adapter.InsertRecord(IDTable,InsertKeys,new HashMap<Field,Object>());
+        InsertKeys.put(IDTable.Key,IDTable.ObjectID);
+        Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
+        InsertProps.put(IDTable.Value,0);
+        Adapter.InsertRecord(IDTable,InsertKeys,InsertProps);
     }
 }
 
@@ -613,7 +622,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(Integer idObject : Session.NewClasses.keySet()) {
             Map<KeyField,Integer> InsertKeys = new HashMap();
             InsertKeys.put(TableFactory.ObjectTable.Key, idObject);
-            Map<Field,Object> InsertProps = new HashMap();
+            Map<PropertyField,Object> InsertProps = new HashMap();
             List<Class> ChangeClasses = Session.NewClasses.get(idObject);
             Class ChangeClass = ChangeClasses.get(ChangeClasses.size()-1);
             Object Value = null;
@@ -632,32 +641,32 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     void DropSession(DataAdapter Adapter, ChangesSession Session) throws SQLException {
         // дропает сессию 
         // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
-        for(Property Property : Properties)
-            if(Property instanceof ObjectProperty)
-                ((ObjectProperty)Property).SessionChanged.remove(Session);
+        setSessionChanged(Session,new HashMap());
 
         // удаляет из всех таблиц свои данные        
         // AddClassTable, RemoveClassTable, ChangeTables
-        FromTable Drop;
-        Drop = new FromTable(TableFactory.AddClassTable.Name);
-        Drop.Wheres.add(new FieldValueWhere(Session.ID,TableFactory.AddClassTable.Session.Name));
-        Adapter.DeleteRecords(Drop);
-        
-        Drop = new FromTable(TableFactory.RemoveClassTable.Name);
-        Drop.Wheres.add(new FieldValueWhere(Session.ID,TableFactory.RemoveClassTable.Session.Name));
-        Adapter.DeleteRecords(Drop);
+
+        Map<KeyField,Integer> ValueKeys;
+
+        ValueKeys = new HashMap();
+        ValueKeys.put(TableFactory.AddClassTable.Session,Session.ID);
+        Adapter.deleteKeyRecords(TableFactory.AddClassTable,ValueKeys);
+
+        ValueKeys = new HashMap();
+        ValueKeys.put(TableFactory.RemoveClassTable.Session,Session.ID);
+        Adapter.deleteKeyRecords(TableFactory.RemoveClassTable,ValueKeys);
 
         for(List<IncrementChangeTable> TypeTables : TableFactory.ChangeTables)
             for(ChangeTable Table : TypeTables) {
-                Drop = new FromTable(Table.Name);
-                Drop.Wheres.add(new FieldValueWhere(Session.ID,Table.Session.Name));
-                Adapter.DeleteRecords(Drop);
+                ValueKeys = new HashMap();
+                ValueKeys.put(Table.Session,Session.ID);
+                Adapter.deleteKeyRecords(Table,ValueKeys);
             }
         for(List<DataChangeTable> TypeTables : TableFactory.DataChangeTables)
             for(ChangeTable Table : TypeTables) {
-                Drop = new FromTable(Table.Name);
-                Drop.Wheres.add(new FieldValueWhere(Session.ID,Table.Session.Name));
-                Adapter.DeleteRecords(Drop);
+                ValueKeys = new HashMap();
+                ValueKeys.put(Table.Session,Session.ID);
+                Adapter.deleteKeyRecords(Table,ValueKeys);
             }
     }
 
@@ -670,8 +679,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     Set<AggregateProperty> Persistents;
     Map<ObjectProperty,Constraint> Constraints;
-    
-        
+
+    // последний параметр
     List<ObjectProperty> UpdateAggregations(DataAdapter Adapter,Collection<ObjectProperty> ToUpdateProperties, ChangesSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
@@ -717,18 +726,45 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     }
     
     // проверяет Constraints
-    boolean CheckConstraints(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+    String CheckConstraints(DataAdapter Adapter,ChangesSession Session) throws SQLException {
 
         for(ObjectProperty Property : Constraints.keySet())
-            if(Property.HasChanges(Session) && !Constraints.get(Property).Check(Adapter,Session,Property))
-                return false;
+            if(Property.HasChanges(Session)) {
+                String ConstraintResult = Constraints.get(Property).Check(Adapter,Session,Property);
+                if(ConstraintResult!=null) return ConstraintResult;
+            }
 
-        return true;
+        return null;
+    }
+
+    Map<ObjectProperty,Integer> getSessionChanged(ChangesSession Session) {
+
+        Map<ObjectProperty,Integer> Result = new HashMap();
+        for(Property Property : Properties)
+            if(Property instanceof ObjectProperty)
+                Result.put((ObjectProperty)Property,(Integer)((ObjectProperty)Property).SessionChanged.get(Session));
+
+        return Result;
+    }
+
+    void setSessionChanged(ChangesSession Session,Map<ObjectProperty,Integer> SessionChanged) {
+
+        for(Property Property : Properties)
+            if(Property instanceof ObjectProperty) {
+                Integer ChangeType = SessionChanged.get(Property);
+                if(ChangeType==null)
+                    ((ObjectProperty)Property).SessionChanged.remove(Session);
+                else
+                    ((ObjectProperty)Property).SessionChanged.put(Session,ChangeType);
+            }
     }
     
-    boolean Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+    String Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
-        Adapter.Execute("BEGIN TRANSACTION");
+        Adapter.Execute(Adapter.startTransaction());
+
+        // сохраним все SessionChanged для транзакции в памяти
+        Map<ObjectProperty,Integer> TransactChanged = getSessionChanged(Session);
         
         // создадим общий список из Persistents + Constraints с AggregateProperty's + DataProperties
         Collection<ObjectProperty> UpdateList = new HashSet(Persistents);
@@ -739,9 +775,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<ObjectProperty> ChangedList = UpdateAggregations(Adapter,UpdateList,Session);
 
         // проверим Constraints
-        if(!CheckConstraints(Adapter,Session)) {
-            Adapter.Execute("ROLLBACK");
-            return false;
+        String Constraints = CheckConstraints(Adapter,Session);
+        if(Constraints!=null) {
+            // откатим транзакцию
+            setSessionChanged(Session,TransactChanged);
+            Adapter.Execute(Adapter.rollbackTransaction());
+            return Constraints;
         }            
         
         // записываем Data, затем Persistents в таблицы из сессии
@@ -752,9 +791,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             if(Property instanceof DataProperty || Persistents.contains(Property))
                 Property.SaveChanges(Adapter,Session);
         
-        Adapter.Execute("COMMIT TRANSACTION");
+        Adapter.Execute(Adapter.commitTransaction());
         
-        return true;        
+        return null;        
     }
 
     void FillDB(DataAdapter Adapter) throws SQLException {
@@ -791,8 +830,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 PropNum = PropNum + 1;
                 Tables.put(Table, PropNum);
 
-                Field PropField = new Field("prop"+PropNum.toString(),Property.GetDBType());
-                Table.PropFields.add(PropField);
+                PropertyField PropField = new PropertyField("prop"+PropNum.toString(),Property.GetDBType());
+                Table.Properties.add(PropField);
                 ((ObjectProperty)Property).Field = PropField;
             }
         }
@@ -800,17 +839,17 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(Table Table : Tables.keySet()) Adapter.CreateTable(Table);
 
         // построим в нужном порядке AggregateProperty и будем заполнять их
-        List<AggregateProperty> UpdateList = new ArrayList();
+        List<ObjectProperty> UpdateList = new ArrayList();
         for(AggregateProperty Property : AggrProperties) Property.FillChangedList(UpdateList,null);
         Integer ViewNum = 0;
-        for(AggregateProperty Property : UpdateList) {
+        for(ObjectProperty Property : UpdateList) {
             if(Property instanceof GroupProperty)
                 ((GroupProperty)Property).FillDB(Adapter,ViewNum++);
         }
         
         // создадим dumb
         Table DumbTable = new Table("dumb");
-        DumbTable.KeyFields.add(new KeyField("dumb","integer"));
+        DumbTable.Keys.add(new KeyField("dumb","integer"));
         Adapter.CreateTable(DumbTable);
         Adapter.Execute("INSERT INTO dumb (dumb) VALUES (1)");
     }
@@ -882,10 +921,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     LSFP AddSFProp(String Formula,boolean Filter,Integer Params) {
 
         StringFormulaProperty Property = null;
-        if(Filter)
-            Property = new FilterFormulaProperty(Formula);
-        else
-            Property = new StringFormulaProperty(Formula);
+        Property = new StringFormulaProperty(Formula,Filter);
         LSFP ListProperty = new LSFP(Property,IntegerClass,Params);
         Properties.add(Property);
         return ListProperty;
@@ -1132,7 +1168,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 }
                 
                 if(Changes) {
-                    DataAdapter ad = new DataAdapter("");
+                    DataAdapter ad = DataAdapter.getDefault();
 
                     FillDB(ad);
 
@@ -1272,7 +1308,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<Property> RandProps = new ArrayList();
         List<ObjectProperty> RandObjProps = new ArrayList();
         
-        StringFormulaProperty Dirihle = new StringFormulaProperty("(CASE WHEN prm1<prm2 THEN 1 ELSE 0 END)");
+        StringFormulaProperty Dirihle = new StringFormulaProperty("prm1<prm2",true);
         Dirihle.Interfaces.add(new StringFormulaPropertyInterface(BaseClass,"prm1"));
         Dirihle.Interfaces.add(new StringFormulaPropertyInterface(BaseClass,"prm2"));
         RandProps.add(Dirihle);
@@ -1498,7 +1534,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         // сгенерить persistent аггрегации
 //        OpenTest(false,false,false,false,false);
 
-        DataAdapter Adapter = new DataAdapter("");
+        DataAdapter Adapter = DataAdapter.getDefault();
         OpenTest(true,true,false,false,false);
 //        if(true) return;
 

@@ -221,10 +221,7 @@ class ObjectClass extends Class {
     ObjectClass(Integer iID, String caption) {super(iID, caption);}
     
     Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        SelectQuery SelectObjects = new SelectQuery(TableFactory.ObjectTable.ClassSelect(this));
-        SelectObjects.Expressions.put("objid",new FieldSourceExpr(SelectObjects.From,TableFactory.ObjectTable.Key.Name));
-        List<Map<String,Object>> Result = Adapter.ExecuteSelect(SelectObjects);
-        
-        return (Integer)Result.get(Randomizer.nextInt(Result.size())).get("objid");
+        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Adapter).keySet());
+        return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);
     }
 }

@@ -64,7 +64,7 @@ class ObjectImplement {
     // идентификатор (в рамках формы)
     int ID = 0;
     
-    SourceExpr GetJoinExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
+    SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
         return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):new ValueSourceExpr(idObject));
     }
 }
@@ -74,6 +74,11 @@ class GroupObjectMap<T> extends LinkedHashMap<ObjectImplement,T> {
 }
 
 class GroupObjectValue extends GroupObjectMap<Integer> {
+
+    GroupObjectValue() {}
+    GroupObjectValue(Map<ObjectImplement,Integer> iValue) {
+        putAll(iValue);
+    }
 }
 
 class GroupObjectImplement extends ArrayList<ObjectImplement> {
@@ -134,46 +139,37 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
         return Result;
     }
 
-    void GetSourceSelect(JoinList JoinKeys,Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> KeySources,TableFactory TableFactory,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+    void fillSourceSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,TableFactory TableFactory,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
         
         // фильтры первыми потому как ограничивают ключи
-        for(Filter Filt : Filters) Filt.FillSelect(JoinKeys,ClassGroup,KeySources,Session,ChangedProps);
+        for(Filter Filt : Filters) Filt.fillSelect(Query,ClassGroup,Session,ChangedProps);
 
         // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
         for(ObjectImplement Object : this) {
-            From KeySelect = TableFactory.ObjectTable.ClassSelect(Object.GridClass);
-            SourceExpr ClassExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
-
             // не было в фильтре
             // если есть remove'классы или новые объекты их надо докинуть
+            Query<KeyField,PropertyField> ObjectQuery = TableFactory.ObjectTable.getClassJoin(Object.GridClass);
             if(Session!=null && Session.AddClasses.contains(Object.GridClass)) {
-                // придется UnionQuery делать
-                UnionQuery ResultQuery = new UnionQuery(2);
-                ResultQuery.Keys.add(TableFactory.ObjectTable.Key.Name);
+                // придется UnionQuery делать, ObjectTable'а Key и AddClass Object'а
+                UnionQuery<KeyField,PropertyField> ResultQuery = new UnionQuery<KeyField,PropertyField>(ObjectQuery.Keys,2);
 
-                SelectQuery SubQuery = new SelectQuery(KeySelect);
-                SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,ClassExpr);
-                ResultQuery.Unions.add(SubQuery);
+                ResultQuery.Unions.put(ObjectQuery,1);
 
-                SubQuery = new SelectQuery(TableFactory.AddClassTable.ClassSelect(Session,Object.GridClass));
-                SubQuery.Expressions.put(TableFactory.ObjectTable.Key.Name,new FieldSourceExpr(SubQuery.From,TableFactory.AddClassTable.Object.Name));
-                ResultQuery.Unions.add(SubQuery);
+                // придется создавать запрос чтобы ключи перекодировать
+                JoinQuery<KeyField,PropertyField> AddQuery = ResultQuery.newJoinQuery(1);
+                Join<KeyField,PropertyField> AddJoin = new Join<KeyField,PropertyField>(TableFactory.AddClassTable.getClassJoin(Session,Object.GridClass));
+                AddJoin.Joins.put(TableFactory.AddClassTable.Object,AddQuery.MapKeys.get(TableFactory.ObjectTable.Key));
+                AddQuery.Wheres.add(new JoinWhere(AddJoin));
 
-                KeySelect = new FromQuery(ResultQuery);
-                ClassExpr = new FieldSourceExpr(KeySelect,TableFactory.ObjectTable.Key.Name);
+                ObjectQuery = ResultQuery;
             }
-            JoinKeys.add(KeySelect);
 
-            SourceExpr KeyExpr = KeySources.get(Object);
-            if(KeyExpr==null) {
-                KeySources.put(Object,ClassExpr);
-                // надо сделать LEFT JOIN remove' классов
-                if(Session!=null && Session.RemoveClasses.contains(Object.GridClass))
-                    TableFactory.RemoveClassTable.ExcludeJoin(Session,JoinKeys,Object.GridClass,ClassExpr);
-            } else {
-//              надо так как фильтр может быть на более конкретные классы
-                KeySelect.Wheres.add(new FieldWhere(KeyExpr,TableFactory.ObjectTable.Key.Name));
-            }
+            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(ObjectQuery);
+            ObjectJoin.Joins.put(TableFactory.ObjectTable.Key,Query.MapKeys.get(Object));
+            Query.Wheres.add(new JoinWhere(ObjectJoin));
+
+            if(Session!=null && Session.RemoveClasses.contains(Object.GridClass))
+                TableFactory.RemoveClassTable.excludeJoin(Query,Session,Object.GridClass,Query.MapKeys.get(Object));
         }
     }
 }
@@ -224,30 +220,16 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         return false;
     }
 
-    SourceExpr JoinSelect(JoinList Joins,Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps,boolean Left) {
+    SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps,boolean NotNull) {
 
-        Collection<PropertyInterface> NullInterfaces = new ArrayList();
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
         
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-            ObjectImplement IntObject = Mapping.get(Interface);
-            SourceExpr JoinExpr = IntObject.GetJoinExpr(ClassGroup,ClassSource);
-            if(JoinExpr==null) 
-                NullInterfaces.add(Interface);
-            else
-                JoinImplement.put(Interface,JoinExpr);
-        }
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
+            JoinImplement.put(Interface,Mapping.get(Interface).getSourceExpr(ClassGroup,ClassSource));
 
-        boolean Changed = (Session!=null && ChangedProps.contains(Property));
-        
         // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
         // иначе как и было
-        SourceExpr Result = Property.UpdatedJoinSelect(Joins,JoinImplement,Left,Session);
-        
-        for(PropertyInterface Interface : NullInterfaces)
-            ClassSource.put(Mapping.get(Interface),JoinImplement.get(Interface));
-
-        return Result;
+        return Property.getUpdatedSourceExpr(JoinImplement,ChangedProps.contains(Property)?Session:null,NotNull);
     }
 }
 
@@ -363,11 +345,9 @@ abstract class Filter {
     boolean DataUpdated(Set<ObjectProperty> ChangedProps) {
         return ChangedProps.contains(Property.Property);
     }
-    
+
     // для полиморфизма сюда
-    void FillSelect(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
-    }
+    abstract void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps);
 }
 
 class NotNullFilter extends Filter {
@@ -376,10 +356,8 @@ class NotNullFilter extends Filter {
         super(iProperty);
     }
     
-    @Override
-    void FillSelect(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        SourceExpr ValueExpr = Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
-        Joins.get(0).Wheres.add(new SourceIsNullWhere(ValueExpr,true));
+    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+        Query.Wheres.add(new SourceIsNullWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session,ChangedProps,true),true));
     }
 }
 
@@ -418,9 +396,8 @@ class CompareFilter extends Filter {
     }
 
     @Override
-    void FillSelect(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        SourceExpr ValueExpr = Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
-        Joins.get(0).Wheres.add(new FieldExprCompareWhere(ValueExpr,Value.GetValueExpr(Joins,ClassGroup,ClassSource,Session,ChangedProps),Compare));
+    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+        Query.Wheres.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session,ChangedProps,true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,ChangedProps),Compare));
     }
 
 }
@@ -433,7 +410,7 @@ abstract class ValueLink {
     
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {return false;}
 
-    abstract SourceExpr GetValueExpr(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps);
+    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps);
 }
 
 
@@ -443,7 +420,7 @@ class UserValueLink extends ValueLink {
     
     UserValueLink(Object iValue) {Value=iValue;}
 
-    SourceExpr GetValueExpr(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
         return new ValueSourceExpr(Value);
     }
 }
@@ -469,11 +446,10 @@ class ObjectValueLink extends ValueLink {
         return ((Object.Updated & (1<<0))!=0);
     }
 
-    SourceExpr GetValueExpr(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        return Object.GetJoinExpr(ClassGroup,ClassSource);
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+        return Object.getSourceExpr(ClassGroup,ClassSource);
     }
 }
-
 
 class PropertyValueLink extends ValueLink {
 
@@ -496,8 +472,8 @@ class PropertyValueLink extends ValueLink {
         return Property.ObjectUpdated(ClassGroup);
     }
 
-    SourceExpr GetValueExpr(JoinList Joins, Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps) {
-        return Property.JoinSelect(Joins,ClassGroup,ClassSource,Session,ChangedProps,false);
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+        return Property.getSourceExpr(ClassGroup,ClassSource,Session,ChangedProps,true);
     }
 }
 
@@ -736,48 +712,35 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter Filter : Object.GroupTo.Filters) {
             if(Filter instanceof CompareFilter && ((CompareFilter)Filter).Compare==0) {
-                SelectQuery SubQuery = new SelectQuery(null);
-                JoinList Joins = new JoinList();
-                Map<ObjectImplement,SourceExpr> ClassSource = new HashMap();
-                Map<ObjectImplement,String> MapFields = new HashMap();
-                int FieldNum = 0;
+                JoinQuery<ObjectImplement,String> SubQuery = new JoinQuery<ObjectImplement,String>(Filter.Property.Mapping.values());
+                Map<ObjectImplement,Integer> FixedObjects = new HashMap();
                 for(ObjectImplement SibObject : Filter.Property.Mapping.values()) {
-                    SourceExpr KeyExpr = null;
                     if(SibObject.GroupTo!=Object.GroupTo) {
-                        KeyExpr = new ValueSourceExpr(SibObject.idObject);
+                        FixedObjects.put(SibObject,SibObject.idObject);
                     } else {
                         if(SibObject!=Object) {
-                            FromTable FromSib = BL.TableFactory.ObjectTable.ClassSelect(SibObject.GridClass);
-                            KeyExpr = new FieldSourceExpr(FromSib,BL.TableFactory.ObjectTable.Key.Name);
-                            Joins.add(FromSib);
+                            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(BL.TableFactory.ObjectTable.getClassJoin(SibObject.GridClass));
+                            ObjectJoin.Joins.put(BL.TableFactory.ObjectTable.Key,SubQuery.MapKeys.get(SibObject));
+                            SubQuery.Wheres.add(new JoinWhere(ObjectJoin));
                         } else
-                            KeyExpr = new ValueSourceExpr(AddID);
+                            FixedObjects.put(SibObject,AddID);
                     }
-
-                    ClassSource.put(SibObject,KeyExpr);
-
-                    String KeyField = "key" + (FieldNum++);
-                    MapFields.put(SibObject,KeyField);
-                    SubQuery.Expressions.put(KeyField,KeyExpr);
                 }
 
-                SubQuery.Expressions.put("newvalue",((CompareFilter)Filter).Value.GetValueExpr(Joins,Object.GroupTo.GetClassGroup(),ClassSource,Session,ChangedProps));
-                
-                if(Joins.size()==0) Joins.add(new FromTable("dumb"));
-                Iterator<From> ij = Joins.iterator();
-                SubQuery.From = ij.next();
-                while(ij.hasNext()) SubQuery.From.Joins.add(ij.next());
-                
-                List<Map<String,Object>> Result = Adapter.ExecuteSelect(SubQuery);
+                SubQuery.putDumbJoin(FixedObjects);
+
+                SubQuery.Properties.put("newvalue",((CompareFilter)Filter).Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session,ChangedProps));
+
+                LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Adapter);
                 // изменяем св-ва
-                for(Map<String,Object> Row : Result) {
+                for(Entry<Map<ObjectImplement,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                     ObjectProperty ChangeProperty = Filter.Property.Property;
                     Map<PropertyInterface,ObjectValue> Keys = new HashMap();
                     for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
-                        Keys.put(Interface,new ObjectValue((Integer)Row.get(MapFields.get(ChangeObject)),ChangeObject.GridClass));
+                        Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
-                    ChangeProperty.ChangeProperty(Adapter,Keys,Row.get("newvalue"),Session);
+                    ChangeProperty.ChangeProperty(Adapter,Keys,Row.getValue().get("newvalue"),Session);
                 }                
             }
         }
@@ -797,14 +760,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }
     
     // рекурсия для генерации порядка
-    Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {
+    SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {
         
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
         boolean Last = !(Index+1<OrderSources.size());
-        Where OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(More?(Last?3:1):2));
+        SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(More?(Last?3:1):2));
         if(!Last) {
-            Where NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,More,Index+1);
+            SourceWhere NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,More,Index+1);
             
             // >A OR (=A AND >B)
             return new FieldOPWhere(OrderWhere,new FieldOPWhere(new FieldExprCompareWhere(OrderExpr,OrderValue,0),NextWhere,true),false);
@@ -815,12 +778,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     // применяет изменения
     public String SaveChanges() throws SQLException {
 
-        if(BL.Apply(Adapter,Session)) {
+        String ApplyResult = BL.Apply(Adapter,Session);
+        if(ApplyResult==null)
             StartNewSession();
-            
-            return "pass";
-        }        
-            return "failed";
+
+        return ApplyResult;
     }
 
     boolean Cancel = false;
@@ -883,7 +845,8 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         Map<GroupObjectImplement,List<PropertyObjectImplement>> MapGroupOrders = null;
         if(StructUpdated) {
             // построим Map'ы
-            // очистим старые 
+            // очистим старые
+
             for(GroupObjectImplement Group : Groups) {
                 Group.MapFilters = new HashSet();
                 Group.MapOrders = new ArrayList();
@@ -903,18 +866,26 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             boolean UpdateKeys = ((Group.Updated & (1<<3))!=0);
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
             // фильтры
-            for(Filter Filt : Group.MapFilters) {
-                // если изменилась структура или кто-то изменил класс, перепроверяем
-                if(StructUpdated || Filt.ClassUpdated(Group))
-                    UpdateKeys = (Filt.IsInInterface(Group)?Group.Filters.add(Filt):Group.Filters.remove(Filt)) || UpdateKeys;
-            }
+            // если изменилась структура или кто-то изменил класс, перепроверяем
+            if(StructUpdated) {
+                Set<Filter> NewFilter = new HashSet();
+                for(Filter Filt : Group.MapFilters)
+                    if(Filt.IsInInterface(Group)) NewFilter.add(Filt);
+
+                UpdateKeys = UpdateKeys || !NewFilter.equals(Group.Filters);
+                Group.Filters = NewFilter;
+            } else
+                for(Filter Filt : Group.MapFilters)
+                    if(Filt.ClassUpdated(Group))
+                        UpdateKeys = (Filt.IsInInterface(Group)?Group.Filters.add(Filt):Group.Filters.remove(Filt)) || UpdateKeys;
+
             // порядки
             boolean SetOrderChanged = false;
             Set<PropertyObjectImplement> SetOrders = new HashSet(Group.Orders);
             for(PropertyObjectImplement Order : Group.MapOrders) {
                 // если изменилась структура или кто-то изменил класс, перепроверяем
                 if(StructUpdated || Order.ClassUpdated(Group))
-                    SetOrderChanged = (Order.IsInInterface(Group)?SetOrders.add(Order):Group.Filters.remove(Order));
+                    SetOrderChanged = (Order.IsInInterface(Group)?SetOrders.add(Order):Group.Orders.remove(Order));
             }
             if(StructUpdated || SetOrderChanged) {
                 // переформирываваем порядок, если структура или принадлежность Order'у изменилась
@@ -1002,16 +973,6 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             if(UpdateKeys) {
                 // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
 
-                // сделаем Map названий ключей
-                int ObjectNum = 0;
-                Map<ObjectImplement,String> KeyNames = new HashMap();
-                for(ObjectImplement ObjectKey : Group)
-                    KeyNames.put(ObjectKey,"key"+(ObjectNum++));
-                int OrderNum = 0;
-                Map<PropertyObjectImplement,String> OrderNames = new HashMap();
-                for(PropertyObjectImplement Order : Orders)
-                    OrderNames.put(Order,"order"+(OrderNum++));
-                
                 // докидываем Join'ами (INNER) фильтры, порядки
                 
                 // уберем все некорректности в Seekах :
@@ -1022,27 +983,18 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(new HashSet(Orders)) || ((PropertySeeks.size()<Orders.size() && (new HashSet(Orders.subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
                 if((NotEnoughOrders || !Group.GridClassView) && ObjectSeeks.size()<Group.size()) {
                     // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
-                    JoinList JoinKeys = new JoinList();
-                    Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
-                    Group.GetSourceSelect(JoinKeys,Group.GetClassGroup(),KeySources,BL.TableFactory,Session,ChangedProps);
+                    OrderedJoinQuery<ObjectImplement,Object> SelectKeys = new OrderedJoinQuery<ObjectImplement,Object>(Group);
+                    SelectKeys.putDumbJoin(ObjectSeeks);
+                    Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.TableFactory,Session,ChangedProps);
                     for(Entry<PropertyObjectImplement,Object> Property : PropertySeeks.entrySet())
-                        JoinKeys.get(0).Wheres.add(new FieldExprCompareWhere(Property.getKey().JoinSelect(JoinKeys,Group.GetClassGroup(),KeySources,Session,ChangedProps,false),Property.getValue(),0));
-                    for(Entry<ObjectImplement,Integer> ObjectValue : ObjectSeeks.entrySet())
-                        JoinKeys.get(0).Wheres.add(new FieldExprCompareWhere(KeySources.get(ObjectValue.getKey()),ObjectValue.getValue(),0));
+                        SelectKeys.Wheres.add(new FieldExprCompareWhere(Property.getKey().getSourceExpr(Group.GetClassGroup(),SelectKeys.MapKeys,Session,ChangedProps,true),Property.getValue(),0));
 
-                    Iterator<From> ij = JoinKeys.iterator();
-                    SelectQuery SelectKeys = new SelectQuery(ij.next());
-                    while(ij.hasNext()) SelectKeys.From.Joins.add(ij.next());
-
-                    for(ObjectImplement ObjectKey : Group)
-                        SelectKeys.Expressions.put(KeyNames.get(ObjectKey),KeySources.get(ObjectKey));
-
+                    // докидываем найденные ключи
                     SelectKeys.Top = 1;
-                    Adapter.OutSelect(SelectKeys);
-                    List<Map<String,Object>> ResultKeys = Adapter.ExecuteSelect(SelectKeys);
+                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Adapter);
                     if(ResultKeys.size()>0)
                         for(ObjectImplement ObjectKey : Group)
-                            ObjectSeeks.put(ObjectKey,(Integer)ResultKeys.get(0).get(KeyNames.get(ObjectKey)));
+                            ObjectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
                 }
 
                 if(!Group.GridClassView) {
@@ -1052,29 +1004,19 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 } else {
                     // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
                     if(NotEnoughOrders && ObjectSeeks.size()==Group.size() && Orders.size() > 0) {
-                        SelectQuery OrderQuery = new SelectQuery(null);
-                        JoinList JoinKeys = new JoinList();
-                        JoinKeys.add(new FromTable("dumb"));
-                        // придется создавать KeySources
-                        Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
-                        for(Entry<ObjectImplement,Integer> ObjectSeek : ObjectSeeks.entrySet())
-                            KeySources.put(ObjectSeek.getKey(),new ValueSourceExpr(ObjectSeek.getValue()));
+                        JoinQuery<ObjectImplement,PropertyObjectImplement> OrderQuery = new JoinQuery<ObjectImplement,PropertyObjectImplement>(ObjectSeeks.keySet());
+                        OrderQuery.putDumbJoin(ObjectSeeks);
+
                         for(PropertyObjectImplement Order : Orders)
-                            OrderQuery.Expressions.put(OrderNames.get(Order),Order.JoinSelect(JoinKeys,Group.GetClassGroup(),KeySources,Session,ChangedProps,true));
-                        Iterator<From> ij = JoinKeys.iterator();
-                        OrderQuery.From = ij.next();
-                        while(ij.hasNext()) OrderQuery.From.Joins.add(ij.next());
-                        Adapter.OutSelect(OrderQuery);
-                        List<Map<String,Object>> ResultOrders = Adapter.ExecuteSelect(OrderQuery);
+                            OrderQuery.Properties.put(Order,Order.getSourceExpr(Group.GetClassGroup(),OrderQuery.MapKeys,Session,ChangedProps,false));
+
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.executeSelect(Adapter);
                         for(PropertyObjectImplement Order : Orders)
-                            PropertySeeks.put(Order,ResultOrders.get(0).get(OrderNames.get(Order)));
+                            PropertySeeks.put(Order,ResultOrders.values().iterator().next().get(Order));
                     }
                 
-                    JoinList JoinKeys = new JoinList();
-                    Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
-                    Group.GetSourceSelect(JoinKeys,Group.GetClassGroup(),KeySources,BL.TableFactory,Cancel?null:Session,ChangedProps);
-
-                    OrderedSelectQuery SelectKeys = new OrderedSelectQuery(null);
+                    OrderedJoinQuery<ObjectImplement,PropertyObjectImplement> SelectKeys = new OrderedJoinQuery<ObjectImplement,PropertyObjectImplement>(Group);
+                    Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.TableFactory,Cancel?null:Session,ChangedProps);
 
                     // складываются источники и значения
                     List<SourceExpr> OrderSources = new ArrayList();
@@ -1082,7 +1024,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                     // закинем порядки (с LEFT JOIN'ом)
                     for(PropertyObjectImplement ToOrder : Group.Orders) {
-                        SourceExpr OrderExpr = ToOrder.JoinSelect(JoinKeys,Group.GetClassGroup(),KeySources,Cancel?null:Session,ChangedProps,true);
+                        SourceExpr OrderExpr = ToOrder.getSourceExpr(Group.GetClassGroup(),SelectKeys.MapKeys,Cancel?null:Session,ChangedProps,false);
                         SelectKeys.Orders.add(OrderExpr);
                         // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                         if(PropertySeeks.containsKey(ToOrder)) {
@@ -1090,7 +1032,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                             OrderWheres.add(PropertySeeks.get(ToOrder));
                         }                    
                         // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                        SelectKeys.Expressions.put(OrderNames.get(ToOrder),OrderExpr);
+                        SelectKeys.Properties.put(ToOrder,OrderExpr);
                     }
 
                     // докинем в ObjectSeeks недостающие группы
@@ -1100,29 +1042,22 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     
                     // закинем объекты в порядок
                     for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
-                        SourceExpr KeyExpr = KeySources.get(ObjectKey);
                         // также закинем их в порядок и в запрос6
+                        SourceExpr KeyExpr = SelectKeys.MapKeys.get(ObjectKey);
                         SelectKeys.Orders.add(KeyExpr);
                         Integer SeekValue = ObjectSeeks.get(ObjectKey);
                         if(SeekValue!=null) {
                             OrderSources.add(KeyExpr);
                             OrderWheres.add(SeekValue);
                         }
-                        // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                        SelectKeys.Expressions.put(KeyNames.get(ObjectKey),KeyExpr);
                     }
                     
-                    // закидываем в Select все таблицы (с JOIN'ами по умодчанию)                ''
-                    ListIterator<From> ijk = JoinKeys.listIterator();
-                    SelectKeys.From = ijk.next();
-                    while(ijk.hasNext()) SelectKeys.From.Joins.add(ijk.next());
 
                     // выполняем запрос
-
                     // какой ряд выбранным будем считать
                     int ActiveRow = -1;
                     // результат
-                    List<Map<String,Object>> KeyResult = new ArrayList();
+                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> KeyResult = new LinkedHashMap();
 
                     SelectKeys.Top = Group.PageSize*3/(Direction==2?2:1);
 
@@ -1133,19 +1068,22 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         Where OrderWhere = null;
                         if(OrderSources.size()>0) {
                             OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,false,0);
-                            SelectKeys.From.Wheres.add(OrderWhere);
+                            SelectKeys.Wheres.add(OrderWhere);
                             Group.DownKeys = true;
                         }
 
                         SelectKeys.Descending = true;
-                        Adapter.OutSelect(SelectKeys);
-                        ListIterator<Map<String,Object>> ik = Adapter.ExecuteSelect(SelectKeys).listIterator();
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecResult = SelectKeys.executeSelect(Adapter);
+                        ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList(ExecResult.keySet())).listIterator();
                         while(ik.hasNext()) ik.next();
-                        while(ik.hasPrevious()) KeyResult.add(ik.previous());
+                        while(ik.hasPrevious()) {
+                            Map<ObjectImplement,Integer> Row = ik.previous();
+                            KeyResult.put(Row,ExecResult.get(Row));
+                        }
                         Group.UpKeys = (KeyResult.size()==SelectKeys.Top);
 
                         if(OrderSources.size()>0)
-                            SelectKeys.From.Wheres.remove(OrderWhere);
+                            SelectKeys.Wheres.remove(OrderWhere);
                         else
                             ActiveRow = KeyResult.size()-1;
                     }
@@ -1153,15 +1091,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     if(Direction==0 || Direction==2) {
                         if(OrderSources.size()>0) {
                             Where OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,true,0);
-                            SelectKeys.From.Wheres.add(OrderWhere);
+                            SelectKeys.Wheres.add(OrderWhere);
                             if(Direction!=2) Group.UpKeys = true;
                         }
 
                         SelectKeys.Descending = false;
-                        Adapter.OutSelect(SelectKeys);
-                        List<Map<String,Object>> ExecuteList = Adapter.ExecuteSelect(SelectKeys);
+//                        SelectKeys.outSelect(Adapter);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Adapter);
                         if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
-                        KeyResult.addAll(ExecuteList);
+                        KeyResult.putAll(ExecuteList);
                         Group.DownKeys = (ExecuteList.size()==SelectKeys.Top);
                     }
                     
@@ -1172,7 +1110,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
                     InsertTable.DropViewID(Adapter, Group.GID);
                     
-                    for(Map<String,Object> ResultRow : KeyResult) {
+                    for(Entry<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultRow : KeyResult.entrySet()) {
                         GroupObjectValue KeyRow = new GroupObjectValue();
                         Map<PropertyObjectImplement,Object> OrderRow = new HashMap();
 
@@ -1182,15 +1120,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         ListIterator<KeyField> ivk = InsertTable.Objects.listIterator();
                         // !!!! важно в Keys сохранить порядок ObjectSeeks
                         for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
-                            Integer KeyValue = (Integer)ResultRow.get(KeyNames.get(ObjectKey));
+                            Integer KeyValue = ResultRow.getKey().get(ObjectKey);
                             KeyRow.put(ObjectKey,KeyValue);
                             ViewKeyInsert.put(ivk.next(), KeyValue);
                         }
                         Adapter.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
 
-                        OrderNum = 0;
                         for(PropertyObjectImplement ToOrder : Group.Orders)
-                            OrderRow.put(ToOrder,ResultRow.get(OrderNames.get(ToOrder)));
+                            OrderRow.put(ToOrder,ResultRow.getValue().get(ToOrder));
 
                         Group.Keys.add(KeyRow);
                         Group.KeyOrders.put(KeyRow, OrderRow);
@@ -1221,7 +1158,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         for(PropertyView DrawProp : Properties) {
 
-            if(DrawProp.View.Property.OutName.equals("кол-во прих."))
+            if(DrawProp.View.Property.OutName.equals("штрих-код") && Cancel)
                     DrawProp = DrawProp;
             // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
             boolean Read = false;
@@ -1298,77 +1235,44 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         }
 
         // погнали выполнять все собранные запросы и FormChanges
-        JoinList JoinProps = null;
-        SelectQuery SelectProps = null;
-        
+
         // сначала PanelProps
         if(PanelProps.size()>0) {
-            JoinProps = new JoinList();
-            SelectProps = new SelectQuery(new FromTable("dumb"));
-
-            Integer SelectFields = 0;
-            Map<PropertyView,String> ToFields = new HashMap();
-            for(PropertyView DrawProp : PanelProps) {
-                SelectFields++;
-                String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,null,null,Cancel?null:Session,ChangedProps,true));
-                ToFields.put(DrawProp, SelectField);
-            }
-        
-            for(From Join : JoinProps)
-                SelectProps.From.Joins.add(Join);
-
-            Adapter.OutSelect(SelectProps);
-            Map<String,Object> ResultProps = Adapter.ExecuteSelect(SelectProps).get(0);
-
+            JoinQuery<Object,PropertyView> SelectProps = new JoinQuery<Object,PropertyView>(new ArrayList<Object>());
             for(PropertyView DrawProp : PanelProps)
-                Result.PanelProperties.put(DrawProp,ResultProps.get(ToFields.get(DrawProp)));
+                SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(null,null,Cancel?null:Session,ChangedProps,false));
+
+            Map<PropertyView,Object> ResultProps = SelectProps.executeSelect(Adapter).values().iterator().next();
+            for(PropertyView DrawProp : PanelProps)
+                Result.PanelProperties.put(DrawProp,ResultProps.get(DrawProp));
         }
         
         for(GroupObjectImplement Group : GroupProps.keySet()) {
             Collection<PropertyView> GroupList = GroupProps.get(Group);
-            JoinProps = new JoinList();
-            
+
+            JoinQuery<ObjectImplement,PropertyView> SelectProps = new JoinQuery<ObjectImplement,PropertyView>(Group);
+
             ViewTable KeyTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-            FromTable SelectKeyTable = new FromTable(KeyTable.Name);
-            SelectProps = new SelectQuery(SelectKeyTable);
+            Join<KeyField,PropertyField> KeyJoin = new Join<KeyField,PropertyField>(KeyTable);
 
-            Map<ObjectImplement,SourceExpr> MapKeys = new HashMap();
-
-            int ObjectNum = 0;
             ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
-            for(ObjectImplement Object : Group) {
-                SourceExpr KeyExpr = new FieldSourceExpr(SelectKeyTable,ikt.next().Name);
-                MapKeys.put(Object,KeyExpr);
-                // также в запрос надо ключи закинуть
-                SelectProps.Expressions.put("key"+(ObjectNum++),KeyExpr);
-            }
+            for(ObjectImplement Object : Group)
+                KeyJoin.Joins.put(ikt.next(),SelectProps.MapKeys.get(Object));
+            KeyJoin.Joins.put(KeyTable.View,new ValueSourceExpr(Group.GID));
+            SelectProps.Wheres.add(new JoinWhere(KeyJoin));
 
-            Integer SelectFields = 0;
-            Map<PropertyView,String> ToFields = new HashMap();
-            for(PropertyView DrawProp : GroupList) {
-                SelectFields++;
-                String SelectField = "prop"+SelectFields;
-                SelectProps.Expressions.put(SelectField,DrawProp.View.JoinSelect(JoinProps,Group.GetClassGroup(),MapKeys,Cancel?null:Session,ChangedProps,true));
-                ToFields.put(DrawProp, SelectField);
-            }
-        
-            for(From Join : JoinProps) SelectProps.From.Joins.add(Join);
-        
-            List<Map<String,Object>> ResultProps = Adapter.ExecuteSelect(SelectProps);
+            for(PropertyView DrawProp : GroupList)
+                SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Cancel?null:Session,ChangedProps,false));
+
+//            SelectProps.outSelect(Adapter);
+            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Adapter);
 
             for(PropertyView DrawProp : GroupList) {
                 Map<GroupObjectValue,Object> PropResult = new HashMap();
                 Result.GridProperties.put(DrawProp,PropResult);
 
-                for(Map<String,Object> ResultRow : ResultProps) {
-                    GroupObjectValue ResultKeys = new GroupObjectValue();
-                    ObjectNum = 0;
-                    for(ObjectImplement ObjectImp : Group)
-                        ResultKeys.put(ObjectImp,(Integer)ResultRow.get("key"+(ObjectNum++)));
-
-                    PropResult.put(ResultKeys,ResultRow.get(ToFields.get(DrawProp)));
-                }
+                for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultRow : ResultProps.entrySet())
+                    PropResult.put(new GroupObjectValue(ResultRow.getKey()),ResultRow.getValue().get(DrawProp));
             }
         }
 
@@ -1405,59 +1309,46 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     FormData ReadData() throws SQLException {
         
         Set<GroupObjectImplement> ReportObjects = GetReportObjects();
-        
+        Collection<ObjectImplement> ReadObjects = new ArrayList();
+        for(GroupObjectImplement Group : ReportObjects)
+            ReadObjects.addAll(Group);
+
         // пока сделаем тупо получаем один большой запрос
         
-        OrderedSelectQuery Query = new OrderedSelectQuery(null);
-        JoinList Joins = new JoinList();
+        OrderedJoinQuery<ObjectImplement,PropertyView> Query = new OrderedJoinQuery<ObjectImplement,PropertyView>(ReadObjects);
 
-        Set<GroupObjectImplement> ClassGroup = new HashSet();
-        Map<ObjectImplement,SourceExpr> KeySources = new HashMap();
-        
-        for(GroupObjectImplement Group : Groups) {
-            if(!ReportObjects.contains(Group)) {
-                // не фиксированные ключи
-                ClassGroup.add(Group);
-                Group.GetSourceSelect(Joins,ClassGroup,KeySources,BL.TableFactory,Session,ChangedProps);
-            }
-            
+        for(GroupObjectImplement Group : ReportObjects) {
+            // не фиксированные ключи
+            Group.fillSourceSelect(Query,ReportObjects,BL.TableFactory,Session,ChangedProps);
+
             // закинем Order'ы
             for(PropertyObjectImplement Order : Group.Orders)
-                Query.Orders.add(Order.JoinSelect(Joins,ClassGroup,KeySources,Session,ChangedProps,true));
+                Query.Orders.add(Order.getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false));
 
-            for(ObjectImplement Object : Group) {
-                SourceExpr KeyExpr = Object.GetJoinExpr(ClassGroup,KeySources);
-                
-                Query.Expressions.put("obj"+Object.ID,KeyExpr);
-                Query.Orders.add(KeyExpr);
-            }
+            for(ObjectImplement Object : Group)
+                Query.Orders.add(Object.getSourceExpr(ReportObjects,Query.MapKeys));
         }
 
         FormData Result = new FormData();
 
-        for(PropertyView Property : Properties) {
-            Query.Expressions.put("prop"+Property.ID,Property.View.JoinSelect(Joins,ClassGroup,KeySources,Session,ChangedProps,true));
+        for(PropertyView Property : Properties)
+            Query.Properties.put(Property,Property.View.getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false));
 
-            Result.Properties.put(Property.ID,new HashMap());
-        }
+//            Result.Properties.put(Property.ID,new HashMap());
+//        }
 
-        // JoinList закинем 
-        Iterator<From> ij = Joins.iterator();
-        Query.From = ij.next();
-        while(ij.hasNext()) Query.From.Joins.add(ij.next());
-
-        List<Map<String,Object>> ResultSelect = Adapter.ExecuteSelect(Query);
+        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Adapter);
         
-        for(Map<String,Object> Row : ResultSelect) {
+        for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> Row : ResultSelect.entrySet()) {
             Map<Integer,Integer> GroupValue = new HashMap();
             for(GroupObjectImplement Group : Groups)
                 for(ObjectImplement Object : Group)
-                    GroupValue.put(Object.ID,(Integer)Row.get("obj"+Object.ID));
+                    GroupValue.put(Object.ID,Row.getKey().get(Object));
             
             Result.ReadOrder.add(GroupValue);
             
             for(PropertyView Property : Properties)
-                Result.Properties.get(Property.ID).put(GroupValue,Row.get("prop"+Property.ID));
+                Result.Properties.get(Property.ID).put(GroupValue,Row.getValue().get(Property));
         }
         
         return Result;
@@ -1465,7 +1356,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     // возвращает какие объекты фиксируются
     Set<GroupObjectImplement> GetReportObjects() {
-        return new HashSet();
+        return new HashSet(Groups);
     }
     
     // получает XML отчета

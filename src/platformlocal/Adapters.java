@@ -7,66 +7,81 @@ package platformlocal;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 
-class DataAdapter {
-    
+interface SQLSyntax {
+
+    boolean allowViews();
+
+    String getUpdate(String TableString,String SetString,String FromString,String WhereString);
+
+    void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+
+    String startTransaction();
+    String commitTransaction();
+    String rollbackTransaction();
+
+    String isNULL(String Expr1, String Expr2, boolean NotSafe);
+
+    String getClustered();
+    String getCommandEnd();
+
+    String getTop(int Top,String SelectString);
+
+    String getNullValue(String DBType);
+}
+
+abstract class DataAdapter implements SQLSyntax {
+
+    static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        return new PostgreDataAdapter();
+    }
+
+    public String getNullValue(String DBType) {
+        return "NULL";
+    }
+
     Connection Connection;
 
-    DataAdapter(String ConnectionString) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        
-        java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver"); 
-        Connection = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+    public String getTop(int Top,String SelectString) {
+        return (Top==0?"":"TOP "+Top+" ") + SelectString;
+    }
 
-        try {
-            Execute("DROP DATABASE TestPlat");
-        } catch(Exception e) {            
-        }
+    DataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         
-        Execute("CREATE DATABASE TestPlat");
-        Execute("USE TestPlat");
+        startConnection();
     }
     
     void CreateTable(Table Table) throws SQLException {
         String CreateString = "";
         String KeyString = "";
-        for(KeyField Key : Table.KeyFields) {
+        for(KeyField Key : Table.Keys) {
             CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare();
             KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
         }
-        for(Field Prop : Table.PropFields)
+        for(PropertyField Prop : Table.Properties)
             CreateString = CreateString+',' + Prop.GetDeclare();
-        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY CLUSTERED (" + KeyString + ")";
+        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + getClustered() + " (" + KeyString + ")";
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         Execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
     }
-    
+
     void Execute(String ExecuteString) throws SQLException {
         Statement Statement = Connection.createStatement();
-        Statement.execute(ExecuteString);                
+        System.out.println(ExecuteString+getCommandEnd());
+        Statement.execute(ExecuteString+getCommandEnd());
     }
     
-    void CreateView(String ViewName,Query Select) throws SQLException {
-        Execute("CREATE VIEW "+ViewName+" AS "+Select.GetSelect(new ArrayList()));
-    }
-    
-    void InsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<Field,Object> PropFields) throws SQLException {
+    void InsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
         
         String InsertString = "";
         String ValueString = "";
         
         // пробежим по KeyFields'ам
-        for(KeyField Key : Table.KeyFields) {
+        for(KeyField Key : Table.Keys) {
             InsertString = (InsertString.length()==0?"":InsertString+',') + Key.Name;
             ValueString = (ValueString.length()==0?"":ValueString+',') + KeyFields.get(Key);
         }
@@ -81,117 +96,220 @@ class DataAdapter {
         Execute("INSERT INTO "+Table.Name+" ("+InsertString+") VALUES ("+ValueString+")");
     }
 
-    void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<Field,Object> PropFields) throws SQLException {
+    void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
 
-        FromTable From = new FromTable(Table.Name);
-        SelectQuery Select = new SelectQuery(From);
+        // по сути пустое кол-во ключей
+        JoinQuery<Object,String> IsRecQuery = new JoinQuery<Object,String>();
+
+        Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table);
         // сначала закинем KeyField'ы и прогоним Select
-        for(KeyField Key : Table.KeyFields)
-            Select.From.Wheres.add(new FieldValueWhere(KeyFields.get(Key),Key.Name));
-        
-        Select.Expressions.put("isrec",new ValueSourceExpr(1));
+        for(KeyField Key : Table.Keys)
+            TableJoin.Joins.put(Key,new ValueSourceExpr(KeyFields.get(Key)));
 
-        if(ExecuteSelect(Select).size()>0) {
+        IsRecQuery.Wheres.add(new JoinWhere(TableJoin));
+
+        if(IsRecQuery.executeSelect(this).size()>0) {
             // есть запись нужно Update лупить
-            Select.Expressions.clear();
-            for(Field Prop : PropFields.keySet())
-                Select.Expressions.put(Prop.Name,new ValueSourceExpr(PropFields.get(Prop)));
-            UpdateRecords(Select);
+            UpdateRecords(new ModifyQuery(Table,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
         } else
             // делаем Insert
             InsertRecord(Table,KeyFields,PropFields);
-                 
     }
 
-    void UpdateRecords(SelectQuery Select) throws SQLException {
-        Execute(Select.GetUpdate());
-    }
-    
-    void DeleteRecords(FromTable Table) throws SQLException {
-        Execute(Table.GetDelete());
-    }
-    
-    void InsertSelect(Table InsertTo,Query Select) throws SQLException {
-        Collection<String> ResultFields = new ArrayList();
-        String SelectString = Select.GetSelect(ResultFields);
-        String InsertString = "";
-        for(String Field : ResultFields) InsertString = (InsertString.length()==0?"":InsertString+",") + Field;
-//        System.out.println("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
-        Execute("INSERT INTO "+InsertTo.Name+" ("+InsertString+") "+SelectString);
+    void deleteKeyRecords(Table Table,Map<KeyField,Integer> Keys) throws SQLException {
+ //       Execute(Table.GetDelete());
+        String DeleteWhere = "";
+        for(Map.Entry<KeyField,Integer> DeleteKey : Keys.entrySet())
+            DeleteWhere = (DeleteWhere.length()==0?"":DeleteWhere+" AND ") + DeleteKey.getKey().Name + "=" + DeleteKey.getValue();
+
+        Execute("DELETE FROM "+Table.Name+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
     }
 
-    List<Map<String,Object>> ExecuteSelect(Query Select) throws SQLException {
-        List<Map<String,Object>> ExecResult = new ArrayList<Map<String,Object>>();
-        Statement Statement = Connection.createStatement();
-        Collection<String> ResultFields = new ArrayList();
-        String SelectString = Select.GetSelect(ResultFields);
-        try {
-            ResultSet Result = Statement.executeQuery(SelectString);
-            try {
-                while(Result.next()) {
-                    Map<String,Object> RowMap = new HashMap<String,Object>();
-                    for(String SelectExpr : ResultFields)
-                        RowMap.put(SelectExpr,Result.getObject(SelectExpr));
-                    ExecResult.add(RowMap);
-                }
-            } finally {
-               Result.close();
-            }
-        } finally {
-            Statement.close();
-        }
-        
-        return ExecResult;
+    void UpdateRecords(ModifyQuery Modify) throws SQLException {
+        Execute(Modify.getUpdate(this));
     }
-    
-    void OutSelect(Query Select) throws SQLException {
-        // выведем на экран
-        Collection<String> ResultFields = new ArrayList();
-        System.out.println(Select.GetSelect(ResultFields));
 
-        List<Map<String,Object>> Result = ExecuteSelect(Select);
-        for(Map<String,Object> RowMap : Result) {
-            for(String Field : ResultFields) {
-                System.out.print(RowMap.get(Field));
-                System.out.print(" ");
-            }
-            System.out.println("");
-        }
+    void InsertSelect(ModifyQuery Modify) throws SQLException {
+        Execute(Modify.getInsertSelect(this));
     }
-    
+
+    // сначала делает InsertSelect, затем UpdateRecords
+    void ModifyRecords(ModifyQuery Modify) throws SQLException {
+        Execute(Modify.getInsertLeftKeys(this));
+        Execute(Modify.getUpdate(this));
+    }
+
+    void CreateView(ModifyQuery Modify) throws SQLException {
+        Execute(Modify.getCreateView(this));
+    }
+
     void Disconnect() throws SQLException {
         Connection.close();
     }
+
+    // по умолчанию
+    public String getClustered() {
+        return "CLUSTERED ";
+    }
+
+    public String getCommandEnd() {
+        return "";
+    }
+
 }
 
-class Field {
-    String Name;
-    String Type;
-    
-    Field(String iName,String iType) {Name=iName;Type=iType;}
-    
-    String GetDeclare() {
-        return Name + " " + Type;
+class MySQLDataAdapter extends DataAdapter {
+
+    MySQLDataAdapter()  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super();
+    }
+
+    public boolean allowViews() {
+        return false;
+    }
+
+    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
+        return TableString + "," + FromString + SetString + WhereString;
+    }
+
+    public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        java.lang.Class.forName("com.mysql.jdbc.Driver");
+        Connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/TestPlat");
+
+        try {
+            Execute("DROP DATABASE testplat");
+        } catch(Exception e) {
+        }
+
+        Execute("CREATE DATABASE testplat");
+        Execute("USE TestPlat");
+    }
+
+    public String startTransaction() {
+        return "START TRANSACTION";
+    }
+
+    public String commitTransaction() {
+        return "COMMIT";
+    }
+
+    public String rollbackTransaction() {
+        return "ROLLBACK";
+    }
+
+    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
+        return "IFNULL(" + Expr1 + "," + "Expr2" + ")";
     }
 }
 
-class KeyField extends Field {
-    KeyField(String iName,String iType) {super(iName,iType);}
-}
-        
-class Table {
-    String Name;
-    
-    Table(String iName) {
-        Name=iName;
-        KeyFields = new ArrayList<KeyField>();
-        PropFields = new ArrayList<Field>();
-        MapFields = new HashMap<String,Field>();
+class MSSQLDataAdapter extends DataAdapter {
+
+    MSSQLDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super();
     }
-    
-    Map<String,Field> MapFields;
-    
-    Collection<KeyField> KeyFields;
-    Collection<Field> PropFields;
+
+    public boolean allowViews() {
+        return true;
+    }
+
+    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
+        return TableString + SetString + " FROM " + FromString + WhereString;
+    }
+
+    public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver");
+        Connection = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+
+        try {
+            Execute("DROP DATABASE testplat");
+        } catch(Exception e) {
+        }
+
+        Execute("CREATE DATABASE testplat");
+        Execute("USE TestPlat");
+    }
+
+    public String startTransaction() {
+        return "BEGIN TRANSACTION";
+    }
+
+    public String commitTransaction() {
+        return "COMMIT TRANSACTION";
+    }
+
+    public String rollbackTransaction() {
+        return "ROLLBACK";
+    }
+
+    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
+        if(NotSafe)
+            return "CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END";
+        else
+            return "ISNULL("+Expr1+","+Expr2+")";
+    }
 }
 
+class PostgreDataAdapter extends DataAdapter {
+
+    PostgreDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super();
+    }
+
+    public boolean allowViews() {
+        return true;
+    }
+
+    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
+        return TableString + SetString + " FROM " + FromString + WhereString;
+    }
+
+    public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        java.lang.Class.forName("org.postgresql.Driver");
+        Connection = DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=postgres&password=11111");
+
+        try {
+            Execute("DROP DATABASE testplat");
+        } catch(Exception e) {
+        }
+
+        Execute("CREATE DATABASE testplat");
+
+        Connection.close();
+
+        Connection = DriverManager.getConnection("jdbc:postgresql://localhost/testplat?user=postgres&password=11111");
+    }
+
+    public String getCommandEnd() {
+        return ";";
+    }
+
+    public String getClustered() {
+        return "";
+    }
+
+    public String getNullValue(String DBType) {
+        String EmptyValue = (DBType.equals("integer")?"0":"''");
+        return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
+    }
+
+    public String startTransaction() {
+        return "BEGIN TRANSACTION";
+    }
+
+    public String commitTransaction() {
+        return "COMMIT TRANSACTION";
+    }
+
+    public String rollbackTransaction() {
+        return "ROLLBACK";
+    }
+
+    public String getTop(int Top,String SelectString) {
+        return SelectString + (Top==0?"":" LIMIT "+Top);
+    }
+
+    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
+//        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
+        return "COALESCE("+Expr1+","+Expr2+")";
+    }
+}

@@ -5,46 +5,18 @@
 
 package platformlocal;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.design.JasperDesign;
-import org.jdesktop.application.SingleFrameApplication;
 
 import javax.swing.*;
-
-import bibliothek.gui.*;
-import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
-import bibliothek.gui.dock.*;
-import bibliothek.gui.dock.control.SingleParentRemover;
-import bibliothek.gui.dock.station.stack.StackDockProperty;
-import bibliothek.gui.dock.layout.DockableProperty;
-import bibliothek.gui.dock.themes.ThemeFactory;
 
 
 public class Main {
@@ -56,6 +28,70 @@ public class Main {
     static Layout Layout;
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+
+/*
+        Table Table1 = new Table("table1");
+        KeyField Table1Key1 = new KeyField("key1","integer");
+        Table1.Keys.add(Table1Key1);
+        PropertyField Table1Prop1 = new PropertyField("prop1","integer");
+        Table1.Properties.add(Table1Prop1);
+        PropertyField Table1Prop2 = new PropertyField("prop2","integer");
+        Table1.Properties.add(Table1Prop2);
+        PropertyField Table1Prop3 = new PropertyField("prop3","integer");
+        Table1.Properties.add(Table1Prop3);
+
+        Table Table2 = new Table("table2");
+        KeyField Table2Key1 = new KeyField("key1","integer");
+        Table2.Keys.add(Table2Key1);
+        PropertyField Table2Prop1 = new PropertyField("prop1","integer");
+        Table2.Properties.add(Table2Prop1);
+        PropertyField Table2Prop2 = new PropertyField("prop2","integer");
+        Table2.Properties.add(Table2Prop2);
+
+        UnionQuery<KeyField,PropertyField> Union = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
+
+        JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);
+
+        Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query);
+        Query.Wheres.add(new JoinWhere(TableJoin));
+
+        Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2);
+        Table2Join.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
+//        Table2Join.Joins.put(Table2Key1,Query.MapKeys.get(Table1Key1));
+        Query.Properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Table2Join,Table2Prop1,true));
+
+        Join<KeyField,PropertyField> Table2Join2 = new Join<KeyField,PropertyField>(Table2);
+        Table2Join2.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
+        Query.Properties.put(Table1Prop2,new JoinExpr<KeyField,PropertyField>(Table2Join2,Table2Prop2,true));
+
+        FormulaSourceExpr Formula = new FormulaSourceExpr("prm1=3");
+        Formula.Params.put("prm1",new JoinExpr<KeyField,PropertyField>(Table2Join2,Table2Prop2,true));
+        Query.Properties.put(Table1Prop3,new FormulaWhereSourceExpr(Formula,true));
+
+        JoinQuery<KeyField,PropertyField> Query2 = Union.newJoinQuery(1);
+        Join<KeyField,PropertyField> Q2TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query2);
+        Query2.Wheres.add(new JoinWhere(Q2TableJoin));
+
+        Query2.Properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Q2TableJoin,Table1Prop1,false));
+
+ //       List<String> GroupKeys = new ArrayList();
+//        GroupKeys.add("value");
+//        GroupQuery<String,String,String> GroupQuery = new GroupQuery<String,String,String>(GroupKeys,Union,"value2",0);
+ */
+        // сначала закинем KeyField'ы и прогоним Select
+/*        Map<KeyField,String> KeyNames = new HashMap();
+        Map<String,String> PropertyNames = new HashMap();
+        Query.fillSelectNames(KeyNames,PropertyNames);
+        System.out.println(Union.getSelect(KeyNames,PropertyNames));*/
+
+//        System.out.println((new ModifyQuery(Table1,Query)).getInsertLeftKeys());
+
+/*        Map<String,String> KeyNames = new HashMap();
+        Map<String,String> PropertyNames = new HashMap();
+        GroupQuery.fillSelectNames(KeyNames,PropertyNames);
+        System.out.println(GroupQuery.getSelect(KeyNames,PropertyNames));
+*/
+//        if(1==1) return;
 
         try {
             UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
@@ -71,7 +107,7 @@ public class Main {
 
         try {
 
-            DataAdapter Adapter = new DataAdapter("");
+            DataAdapter Adapter = DataAdapter.getDefault();
 
             TestBusinessLogics BL = new TestBusinessLogics();
             BL.FillDB(Adapter);
@@ -220,6 +256,13 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         Apply(ad,Session);
 
+/*        PrihArtStore.Property.Out(ad);
+        RashArtStore.Property.Out(ad);
+        OstArtStore.Property.Out(ad);
+        OstArt.Property.Out(ad);
+
+        throw new RuntimeException();
+  */
     }
     
     PropertyObjectImplement AddPropView(RemoteForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
@@ -259,7 +302,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
             DocDate,GrAddV,ArtAddV,BarCode,ExpireDate,Weight;
     LRP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
-    LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt;
+    LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore;
 
     void InitProperties() {
         
@@ -352,10 +395,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
         G2P.Property.OutName = "скл-гр. тов";
 
-        LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
+        PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
         PrihArtStore.Property.OutName = "приход по складу";
 
-        LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
+        RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
         RashArtStore.Property.OutName = "расход по складу";
 
         OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
@@ -371,7 +414,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         MaxOpStore.Property.OutName = "макс. операция";
         
         SumMaxArt = AddGProp(MaxOpStore,true,2);
-        SumMaxArt.Property.OutName = "сумма макс. операция";
+        SumMaxArt.Property.OutName = "макс. операция (сумма)";
     }
 
     void InitConstraints() {
@@ -379,6 +422,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Constraints.put((ObjectProperty)OstArtStore.Property,new PositiveConstraint());
         Constraints.put((ObjectProperty)FilledProperty.Property,new NotEmptyConstraint());
         Constraints.put((ObjectProperty)BarCode.Property,new UniqueConstraint());
+
     }
 
     void InitPersistents() {
@@ -490,7 +534,7 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
 
 //        AddFilter(new NotNullFilter(QImpl));
-        addFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
+//        addFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
         
 //        fbv.AddObjectSeek(obj3,13);
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
@@ -531,7 +575,7 @@ class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
 
         gv.add(obj1);
         AddGroup(gv);
-        gv.GID = 1;
+        gv.GID = 4;
 
         BL.FillSingleViews(obj1,this,null);
     }
