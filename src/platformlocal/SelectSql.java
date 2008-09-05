@@ -1189,13 +1189,13 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             }
         }
 
+        if(Operands.size()<=1)
+            return Result;
+        else
         if((Safe || Syntax.isNullSafe()) && Operator==2)
             return "COALESCE(" + Result + ")";    
         else
-        if(Operands.size()>1)
             return "("+Result+")";
-        else
-            return Result;
     }
 
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {

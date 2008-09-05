@@ -39,7 +39,7 @@ interface SQLSyntax {
 abstract class DataAdapter implements SQLSyntax {
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new PostgreDataAdapter();
+        return new MSSQLDataAdapter();
     }
 
     public String getNullValue(String DBType) {
@@ -186,7 +186,7 @@ class MySQLDataAdapter extends DataAdapter {
         }
 
         Execute("CREATE DATABASE testplat");
-        Execute("USE TestPlat");
+        Execute("USE testplat");
     }
 
     public String startTransaction() {
