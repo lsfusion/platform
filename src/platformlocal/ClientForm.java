@@ -338,9 +338,7 @@ public class ClientForm extends Container {
         try {
             Report = JasperCompileManager.compileReport(Design);
             JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),remoteForm.ReadData());
-
-            JRViewer Viewer = new JRViewer(Print);
-            Main.Layout.DefaultStation.drop(new DefaultDockable(Viewer,"Report"));
+            Main.Layout.DefaultStation.drop(new ReportDockable(Print));
 /*            JFrame DrawPrint = new JFrame("Report");
             DrawPrint.getContentPane().add(Viewer);
             DrawPrint.setSize(800,600);
@@ -368,8 +366,8 @@ public class ClientForm extends Container {
 
             try {
                 String message = remoteForm.SaveChanges();
-                if ("pass".equals(message)) {
-                    Log.printSuccessMessage(message);
+                if (message==null) {
+                    Log.printSuccessMessage("Изменения были удачно записаны...");
                     dataReset();
                 }
                 else {

@@ -6,16 +6,7 @@
 package platformlocal;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 class ObjectValue {
     Integer idObject;
@@ -37,7 +28,7 @@ class PropertyImplement<P extends Property,T> {
 
 interface PropertyInterfaceImplement {
 
-    public SourceExpr MapJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement, boolean Left,ChangesSession Session,int Value);
+    public SourceExpr mapSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull,ChangesSession Session,int Value);
     public Class MapGetValueClass(InterfaceClass ClassImplement);
     public InterfaceClassSet MapGetClassSet(Class ReqValue);
 
@@ -52,7 +43,7 @@ interface PropertyInterfaceImplement {
 class PropertyInterface implements PropertyInterfaceImplement {
     //можно использовать JoinExps потому как все равну вернуться она не может потому как иначе она зациклится
     
-    public SourceExpr MapJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left,ChangesSession Session,int Value) {
+    public SourceExpr mapSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull,ChangesSession Session,int Value) {
         return JoinImplement.get(this);
     }
     
@@ -82,73 +73,35 @@ class PropertyInterface implements PropertyInterfaceImplement {
 }
 
 
-// само св-во также является имплементацией св-ва
-class JoinList extends ArrayList<From> {
-    JoinList() {
-        CacheTables = new HashMap();
-    }
-
-    Map<Table,Map<Map<KeyField,SourceExpr>,FromTable>> CacheTables;
-
-    // приходится перегружать hash'и а то ведет себя неадекватно
-    @Override
-    public boolean equals(Object o) {
-        return this==o;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        return hash;
-    }
-
-    Map<Map<KeyField,SourceExpr>,FromTable> GetCacheMaps(Table SourceTable) {
-        // поищем что такая таблица уже есть в запросе причем с такими же полями и такими же Join'ами
-        Map<Map<KeyField,SourceExpr>,FromTable> CacheTable = CacheTables.get(SourceTable);
-        if(CacheTable==null) {
-            CacheTable = new HashMap();
-            CacheTables.put(SourceTable,CacheTable);
-        }
-        
-        return CacheTable;
-    }
-}
 abstract class Property<T extends PropertyInterface> {
 
     int ID=0;
     
-    Property() {
-        Interfaces = new ArrayList<T>();
-        SelectCacheJoins = new HashMap<JoinList,Map<Map<PropertyInterface,SourceExpr>,SourceExpr>>();
-    }
-    
     // чтобы подчеркнуть что не направленный
-    Collection<T> Interfaces;
+    Collection<T> Interfaces = new ArrayList();
     // кэшируем здесь а не в JoinList потому как быстрее
     // работает только для JOIN смотри ChangedJoinSelect
-    Map<JoinList,Map<Map<PropertyInterface,SourceExpr>,SourceExpr>> SelectCacheJoins;
+    Map<Map<PropertyInterface,SourceExpr>,SourceExpr> SelectCacheJoins = new HashMap();
     
-    // закэшируем чтобы тучу таблиц не создавать и быстрее работать
-    public SourceExpr JoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
+    // закэшируем чтобы быстрее работать
+    // здесь как и в произвольных Left значит что могут быть null, не Left соответственно только не null
+    // (пока в нашем случае просто можно убирать записи где точно null)
+    public SourceExpr getSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
 
-        Map<Map<PropertyInterface,SourceExpr>,SourceExpr> CacheJoins = SelectCacheJoins.get(Joins);
-        if(CacheJoins==null) {
-            CacheJoins = new HashMap<Map<PropertyInterface,SourceExpr>,SourceExpr>();
-            SelectCacheJoins.put(Joins,CacheJoins);
-        }
-        
+        SourceExpr CacheJoins = SelectCacheJoins.get(JoinImplement);
+
         // не будем проверять что все интерфейсы реализованы все равно null в map не попадет
-        SourceExpr JoinExpr = CacheJoins.get(JoinImplement);
+        SourceExpr JoinExpr = SelectCacheJoins.get(JoinImplement);
         if(JoinExpr==null) {
-            JoinExpr = ProceedJoinSelect(Joins,JoinImplement,Left);
-            CacheJoins.put(JoinImplement,JoinExpr);
+            JoinExpr = proceedSourceExpr(JoinImplement,NotNull);
+            SelectCacheJoins.put(JoinImplement,JoinExpr);
         }
 
         return JoinExpr;
     }
 
-    abstract SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left);
-    
+    abstract SourceExpr proceedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull);
+
     // возвращает класс значения
     // если null то не подходит по интерфейсу
     abstract public Class GetValueClass(InterfaceClass ClassImplement);
@@ -167,23 +120,15 @@ abstract class Property<T extends PropertyInterface> {
     // заполняет список, возвращает есть ли изменения
     abstract boolean FillChangedList(List<ObjectProperty> ChangedProperties,ChangesSession Session);
     
-    SelectQuery GetOutSelect(DataAdapter Adapter) {
-        JoinList Joins = new JoinList();
-        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-        SourceExpr ValueExpr = JoinSelect(Joins,JoinImplement,false);
-                
-        ListIterator<From> i = Joins.listIterator();
-        SelectQuery Select = new SelectQuery(i.next());
-        while(i.hasNext()) Select.From.Joins.add(i.next());
-        int KeyNum = 0;
-        for(T Interface : Interfaces) Select.Expressions.put("key"+(KeyNum++),JoinImplement.get(Interface));
-        Select.Expressions.put("value",ValueExpr);
-        
-        return Select;
+    JoinQuery<PropertyInterface,String> getOutSelect(DataAdapter Adapter,String Value) {
+        JoinQuery<PropertyInterface,String> Query = new JoinQuery(Interfaces);
+        Query.Properties.put(Value,getSourceExpr(Query.MapKeys,true));
+        return Query;
     }
     
     void Out(DataAdapter Adapter) throws SQLException {
-        Adapter.OutSelect(GetOutSelect(Adapter));
+        System.out.println(OutName);
+        getOutSelect(Adapter,"value").outSelect(Adapter);
     }
 }
 
@@ -234,176 +179,86 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         for(T Interface : Interfaces)
             ChangeTableMap.put(Interface,io.next());
     }
-    
-    // получает таблицу и вычищает все из сессии
-    void StartChangeTable(DataAdapter Adapter,ChangesSession Session) throws SQLException {
-        Adapter.DeleteRecords(GetChangedFrom(Session));
-    }
-    
-    // получает UnionQuery с проставленными ключами
-    UnionQuery GetChangeUnion(ChangesSession Session,int Operator) {
-        // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = new UnionQuery(Operator);
-        for(T Interface : Interfaces)
-            ResultQuery.Keys.add(ChangeTableMap.get(Interface).Name);
-        ResultQuery.Values.add(ChangeTable.Value.Name);
-        ResultQuery.ValueKeys.put(ChangeTable.Session.Name,Session.ID);
-        ResultQuery.ValueKeys.put(ChangeTable.Property.Name,ID);
 
-        return ResultQuery;
+    // вычищает все из сессии
+    void StartChangeTable(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+
+        Map<KeyField,Integer> ValueKeys = new HashMap();
+        ValueKeys.put(ChangeTable.Session,Session.ID);
+        ValueKeys.put(ChangeTable.Property,ID);
+        Adapter.deleteKeyRecords(ChangeTable,ValueKeys);
     }
     
+    // подготавливает Join примененных изменений
+    Join<KeyField,PropertyField> getChangedValueJoin(Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session) {
+
+        Join<KeyField,PropertyField> From = new Join<KeyField,PropertyField>(ChangeTable);
+        From.Joins.put(ChangeTable.Session,new ValueSourceExpr(Session.ID));
+        From.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
+        for(T Interface : Interfaces)
+            From.Joins.put(ChangeTableMap.get(Interface),JoinImplement.get(Interface));
+
+        return From;
+    }
+
+    // подготавливает JoinExpr
+    SourceExpr getChangedValueExpr(Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session,PropertyField Value) {
+
+        return new JoinExpr<KeyField,PropertyField>(getChangedValueJoin(JoinImplement,Session),Value,true);
+    }
+
     // связывает именно измененные записи из сессии
     // Value - что получать, 0 - новые значения, 1 - +(увеличение), 2 - старые значения
-    SourceExpr ChangedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session,int Value,boolean Left) {
-        Map<KeyField,SourceExpr> MapJoins = new HashMap();
-        for(T Interface : Interfaces)
-            MapJoins.put(ChangeTableMap.get(Interface),JoinImplement.get(Interface));
-        MapJoins.put(ChangeTable.Session,new ValueSourceExpr(Session.ID));
-        MapJoins.put(ChangeTable.Property,new ValueSourceExpr(ID));
-        
-        Map<Map<KeyField,SourceExpr>,FromTable> CacheTable = Joins.GetCacheMaps(ChangeTable);
-        FromTable SelectChanges = CacheTable.get(MapJoins);
-        if(SelectChanges==null) {
-            SelectChanges = GetChangedFrom(Session);
+    SourceExpr getChangedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session,int Value) {
 
-            for(T Interface : Interfaces) {
-                KeyField JoinField = ChangeTableMap.get(Interface);
-
-                // сюда мы маппимся 
-                SourceExpr JoinExpr = JoinImplement.get(Interface);
-                if(JoinExpr==null) {
-                    JoinExpr = new FieldSourceExpr(SelectChanges,JoinField.Name);
-                    JoinImplement.put(Interface,JoinExpr);
-                    MapJoins.put(JoinField,JoinExpr);
-                } else 
-                    SelectChanges.Wheres.add(new FieldWhere(JoinExpr,JoinField.Name));
-            }
-            
-            CacheTable.put(MapJoins,SelectChanges);
-            Joins.add(SelectChanges);
-            
-            if(Left) SelectChanges.JoinType = "LEFT";
-        } 
-
-        if(!Left) SelectChanges.JoinType = "";
-        
-        FieldSourceExpr NewValue = new FieldSourceExpr(SelectChanges,ChangeTable.Value.Name);
-        FieldSourceExpr PrevValue = new FieldSourceExpr(SelectChanges,ChangeTable.PrevValue.Name);
         int ChangedType = GetChangeType(Session);
         // теперь определимся что возвращать
-        if(Value==2 && ChangedType==2) {
-            return PrevValue;
-        }
+        if(Value==2 && ChangedType==2)
+            return getChangedValueExpr(JoinImplement,Session,ChangeTable.PrevValue);
 
         if(Value==ChangedType || (Value==0 && ChangedType==2))
-            return NewValue;
+            return getChangedValueExpr(JoinImplement,Session,ChangeTable.Value);
 
         if(Value==1 && ChangedType==2) {
-            ListSourceExpr Result = new ListSourceExpr(1);
-            Result.AddOperand(NewValue,1);
-            Result.AddOperand(PrevValue,-1);
+            UnionSourceExpr Result = new UnionSourceExpr(1);
+            Result.Operands.put(getChangedValueExpr(JoinImplement,Session,ChangeTable.Value),1);
+            Result.Operands.put(getChangedValueExpr(JoinImplement,Session,ChangeTable.PrevValue),-1);
             return Result;
         }
 
-        Integer A = null;
-        A.equals(1);
-
-        return null;
+        throw new RuntimeException();
     }
 
     // записывается в запрос с map'ом
-    SourceExpr UpdatedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left,ChangesSession Session) {
+    SourceExpr getUpdatedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,ChangesSession Session,boolean NotNull) {
 
         if(Session!=null && HasChanges(Session)) {
-            // если нужно не Left Join, Full Join'им старое с новым
-            if(!Left) {
-                // заполним названия полей в которые будем Select'ать
-                String Value = "joinvalue";
-                Map<PropertyInterface,String> MapFields = new HashMap();
-            
-                FromQuery FromResultQuery = new FromQuery(UpdateUnionQuery(Session,Value,MapFields));
-            
-                // надо за Join'ить
-                for(PropertyInterface Interface : Interfaces) {
-                    SourceExpr JoinExpr = JoinImplement.get(Interface);
-                    String ResultField = MapFields.get(Interface);
-                    if(JoinExpr==null)
-                        JoinImplement.put(Interface,new FieldSourceExpr(FromResultQuery,ResultField));
-                    else
-                        FromResultQuery.Wheres.add(new FieldWhere(JoinExpr,ResultField));
-                }
+            String Value = "joinvalue";
 
-                Joins.add(FromResultQuery);
-            
-                return new FieldSourceExpr(FromResultQuery,Value);
-            } else {
-                SourceExpr Result = JoinSelect(Joins,JoinImplement,true);
-                // если св-во изменилось закинем сюда 
-                SourceExpr NewResult = ChangedJoinSelect(Joins,JoinImplement,Session,0,true);
-                // пока так по идиотски
-                Collection<SourceExpr> KeyExpr = new ArrayList();
-                KeyExpr.add(new FieldSourceExpr(Joins.get(Joins.size()-1),ChangeTable.Objects.iterator().next().Name));
-                Result = new NullValueSourceExpr(KeyExpr,Result,NewResult);
+            UnionQuery<PropertyInterface,String> UnionQuery = new UnionQuery<PropertyInterface,String>((Collection<PropertyInterface>)Interfaces,3);
 
-                return Result;
-            }
+            JoinQuery<PropertyInterface,String> SourceQuery = UnionQuery.newJoinQuery(1);
+            SourceQuery.Properties.put(Value,getSourceExpr(SourceQuery.MapKeys,true));
+
+            JoinQuery<PropertyInterface,String> NewQuery = UnionQuery.newJoinQuery(1);
+            NewQuery.Properties.put(Value,getChangedSourceExpr(NewQuery.MapKeys,Session,0));
+
+            return new JoinExpr<PropertyInterface,String>(new Join<PropertyInterface,String>(UnionQuery,JoinImplement),Value,NotNull);
         } else
-            return JoinSelect(Joins,JoinImplement,Left);
+            return getSourceExpr(JoinImplement,NotNull);
     }
     
-    // делает UnionQuery с новыми значениеми (возвр.) Map сгенеренных ключей
-    UnionQuery UpdateUnionQuery(ChangesSession Session,String Value,Map<PropertyInterface,String> MapFields) {
-
-        Integer KeyNum = 1;
-        UnionQuery ResultQuery = new UnionQuery(3);
-        for(PropertyInterface Interface : Interfaces) {
-            String KeyField = "key"+(KeyNum++);
-            MapFields.put(Interface,KeyField);
-            ResultQuery.Keys.add(KeyField);
-        }
-        ResultQuery.Values.add(Value);
-
-        SelectQuery SubQuery = new SelectQuery(null);
-        JoinList SubList = new JoinList();
-        Map<PropertyInterface,SourceExpr> SubImplement = new HashMap();
-        SubQuery.Expressions.put(Value,JoinSelect(SubList,SubImplement,false));
-
-        Iterator<From> is = SubList.iterator();
-        SubQuery.From = is.next();
-        while(is.hasNext())
-            SubQuery.From.Joins.add(is.next());
-        for(PropertyInterface Interface : Interfaces)
-            SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
-        ResultQuery.Unions.add(SubQuery);
-
-        SubQuery = new SelectQuery(null);
-        SubList = new JoinList();
-        SubImplement = new HashMap();
-        SubQuery.Expressions.put(Value,ChangedJoinSelect(SubList,SubImplement,Session,0,false));
-        is = SubList.iterator();
-        SubQuery.From = is.next();
-        while(is.hasNext())
-            SubQuery.From.Joins.add(is.next());
-        for(PropertyInterface Interface : Interfaces)
-            SubQuery.Expressions.put(MapFields.get(Interface),SubImplement.get(Interface));
-        ResultQuery.Unions.add(SubQuery);
-
-        return ResultQuery;
-    }
-
     void OutChangesTable(DataAdapter Adapter, ChangesSession Session) throws SQLException {
-        SelectQuery SelectChanges = new SelectQuery(GetChangedFrom(Session));
-        
-        for(T Interface : Interfaces) {
-            String Field = ChangeTableMap.get(Interface).Name;
-            SelectChanges.Expressions.put(Field,new FieldSourceExpr(SelectChanges.From,Field));
-        }
-        
-        SelectChanges.Expressions.put(ChangeTable.Value.Name,new FieldSourceExpr(SelectChanges.From,ChangeTable.Value.Name));
-        SelectChanges.Expressions.put(ChangeTable.PrevValue.Name,new FieldSourceExpr(SelectChanges.From,ChangeTable.PrevValue.Name));
-        
-        Adapter.OutSelect(SelectChanges);
+        JoinQuery<PropertyInterface,PropertyField> Query = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
+
+        Join<KeyField,PropertyField> ChangeJoin = new MapJoin<KeyField,PropertyField,PropertyInterface>(ChangeTable,Query,ChangeTableMap);
+        ChangeJoin.Joins.put(ChangeTable.Session,new ValueSourceExpr(Session.ID));
+        ChangeJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
+
+        Query.Properties.put(ChangeTable.Value,new JoinExpr<KeyField,PropertyField>(ChangeJoin,ChangeTable.Value,true));
+        Query.Properties.put(ChangeTable.PrevValue,new JoinExpr<KeyField,PropertyField>(ChangeJoin,ChangeTable.PrevValue,true));
+
+        Query.outSelect(Adapter);
     }
 
     // сохраняет изменения в таблицу
@@ -411,62 +266,24 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
 
         // если не изменились ничего не делаем
         if(!HasChanges(Session)) return;
-        
+
         Map<KeyField,T> MapKeys = new HashMap();
         Table SourceTable = GetTable(MapKeys);
 
-        // сначала вкидываем Insert того чего нету в Source             
-        SelectQuery Insert = new SelectQuery(GetChangedFrom(Session));
+        JoinQuery<KeyField,PropertyField> ModifyQuery = new JoinQuery<KeyField,PropertyField>(SourceTable.Keys);
 
-        FromTable SelectSource = new FromTable(SourceTable.Name);
-        Insert.From.Joins.add(SelectSource);
-        SelectSource.JoinType = "LEFT";
+        Join<KeyField,PropertyField> Update = new Join<KeyField,PropertyField>(ChangeTable);
+        for(KeyField Key : SourceTable.Keys)
+            Update.Joins.put(ChangeTableMap.get(MapKeys.get(Key)),ModifyQuery.MapKeys.get(Key));
+        Update.Joins.put(ChangeTable.Session,new ValueSourceExpr(Session.ID));
+        Update.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
 
-        Iterator<KeyField> ifs = MapKeys.keySet().iterator();
-        KeyField Key = null;
-        while(ifs.hasNext()) {
-            Key = ifs.next();
-            String ChangeKey = ChangeTableMap.get(MapKeys.get(Key)).Name;
-            FieldSourceExpr FieldExpr = new FieldSourceExpr(Insert.From,ChangeKey);
-            SelectSource.Wheres.add(new FieldWhere(FieldExpr,Key.Name));
-            
-            Insert.Expressions.put(Key.Name,FieldExpr);
-        }
-        
-        // сначала сделаем Insert, на RIGHT JOIN, IS NULL
-        Insert.From.Wheres.add(new SourceIsNullWhere(new FieldSourceExpr(SelectSource,Key.Name),false));
-//        try {
-        Adapter.InsertSelect(SourceTable,Insert);
-//        } catch(Exception e) {
-//            Adapter.InsertSelect(SourceTable,Insert);
-//        }
-        
-        // затем Update на inner join
-        SelectQuery Update = new SelectQuery(new FromTable(SourceTable.Name));
-
-        FromTable SelectChanges = GetChangedFrom(Session);
-        Update.From.Joins.add(SelectChanges);
-
-        ifs = MapKeys.keySet().iterator();
-        while(ifs.hasNext()) {
-            Key = ifs.next();
-            SelectChanges.Wheres.add(new FieldWhere(new FieldSourceExpr(Update.From,Key.Name),ChangeTableMap.get(MapKeys.get(Key)).Name));
-        }
-        
-        SourceExpr ChangeExpr = new FieldSourceExpr(SelectChanges,ChangeTable.Value.Name);
-/*        if(ChangeType==1) { // +
-            FormulaSourceExpr SumExpr = new FormulaSourceExpr("prm1+ISNULL(prm2,0)");
-            SumExpr.Params.put("prm1",ChangeExpr);
-            SumExpr.Params.put("prm2",new FieldSourceExpr(Update.From,Field.Name));
-            ChangeExpr = SumExpr;
-        }*/
-        
-        Update.Expressions.put(Field.Name,ChangeExpr);
-        Adapter.UpdateRecords(Update);
+        ModifyQuery.Properties.put(Field,new JoinExpr<KeyField,PropertyField>(Update,ChangeTable.Value,true));
+        Adapter.ModifyRecords(new ModifyQuery(SourceTable,ModifyQuery));
     }
 
     
-    Field Field;
+    PropertyField Field;
     abstract Table GetTable(Map<KeyField,T> MapJoins);
     
     boolean IsPersistent() {
@@ -474,78 +291,23 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     }
             
     // при текущей реализации проше предполагать что не имплементнутые Interface имеют null Select !!!!!
-    SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
-        if(IsPersistent()) { 
+    SourceExpr proceedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
+        if(IsPersistent()) {
+            // если persistent читаем из таблицы
             Map<KeyField,T> MapJoins = new HashMap();
             Table SourceTable = GetTable(MapJoins);
 
             // прогоним проверим все ли Implement'ировано
-            Map<KeyField,SourceExpr> MapFields = new HashMap<KeyField,SourceExpr>();
-            for(KeyField TableField : SourceTable.KeyFields)
-                MapFields.put(TableField,JoinImplement.get(MapJoins.get(TableField)));
+            Join<KeyField,PropertyField> SourceJoin = new Join<KeyField,PropertyField>(SourceTable);
+            for(KeyField Key : SourceTable.Keys)
+                SourceJoin.Joins.put(Key,JoinImplement.get(MapJoins.get(Key)));
 
-            // поищем что такая таблица уже есть в запросе причем с такими же полями и такими же Join'ами
-            Map<Map<KeyField,SourceExpr>,FromTable> CacheTable = Joins.GetCacheMaps(SourceTable);
-            FromTable JoinTable = CacheTable.get(MapFields);
-            if (JoinTable==null) {
-                JoinTable = new FromTable(SourceTable.Name);
-                for(KeyField TableField : SourceTable.KeyFields) {
-                    PropertyInterface Interface = MapJoins.get(TableField);
-                    SourceExpr JoinExpr = JoinImplement.get(Interface);
-                    if(JoinExpr==null) {
-                        JoinExpr = new FieldSourceExpr(JoinTable,TableField.Name);
-                        JoinImplement.put(Interface,JoinExpr);
-                        MapFields.put(TableField,JoinExpr);
-                    } else 
-                        JoinTable.Wheres.add(new FieldWhere(JoinExpr,TableField.Name));
-                }
-
-                CacheTable.put(MapFields, JoinTable);
-                Joins.add(JoinTable);
-                
-                if(Left) JoinTable.JoinType = "LEFT";
-            } 
-
-            if(!Left) JoinTable.JoinType = "";
-
-            return new FieldSourceExpr(JoinTable,Field.Name);
+            return new JoinExpr<KeyField,PropertyField>(SourceJoin,Field,NotNull);
         } else {
-            return ((AggregateProperty)this).CalculateJoinSelect(Joins,JoinImplement,Left);
+            return ((AggregateProperty)this).calculateSourceExpr(JoinImplement,NotNull);
         }
     }
 
-    // строит Left Join к Change запросу старых значе
-    SelectQuery LeftJoinChangedQuery(From From) {
-        
-        // нужно LEFT JOIN'ить старые
-        SelectQuery NewQuery = new SelectQuery(From);
-                
-        // заполняем ключи\JoinImplement'ы
-        JoinList Joins = new JoinList();
-        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-        for(T Interface : Interfaces) {
-            String KeyField = ChangeTableMap.get(Interface).Name;
-            SourceExpr KeyExpr = new FieldSourceExpr(NewQuery.From,KeyField);
-            JoinImplement.put(Interface,KeyExpr);
-            NewQuery.Expressions.put(KeyField,KeyExpr);
-        }
-                
-        SourceExpr PrevValue = JoinSelect(Joins,JoinImplement,true);
-        for(From Join : Joins) NewQuery.From.Joins.add(Join);
-        
-        NewQuery.Expressions.put(ChangeTable.PrevValue.Name,PrevValue);
-
-        return NewQuery;
-    }
-    
-    FromTable GetChangedFrom(ChangesSession Session) {
-        FromTable ChangedFrom = new FromTable(ChangeTable.Name);
-        ChangedFrom.Wheres.add(new FieldValueWhere(Session.ID,ChangeTable.Session.Name));
-        ChangedFrom.Wheres.add(new FieldValueWhere(ID,ChangeTable.Property.Name));
-
-        return ChangedFrom;
-    }
-    
     // базовый метод - ничего не делать, его перегружают только Override и Data
     void ChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {}
     
@@ -555,51 +317,82 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     // заполняет инкрементные изменения
     void IncrementChanges(DataAdapter Adapter, ChangesSession Session) throws SQLException {
 
+        // удалим старые данные
         StartChangeTable(Adapter,Session);
-        
-        Query ResultQuery = QueryIncrementChanged(Session);
 
-        // если вернул 2 запишем
-        if(QueryIncrementType==2) SessionChanged.put(Session,2);
-                
-        int ChangeType = GetChangeType(Session);
+        Query<PropertyInterface,PropertyField> ResultQuery = QueryIncrementChanged(Session);
+
         // проверим что вернули что вернули то что надо, "подчищаем" если не то
-        if(QueryIncrementType != ChangeType) {
-            // нужно LEFT JOIN'ить старые
-            SelectQuery NewQuery = LeftJoinChangedQuery(new FromQuery(ResultQuery));
-                
-            SourceExpr NewValue = new FieldSourceExpr(NewQuery.From,ChangeTable.Value.Name);
-            if(QueryIncrementType==1) {
-                ListSourceExpr SumExpr = new ListSourceExpr(1);
-                SumExpr.AddOperand(NewValue,1);
-                SumExpr.AddOperand(NewQuery.Expressions.get(ChangeTable.PrevValue.Name),1);
-                NewValue = SumExpr;
-            }
-
-            NewQuery.Expressions.put(ChangeTable.Value.Name,NewValue);
-
-            ResultQuery = NewQuery;
-
-            // так как все равно считать старые, запишем 2-ку в изменения
+        int ChangeType = GetChangeType(Session);
+        // если вернул 2 запишем
+        if(QueryIncrementType==2 || (QueryIncrementType!=ChangeType)) {
+            ChangeType = 2;
             SessionChanged.put(Session,2);
         }
-        
-        ResultQuery.ValueKeys.put(ChangeTable.Session.Name,Session.ID);
-        ResultQuery.ValueKeys.put(ChangeTable.Property.Name,ID);
-
-        if(TableFactory.Crash) {
-           System.out.println(OutName);
-           Adapter.OutSelect(ResultQuery);
+                
+        if(QueryIncrementType != ChangeType) {
+            JoinQuery<PropertyInterface,PropertyField> NewQuery = new JoinQuery<PropertyInterface,PropertyField>((Collection<PropertyInterface>) Interfaces);
+            SourceExpr NewExpr = new JoinExpr<PropertyInterface,PropertyField>(new UniJoin<PropertyInterface,PropertyField>(ResultQuery,NewQuery),ChangeTable.Value,true);
+            // нужно LEFT JOIN'ить старые
+            SourceExpr PrevExpr = getSourceExpr(NewQuery.MapKeys,false);
+            // по любому 2 нету надо докинуть
+            NewQuery.Properties.put(ChangeTable.PrevValue,PrevExpr);
+            if(QueryIncrementType==1) {
+                // есть 1, а надо по сути 0
+                UnionSourceExpr SumExpr = new UnionSourceExpr(1);
+                SumExpr.Operands.put(NewExpr,1);
+                SumExpr.Operands.put(PrevExpr,1);
+                NewExpr = SumExpr;
+            }
+            NewQuery.Properties.put(ChangeTable.Value,NewExpr);
+            ResultQuery = NewQuery;
         }
-        
-        Adapter.InsertSelect(ChangeTable,ResultQuery);
+
+        if("приход по складу".equals(OutName))
+            OutName = OutName;
+        System.out.println(OutName);
+        ResultQuery.outSelect(Adapter);
+        Adapter.InsertSelect(modifyIncrementChanges(Session,ResultQuery,ChangeType));
+    }
+
+    // вынесем в отдельный метод потому как используется в 2 местах
+    ModifyQuery modifyIncrementChanges(ChangesSession Session,Source<PropertyInterface,PropertyField> Query,int ChangeType) {
+
+        JoinQuery<KeyField,PropertyField> WriteQuery = new JoinQuery<KeyField,PropertyField>(ChangeTable.Keys);
+        Join<PropertyInterface,PropertyField> ResultJoin = new MapJoin<PropertyInterface,PropertyField,KeyField>(Query,ChangeTableMap,WriteQuery);
+        WriteQuery.Properties.put(ChangeTable.Value,new JoinExpr<PropertyInterface,PropertyField>(ResultJoin,ChangeTable.Value,true));
+        if(ChangeType>=2)
+            WriteQuery.Properties.put(ChangeTable.PrevValue,new JoinExpr<PropertyInterface,PropertyField>(ResultJoin,ChangeTable.PrevValue,true));
+        if(ChangeType>=3)
+            WriteQuery.Properties.put(ChangeTable.SysValue,new JoinExpr<PropertyInterface,PropertyField>(ResultJoin,ChangeTable.SysValue,true));
+
+        Map<KeyField,Integer> ValueKeys = new HashMap();
+        ValueKeys.put(ChangeTable.Session,Session.ID);
+        ValueKeys.put(ChangeTable.Property,ID);
+        WriteQuery.putDumbJoin(ValueKeys);
+
+        return new ModifyQuery(ChangeTable,WriteQuery);
     }
 
     // для возврата чтобы не плодить классы
     int QueryIncrementType;
     // получает запрос для инкрементных изменений
-    abstract Query QueryIncrementChanged(ChangesSession Session);
+    abstract Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session);
 
+    // присоединяют объекты
+    void joinChangeClass(ChangeClassTable Table,JoinQuery<PropertyInterface,?> Query,ChangesSession Session,DataPropertyInterface Interface) {
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(Table.getClassJoin(Session,Interface.Class));
+        ClassJoin.Joins.put(Table.Object,Query.MapKeys.get(Interface));
+
+        Query.Wheres.add(new JoinWhere(ClassJoin));
+    }
+
+    void joinObjects(JoinQuery<PropertyInterface,?> Query,DataPropertyInterface Interface) {
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(TableFactory.ObjectTable.getClassJoin(Interface.Class));
+        ClassJoin.Joins.put(TableFactory.ObjectTable.Key,Query.MapKeys.get(Interface));
+
+        Query.Wheres.add(new JoinWhere(ClassJoin));
+    }
 }
     
 class DataPropertyInterface extends PropertyInterface {
@@ -655,7 +448,7 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
 
     // свойства для "ручных" изменений пользователем
     DataChangeTable DataTable;
-    Map<PropertyInterface,KeyField> DataTableMap = null;
+    Map<KeyField,PropertyInterface> DataTableMap = null;
 
     void FillDataTable() {
         DataTable = TableFactory.GetDataChangeTable(Interfaces.size(),GetDBType());
@@ -663,25 +456,16 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         DataTableMap = new HashMap();
         Iterator<KeyField> io = DataTable.Objects.iterator();
         for(DataPropertyInterface Interface : Interfaces)
-            DataTableMap.put(Interface,io.next());
+            DataTableMap.put(io.next(),Interface);
     }
     
-    FromTable GetDataChangedFrom(ChangesSession Session) {
-        FromTable ChangedFrom = new FromTable(DataTable.Name);
-        ChangedFrom.Wheres.add(new FieldValueWhere(Session.ID,DataTable.Session.Name));
-        ChangedFrom.Wheres.add(new FieldValueWhere(ID,DataTable.Property.Name));
-        
-        return ChangedFrom;
-    }
-
-
     @Override
     void ChangeProperty(DataAdapter Adapter,Map<PropertyInterface,ObjectValue> Keys,Object NewValue,ChangesSession Session) throws SQLException {
         // записываем в таблицу изменений
         Map<KeyField,Integer> InsertKeys = new HashMap();
-        for(DataPropertyInterface Interface : Interfaces)
-            InsertKeys.put(DataTableMap.get(Interface),Keys.get(Interface).idObject);
-        
+        for(KeyField Field : DataTableMap.keySet())
+            InsertKeys.put(Field,Keys.get(DataTableMap.get(Field)).idObject);
+
         InsertKeys.put(DataTable.Property,ID);
         InsertKeys.put(DataTable.Session,Session.ID);
         
@@ -691,7 +475,7 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         if(NewValue instanceof String && ((String)NewValue).equals("0"))
             NewValue = null;
 
-        Map<Field,Object> InsertValues = new HashMap();
+        Map<PropertyField,Object> InsertValues = new HashMap();
         InsertValues.put(DataTable.Value,NewValue);
 
         Adapter.UpdateInsertRecord(DataTable,InsertKeys,InsertValues);
@@ -747,135 +531,92 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
     }
 
     // заполним старыми значениями (LEFT JOIN'ом)
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
 
-        UnionQuery ResultQuery = GetChangeUnion(Session,3);
+        // на 3 то есть слева/направо
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,3);
 
         // Default изменения (пока Add)
         if(DefaultProperty!=null) {
-            // бежим по всем добавленным интерфейсам
             if(!OnDefaultChange) {
+                // бежим по всем добавленным интерфейсам
                 for(DataPropertyInterface Interface : Interfaces) 
                     if(Session.AddClasses.contains(Interface.Class)) {
-                        // вкидываем "новое" состояние DefaultProperty с Join'ое с AddClassTable
-                        // если DefaultProperty требует на входе такой добавляемый интерфейс то можно чисто новое брать
-                        SelectQuery Query = new SelectQuery(null);
-                        JoinList Joins = new JoinList();
-                        FromTable JoinTable = TableFactory.AddClassTable.ClassSelect(Session,Interface.Class);
-                        Joins.add(JoinTable);
-
+                        JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
                         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-                        JoinImplement.put(DefaultMap.get(Interface),new FieldSourceExpr(JoinTable,TableFactory.AddClassTable.Object.Name));
-                        SourceExpr ValueExpr = DefaultProperty.UpdatedJoinSelect(Joins,JoinImplement,false,Session);
-
                         // "перекодируем" в базовый интерфейс
                         for(DataPropertyInterface DataInterface : Interfaces)
-                            Query.Expressions.put(ChangeTableMap.get(DataInterface).Name,JoinImplement.get(DefaultMap.get(DataInterface)));
+                            JoinImplement.put(DefaultMap.get(DataInterface),Query.MapKeys.get(DataInterface));
 
-                        Iterator<From> i = Joins.iterator();
-                        Query.From = i.next();
-                        while(i.hasNext()) Query.From.Joins.add(i.next());
+                        // вкидываем "новое" состояние DefaultProperty с Join'ое с AddClassTable
+                        // если DefaultProperty требует на входе такой добавляемый интерфейс то можно чисто новое брать
+                        joinChangeClass(TableFactory.AddClassTable,Query,Session,Interface);
 
-                        Query.Expressions.put(ChangeTable.Value.Name,ValueExpr);
-                        ResultQuery.Unions.add(Query);
+                        Query.Properties.put(ChangeTable.Value,DefaultProperty.getUpdatedSourceExpr(JoinImplement,Session,true));
                     }
             } else {
                 if(DefaultProperty.HasChanges(Session)) {
-                    // по изменению св-ва
-                    SelectQuery Query = new SelectQuery(null);
-                    JoinList Joins = new JoinList();
+                    JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
                     Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-                
-                    SourceExpr NewExpr = DefaultProperty.ChangedJoinSelect(Joins,JoinImplement,Session,0,false);
-                    SourceExpr PrevExpr = DefaultProperty.ChangedJoinSelect(Joins,JoinImplement,Session,2,false);
-                
-                    Iterator<From> i = Joins.iterator();
-                    Query.From = i.next();
-                    while(i.hasNext()) Query.From.Joins.add(i.next());
-                
+                    // "перекодируем" в базовый интерфейс
                     for(DataPropertyInterface DataInterface : Interfaces)
-                       Query.Expressions.put(ChangeTableMap.get(DataInterface).Name,JoinImplement.get(DefaultMap.get(DataInterface)));
-                
-                    String BaseType = DefaultProperty.GetDBType();
-                    NewExpr = new NullEmptySourceExpr(NewExpr,BaseType);
-                    PrevExpr = new NullEmptySourceExpr(PrevExpr,BaseType);
+                        JoinImplement.put(DefaultMap.get(DataInterface),Query.MapKeys.get(DataInterface));
+
+                    // по изменению св-ва
+                    SourceExpr NewExpr = DefaultProperty.getChangedSourceExpr(JoinImplement,Session,0);
+                    SourceExpr PrevExpr = DefaultProperty.getChangedSourceExpr(JoinImplement,Session,2);
+
+                    Query.Properties.put(ChangeTable.Value,NewExpr);
+
+                    NewExpr = new NullEmptySourceExpr(NewExpr);
+                    PrevExpr = new NullEmptySourceExpr(PrevExpr);
                     
                     // new, не равно prev
-                    Query.From.Wheres.add(new FieldExprCompareWhere(NewExpr,PrevExpr,5));
-                    Query.Expressions.put(ChangeTable.Value.Name,NewExpr);
-                
-                    ResultQuery.Unions.add(Query);
+                    Query.Wheres.add(new FieldExprCompareWhere(NewExpr,PrevExpr,5));
                 }
             }
         }
-        
-        // пользовательские изменения
-        From DataFrom = GetDataChangedFrom(Session);
-        SelectQuery DataQuery = new SelectQuery(null);
-        JoinList DataJoins = new JoinList();
-        DataJoins.add(DataFrom);
-        Map<PropertyInterface,SourceExpr> DataImplement = new HashMap();
-        for(DataPropertyInterface Interface : Interfaces) {
-            SourceExpr KeyExpr = new FieldSourceExpr(DataFrom,DataTableMap.get(Interface).Name);
-            DataImplement.put(Interface,KeyExpr);
-            DataQuery.Expressions.put(ChangeTableMap.get(Interface).Name,KeyExpr);
-        }
-        SourceExpr DataExpr = new FieldSourceExpr(DataFrom,DataTable.Value.Name);
-        DataQuery.Expressions.put(ChangeTable.Value.Name,DataExpr);
+
+        JoinQuery<PropertyInterface,PropertyField> DataQuery = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
+
+        // GetChangedFrom
+        Join<KeyField,PropertyField> DataJoin = new MapJoin<KeyField,PropertyField,PropertyInterface>(DataTable,DataTableMap,DataQuery);
+        DataJoin.Joins.put(DataTable.Session,new ValueSourceExpr(Session.ID));
+        DataJoin.Joins.put(DataTable.Property,new ValueSourceExpr(ID));
+
+        SourceExpr DataExpr = new JoinExpr<KeyField,PropertyField>(DataJoin,DataTable.Value,true);
+        DataQuery.Properties.put(ChangeTable.Value,DataExpr);
 
         for(DataPropertyInterface RemoveInterface : Interfaces) {
             if(Session.RemoveClasses.contains(RemoveInterface.Class)) {
                 // те изменения которые были на удаляемые объекты исключаем
-                TableFactory.RemoveClassTable.ExcludeJoin(Session,DataJoins,RemoveInterface.Class,DataImplement.get(RemoveInterface));
+                TableFactory.RemoveClassTable.excludeJoin(DataQuery,Session,RemoveInterface.Class,DataQuery.MapKeys.get(RemoveInterface));
 
                 // проверяем может кто удалился из интерфейса объекта
-                SelectQuery SubQuery = new SelectQuery(TableFactory.RemoveClassTable.ClassSelect(Session,RemoveInterface.Class));
-                JoinList Joins = new JoinList();
-                Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-                JoinImplement.put(RemoveInterface,new FieldSourceExpr(SubQuery.From,TableFactory.RemoveClassTable.Object.Name));
-                // пока сделаем что наплевать на старое значение хотя конечно 2 раза может тоже не имеет смысл считать
-                JoinSelect(Joins,JoinImplement,false);
-                
-                for(From Join : Joins) SubQuery.From.Joins.add(Join);
-                
-                // закинем JoinImplement
-                for(DataPropertyInterface Interface : Interfaces)
-                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
-                SubQuery.Expressions.put(ChangeTable.Value.Name,new ValueSourceExpr(null));
+                JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
 
-                ResultQuery.Unions.add(SubQuery);
+                joinChangeClass(TableFactory.RemoveClassTable,Query,Session,RemoveInterface);
+
+                // пока сделаем что наплевать на старое значение хотя конечно 2 раза может тоже не имеет смысл считать
+                Query.Properties.put(ChangeTable.Value,new NullSourceExpr(getSourceExpr(Query.MapKeys,true)));
             }
         }
 
         if(Session.RemoveClasses.contains(Value)) {
             // те изменения которые были на удаляемые объекты исключаем
-            TableFactory.RemoveClassTable.ExcludeJoin(Session,DataJoins,Value,DataExpr);
+            TableFactory.RemoveClassTable.excludeJoin(DataQuery,Session,Value,DataExpr);
 
-            JoinList Joins = new JoinList();
-            Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-            SourceExpr ValueExpr = JoinSelect(Joins,JoinImplement,false);
+            JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
 
-            // докинем последнюю таблицу
-            FromTable RemoveFrom = TableFactory.RemoveClassTable.ClassSelect(Session,Value);
-            RemoveFrom.Wheres.add(new FieldWhere(ValueExpr,TableFactory.RemoveClassTable.Object.Name));
-            Joins.add(RemoveFrom);
-            
-            Iterator<From> ij = Joins.iterator();
-            SelectQuery SubQuery = new SelectQuery(ij.next());
-            while(ij.hasNext()) SubQuery.From.Joins.add(ij.next());
-            
-            // закинем JoinImplement
-            for(DataPropertyInterface Interface : Interfaces)
-                SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
-            SubQuery.Expressions.put(ChangeTable.Value.Name,new ValueSourceExpr(null));
-            
-            ResultQuery.Unions.add(SubQuery);
+            Join<KeyField,PropertyField> RemoveJoin = new Join<KeyField,PropertyField>(TableFactory.RemoveClassTable.getClassJoin(Session,Value));
+            RemoveJoin.Joins.put(TableFactory.RemoveClassTable.Object,getSourceExpr(Query.MapKeys,true));
+            Query.Wheres.add(new JoinWhere(RemoveJoin));
+
+            Query.Properties.put(ChangeTable.Value,new StaticNullSourceExpr(ChangeTable.Value.Type));
         }
-        
-        Iterator<From> ij = DataJoins.iterator();
-        DataQuery.From = ij.next();
-        while(ij.hasNext()) DataQuery.From.Joins.add(ij.next());
-        ResultQuery.Unions.add(DataQuery);
+
+        // здесь именно в конце так как должна быть последней
+        ResultQuery.Unions.put(DataQuery,1);
 
         QueryIncrementType = 0;
         return ResultQuery;
@@ -912,21 +653,21 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
     }
     
     // расчитывает JoinSelect
-    abstract SourceExpr CalculateJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left);
+    abstract SourceExpr calculateSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull);
     
     // проверяет аггрегацию для отладки
     boolean CheckAggregation(DataAdapter Adapter,String Caption) throws SQLException {
-        SelectQuery AggrSelect;
-        AggrSelect = GetOutSelect(Adapter);
-        List<Map<String,Object>> AggrResult = Adapter.ExecuteSelect(AggrSelect);
+        JoinQuery<PropertyInterface, String> AggrSelect;
+        AggrSelect = getOutSelect(Adapter,"value");
+        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> AggrResult = AggrSelect.executeSelect(Adapter);
         TableFactory.ReCalculateAggr = true;
-        AggrSelect = GetOutSelect(Adapter);
-        List<Map<String,Object>> CalcResult = Adapter.ExecuteSelect(AggrSelect);
+        AggrSelect = getOutSelect(Adapter,"value");
+        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> CalcResult = AggrSelect.executeSelect(Adapter);
         TableFactory.ReCalculateAggr = false;
-        
-        Iterator<Map<String,Object>> i = AggrResult.iterator();
+
+        Iterator<Map<PropertyInterface,Integer>> i = AggrResult.keySet().iterator();
         while(i.hasNext()) {
-            Map<String,Object> Row = i.next();
+            Map<PropertyInterface,Integer> Row = i.next();
             
             boolean ToRemove = false;
             for(Object Value : Row.values())
@@ -934,19 +675,19 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
                     ToRemove = true;
                     break;
                 }
-            
-            if(ToRemove || CalcResult.remove(Row))
+
+            if(ToRemove || (CalcResult.remove(Row)!=null))
                 i.remove();
             else {
-                Object Value =  Row.get("value");
+                Object Value =  AggrResult.get(Row).get("value");
                 if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
                 if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
             }
         }
         // вычистим и отсюда 0
-        i = CalcResult.iterator();
+        i = CalcResult.keySet().iterator();
         while(i.hasNext()) {
-            Map<String,Object> Row = i.next();
+            Map<PropertyInterface,Integer> Row = i.next();
 
             boolean ToRemove = false;
             for(Object Value : Row.values())
@@ -958,21 +699,21 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             if(ToRemove)
                 i.remove();
             else {
-                Object Value = Row.get("value");
+                Object Value = CalcResult.get(Row).get("value");
                 if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
                 if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
             }
         }
 
         if(CalcResult.size()>0 || AggrResult.size()>0) {
-           System.out.println("----CheckAggregations "+Caption+"-----");
-           System.out.println("----Aggr-----");
-            i = AggrResult.iterator();
-            while(i.hasNext()) 
-                System.out.println(i.next());
+            System.out.println("----CheckAggregations "+Caption+"-----");
+            System.out.println("----Aggr-----");
+            for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : AggrResult.entrySet())
+                System.out.println(Row);
             System.out.println("----Calc-----");
-            i = CalcResult.iterator();
-            while(i.hasNext()) 
+            for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : CalcResult.entrySet())
+                System.out.println(Row);
+            while(i.hasNext())
                 System.out.println(i.next());
             
             return false;
@@ -1009,7 +750,7 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
         return false;
     }
 
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
 
         // работает на = и на + ему собсно пофигу, то есть сразу на 2
         
@@ -1023,26 +764,20 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
                 RemoveInterfaces.add(ValueInterface);
 
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Session,3); // по сути неважно на что 
-        
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,3);
+
         // для RemoveClass без SS все за Join'им (ValueClass пока трогать не будем (так как у значения пока не закладываем механизм изменений))
         for(DataPropertyInterface ChangedInterface : RemoveInterfaces) {
-            SelectQuery Query = new SelectQuery(TableFactory.RemoveClassTable.ClassSelect(Session,ChangedInterface.Class));
-            Query.Expressions.put(ChangeTableMap.get(ChangedInterface).Name,new FieldSourceExpr(Query.From,TableFactory.RemoveClassTable.Object.Name));
+            JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
 
-            for(DataPropertyInterface ValueInterface : Interfaces) {
-                if(ValueInterface!=ChangedInterface) {
-                    // Join'им со старыми
-                    FromTable JoinTable = TableFactory.ObjectTable.ClassSelect(ValueInterface.Class);
-                    Query.From.Joins.add(JoinTable);
-                    Query.Expressions.put(ChangeTableMap.get(ValueInterface).Name,new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name));
-                }
-            }
+            // RemoveClass + остальные из старой таблицы
+            joinChangeClass(TableFactory.RemoveClassTable,Query,Session,ChangedInterface);
+            for(DataPropertyInterface ValueInterface : Interfaces)
+                if(ValueInterface!=ChangedInterface)
+                    joinObjects(Query,ValueInterface);
 
-            Query.Expressions.put(ChangeTable.Value.Name,new ValueSourceExpr(null));
-            Query.Expressions.put(ChangeTable.PrevValue.Name,new ValueSourceExpr(Value));
-
-            ResultQuery.Unions.add(Query);
+            Query.Properties.put(ChangeTable.Value,new StaticNullSourceExpr(ChangeTable.Value.Type));
+            Query.Properties.put(ChangeTable.PrevValue,(Value==null?new StaticNullSourceExpr(ValueClass.GetDBType()):new ValueSourceExpr(Value)));
         }
 
         List<DataPropertyInterface> AddInterfaces = new ArrayList();
@@ -1056,39 +791,22 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
         while(il.hasNext()) {
             List<DataPropertyInterface> ChangeProps = il.next();
 
-            SelectQuery Query = new SelectQuery(null);
-            JoinList Joins = new JoinList();
+            JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
 
             for(DataPropertyInterface ValueInterface : Interfaces) {
-                FromTable JoinTable;
-                SourceExpr JoinExpr;
-                if(ChangeProps.contains(ValueInterface)) {
-                    JoinTable = TableFactory.AddClassTable.ClassSelect(Session,ValueInterface.Class);
-                    JoinExpr = new FieldSourceExpr(JoinTable,TableFactory.AddClassTable.Object.Name);
-                    
-                    Joins.add(JoinTable);
-                } else {
-                    JoinTable = TableFactory.ObjectTable.ClassSelect(ValueInterface.Class);
-                    JoinExpr = new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name);
-                    
-                    Joins.add(JoinTable);
-                    
+                if(ChangeProps.contains(ValueInterface))
+                    joinChangeClass(TableFactory.AddClassTable,Query,Session,ValueInterface);
+                else {
+                    joinObjects(Query,ValueInterface);
+
                     // здесь также надо проверить что не из RemoveClasses (то есть LEFT JOIN на null)
                     if(Session.RemoveClasses.contains(ValueInterface.Class))
-                        TableFactory.RemoveClassTable.ExcludeJoin(Session,Joins,ValueInterface.Class,JoinExpr);
+                        TableFactory.RemoveClassTable.excludeJoin(Query,Session,ValueInterface.Class,Query.MapKeys.get(ValueInterface));
                 }
-                
-                Query.Expressions.put(ChangeTableMap.get(ValueInterface).Name,JoinExpr);
             }
             
-            ListIterator<From> i = Joins.listIterator();
-            Query.From = i.next();
-            while(i.hasNext()) Query.From.Joins.add(i.next());
-
-            Query.Expressions.put(ChangeTable.Value.Name,new ValueSourceExpr(Value));
-            Query.Expressions.put(ChangeTable.PrevValue.Name,new ValueSourceExpr(null));
-
-            ResultQuery.Unions.add(Query);
+            Query.Properties.put(ChangeTable.PrevValue,new StaticNullSourceExpr(ChangeTable.PrevValue.Type));
+            Query.Properties.put(ChangeTable.Value,(Value==null?new StaticNullSourceExpr(ValueClass.GetDBType()):new ValueSourceExpr(Value)));
         }
         
         QueryIncrementType = 2;
@@ -1096,31 +814,16 @@ class ValueProperty extends AggregateProperty<DataPropertyInterface> {
         return ResultQuery;
     }
 
-    SourceExpr CalculateJoinSelect(JoinList Joins, Map<PropertyInterface, SourceExpr> JoinImplement, boolean Left) {
-        
-        List<SourceExpr> KeyList = new ArrayList();
+    SourceExpr calculateSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
+
+        String ValueString = "value";
+        JoinQuery<PropertyInterface,String> Query = new JoinQuery(Interfaces);
                 
-        for(DataPropertyInterface ValueInterface : Interfaces) {
-            FromTable JoinTable = TableFactory.ObjectTable.ClassSelect(ValueInterface.Class);
-            // нужно также проверить кэш, но пока не будем
+        for(DataPropertyInterface ValueInterface : Interfaces)
+            joinObjects(Query,ValueInterface);
+        Query.Properties.put(ValueString,(Value==null?new StaticNullSourceExpr(ValueClass.GetDBType()):new ValueSourceExpr(Value)));
 
-            SourceExpr JoinKeyExpr = new FieldSourceExpr(JoinTable,TableFactory.ObjectTable.Key.Name);
-            KeyList.add(JoinKeyExpr);
-
-            SourceExpr JoinExpr = JoinImplement.get(ValueInterface);
-            if(JoinExpr==null)
-                JoinImplement.put(ValueInterface,JoinKeyExpr);
-            else 
-                JoinTable.Wheres.add(new FieldWhere(JoinExpr,TableFactory.ObjectTable.Key.Name));
-            
-            if(Left) JoinTable.JoinType = "LEFT";
-            Joins.add(JoinTable);
-        }
-
-        if(Left)
-            return new NullValueSourceExpr(KeyList,new ValueSourceExpr(null),new ValueSourceExpr(Value));
-        else
-            return new ValueSourceExpr(Value);
+        return new JoinExpr<PropertyInterface,String>(new Join<PropertyInterface,String>(Query,JoinImplement),ValueString,NotNull);
     }
 
     public Class GetValueClass(InterfaceClass ClassImplement) {
@@ -1161,27 +864,15 @@ class PropertyMapImplement extends PropertyImplement<ObjectProperty,PropertyInte
     
     PropertyMapImplement(ObjectProperty iProperty) {super(iProperty);}
 
-    public SourceExpr MapJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left,ChangesSession Session,int Value) {
+    // NotNull только если сессии нету
+    public SourceExpr mapSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull,ChangesSession Session,int Value) {
         
-        // собираем null ссылки чтобы обновить свои JoinExprs
-        Collection<PropertyInterface> NullInterfaces = new ArrayList<PropertyInterface>();
         // соберем интерфейс по всем нижним интерфейсам
         Map<PropertyInterface,SourceExpr> MapImplement = new HashMap();
-        for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Property.Interfaces) {
-            SourceExpr JoinExpr = JoinImplement.get(Mapping.get(ImplementInterface));
-            if(JoinExpr==null) 
-                NullInterfaces.add(ImplementInterface);
-            else
-                MapImplement.put(ImplementInterface,JoinExpr);
-        }
-        
-        SourceExpr JoinSource = (Session!=null?((ObjectProperty)Property).ChangedJoinSelect(Joins,MapImplement,Session,Value,Left):Property.JoinSelect(Joins,MapImplement,Left));
-        
-        // прогоним и проверим если кто-то изменил с null себе закинем JoinExprs
-        for(PropertyInterface ImplementInterface : NullInterfaces)
-            JoinImplement.put(Mapping.get(ImplementInterface),MapImplement.get(ImplementInterface));
-        
-        return JoinSource;
+        for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Property.Interfaces)
+            MapImplement.put(ImplementInterface,JoinImplement.get(Mapping.get(ImplementInterface)));
+
+        return (Session!=null?((ObjectProperty)Property).getChangedSourceExpr(MapImplement,Session,Value):Property.getSourceExpr(MapImplement,NotNull));
     }
     
     public Class MapGetValueClass(InterfaceClass ClassImplement) {
@@ -1236,44 +927,14 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
         super(iTableFactory);
         Implements = new PropertyImplement(iProperty);
     }
-    
-    // маразм конечно, но по другому не придумал и все локализовано в RelationProperty
-    void RefreshNullJoins(boolean ToMap,Map<PropertyInterface,SourceExpr> JoinImplement,Map<PropertyInterface,SourceExpr> MapImplement) {
-        if(ToMap) {
-            // значит надо обновить\проверить кто же все-таки остался null
-            for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces) {
-                if(MapImplement.get(ImplementInterface)==null)
-                    MapImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).MapJoinSelect(null,JoinImplement,false,null,0));
-            }
-        } else {
-            // наоборот бежим по JoinImplement'ам и подчищаем null'ы
-            for(PropertyInterface ImplementInterface : Interfaces) {
-                if(JoinImplement.get(ImplementInterface)==null) {
-                   // находим в его и map'им то что вернул Relation property
-                   Iterator<PropertyInterface> im = Implements.Property.Interfaces.iterator();
-                   while(im.hasNext()) {
-                        PropertyInterface MapInterface = im.next();
-                        if(Implements.Mapping.get(MapInterface)==ImplementInterface)
-                            JoinImplement.put(ImplementInterface,MapImplement.get(MapInterface));
-                   }
-                }
-            }
-        }        
-    }
-    
-    SourceExpr CalculateJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
+
+    SourceExpr calculateSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
         // для всех нижних делаем JoinSelect
         Map<PropertyInterface,SourceExpr> MapImplement = new HashMap();
         for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces)
-            MapImplement.put(ImplementInterface, Implements.Mapping.get(ImplementInterface).MapJoinSelect(Joins,JoinImplement,Left,null,0));
+            MapImplement.put(ImplementInterface, Implements.Mapping.get(ImplementInterface).mapSourceExpr(JoinImplement,NotNull,null,0));
         
-        RefreshNullJoins(true,JoinImplement,MapImplement);
-        
-        SourceExpr Result = Implements.Property.JoinSelect(Joins,MapImplement,Left);
-        
-        RefreshNullJoins(false,JoinImplement,MapImplement);
-        
-        return Result;
+        return Implements.Property.getSourceExpr(MapImplement,NotNull);
     }
 
     public Class GetValueClass(InterfaceClass ClassImplement) {
@@ -1342,7 +1003,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
     }
     
     // инкрементные св-ва
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
         
         // алгоритм такой - для всех map св-в (в которых были изменения) строим подмножества изм. св-в
         // далее реализации этих св-в "замещаем" (то есть при JOIN будем подставлять), с остальными св-вами делаем LEFT JOIN на IS NULL 
@@ -1356,9 +1017,8 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
         if(ChangedProperties.size()!=0 && !MultiplyRelation)
            QueryIncrementType = 0;
         
-        // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Session,(MultiplyRelation?1:3)); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
-        if(QueryIncrementType==2) ResultQuery.Values.add(ChangeTable.PrevValue.Name);
+        // конечный результат, с ключами и выражением
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,(MultiplyRelation?1:3)); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
 
         // строим все подмножества св-в в лексикографическом порядке
         ListIterator<List<PropertyInterface>> il = (new SetBuilder<PropertyInterface>()).BuildSubSetList(ChangedProperties).listIterator();
@@ -1368,46 +1028,24 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
             // будем докидывать FULL JOIN'ы в нужном порядке получая соотв. NVL
             // нужно за Join'ить со старыми значениями (исключить этот JOIN если пустое подмн-во !!! собсно в этом и заключается оптимизация инкрементности), затем с новыми (если она есть)
             for(int ij=(ChangeProps.size()==0?1:0);ij<(Implements.Property.HasChanges(Session)?2:1);ij++) {
-                SelectQuery SubQuery = new SelectQuery(null);
-                JoinList Joins = new JoinList();
-                // JoinImplement'ы этого св-ва
-                Map<PropertyInterface,SourceExpr> MapImplement = new HashMap();
+                JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
                 // JoinImplement'ы основного св-ва
                 Map<PropertyInterface,SourceExpr> MapJoinImplement = new HashMap();
-
                 for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces)
-                    MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).MapJoinSelect(Joins,MapImplement,false,(ChangeProps.contains(ImplementInterface)?Session:null),MultiplyRelation?1:0));
+                    MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).mapSourceExpr(Query.MapKeys,true,(ChangeProps.contains(ImplementInterface)?Session:null),MultiplyRelation?1:0));
                 
-                RefreshNullJoins(true,MapImplement,MapJoinImplement);
-
                 SourceExpr ValueExpr = null;
                 if(ij==0) 
-                    ValueExpr = Implements.Property.JoinSelect(Joins,MapJoinImplement,true);
+                    ValueExpr = Implements.Property.getSourceExpr(MapJoinImplement,false);
                 else {
-                    ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,QueryIncrementType,false);
+                    ValueExpr = ((ObjectProperty)Implements.Property).getChangedSourceExpr(MapJoinImplement,Session,QueryIncrementType);
                     if(QueryIncrementType==2) {
                         // если и предыдущее надо, то закидываем предыдущее, а потом новое 
-                        SubQuery.Expressions.put(ChangeTable.PrevValue.Name,ValueExpr);
-                        ValueExpr = ((ObjectProperty)Implements.Property).ChangedJoinSelect(Joins,MapJoinImplement,Session,0,false);
+                        Query.Properties.put(ChangeTable.PrevValue,ValueExpr);
+                        ValueExpr = ((ObjectProperty)Implements.Property).getChangedSourceExpr(MapJoinImplement,Session,0);
                     }
                 }
-                SubQuery.Expressions.put(ChangeTable.Value.Name,ValueExpr);
-                
-                RefreshNullJoins(false,MapImplement,MapJoinImplement);
-
-                // закинем все ключи в запрос
-                for(PropertyInterface Interface : Interfaces) {
-                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,MapImplement.get(Interface));
-                    if(MapImplement.get(Interface)==null)
-                        ValueExpr = ((SourceExpr)(Object)this);                        
-                }
-
-                // закинем Join'ы как обычно
-                ListIterator<From> is = Joins.listIterator();
-                SubQuery.From = is.next();
-                while(is.hasNext()) SubQuery.From.Joins.add(is.next());
-
-                ResultQuery.Unions.add(SubQuery);
+                Query.Properties.put(ChangeTable.Value,ValueExpr);
             }
         }
         
@@ -1461,62 +1099,42 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     Map<PropertyInterface,Class> ToClasses;
 
     // заполняются при заполнении базы
-    String ViewName;
-    String GroupField = "grfield";
-    Map<GroupPropertyInterface,String> GroupKeys;
-    
-    void FillDB(DataAdapter Adapter,Integer ViewNum) throws SQLException {
-        JoinList QueryJoins = new JoinList();
-        GroupQuery SubQuery = new GroupQuery(null);
+    Table ViewTable;
+    PropertyField GroupField;
+    Map<PropertyInterface,KeyField> GroupKeys;
 
-        Map<PropertyInterface,SourceExpr> GroupImplement = new HashMap();
-        SubQuery.AggrExprs.put(GroupField,new GroupExpression(GroupProperty.JoinSelect(QueryJoins,GroupImplement,false),Operator));
+    GroupQuery<Object,PropertyInterface,Object> getGroupQuery(Object PropertyObject) {
+        JoinQuery<PropertyInterface,Object> Query = new JoinQuery<PropertyInterface,Object>(GroupProperty.Interfaces);
+        for(GroupPropertyInterface ImplementInterface : Interfaces)
+            Query.Properties.put(ImplementInterface,ImplementInterface.Implement.mapSourceExpr(Query.MapKeys,true,null,0));
 
-        Integer KeyNum = 0;
-        for(GroupPropertyInterface ImplementInterface : Interfaces) {
-            SourceExpr JoinSource = ImplementInterface.Implement.MapJoinSelect(QueryJoins,GroupImplement,false,null,0);
-            
-            KeyNum++;
-            String KeyField = "key"+KeyNum.toString();
-            GroupKeys.put(ImplementInterface,KeyField);
-            SubQuery.GroupBy.put(KeyField,JoinSource);
-            
-            // закинем !ISNULL при определенных раскладах выплывает при IncrementChanges, потом может еще куда перенесем
-            QueryJoins.get(0).Wheres.add(new SourceIsNullWhere(JoinSource,true));
-        }
-
-        // закидываем From'ы
-        ListIterator<From> is = QueryJoins.listIterator();
-        SubQuery.From = is.next();
-        while (is.hasNext())
-            SubQuery.From.Joins.add(is.next());
-
-        // для всех классов нужно еще докинуть Join и фильтры на класс
-        for(PropertyInterface ClassInterface : ToClasses.keySet())
-            SubQuery.From.Joins.add(TableFactory.ObjectTable.ClassJoinSelect(ToClasses.get(ClassInterface),GroupImplement.get(ClassInterface)));
-
-        ViewName = "view"+ViewNum;
-        Adapter.CreateView(ViewName,SubQuery);
+        Query.Properties.put(PropertyObject,GroupProperty.getSourceExpr(Query.MapKeys,true));
+        return new GroupQuery<Object,PropertyInterface,Object>(Interfaces,Query,PropertyObject,Operator);
     }
-    
-    SourceExpr CalculateJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
-        // создадим сразу Select
-        FromTable QuerySelect = new FromTable(ViewName);
-        if(Left) QuerySelect.JoinType = "LEFT";
 
-        for(GroupPropertyInterface ImplementInterface : Interfaces) {
-            String KeyField = GroupKeys.get(ImplementInterface);
-            // здесь нужно или Join'ить или свой FieldSourceExpr подставлять
-            SourceExpr JoinExpr = JoinImplement.get(ImplementInterface);
-            if(JoinExpr==null) {
-                JoinImplement.put(ImplementInterface,new FieldSourceExpr(QuerySelect,KeyField));
-            } else {
-                QuerySelect.Wheres.add(new FieldWhere(JoinExpr,KeyField));
-            }
+    void FillDB(DataAdapter Adapter,Integer ViewNum) throws SQLException {
+
+        if(Adapter.allowViews()) {
+            // создадим View
+            Map<Object,PropertyField> MapProperties = new HashMap();
+            ViewTable = getGroupQuery("grfield").createView(Adapter,"view"+ViewNum,GroupKeys,MapProperties);
+            GroupField = MapProperties.get("grfield");
+        }
+    }
+
+    SourceExpr calculateSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
+
+        if(ViewTable!=null) {
+            // по сути также как при persistent
+            Join<KeyField,PropertyField> SourceJoin = new Join<KeyField,PropertyField>(ViewTable);
+            for(PropertyInterface Interface : Interfaces)
+                SourceJoin.Joins.put(GroupKeys.get(Interface),JoinImplement.get(Interface));
+
+            return new JoinExpr<KeyField,PropertyField>(SourceJoin,GroupField,NotNull);
+        } else {
+            return new JoinExpr<PropertyInterface,Object>(new Join<PropertyInterface,Object>(getGroupQuery(GroupField),JoinImplement),GroupField,NotNull);
         }
 
-        Joins.add(QuerySelect);
-        return new FieldSourceExpr(QuerySelect,GroupField);
     }
     
     public Class GetValueClass(InterfaceClass ClassImplement) {
@@ -1584,7 +1202,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
     }
     
     // получает всевозможные инкрементные запросы для обеспечения IncrementChanges
-    GroupQuery IncrementQuery(ChangesSession Session,String ValueName,List<GroupPropertyInterface> ChangedProperties,int GroupSet,boolean ValueType,boolean InterfaceSubSet,boolean InterfaceEmptySet) {
+    Query<PropertyInterface,PropertyField> IncrementQuery(ChangesSession Session,PropertyField Value,List<GroupPropertyInterface> ChangedProperties,int GroupSet,boolean ValueType,boolean InterfaceSubSet,boolean InterfaceEmptySet) {
         // ValueName куда значение класть
         // ChangedProperties чтобы по нескольку раз не считать
         // GroupSet -> 0(G) - новые, 1(A) - предыдущие, 2(G/A) - новые и предыдущие
@@ -1593,19 +1211,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         // InterfaceEmptySet -> true - включать пустое подмн-во, false - не включать
         // P GroupValue -> чтобы знать на какое значение считать =(0)/+(1)/prev(2), Operand определяет SUM\MAX
 
-        UnionQuery DataQuery = new UnionQuery(3);
-                    
-        // заполняем ключи и значения для DataQuery
-        int DataKeysNum = 1;
-        Map<PropertyInterface,String> DataKeysMap = new HashMap();
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)GroupProperty.Interfaces) {
-            String KeyField = "dkey" + DataKeysNum++;
-            DataKeysMap.put(Interface,KeyField);
-            DataQuery.Keys.add(KeyField);
-        }
-        for(GroupPropertyInterface Interface : Interfaces)
-            DataQuery.Values.add(ChangeTableMap.get(Interface).Name);
-        DataQuery.Values.add(ValueName);
+        UnionQuery<PropertyInterface,Object> DataQuery = new UnionQuery<PropertyInterface,Object>(GroupProperty.Interfaces,3);
 
         for(int GroupOp=(GroupSet==1 || GroupSet==2?0:1);GroupOp<=((GroupSet==0 || GroupSet==2) && GroupProperty.HasChanges(Session)?1:0);GroupOp++) {
             // подмн-во Group
@@ -1629,44 +1235,18 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
 
             while(il.hasNext()) {
                 List<GroupPropertyInterface> ChangeProps = il.next();
-                SelectQuery SubQuery = new SelectQuery(null);
-                JoinList Joins = new JoinList();
+                JoinQuery<PropertyInterface,Object> Query = DataQuery.newJoinQuery(1);
 
-                // обнуляем, закидываем GroupProperty,
-                Map<PropertyInterface,SourceExpr> GroupImplement = new HashMap();
-                
                 // значение
-                SubQuery.Expressions.put(ValueName,(GroupOp==1?GroupProperty.ChangedJoinSelect(Joins,GroupImplement,Session,(ValueType?Operator:2),false):GroupProperty.JoinSelect(Joins,GroupImplement,false)));
+                Query.Properties.put(Value,(GroupOp==1?GroupProperty.getChangedSourceExpr(Query.MapKeys,Session,(ValueType?Operator:2)):GroupProperty.getSourceExpr(Query.MapKeys,true)));
 
                 // значения интерфейсов
                 for(GroupPropertyInterface Interface : Interfaces)
-                    SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,Interface.Implement.MapJoinSelect(Joins,GroupImplement,false,(ChangeProps.contains(Interface)?Session:null),ValueType?0:2));
-                
-                // значения ключей базовые
-                for(PropertyInterface Interface : (Collection<PropertyInterface>)GroupProperty.Interfaces)
-                    SubQuery.Expressions.put(DataKeysMap.get(Interface),GroupImplement.get(Interface));
-
-                // закинем Join'ы как обычно
-                ListIterator<From> is = Joins.listIterator();
-                SubQuery.From = is.next();
-                while(is.hasNext()) SubQuery.From.Joins.add(is.next());
-
-                DataQuery.Unions.add(SubQuery);
+                    Query.Properties.put(Interface,Interface.Implement.mapSourceExpr(Query.MapKeys,true,(ChangeProps.contains(Interface)?Session:null),ValueType?0:2));
             }
         }
         
-        // закинем сразу проверки на !null
-        FromQuery FromDataQuery = new FromQuery(DataQuery);
-        GroupQuery GroupQuery = new GroupQuery(FromDataQuery);
-        for(GroupPropertyInterface Interface : Interfaces) {
-            String KeyField = ChangeTableMap.get(Interface).Name;
-            SourceExpr KeyExpr = new FieldSourceExpr(FromDataQuery,KeyField);
-            GroupQuery.GroupBy.put(KeyField,KeyExpr);
-            FromDataQuery.Wheres.add(new SourceIsNullWhere(KeyExpr,true));
-        }
-        GroupQuery.AggrExprs.put(ValueName,new GroupExpression(new FieldSourceExpr(FromDataQuery,ValueName),Operator));
-
-        return GroupQuery;
+        return new GroupQuery<Object,PropertyInterface,PropertyField>(Interfaces,DataQuery,Value,Operator);
     }
 
     List<GroupPropertyInterface> GetChangedProperties(ChangesSession Session) {
@@ -1692,7 +1272,7 @@ class SumGroupProperty extends GroupProperty {
             ((ObjectProperty)((PropertyMapImplement)Interface.Implement).Property).SetChangeType(Session,2);
     }
 
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
         // алгоритм пока такой :
         // 1. берем GROUPPROPERTY(изм на +) по аналогии с реляционными
         // G(0) =(true) SS(true) без общ.(false) 1 SUM(+)
@@ -1704,32 +1284,23 @@ class SumGroupProperty extends GroupProperty {
 
         List<GroupPropertyInterface> ChangedProperties = GetChangedProperties(Session);
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Session,1);
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,1);
 
         // InterfaceSubSet ij<=2
         // InterfaceValue ij<=2
         // InterfaceEmptySet ij!=2
         // GroupSet (ij==1,0,1)
         
-        GroupQuery GroupQuery = null;
-        if(GroupProperty.HasChanges(Session)) {
-            GroupQuery = IncrementQuery(Session,ChangeTable.Value.Name,ChangedProperties,0,true,true,false);
-            ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.Coeffs.put(GroupQuery,1);
-        }
+        if(GroupProperty.HasChanges(Session))
+            ResultQuery.Unions.put(IncrementQuery(Session,ChangeTable.Value,ChangedProperties,0,true,true,false),1);
 
         if(ChangedProperties.size()>0) {
-            GroupQuery = IncrementQuery(Session,ChangeTable.Value.Name,ChangedProperties,1,true,true,false);
-            ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.Coeffs.put(GroupQuery,1);
-            
-            GroupQuery = IncrementQuery(Session,ChangeTable.Value.Name,ChangedProperties,1,false,false,false);
-            ResultQuery.Unions.add(GroupQuery);
-            ResultQuery.Coeffs.put(GroupQuery,-1);
+            ResultQuery.Unions.put(IncrementQuery(Session,ChangeTable.Value,ChangedProperties,1,true,true,false),1);
+            ResultQuery.Unions.put(IncrementQuery(Session,ChangeTable.Value,ChangedProperties,1,false,false,false),-1);
         }
 
         QueryIncrementType = 1;
-        
+
         return ResultQuery;
      }
 }
@@ -1767,43 +1338,22 @@ class MaxGroupProperty extends GroupProperty {
         // расчитать старые для всех измененных (LEFT JOIN'им с старым View/persistent таблицей) JoinSelect(на true) (prev)
 
         StartChangeTable(Adapter,Session);
-        // конечный результат, с ключами и выражением 
-        UnionQuery ChangeQuery = new UnionQuery(3);
-        FromQuery FromChangeQuery = new FromQuery(ChangeQuery);
-        SelectQuery ResultQuery = new SelectQuery(FromChangeQuery);
+        // конечный результат, с ключами и выражением
+        JoinQuery<PropertyInterface,PropertyField> ResultQuery = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
 
-        // про Left Join'им старое значение и сразу запишем
-        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-        for(GroupPropertyInterface Interface : Interfaces) {
-            String KeyName = ChangeTableMap.get(Interface).Name;
-            ChangeQuery.Keys.add(KeyName);
-            SourceExpr KeyExpr = new FieldSourceExpr(FromChangeQuery,KeyName);
-            JoinImplement.put(Interface,KeyExpr);
-            ResultQuery.Expressions.put(KeyName,KeyExpr);
-        }
-        
-        ChangeQuery.Values.add(ChangeTable.SysValue.Name);
-        ChangeQuery.Unions.add(IncrementQuery(Session,ChangeTable.SysValue.Name,ChangedProperties,2,false,false,false));
-        
-//        Adapter.OutSelect(IncrementQuery(Session,Table.SysValue.Name,ChangedProperties,2,false,false,false));
-                
-        ChangeQuery.Values.add(ChangeTable.Value.Name);
-        ChangeQuery.Unions.add(IncrementQuery(Session,ChangeTable.Value.Name,ChangedProperties,2,true,true,false));
+        UnionQuery<PropertyInterface,PropertyField> ChangeQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,3);
+        ChangeQuery.Unions.put(IncrementQuery(Session,ChangeTable.Value,ChangedProperties,2,true,true,false),1);
+        ChangeQuery.Unions.put(IncrementQuery(Session,ChangeTable.SysValue,ChangedProperties,2,false,false,false),1);
 
-        // протранслируем все дальше
-        JoinList JoinPrev = new JoinList();
-        SourceExpr PrevValue = JoinSelect(JoinPrev,JoinImplement,true);
-        for(From Join : JoinPrev) FromChangeQuery.Joins.add(Join);
-        
-        ResultQuery.Expressions.put(ChangeTable.Session.Name,new ValueSourceExpr(Session.ID));
-        ResultQuery.Expressions.put(ChangeTable.Property.Name,new ValueSourceExpr(ID));
+        UniJoin<PropertyInterface,PropertyField> ChangeJoin = new UniJoin<PropertyInterface,PropertyField>(ChangeQuery,ResultQuery);
 
-        SourceExpr NewValue = new FieldSourceExpr(FromChangeQuery,ChangeTable.Value.Name);
-        SourceExpr OldValue = new FieldSourceExpr(FromChangeQuery,ChangeTable.SysValue.Name);
-                
-        ResultQuery.Expressions.put(ChangeTable.Value.Name,NewValue);
-        ResultQuery.Expressions.put(ChangeTable.SysValue.Name,OldValue);
-        ResultQuery.Expressions.put(ChangeTable.PrevValue.Name,PrevValue);
+        SourceExpr NewValue = new JoinExpr<PropertyInterface,PropertyField>(ChangeJoin,ChangeTable.Value,true);
+        SourceExpr OldValue = new JoinExpr<PropertyInterface,PropertyField>(ChangeJoin,ChangeTable.SysValue,true);
+        SourceExpr PrevValue = getSourceExpr(ResultQuery.MapKeys,false);
+
+        ResultQuery.Properties.put(ChangeTable.Value,NewValue);
+        ResultQuery.Properties.put(ChangeTable.SysValue,OldValue);
+        ResultQuery.Properties.put(ChangeTable.PrevValue,PrevValue);
 
         ValueSourceExpr MinValue = new ValueSourceExpr(-99999999);
         NewValue = new IsNullSourceExpr(NewValue,MinValue);
@@ -1813,43 +1363,35 @@ class MaxGroupProperty extends GroupProperty {
         // null ассоциируется с -бесконечностью
         // удаляем всех пришедших<=старых значений и ушедшие<старых значений
         // то есть пропускаем (пришедшие>старых значений) или (ушедшие=старых значений)
-        FromChangeQuery.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,1),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
+        ResultQuery.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,1),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
 
 //        Adapter.OutSelect(ResultQuery);
-        Adapter.InsertSelect(ChangeTable,ResultQuery);
-        
+        Adapter.InsertSelect(modifyIncrementChanges(Session,ResultQuery,3));
+
         // для всех ушедших=старые значения (а они всегда <=) и пришедшие<старых значений обновляем по LEFT JOIN с запросом
 		// MAX(по новым значениям, но весь запрос) просто берем запрос аналогии 2 (только взяв не только изменившиеся а все в том числе - пустое подмн-во)
                 // G/A(2) =(true) (SS)(true) (с общ.)(true) =(null) MAX(=)
-        FromTable FromChanges = GetChangedFrom(Session);
-        
-        NewValue = new IsNullSourceExpr(new FieldSourceExpr(FromChanges,ChangeTable.Value.Name),MinValue);
-        OldValue = new IsNullSourceExpr(new FieldSourceExpr(FromChanges,ChangeTable.SysValue.Name),MinValue);
-        PrevValue = new IsNullSourceExpr(new FieldSourceExpr(FromChanges,ChangeTable.PrevValue.Name),MinValue);
 
-        FromChanges.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,2),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
-        
         // теоретически этот запрос нужно выполнять когда есть хоть одна запись но пока этого проверять не будем
-        SelectQuery UpdateQuery = new SelectQuery(FromChanges);
-        GroupQuery NewQuery = IncrementQuery(Session,ChangeTable.Value.Name,ChangedProperties,2,true,true,true);
-        FromQuery FromNewQuery = new FromQuery(NewQuery);
-        FromNewQuery.JoinType = "LEFT";
-        for(GroupPropertyInterface Interface : Interfaces) {
-            String KeyName = ChangeTableMap.get(Interface).Name;
-            FromNewQuery.Wheres.add(new FieldWhere(new FieldSourceExpr(FromChanges,KeyName),KeyName));
-        }
-        FromChanges.Joins.add(FromNewQuery);
-        UpdateQuery.Expressions.put(ChangeTable.Value.Name,new FieldSourceExpr(FromNewQuery,ChangeTable.Value.Name));
+        JoinQuery<PropertyInterface,PropertyField> UpdateQuery = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
 
- //       Adapter.OutSelect(UpdateQuery);
- //       System.out.println(UpdateQuery.GetUpdate());
-        Adapter.UpdateRecords(UpdateQuery);
-//        OutChangesTable(Adapter, Session);
+        Join<KeyField,PropertyField> ChangesJoin = getChangedValueJoin(UpdateQuery.MapKeys,Session);
+        NewValue = new IsNullSourceExpr(new JoinExpr<KeyField,PropertyField>(ChangesJoin,ChangeTable.Value,true),MinValue);
+        OldValue = new IsNullSourceExpr(new JoinExpr<KeyField,PropertyField>(ChangesJoin,ChangeTable.SysValue,true),MinValue);
+        PrevValue = new IsNullSourceExpr(new JoinExpr<KeyField,PropertyField>(ChangesJoin,ChangeTable.PrevValue,true),MinValue);
+
+        UpdateQuery.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,2),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
+
+        UpdateQuery.Properties.put(ChangeTable.Value,new JoinExpr<PropertyInterface,PropertyField>(
+                new UniJoin<PropertyInterface,PropertyField>(IncrementQuery(Session,ChangeTable.Value,ChangedProperties,2,true,true,true),UpdateQuery),ChangeTable.Value,false));
+
+        Adapter.UpdateRecords(modifyIncrementChanges(Session,UpdateQuery,0));
+
         // помечаем изменение в сессии на 2 вручную
         SessionChanged.put(Session,2);
     }
 
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
         // так как мы перегружаем IncrementChanges, этот метод вызываться не может
         return null;
     }
@@ -1870,99 +1412,16 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
     // коэффициенты
     Map<PropertyMapImplement,Integer> Coeffs;
 
-    SourceExpr CalculateJoinSelect(JoinList Joins, Map<PropertyInterface, SourceExpr> JoinImplement,boolean Left) {
+    SourceExpr calculateSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
         
-        // собсно с этим методом и должна быть связана основная оптимизация
-        // если JoinImplement все заданы то если есть все ключи (кол-во совпадает с размерностью) запускается JoinSelect с Left
-        // иначе если не хватает ключей (тогда Left по-любому false)
-        // пока сделаем просто если все операнды идут в одну таблицу с одним map'ом запускаем ее на обычный JoinSelect
-        // иначе сделаем отдельные UnionQuery GetOutSelect'ов а затем их за Join'им
-
-        // неструктурно потому как оптимизация
-        // сначала если не совпадают интерфейсы попробуем достать может все идут в одну таблицу
-        boolean IsCommon = true;
-        if(!Left && JoinImplement.size()!=Interfaces.size()) {
-            Table CommonTable = null;
-            Map<KeyField,PropertyInterface> CommonJoins = null;
-            for(PropertyMapImplement Operand : Operands) {
-                ObjectProperty OpProperty = (ObjectProperty)Operand.Property;
-                if(OpProperty.IsPersistent()) {
-                    Map<KeyField,PropertyInterface> MapJoins = new HashMap();
-                    Table SourceTable = OpProperty.GetTable(MapJoins);
-                    // дальше придется Map'нуть на базовый интерфейс 
-                    Map<KeyField,PropertyInterface> BaseJoins = new HashMap();
-                    Iterator<KeyField> ik = MapJoins.keySet().iterator();
-                    while(ik.hasNext()) {
-                        KeyField Key = ik.next();
-                        BaseJoins.put(Key,Operand.Mapping.get(MapJoins.get(Key)));
-                    }
-                
-                    if(CommonTable==null) {
-                        CommonTable = SourceTable;
-                        CommonJoins = BaseJoins;
-                    } else 
-                        IsCommon = (CommonTable==SourceTable && CommonJoins.equals(BaseJoins));
-                } else
-                    IsCommon = false;
-                
-                if(!IsCommon)
-                    break;
-            }
+        String ValueString = "joinvalue";
+        UnionQuery<PropertyInterface,String> ResultQuery = new UnionQuery<PropertyInterface,String>(Interfaces,Operator);
+        for(PropertyMapImplement Operand : Operands) {
+            JoinQuery<PropertyInterface,String> Query = ResultQuery.newJoinQuery(Coeffs.get(Operand));
+            Query.Properties.put(ValueString,Operand.mapSourceExpr(Query.MapKeys,true,null,0));
         }
 
-        if(IsCommon) {
-            ListSourceExpr ResultExpr = new ListSourceExpr(Operator);
-            for(PropertyMapImplement Operand : Operands)
-                ResultExpr.AddOperand(Operand.MapJoinSelect(Joins,JoinImplement,Left,null,0),Coeffs.get(Operand));
-            
-            return ResultExpr;
-        } else {
-            // заполним названия полей в которые будем Select'ать
-            String Value = "joinvalue";
-            Map<PropertyInterface,String> MapFields = new HashMap();
-            Integer KeyNum = 1;
-            UnionQuery ResultQuery = new UnionQuery(Operator);
-            for(PropertyInterface Interface : Interfaces) {
-                String KeyField = "key"+(KeyNum++);
-                MapFields.put(Interface,KeyField);
-                ResultQuery.Keys.add(KeyField);
-            }
-            ResultQuery.Values.add(Value);
-
-            for(PropertyMapImplement Operand : Operands) {
-                SelectQuery SubQuery = new SelectQuery(null);
-                JoinList OpJoins = new JoinList();
-                Map<PropertyInterface,SourceExpr> OpImplement = new HashMap();                
-                SubQuery.Expressions.put(Value,Operand.MapJoinSelect(OpJoins,OpImplement,false,null,0));
-                // запишем все ключи
-                for(PropertyInterface Interface : OpImplement.keySet())
-                    SubQuery.Expressions.put(MapFields.get(Interface),OpImplement.get(Interface));
-                
-                // From'ы как обычно закидываем
-                ListIterator<From> is = OpJoins.listIterator();
-                SubQuery.From = is.next();
-                while(is.hasNext()) SubQuery.From.Joins.add(is.next());
-                
-                ResultQuery.Unions.add(SubQuery);
-                ResultQuery.Coeffs.put(SubQuery,Coeffs.get(Operand));
-            }
-            
-            FromQuery FromResultQuery = new FromQuery(ResultQuery);
-            Joins.add(FromResultQuery);
-            
-            // за Join'им результат
-            for(PropertyInterface ResultInterface : Interfaces) {
-                String KeyField = MapFields.get(ResultInterface);
-                SourceExpr JoinExpr = JoinImplement.get(ResultInterface);
-                if(JoinExpr==null) {
-                    JoinImplement.put(ResultInterface,new FieldSourceExpr(FromResultQuery,KeyField));
-                } else {
-                    FromResultQuery.Wheres.add(new FieldWhere(JoinImplement.get(ResultInterface),KeyField));
-                }                
-            }
-            
-            return (new FieldSourceExpr(FromResultQuery,Value));
-        }
+        return new JoinExpr<PropertyInterface,String>(new Join<PropertyInterface,String>(ResultQuery,JoinImplement),ValueString,NotNull);
     }
 
     public Class GetValueClass(InterfaceClass ClassImplement) {
@@ -2017,7 +1476,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
         return ChangedProperties;
     }
     
-    Query IncrementQuery(ChangesSession Session,int ValueType) {
+    Query<PropertyInterface,PropertyField> IncrementQuery(ChangesSession Session,int ValueType) {
         //      	0                   1                           2
         //Max(0)	значение,SS,LJ      не может быть               значение,SS,LJ,prevv
         //Sum(1)	значение,SS,LJ      значение,без SS, без LJ     значение,SS,LJ,prevv
@@ -2030,8 +1489,7 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
         boolean SumList = (Operator==1 && ValueType==1);
         
         // конечный результат, с ключами и выражением 
-        UnionQuery ResultQuery = GetChangeUnion(Session,SumList?1:3);
-        if(ValueType==2) ResultQuery.Values.add(ChangeTable.PrevValue.Name);
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,SumList?1:3);
 
         ListIterator<List<PropertyMapImplement>> il = null;
         if(SumList) {
@@ -2046,41 +1504,41 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
             il = ChangedList.listIterator();
         } else {
             il = (new SetBuilder<PropertyMapImplement>()).BuildSubSetList(ChangedProperties).listIterator();
-            // здесь надо вырезать все
+            // здесь надо вырезать для оптимизации лишние
         }
         
         // пропустим пустое подмн-во
         il.next();
         while(il.hasNext()) {
             List<PropertyMapImplement> ChangedProps = il.next();
-            
-            JoinList SetJoins = new JoinList();
-            ListSourceExpr ResultExpr = new ListSourceExpr(Operator);
-            ListSourceExpr PrevExpr = (ValueType==2?new ListSourceExpr(Operator):null);
 
-            Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
+            JoinQuery<PropertyInterface,PropertyField> Query = ResultQuery.newJoinQuery(1);
+
+            UnionSourceExpr ResultExpr = new UnionSourceExpr(Operator);
+            UnionSourceExpr PrevExpr = (ValueType==2?new UnionSourceExpr(Operator):null);
+
             // так как делается LEFT JOIN важен порядок сначала закидываем ChangedProps ChangedJoinSelect
             // сначала бежим по Join'ам, затем по LEFT JOIN, но ResultExpr именно в нужном порядке
             Map<PropertyMapImplement,SourceExpr> ResultValues = new HashMap();
             Map<PropertyMapImplement,SourceExpr> PrevValues = new HashMap();
             
             for(PropertyMapImplement Operand : ChangedProps) {
-                ResultValues.put(Operand,Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,ValueType==1?1:0));
-                if(ValueType==2) PrevValues.put(Operand,Operand.MapJoinSelect(SetJoins,JoinImplement,false,Session,2));
+                ResultValues.put(Operand,Operand.mapSourceExpr(Query.MapKeys,true,Session,ValueType==1?1:0));
+                if(ValueType==2) PrevValues.put(Operand,Operand.mapSourceExpr(Query.MapKeys,true,Session,2));
             }
             
             if(!SumList) {
                 for(PropertyMapImplement Operand : Operands) {
                     // здесь надо отрезать только те которые могут в принципе пересекаться по классам
                     if(!ChangedProps.contains(Operand)) {
-                        SourceExpr OperandExpr = Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,0);
+                        SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys,false,null,0);
                         if(Operator==2 && ValueType==1) { // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
                             List<SourceExpr> NullValues = new ArrayList();
                             NullValues.add(OperandExpr);
-                            OperandExpr = new NullValueSourceExpr(NullValues,new ValueSourceExpr(null),new ValueSourceExpr(0));
+                            OperandExpr = new NullValueSourceExpr(NullValues,new StaticNullSourceExpr(OperandExpr.getDBType()),new ValueSourceExpr(0));
                         }
                         ResultValues.put(Operand,OperandExpr);
-                        if(ValueType==2) PrevValues.put(Operand,Operand.MapJoinSelect(SetJoins,JoinImplement,true,null,2));
+                        if(ValueType==2) PrevValues.put(Operand,Operand.mapSourceExpr(Query.MapKeys,false,null,2));
                     }
                 }
             }
@@ -2088,21 +1546,12 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
             // так хитро бежим потому как важен порядок
             for(PropertyMapImplement Operand : Operands)
                 if(ResultValues.containsKey(Operand)) {
-                    ResultExpr.AddOperand(ResultValues.get(Operand),Coeffs.get(Operand));
-                    if(ValueType==2) PrevExpr.AddOperand(PrevValues.get(Operand),Coeffs.get(Operand));
+                    ResultExpr.Operands.put(ResultValues.get(Operand),Coeffs.get(Operand));
+                    if(ValueType==2) PrevExpr.Operands.put(PrevValues.get(Operand),Coeffs.get(Operand));
                 } 
 
-            ListIterator<From> ij = SetJoins.listIterator();
-            SelectQuery SubQuery = new SelectQuery(ij.next());
-            while(ij.hasNext()) SubQuery.From.Joins.add(ij.next());
-
-            // закинем ключи значения
-            for(PropertyInterface Interface : Interfaces)
-                SubQuery.Expressions.put(ChangeTableMap.get(Interface).Name,JoinImplement.get(Interface));
-            SubQuery.Expressions.put(ChangeTable.Value.Name,ResultExpr);
-            if(ValueType==2) SubQuery.Expressions.put(ChangeTable.PrevValue.Name,PrevExpr);
-
-            ResultQuery.Unions.add(SubQuery);
+            Query.Properties.put(ChangeTable.Value,ResultExpr);
+            if(ValueType==2) Query.Properties.put(ChangeTable.PrevValue,PrevExpr);
         }
         
         return ResultQuery;
@@ -2125,7 +1574,7 @@ class SumListProperty extends ListProperty {
         }
     }
 
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
         
         QueryIncrementType = (IsPersistent()?1:GetChangeType(Session));
         return IncrementQuery(Session,QueryIncrementType);
@@ -2149,7 +1598,7 @@ class MaxListProperty extends ListProperty {
         }
     }
 
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
 
         QueryIncrementType = (IsPersistent() || GetChangeType(Session)==0?0:2);
         return IncrementQuery(Session,QueryIncrementType);
@@ -2169,7 +1618,7 @@ class OverrideListProperty extends ListProperty {
         }
     }
 
-    Query QueryIncrementChanged(ChangesSession Session) {
+    Query<PropertyInterface, PropertyField> QueryIncrementChanged(ChangesSession Session) {
 
         QueryIncrementType = GetChangeType(Session);
         return IncrementQuery(Session,QueryIncrementType);
@@ -2248,48 +1697,32 @@ class StringFormulaPropertyInterface extends FormulaPropertyInterface {
 class StringFormulaProperty extends FormulaProperty<StringFormulaPropertyInterface> {
 
     String Formula;
+    boolean Filter;
 
-    StringFormulaProperty(String iFormula) {
+    StringFormulaProperty(String iFormula,boolean iFilter) {
         super();
         Formula = iFormula;
+        Filter = iFilter;
     }
-    
-    SourceExpr GetSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,String SourceFormula) {
-        FormulaSourceExpr Source = new FormulaSourceExpr(SourceFormula);
-                
+
+    SourceExpr proceedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
+
+        FormulaSourceExpr Source = new FormulaSourceExpr(Formula);
+
         for(StringFormulaPropertyInterface Interface : Interfaces)
             Source.Params.put(Interface.Param,JoinImplement.get(Interface));
 
-        return Source;
-    }
-    
-    SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
-        return GetSourceExpr(JoinImplement,Formula);
-    }
-}
-
-class FilterFormulaProperty extends StringFormulaProperty {
-
-    FilterFormulaProperty(String iFormula) {super(iFormula);}
-    
-    @Override
-    SourceExpr ProceedJoinSelect(JoinList Joins,Map<PropertyInterface,SourceExpr> JoinImplement,boolean Left) {
-        if(Left)
-            return GetSourceExpr(JoinImplement,"(CASE WHEN "+Formula+" THEN 1 ELSE NULL END)");
-        else {
-            FormulaWhere Source = new FormulaWhere(Formula);
-            for(StringFormulaPropertyInterface Interface : Interfaces)
-                Source.Params.put(Interface.Param,JoinImplement.get(Interface));
-
-            Joins.get(0).Wheres.add(Source);
-            return new ValueSourceExpr(1);
-        }
+        if(Filter)
+            return new FormulaWhereSourceExpr(Source,NotNull);
+        else
+            return Source;
     }
 }
+
 
 class MultiplyFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
 
-    SourceExpr ProceedJoinSelect(JoinList Joins, Map<PropertyInterface, SourceExpr> JoinImplement, boolean Left) {
+    SourceExpr proceedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
 
         FormulaSourceExpr Source = new FormulaSourceExpr("");
         int ParamNum=0;
@@ -2474,6 +1907,7 @@ class InterfaceClass extends HashMap<PropertyInterface,Class> {
             put(Key,get(Key).CommonParent(Op.get(Key)));
     }
 }
+
 class ChangesSession {
     
     ChangesSession(Integer iID) {

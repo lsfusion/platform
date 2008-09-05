@@ -301,11 +301,13 @@ class Layout extends JFrame implements ComponentCollector {
 		});
         WorkPlaceMenu.add(Save);
 
+        final JFrame MainFrame = this;
         JMenuItem SaveAs = new JMenuItem("Сохранить как...");
         SaveAs.addActionListener( new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                String Name = "АРМ " + (Frontend.getSettings().size()+1);
-                Frontend.save(Name);
+                String Name = JOptionPane.showInputDialog(MainFrame,"Название АРМ :","АРМ "+(Frontend.getSettings().size()+1));
+                if(Name!=null)
+                    Frontend.save(Name);
             }
         });
         WorkPlaceMenu.add(SaveAs);
