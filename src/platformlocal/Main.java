@@ -543,13 +543,6 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
 //        fbv.AddOrder(Obj3Props.get("дата док."));
 
     }
-
-
-    @Override
-    Set<GroupObjectImplement> GetReportObjects() {
-        return new HashSet();
-    }
-
 }
 
 class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
@@ -579,13 +572,6 @@ class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
 
         BL.FillSingleViews(obj1,this,null);
     }
-
-
-    @Override
-    Set<GroupObjectImplement> GetReportObjects() {
-        return new HashSet();
-    }
-
 }
 
 class LP {

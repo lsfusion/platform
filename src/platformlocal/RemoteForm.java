@@ -321,58 +321,28 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
     }
 }
 
-abstract class Filter {
-    
-    Filter(PropertyObjectImplement iProperty) {Property=iProperty;}
+
+class Filter {
+
     PropertyObjectImplement Property;
+    ValueLink Value;
+    int Compare;
+    
+    Filter(PropertyObjectImplement iProperty,int iCompare,ValueLink iValue) {
+        Property=iProperty;
+        Compare = iCompare;
+        Value = iValue;
+    }
+
 
     GroupObjectImplement GetApplyObject() {
         return Property.GetApplyObject();
     }
-    
-    boolean IsInInterface(GroupObjectImplement ClassGroup) {
-        return Property.IsInInterface(ClassGroup);
-    }
 
-    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
-        return Property.ClassUpdated(ClassGroup);
-    }
-
-    boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
-        return Property.ObjectUpdated(ClassGroup);
-    }
-    
     boolean DataUpdated(Set<ObjectProperty> ChangedProps) {
         return ChangedProps.contains(Property.Property);
     }
 
-    // для полиморфизма сюда
-    abstract void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps);
-}
-
-class NotNullFilter extends Filter {
-    
-    NotNullFilter(PropertyObjectImplement iProperty) {
-        super(iProperty);
-    }
-    
-    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
-        Query.Wheres.add(new SourceIsNullWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session,ChangedProps,true),true));
-    }
-}
-
-class CompareFilter extends Filter {
-    
-    ValueLink Value;
-    int Compare;
-    
-    CompareFilter(PropertyObjectImplement iProperty,int iCompare,ValueLink iValue) {
-        super(iProperty);
-        Compare = iCompare;
-        Value = iValue;
-    }
-    
-    @Override
     boolean IsInInterface(GroupObjectImplement ClassGroup) {
         Class ValueClass = Value.GetValueClass(ClassGroup);
         if(ValueClass==null) 
@@ -381,25 +351,21 @@ class CompareFilter extends Filter {
             return ValueClass.IsParent(Property.GetValueClass(ClassGroup));
     }
 
-    @Override
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
-        if(super.ClassUpdated(ClassGroup)) return true;
+        if(Property.ClassUpdated(ClassGroup)) return true;
         
         return Value.ClassUpdated(ClassGroup);
     }
 
-    @Override
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
-        if(super.ObjectUpdated(ClassGroup)) return true;
+        if(Property.ObjectUpdated(ClassGroup)) return true;
 
         return Value.ObjectUpdated(ClassGroup);
     }
 
-    @Override
     void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
         Query.Wheres.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session,ChangedProps,true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,ChangedProps),Compare));
     }
-
 }
 
 abstract class ValueLink {
@@ -711,7 +677,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter Filter : Object.GroupTo.Filters) {
-            if(Filter instanceof CompareFilter && ((CompareFilter)Filter).Compare==0) {
+            if(Filter.Compare==0) {
                 JoinQuery<ObjectImplement,String> SubQuery = new JoinQuery<ObjectImplement,String>(Filter.Property.Mapping.values());
                 Map<ObjectImplement,Integer> FixedObjects = new HashMap();
                 for(ObjectImplement SibObject : Filter.Property.Mapping.values()) {
@@ -729,7 +695,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                 SubQuery.putDumbJoin(FixedObjects);
 
-                SubQuery.Properties.put("newvalue",((CompareFilter)Filter).Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session,ChangedProps));
+                SubQuery.Properties.put("newvalue",Filter.Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session,ChangedProps));
 
                 LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Adapter);
                 // изменяем св-ва
@@ -1331,12 +1297,13 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         FormData Result = new FormData();
 
-        for(PropertyView Property : Properties)
+        for(PropertyView Property : Properties) {
             Query.Properties.put(Property,Property.View.getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false));
 
-//            Result.Properties.put(Property.ID,new HashMap());
-//        }
+            Result.Properties.put(Property.ID,new HashMap());
+        }
 
+        Query.outSelect(Adapter);
         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Adapter);
         
         for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> Row : ResultSelect.entrySet()) {

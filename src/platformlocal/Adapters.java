@@ -31,6 +31,9 @@ interface SQLSyntax {
     String getTop(int Top,String SelectString);
 
     String getNullValue(String DBType);
+
+    // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
+    boolean isNullSafe();
 }
 
 abstract class DataAdapter implements SQLSyntax {
@@ -139,10 +142,6 @@ abstract class DataAdapter implements SQLSyntax {
         Execute(Modify.getUpdate(this));
     }
 
-    void CreateView(ModifyQuery Modify) throws SQLException {
-        Execute(Modify.getCreateView(this));
-    }
-
     void Disconnect() throws SQLException {
         Connection.close();
     }
@@ -150,6 +149,11 @@ abstract class DataAdapter implements SQLSyntax {
     // по умолчанию
     public String getClustered() {
         return "CLUSTERED ";
+    }
+
+    // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
+    public boolean isNullSafe() {
+        return true;
     }
 
     public String getCommandEnd() {
@@ -246,6 +250,10 @@ class MSSQLDataAdapter extends DataAdapter {
             return "CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END";
         else
             return "ISNULL("+Expr1+","+Expr2+")";
+    }
+
+    public boolean isNullSafe() {
+        return false;
     }
 }
 

@@ -340,7 +340,7 @@ class Serializer {
             valueLink = new PropertyValueLink(remoteForm.getPropertyView(inStream.readInt()).View);
         }
 
-        return new CompareFilter(property, compare, valueLink);
+        return new Filter(property, compare, valueLink);
 
     }
 
