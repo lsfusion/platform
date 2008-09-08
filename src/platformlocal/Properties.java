@@ -1961,10 +1961,9 @@ class DataSession {
         }
         for(PropertyField Prop : Table.Properties)
             CreateString = CreateString+',' + Prop.GetDeclare();
-        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")";
-
+        
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        Execute("CREATE TEMPORARY TABLE "+Table.Name+" ("+CreateString+")");
+        Execute(Syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")"));
     }
 
     void Execute(String ExecuteString) throws SQLException {
@@ -1991,7 +1990,7 @@ class DataSession {
             ValueString = ValueString+","+(Value==null?"NULL":(Value instanceof String?"'"+(String)Value+"'":Value.toString()));
         }
 
-        Execute("INSERT INTO "+Table.Name+" ("+InsertString+") VALUES ("+ValueString+")");
+        Execute("INSERT INTO "+Table.getSource(Syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
     }
 
     void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
@@ -2020,7 +2019,7 @@ class DataSession {
         for(Map.Entry<KeyField,Integer> DeleteKey : Keys.entrySet())
             DeleteWhere = (DeleteWhere.length()==0?"":DeleteWhere+" AND ") + DeleteKey.getKey().Name + "=" + DeleteKey.getValue();
 
-        Execute("DELETE FROM "+Table.Name+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
+        Execute("DELETE FROM "+Table.getSource(Syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
     }
 
     void UpdateRecords(ModifyQuery Modify) throws SQLException {

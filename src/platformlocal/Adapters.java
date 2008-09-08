@@ -34,6 +34,9 @@ interface SQLSyntax {
 
     String getNullValue(String DBType);
 
+    String getSessionTableName(String TableName);
+    String getCreateSessionTable(String TableName,String DeclareString,String ConstraintString);
+
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     boolean isNullSafe();
 }
@@ -41,7 +44,7 @@ interface SQLSyntax {
 abstract class DataAdapter implements SQLSyntax {
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new PostgreDataAdapter();
+        return new MSSQLDataAdapter();
     }
 
     public String getNullValue(String DBType) {
@@ -76,6 +79,13 @@ abstract class DataAdapter implements SQLSyntax {
         return "";
     }
 
+    public String getCreateSessionTable(String TableName, String DeclareString, String ConstraintString) {
+        return "CREATE TEMPORARY TABLE "+TableName+" ("+DeclareString+","+ConstraintString+")";
+    }
+
+    public String getSessionTableName(String TableName) {
+        return TableName;
+    }
 }
 
 class MySQLDataAdapter extends DataAdapter {
@@ -98,7 +108,7 @@ class MySQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = startConnection();
+        Connection Connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/TestPlat");
         Connect.createStatement().execute("DROP DATABASE testplat");
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
@@ -148,14 +158,14 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = startConnection();
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
         Connect.createStatement().execute("DROP DATABASE testplat");
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
         Connect.createStatement().execute("USE testplat");
 
         return Connect;
@@ -178,6 +188,14 @@ class MSSQLDataAdapter extends DataAdapter {
             return "CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END";
         else
             return "ISNULL("+Expr1+","+Expr2+")";
+    }
+
+    public String getCreateSessionTable(String TableName, String DeclareString, String ConstraintString) {
+        return "CREATE TABLE #"+TableName+" ("+DeclareString+","+ConstraintString+")";
+    }
+
+    public String getSessionTableName(String TableName) {
+        return "#"+TableName;
     }
 
     public boolean isNullSafe() {

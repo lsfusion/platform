@@ -255,14 +255,6 @@ class ViewTable extends SessionTable {
     }
 }
 
-// временная таблица на момент сессии
-abstract class SessionTable extends Table {
-
-    SessionTable(String iName) {
-        super(iName);
-    }
-}
-
 abstract class ChangeTable extends SessionTable {
 
 //    KeyField Session;

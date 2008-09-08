@@ -271,6 +271,19 @@ class Table extends Source<KeyField,PropertyField> {
     }
 }
 
+// временная таблица на момент сессии
+class SessionTable extends Table {
+
+    SessionTable(String iName) {
+        super(iName);
+    }
+
+    String getSource(SQLSyntax Syntax) {
+        return Syntax.getSessionTableName(Name);
+    }
+
+}
+
 abstract class Query<K,V> extends Source<K,V> {
 
     int KeyCount = 0;
@@ -1362,7 +1375,7 @@ class ModifyQuery {
         String FromSelect = Change.fillSelect(KeySelect,PropertySelect,WhereSelect, Syntax);
 
         for(KeyField Key : Table.Keys)
-            WhereSelect.add(Table.Name+"."+Key.Name+"="+KeySelect.get(Key));
+            WhereSelect.add(Table.getSource(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
 
         String WhereString = "";
         for(String Where : WhereSelect)
@@ -1372,7 +1385,7 @@ class ModifyQuery {
         for(Map.Entry<PropertyField,String> SetProperty : PropertySelect.entrySet())
             SetString = (SetString.length()==0?"":SetString+",") + SetProperty.getKey().Name + "=" + SetProperty.getValue();
 
-        return "UPDATE " + Syntax.getUpdate(Table.Name," SET "+SetString,FromSelect,(WhereString.length()==0?"":" WHERE "+WhereString));
+        return "UPDATE " + Syntax.getUpdate(Table.getSource(Syntax)," SET "+SetString,FromSelect,(WhereString.length()==0?"":" WHERE "+WhereString));
     }
 
     String getInsertLeftKeys(SQLSyntax Syntax) {
@@ -1399,7 +1412,7 @@ class ModifyQuery {
         for(PropertyField PropertyField : PropertyOrder)
             InsertString = (InsertString.length()==0?"":InsertString+",") + PropertyField.Name;
 
-        return "INSERT INTO " + Table.Name + " (" + InsertString + ") " + SelectString;
+        return "INSERT INTO " + Table.getSource(Syntax) + " (" + InsertString + ") " + SelectString;
     }
 
     void outSelect(DataSession Session) throws SQLException {
