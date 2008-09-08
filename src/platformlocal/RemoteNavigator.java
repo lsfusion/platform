@@ -8,10 +8,7 @@ package platformlocal;
 // навигатор работает с абстрактной BL
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.io.DataInputStream;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
@@ -21,12 +18,18 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     DataAdapter Adapter;
     T BL;
     Map<Class,Integer> MapObjects;
+    Class leadClass;
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
     RemoteNavigator(DataAdapter iAdapter,T iBL,Map<Class,Integer> iMapObjects) {
+        this(iAdapter, iBL, iMapObjects, null);
+    }
+
+    public RemoteNavigator(DataAdapter iAdapter, T iBL, Map<Class,Integer> iMapObjects, Class ileadClass) {
         Adapter = iAdapter;
         BL = iBL;
         MapObjects = iMapObjects;
+        leadClass = ileadClass;
     }
 
     List<NavigatorElement> GetElements(int groupID) {
@@ -44,10 +47,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         return ByteArraySerializer.serializeListNavigatorElement(GetElements(groupID));
     }
 
+
+    RemoteForm<T> lastOpenedForm;
     RemoteForm<T> CreateForm(int FormID) throws SQLException {
 
         // инстанцирует форму
-        return BL.BaseGroup.getNavigatorForm(FormID).CreateForm(Adapter,BL);
+        lastOpenedForm = BL.BaseGroup.getNavigatorForm(FormID).CreateForm(Adapter,BL);
+        return lastOpenedForm;
+    }
+
+    int getLeadObject() {
+
+        for (GroupObjectImplement group : lastOpenedForm.Groups) {
+            for (ObjectImplement object : group) {
+                if (leadClass.IsParent(object.BaseClass))
+                    return object.idObject;
+            }
+        }
+
+        return -1;
     }
 
     String getCaption(int FormID){

@@ -39,7 +39,10 @@ public class ClientDialog extends JDialog {
 
     public Object objectChosen() {
 
-        return 22;
+        int objectID = navigator.remoteNavigator.getLeadObject();
+        if (objectID == -1) return null;
+
+        return objectID;
     }
 
     public void setCurrentForm(int formID) {

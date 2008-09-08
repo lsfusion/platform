@@ -76,7 +76,6 @@ public class ClientForm extends Container {
         initializeForm();
 
         applyFormChanges();
-
     }
 
     private FormLayout formLayout;
@@ -304,7 +303,7 @@ public class ClientForm extends Container {
             e.printStackTrace();
         }
 
-        models.get(groupObject).setClassView(classView);
+        models.get(groupObject).setClassView(classView, true);
 
         applyFormChanges();
     }
@@ -461,10 +460,10 @@ public class ClientForm extends Container {
                 objects.put(object, new ObjectModel(object));
             }
             
-            setClassView(true);
+            setClassView(true, false);
         }
         
-        public void setClassView(Boolean iclassView) {
+        public void setClassView(Boolean iclassView, boolean userChange) {
             
             if (classView != iclassView) {
                 
@@ -472,15 +471,17 @@ public class ClientForm extends Container {
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            grid.table.requestFocusInWindow();
-                        }
-                    });
+                    if (userChange)
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                grid.table.requestFocusInWindow();
+                            }
+                        });
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
-                    panel.getObjectIDView(0).requestFocusInWindow();
+                    if (userChange)
+                        panel.getObjectIDView(0).requestFocusInWindow();
 //                    panel.requestFocusInWindow();
                 }
 
@@ -589,7 +590,7 @@ public class ClientForm extends Container {
                                          implements TableCellRenderer {
 
 
-            public Component getTableCellRendererComponent(JTable table, 
+            public Component getTableCellRendererComponent(JTable table,
                                                            Object value, 
                                                            boolean isSelected, 
                                                            boolean hasFocus, 
@@ -651,8 +652,8 @@ public class ClientForm extends Container {
 
                 return false;
             }
-            
-            public Component getTableCellEditorComponent(JTable table, 
+
+            public Component getTableCellEditorComponent(JTable table,
                                                          Object ivalue, 
                                                          boolean isSelected, 
                                                          int row, 
@@ -671,7 +672,7 @@ public class ClientForm extends Container {
                     Component comp = currentComp.getComponent();
                     if (comp == null) {
                         Object newValue = getCellEditorValue();
-                        if (! value.equals(newValue))
+                        if ((value == null && newValue != null) || ! value.equals(newValue))
                             table.setValueAt(newValue, row, column);
                     }
                     return comp;
@@ -1055,9 +1056,7 @@ public class ClientForm extends Container {
                 }
 
                 if (table.gridColumns.size() != 0) {
-                    
                     formLayout.add(view, container);
-
                 } else {
                     formLayout.remove(view, container);
                 }
@@ -1234,9 +1233,11 @@ public class ClientForm extends Container {
 
                     int oldindex = getSelectionModel().getLeadSelectionIndex();
                     int newindex = gridRows.indexOf(value);
-                    if (newindex != -1 && newindex != oldindex)
-                        changeSelection(newindex, -1, false, false);
-//                    getSelectionModel().setLeadSelectionIndex(newindex);
+                    if (newindex != -1 && newindex != oldindex) {
+                        //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
+                        changeSelection(newindex, 0, false, false);
+//                        getSelectionModel().setLeadSelectionIndex(newindex);
+                    }
 
                 }
 

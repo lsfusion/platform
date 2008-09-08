@@ -139,7 +139,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     }
 
     void fillSourceSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,TableFactory TableFactory, DataSession Session,Set<ObjectProperty> ChangedProps) {
-        
+
         // фильтры первыми потому как ограничивают ключи
         for(Filter Filt : Filters) Filt.fillSelect(Query,ClassGroup,Session,ChangedProps);
 
@@ -175,7 +175,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
 class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImplement> {
     PropertyObjectImplement(ObjectProperty iProperty) {super(iProperty);}
-    
+
     // получает Grid в котором рисоваться
     GroupObjectImplement GetApplyObject() {
         GroupObjectImplement ApplyObject=null;
@@ -184,7 +184,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
 
         return ApplyObject;
     }
-    
+
     // получает класс значения
     Class GetValueClass(GroupObjectImplement ClassGroup) {
         InterfaceClass ClassImplement = new InterfaceClass();
@@ -207,7 +207,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : Mapping.values())
             if(IntObject.GroupTo!=ClassGroup && ((IntObject.Updated & (1<<0))!=0)) return true;
-        
+
         return false;
     }
 
@@ -215,14 +215,14 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : Mapping.values())
             if(((IntObject.Updated & (1<<(IntObject.GroupTo==ClassGroup?3:1))))!=0) return true;
-        
+
         return false;
     }
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session, Set<ObjectProperty> ChangedProps,boolean NotNull) {
 
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
-        
+
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
             JoinImplement.put(Interface,Mapping.get(Interface).getSourceExpr(ClassGroup,ClassSource));
 
@@ -244,11 +244,11 @@ class PropertyView {
         ToDraw = iToDraw;
         ID = iID;
     }
-    
+
     void Out() {
         System.out.print(View.Property.OutName);
-    }            
-    
+    }
+
     // идентификатор (в рамках формы)
     int ID = 0;
 }
@@ -272,7 +272,7 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
             List<GroupObjectValue> GroupGridObjects = GridObjects.get(Group);
             if(GroupGridObjects!=null) {
                 System.out.println(Group.GID+" - Grid Changes");
-                for(GroupObjectValue Value : GroupGridObjects) { 
+                for(GroupObjectValue Value : GroupGridObjects) {
                     Group.Out(Value);
                     System.out.println("");
                 }
@@ -292,10 +292,10 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
             Map<GroupObjectValue,Object> PropertyValues = GridProperties.get(Property);
             Property.Out();
             System.out.println(" ---- property");
-            for(GroupObjectValue gov : PropertyValues.keySet()) { 
+            for(GroupObjectValue gov : PropertyValues.keySet()) {
                 Property.ToDraw.Out(gov);
                 System.out.println(" - "+PropertyValues.get(gov));
-            }                    
+            }
         }
 
         System.out.println(" ------- Panel ---------------");
@@ -303,7 +303,7 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
             Property.Out();
             System.out.println(" - "+PanelProperties.get(Property));
         }
-        
+
         System.out.println(" ------- Drop ---------------");
         for(PropertyView Property : DropProperties) {
             Property.Out();
@@ -318,7 +318,7 @@ class Filter {
     PropertyObjectImplement Property;
     ValueLink Value;
     int Compare;
-    
+
     Filter(PropertyObjectImplement iProperty,int iCompare,ValueLink iValue) {
         Property=iProperty;
         Compare = iCompare;
@@ -336,7 +336,7 @@ class Filter {
 
     boolean IsInInterface(GroupObjectImplement ClassGroup) {
         Class ValueClass = Value.GetValueClass(ClassGroup);
-        if(ValueClass==null) 
+        if(ValueClass==null)
             return Property.IsInInterface(ClassGroup);
         else
             return ValueClass.IsParent(Property.GetValueClass(ClassGroup));
@@ -344,7 +344,7 @@ class Filter {
 
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
         if(Property.ClassUpdated(ClassGroup)) return true;
-        
+
         return Value.ClassUpdated(ClassGroup);
     }
 
@@ -362,9 +362,9 @@ class Filter {
 abstract class ValueLink {
 
     Class GetValueClass(GroupObjectImplement ClassGroup) {return null;}
-    
+
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {return false;}
-    
+
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {return false;}
 
     abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps);
@@ -372,9 +372,9 @@ abstract class ValueLink {
 
 
 class UserValueLink extends ValueLink {
-    
+
     Object Value;
-    
+
     UserValueLink(Object iValue) {Value=iValue;}
 
     SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
@@ -384,8 +384,8 @@ class UserValueLink extends ValueLink {
 
 class ObjectValueLink extends ValueLink {
 
-    ObjectValueLink(ObjectImplement iObject) {Object=iObject;} 
-    
+    ObjectValueLink(ObjectImplement iObject) {Object=iObject;}
+
     ObjectImplement Object;
 
     @Override
@@ -410,8 +410,8 @@ class ObjectValueLink extends ValueLink {
 
 class PropertyValueLink extends ValueLink {
 
-    PropertyValueLink(PropertyObjectImplement iProperty) {Property=iProperty;} 
-    
+    PropertyValueLink(PropertyObjectImplement iProperty) {Property=iProperty;}
+
     PropertyObjectImplement Property;
 
     @Override
@@ -447,30 +447,30 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     // чисто для getNavigator
     DataAdapter Adapter;
-    
+
     Set<ObjectProperty> ChangedProps = new HashSet();
     RemoteForm(DataAdapter iAdapter,T iBL) throws SQLException {
         BL = iBL;
         Adapter = iAdapter;
-        
+
         Session = BL.createSession(iAdapter);
-        
+
         StructUpdated = true;
     }
 
     // счетчик идентивикаторов
     int IDCount = 0;
-    
+
     int GenID(int Offs) {
         return IDCount + Offs;
     }
-            
+
     int IDShift(int Offs) {
         IDCount += Offs;
         return IDCount;
     }
-    
-    void AddGroup(GroupObjectImplement Group) { 
+
+    void AddGroup(GroupObjectImplement Group) {
         Groups.add(Group);
         Group.Order = Groups.size();
         for(ObjectImplement Object : Group) Object.GroupTo = Group;
@@ -479,13 +479,13 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     List<GroupObjectImplement> Groups = new ArrayList();
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     List<PropertyView> Properties = new ArrayList();
-    
+
     // Set чтобы сравнивать удобнее было бы
     Set<Filter> Filters = new HashSet();
     LinkedHashMap<PropertyObjectImplement,Boolean> Orders = new LinkedHashMap();
-    
+
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
-    Map<PropertyView,Boolean> InterfacePool = new HashMap();    
+    Map<PropertyView,Boolean> InterfacePool = new HashMap();
 
     // Методы, которые по ID находят объект
     public GroupObjectImplement getGroupObjectImplement(int groupID) {
@@ -542,7 +542,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     Object.Class = ObjectClass;
                     Object.Updated = Object.Updated | (1<<1);
                 }
-                
+
                 Group.Updated = Group.Updated | (1<<0);
             }
         }
@@ -579,7 +579,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         Group.GridClassView = Show;
         Group.Updated = Group.Updated | (1<<4);
     }
-    
+
     // флаги изменения фильтров\порядков чисто для ускорения
     boolean StructUpdated = false;
     // фильтры !null (св-во), св-во - св-во, св-во - объект, класс св-ва (для < > в том числе)?,
@@ -631,15 +631,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     // собсно скорее все-таки будет PropertyView передаваться
     public void AddOrder(PropertyObjectImplement Property) {
         Orders.put(Property,false);
-        
+
         StructUpdated = true;
     }
-    
+
     // пометка что изменилось св-во
     boolean DataChanged = false;
 
     public void ChangeProperty(PropertyObjectImplement Property,Object Value) throws SQLException {
-        
+
         ObjectProperty ChangeProperty = Property.Property;
         Map<PropertyInterface,ObjectValue> Keys = new HashMap();
         for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
@@ -649,7 +649,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         // изменяем св-во
         ChangeProperty.ChangeProperty(Keys,Value,Session);
-            
+
         DataChanged = true;
     }
 
@@ -669,7 +669,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     public void AddObject(ObjectImplement Object, Class cls) throws SQLException {
         // пока тупо в базу
         Integer AddID = BL.AddObject(Session, cls);
-        
+
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter Filter : Object.GroupTo.Filters) {
@@ -703,11 +703,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
                     ChangeProperty.ChangeProperty(Keys,Row.getValue().get("newvalue"),Session);
-                }                
+                }
             }
         }
         DataChanged = true;
-    }   
+    }
 
     public void ChangeClass(int objectID, int classID) throws SQLException {
 
@@ -715,15 +715,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         ChangeClass(object, (classID == -1) ? null : getFormClass(object.BaseClass, classID));
 
     }
-    
+
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
         BL.ChangeClass(Session, Object.idObject,Class);
         DataChanged = true;
     }
-    
+
     // рекурсия для генерации порядка
     SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
-        
+
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
         boolean Last = !(Index+1<OrderSources.size());
@@ -731,7 +731,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(Down?(Last?CompareIndex+2:CompareIndex):3-CompareIndex));
         if(!Last) {
             SourceWhere NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1);
-            
+
             // >A OR (=A AND >B)
             return new FieldOPWhere(OrderWhere,new FieldOPWhere(new FieldExprCompareWhere(OrderExpr,OrderValue,0),NextWhere,true),false);
         } else
@@ -751,10 +751,10 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     boolean Cancel = false;
     public void CancelChanges() {
         Cancel = true;
-        
+
         DataChanged = true;
     }
-    
+
     // получаем все аггрегированные св-ва задействованные на форме
     Set<ObjectProperty> GetProperties() {
 
@@ -763,25 +763,25 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             Result.add(PropView.View.Property);
         return Result;
     }
-    
+
     public void StartNewSession() throws SQLException {
 
         ChangedProps.clear();
         BL.restartSession(Session);
     }
-    
+
     void Close() throws SQLException {
-        
+
         for(GroupObjectImplement Group : Groups) {
             ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
             DropTable.DropViewID(Session, Group.GID);
-        }        
+        }
     }
 
     // поиски по свойствам\объектам
     Map<PropertyObjectImplement,Object> UserPropertySeeks = new HashMap();
     Map<ObjectImplement,Integer> UserObjectSeeks = new HashMap();
-    
+
     void AddPropertySeek(PropertyObjectImplement Property, Object Value) {
         UserPropertySeeks.put(Property,Value);
     }
@@ -816,7 +816,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             // фильтры
             for(Filter Filt : Filters)
                 Filt.GetApplyObject().MapFilters.add(Filt);
-            
+
             // порядки
             for(PropertyObjectImplement Order : Orders.keySet())
                 Order.GetApplyObject().MapOrders.add(Order);
@@ -857,7 +857,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                 UpdateKeys = UpdateKeys || SetOrderChanged || !(new ArrayList(Group.Orders.entrySet())).equals(new ArrayList(NewOrder.entrySet())); //Group.Orders.equals(NewOrder)
                 Group.Orders = NewOrder;
-            }        
+            }
 
             // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
             if(!UpdateKeys)
@@ -905,7 +905,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 UpdateKeys = true;
                 Direction = 2;
             }
-                
+
             if(!UpdateKeys && Group.GridClassView && (Group.Updated & (1<<0))!=0) {
                 // листание - объекты стали близки к краю (idObject не далеко от края - надо хранить список не базу же дергать) - изменился объект
                 int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
@@ -913,7 +913,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 if(KeyNum<Group.PageSize && Group.UpKeys) {
                     Direction = 1;
                     UpdateKeys = true;
-                    
+
                     if(Group.PageSize*2<Group.Keys.size()) {
                         ObjectSeeks = Group.Keys.get(Group.PageSize*2);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
@@ -923,7 +923,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 if(KeyNum>Group.Keys.size()-Group.PageSize && Group.DownKeys) {
                     Direction = 0;
                     UpdateKeys = true;
-                    
+
                     if(Group.Keys.size()-2*Group.PageSize>=0) {
                         ObjectSeeks = Group.Keys.get(Group.Keys.size()-2*Group.PageSize);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
@@ -931,12 +931,12 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 }
                 }
             }
-            
+
             if(UpdateKeys) {
                 // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
 
                 // докидываем Join'ами (INNER) фильтры, порядки
-                
+
                 // уберем все некорректности в Seekах :
                 // корректно если : PropertySeeks = Orders или (Orders.sublist(PropertySeeks.size) = PropertySeeks и ObjectSeeks - пустое)
                 // если Orders.sublist(PropertySeeks.size) != Orders, тогда дочитываем ObjectSeeks полностью
@@ -976,7 +976,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         for(PropertyObjectImplement Order : Orders.keySet())
                             PropertySeeks.put(Order,ResultOrders.values().iterator().next().get(Order));
                     }
-                
+
                     OrderedJoinQuery<ObjectImplement,PropertyObjectImplement> SelectKeys = new OrderedJoinQuery<ObjectImplement,PropertyObjectImplement>(Group);
                     Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.TableFactory,Cancel?null:Session,ChangedProps);
 
@@ -994,7 +994,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                             OrderSources.add(OrderExpr);
                             OrderWheres.add(PropertySeeks.get(ToOrder.getKey()));
                             OrderDirs.add(Orders.get(ToOrder.getKey()));
-                        }                    
+                        }
                         // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
                         SelectKeys.Properties.put(ToOrder.getKey(),OrderExpr);
                     }
@@ -1003,7 +1003,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     for(ObjectImplement ObjectKey : Group)
                         if(!ObjectSeeks.containsKey(ObjectKey))
                             ObjectSeeks.put(ObjectKey,null);
-                    
+
                     // закинем объекты в порядок
                     for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
                         // также закинем их в порядок и в запрос6
@@ -1016,7 +1016,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                             OrderDirs.add(false);
                         }
                     }
-                    
+
 
                     // выполняем запрос
                     // какой ряд выбранным будем считать
@@ -1067,14 +1067,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         KeyResult.putAll(ExecuteList);
                         Group.DownKeys = (ExecuteList.size()==SelectKeys.Top);
                     }
-                    
+
                     Group.Keys = new ArrayList();
                     Group.KeyOrders = new HashMap();
 
                     // параллельно будем обновлять ключи чтобы Join'ить
                     ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
                     InsertTable.DropViewID(Session, Group.GID);
-                    
+
                     for(Entry<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultRow : KeyResult.entrySet()) {
                         GroupObjectValue KeyRow = new GroupObjectValue();
                         Map<PropertyObjectImplement,Object> OrderRow = new HashMap();
@@ -1110,7 +1110,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         // нашли ряд его выбираем
                         Result.Objects.put(Group,Group.Keys.get(ActiveRow));
                         ChangeObject(Group,Group.Keys.get(ActiveRow));
-                    } else 
+                    } else
                         ChangeObject(Group,new GroupObjectValue());
                 }
             }
@@ -1118,7 +1118,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         Collection<PropertyView> PanelProps = new ArrayList();
         Map<GroupObjectImplement,Collection<PropertyView>> GroupProps = new HashMap();
-        
+
 //        PanelProps.
 
         for(PropertyView DrawProp : Properties) {
@@ -1130,7 +1130,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             boolean CheckClass = false;
             boolean CheckObject = false;
             int InInterface = 0;
-            
+
             if(DrawProp.ToDraw!=null) {
                 // если рисуемся в какой-то вид и обновился источник насильно перечитываем все св-ва
                 Read = ((DrawProp.ToDraw.Updated & ((1<<2)+(1<<4)))!=0);
@@ -1169,7 +1169,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     NewInInterface = (DrawProp.View.IsInInterface(DrawProp.ToDraw)?2:0);
                 if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 && InInterface==2))
                     NewInInterface = (DrawProp.View.IsInInterface(null)?1:0);
-                
+
                 if(InInterface!=NewInInterface) {
                     InInterface = NewInInterface;
 
@@ -1184,7 +1184,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             }
 
             if(!Read && (DataChanged && ChangedProps.contains(DrawProp.View.Property)))
-                Read = true;                
+                Read = true;
 
             if(InInterface>0 && Read) {
                 if(InInterface==2 && DrawProp.ToDraw.GridClassView) {
@@ -1211,7 +1211,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             for(PropertyView DrawProp : PanelProps)
                 Result.PanelProperties.put(DrawProp,ResultProps.get(DrawProp));
         }
-        
+
         for(GroupObjectImplement Group : GroupProps.keySet()) {
             Collection<PropertyView> GroupList = GroupProps.get(Group);
 
@@ -1243,7 +1243,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         UserPropertySeeks.clear();
         UserObjectSeeks.clear();
-        
+
         // сбрасываем все пометки
         StructUpdated = false;
         for(GroupObjectImplement Group : Groups) {
@@ -1253,10 +1253,10 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         }
         DataChanged = false;
         if(Cancel) {
-            StartNewSession();            
+            StartNewSession();
             Cancel = false;
-        }        
-        
+        }
+
         Result.Out(this);
 
         return Result;
@@ -1272,14 +1272,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     // считывает все данные (для отчета)
     FormData ReadData() throws SQLException {
-        
+
         Set<GroupObjectImplement> ReportObjects = GetReportObjects();
         Collection<ObjectImplement> ReadObjects = new ArrayList();
         for(GroupObjectImplement Group : ReportObjects)
             ReadObjects.addAll(Group);
 
         // пока сделаем тупо получаем один большой запрос
-        
+
         OrderedJoinQuery<ObjectImplement,PropertyView> Query = new OrderedJoinQuery<ObjectImplement,PropertyView>(ReadObjects);
 
         for(GroupObjectImplement Group : ReportObjects) {
@@ -1303,19 +1303,19 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         }
 
         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Session);
-        
+
         for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> Row : ResultSelect.entrySet()) {
             Map<Integer,Integer> GroupValue = new HashMap();
             for(GroupObjectImplement Group : Groups)
                 for(ObjectImplement Object : Group)
                     GroupValue.put(Object.ID,Row.getKey().get(Object));
-            
+
             Result.ReadOrder.add(GroupValue);
-            
+
             for(PropertyView Property : Properties)
                 Result.Properties.get(Property.ID).put(GroupValue,Row.getValue().get(Property));
         }
-        
+
         return Result;
     }
 
@@ -1323,7 +1323,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     Set<GroupObjectImplement> GetReportObjects() {
         return new HashSet(Groups);
     }
-    
+
     // получает XML отчета
     JasperDesign GetReportDesign() {
         // итак цель сделать генерацию XML
@@ -1332,7 +1332,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         int PageWidth = 595-40;
 //        Design.setPageWidth(PageWidth);
         Design.setName("Report");
-        
+
 	JRDesignStyle Style = new JRDesignStyle();
 	Style.setName("Arial_Normal");
 	Style.setDefault(true);
@@ -1346,19 +1346,19 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         } catch(JRException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-            
-                
+
+
         for(GroupObjectImplement Group : Groups) {
             Collection<ReportDrawField> DrawFields = new ArrayList();
-            
-            // сначала все коды 
+
+            // сначала все коды
             for(ObjectImplement Object : Group)
                 DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.OutName,"integer"));
 
             // бежим по всем свойствам входящим в объектам
             for(PropertyView Property : Properties) {
                 GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
-                if(DrawProp==Group) 
+                if(DrawProp==Group)
                     DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.OutName,Property.View.Property.GetDBType()));
             }
 
@@ -1374,7 +1374,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 PageHeadBand = new JRDesignBand();
                 PageHeadBand.setHeight(PageHeadHeight);
                 Design.setPageHeader(PageHeadBand);
-                
+
                 Design.setDetail(Band);
             } else {
                 // создадим группу
@@ -1396,14 +1396,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            
+
             // узнаем общую ширину чтобы пропорционально считать ()
             int TotalWidth = 0;
             for(ReportDrawField Draw : DrawFields) {
                 if(!Detail) TotalWidth += Draw.GetCaptionWidth();
                 TotalWidth += Draw.Width;
             }
-            
+
 
             int Left = 0;
             for(ReportDrawField Draw : DrawFields) {
@@ -1416,9 +1416,9 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 } catch(JRException ex) {
                     Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
+
                 int DrawWidth = PageWidth*Draw.Width/TotalWidth;
-                
+
                 JRDesignStaticText DrawCaption = new JRDesignStaticText();
 		DrawCaption.setText(Draw.Caption);
                 DrawCaption.setX(Left);
@@ -1428,7 +1428,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     DrawCaption.setWidth(DrawWidth);
                     DrawCaption.setHeight(PageHeadHeight);
                     DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
-                    PageHeadBand.addElement(DrawCaption);                    
+                    PageHeadBand.addElement(DrawCaption);
                 } else {
                     int CaptWidth = PageWidth*Draw.GetCaptionWidth()/TotalWidth;
                     DrawCaption.setWidth(CaptWidth);
@@ -1446,26 +1446,30 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 DrawText.setHeight(BandHeight);
                 DrawText.setHorizontalAlignment(Draw.Alignment);
                 Left += DrawWidth;
-                
+
 		JRDesignExpression DrawExpr = new JRDesignExpression();
 		DrawExpr.setValueClass(Draw.ValueClass);
 		DrawExpr.setText("$F{"+Draw.ID+"}");
 		DrawText.setExpression(DrawExpr);
                 Band.addElement(DrawText);
-                
+
                 DrawText.setStretchWithOverflow(true);
             }
         }
-        
+
         return Design;
     }
-    
+
     RemoteNavigator<T> getNavigator(int propertyID) {
-        return getNavigator(getPropertyView(propertyID).View);
+        return getNavigator(getPropertyView(propertyID));
     }
 
-    RemoteNavigator<T> getNavigator(PropertyObjectImplement property) {
-        return new RemoteNavigator(Adapter,BL,new HashMap());
+    RemoteNavigator<T> getNavigator(PropertyView propertyView) {
+        return getNavigator(propertyView.View.GetValueClass(propertyView.ToDraw));
+    }
+
+    RemoteNavigator<T> getNavigator(Class cls) {
+        return new RemoteNavigator(Adapter, BL, new HashMap(), cls);
     }
 
 

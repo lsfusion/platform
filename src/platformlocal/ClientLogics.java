@@ -204,7 +204,7 @@ class ClientPropertyView extends ClientCellView {
     
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
 
-//        if ("гр. тов".equals(caption)) return new ObjectPropertyEditor(form);
+        if ("гр. тов".equals(caption)) return new ObjectPropertyEditor(form);
         if ("вес.".equals(caption)) return new BitPropertyEditor();
         if ("срок годн.".equals(caption)) return new DatePropertyEditor();
         if (type.equals("integer")) return new IntegerPropertyEditor((NumberFormat)getFormat());
