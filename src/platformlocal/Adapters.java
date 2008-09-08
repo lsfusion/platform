@@ -39,7 +39,7 @@ interface SQLSyntax {
 abstract class DataAdapter implements SQLSyntax {
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new MSSQLDataAdapter();
+        return new PostgreDataAdapter();
     }
 
     public String getNullValue(String DBType) {
@@ -74,7 +74,7 @@ abstract class DataAdapter implements SQLSyntax {
 
     void Execute(String ExecuteString) throws SQLException {
         Statement Statement = Connection.createStatement();
-        System.out.println(ExecuteString+getCommandEnd());
+//        System.out.println(ExecuteString+getCommandEnd());
         Statement.execute(ExecuteString+getCommandEnd());
     }
     
@@ -222,7 +222,7 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver");
-        Connection = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        Connection = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
 
         try {
             Execute("DROP DATABASE testplat");
@@ -273,7 +273,7 @@ class PostgreDataAdapter extends DataAdapter {
 
     public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         java.lang.Class.forName("org.postgresql.Driver");
-        Connection = DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=postgres&password=11111");
+        Connection = DriverManager.getConnection("jdbc:postgresql://server/postgres?user=postgres&password=11111");
 
         try {
             Execute("DROP DATABASE testplat");
@@ -284,7 +284,7 @@ class PostgreDataAdapter extends DataAdapter {
 
         Connection.close();
 
-        Connection = DriverManager.getConnection("jdbc:postgresql://localhost/testplat?user=postgres&password=11111");
+        Connection = DriverManager.getConnection("jdbc:postgresql://server/testplat?user=postgres&password=11111");
     }
 
     public String getCommandEnd() {

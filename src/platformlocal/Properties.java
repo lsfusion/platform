@@ -348,10 +348,8 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             ResultQuery = NewQuery;
         }
 
-        if("приход по складу".equals(OutName))
-            OutName = OutName;
-        System.out.println(OutName);
-        ResultQuery.outSelect(Adapter);
+//        System.out.println(OutName);
+//        ResultQuery.outSelect(Adapter);
         Adapter.InsertSelect(modifyIncrementChanges(Session,ResultQuery,ChangeType));
     }
 
@@ -723,16 +721,16 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
     }
 }
 
-class ValueProperty extends AggregateProperty<DataPropertyInterface> {
+class ClassProperty extends AggregateProperty<DataPropertyInterface> {
 
     Class ValueClass;
     Object Value;
     
-    ValueProperty(TableFactory iTableFactory, Class iValueClass, Object iValue) {
+    ClassProperty(TableFactory iTableFactory, Class iValueClass, Object iValue) {
         super(iTableFactory);
         ValueClass = iValueClass;
         Value = iValue;
-    }
+    }                                                               
     
     void FillRequiredChanges(ChangesSession Session) {
         // этому св-ву чужого не надо
@@ -920,10 +918,10 @@ class PropertyMapImplement extends PropertyImplement<ObjectProperty,PropertyInte
 
 }
 
-class RelationProperty extends AggregateProperty<PropertyInterface> {
+class JoinProperty extends AggregateProperty<PropertyInterface> {
     PropertyImplement<Property,PropertyInterfaceImplement> Implements;
     
-    RelationProperty(TableFactory iTableFactory, Property iProperty) {
+    JoinProperty(TableFactory iTableFactory, Property iProperty) {
         super(iTableFactory);
         Implements = new PropertyImplement(iProperty);
     }
@@ -1013,12 +1011,12 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
         List<PropertyInterface> ChangedProperties = GetChangedImplements(Session);
 
         QueryIncrementType = GetChangeType(Session);
-        boolean MultiplyRelation = (Implements.Property instanceof MultiplyFormulaProperty && QueryIncrementType==1);
-        if(ChangedProperties.size()!=0 && !MultiplyRelation)
+        boolean MultiplyJoin = (Implements.Property instanceof MultiplyFormulaProperty && QueryIncrementType==1);
+        if(ChangedProperties.size()!=0 && !MultiplyJoin)
            QueryIncrementType = 0;
         
         // конечный результат, с ключами и выражением
-        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,(MultiplyRelation?1:3)); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,(MultiplyJoin?1:3)); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
 
         // строим все подмножества св-в в лексикографическом порядке
         ListIterator<List<PropertyInterface>> il = (new SetBuilder<PropertyInterface>()).BuildSubSetList(ChangedProperties).listIterator();
@@ -1032,7 +1030,7 @@ class RelationProperty extends AggregateProperty<PropertyInterface> {
                 // JoinImplement'ы основного св-ва
                 Map<PropertyInterface,SourceExpr> MapJoinImplement = new HashMap();
                 for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces)
-                    MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).mapSourceExpr(Query.MapKeys,true,(ChangeProps.contains(ImplementInterface)?Session:null),MultiplyRelation?1:0));
+                    MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).mapSourceExpr(Query.MapKeys,true,(ChangeProps.contains(ImplementInterface)?Session:null),MultiplyJoin?1:0));
                 
                 SourceExpr ValueExpr = null;
                 if(ij==0) 
@@ -1396,9 +1394,9 @@ class MaxGroupProperty extends GroupProperty {
         return null;
     }
 }
-abstract class ListProperty extends AggregateProperty<PropertyInterface> {
+abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
 
-    ListProperty(TableFactory iTableFactory,int iOperator) {
+    UnionProperty(TableFactory iTableFactory,int iOperator) {
         super(iTableFactory);
         Operands = new ArrayList();
         Operator = iOperator;
@@ -1559,9 +1557,9 @@ abstract class ListProperty extends AggregateProperty<PropertyInterface> {
 }
 
 
-class SumListProperty extends ListProperty {
+class SumUnionProperty extends UnionProperty {
     
-    SumListProperty(TableFactory iTableFactory) {super(iTableFactory,1);}
+    SumUnionProperty(TableFactory iTableFactory) {super(iTableFactory,1);}
 
     void FillRequiredChanges(ChangesSession Session) {
         // если pers или 1 - Operand на ->1 - IncrementQuery(1) возвр. 1 - (на подчищение - если (0 или 2) LEFT JOIN'им старые)
@@ -1583,9 +1581,9 @@ class SumListProperty extends ListProperty {
     
 }
 
-class MaxListProperty extends ListProperty {
+class MaxUnionProperty extends UnionProperty {
 
-    MaxListProperty(TableFactory iTableFactory) {super(iTableFactory,0);}
+    MaxUnionProperty(TableFactory iTableFactory) {super(iTableFactory,0);}
     
     void FillRequiredChanges(ChangesSession Session) {
         // если pers или 0 - Operand на ->0 - IncrementQuery(0), возвр. 0 - (на подчищение - если (1 или 2) LEFT JOIN'им старые)
@@ -1605,9 +1603,9 @@ class MaxListProperty extends ListProperty {
     }
 }
 
-class OverrideListProperty extends ListProperty {
+class OverrideUnionProperty extends UnionProperty {
     
-    OverrideListProperty(TableFactory iTableFactory) {super(iTableFactory,2);}
+    OverrideUnionProperty(TableFactory iTableFactory) {super(iTableFactory,2);}
     
     void FillRequiredChanges(ChangesSession Session) {
         // Operand на ->I - IncrementQuery(I) возвр. I

@@ -89,7 +89,7 @@ abstract class Source<K,V> {
 
         Statement Statement = Adapter.Connection.createStatement();
 
-        System.out.println(getSelect(new ArrayList(),new ArrayList(), Adapter));
+//        System.out.println(getSelect(new ArrayList(),new ArrayList(), Adapter));
         try {
             ResultSet Result = Statement.executeQuery(getSelect(new ArrayList(),new ArrayList(), Adapter));
             try {
@@ -176,8 +176,13 @@ class DumbSource<K,V> extends Source<K,V> {
         return ValueKeys.get(Key).toString();
     }
 
-    String getValueString(V Value,String Alias) {
-        return Values.get(Value).toString();
+    String getPropertyString(V Property,String Alias) {
+        Object Value = Values.get(Property);
+        if(Value instanceof String)
+            return "'" + Value + "'";
+        else
+            return Value.toString();
+
     }
 
     Collection<V> getProperties() {
@@ -199,7 +204,7 @@ class DumbSource<K,V> extends Source<K,V> {
         for(Map.Entry<K,Integer> ValueKey : ValueKeys.entrySet())
             KeySelect.put(ValueKey.getKey(),ValueKey.getValue().toString());
         for(Map.Entry<V,Object> Value : Values.entrySet())
-            PropertySelect.put(Value.getKey(),(Value.getValue()==null?"NULL":Value.getValue().toString()));
+            PropertySelect.put(Value.getKey(),(Value.getValue()==null?"NULL":(Value.getValue() instanceof String?"'"+Value.getValue()+"'":Value.getValue().toString())));
 
         return "dumb";
     }
@@ -1107,8 +1112,8 @@ class OrderedJoinQuery<K,V> extends JoinQuery<K,V> {
 
     int Top;
 
-    boolean Descending;
-    List<SourceExpr> Orders = new ArrayList();
+    boolean Up;
+    LinkedHashMap<SourceExpr,Boolean> Orders = new LinkedHashMap();
 
     // кривоватая перегрузка но плодить параметры еще хуже
     String getSelect(List<K> KeyOrder, List<V> PropertyOrder, SQLSyntax Syntax) {
@@ -1116,7 +1121,7 @@ class OrderedJoinQuery<K,V> extends JoinQuery<K,V> {
         Map<V,String> PropertySelect = new HashMap();
         Collection<String> WhereSelect = new ArrayList();
         Map<SourceExpr,String> OrderSelect = new HashMap();
-        for(SourceExpr Order : Orders)
+        for(SourceExpr Order : Orders.keySet())
             OrderSelect.put(Order,null);
         String From = fillOrderSelect(KeySelect,PropertySelect,WhereSelect,OrderSelect, Syntax);
 
@@ -1135,8 +1140,8 @@ class OrderedJoinQuery<K,V> extends JoinQuery<K,V> {
             WhereString = (WhereString.length()==0?"":WhereString+" AND ") + Where;
 
         String OrderString = "";
-        for(SourceExpr Order : Orders)
-            OrderString = (OrderString.length()==0?"":OrderString+",") + OrderSelect.get(Order)+(Descending?" DESC":" ASC");
+        for(Map.Entry<SourceExpr,Boolean> Order : Orders.entrySet())
+            OrderString = (OrderString.length()==0?"":OrderString+",") + OrderSelect.get(Order.getKey())+(Up==Order.getValue()?" ASC":" DESC");
 
         return "SELECT " + Syntax.getTop(Top, ExpressionString + " FROM " + From + (WhereString.length()==0?"":" WHERE " + WhereString) +
                 (OrderString.length()==0?"":" ORDER BY "+OrderString));

@@ -1881,6 +1881,7 @@ public class ClientForm extends Container {
                                 } else {
                                     if (e.getButton() == MouseEvent.BUTTON1) {
                                         orderDirections.set(ordNum, !orderDirections.get(ordNum));
+                                        changeOrder(property, RemoteForm.ORDER_DIR);
                                     } else {
                                         changeOrder(property, RemoteForm.ORDER_REMOVE);
                                         orders.remove(ordNum);

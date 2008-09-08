@@ -5,12 +5,7 @@
 
 package platformlocal;
 
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import java.util.*;
 
@@ -260,14 +255,33 @@ class ViewTable extends Table {
     }
 }
 
-class ChangeTable extends Table {
+// временная таблица на момент сессии
+abstract class TemporaryTable extends Table {
+
+    TemporaryTable(String iName) {
+        super(iName);
+    }
+}
+
+abstract class ChangeTable extends TemporaryTable {
+
+    KeyField Session;
+    
+    ChangeTable(String iName) {
+        super(iName);
+
+        Session = new KeyField("session","integer");
+        Keys.add(Session);
+    }
+}
+
+class ChangeObjectTable extends ChangeTable {
 
     Collection<KeyField> Objects;
-    KeyField Session;
     KeyField Property;
     PropertyField Value;
     
-    ChangeTable(String TablePrefix,Integer iObjects,Integer iDBType,List<String> DBTypes) {
+    ChangeObjectTable(String TablePrefix,Integer iObjects,Integer iDBType,List<String> DBTypes) {
         super(TablePrefix+"changetable"+iObjects+"t"+iDBType);
 
         Objects = new ArrayList();
@@ -277,9 +291,6 @@ class ChangeTable extends Table {
             Keys.add(ObjKeyField);
         }
         
-        Session = new KeyField("session","integer");
-        Keys.add(Session);
-        
         Property = new KeyField("property","integer");
         Keys.add(Property);
         
@@ -288,14 +299,14 @@ class ChangeTable extends Table {
     }
 }
 
-class DataChangeTable extends ChangeTable {
+class DataChangeTable extends ChangeObjectTable {
 
     DataChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
         super("data",iObjects,iDBType,DBTypes);
     }
 }
 
-class IncrementChangeTable extends ChangeTable {
+class IncrementChangeTable extends ChangeObjectTable {
 
     PropertyField PrevValue;
     // системное поля, по сути для MaxGroupProperty
@@ -314,18 +325,14 @@ class IncrementChangeTable extends ChangeTable {
 
 // таблица изменений классов
 // хранит добавляение\удаление классов
-class ChangeClassTable extends Table {
+class ChangeClassTable extends ChangeTable {
 
-    KeyField Session;
     KeyField Class;
     KeyField Object;
 
     ChangeClassTable(String iTable) {
         super(iTable);
 
-        Session = new KeyField("session","integer");
-        Keys.add(Session);
-        
         Object = new KeyField("object","integer");
         Keys.add(Object);
 
@@ -481,9 +488,9 @@ class TableFactory extends TableImplement{
         for(ViewTable ViewTable : ViewTables) Adapter.CreateTable(ViewTable);
 
         for(List<IncrementChangeTable> ListTables : ChangeTables)
-            for(ChangeTable ChangeTable : ListTables) Adapter.CreateTable(ChangeTable);
+            for(ChangeObjectTable ChangeTable : ListTables) Adapter.CreateTable(ChangeTable);
         for(List<DataChangeTable> ListTables : DataChangeTables)
-            for(ChangeTable DataChangeTable : ListTables) Adapter.CreateTable(DataChangeTable);
+            for(ChangeObjectTable DataChangeTable : ListTables) Adapter.CreateTable(DataChangeTable);
 
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
@@ -498,10 +505,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     BusinessLogics() {
         TableFactory = new TableFactory();
-        Properties = new ArrayList();
-        Persistents = new HashSet();
-        Constraints = new HashMap();
-        
+
         BaseClass = new ObjectClass(0, "Базовый класс");
         
         StringClass = new StringClass(1, "Строка");
@@ -657,13 +661,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Adapter.deleteKeyRecords(TableFactory.RemoveClassTable,ValueKeys);
 
         for(List<IncrementChangeTable> TypeTables : TableFactory.ChangeTables)
-            for(ChangeTable Table : TypeTables) {
+            for(ChangeObjectTable Table : TypeTables) {
                 ValueKeys = new HashMap();
                 ValueKeys.put(Table.Session,Session.ID);
                 Adapter.deleteKeyRecords(Table,ValueKeys);
             }
         for(List<DataChangeTable> TypeTables : TableFactory.DataChangeTables)
-            for(ChangeTable Table : TypeTables) {
+            for(ChangeObjectTable Table : TypeTables) {
                 ValueKeys = new HashMap();
                 ValueKeys.put(Table.Session,Session.ID);
                 Adapter.deleteKeyRecords(Table,ValueKeys);
@@ -675,10 +679,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     IntegralClass IntegerClass;
     
     TableFactory TableFactory;
-    Collection<Property> Properties;
-    
-    Set<AggregateProperty> Persistents;
-    Map<ObjectProperty,Constraint> Constraints;
+    Collection<Property> Properties = new ArrayList();
+    Set<AggregateProperty> Persistents = new HashSet();
+    Map<ObjectProperty,Constraint> Constraints = new HashMap();
 
     // последний параметр
     List<ObjectProperty> UpdateAggregations(DataAdapter Adapter,Collection<ObjectProperty> ToUpdateProperties, ChangesSession Session) throws SQLException {
@@ -908,8 +911,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Property.OnDefaultChange = OnChange;
     }
 
-    LDP AddVProp(Object Value,Class ValueClass,Class ...Params) {
-        ValueProperty Property = new ValueProperty(TableFactory,ValueClass,Value);
+    LDP AddCProp(Object Value,Class ValueClass,Class ...Params) {
+        ClassProperty Property = new ClassProperty(TableFactory,ValueClass,Value);
         LDP ListProperty = new LDP(Property);
         for(Class Int : Params) {
             ListProperty.AddInterface(Int);
@@ -964,8 +967,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return Result;
     }
 
-    LRP AddRProp(LP MainProp, int IntNum, Object ...Params) {
-        RelationProperty Property = new RelationProperty(TableFactory,MainProp.Property);
+    LRP AddJProp(LP MainProp, int IntNum, Object ...Params) {
+        JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
         LRP ListProperty = new LRP(Property,IntNum);
         int MainInt = 0;
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(ListProperty,Params);
@@ -992,17 +995,17 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return ListProperty;
     }
 
-    LRP AddLProp(int ListType, int IntNum, Object ...Params) {
-        ListProperty Property = null;
-        switch(ListType) {
+    LRP AddUProp(int UnionType, int IntNum, Object ...Params) {
+        UnionProperty Property = null;
+        switch(UnionType) {
             case 0:
-                Property = new MaxListProperty(TableFactory);
+                Property = new MaxUnionProperty(TableFactory);
                 break;
             case 1:
-                Property = new SumListProperty(TableFactory);
+                Property = new SumUnionProperty(TableFactory);
                 break;
             case 2:
-                Property = new OverrideListProperty(TableFactory);
+                Property = new OverrideUnionProperty(TableFactory);
                 break;
         }
         
@@ -1105,21 +1108,21 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 PriceSupp.Property.OutName = "цена пост.";
                 GrStQty.Property.OutName = "грт на скл.";
 
-                LRP QtyGrSt = AddRProp(GrStQty,2,ArtToGroup,1,DocStore,2);
+                LRP QtyGrSt = AddJProp(GrStQty,2,ArtToGroup,1,DocStore,2);
                 QtyGrSt.Property.OutName = "тдок - кол-во гр. ск.";
 
-                LRP OstPrice = AddRProp(PriceSupp,2,1,ArtSupplier,1,2);
+                LRP OstPrice = AddJProp(PriceSupp,2,1,ArtSupplier,1,2);
                 OstPrice.Property.OutName = "цена на складе";
 
-                LRP StoreName = AddRProp(Name,1,DocStore,1);
+                LRP StoreName = AddJProp(Name,1,DocStore,1);
                 StoreName.Property.OutName = "имя склада";
-                LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
+                LRP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
                 ArtGroupName.Property.OutName = "имя гр. тов.";
 
-                LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
+                LRP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
                 DDep.Property.OutName = "предш. док.";
 
-                LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
+                LRP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
                 QDep.Property.OutName = "изм. баланса";
 
                 LGP GSum = AddGProp(QDep,true,2,3);
@@ -1138,7 +1141,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
                 RashArtStore.Property.OutName = "расход по складу";
 
-                LRP OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+                LRP OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
                 OstArtStore.Property.OutName = "остаток по складу";
 
                 LGP OstArt = AddGProp(OstArtStore,true,2);
@@ -1147,7 +1150,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
                 MaxPrih.Property.OutName = "макс. приход по гр. тов.";
 
-                LRP MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+                LRP MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
                 MaxOpStore.Property.OutName = "макс. операция";
 
                 LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
@@ -1342,8 +1345,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             ObjectProperty GenProp = null;
             String ResType = "";
             if(PropClass==0) {
-                // RelationProperty
-                RelationProperty RelProp = new RelationProperty(TableFactory,RandProps.get(Randomizer.nextInt(RandProps.size())));
+                // JoinProperty
+                JoinProperty RelProp = new JoinProperty(TableFactory,RandProps.get(Randomizer.nextInt(RandProps.size())));
                 
                 // генерируем случайно кол-во интерфейсов
                 List<PropertyInterface> RelPropInt = new ArrayList();
@@ -1437,16 +1440,16 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
 
             if(PropClass==3 || PropClass==4 || PropClass==5) {
-                ListProperty Property = null;
+                UnionProperty Property = null;
                 if(PropClass==3) {
-                    Property = new SumListProperty(TableFactory);
+                    Property = new SumUnionProperty(TableFactory);
                     ResType = "SL";
                 } else {
                 if(PropClass==4) {
-                    Property = new MaxListProperty(TableFactory);
+                    Property = new MaxUnionProperty(TableFactory);
                     ResType = "ML";
                 } else {
-                    Property = new OverrideListProperty(TableFactory);
+                    Property = new OverrideUnionProperty(TableFactory);
                     ResType = "OL";
                 }
                 }
@@ -1572,7 +1575,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 //        Randomizer.setSeed(1);
         int Iterations = 2;
         while(Iterations<MaxIterations) {
-            System.out.println(Iterations);
+            System.out.println(Iterations++);
 
             ChangesSession Session = CreateSession();
 
@@ -1622,7 +1625,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 
                 
             Apply(Adapter,Session);
-            CheckPersistent(Adapter);
+//            CheckPersistent(Adapter);
         }
     }
 }

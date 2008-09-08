@@ -6,13 +6,7 @@
 package platformlocal;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -256,6 +250,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         Apply(ad,Session);
 
+//        ChangeDBTest(ad,30,new Random());
+
 /*        PrihArtStore.Property.Out(ad);
         RashArtStore.Property.Out(ad);
         OstArtStore.Property.Out(ad);
@@ -324,37 +320,37 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Weight = AddDProp(IntegerClass,Article);
         Weight.Property.OutName = "вес.";
 
-        LDP AbsQuantity = AddVProp(null,IntegerClass,Document,Article);
+        LDP AbsQuantity = AddCProp(null,IntegerClass,Document,Article);
         AbsQuantity.Property.OutName = "абст. кол-во";
 
-        LDP IsGrmat = AddVProp(0,IntegerClass,Article);
+        LDP IsGrmat = AddCProp(0,IntegerClass,Article);
         IsGrmat.Property.OutName = "признак товара";
 
-        FilledProperty = AddLProp(0,1,1,IsGrmat,1,1,ArtToGroup,1);
+        FilledProperty = AddUProp(0,1,1,IsGrmat,1,1,ArtToGroup,1);
         FilledProperty.Property.OutName = "заполнение гр. тов.";
 
         // сделаем Quantity перегрузкой
-        Quantity = AddLProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+        Quantity = AddUProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LDP RashValue = AddVProp(-1,IntegerClass,RashDocument);
+        LDP RashValue = AddCProp(-1,IntegerClass,RashDocument);
         RashValue.Property.OutName = "призн. расхода";
 
-        LDP PrihValue = AddVProp(1,IntegerClass,PrihDocument);
+        LDP PrihValue = AddCProp(1,IntegerClass,PrihDocument);
         PrihValue.Property.OutName = "призн. прихода";
 
-        OpValue = AddLProp(2,1,1,RashValue,1,1,PrihValue,1);
+        OpValue = AddUProp(2,1,1,RashValue,1,1,PrihValue,1);
         OpValue.Property.OutName = "общ. призн.";
         
         LGP RaznSValue = AddGProp(OpValue,true,DocStore,1);
         RaznSValue.Property.OutName = "разн. пр-рас.";
         
-        LRP RGrAddV = AddRProp(GrAddV,1,ArtToGroup,1);
+        LRP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.OutName = "наценка по товару (гр.)";
 
-        LRP ArtActAddV = AddLProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
+        LRP ArtActAddV = AddUProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
         ArtActAddV.Property.OutName = "наценка по товару";
 
-//        LRP Quantity = AddLProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+//        LRP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
         LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
         LMFP Multiply = AddMFProp(2);
@@ -369,20 +365,20 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         GrAddV.Property.OutName = "нац. по гр.";
         ArtAddV.Property.OutName = "нац. перегр.";
 
-        LRP StoreName = AddRProp(Name,1,DocStore,1);
+        LRP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.OutName = "имя склада";
         
-        LRP ArtGroupName = AddRProp(Name,1,ArtToGroup,1);
+        LRP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
         ArtGroupName.Property.OutName = "имя гр. тов.";
 
         LDP ArtGName = AddDProp(StringClass,Article);
         ArtGName.Property.OutName = "при доб. гр. тов.";
         SetDefProp(ArtGName,ArtGroupName,true);
 
-        LRP DDep = AddRProp(Dirihle,2,DocDate,1,DocDate,2);
+        LRP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
         DDep.Property.OutName = "предш. док.";
 
-        LRP QDep = AddRProp(Multiply,3,DDep,1,2,Quantity,1,3);
+        LRP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
         QDep.Property.OutName = "изм. баланса";
 
         GSum = AddGProp(QDep,true,2,3);
@@ -401,7 +397,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
         RashArtStore.Property.OutName = "расход по складу";
 
-        OstArtStore = AddLProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+        OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
         OstArtStore.Property.OutName = "остаток по складу";
 
         OstArt = AddGProp(OstArtStore,true,2);
@@ -410,7 +406,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
         MaxPrih.Property.OutName = "макс. приход по гр. тов.";
 
-        MaxOpStore = AddLProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+        MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
         MaxOpStore.Property.OutName = "макс. операция";
         
         SumMaxArt = AddGProp(MaxOpStore,true,2);
@@ -497,7 +493,7 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
         obj1.OutName = "группа товаров";
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
         obj2.OutName = "товар";
-        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.BaseClass);
+        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
         obj3.OutName = "документ";
         
         GroupObjectImplement gv = new GroupObjectImplement();

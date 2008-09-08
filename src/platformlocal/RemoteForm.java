@@ -87,7 +87,6 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
         MapFilters = new HashSet();
         MapOrders = new ArrayList();
         Filters = new HashSet();
-        Orders = new ArrayList();
     }
 
     Integer Order = 0;
@@ -106,7 +105,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     
     // с активным интерфейсом
     Set<Filter> Filters;
-    List<PropertyObjectImplement> Orders;
+    LinkedHashMap<PropertyObjectImplement,Boolean> Orders = new LinkedHashMap();
     
     boolean UpKeys, DownKeys;
     List<GroupObjectValue> Keys = null;
@@ -256,19 +255,11 @@ class PropertyView {
 
 class AbstractFormChanges<T,V,Z> {
 
-    AbstractFormChanges() {
-        Objects = new HashMap();
-        GridObjects = new HashMap();
-        GridProperties = new HashMap();
-        PanelProperties = new HashMap();
-        DropProperties = new HashSet();
-    }
-
-    Map<T,V> Objects;
-    Map<T,List<V>> GridObjects;
-    Map<Z,Map<V,Object>> GridProperties;
-    Map<Z,Object> PanelProperties;
-    Set<Z> DropProperties;
+    Map<T,V> Objects = new HashMap();
+    Map<T,List<V>> GridObjects = new HashMap();
+    Map<Z,Map<V,Object>> GridProperties = new HashMap();
+    Map<Z,Object> PanelProperties = new HashMap();
+    Set<Z> DropProperties = new HashSet();
 }
 
 // класс в котором лежит какие изменения произошли
@@ -488,7 +479,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     
     // Set чтобы сравнивать удобнее было бы
     Set<Filter> Filters = new HashSet();
-    List<PropertyObjectImplement> Orders = new ArrayList();
+    LinkedHashMap<PropertyObjectImplement,Boolean> Orders = new LinkedHashMap();
     
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
     Map<PropertyView,Boolean> InterfacePool = new HashMap();    
@@ -612,6 +603,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     public static int ORDER_REPLACE = 1;
     public static int ORDER_ADD = 2;
     public static int ORDER_REMOVE = 3;
+    public static int ORDER_DIR = 4;
 
     public void ChangeOrder(int propertyID, int modiType) {
         ChangeOrder(getPropertyView(propertyID), modiType);
@@ -621,12 +613,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         PropertyObjectImplement property = propertyView.View;
 
-        if (modiType == ORDER_REMOVE) {
+        if (modiType == ORDER_REMOVE)
             Orders.remove(property);
-        } else {
+        else
+        if (modiType == ORDER_DIR)
+            Orders.put(property,!Orders.get(property));
+        else {
             if (modiType == ORDER_REPLACE)
                 Orders.clear();
-            Orders.add(property);
+            Orders.put(property,false);
         }
 
         StructUpdated = true;
@@ -634,7 +629,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     // собсно скорее все-таки будет PropertyView передаваться
     public void AddOrder(PropertyObjectImplement Property) {
-        Orders.add(Property);
+        Orders.put(Property,false);
         
         StructUpdated = true;
     }
@@ -726,14 +721,15 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }
     
     // рекурсия для генерации порядка
-    SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,boolean More,int Index) {
+    SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
         
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
         boolean Last = !(Index+1<OrderSources.size());
-        SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(More?(Last?3:1):2));
+        int CompareIndex = (OrderDirs.get(Index)?2:1);
+        SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(Down?(Last?CompareIndex+2:CompareIndex):3-CompareIndex));
         if(!Last) {
-            SourceWhere NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,More,Index+1);
+            SourceWhere NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1);
             
             // >A OR (=A AND >B)
             return new FieldOPWhere(OrderWhere,new FieldOPWhere(new FieldExprCompareWhere(OrderExpr,OrderValue,0),NextWhere,true),false);
@@ -822,7 +818,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 Filt.GetApplyObject().MapFilters.add(Filt);
             
             // порядки
-            for(PropertyObjectImplement Order : Orders)
+            for(PropertyObjectImplement Order : Orders.keySet())
                 Order.GetApplyObject().MapOrders.add(Order);
         }
 
@@ -847,7 +843,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
             // порядки
             boolean SetOrderChanged = false;
-            Set<PropertyObjectImplement> SetOrders = new HashSet(Group.Orders);
+            Set<PropertyObjectImplement> SetOrders = new HashSet(Group.Orders.keySet());
             for(PropertyObjectImplement Order : Group.MapOrders) {
                 // если изменилась структура или кто-то изменил класс, перепроверяем
                 if(StructUpdated || Order.ClassUpdated(Group))
@@ -855,11 +851,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             }
             if(StructUpdated || SetOrderChanged) {
                 // переформирываваем порядок, если структура или принадлежность Order'у изменилась
-                List<PropertyObjectImplement> NewOrder = new ArrayList();
+                LinkedHashMap<PropertyObjectImplement,Boolean> NewOrder = new LinkedHashMap();
                 for(PropertyObjectImplement Order : Group.MapOrders)
-                    if(SetOrders.contains(Order)) NewOrder.add(Order);
+                    if(SetOrders.contains(Order)) NewOrder.put(Order,Orders.get(Order));
 
-                UpdateKeys = UpdateKeys || SetOrderChanged || !Group.Orders.equals(NewOrder);
+                UpdateKeys = UpdateKeys || SetOrderChanged || !(new ArrayList(Group.Orders.entrySet())).equals(new ArrayList(NewOrder.entrySet())); //Group.Orders.equals(NewOrder)
                 Group.Orders = NewOrder;
             }        
 
@@ -868,14 +864,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 for(Filter Filt : Group.Filters)
                     if(Filt.ObjectUpdated(Group)) {UpdateKeys = true; break;}
             if(!UpdateKeys)
-                for(PropertyObjectImplement Order : Group.Orders)
+                for(PropertyObjectImplement Order : Group.Orders.keySet())
                     if(Order.ObjectUpdated(Group)) {UpdateKeys = true; break;}
             // проверим на изменение данных
             if(!UpdateKeys)
                 for(Filter Filt : Group.Filters)
                     if(DataChanged && Filt.DataUpdated(ChangedProps)) {UpdateKeys = true; break;}
             if(!UpdateKeys)
-                for(PropertyObjectImplement Order : Group.Orders)
+                for(PropertyObjectImplement Order : Group.Orders.keySet())
                     if(DataChanged && ChangedProps.contains(Order.Property)) {UpdateKeys = true; break;}
             // классы удалились\добавились
             if(!UpdateKeys && DataChanged) {
@@ -946,7 +942,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 // если Orders.sublist(PropertySeeks.size) != Orders, тогда дочитываем ObjectSeeks полностью
                 // выкидываем лишние PropertySeeks, дочитываем недостающие Orders в PropertySeeks
                 // также если панель то тупо прочитаем объект
-                boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(new HashSet(Orders)) || ((PropertySeeks.size()<Orders.size() && (new HashSet(Orders.subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
+                boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(Orders.keySet()) || ((PropertySeeks.size()<Orders.size() && (new HashSet((new ArrayList(Orders.keySet())).subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
                 if((NotEnoughOrders || !Group.GridClassView) && ObjectSeeks.size()<Group.size()) {
                     // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
                     OrderedJoinQuery<ObjectImplement,Object> SelectKeys = new OrderedJoinQuery<ObjectImplement,Object>(Group);
@@ -973,11 +969,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         JoinQuery<ObjectImplement,PropertyObjectImplement> OrderQuery = new JoinQuery<ObjectImplement,PropertyObjectImplement>(ObjectSeeks.keySet());
                         OrderQuery.putDumbJoin(ObjectSeeks);
 
-                        for(PropertyObjectImplement Order : Orders)
+                        for(PropertyObjectImplement Order : Orders.keySet())
                             OrderQuery.Properties.put(Order,Order.getSourceExpr(Group.GetClassGroup(),OrderQuery.MapKeys,Session,ChangedProps,false));
 
                         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.executeSelect(Adapter);
-                        for(PropertyObjectImplement Order : Orders)
+                        for(PropertyObjectImplement Order : Orders.keySet())
                             PropertySeeks.put(Order,ResultOrders.values().iterator().next().get(Order));
                     }
                 
@@ -987,18 +983,20 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     // складываются источники и значения
                     List<SourceExpr> OrderSources = new ArrayList();
                     List<Object> OrderWheres = new ArrayList();
+                    List<Boolean> OrderDirs = new ArrayList();
 
                     // закинем порядки (с LEFT JOIN'ом)
-                    for(PropertyObjectImplement ToOrder : Group.Orders) {
-                        SourceExpr OrderExpr = ToOrder.getSourceExpr(Group.GetClassGroup(),SelectKeys.MapKeys,Cancel?null:Session,ChangedProps,false);
-                        SelectKeys.Orders.add(OrderExpr);
+                    for(Map.Entry<PropertyObjectImplement,Boolean> ToOrder : Group.Orders.entrySet()) {
+                        SourceExpr OrderExpr = ToOrder.getKey().getSourceExpr(Group.GetClassGroup(),SelectKeys.MapKeys,Cancel?null:Session,ChangedProps,false);
+                        SelectKeys.Orders.put(OrderExpr,ToOrder.getValue());
                         // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
-                        if(PropertySeeks.containsKey(ToOrder)) {
+                        if(PropertySeeks.containsKey(ToOrder.getKey())) {
                             OrderSources.add(OrderExpr);
-                            OrderWheres.add(PropertySeeks.get(ToOrder));
+                            OrderWheres.add(PropertySeeks.get(ToOrder.getKey()));
+                            OrderDirs.add(Orders.get(ToOrder.getKey()));
                         }                    
                         // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                        SelectKeys.Properties.put(ToOrder,OrderExpr);
+                        SelectKeys.Properties.put(ToOrder.getKey(),OrderExpr);
                     }
 
                     // докинем в ObjectSeeks недостающие группы
@@ -1010,11 +1008,12 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
                         // также закинем их в порядок и в запрос6
                         SourceExpr KeyExpr = SelectKeys.MapKeys.get(ObjectKey);
-                        SelectKeys.Orders.add(KeyExpr);
+                        SelectKeys.Orders.put(KeyExpr,false);
                         Integer SeekValue = ObjectSeeks.get(ObjectKey);
                         if(SeekValue!=null) {
                             OrderSources.add(KeyExpr);
                             OrderWheres.add(SeekValue);
+                            OrderDirs.add(false);
                         }
                     }
                     
@@ -1033,12 +1032,12 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     if(Direction==1 || Direction==2) {
                         Where OrderWhere = null;
                         if(OrderSources.size()>0) {
-                            OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,false,0);
+                            OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,false,0);
                             SelectKeys.Wheres.add(OrderWhere);
                             Group.DownKeys = true;
                         }
 
-                        SelectKeys.Descending = true;
+                        SelectKeys.Up = true;
                         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecResult = SelectKeys.executeSelect(Adapter);
                         ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList(ExecResult.keySet())).listIterator();
                         while(ik.hasNext()) ik.next();
@@ -1056,12 +1055,12 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                     // потом Ascending
                     if(Direction==0 || Direction==2) {
                         if(OrderSources.size()>0) {
-                            Where OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,true,0);
+                            Where OrderWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,true,0);
                             SelectKeys.Wheres.add(OrderWhere);
                             if(Direction!=2) Group.UpKeys = true;
                         }
 
-                        SelectKeys.Descending = false;
+                        SelectKeys.Up = false;
 //                        SelectKeys.outSelect(Adapter);
                         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Adapter);
                         if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
@@ -1092,7 +1091,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         }
                         Adapter.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
 
-                        for(PropertyObjectImplement ToOrder : Group.Orders)
+                        for(PropertyObjectImplement ToOrder : Group.Orders.keySet())
                             OrderRow.put(ToOrder,ResultRow.getValue().get(ToOrder));
 
                         Group.Keys.add(KeyRow);
@@ -1288,11 +1287,11 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             Group.fillSourceSelect(Query,ReportObjects,BL.TableFactory,Session,ChangedProps);
 
             // закинем Order'ы
-            for(PropertyObjectImplement Order : Group.Orders)
-                Query.Orders.add(Order.getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false));
+            for(Map.Entry<PropertyObjectImplement,Boolean> Order : Group.Orders.entrySet())
+                Query.Orders.put(Order.getKey().getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false),Order.getValue());
 
             for(ObjectImplement Object : Group)
-                Query.Orders.add(Object.getSourceExpr(ReportObjects,Query.MapKeys));
+                Query.Orders.put(Object.getSourceExpr(ReportObjects,Query.MapKeys),false);
         }
 
         FormData Result = new FormData();
