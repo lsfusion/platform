@@ -1249,14 +1249,24 @@ public class ClientForm extends Container {
 
                 private Object getSelectedValue() {
 
-                    int row = getSelectedRow();
-                    int col = getSelectedColumn();
+                    return getSelectedValue(getSelectedColumn());
+                }
 
+                private Object getSelectedValue(ClientCellView cell) {
+                    return getSelectedValue(gridColumns.indexOf(cell));
+                }
+
+
+                private Object getSelectedValue(int col) {
+
+                    int row = getSelectedRow();
                     if (row != -1 && col != -1)
                         return getValueAt(row, col);
                     else
                         return null;
                 }
+
+
 
                 // ---------------------------------------------------------------------------------------------- //
                 // -------------------------------------- Поиски и отборы --------------------------------------- //
@@ -1422,7 +1432,7 @@ public class ClientForm extends Container {
                             valueViews = new HashMap();
                             
                             ClientUserValueLink userValue = new ClientUserValueLink();
-                            userValue.value = table.getSelectedValue();
+//                            userValue.value = table.getSelectedValue();
                             ClientUserValueLinkView userView = new ClientUserValueLinkView(userValue, filter.property);
                             valueViews.put(userValue, userView);
 
@@ -1488,11 +1498,12 @@ public class ClientForm extends Container {
                                 remove(valueView);
 
                             valueView = valueViews.get(filter.value);
-                            valueView.propertyChanged(filter.property);
-
-                            if (valueView != null)
+                            if (valueView != null) {
                                 add(valueView);
+                            }
 
+                            valueView.propertyChanged(filter.property);
+                            
                             add(delButton);
 
                             hasChanged = true;
@@ -1556,6 +1567,7 @@ public class ClientForm extends Container {
 
                             public void propertyChanged(ClientPropertyView property) {
                                 cell.setKey(property);
+                                cell.setValue(table.getSelectedValue(property));
                             }
 
                             public void stopEditing() {
