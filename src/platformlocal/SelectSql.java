@@ -83,15 +83,15 @@ abstract class Source<K,V> {
     }
 
     // из-за templatов сюда кинем
-    LinkedHashMap<Map<K,Integer>,Map<V,Object>> executeSelect(DataAdapter Adapter) throws SQLException {
+    LinkedHashMap<Map<K,Integer>,Map<V,Object>> executeSelect(DataSession Session) throws SQLException {
 
         LinkedHashMap<Map<K,Integer>,Map<V,Object>> ExecResult = new LinkedHashMap();
 
-        Statement Statement = Adapter.Connection.createStatement();
+        Statement Statement = Session.Connection.createStatement();
 
-//        System.out.println(getSelect(new ArrayList(),new ArrayList(), Adapter));
+//        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
         try {
-            ResultSet Result = Statement.executeQuery(getSelect(new ArrayList(),new ArrayList(), Adapter));
+            ResultSet Result = Statement.executeQuery(getSelect(new ArrayList(),new ArrayList(),Session.Syntax));
             try {
                 while(Result.next()) {
                     Map<K,Integer> RowKeys = new HashMap();
@@ -113,12 +113,12 @@ abstract class Source<K,V> {
         return ExecResult;
     }
 
-    void outSelect(DataAdapter Adapter) throws SQLException {
+    void outSelect(DataSession Session) throws SQLException {
         // выведем на экран
         Collection<String> ResultFields = new ArrayList();
 //        System.out.println(Select.GetSelect(ResultFields));
 
-        LinkedHashMap<Map<K,Integer>,Map<V,Object>> Result = executeSelect(Adapter);
+        LinkedHashMap<Map<K,Integer>,Map<V,Object>> Result = executeSelect(Session);
 
         for(Map.Entry<Map<K,Integer>,Map<V,Object>> RowMap : Result.entrySet()) {
             for(K Key : Keys) {
@@ -136,7 +136,7 @@ abstract class Source<K,V> {
     }
 
     // по сути тоже самое что и InsertSelect
-    Table createView(DataAdapter Adapter,String ViewName,Map<K,KeyField> MapKeys,Map<V,PropertyField> MapProperties) throws SQLException {
+    Table createView(DataSession Session,String ViewName,Map<K,KeyField> MapKeys,Map<V,PropertyField> MapProperties) throws SQLException {
 
         Table View = new Table(ViewName);
         for(K Key : Keys) {
@@ -150,7 +150,7 @@ abstract class Source<K,V> {
             MapProperties.put(Property,PropertyField);
         }
 
-        Adapter.Execute("CREATE VIEW " + ViewName + " AS " + getSelect(new ArrayList(),new ArrayList(), Adapter));
+        Session.Execute("CREATE VIEW " + ViewName + " AS " + getSelect(new ArrayList(),new ArrayList(),Session.Syntax));
 
         return View;
     }
@@ -218,7 +218,7 @@ class DumbSource<K,V> extends Source<K,V> {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    void outSelect(DataAdapter Adapter) throws SQLException {
+    void outSelect(DataSession Session) throws SQLException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 }
@@ -1402,11 +1402,11 @@ class ModifyQuery {
         return "INSERT INTO " + Table.Name + " (" + InsertString + ") " + SelectString;
     }
 
-    void outSelect(DataAdapter Adapter) throws SQLException {
+    void outSelect(DataSession Session) throws SQLException {
         System.out.println("Table");
-        Table.outSelect(Adapter);
+        Table.outSelect(Session);
         System.out.println("Source");
-        Change.outSelect(Adapter);
+        Change.outSelect(Session);
     }
 }
 

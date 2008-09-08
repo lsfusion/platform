@@ -17,7 +17,9 @@ interface SQLSyntax {
 
     String getUpdate(String TableString,String SetString,String FromString,String WhereString);
 
-    void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+    String getClassName();
+    void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+    Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
     String startTransaction();
     String commitTransaction();
@@ -46,104 +48,18 @@ abstract class DataAdapter implements SQLSyntax {
         return "NULL";
     }
 
-    Connection Connection;
-
     public String getTop(int Top,String SelectString) {
         return (Top==0?"":"TOP "+Top+" ") + SelectString;
     }
 
-    DataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        
-        startConnection();
+   DataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+
+       java.lang.Class.forName(getClassName());
+       createDB();
     }
     
-    void CreateTable(Table Table) throws SQLException {
-        String CreateString = "";
-        String KeyString = "";
-        for(KeyField Key : Table.Keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare();
-            KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
-        }
-        for(PropertyField Prop : Table.Properties)
-            CreateString = CreateString+',' + Prop.GetDeclare();
-        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + getClustered() + " (" + KeyString + ")";
-
-//        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        Execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-    }
-
-    void Execute(String ExecuteString) throws SQLException {
-        Statement Statement = Connection.createStatement();
-//        System.out.println(ExecuteString+getCommandEnd());
-        Statement.execute(ExecuteString+getCommandEnd());
-    }
-    
-    void InsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
-        
-        String InsertString = "";
-        String ValueString = "";
-        
-        // пробежим по KeyFields'ам
-        for(KeyField Key : Table.Keys) {
-            InsertString = (InsertString.length()==0?"":InsertString+',') + Key.Name;
-            ValueString = (ValueString.length()==0?"":ValueString+',') + KeyFields.get(Key);
-        }
-        
-        // пробежим по Fields'ам
-        for(Field Prop : PropFields.keySet()) {
-            Object Value = PropFields.get(Prop);
-            InsertString = InsertString+","+Prop.Name;
-            ValueString = ValueString+","+(Value==null?"NULL":(Value instanceof String?"'"+(String)Value+"'":Value.toString()));
-        }
-
-        Execute("INSERT INTO "+Table.Name+" ("+InsertString+") VALUES ("+ValueString+")");
-    }
-
-    void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
-
-        // по сути пустое кол-во ключей
-        JoinQuery<Object,String> IsRecQuery = new JoinQuery<Object,String>();
-
-        Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table);
-        // сначала закинем KeyField'ы и прогоним Select
-        for(KeyField Key : Table.Keys)
-            TableJoin.Joins.put(Key,new ValueSourceExpr(KeyFields.get(Key)));
-
-        IsRecQuery.Wheres.add(new JoinWhere(TableJoin));
-
-        if(IsRecQuery.executeSelect(this).size()>0) {
-            // есть запись нужно Update лупить
-            UpdateRecords(new ModifyQuery(Table,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
-        } else
-            // делаем Insert
-            InsertRecord(Table,KeyFields,PropFields);
-    }
-
-    void deleteKeyRecords(Table Table,Map<KeyField,Integer> Keys) throws SQLException {
- //       Execute(Table.GetDelete());
-        String DeleteWhere = "";
-        for(Map.Entry<KeyField,Integer> DeleteKey : Keys.entrySet())
-            DeleteWhere = (DeleteWhere.length()==0?"":DeleteWhere+" AND ") + DeleteKey.getKey().Name + "=" + DeleteKey.getValue();
-
-        Execute("DELETE FROM "+Table.Name+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
-    }
-
-    void UpdateRecords(ModifyQuery Modify) throws SQLException {
-        Execute(Modify.getUpdate(this));
-    }
-
-    void InsertSelect(ModifyQuery Modify) throws SQLException {
-        Execute(Modify.getInsertSelect(this));
-    }
-
-    // сначала делает InsertSelect, затем UpdateRecords
-    void ModifyRecords(ModifyQuery Modify) throws SQLException {
-        Execute(Modify.getInsertLeftKeys(this));
-        Execute(Modify.getUpdate(this));
-    }
 
     void Disconnect() throws SQLException {
-        Connection.close();
     }
 
     // по умолчанию
@@ -176,17 +92,23 @@ class MySQLDataAdapter extends DataAdapter {
         return TableString + "," + FromString + SetString + WhereString;
     }
 
-    public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        java.lang.Class.forName("com.mysql.jdbc.Driver");
-        Connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/TestPlat");
+    public String getClassName() {
+        return "com.mysql.jdbc.Driver";
+    }
 
-        try {
-            Execute("DROP DATABASE testplat");
-        } catch(Exception e) {
-        }
+    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Execute("CREATE DATABASE testplat");
-        Execute("USE testplat");
+        Connection Connect = startConnection();
+        Connect.createStatement().execute("DROP DATABASE testplat");
+        Connect.createStatement().execute("CREATE DATABASE testplat");
+        Connect.close();
+    }
+
+    public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        Connection Connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/TestPlat");
+        Connect.createStatement().execute("USE testplat");
+
+        return Connect;
     }
 
     public String startTransaction() {
@@ -220,17 +142,23 @@ class MSSQLDataAdapter extends DataAdapter {
         return TableString + SetString + " FROM " + FromString + WhereString;
     }
 
-    public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        java.lang.Class.forName("net.sourceforge.jtds.jdbc.Driver");
-        Connection = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
+    public String getClassName() {
+        return "net.sourceforge.jtds.jdbc.Driver";
+    }
 
-        try {
-            Execute("DROP DATABASE testplat");
-        } catch(Exception e) {
-        }
+    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Execute("CREATE DATABASE testplat");
-        Execute("USE TestPlat");
+        Connection Connect = startConnection();
+        Connect.createStatement().execute("DROP DATABASE testplat");
+        Connect.createStatement().execute("CREATE DATABASE testplat");
+        Connect.close();
+    }
+
+    public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
+        Connect.createStatement().execute("USE testplat");
+
+        return Connect;
     }
 
     public String startTransaction() {
@@ -271,20 +199,20 @@ class PostgreDataAdapter extends DataAdapter {
         return TableString + SetString + " FROM " + FromString + WhereString;
     }
 
-    public void startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        java.lang.Class.forName("org.postgresql.Driver");
-        Connection = DriverManager.getConnection("jdbc:postgresql://server/postgres?user=postgres&password=11111");
+    public String getClassName() {
+        return "org.postgresql.Driver";
+    }
 
-        try {
-            Execute("DROP DATABASE testplat");
-        } catch(Exception e) {
-        }
+    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Execute("CREATE DATABASE testplat");
+        Connection Connect = DriverManager.getConnection("jdbc:postgresql://server/postgres?user=postgres&password=11111");
+        Connect.createStatement().execute("DROP DATABASE testplat");
+        Connect.createStatement().execute("CREATE DATABASE testplat");
+        Connect.close();
+    }
 
-        Connection.close();
-
-        Connection = DriverManager.getConnection("jdbc:postgresql://server/testplat?user=postgres&password=11111");
+    public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        return DriverManager.getConnection("jdbc:postgresql://server/testplat?user=postgres&password=11111");
     }
 
     public String getCommandEnd() {

@@ -8,12 +8,10 @@ package platformlocal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 /**
  *
@@ -180,7 +178,7 @@ abstract class Class {
     }
     
     // получает рандомный объект
-    abstract Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
+    abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
 }
 
 // класс который можно сравнивать
@@ -188,7 +186,7 @@ class IntegralClass extends Class {
     
     IntegralClass(Integer iID, String caption) {super(iID, caption);}
     
-    Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
+    Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         return Randomizer.nextInt(Diap*Diap+1);
     }
 }
@@ -211,7 +209,7 @@ class StringClass extends Class {
         return "char(50)";
     }
     
-    Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
+    Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         return "NAME "+Randomizer.nextInt(50);
     }
 
@@ -220,8 +218,8 @@ class StringClass extends Class {
 class ObjectClass extends Class {    
     ObjectClass(Integer iID, String caption) {super(iID, caption);}
     
-    Object GetRandomObject(DataAdapter Adapter,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Adapter).keySet());
+    Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
+        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
         return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);
     }
 }

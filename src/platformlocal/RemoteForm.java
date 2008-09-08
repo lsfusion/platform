@@ -138,7 +138,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
         return Result;
     }
 
-    void fillSourceSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,TableFactory TableFactory,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+    void fillSourceSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,TableFactory TableFactory, DataSession Session,Set<ObjectProperty> ChangedProps) {
         
         // фильтры первыми потому как ограничивают ключи
         for(Filter Filt : Filters) Filt.fillSelect(Query,ClassGroup,Session,ChangedProps);
@@ -219,7 +219,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         return false;
     }
 
-    SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, ChangesSession Session, Set<ObjectProperty> ChangedProps,boolean NotNull) {
+    SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session, Set<ObjectProperty> ChangedProps,boolean NotNull) {
 
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
         
@@ -354,7 +354,7 @@ class Filter {
         return Value.ObjectUpdated(ClassGroup);
     }
 
-    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup, DataSession Session,Set<ObjectProperty> ChangedProps) {
         Query.Wheres.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session,ChangedProps,true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,ChangedProps),Compare));
     }
 }
@@ -367,7 +367,7 @@ abstract class ValueLink {
     
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {return false;}
 
-    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps);
+    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps);
 }
 
 
@@ -377,7 +377,7 @@ class UserValueLink extends ValueLink {
     
     UserValueLink(Object iValue) {Value=iValue;}
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
         return new ValueSourceExpr(Value);
     }
 }
@@ -403,7 +403,7 @@ class ObjectValueLink extends ValueLink {
         return ((Object.Updated & (1<<0))!=0);
     }
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
         return Object.getSourceExpr(ClassGroup,ClassSource);
     }
 }
@@ -429,7 +429,7 @@ class PropertyValueLink extends ValueLink {
         return Property.ObjectUpdated(ClassGroup);
     }
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource,ChangesSession Session,Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
         return Property.getSourceExpr(ClassGroup,ClassSource,Session,ChangedProps,true);
     }
 }
@@ -443,14 +443,17 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     T BL;
 
-    ChangesSession Session;
+    DataSession Session;
+
+    // чисто для getNavigator
+    DataAdapter Adapter;
     
     Set<ObjectProperty> ChangedProps = new HashSet();
-    RemoteForm(DataAdapter iAdapter,T iBL) {
-        Adapter = iAdapter;
+    RemoteForm(DataAdapter iAdapter,T iBL) throws SQLException {
         BL = iBL;
+        Adapter = iAdapter;
         
-        Session = BL.CreateSession();
+        Session = BL.createSession(iAdapter);
         
         StructUpdated = true;
     }
@@ -483,8 +486,6 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
     Map<PropertyView,Boolean> InterfacePool = new HashMap();    
-
-    DataAdapter Adapter;
 
     // Методы, которые по ID находят объект
     public GroupObjectImplement getGroupObjectImplement(int groupID) {
@@ -536,7 +537,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 Object.Updated = Object.Updated | (1<<0);
 
                 // запишем класс объекта
-                Class ObjectClass = BL.GetClass(Session, Adapter, idObject);
+                Class ObjectClass = BL.GetClass(Session, idObject);
                 if(Object.Class!=ObjectClass) {
                     Object.Class = ObjectClass;
                     Object.Updated = Object.Updated | (1<<1);
@@ -647,7 +648,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         }
 
         // изменяем св-во
-        ChangeProperty.ChangeProperty(Adapter,Keys,Value,Session);
+        ChangeProperty.ChangeProperty(Keys,Value,Session);
             
         DataChanged = true;
     }
@@ -667,7 +668,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     public void AddObject(ObjectImplement Object, Class cls) throws SQLException {
         // пока тупо в базу
-        Integer AddID = BL.AddObject(Session,Adapter,cls);
+        Integer AddID = BL.AddObject(Session, cls);
         
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
@@ -692,7 +693,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                 SubQuery.Properties.put("newvalue",Filter.Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session,ChangedProps));
 
-                LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Adapter);
+                LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Session);
                 // изменяем св-ва
                 for(Entry<Map<ObjectImplement,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                     ObjectProperty ChangeProperty = Filter.Property.Property;
@@ -701,7 +702,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
                         Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
-                    ChangeProperty.ChangeProperty(Adapter,Keys,Row.getValue().get("newvalue"),Session);
+                    ChangeProperty.ChangeProperty(Keys,Row.getValue().get("newvalue"),Session);
                 }                
             }
         }
@@ -716,7 +717,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     }
     
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
-        BL.ChangeClass(Session,Adapter,Object.idObject,Class);
+        BL.ChangeClass(Session, Object.idObject,Class);
         DataChanged = true;
     }
     
@@ -740,7 +741,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     // применяет изменения
     public String SaveChanges() throws SQLException {
 
-        String ApplyResult = BL.Apply(Adapter,Session);
+        String ApplyResult = BL.Apply(Session);
         if(ApplyResult==null)
             StartNewSession();
 
@@ -766,15 +767,14 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     public void StartNewSession() throws SQLException {
 
         ChangedProps.clear();
-        BL.DropSession(Adapter, Session);
-        Session = BL.CreateSession();
+        BL.restartSession(Session);
     }
     
     void Close() throws SQLException {
         
         for(GroupObjectImplement Group : Groups) {
             ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-            DropTable.DropViewID(Adapter, Group.GID);
+            DropTable.DropViewID(Session, Group.GID);
         }        
     }
 
@@ -800,7 +800,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
         // если изменились данные, применяем изменения
         if(DataChanged)
-            ChangedProps.addAll(BL.UpdateAggregations(Adapter,GetProperties(),Session));
+            ChangedProps.addAll(BL.UpdateAggregations(GetProperties(),Session));
 
         // бежим по списку вниз
         Map<GroupObjectImplement,Set<Filter>> MapGroupFilters = null;
@@ -953,7 +953,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                     // докидываем найденные ключи
                     SelectKeys.Top = 1;
-                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Adapter);
+                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Session);
                     if(ResultKeys.size()>0)
                         for(ObjectImplement ObjectKey : Group)
                             ObjectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
@@ -972,7 +972,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         for(PropertyObjectImplement Order : Orders.keySet())
                             OrderQuery.Properties.put(Order,Order.getSourceExpr(Group.GetClassGroup(),OrderQuery.MapKeys,Session,ChangedProps,false));
 
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.executeSelect(Adapter);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.executeSelect(Session);
                         for(PropertyObjectImplement Order : Orders.keySet())
                             PropertySeeks.put(Order,ResultOrders.values().iterator().next().get(Order));
                     }
@@ -1038,7 +1038,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                         }
 
                         SelectKeys.Up = true;
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecResult = SelectKeys.executeSelect(Adapter);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecResult = SelectKeys.executeSelect(Session);
                         ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList(ExecResult.keySet())).listIterator();
                         while(ik.hasNext()) ik.next();
                         while(ik.hasPrevious()) {
@@ -1062,7 +1062,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                         SelectKeys.Up = false;
 //                        SelectKeys.outSelect(Adapter);
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Adapter);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Session);
                         if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
                         KeyResult.putAll(ExecuteList);
                         Group.DownKeys = (ExecuteList.size()==SelectKeys.Top);
@@ -1073,7 +1073,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                     // параллельно будем обновлять ключи чтобы Join'ить
                     ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-                    InsertTable.DropViewID(Adapter, Group.GID);
+                    InsertTable.DropViewID(Session, Group.GID);
                     
                     for(Entry<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultRow : KeyResult.entrySet()) {
                         GroupObjectValue KeyRow = new GroupObjectValue();
@@ -1089,7 +1089,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                             KeyRow.put(ObjectKey,KeyValue);
                             ViewKeyInsert.put(ivk.next(), KeyValue);
                         }
-                        Adapter.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
+                        Session.InsertRecord(InsertTable,ViewKeyInsert,new HashMap());
 
                         for(PropertyObjectImplement ToOrder : Group.Orders.keySet())
                             OrderRow.put(ToOrder,ResultRow.getValue().get(ToOrder));
@@ -1207,7 +1207,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             for(PropertyView DrawProp : PanelProps)
                 SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(null,null,Cancel?null:Session,ChangedProps,false));
 
-            Map<PropertyView,Object> ResultProps = SelectProps.executeSelect(Adapter).values().iterator().next();
+            Map<PropertyView,Object> ResultProps = SelectProps.executeSelect(Session).values().iterator().next();
             for(PropertyView DrawProp : PanelProps)
                 Result.PanelProperties.put(DrawProp,ResultProps.get(DrawProp));
         }
@@ -1230,7 +1230,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
                 SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Cancel?null:Session,ChangedProps,false));
 
 //            SelectProps.outSelect(Adapter);
-            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Adapter);
+            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {
                 Map<GroupObjectValue,Object> PropResult = new HashMap();
@@ -1302,8 +1302,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
             Result.Properties.put(Property.ID,new HashMap());
         }
 
-        Query.outSelect(Adapter);
-        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Adapter);
+        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Session);
         
         for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> Row : ResultSelect.entrySet()) {
             Map<Integer,Integer> GroupValue = new HashMap();
@@ -1461,10 +1460,6 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         return Design;
     }
     
-    RemoteNavigator<T> CreateNavigator() {
-        return new RemoteNavigator(Adapter,BL,new HashMap());
-    }
-
     RemoteNavigator<T> getNavigator(int propertyID) {
         return getNavigator(getPropertyView(propertyID).View);
     }

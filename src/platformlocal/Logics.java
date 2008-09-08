@@ -167,14 +167,14 @@ class ObjectTable extends Table {
         Properties.add(Class);
     };
     
-    Integer GetClassID(DataAdapter Adapter,Integer idObject) throws SQLException {
+    Integer GetClassID(DataSession Session,Integer idObject) throws SQLException {
         if(idObject==null) return null;
 
         JoinQuery<Object,String> Query = new JoinQuery<Object,String>();
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
         JoinTable.Joins.put(Key,new ValueSourceExpr(idObject));
         Query.Properties.put("classid",new JoinExpr<KeyField,PropertyField>(JoinTable,Class,true));
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Adapter);
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
         if(Result.size()>0)
             return (Integer)Result.values().iterator().next().get("classid");
         else
@@ -209,7 +209,7 @@ class IDTable extends Table {
 
     int ObjectID = 1;
     
-    Integer GenerateID(DataAdapter Adapter) throws SQLException {
+    Integer GenerateID(DataSession Adapter) throws SQLException {
         // читаем
         JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
@@ -231,7 +231,7 @@ class IDTable extends Table {
 }
 
 // таблица куда виды складывают свои объекты
-class ViewTable extends Table {
+class ViewTable extends SessionTable {
     ViewTable(Integer iObjects) {
         super("viewtable"+iObjects.toString());
         Objects = new ArrayList();
@@ -248,30 +248,30 @@ class ViewTable extends Table {
     List<KeyField> Objects;
     KeyField View;
     
-    void DropViewID(DataAdapter Adapter,Integer ViewID) throws SQLException {
+    void DropViewID(DataSession Session,Integer ViewID) throws SQLException {
         Map<KeyField,Integer> ValueKeys = new HashMap();
         ValueKeys.put(View,ViewID);
-        Adapter.deleteKeyRecords(this,ValueKeys);
+        Session.deleteKeyRecords(this,ValueKeys);
     }
 }
 
 // временная таблица на момент сессии
-abstract class TemporaryTable extends Table {
+abstract class SessionTable extends Table {
 
-    TemporaryTable(String iName) {
+    SessionTable(String iName) {
         super(iName);
     }
 }
 
-abstract class ChangeTable extends TemporaryTable {
+abstract class ChangeTable extends SessionTable {
 
-    KeyField Session;
+//    KeyField Session;
     
     ChangeTable(String iName) {
         super(iName);
 
-        Session = new KeyField("session","integer");
-        Keys.add(Session);
+//        Session = new KeyField("session","integer");
+//        Keys.add(Session);
     }
 }
 
@@ -340,31 +340,28 @@ class ChangeClassTable extends ChangeTable {
         Keys.add(Class);
     }
     
-    void ChangeClass(DataAdapter Adapter,ChangesSession ChangeSession,Integer idObject,Collection<Class> Classes) throws SQLException {
+    void ChangeClass(DataSession ChangeSession, Integer idObject, Collection<Class> Classes) throws SQLException {
 
         for(Class Change : Classes) {
             Map<KeyField,Integer> InsertKeys = new HashMap();
-            InsertKeys.put(Session,ChangeSession.ID);
             InsertKeys.put(Object,idObject);
             InsertKeys.put(Class,Change.ID);
-            Adapter.InsertRecord(this,InsertKeys,new HashMap());
+            ChangeSession.InsertRecord(this,InsertKeys,new HashMap());
         }
     }
     
-    void DropSession(DataAdapter Adapter,ChangesSession ChangeSession) throws SQLException {
+    void DropSession(DataSession ChangeSession) throws SQLException {
         Map<KeyField,Integer> ValueKeys = new HashMap();
-        ValueKeys.put(Session,ChangeSession.ID);
-        Adapter.deleteKeyRecords(this,ValueKeys);
+        ChangeSession.deleteKeyRecords(this,ValueKeys);
     }
     
-    JoinQuery<KeyField,PropertyField> getClassJoin(ChangesSession ChangeSession,Class ChangeClass) {
+    JoinQuery<KeyField,PropertyField> getClassJoin(DataSession ChangeSession,Class ChangeClass) {
 
         Collection<KeyField> ObjectKeys = new ArrayList();
         ObjectKeys.add(Object);
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(ObjectKeys);
 
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this);
-        ClassJoin.Joins.put(Session,new ValueSourceExpr(ChangeSession.ID));
         ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
         ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID));
 
@@ -388,7 +385,7 @@ class RemoveClassTable extends ChangeClassTable {
         super("removechange");
     }
 
-    void excludeJoin(JoinQuery<?,?> Query,ChangesSession Session,Class ChangeClass,SourceExpr Join) {
+    void excludeJoin(JoinQuery<?,?> Query, DataSession Session,Class ChangeClass,SourceExpr Join) {
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass));
         ClassJoin.Joins.put(Object,Join);
 
@@ -462,7 +459,7 @@ class TableFactory extends TableImplement{
         RecIncludeIntoGraph(IncludeItem,true,Checks);
     }
     
-    void FillDB(DataAdapter Adapter) throws SQLException {
+    void FillDB(DataSession Session) throws SQLException {
         Integer TableNum = 0;
         Set<TableImplement> TableImplements = new HashSet<TableImplement>();
         FillSet(TableImplements);
@@ -480,24 +477,43 @@ class TableFactory extends TableImplement{
             }
         }
 
-        Adapter.CreateTable(AddClassTable);
-        Adapter.CreateTable(RemoveClassTable);
-
-        Adapter.CreateTable(ObjectTable);
-        Adapter.CreateTable(IDTable);
-        for(ViewTable ViewTable : ViewTables) Adapter.CreateTable(ViewTable);
-
-        for(List<IncrementChangeTable> ListTables : ChangeTables)
-            for(ChangeObjectTable ChangeTable : ListTables) Adapter.CreateTable(ChangeTable);
-        for(List<DataChangeTable> ListTables : DataChangeTables)
-            for(ChangeObjectTable DataChangeTable : ListTables) Adapter.CreateTable(DataChangeTable);
+        Session.CreateTable(ObjectTable);
+        Session.CreateTable(IDTable);
 
         // закинем одну запись
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
         InsertKeys.put(IDTable.Key,IDTable.ObjectID);
         Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
         InsertProps.put(IDTable.Value,0);
-        Adapter.InsertRecord(IDTable,InsertKeys,InsertProps);
+        Session.InsertRecord(IDTable,InsertKeys,InsertProps);
+    }
+
+    // заполняет временные таблицы
+    void fillSession(DataSession Session) throws SQLException {
+        
+        Session.CreateTemporaryTable(AddClassTable);
+        Session.CreateTemporaryTable(RemoveClassTable);
+
+        for(List<IncrementChangeTable> ListTables : ChangeTables)
+            for(ChangeObjectTable ChangeTable : ListTables) Session.CreateTemporaryTable(ChangeTable);
+        for(List<DataChangeTable> ListTables : DataChangeTables)
+            for(ChangeObjectTable DataChangeTable : ListTables) Session.CreateTemporaryTable(DataChangeTable);
+
+        for(ViewTable ViewTable : ViewTables) Session.CreateTemporaryTable(ViewTable);
+    }
+
+    // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
+    void clearSession(DataSession Session) throws SQLException {
+
+        Session.deleteKeyRecords(AddClassTable,new HashMap());
+        Session.deleteKeyRecords(RemoveClassTable,new HashMap());
+
+        for(List<IncrementChangeTable> TypeTables : ChangeTables)
+            for(ChangeObjectTable Table : TypeTables)
+                Session.deleteKeyRecords(Table,new HashMap());
+        for(List<DataChangeTable> TypeTables : DataChangeTables)
+            for(ChangeObjectTable Table : TypeTables)
+                Session.deleteKeyRecords(Table,new HashMap());
     }
 }
 
@@ -557,35 +573,39 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     }
 
     // получает класс по ID объекта
-    Class GetClass(ChangesSession Session,DataAdapter Adapter,Integer idObject) throws SQLException {
+    Class GetClass(DataSession Session, Integer idObject) throws SQLException {
         // сначала получаем idClass
-        if(Session!=null && Session.NewClasses.containsKey(idObject)) {
+        if(Session.NewClasses.containsKey(idObject)) {
             List<Class> ChangeClasses = Session.NewClasses.get(idObject);
             return ChangeClasses.get(ChangeClasses.size()-1);
-        }
-        return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Adapter,idObject));
+        } else
+            return readClass(Session,idObject);
+    }
+
+    Class readClass(DataSession Session, Integer idObject) throws SQLException {
+        return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Session,idObject));
     }
     
-    Integer AddObject(ChangesSession Session,DataAdapter Adapter,Class Class) throws SQLException {
+    Integer AddObject(DataSession Session, Class Class) throws SQLException {
 
-        Integer FreeID = TableFactory.IDTable.GenerateID(Adapter);
+        Integer FreeID = TableFactory.IDTable.GenerateID(Session);
 
-        ChangeClass(Session,Adapter,FreeID,Class);
+        ChangeClass(Session,FreeID,Class);
         
         return FreeID;
     }
     
-    void ChangeClass(ChangesSession Session,DataAdapter Adapter,Integer idObject,Class Class) throws SQLException {
+    void ChangeClass(DataSession Session, Integer idObject, Class Class) throws SQLException {
         
         // запишем объекты, которые надо будет сохранять
         Session.ChangeClass(idObject,Class);
     }
     
-    void UpdateClassChanges(ChangesSession Session,DataAdapter Adapter) throws SQLException {
+    void UpdateClassChanges(DataSession Session) throws SQLException {
 
         // дропнем старую сессию
-        TableFactory.AddClassTable.DropSession(Adapter,Session);
-        TableFactory.RemoveClassTable.DropSession(Adapter,Session);
+        TableFactory.AddClassTable.DropSession(Session);
+        TableFactory.RemoveClassTable.DropSession(Session);
         Session.AddClasses.clear();
         Session.RemoveClasses.clear();
         
@@ -607,7 +627,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             // узнаем старый класс
             Collection<Class> AddClasses = new ArrayList();
             Set<Class> RemoveClasses = new HashSet();
-            NewClass.GetDiffSet(GetClass(null,Adapter,idObject),AddClasses,RemoveClasses);
+            NewClass.GetDiffSet(readClass(Session,idObject),AddClasses,RemoveClasses);
             Session.AddClasses.addAll(AddClasses);
             
             // вырежем все из AddClasses
@@ -616,12 +636,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             Session.RemoveClasses.addAll(RemoveClasses);
 
             // собсно в сессию надо записать все изм. объекты
-            TableFactory.AddClassTable.ChangeClass(Adapter,Session,idObject,AddClasses);
-            TableFactory.RemoveClassTable.ChangeClass(Adapter,Session,idObject,RemoveClasses);
+            TableFactory.AddClassTable.ChangeClass(Session,idObject,AddClasses);
+            TableFactory.RemoveClassTable.ChangeClass(Session,idObject,RemoveClasses);
         }
     }
     
-    void SaveClassChanges(ChangesSession Session,DataAdapter Adapter) throws SQLException {
+    void SaveClassChanges(DataSession Session) throws SQLException {
     
         for(Integer idObject : Session.NewClasses.keySet()) {
             Map<KeyField,Integer> InsertKeys = new HashMap();
@@ -633,45 +653,26 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             if(ChangeClass!=null) Value = ChangeClass.ID;
             InsertProps.put(TableFactory.ObjectTable.Class,Value);
         
-            Adapter.UpdateInsertRecord(TableFactory.ObjectTable,InsertKeys,InsertProps);
+            Session.UpdateInsertRecord(TableFactory.ObjectTable,InsertKeys,InsertProps);
         }        
     }
-    
+
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
-    int SessionCounter = 0;
-    ChangesSession CreateSession() {
-        return new ChangesSession(SessionCounter++);
-    }
-    void DropSession(DataAdapter Adapter, ChangesSession Session) throws SQLException {
-        // дропает сессию 
+    void restartSession(DataSession Session) throws SQLException {
+        // дропает сессию
         // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
         setSessionChanged(Session,new HashMap());
 
-        // удаляет из всех таблиц свои данные        
-        // AddClassTable, RemoveClassTable, ChangeTables
+        TableFactory.clearSession(Session);
+    }
 
-        Map<KeyField,Integer> ValueKeys;
+    DataSession createSession(DataAdapter Adapter) throws SQLException {
+        // дропает сессию
+        // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
+        DataSession Session = new DataSession(Adapter);
+        TableFactory.fillSession(Session);
 
-        ValueKeys = new HashMap();
-        ValueKeys.put(TableFactory.AddClassTable.Session,Session.ID);
-        Adapter.deleteKeyRecords(TableFactory.AddClassTable,ValueKeys);
-
-        ValueKeys = new HashMap();
-        ValueKeys.put(TableFactory.RemoveClassTable.Session,Session.ID);
-        Adapter.deleteKeyRecords(TableFactory.RemoveClassTable,ValueKeys);
-
-        for(List<IncrementChangeTable> TypeTables : TableFactory.ChangeTables)
-            for(ChangeObjectTable Table : TypeTables) {
-                ValueKeys = new HashMap();
-                ValueKeys.put(Table.Session,Session.ID);
-                Adapter.deleteKeyRecords(Table,ValueKeys);
-            }
-        for(List<DataChangeTable> TypeTables : TableFactory.DataChangeTables)
-            for(ChangeObjectTable Table : TypeTables) {
-                ValueKeys = new HashMap();
-                ValueKeys.put(Table.Session,Session.ID);
-                Adapter.deleteKeyRecords(Table,ValueKeys);
-            }
+        return Session;
     }
 
     Class BaseClass;
@@ -684,11 +685,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     Map<ObjectProperty,Constraint> Constraints = new HashMap();
 
     // последний параметр
-    List<ObjectProperty> UpdateAggregations(DataAdapter Adapter,Collection<ObjectProperty> ToUpdateProperties, ChangesSession Session) throws SQLException {
+    List<ObjectProperty> UpdateAggregations(Collection<ObjectProperty> ToUpdateProperties, DataSession Session) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         // update'им изменения классов
-        UpdateClassChanges(Session,Adapter);
+        UpdateClassChanges(Session);
 
         // нужно из графа зависимостей выделить направленный список object св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
         // все необходимые AggregateProperty - Apply (Persistents+Constraints), Bean (AggregateProperty в бине)
@@ -723,24 +724,24 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         }
         
         // запускаем IncrementChanges для этого списка
-        for(ObjectProperty UpdateProperty : UpdateList) UpdateProperty.IncrementChanges(Adapter,Session);
+        for(ObjectProperty UpdateProperty : UpdateList) UpdateProperty.IncrementChanges(Session);
         
         return UpdateList;
     }
     
     // проверяет Constraints
-    String CheckConstraints(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+    String CheckConstraints(DataSession Session) throws SQLException {
 
         for(ObjectProperty Property : Constraints.keySet())
             if(Property.HasChanges(Session)) {
-                String ConstraintResult = Constraints.get(Property).Check(Adapter,Session,Property);
+                String ConstraintResult = Constraints.get(Property).Check(Session,Property);
                 if(ConstraintResult!=null) return ConstraintResult;
             }
 
         return null;
     }
 
-    Map<ObjectProperty,Integer> getSessionChanged(ChangesSession Session) {
+    Map<ObjectProperty,Integer> getSessionChanged(DataSession Session) {
 
         Map<ObjectProperty,Integer> Result = new HashMap();
         for(Property Property : Properties)
@@ -750,7 +751,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return Result;
     }
 
-    void setSessionChanged(ChangesSession Session,Map<ObjectProperty,Integer> SessionChanged) {
+    void setSessionChanged(DataSession Session,Map<ObjectProperty,Integer> SessionChanged) {
 
         for(Property Property : Properties)
             if(Property instanceof ObjectProperty) {
@@ -762,9 +763,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
     }
     
-    String Apply(DataAdapter Adapter,ChangesSession Session) throws SQLException {
+    String Apply(DataSession Session) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
-        Adapter.Execute(Adapter.startTransaction());
+        Session.Execute(Session.Syntax.startTransaction());
 
         // сохраним все SessionChanged для транзакции в памяти
         Map<ObjectProperty,Integer> TransactChanged = getSessionChanged(Session);
@@ -775,33 +776,33 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(Property Property : Properties)
             if(Property instanceof DataProperty) UpdateList.add((DataProperty)Property);
 
-        List<ObjectProperty> ChangedList = UpdateAggregations(Adapter,UpdateList,Session);
+        List<ObjectProperty> ChangedList = UpdateAggregations(UpdateList,Session);
 
         // проверим Constraints
-        String Constraints = CheckConstraints(Adapter,Session);
+        String Constraints = CheckConstraints(Session);
         if(Constraints!=null) {
             // откатим транзакцию
             setSessionChanged(Session,TransactChanged);
-            Adapter.Execute(Adapter.rollbackTransaction());
+            Session.Execute(Session.Syntax.rollbackTransaction());
             return Constraints;
         }            
         
         // записываем Data, затем Persistents в таблицы из сессии
-        SaveClassChanges(Session,Adapter);
+        SaveClassChanges(Session);
         
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(ObjectProperty Property : ChangedList)
             if(Property instanceof DataProperty || Persistents.contains(Property))
-                Property.SaveChanges(Adapter,Session);
+                Property.SaveChanges(Session);
         
-        Adapter.Execute(Adapter.commitTransaction());
+        Session.Execute(Session.Syntax.commitTransaction());
         
         return null;        
     }
 
-    void FillDB(DataAdapter Adapter) throws SQLException {
+    void FillDB(DataSession Session) throws SQLException {
         // инициализируем таблицы
-        TableFactory.FillDB(Adapter);
+        TableFactory.FillDB(Session);
 
         // запишем ID'ки
         int IDPropNum = 0;
@@ -839,7 +840,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
         }
 
-        for(Table Table : Tables.keySet()) Adapter.CreateTable(Table);
+        for(Table Table : Tables.keySet()) Session.CreateTable(Table);
 
         // построим в нужном порядке AggregateProperty и будем заполнять их
         List<ObjectProperty> UpdateList = new ArrayList();
@@ -847,19 +848,19 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Integer ViewNum = 0;
         for(ObjectProperty Property : UpdateList) {
             if(Property instanceof GroupProperty)
-                ((GroupProperty)Property).FillDB(Adapter,ViewNum++);
+                ((GroupProperty)Property).FillDB(Session,ViewNum++);
         }
         
         // создадим dumb
         Table DumbTable = new Table("dumb");
         DumbTable.Keys.add(new KeyField("dumb","integer"));
-        Adapter.CreateTable(DumbTable);
-        Adapter.Execute("INSERT INTO dumb (dumb) VALUES (1)");
+        Session.CreateTable(DumbTable);
+        Session.Execute("INSERT INTO dumb (dumb) VALUES (1)");
     }
     
-    boolean CheckPersistent(DataAdapter Adapter) throws SQLException {
+    boolean CheckPersistent(DataSession Session) throws SQLException {
         for(AggregateProperty Property : Persistents) {
-            if(!Property.CheckAggregation(Adapter,Property.OutName))
+            if(!Property.CheckAggregation(Session,Property.OutName))
                 return false;
 //            Property.Out(Adapter);
         }
@@ -1173,114 +1174,114 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 if(Changes) {
                     DataAdapter ad = DataAdapter.getDefault();
 
-                    FillDB(ad);
-
-                    ChangesSession Session = CreateSession();
+                    DataSession Session = createSession(ad);
+                    
+                    FillDB(Session);
 
                     Integer i;
                     Integer[] Articles = new Integer[6];
-                    for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session,ad,Article);
+                    for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session, Article);
 
                     Integer[] Stores = new Integer[2];
-                    for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session,ad,Store);
+                    for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session, Store);
 
                     Integer[] PrihDocuments = new Integer[6];
                     for(i=0;i<PrihDocuments.length;i++) {
-                        PrihDocuments[i] = AddObject(Session,ad,PrihDocument);
-                        Name.ChangeProperty(Session,ad,"ПР ДОК "+i.toString(), PrihDocuments[i]);
+                        PrihDocuments[i] = AddObject(Session, PrihDocument);
+                        Name.ChangeProperty(Session, "ПР ДОК "+i.toString(), PrihDocuments[i]);
                     }
 
                     Integer[] RashDocuments = new Integer[6];
                     for(i=0;i<RashDocuments.length;i++) {
-                        RashDocuments[i] = AddObject(Session,ad,RashDocument);
-                        Name.ChangeProperty(Session,ad,"РАСХ ДОК "+i.toString(), RashDocuments[i]);
+                        RashDocuments[i] = AddObject(Session, RashDocument);
+                        Name.ChangeProperty(Session, "РАСХ ДОК "+i.toString(), RashDocuments[i]);
                     }
 
                     Integer[] ArticleGroups = new Integer[2];
-                    for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session,ad,ArticleGroup);
+                    for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session, ArticleGroup);
 
-                    Name.ChangeProperty(Session,ad,"КОЛБАСА", Articles[0]);
-                    Name.ChangeProperty(Session,ad,"ТВОРОГ", Articles[1]);
-                    Name.ChangeProperty(Session,ad,"МОЛОКО", Articles[2]);
-                    Name.ChangeProperty(Session,ad,"ОБУВЬ", Articles[3]);
-                    Name.ChangeProperty(Session,ad,"ДЖЕМПЕР", Articles[4]);
-                    Name.ChangeProperty(Session,ad,"МАЙКА", Articles[5]);
+                    Name.ChangeProperty(Session, "КОЛБАСА", Articles[0]);
+                    Name.ChangeProperty(Session, "ТВОРОГ", Articles[1]);
+                    Name.ChangeProperty(Session, "МОЛОКО", Articles[2]);
+                    Name.ChangeProperty(Session, "ОБУВЬ", Articles[3]);
+                    Name.ChangeProperty(Session, "ДЖЕМПЕР", Articles[4]);
+                    Name.ChangeProperty(Session, "МАЙКА", Articles[5]);
 
-                    Name.ChangeProperty(Session,ad,"СКЛАД", Stores[0]);
-                    Name.ChangeProperty(Session,ad,"ТЗАЛ", Stores[1]);
+                    Name.ChangeProperty(Session, "СКЛАД", Stores[0]);
+                    Name.ChangeProperty(Session, "ТЗАЛ", Stores[1]);
 
-                    Name.ChangeProperty(Session,ad,"ПРОДУКТЫ", ArticleGroups[0]);
-                    Name.ChangeProperty(Session,ad,"ОДЕЖДА", ArticleGroups[1]);
+                    Name.ChangeProperty(Session, "ПРОДУКТЫ", ArticleGroups[0]);
+                    Name.ChangeProperty(Session, "ОДЕЖДА", ArticleGroups[1]);
 
-                    DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[0]);
-                    DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[1]);
-                    DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[2]);
-                    DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[3]);
-                    DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[4]);
+                    DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[0]);
+                    DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[1]);
+                    DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[2]);
+                    DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[3]);
+                    DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[4]);
 
-                    DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[0]);
-                    DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[1]);
-                    DocStore.ChangeProperty(Session,ad,Stores[0],RashDocuments[2]);
-                    DocStore.ChangeProperty(Session,ad,Stores[0],RashDocuments[3]);
-                    DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[4]);
+                    DocStore.ChangeProperty(Session, Stores[1],RashDocuments[0]);
+                    DocStore.ChangeProperty(Session, Stores[1],RashDocuments[1]);
+                    DocStore.ChangeProperty(Session, Stores[0],RashDocuments[2]);
+                    DocStore.ChangeProperty(Session, Stores[0],RashDocuments[3]);
+                    DocStore.ChangeProperty(Session, Stores[1],RashDocuments[4]);
 
             //        DocStore.ChangeProperty(ad,Stores[1],Documents[5]);
 
-                    DocDate.ChangeProperty(Session,ad,1001,PrihDocuments[0]);
-                    DocDate.ChangeProperty(Session,ad,1001,RashDocuments[0]);
-                    DocDate.ChangeProperty(Session,ad,1008,PrihDocuments[1]);
-                    DocDate.ChangeProperty(Session,ad,1009,RashDocuments[1]);
-                    DocDate.ChangeProperty(Session,ad,1010,RashDocuments[2]);
-                    DocDate.ChangeProperty(Session,ad,1011,RashDocuments[3]);
-                    DocDate.ChangeProperty(Session,ad,1012,PrihDocuments[2]);
-                    DocDate.ChangeProperty(Session,ad,1014,PrihDocuments[3]);
-                    DocDate.ChangeProperty(Session,ad,1016,RashDocuments[4]);
-                    DocDate.ChangeProperty(Session,ad,1018,PrihDocuments[4]);
+                    DocDate.ChangeProperty(Session, 1001,PrihDocuments[0]);
+                    DocDate.ChangeProperty(Session, 1001,RashDocuments[0]);
+                    DocDate.ChangeProperty(Session, 1008,PrihDocuments[1]);
+                    DocDate.ChangeProperty(Session, 1009,RashDocuments[1]);
+                    DocDate.ChangeProperty(Session, 1010,RashDocuments[2]);
+                    DocDate.ChangeProperty(Session, 1011,RashDocuments[3]);
+                    DocDate.ChangeProperty(Session, 1012,PrihDocuments[2]);
+                    DocDate.ChangeProperty(Session, 1014,PrihDocuments[3]);
+                    DocDate.ChangeProperty(Session, 1016,RashDocuments[4]);
+                    DocDate.ChangeProperty(Session, 1018,PrihDocuments[4]);
 
-                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[0]);
-                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[1]);
-                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[2]);
-                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[3]);
-                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[4]);
+                    ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[0]);
+                    ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[1]);
+                    ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[2]);
+                    ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[3]);
+                    ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[4]);
 
                     // Quantity
-                    PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[0],Articles[0]);
-                    RashQuantity.ChangeProperty(Session,ad,5,RashDocuments[0],Articles[0]);
-                    RashQuantity.ChangeProperty(Session,ad,3,RashDocuments[1],Articles[0]);
+                    PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[0],Articles[0]);
+                    RashQuantity.ChangeProperty(Session, 5,RashDocuments[0],Articles[0]);
+                    RashQuantity.ChangeProperty(Session, 3,RashDocuments[1],Articles[0]);
 
-                    PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[0],Articles[1]);
-                    PrihQuantity.ChangeProperty(Session,ad,2,PrihDocuments[1],Articles[1]);
-                    PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[3],Articles[1]);
-                    RashQuantity.ChangeProperty(Session,ad,14,RashDocuments[2],Articles[1]);
+                    PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[1]);
+                    PrihQuantity.ChangeProperty(Session, 2,PrihDocuments[1],Articles[1]);
+                    PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[1]);
+                    RashQuantity.ChangeProperty(Session, 14,RashDocuments[2],Articles[1]);
 
-                    PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[3],Articles[2]);
-                    RashQuantity.ChangeProperty(Session,ad,2,RashDocuments[1],Articles[2]);
-                    RashQuantity.ChangeProperty(Session,ad,10,RashDocuments[3],Articles[2]);
-                    PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[4],Articles[2]);
+                    PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[3],Articles[2]);
+                    RashQuantity.ChangeProperty(Session, 2,RashDocuments[1],Articles[2]);
+                    RashQuantity.ChangeProperty(Session, 10,RashDocuments[3],Articles[2]);
+                    PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[4],Articles[2]);
 
-                    PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[3],Articles[3]);
+                    PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[3],Articles[3]);
 
-                    RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[2],Articles[4]);
-                    RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[3],Articles[4]);
+                    RashQuantity.ChangeProperty(Session, 4,RashDocuments[2],Articles[4]);
+                    RashQuantity.ChangeProperty(Session, 4,RashDocuments[3],Articles[4]);
 
-                    GrStQty.ChangeProperty(Session,ad,5,ArticleGroups[0],Stores[0]);
-                    GrStQty.ChangeProperty(Session,ad,4,ArticleGroups[0],Stores[1]);
-                    GrStQty.ChangeProperty(Session,ad,3,ArticleGroups[1],Stores[0]);
+                    GrStQty.ChangeProperty(Session, 5,ArticleGroups[0],Stores[0]);
+                    GrStQty.ChangeProperty(Session, 4,ArticleGroups[0],Stores[1]);
+                    GrStQty.ChangeProperty(Session, 3,ArticleGroups[1],Stores[0]);
 
-                    Apply(ad,Session);
+                    Apply(Session);
 
-                    Session = CreateSession();
+                    restartSession(Session);
 
-                    DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[0]);
-                    ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[0]);
+                    DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[0]);
+                    ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[0]);
                     
-                    Apply(ad,Session);
+                    Apply(Session);
 
 //                    TableFactory.ReCalculateAggr = true;
 //                    QtyGrSt.Property.Out(ad);
 //                    TableFactory.ReCalculateAggr = false;
 //                    QtyGrSt.Property.Out(ad);
-                    CheckPersistent(ad);
+                    CheckPersistent(Session);
                 }
             }
 
@@ -1552,13 +1553,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             RandomImplement(Randomizer);
 
             RandomPersistent(Randomizer);
-            
-            FillDB(Adapter);
+
+            FillDB(createSession(Adapter));
 
             // запустить ChangeDBTest
             ChangeDBTest(Adapter,20,Randomizer);
-
-            Adapter.Disconnect();
         }
     }
     
@@ -1571,13 +1570,15 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             if(Property instanceof DataProperty)
                 DataProperties.add((DataProperty)Property);
         }
-        
+
+        DataSession Session = createSession(Adapter);
+
 //        Randomizer.setSeed(1);
         int Iterations = 2;
         while(Iterations<MaxIterations) {
             System.out.println(Iterations++);
 
-            ChangesSession Session = CreateSession();
+            restartSession(Session);
 
             // будем также рандомно создавать объекты
             List<Class> AddClasses = new ArrayList();
@@ -1586,7 +1587,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             for(int ia=0;ia<ObjectAdd;ia++) {
                 Class AddClass = AddClasses.get(Randomizer.nextInt(AddClasses.size()));
                 if(AddClass instanceof ObjectClass) {
-                    AddObject(Session,Adapter,AddClass);
+                    AddObject(Session, AddClass);
                 }
             }
 
@@ -1609,13 +1610,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                     // генерим рандомные объекты этих классов
                     Map<PropertyInterface,ObjectValue> Keys = new HashMap();
                     for(DataPropertyInterface Interface : ChangeProp.Interfaces)
-                        Keys.put(Interface,new ObjectValue((Integer)Classes.get(Interface).GetRandomObject(Adapter,TableFactory,Randomizer,0),Classes.get(Interface)));
+                        Keys.put(Interface,new ObjectValue((Integer)Classes.get(Interface).GetRandomObject(Session,TableFactory,Randomizer,0),Classes.get(Interface)));
                     
                     Object ValueObject = null;
                     if(Randomizer.nextInt(10)<8)
-                        ValueObject = ChangeProp.Value.GetRandomObject(Adapter,TableFactory,Randomizer,Iterations);
+                        ValueObject = ChangeProp.Value.GetRandomObject(Session,TableFactory,Randomizer,Iterations);
                     
-                    ChangeProp.ChangeProperty(Adapter,Keys,ValueObject,Session);
+                    ChangeProp.ChangeProperty(Keys,ValueObject,Session);
                 }
             }
             
@@ -1624,7 +1625,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }*/
                 
                 
-            Apply(Adapter,Session);
+            Apply(Session);
 //            CheckPersistent(Adapter);
         }
     }

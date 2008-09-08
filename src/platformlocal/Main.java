@@ -104,8 +104,13 @@ public class Main {
             DataAdapter Adapter = DataAdapter.getDefault();
 
             TestBusinessLogics BL = new TestBusinessLogics();
-            BL.FillDB(Adapter);
-            BL.FillData(Adapter);
+
+            DataSession Session = BL.createSession(Adapter);
+
+            BL.FillDB(Session);
+            BL.FillData(Session);
+
+            Session.close();
 
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
@@ -152,103 +157,101 @@ public class Main {
 class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     // заполняет тестовую базу
-    void FillData(DataAdapter ad) throws SQLException {
-        
-        ChangesSession Session = CreateSession();
+    void FillData(DataSession Session) throws SQLException {
         
         Integer i;
         Integer[] Articles = new Integer[6];
-        for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session,ad,Article);
+        for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session, Article);
 
         Integer[] Stores = new Integer[2];
-        for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session,ad,Store);
+        for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session, Store);
         
         Integer[] PrihDocuments = new Integer[6];
         for(i=0;i<PrihDocuments.length;i++) {
-            PrihDocuments[i] = AddObject(Session,ad,PrihDocument);
-            Name.ChangeProperty(Session,ad,"ПР ДОК "+i.toString(), PrihDocuments[i]);
+            PrihDocuments[i] = AddObject(Session, PrihDocument);
+            Name.ChangeProperty(Session, "ПР ДОК "+i.toString(), PrihDocuments[i]);
         }
 
         Integer[] RashDocuments = new Integer[6];
         for(i=0;i<RashDocuments.length;i++) {
-            RashDocuments[i] = AddObject(Session,ad,RashDocument);
-            Name.ChangeProperty(Session,ad,"РАСХ ДОК "+i.toString(), RashDocuments[i]);
+            RashDocuments[i] = AddObject(Session, RashDocument);
+            Name.ChangeProperty(Session, "РАСХ ДОК "+i.toString(), RashDocuments[i]);
         }
 
         Integer[] ArticleGroups = new Integer[2];
-        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session,ad,ArticleGroup);
+        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session, ArticleGroup);
 
-        Name.ChangeProperty(Session,ad,"КОЛБАСА", Articles[0]);
-        Name.ChangeProperty(Session,ad,"ТВОРОГ", Articles[1]);
-        Name.ChangeProperty(Session,ad,"МОЛОКО", Articles[2]);
-        Name.ChangeProperty(Session,ad,"ОБУВЬ", Articles[3]);
-        Name.ChangeProperty(Session,ad,"ДЖЕМПЕР", Articles[4]);
-        Name.ChangeProperty(Session,ad,"МАЙКА", Articles[5]);
+        Name.ChangeProperty(Session, "КОЛБАСА", Articles[0]);
+        Name.ChangeProperty(Session, "ТВОРОГ", Articles[1]);
+        Name.ChangeProperty(Session, "МОЛОКО", Articles[2]);
+        Name.ChangeProperty(Session, "ОБУВЬ", Articles[3]);
+        Name.ChangeProperty(Session, "ДЖЕМПЕР", Articles[4]);
+        Name.ChangeProperty(Session, "МАЙКА", Articles[5]);
 
-        Name.ChangeProperty(Session,ad,"СКЛАД", Stores[0]);
-        Name.ChangeProperty(Session,ad,"ТЗАЛ", Stores[1]);
+        Name.ChangeProperty(Session, "СКЛАД", Stores[0]);
+        Name.ChangeProperty(Session, "ТЗАЛ", Stores[1]);
 
-        Name.ChangeProperty(Session,ad,"ПРОДУКТЫ", ArticleGroups[0]);
-        Name.ChangeProperty(Session,ad,"ОДЕЖДА", ArticleGroups[1]);
+        Name.ChangeProperty(Session, "ПРОДУКТЫ", ArticleGroups[0]);
+        Name.ChangeProperty(Session, "ОДЕЖДА", ArticleGroups[1]);
 
-        DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[0]);
-        DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[1]);
-        DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[2]);
-        DocStore.ChangeProperty(Session,ad,Stores[0],PrihDocuments[3]);
-        DocStore.ChangeProperty(Session,ad,Stores[1],PrihDocuments[4]);
+        DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[0]);
+        DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[1]);
+        DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[2]);
+        DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[3]);
+        DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[4]);
 
-        DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[0]);
-        DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[1]);
-        DocStore.ChangeProperty(Session,ad,Stores[0],RashDocuments[2]);
-        DocStore.ChangeProperty(Session,ad,Stores[0],RashDocuments[3]);
-        DocStore.ChangeProperty(Session,ad,Stores[1],RashDocuments[4]);
+        DocStore.ChangeProperty(Session, Stores[1],RashDocuments[0]);
+        DocStore.ChangeProperty(Session, Stores[1],RashDocuments[1]);
+        DocStore.ChangeProperty(Session, Stores[0],RashDocuments[2]);
+        DocStore.ChangeProperty(Session, Stores[0],RashDocuments[3]);
+        DocStore.ChangeProperty(Session, Stores[1],RashDocuments[4]);
 
 //        DocStore.ChangeProperty(ad,Stores[1],Documents[5]);
 
-        DocDate.ChangeProperty(Session,ad,1001,PrihDocuments[0]);
-        DocDate.ChangeProperty(Session,ad,1001,RashDocuments[0]);
-        DocDate.ChangeProperty(Session,ad,1008,PrihDocuments[1]);
-        DocDate.ChangeProperty(Session,ad,1009,RashDocuments[1]);
-        DocDate.ChangeProperty(Session,ad,1010,RashDocuments[2]);
-        DocDate.ChangeProperty(Session,ad,1011,RashDocuments[3]);
-        DocDate.ChangeProperty(Session,ad,1012,PrihDocuments[2]);
-        DocDate.ChangeProperty(Session,ad,1014,PrihDocuments[3]);
-        DocDate.ChangeProperty(Session,ad,1016,RashDocuments[4]);
-        DocDate.ChangeProperty(Session,ad,1018,PrihDocuments[4]);
+        DocDate.ChangeProperty(Session, 1001,PrihDocuments[0]);
+        DocDate.ChangeProperty(Session, 1001,RashDocuments[0]);
+        DocDate.ChangeProperty(Session, 1008,PrihDocuments[1]);
+        DocDate.ChangeProperty(Session, 1009,RashDocuments[1]);
+        DocDate.ChangeProperty(Session, 1010,RashDocuments[2]);
+        DocDate.ChangeProperty(Session, 1011,RashDocuments[3]);
+        DocDate.ChangeProperty(Session, 1012,PrihDocuments[2]);
+        DocDate.ChangeProperty(Session, 1014,PrihDocuments[3]);
+        DocDate.ChangeProperty(Session, 1016,RashDocuments[4]);
+        DocDate.ChangeProperty(Session, 1018,PrihDocuments[4]);
         
-        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[0]);
-        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[1]);
-        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[0],Articles[2]);
-        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[3]);
-        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[4]);
-        ArtToGroup.ChangeProperty(Session,ad,ArticleGroups[1],Articles[5]);
+        ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[0]);
+        ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[1]);
+        ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[2]);
+        ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[3]);
+        ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[4]);
+        ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[5]);
 
         // Quantity
-        PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[0],Articles[0]);
-        PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[2],Articles[0]);
-        RashQuantity.ChangeProperty(Session,ad,5,RashDocuments[0],Articles[0]);
-        RashQuantity.ChangeProperty(Session,ad,3,RashDocuments[1],Articles[0]);
+        PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[0],Articles[0]);
+        PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[2],Articles[0]);
+        RashQuantity.ChangeProperty(Session, 5,RashDocuments[0],Articles[0]);
+        RashQuantity.ChangeProperty(Session, 3,RashDocuments[1],Articles[0]);
         
-        PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[0],Articles[1]);
-        PrihQuantity.ChangeProperty(Session,ad,2,PrihDocuments[1],Articles[1]);
-        PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[3],Articles[1]);
-        RashQuantity.ChangeProperty(Session,ad,14,RashDocuments[2],Articles[1]);
+        PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[1]);
+        PrihQuantity.ChangeProperty(Session, 2,PrihDocuments[1],Articles[1]);
+        PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[1]);
+        RashQuantity.ChangeProperty(Session, 14,RashDocuments[2],Articles[1]);
 
-        PrihQuantity.ChangeProperty(Session,ad,32,PrihDocuments[2],Articles[2]);
-        PrihQuantity.ChangeProperty(Session,ad,18,PrihDocuments[3],Articles[2]);
-        RashQuantity.ChangeProperty(Session,ad,2,RashDocuments[1],Articles[2]);
-        RashQuantity.ChangeProperty(Session,ad,10,RashDocuments[3],Articles[2]);
-        PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[4],Articles[2]);
+        PrihQuantity.ChangeProperty(Session, 32,PrihDocuments[2],Articles[2]);
+        PrihQuantity.ChangeProperty(Session, 18,PrihDocuments[3],Articles[2]);
+        RashQuantity.ChangeProperty(Session, 2,RashDocuments[1],Articles[2]);
+        RashQuantity.ChangeProperty(Session, 10,RashDocuments[3],Articles[2]);
+        PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[4],Articles[2]);
 
-        PrihQuantity.ChangeProperty(Session,ad,4,PrihDocuments[3],Articles[3]);
+        PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[3],Articles[3]);
 
-        PrihQuantity.ChangeProperty(Session,ad,8,PrihDocuments[0],Articles[4]);
-        RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[2],Articles[4]);
-        RashQuantity.ChangeProperty(Session,ad,4,RashDocuments[3],Articles[4]);
+        PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[4]);
+        RashQuantity.ChangeProperty(Session, 4,RashDocuments[2],Articles[4]);
+        RashQuantity.ChangeProperty(Session, 4,RashDocuments[3],Articles[4]);
 
-        PrihQuantity.ChangeProperty(Session,ad,10,PrihDocuments[3],Articles[5]);
+        PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[5]);
 
-        Apply(ad,Session);
+        Apply(Session);
 
 //        ChangeDBTest(ad,30,new Random());
 
@@ -589,7 +592,7 @@ class LDP extends LP {
         Property.Interfaces.add(Interface);
     }
     
-    void ChangeProperty(ChangesSession Session,DataAdapter Adapter,Object Value,Integer ...iParams) throws SQLException {
+    void ChangeProperty(DataSession Session, Object Value, Integer... iParams) throws SQLException {
         Map<PropertyInterface,ObjectValue> Keys = new HashMap();
         Integer IntNum = 0;
         for(int i : iParams) {
@@ -598,7 +601,7 @@ class LDP extends LP {
             IntNum++;
         }
         
-        ((DataProperty)Property).ChangeProperty(Adapter, Keys, Value, Session);
+        ((DataProperty)Property).ChangeProperty(Keys, Value, Session);
     }
 
 }

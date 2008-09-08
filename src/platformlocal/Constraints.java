@@ -16,7 +16,7 @@ import java.util.*;
 // constraint
 abstract class Constraint {
     
-    abstract String Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException;
+    abstract String Check(DataSession Session, ObjectProperty Property) throws SQLException;
 
 }
 
@@ -26,7 +26,7 @@ abstract class ValueConstraint extends Constraint {
 
     int Invalid;
 
-    String Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException {
+    String Check(DataSession Session, ObjectProperty Property) throws SQLException {
 
         JoinQuery<PropertyInterface,String> Changed = new JoinQuery<PropertyInterface,String>(Property.Interfaces);
 
@@ -35,7 +35,7 @@ abstract class ValueConstraint extends Constraint {
         Changed.Wheres.add(new FieldExprCompareWhere(ValueExpr,(Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
         Changed.Properties.put("value",ValueExpr);
 
-        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Adapter);
+        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
             String ResultString = "Ограничение на св-во "+Property.OutName+" нарушено"+'\n';
             for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : Result.entrySet()) {
@@ -69,7 +69,7 @@ class PositiveConstraint extends ValueConstraint {
 // >= 0
 class UniqueConstraint extends Constraint {
     
-    String Check(DataAdapter Adapter,ChangesSession Session,ObjectProperty Property) throws SQLException {
+    String Check(DataSession Session, ObjectProperty Property) throws SQLException {
         
         // надо проверить для каждого что старых нету
         // изменения JOIN'им (ст. запрос FULL JOIN новый) ON изм. зн = новому зн. WHERE код изм. = код нов. и ключи не равны и зн. не null
@@ -108,7 +108,7 @@ class UniqueConstraint extends Constraint {
         Changed.Wheres.add(OrDiffKeys);
         Changed.Properties.put("value",ChangedExpr);
 
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Adapter);
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
             String ResultString = "Уникальное ограничение на св-во "+Property.OutName+" нарушено"+'\n';
             for(Map.Entry<Map<Object,Integer>,Map<String,Object>> Row : Result.entrySet()) {
