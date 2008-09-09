@@ -2,6 +2,10 @@ package platformlocal;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.sql.SQLException;
 
 public class ClientDialog extends JDialog {
@@ -27,6 +31,14 @@ public class ClientDialog extends JDialog {
         add(navigator, BorderLayout.LINE_START);
 
         setCurrentForm(navigator.remoteNavigator.getDefaultForm());
+
+        addWindowListener(new WindowAdapter() {
+
+            public void windowActivated(WindowEvent e) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm);
+            }
+
+        });
     }
 
     private boolean objectChosen = false;

@@ -40,7 +40,7 @@ interface ClientCellViewTable {
 
 }
 
-public class ClientForm extends Container {
+public class ClientForm extends JPanel {
 
     private final ClientFormView formView;
 
@@ -63,7 +63,7 @@ public class ClientForm extends Container {
     public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
 
-//        FocusOwnerTracer.installFocusTracer();
+        FocusOwnerTracer.installFocusTracer();
 
         remoteForm = iremoteForm;
 
@@ -136,14 +136,14 @@ public class ClientForm extends Container {
 
         formLayout.add(formView.cancelView, buttonCancel);
 
-        buttonOK = new JButton("OK");
-        buttonOK.addActionListener(new ActionListener() {
+        AbstractAction okAction = new AbstractAction("OK") {
 
             public void actionPerformed(ActionEvent e) {
                 okPressed();
             }
-        });
+        };
 
+        buttonOK = new JButton(okAction);
         formLayout.add(formView.okView, buttonOK);
 
         buttonClose = new JButton("Закрыть");
@@ -157,16 +157,15 @@ public class ClientForm extends Container {
         formLayout.add(formView.closeView, buttonClose);
 
         dataReset();
-/*        JButton test = new JButton("Test");
 
-        test.addActionListener(new ActionListener() {
+        //  Have the enter key work the same as the tab key
+		InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-            public void actionPerformed(ActionEvent e) {
-                formLayout.globalLayout.disableLayout = true;
-            }
-        });
+		KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
+        im.put(altEnter, "okPressed");
 
-        add(test);*/
+        ActionMap am = getActionMap();
+        am.put("okPressed", okAction);
 
     }
 
