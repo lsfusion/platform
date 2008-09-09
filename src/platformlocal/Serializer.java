@@ -228,6 +228,12 @@ class Serializer {
             return;
         }
 
+        if (object instanceof Long) {
+            outStream.writeByte(3);
+            outStream.writeLong((Long)object);
+            return;
+        }
+
         throw new IOException();
     }
 
@@ -246,6 +252,11 @@ class Serializer {
 
         if (objectType == 2) {
             return inStream.readUTF();
+        }
+
+        if (objectType == 3) {
+
+            return (Long)inStream.readLong();
         }
 
         throw new IOException();

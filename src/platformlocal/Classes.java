@@ -6,12 +6,7 @@
 package platformlocal;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  *
@@ -111,16 +106,27 @@ abstract class Class {
             Child.FillClassList(ClassList);
     }
 
+    // заполняет список классов
+    void fillParents(Collection<Class> ParentSet) {
+        if (ParentSet.contains(ID))
+            return;
+
+        ParentSet.add(this);
+
+        for(Class Parent : Parents)
+            Parent.fillParents(ParentSet);
+    }
+
     // получает классы у которого есть оба интерфейса
     Collection<Class> CommonClassSet(Class ToCommon) {
         CommonClassSet1(false);
         ToCommon.CommonClassSet2(false,null,false);
-        
+
         Collection<Class> Result = new ArrayList<Class>();
         CommonClassSet3(Result,null,false);
         return Result;
     }
-    
+
     int Check = 0;
     // 1-й шаг расставляем пометки 1
     private void CommonClassSet1(boolean Up) {
@@ -179,6 +185,7 @@ abstract class Class {
     
     // получает рандомный объект
     abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
+    abstract Object getRandomObject(Map<Class, List<Integer>> Objects,Random Randomizer,Integer Diap) throws SQLException;
 }
 
 // класс который можно сравнивать
@@ -188,6 +195,10 @@ class IntegralClass extends Class {
     
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         return Randomizer.nextInt(Diap*Diap+1);
+    }
+
+    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
+        return Randomizer.nextInt(Diap);
     }
 }
 
@@ -213,6 +224,10 @@ class StringClass extends Class {
         return "NAME "+Randomizer.nextInt(50);
     }
 
+    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
+        return "NAME "+Randomizer.nextInt(Diap);
+    }
+
 }
 
 class ObjectClass extends Class {    
@@ -221,5 +236,10 @@ class ObjectClass extends Class {
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
         return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);
+    }
+
+    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
+        List<Integer> ClassObjects = Objects.get(this);
+        return ClassObjects.get(Randomizer.nextInt(ClassObjects.size()));
     }
 }

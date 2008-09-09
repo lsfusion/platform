@@ -13,7 +13,22 @@ import java.util.*;
 class ObjectValue {
     Integer idObject;
     Class Class;
-    
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ObjectValue that = (ObjectValue) o;
+
+        if (!idObject.equals(that.idObject)) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        return idObject.hashCode();
+    }
+
     ObjectValue(Integer iObject,Class iClass) {idObject=iObject;Class=iClass;}
 }
 
@@ -191,20 +206,24 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     }
     
     // подготавливает Join примененных изменений
-    Join<KeyField,PropertyField> getChangedValueJoin(Map<PropertyInterface,SourceExpr> JoinImplement, DataSession Session) {
+    Join<? extends Object,PropertyField> getChangedValueJoin(Map<PropertyInterface,SourceExpr> JoinImplement, DataSession Session) {
 
-        Join<KeyField,PropertyField> From = new Join<KeyField,PropertyField>(ChangeTable);
-        From.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
-        for(T Interface : Interfaces)
-            From.Joins.put(ChangeTableMap.get(Interface),JoinImplement.get(Interface));
+        if(IncrementSource!=null)
+            return new Join<PropertyInterface,PropertyField>(IncrementSource,JoinImplement);
+        else {
+            Join<KeyField,PropertyField> From = new Join<KeyField,PropertyField>(ChangeTable);
+            From.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
+            for(T Interface : Interfaces)
+                From.Joins.put(ChangeTableMap.get(Interface),JoinImplement.get(Interface));
 
-        return From;
+            return From;
+        }
     }
 
     // подготавливает JoinExpr
     SourceExpr getChangedValueExpr(Map<PropertyInterface,SourceExpr> JoinImplement, DataSession Session,PropertyField Value) {
 
-        return new JoinExpr<KeyField,PropertyField>(getChangedValueJoin(JoinImplement,Session),Value,true);
+        return new JoinExpr<Object,PropertyField>((Join<Object,PropertyField>)getChangedValueJoin(JoinImplement,Session),Value,true);
     }
 
     // связывает именно измененные записи из сессии
@@ -312,6 +331,10 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     // заполняет требования к изменениям
     abstract void FillRequiredChanges(DataSession Session);
 
+    // для каскадного выполнения (запрос)
+    Source<PropertyInterface,PropertyField> IncrementSource = null;
+    boolean XL = false;
+
     // заполняет инкрементные изменения
     void IncrementChanges(DataSession Session) throws SQLException {
 
@@ -346,9 +369,14 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             ResultQuery = NewQuery;
         }
 
-//        System.out.println(OutName);
+        System.out.println(OutName);
 //        ResultQuery.outSelect(Adapter);
-        Session.InsertSelect(modifyIncrementChanges(ResultQuery,ChangeType));
+        if(!IsPersistent() && XL)
+            IncrementSource = ResultQuery;
+        else {
+            Session.InsertSelect(modifyIncrementChanges(ResultQuery,ChangeType));
+            IncrementSource = null;
+        }
     }
 
     // вынесем в отдельный метод потому как используется в 2 местах
@@ -453,7 +481,18 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         for(DataPropertyInterface Interface : Interfaces)
             DataTableMap.put(io.next(),Interface);
     }
-    
+
+    void outDataChangesTable(DataSession Session) throws SQLException {
+        JoinQuery<PropertyInterface,PropertyField> Query = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
+
+        Join<KeyField,PropertyField> ChangeJoin = new MapJoin<KeyField,PropertyField,PropertyInterface>(DataTable,DataTableMap,Query);
+        ChangeJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
+
+        Query.Properties.put(ChangeTable.Value,new JoinExpr<KeyField,PropertyField>(ChangeJoin,DataTable.Value,true));
+
+        Query.outSelect(Session);
+    }
+
     @Override
     void ChangeProperty(Map<PropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
         // записываем в таблицу изменений
@@ -1368,10 +1407,10 @@ class MaxGroupProperty extends GroupProperty {
         // теоретически этот запрос нужно выполнять когда есть хоть одна запись но пока этого проверять не будем
         JoinQuery<PropertyInterface,PropertyField> UpdateQuery = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
 
-        Join<KeyField,PropertyField> ChangesJoin = getChangedValueJoin(UpdateQuery.MapKeys,Session);
-        NewValue = new IsNullSourceExpr(new JoinExpr<KeyField,PropertyField>(ChangesJoin,ChangeTable.Value,true),MinValue);
-        OldValue = new IsNullSourceExpr(new JoinExpr<KeyField,PropertyField>(ChangesJoin,ChangeTable.SysValue,true),MinValue);
-        PrevValue = new IsNullSourceExpr(new JoinExpr<KeyField,PropertyField>(ChangesJoin,ChangeTable.PrevValue,true),MinValue);
+        Join<Object,PropertyField> ChangesJoin = (Join<Object,PropertyField>)getChangedValueJoin(UpdateQuery.MapKeys,Session);
+        NewValue = new IsNullSourceExpr(new JoinExpr<Object,PropertyField>(ChangesJoin,ChangeTable.Value,true),MinValue);
+        OldValue = new IsNullSourceExpr(new JoinExpr<Object,PropertyField>(ChangesJoin,ChangeTable.SysValue,true),MinValue);
+        PrevValue = new IsNullSourceExpr(new JoinExpr<Object,PropertyField>(ChangesJoin,ChangeTable.PrevValue,true),MinValue);
 
         UpdateQuery.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,2),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
 
@@ -1906,7 +1945,11 @@ class DataSession {
     Connection Connection;
     SQLSyntax Syntax;
 
-    DataSession(DataAdapter Adapter) throws SQLException{
+    int ID = 0;
+
+    DataSession(DataAdapter Adapter,int iID) throws SQLException{
+
+        ID = iID;
 
         try {
             Connection = Adapter.startConnection();
@@ -1963,7 +2006,7 @@ class DataSession {
             CreateString = CreateString+',' + Prop.GetDeclare();
         
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        Execute(Syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")"));
+        Execute(Syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")"));
     }
 
     void Execute(String ExecuteString) throws SQLException {

@@ -44,7 +44,7 @@ interface SQLSyntax {
 abstract class DataAdapter implements SQLSyntax {
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new MSSQLDataAdapter();
+        return new PostgreDataAdapter();
     }
 
     public String getNullValue(String DBType) {
@@ -158,14 +158,14 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
         Connect.createStatement().execute("DROP DATABASE testplat");
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
         Connect.createStatement().execute("USE testplat");
 
         return Connect;

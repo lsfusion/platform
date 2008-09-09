@@ -106,11 +106,10 @@ public class Main {
             TestBusinessLogics BL = new TestBusinessLogics();
 
             DataSession Session = BL.createSession(Adapter);
-
             BL.FillDB(Session);
-            BL.FillData(Session);
-
             Session.close();
+            
+            BL.FillData(Adapter);
 
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
@@ -157,7 +156,38 @@ public class Main {
 class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     // заполняет тестовую базу
-    void FillData(DataSession Session) throws SQLException {
+    void FillData(DataAdapter Adapter) throws SQLException {
+
+        Map<Class,Integer> ClassQuantity = new HashMap();
+        ClassQuantity.put(Article,1000);
+        ClassQuantity.put(ArticleGroup,50);
+        ClassQuantity.put(Store,5);
+        ClassQuantity.put(PrihDocument,500);
+        ClassQuantity.put(RashDocument,2000);
+/*        ClassQuantity.put(Article,10);
+        ClassQuantity.put(ArticleGroup,2);
+        ClassQuantity.put(Store,2);
+        ClassQuantity.put(PrihDocument,10);
+        ClassQuantity.put(RashDocument,20);
+  */
+        Map<DataProperty,Integer> PropQuantity = new HashMap();
+        Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls = new HashMap();
+
+        Name.putNotNulls(PropNotNulls,0);
+        DocStore.putNotNulls(PropNotNulls,0);
+        DocDate.putNotNulls(PropNotNulls,0);
+        ArtToGroup.putNotNulls(PropNotNulls,0);
+        PrihQuantity.putNotNulls(PropNotNulls,0);
+        RashQuantity.putNotNulls(PropNotNulls,0);
+
+        PropQuantity.put((DataProperty)PrihQuantity.Property,10);
+        PropQuantity.put((DataProperty)RashQuantity.Property,3);
+
+        autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
+
+        if(1==1) return;
+
+        DataSession Session = createSession(Adapter);
         
         Integer i;
         Integer[] Articles = new Integer[6];
@@ -254,6 +284,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Apply(Session);
 
 //        ChangeDBTest(ad,30,new Random());
+
+        Session.close();
 
 /*        PrihArtStore.Property.Out(ad);
         RashArtStore.Property.Out(ad);
@@ -380,9 +412,11 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LRP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
         DDep.Property.OutName = "предш. док.";
+        ((ObjectProperty)DDep.Property).XL = true;
 
         LRP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
         QDep.Property.OutName = "изм. баланса";
+        ((ObjectProperty)QDep.Property).XL = true;
 
         GSum = AddGProp(QDep,true,2,3);
         GSum.Property.OutName = "остаток до операции";
@@ -417,11 +451,11 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     void InitConstraints() {
-        
+/*
         Constraints.put((ObjectProperty)OstArtStore.Property,new PositiveConstraint());
         Constraints.put((ObjectProperty)FilledProperty.Property,new NotEmptyConstraint());
         Constraints.put((ObjectProperty)BarCode.Property,new UniqueConstraint());
-
+*/
     }
 
     void InitPersistents() {
@@ -429,7 +463,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Persistents.add((AggregateProperty)GP.Property);
         Persistents.add((AggregateProperty)GAP.Property);
         Persistents.add((AggregateProperty)G2P.Property);
-        Persistents.add((AggregateProperty)GSum.Property);
+//        Persistents.add((AggregateProperty)GSum.Property);
         Persistents.add((AggregateProperty)OstArtStore.Property);
         Persistents.add((AggregateProperty)OstArt.Property);
         Persistents.add((AggregateProperty)MaxPrih.Property);
@@ -573,6 +607,61 @@ class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
     }
 }
 
+class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
+
+    Test2NavigatorForm(int iID, String caption) {super(iID, caption);}
+
+    RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
+        return new Test2RemoteForm(Adapter,BL);
+    }
+
+}
+
+class Test2RemoteForm extends RemoteForm<TestBusinessLogics> {
+
+    // в EJB кто-то должен сказать где брать Adapter, а где BusinessLogics
+    Test2RemoteForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
+        super(Adapter,BL);
+
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Document);
+        obj1.OutName = "документ";
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
+        obj2.OutName = "товар";
+
+        GroupObjectImplement gv = new GroupObjectImplement();
+        GroupObjectImplement gv2 = new GroupObjectImplement();
+
+        gv.add(obj1);
+        gv2.add(obj2);
+        AddGroup(gv);
+        AddGroup(gv2);
+        gv.GID = 1;
+        gv2.GID = 2;
+
+        BL.FillSingleViews(obj1,this,null);
+        BL.FillSingleViews(obj2,this,null);
+
+        PropertyObjectImplement QImpl = BL.AddPropView(this,BL.Quantity,gv2,obj1,obj2);
+        BL.AddPropView(this,BL.GP,gv2,obj1,obj2);
+        BL.AddPropView(this,BL.PrihQuantity,gv2,obj1,obj2);
+        BL.AddPropView(this,BL.RashQuantity,gv2,obj1,obj2);
+//        BL.AddPropView(this,BL.GSum,gv2,obj1,obj2);
+
+//        fbv.AddObjectSeek(obj3,13);
+//        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
+
+//        AddFilter(new NotNullFilter(QImpl));
+//        addFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
+
+//        fbv.AddObjectSeek(obj3,13);
+//        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
+
+//        fbv.AddOrder(Obj3Props.get("имя"));
+//        fbv.AddOrder(Obj3Props.get("дата док."));
+
+    }
+}
+
 class LP {
     LP(Property iProperty) {
         Property=iProperty;
@@ -604,6 +693,13 @@ class LDP extends LP {
         ((DataProperty)Property).ChangeProperty(Keys, Value, Session);
     }
 
+    void putNotNulls(Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls,Integer... iParams) {
+        Set<DataPropertyInterface> InterfaceNotNulls = new HashSet();
+        for(Integer Interface : iParams)
+            InterfaceNotNulls.add((DataPropertyInterface)ListInterfaces.get(Interface));
+
+        PropNotNulls.put((DataProperty)Property,InterfaceNotNulls);
+    }
 }
 
 class LSFP extends LP {

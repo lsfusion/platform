@@ -56,7 +56,29 @@ class MapBuilder<T,V> {
         List<Map<T,V>> Result = new ArrayList<Map<T,V>>();
         RecBuildMap(From,To,0,Result,new HashMap<T,V>(0));
         return Result;
-    }            
+    }
+
+    void recBuildCombination(Map<T,Collection<V>> Map,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
+        if(!iT.hasNext()) {
+            Result.add((Map<T,V>)CurrentMap.clone());
+            return;
+        }
+
+        T Current = iT.next();
+
+        for(V toV : Map.get(Current)) {
+            CurrentMap.put(Current,toV);
+            recBuildCombination(Map,iT,Result,CurrentMap);
+        }
+
+        iT.previous();
+    }
+
+    Collection<Map<T,V>> buildCombination(Map<T,Collection<V>> Map) {
+        Collection<Map<T,V>> Result = new ArrayList<Map<T,V>>();
+        recBuildCombination(Map,(new ArrayList(Map.keySet())).listIterator(),Result,new HashMap<T,V>());
+        return Result;
+    }
 }
 
 class MapUtils<T,V> {

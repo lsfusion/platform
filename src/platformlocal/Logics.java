@@ -658,10 +658,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         TableFactory.clearSession(Session);
     }
 
+    int SessionCounter = 0;
     DataSession createSession(DataAdapter Adapter) throws SQLException {
         // дропает сессию
         // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
-        DataSession Session = new DataSession(Adapter);
+        DataSession Session = new DataSession(Adapter,SessionCounter++);
         TableFactory.fillSession(Session);
 
         return Session;
@@ -1621,30 +1622,102 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 //            CheckPersistent(Adapter);
         }
     }
+
+    void autoFillDB(DataAdapter Adapter, Map<Class, Integer> ClassQuantity, Map<DataProperty, Integer> PropQuantity, Map<DataProperty, Set<DataPropertyInterface>> PropNotNull) throws SQLException {
+
+        DataSession Session = createSession(Adapter);
+
+        // генерируем классы
+        Map<Integer,String> ObjectNames = new HashMap();
+        Map<Class,List<Integer>> Objects = new HashMap();
+        List<Class> Classes = new ArrayList();
+        BaseClass.FillClassList(Classes);
+
+        for(Class FillClass : Classes)
+            Objects.put(FillClass,new ArrayList());
+
+        for(Class FillClass : Classes)
+            if(FillClass.Childs.size()==0) {
+                Integer Quantity = ClassQuantity.get(FillClass);
+                if(Quantity==null) Quantity = 1;
+
+                List<Integer> ListObjects = new ArrayList();
+                for(int i=0;i<Quantity;i++) {
+                    Integer idObject = AddObject(Session,FillClass);
+                    ListObjects.add(idObject);
+                    ObjectNames.put(idObject,FillClass.caption+" "+(i+1));
+                }
+
+                Set<Class> Parents = new HashSet();
+                FillClass.fillParents(Parents);
+
+                for(Class Class : Parents)
+                    Objects.get(Class).addAll(ListObjects);
+            }
+
+        Random Randomizer = new Random(1000);
+
+        // бежим по св-вам
+        for(Property AbstractProperty : Properties)
+            if(AbstractProperty instanceof DataProperty) {
+                DataProperty Property = (DataProperty)AbstractProperty;
+
+                System.out.println(Property.OutName);
+
+                Set<DataPropertyInterface> InterfaceNotNull = PropNotNull.get(Property);
+                if(InterfaceNotNull==null) InterfaceNotNull = new HashSet(); 
+                Integer Quantity = PropQuantity.get(Property);
+                if(Quantity==null) {
+                    Quantity = 1;
+                    for(DataPropertyInterface Interface : Property.Interfaces)
+                        if(!InterfaceNotNull.contains(Interface))
+                            Quantity = Quantity * Objects.get(Interface.Class).size();
+
+                    if(Quantity > 1)
+                        Quantity = (int)(Quantity * 0.5);
+                }
+
+                Map<DataPropertyInterface,Collection<Integer>> MapInterfaces = new HashMap();
+                if(PropNotNull.containsKey(Property))
+                    for(DataPropertyInterface Interface : InterfaceNotNull)
+                        MapInterfaces.put(Interface,Objects.get(Interface.Class));
+
+                // сначала для всех PropNotNull генерируем все возможные Map<ы>
+                for(Map<DataPropertyInterface,Integer> NotNulls : (new MapBuilder<DataPropertyInterface,Integer>()).buildCombination(MapInterfaces)) {
+                    Set<Map<DataPropertyInterface,Integer>> RandomInterfaces = new HashSet();
+                    while(RandomInterfaces.size()<Quantity) {
+                        Map<DataPropertyInterface,Integer> RandomIteration = new HashMap();
+                        for(DataPropertyInterface Interface : Property.Interfaces)
+                            if(!NotNulls.containsKey(Interface)) {
+                                List<Integer> ListObjects = Objects.get(Interface.Class);
+                                RandomIteration.put(Interface,ListObjects.get(Randomizer.nextInt(ListObjects.size())));
+                            }
+                        RandomInterfaces.add(RandomIteration);
+                    }
+
+                    for(Map<DataPropertyInterface,Integer> RandomIteration : RandomInterfaces) {
+                        Map<PropertyInterface,ObjectValue> Keys = new HashMap();
+                        RandomIteration.putAll(NotNulls);
+                        for(Map.Entry<DataPropertyInterface,Integer> InterfaceValue : RandomIteration.entrySet())
+                            Keys.put(InterfaceValue.getKey(),new ObjectValue(InterfaceValue.getValue(),InterfaceValue.getKey().Class));
+
+                        Object ValueObject = null;
+                        if(Property.Value instanceof StringClass) {
+                            String ObjectName = "";
+                            for(DataPropertyInterface Interface : Property.Interfaces)
+                                ObjectName += ObjectNames.get(RandomIteration.get(Interface)) + " ";
+                            ValueObject = ObjectName;
+                        } else
+                            ValueObject = Property.Value.getRandomObject(Objects,Randomizer,20);
+                        Property.ChangeProperty(Keys,ValueObject,Session);
+                    }
+                }
+            }
+
+        System.out.println("Apply");
+        Apply(Session);
+
+        Session.close();
+    }
 }
 
-
-/*
- *             if(!TableFactory.Crash) {
-                for(AggregateProperty Prop : Persistents)
-                    if(Prop.OutName.equals("макс. операция")) {
-                        System.out.println("-макс. операция--AFTER PERS ----");
-                        Prop.Out(Adapter);
-                        System.out.println("-макс. операция--AFTER RECA ----");
-                        TableFactory.ReCalculateAggr = true;
-                        Prop.Out(Adapter);
-                        TableFactory.ReCalculateAggr = false;
-                    }
-
-                for(AggregateProperty Prop : Persistents)
-                    if(Prop.OutName.equals("приход по складу")) {
-                        System.out.println("-приход по складу--AFTER PERS ----");
-                        Prop.Out(Adapter);
-                        System.out.println("-приход по складу--AFTER RECA ----");
-                        TableFactory.ReCalculateAggr = true;
-                        Prop.Out(Adapter);
-                        TableFactory.ReCalculateAggr = false;
-                    }
-
-                TableFactory.Crash = true;
-*/
