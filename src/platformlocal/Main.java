@@ -180,8 +180,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         PrihQuantity.putNotNulls(PropNotNulls,0);
         RashQuantity.putNotNulls(PropNotNulls,0);
 
-        PropQuantity.put((DataProperty)PrihQuantity.Property,10);
-        PropQuantity.put((DataProperty)RashQuantity.Property,3);
+        PropQuantity.put((DataProperty)PrihQuantity.Property,5);
+        PropQuantity.put((DataProperty)RashQuantity.Property,2);
 
         autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
 
@@ -507,6 +507,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         group1.AddChild(new TestNavigatorForm(1,"Test Form 1"));
         group2.AddChild(new SimpleNavigatorForm(2,"Test Form 2"));
+        group2.AddChild(new Test2NavigatorForm(3,"Test Form 3"));
     }
 }
 
