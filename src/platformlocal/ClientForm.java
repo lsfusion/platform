@@ -63,7 +63,7 @@ public class ClientForm extends JPanel {
     public ClientForm(RemoteForm iremoteForm) {
 //        super(app);
 
-        FocusOwnerTracer.installFocusTracer();
+//        FocusOwnerTracer.installFocusTracer();
 
         remoteForm = iremoteForm;
 
