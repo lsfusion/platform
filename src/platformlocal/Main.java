@@ -159,17 +159,17 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     void FillData(DataAdapter Adapter) throws SQLException {
 
         Map<Class,Integer> ClassQuantity = new HashMap();
-        ClassQuantity.put(Article,1000);
+/*        ClassQuantity.put(Article,1000);
         ClassQuantity.put(ArticleGroup,50);
         ClassQuantity.put(Store,5);
         ClassQuantity.put(PrihDocument,500);
-        ClassQuantity.put(RashDocument,2000);
-/*        ClassQuantity.put(Article,10);
+        ClassQuantity.put(RashDocument,2000); */
+        ClassQuantity.put(Article,10);
         ClassQuantity.put(ArticleGroup,2);
         ClassQuantity.put(Store,2);
         ClassQuantity.put(PrihDocument,10);
         ClassQuantity.put(RashDocument,20);
-  */
+  
         Map<DataProperty,Integer> PropQuantity = new HashMap();
         Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls = new HashMap();
 
@@ -463,7 +463,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Persistents.add((AggregateProperty)GP.Property);
         Persistents.add((AggregateProperty)GAP.Property);
         Persistents.add((AggregateProperty)G2P.Property);
-//        Persistents.add((AggregateProperty)GSum.Property);
+        Persistents.add((AggregateProperty)GSum.Property);
         Persistents.add((AggregateProperty)OstArtStore.Property);
         Persistents.add((AggregateProperty)OstArt.Property);
         Persistents.add((AggregateProperty)MaxPrih.Property);
