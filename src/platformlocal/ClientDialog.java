@@ -22,7 +22,7 @@ public class ClientDialog extends JDialog {
 
         setBounds(owner.getBounds());
 
-        classID = owner.remoteForm.getClassID(((ClientPropertyView)owner.editingCell).ID);
+        classID = owner.remoteForm.getPropertyClassID(((ClientPropertyView)owner.editingCell).ID);
 //        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).ID);
         navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
 

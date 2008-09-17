@@ -9,7 +9,6 @@ package platformlocal;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.io.DataInputStream;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -126,7 +125,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     private ClassCache classCache;
 
     public void addCacheObject(int classID, int value) {
-        addCacheObject(BL.BaseClass.FindClassID(classID), value);
+        addCacheObject(BL.objectClass.FindClassID(classID), value);
     }
 
     public void addCacheObject(Class cls, Integer value) {
@@ -134,7 +133,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
     public int getCacheObject(int classID) {
-        return getCacheObject(BL.BaseClass.FindClassID(classID));
+        return getCacheObject(BL.objectClass.FindClassID(classID));
     }
 
     public int getCacheObject(Class cls) {
@@ -151,7 +150,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         for (GroupObjectImplement group : lastOpenedForm.Groups) {
             for (ObjectImplement object : group) {
-                if (leadClass.IsParent(object.BaseClass))
+                if (leadClass.IsParent(object.objectClass))
                     return object.idObject;
             }
         }

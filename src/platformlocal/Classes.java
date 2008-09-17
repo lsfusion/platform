@@ -211,6 +211,10 @@ class DateClass extends IntegralClass {
     DateClass(Integer iID, String caption) {super(iID, caption);}
 }
 
+class BitClass extends IntegralClass {
+    BitClass(Integer iID, String caption) {super(iID, caption);}
+}
+
 class StringClass extends Class {    
 
     StringClass(Integer iID, String caption) {super(iID, caption);}

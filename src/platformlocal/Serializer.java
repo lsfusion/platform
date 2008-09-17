@@ -286,6 +286,13 @@ class Serializer {
     }
 
     public static void serializeClass(DataOutputStream outStream, Class cls) throws IOException {
+
+        if (cls instanceof ObjectClass) outStream.writeByte(0);
+        if (cls instanceof StringClass) outStream.writeByte(1);
+        if (cls instanceof QuantityClass) outStream.writeByte(2);
+        if (cls instanceof DateClass) outStream.writeByte(3);
+        if (cls instanceof BitClass) outStream.writeByte(4);
+
         outStream.writeInt(cls.ID);
         outStream.writeUTF(cls.caption);
         outStream.writeBoolean(!cls.Childs.isEmpty());
@@ -293,7 +300,18 @@ class Serializer {
 
     public static ClientClass deserializeClientClass(DataInputStream inStream) throws IOException {
 
-        ClientClass cls = new ClientClass();
+        ClientClass cls;
+
+        int clsType = inStream.readByte();
+
+        switch (clsType) {
+            case 0 : cls = new ClientObjectClass(); break;
+            case 1 : cls = new ClientStringClass(); break;
+            case 2 : cls = new ClientQuantityClass(); break;
+            case 3 : cls = new ClientDateClass(); break;
+            case 4 : cls = new ClientBitClass(); break;
+            default : throw new IOException();
+        }
 
         cls.ID = inStream.readInt();
         cls.caption = inStream.readUTF();

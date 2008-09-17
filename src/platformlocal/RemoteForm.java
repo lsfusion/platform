@@ -544,7 +544,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
-        Class GridClass = BL.BaseClass.FindClassID(idClass);
+        Class GridClass = BL.objectClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
         if(GridClass==null) throw new RuntimeException();
         Object.GridClass = GridClass;
@@ -1443,15 +1443,19 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return Design;
     }
 
-    public int getClassID(int propertyID) {
-        return getClass(propertyID).ID;
+    public int getPropertyClassID(int propertyID) {
+        return getPropertyClass(propertyID).ID;
     }
 
-    public Class getClass(int propertyID) {
-        return getClass(getPropertyView(propertyID));
+    public byte[] getPropertyClassByteArray(int propertyID) {
+        return ByteArraySerializer.serializeClass(getPropertyClass(getPropertyView(propertyID)));
     }
 
-    public Class getClass(PropertyView propertyView) {
+    public Class getPropertyClass(int propertyID) {
+        return getPropertyClass(getPropertyView(propertyID));
+    }
+
+    public Class getPropertyClass(PropertyView propertyView) {
         return propertyView.View.GetValueClass(propertyView.ToDraw); 
     }
 

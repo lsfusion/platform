@@ -514,17 +514,16 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     BusinessLogics() {
         TableFactory = new TableFactory();
 
-        BaseClass = new ObjectClass(0, "Базовый класс");
-        
-        StringClass = new StringClass(1, "Строка");
-//        StringClass.AddParent(BaseClass);
-        IntegerClass = new QuantityClass(2, "Число");
-        IntegerClass.AddParent(BaseClass);
-        
+        objectClass = new ObjectClass(0, "Базовый класс");
+        stringClass = new StringClass(1, "Строка");
+        quantityClass = new QuantityClass(2, "Число");
+        dateClass = new DateClass(3, "Дата");
+        bitClass = new BitClass(4, "Бит");
+
         for(int i=0;i<TableFactory.MaxInterface;i++) {
             TableImplement Include = new TableImplement();
             for(int j=0;j<=i;j++)
-                Include.add(new DataPropertyInterface(BaseClass));
+                Include.add(new DataPropertyInterface(objectClass));
             TableFactory.IncludeIntoGraph(Include);
         }         
         
@@ -575,7 +574,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     }
 
     Class readClass(DataSession Session, Integer idObject) throws SQLException {
-        return BaseClass.FindClassID(TableFactory.ObjectTable.GetClassID(Session,idObject));
+        return objectClass.FindClassID(TableFactory.ObjectTable.GetClassID(Session,idObject));
     }
     
     Integer AddObject(DataSession Session, Class Class) throws SQLException {
@@ -608,10 +607,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             
             ListIterator<Class> ic = Session.NewClasses.get(idObject).listIterator();
             Class NewClass = ic.next();
-            if(NewClass==null) NewClass = BaseClass;
+            if(NewClass==null) NewClass = objectClass;
             while(ic.hasNext()) {
                 Class NextClass = ic.next();
-                if(NextClass==null) NextClass = BaseClass;
+                if(NextClass==null) NextClass = objectClass;
                 NextClass.GetDiffSet(NewClass,null,TempRemoveClasses);
                 NewClass = NextClass;
             }
@@ -668,10 +667,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return Session;
     }
 
-    Class BaseClass;
-    Class StringClass;
-    IntegralClass IntegerClass;
-    
+    ObjectClass objectClass;
+    StringClass stringClass;
+    QuantityClass quantityClass;
+    DateClass dateClass;
+    BitClass bitClass;
+
     TableFactory TableFactory;
     Collection<Property> Properties = new ArrayList();
     Set<AggregateProperty> Persistents = new HashSet();
@@ -919,14 +920,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         StringFormulaProperty Property = null;
         Property = new StringFormulaProperty(Formula,Filter);
-        LSFP ListProperty = new LSFP(Property,IntegerClass,Params);
+        LSFP ListProperty = new LSFP(Property, quantityClass,Params);
         Properties.add(Property);
         return ListProperty;
     }
 
     LMFP AddMFProp(Integer Params) {
         MultiplyFormulaProperty Property = new MultiplyFormulaProperty();
-        LMFP ListProperty = new LMFP(Property,IntegerClass,Params);
+        LMFP ListProperty = new LMFP(Property, quantityClass,Params);
         Properties.add(Property);
         return ListProperty;
     }
@@ -1038,7 +1039,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         if(Classes) {
             Class Base = new ObjectClass(3, "Базовый объект");
-            Base.AddParent(BaseClass);
+            Base.AddParent(objectClass);
             Class Article = new ObjectClass(4, "Товар");
             Article.AddParent(Base);
             Class Store = new ObjectClass(5, "Склад");
@@ -1077,16 +1078,16 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
             
             if(Properties) {
-                LDP Name = AddDProp(StringClass,Base);
+                LDP Name = AddDProp(stringClass,Base);
                 LDP DocStore = AddDProp(Store,Document);
-                LDP Quantity = AddDProp(IntegerClass,Document,Article);
-                LDP PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
-                LDP RashQuantity = AddDProp(IntegerClass,RashDocument,Article);
+                LDP Quantity = AddDProp(quantityClass,Document,Article);
+                LDP PrihQuantity = AddDProp(quantityClass,PrihDocument,Article);
+                LDP RashQuantity = AddDProp(quantityClass,RashDocument,Article);
                 LDP ArtToGroup = AddDProp(ArticleGroup,Article);
-                LDP DocDate = AddDProp(IntegerClass,Document);
+                LDP DocDate = AddDProp(quantityClass,Document);
                 LDP ArtSupplier = AddDProp(Supplier,Article,Store);
-                LDP PriceSupp = AddDProp(IntegerClass,Article,Supplier);
-                LDP GrStQty = AddDProp(IntegerClass,ArticleGroup,Store);
+                LDP PriceSupp = AddDProp(quantityClass,Article,Supplier);
+                LDP GrStQty = AddDProp(quantityClass,ArticleGroup,Store);
 
                 LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
                 LMFP Multiply = AddMFProp(2);
@@ -1285,7 +1286,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     void RandomClasses(Random Randomizer) {
         int CustomClasses = Randomizer.nextInt(20);//
         List<Class> ObjClasses = new ArrayList();
-        ObjClasses.add(BaseClass);
+        ObjClasses.add(objectClass);
         for(int i=0;i<CustomClasses;i++) {
             Class Class = new ObjectClass(i+3, "Случайный класс");
             int Parents = Randomizer.nextInt(6) + 1;
@@ -1300,19 +1301,19 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     void RandomProperties(Random Randomizer) {
         
         List<Class> Classes = new ArrayList();
-        BaseClass.FillClassList(Classes);
+        objectClass.FillClassList(Classes);
         
         List<Property> RandProps = new ArrayList();
         List<ObjectProperty> RandObjProps = new ArrayList();
         
         StringFormulaProperty Dirihle = new StringFormulaProperty("prm1<prm2",true);
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(BaseClass,"prm1"));
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(BaseClass,"prm2"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(objectClass,"prm1"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(objectClass,"prm2"));
         RandProps.add(Dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty();
-        Multiply.Interfaces.add(new FormulaPropertyInterface(BaseClass));
-        Multiply.Interfaces.add(new FormulaPropertyInterface(BaseClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(objectClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(objectClass));
         RandProps.add(Multiply);
 
         int DataPropCount = Randomizer.nextInt(15)+1;
@@ -1495,7 +1496,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     // случайным образом генерирует имплементацию
     void RandomImplement(Random Randomizer) {
         List<Class> Classes = new ArrayList();
-        BaseClass.FillClassList(Classes);
+        objectClass.FillClassList(Classes);
 
         // заполнение физ модели
         int ImplementCount = Randomizer.nextInt(8);
@@ -1575,7 +1576,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
             // будем также рандомно создавать объекты
             List<Class> AddClasses = new ArrayList();
-            BaseClass.FillClassList(AddClasses);
+            objectClass.FillClassList(AddClasses);
             int ObjectAdd = Randomizer.nextInt(2)+1;
             for(int ia=0;ia<ObjectAdd;ia++) {
                 Class AddClass = AddClasses.get(Randomizer.nextInt(AddClasses.size()));
@@ -1593,7 +1594,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 /*                    // теперь определяем класс найденного объекта
                     Class ValueClass = null;
                     if(ChangeProp.Value instanceof ObjectClass)
-                        ValueClass = BaseClass.FindClassID(ValueObject);
+                        ValueClass = objectClass.FindClassID(ValueObject);
                     else
                         ValueClass = ChangeProp.Value;*/
                         
@@ -1631,7 +1632,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Map<Integer,String> ObjectNames = new HashMap();
         Map<Class,List<Integer>> Objects = new HashMap();
         List<Class> Classes = new ArrayList();
-        BaseClass.FillClassList(Classes);
+        objectClass.FillClassList(Classes);
 
         for(Class FillClass : Classes)
             Objects.put(FillClass,new ArrayList());

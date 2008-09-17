@@ -13,8 +13,6 @@ import java.awt.*;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.io.Serializable;
-import java.io.ObjectOutputStream;
-import java.io.IOException;
 
 class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
                                  implements Serializable {
@@ -164,54 +162,36 @@ abstract class ClientCellView extends ClientComponentView {
 
 class ClientPropertyView extends ClientCellView {
 
+    public ClientClass baseClass;
+
+/*    public ClientClass getBaseClass(ClientForm form) {
+
+       if (baseClass == null) baseClass = ByteArraySerializer.deserializeClientClass(form.remoteForm.getPropertyClassByteArray(ID));
+
+       return baseClass;
+    }*/
     String type;
 
     public int getMinimumWidth() {
-        if (type.equals("char(50)"))
-            return 30;
-        else
-            return super.getMinimumWidth();
+
+        return baseClass.getMinimumWidth();
     }
 
     public int getPreferredWidth() {
-        
-        int res = 15;
-        
-        if (type.equals("integer")) res = 9;
-        if (type.equals("char(50)")) res = 50;
-        if ("срок годн.".equals(caption)) res = 14;
-        if ("вес.".equals(caption)) res = 7;
 
-        return res * 5;
+        return baseClass.getPreferredWidth();
     }
 
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
-        if (renderer == null) {
-            
-            if (type.equals("integer")) renderer = new IntegerPropertyRenderer(getFormat());
-            if (type.equals("char(50)")) renderer = new StringPropertyRenderer(getFormat());
-            if ("срок годн.".equals(caption)) renderer = new DatePropertyRenderer(getFormat());
-            if ("вес.".equals(caption)) renderer = new BitPropertyRenderer();
+        if (renderer == null) renderer = baseClass.getRendererComponent(getFormat());
 
-            if (renderer == null) renderer = new StringPropertyRenderer(getFormat());
-            
-        }
-        
         return renderer;
-        
     }
     
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
 
-        if ("гр. тов".equals(caption)) return new ObjectPropertyEditor(form);
-        if ("вес.".equals(caption)) return new BitPropertyEditor();
-        if ("срок годн.".equals(caption)) return new DatePropertyEditor();
-        if (type.equals("integer")) return new IntegerPropertyEditor((NumberFormat)getFormat());
-        if (type.equals("char(50)")) return new StringPropertyEditor();
-
-        return new StringPropertyEditor();
-        
+        return baseClass.getEditorComponent(form, getFormat());
     }
 
 }
@@ -221,7 +201,7 @@ class ClientObjectView extends ClientCellView {
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
         
         if (renderer == null) {
-            renderer = new IntegerPropertyRenderer(getFormat());
+            renderer = new QuantityPropertyRenderer(getFormat());
         }
         
         return renderer;
@@ -390,6 +370,8 @@ class DefaultClientFormView extends ClientFormView {
 
             //временно
             clientProperty.caption = property.View.Property.OutName;
+            clientProperty.baseClass = ByteArraySerializer.deserializeClientClass(
+                                       ByteArraySerializer.serializeClass(property.View.Property.GetValueClass(property.View.Property.GetClassSet(null).get(0))));
             clientProperty.type = property.View.Property.GetDBType();
 
             mproperties.put(property, clientProperty);
@@ -435,7 +417,7 @@ class DefaultClientFormView extends ClientFormView {
 
 // -------------------------------------- Классы ------------------------------ //
 
-class ClientClass implements Serializable {
+abstract class ClientClass implements Serializable {
 
     int ID;
     String caption;
@@ -443,6 +425,57 @@ class ClientClass implements Serializable {
     boolean hasChilds;
 
     public String toString() { return caption; }
+
+    public int getMinimumWidth() {
+        return getPreferredWidth();
+    }
+    public int getPreferredWidth() {
+        return 50;
+    }
+
+    abstract public PropertyRendererComponent getRendererComponent(Format format);
+    abstract public PropertyEditorComponent getEditorComponent(ClientForm form, Format format);
+}
+
+class ClientObjectClass extends ClientClass {
+
+    public int getPreferredWidth() { return 45; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new QuantityPropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new ObjectPropertyEditor(form); }
+}
+
+class ClientStringClass extends ClientClass {
+
+    public int getMinimumWidth() { return 30; }
+    public int getPreferredWidth() { return 250; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new StringPropertyEditor(); }
+}
+
+class ClientQuantityClass extends ClientClass {
+
+    public int getPreferredWidth() { return 45; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new QuantityPropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new QuantityPropertyEditor((NumberFormat)format); }
+}
+
+class ClientDateClass extends ClientClass {
+
+    public int getPreferredWidth() { return 70; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new DatePropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new DatePropertyEditor(); }
+}
+
+class ClientBitClass extends ClientClass {
+
+    public int getPreferredWidth() { return 35; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new BitPropertyEditor(); }
 }
 
 // -------------------------------------- Фильтры ------------------------------ //

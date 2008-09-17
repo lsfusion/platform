@@ -41,10 +41,10 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 }
 
 
-class IntegerPropertyRenderer extends LabelPropertyRenderer
+class QuantityPropertyRenderer extends LabelPropertyRenderer
                               implements PropertyRendererComponent{
 
-    public IntegerPropertyRenderer(Format iformat) {
+    public QuantityPropertyRenderer(Format iformat) {
         super((iformat == null) ? NumberFormat.getInstance() : iformat);
 
         setHorizontalAlignment(JLabel.RIGHT);

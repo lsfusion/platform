@@ -46,10 +46,10 @@ class TextFieldPropertyEditor extends JFormattedTextField {
 
 }
 
-class IntegerPropertyEditor extends TextFieldPropertyEditor
+class QuantityPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor(NumberFormat iformat) {
+    public QuantityPropertyEditor(NumberFormat iformat) {
 
         NumberFormat format = iformat;
         if (format == null)
