@@ -107,9 +107,22 @@ class Layout extends JFrame implements ComponentCollector {
 
         DefaultStation = StackStation;
 
-        NavigatorDockable NavigatorForm = new NavigatorDockable(Navigator);
+        ClientNavigator mainNavigator = new ClientNavigator(Navigator) {
+            public void openForm(ClientNavigatorForm element) {
+                try {
+                    Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        NavigatorDockable mainNavigatorForm = new NavigatorDockable(mainNavigator, "Навигатор");
         // нужно обязательно до Drop чтобы появились крестики
-        Frontend.add(NavigatorForm,"Navigator");
+        Frontend.add(mainNavigatorForm,"Navigator");
+
+        NavigatorDockable relevantNavigatorForm = new NavigatorDockable(mainNavigator.relevantNavigator, "Связанные формы");
+        Frontend.add(relevantNavigatorForm,"relevantNavigator");
 
         DefaultDockable logPanel = new DefaultDockable(Log.getPanel(), "Log");
         Frontend.add(logPanel, "Log");
@@ -127,11 +140,12 @@ class Layout extends JFrame implements ComponentCollector {
         // здесь чтобы сама потом подцепила галочки панелей
         setupMenu();
 
-        Frontend.registerFactory(new ClientFormFactory(Navigator));
+        Frontend.registerFactory(new ClientFormFactory(mainNavigator));
         try {
             read();
         } catch (IOException e) {
-            SplitStation.drop(NavigatorForm);
+            SplitStation.drop(mainNavigatorForm);
+            SplitStation.drop(relevantNavigatorForm);
             SplitStation.drop(logPanel);
             SplitStation.drop(StackStation);
         }
@@ -430,17 +444,9 @@ class LayoutActionGuard implements ActionGuard {
 
 class NavigatorDockable extends DefaultDockable {
 
-    NavigatorDockable(RemoteNavigator Navigator) {
-        super(new ClientNavigator(Navigator) {
+    NavigatorDockable(AbstractNavigator navigator, String caption) {
+        super(navigator,caption);
 
-            public void openForm(ClientNavigatorForm element) {
-                try {
-                    Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, remoteNavigator));
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-        },"Navigator");
     }
 }
 
@@ -474,12 +480,12 @@ class ReportDockable extends FormDockable {
 class ClientFormDockable extends FormDockable {
 
     int FormID;
-    RemoteNavigator Navigator;
+    ClientNavigator navigator;
 
-    ClientFormDockable(int iFormID,RemoteNavigator iNavigator) throws SQLException {
+    ClientFormDockable(int iFormID,ClientNavigator inavigator) throws SQLException {
         super("Form");
         FormID = iFormID;
-        Navigator = iNavigator;
+        navigator = inavigator;
         setFactoryID(ClientFormFactory.FACTORY_ID);
 
         setFormID(iFormID);
@@ -490,8 +496,8 @@ class ClientFormDockable extends FormDockable {
     void setFormID(int iFormID) throws SQLException {
 
         if(ActiveComponent!=null) remove(ActiveComponent);
-        setTitleText(Navigator.getCaption(FormID));
-        ActiveComponent = (new ClientForm(Navigator.CreateForm(FormID)));
+        setTitleText(navigator.remoteNavigator.getCaption(FormID));
+        ActiveComponent = (new ClientForm(navigator.remoteNavigator.CreateForm(FormID), navigator));
         add(ActiveComponent);
     }
 
@@ -503,9 +509,9 @@ class ClientFormDockable extends FormDockable {
 
 class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
 
-    RemoteNavigator Navigator;
-    ClientFormFactory(RemoteNavigator iNavigator) {
-        Navigator = iNavigator;
+    ClientNavigator navigator;
+    ClientFormFactory(ClientNavigator inavigator) {
+        navigator = inavigator;
     }
 
     public static final String FACTORY_ID = "clientforms";
@@ -536,7 +542,7 @@ class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
 
     public ClientFormDockable layout(Integer integer) {
         try {
-            return new ClientFormDockable(integer,Navigator);
+            return new ClientFormDockable(integer,navigator);
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }

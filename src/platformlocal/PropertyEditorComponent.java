@@ -6,11 +6,15 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import javax.swing.*;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.text.NumberFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -241,6 +245,8 @@ class DatePropertyEditorComponent extends JTextFieldDateEditor {
 class BitPropertyEditor extends JCheckBox
                         implements PropertyEditorComponent {
 
+    boolean isNull = false;
+
     public BitPropertyEditor() {
 
         setHorizontalAlignment(JCheckBox.CENTER);
@@ -249,6 +255,25 @@ class BitPropertyEditor extends JCheckBox
         setOpaque(true);
 
         setBackground(Color.white);
+
+        addMouseListener(new MouseAdapter() {
+
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON3) {
+                    setSelected(false);
+                    isNull = true;
+                    setBackground(Color.lightGray);
+                }
+            }
+        });
+
+        this.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                isNull = false;
+                setBackground(Color.white);
+            }
+        });
     }
 
     public Component getComponent() {
@@ -261,6 +286,8 @@ class BitPropertyEditor extends JCheckBox
     }
 
     public Object getCellEditorValue() {
+
+        if (isNull) return null;
         return (isSelected()) ? 1 : 0;
     }
 }
@@ -285,7 +312,9 @@ class ObjectPropertyEditor implements PropertyEditorComponent {
     }
 
     public void setCellEditorValue(Object value) {
+
         oldValue = value;
+        clientDialog.createDefaultForm((Integer)value);
     }
 
     public Object getCellEditorValue() {

@@ -19,6 +19,8 @@ import java.io.ObjectOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import javax.swing.JTextField;
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
@@ -45,6 +47,7 @@ public class ClientForm extends JPanel {
     private final ClientFormView formView;
 
     public final RemoteForm remoteForm;
+    public final ClientNavigator clientNavigator;
 
     // Icons - загружаем один раз, для экономии
     private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("images/arrowup.gif"));
@@ -60,12 +63,16 @@ public class ClientForm extends JPanel {
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
 
-    public ClientForm(RemoteForm iremoteForm) {
+    public ClientForm(RemoteForm iremoteForm, ClientNavigator iclientNavigator) {
 //        super(app);
 
 //        FocusOwnerTracer.installFocusTracer();
 
+        // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
+
+        // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
+        clientNavigator = iclientNavigator;
 
 //        getFrame().setTitle(caption);
 
@@ -76,7 +83,39 @@ public class ClientForm extends JPanel {
         initializeForm();
 
         applyFormChanges();
+
+        final String FOCUS_OWNER_PROPERTY = "permanentFocusOwner";
+
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(FOCUS_OWNER_PROPERTY, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                Component focusComponent = (Component)evt.getNewValue();
+                if (focusComponent != null) {
+                    boolean newHasFocus = ClientForm.this.isAncestorOf(focusComponent);
+                    if (hasFocus != newHasFocus) {
+                        hasFocus = newHasFocus;
+                        if (hasFocus) {
+                            clientNavigator.changeCurrentForm(remoteForm.getID());
+                        }
+                    }
+                }
+
+            }
+        });
+
+
+/*        this.setFocusable(true);
+//        this.setRequestFocusEnabled(true);
+        addFocusListener(new FocusAdapter() {
+
+            public void focusGained(FocusEvent e) {
+                System.out.println("focusGained");
+//                clientNavigator.changeCurrentForm(this);
+            }
+        });*/
     }
+
+    private boolean hasFocus = false;
 
     private FormLayout formLayout;
 
@@ -1567,7 +1606,8 @@ public class ClientForm extends JPanel {
 
                             public void propertyChanged(ClientPropertyView property) {
                                 cell.setKey(property);
-                                cell.setValue(table.getSelectedValue(property));
+                                cell.cellValueChanged(table.getSelectedValue(property));
+//                                cell.setValue(table.getSelectedValue(property));
                             }
 
                             public void stopEditing() {

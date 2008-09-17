@@ -60,7 +60,7 @@ abstract class DataAdapter implements SQLSyntax {
        java.lang.Class.forName(getClassName());
        createDB();
     }
-    
+
 
     void Disconnect() throws SQLException {
     }
@@ -159,7 +159,11 @@ class MSSQLDataAdapter extends DataAdapter {
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
-        Connect.createStatement().execute("DROP DATABASE testplat");
+        try {
+            Connect.createStatement().execute("DROP DATABASE testplat");
+        } catch (Exception e) {
+            
+        }
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
     }

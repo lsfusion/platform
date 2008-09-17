@@ -861,7 +861,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return true;
     }
 
-    Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,RemoteForm Form,Set<String> Names) {
+    Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {
         
         Map<String,PropertyObjectImplement> Result = new HashMap();
         

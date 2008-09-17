@@ -13,6 +13,8 @@ public class ClientDialog extends JDialog {
     ClientNavigator navigator;
     ClientForm currentForm;
 
+    int classID;
+
     ClientDialog(ClientForm owner) {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
@@ -20,17 +22,22 @@ public class ClientDialog extends JDialog {
 
         setBounds(owner.getBounds());
 
-        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).ID);
-        navigator = new ClientNavigator(remoteNavigator) {
+        classID = owner.remoteForm.getClassID(((ClientPropertyView)owner.editingCell).ID);
+//        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).ID);
+        navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
 
             public void openForm(ClientNavigatorForm element) {
                 setCurrentForm(element.ID);
             }
         };
 
-        add(navigator, BorderLayout.LINE_START);
+        JPanel navigatorPanel = new JPanel();
+        navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
 
-        setCurrentForm(navigator.remoteNavigator.getDefaultForm());
+        navigatorPanel.add(navigator);
+        navigatorPanel.add(navigator.relevantNavigator);
+
+        add(navigatorPanel, BorderLayout.LINE_START);
 
         addWindowListener(new WindowAdapter() {
 
@@ -49,9 +56,17 @@ public class ClientDialog extends JDialog {
         return objectChosen;
     }
 
+    public void createDefaultForm(Integer value) {
+
+        if (value != null)
+            navigator.remoteNavigator.addCacheObject(classID, value);
+        
+        setCurrentForm(navigator.remoteNavigator.getDefaultForm());
+    }
+
     public Object objectChosen() {
 
-        int objectID = navigator.remoteNavigator.getLeadObject();
+        int objectID = navigator.remoteNavigator.getCacheObject(classID); //navigator.remoteNavigator.getLeadObject();
         if (objectID == -1) return null;
 
         return objectID;
@@ -61,7 +76,7 @@ public class ClientDialog extends JDialog {
 
         if (currentForm != null) remove(currentForm);
         try {
-            currentForm = new ClientForm(navigator.remoteNavigator.CreateForm(formID)) {
+            currentForm = new ClientForm(navigator.remoteNavigator.CreateForm(formID), navigator) {
 
                 boolean okPressed() {
                     if (super.okPressed()) {

@@ -11,13 +11,13 @@ import java.awt.event.MouseEvent;
 import java.awt.*;
 import java.sql.SQLException;
 
-public abstract class ClientNavigator extends JPanel {
+abstract class AbstractNavigator extends JPanel {
 
     RemoteNavigator remoteNavigator;
 
-    JTree tree;
+    NavigatorTree tree;
 
-    public ClientNavigator(RemoteNavigator iremoteNavigator) {
+    public AbstractNavigator(RemoteNavigator iremoteNavigator) {
 
         remoteNavigator = iremoteNavigator;
 
@@ -40,8 +40,7 @@ public abstract class ClientNavigator extends JPanel {
 
         public NavigatorTree() {
 
-            rootNode = new DefaultMutableTreeNode(null);
-            model = new DefaultTreeModel(rootNode);
+            model = new DefaultTreeModel(null);
 
             setModel(model);
 
@@ -54,9 +53,6 @@ public abstract class ClientNavigator extends JPanel {
                 public void treeCollapsed(TreeExpansionEvent event) {};
 
             });
-
-            rootNode.add(new ExpandingTreeNode());
-            expandPath(new TreePath(rootNode));
 
             addMouseListener(new MouseAdapter() {
 
@@ -75,8 +71,20 @@ public abstract class ClientNavigator extends JPanel {
                         openForm((ClientNavigatorForm) nodeObject);
                     }
                 }
+
             });
 
+            createRootNode();
+
+        }
+
+        public void createRootNode() {
+
+            rootNode = new DefaultMutableTreeNode(null);
+            model.setRoot(rootNode);
+            
+            rootNode.add(new ExpandingTreeNode());
+            expandPath(new TreePath(rootNode));
         }
 
         private void addNodeElements(DefaultMutableTreeNode parent) {
@@ -92,8 +100,7 @@ public abstract class ClientNavigator extends JPanel {
             ClientNavigatorGroup group = (ClientNavigatorGroup) nodeObject;
 
             int groupID = (group == null) ? -1 : group.ID;
-            List<ClientNavigatorElement> elements = ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                            remoteNavigator.GetElementsByteArray(groupID));
+            List<ClientNavigatorElement> elements = getNodeElements(groupID);
 
             for (ClientNavigatorElement element : elements) {
 
@@ -108,6 +115,47 @@ public abstract class ClientNavigator extends JPanel {
 
             model.reload(parent);
 
+        }
+
+    }
+
+    abstract protected List<ClientNavigatorElement> getNodeElements(int groupID);
+
+}
+
+public abstract class ClientNavigator extends AbstractNavigator {
+
+    RelevantNavigator relevantNavigator;
+
+    public ClientNavigator(RemoteNavigator iremoteNavigator) {
+        super(iremoteNavigator);
+
+        relevantNavigator = new RelevantNavigator(iremoteNavigator);
+    }
+
+    protected List<ClientNavigatorElement> getNodeElements(int groupID) {
+        return ByteArraySerializer.deserializeListClientNavigatorElement(
+                                                remoteNavigator.GetElementsByteArray(groupID));
+    }
+
+    public void changeCurrentForm(int formID) {
+        remoteNavigator.changeCurrentForm(formID);
+        relevantNavigator.tree.createRootNode();
+    }
+
+    class RelevantNavigator extends AbstractNavigator {
+
+        public RelevantNavigator(RemoteNavigator iremoteNavigator) {
+            super(iremoteNavigator);
+        }
+
+        public void openForm(ClientNavigatorForm element) {
+            ClientNavigator.this.openForm(element);
+        }
+
+        protected List<ClientNavigatorElement> getNodeElements(int groupID) {
+            return ByteArraySerializer.deserializeListClientNavigatorElement(
+                                                remoteNavigator.GetElementsByteArray((groupID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANT : groupID));
         }
 
     }

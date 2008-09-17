@@ -112,7 +112,7 @@ public class Main {
             BL.FillData(Adapter);
 
             // базовый навигатор
-            RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL,new HashMap());
+            RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL);
 
 /*            JFrame frame = new JFrame("Hello");
             frame.add(new ClientForm(Navigator.CreateForm(1)));
@@ -147,7 +147,7 @@ public class Main {
 
 //        BusinessLogics t = new BusinessLogics();
 //        t.FullDBTest();
-        
+
 //        Test t = new Test();
 //        t.SimpleTest(null);
     }
@@ -169,7 +169,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ClassQuantity.put(Store,2);
         ClassQuantity.put(PrihDocument,10);
         ClassQuantity.put(RashDocument,20);
-  
+
         Map<DataProperty,Integer> PropQuantity = new HashMap();
         Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls = new HashMap();
 
@@ -188,14 +188,14 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         if(1==1) return;
 
         DataSession Session = createSession(Adapter);
-        
+
         Integer i;
         Integer[] Articles = new Integer[6];
         for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session, Article);
 
         Integer[] Stores = new Integer[2];
         for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session, Store);
-        
+
         Integer[] PrihDocuments = new Integer[6];
         for(i=0;i<PrihDocuments.length;i++) {
             PrihDocuments[i] = AddObject(Session, PrihDocument);
@@ -248,7 +248,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         DocDate.ChangeProperty(Session, 1014,PrihDocuments[3]);
         DocDate.ChangeProperty(Session, 1016,RashDocuments[4]);
         DocDate.ChangeProperty(Session, 1018,PrihDocuments[4]);
-        
+
         ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[0]);
         ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[1]);
         ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[2]);
@@ -261,7 +261,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[2],Articles[0]);
         RashQuantity.ChangeProperty(Session, 5,RashDocuments[0],Articles[0]);
         RashQuantity.ChangeProperty(Session, 3,RashDocuments[1],Articles[0]);
-        
+
         PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[1]);
         PrihQuantity.ChangeProperty(Session, 2,PrihDocuments[1],Articles[1]);
         PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[1]);
@@ -295,10 +295,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         throw new RuntimeException();
   */
     }
-    
+
     PropertyObjectImplement AddPropView(RemoteForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
         PropertyObjectImplement PropImpl = new PropertyObjectImplement((ObjectProperty)ListProp.Property);
-        
+
         ListIterator<PropertyInterface> i = ListProp.ListInterfaces.listIterator();
         for(ObjectImplement Object : Params) {
             PropImpl.Mapping.put(i.next(),Object);
@@ -315,7 +315,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     Class RashDocument;
 
     void InitClasses() {
-        
+
         Article = new ObjectClass(4, "Товар");
         Article.AddParent(BaseClass);
         Store = new ObjectClass(5, "Склад");
@@ -336,7 +336,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore;
 
     void InitProperties() {
-        
+
         Name = AddDProp(StringClass,BaseClass);
         DocStore = AddDProp(Store,Document);
         PrihQuantity = AddDProp(IntegerClass,PrihDocument,Article);
@@ -375,10 +375,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         OpValue = AddUProp(2,1,1,RashValue,1,1,PrihValue,1);
         OpValue.Property.OutName = "общ. призн.";
-        
+
         LGP RaznSValue = AddGProp(OpValue,true,DocStore,1);
         RaznSValue.Property.OutName = "разн. пр-рас.";
-        
+
         LRP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.OutName = "наценка по товару (гр.)";
 
@@ -402,7 +402,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LRP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.OutName = "имя склада";
-        
+
         LRP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
         ArtGroupName.Property.OutName = "имя гр. тов.";
 
@@ -445,7 +445,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
         MaxOpStore.Property.OutName = "макс. операция";
-        
+
         SumMaxArt = AddGProp(MaxOpStore,true,2);
         SumMaxArt.Property.OutName = "макс. операция (сумма)";
     }
@@ -474,7 +474,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitTables() {
         TableImplement Include;
-        
+
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(Article));
         TableFactory.IncludeIntoGraph(Include);
@@ -505,27 +505,21 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         BaseGroup.AddChild(group1);
         BaseGroup.AddChild(group2);
 
-        group1.AddChild(new TestNavigatorForm(1,"Test Form 1"));
-        group2.AddChild(new SimpleNavigatorForm(2,"Test Form 2"));
-        group2.AddChild(new Test2NavigatorForm(3,"Test Form 3"));
+        NavigatorForm testForm = new TestNavigatorForm(1,"Test Form 1", this);
+        group1.AddChild(testForm);
+
+        NavigatorForm simpleForm = new SimpleNavigatorForm(2,"Test Form 2", this);
+        group2.AddChild(simpleForm);
+
+        testForm.addRelevantForm(simpleForm);
+        simpleForm.addRelevantForm(testForm);
     }
 }
 
 class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
-    TestNavigatorForm(int iID, String caption) {super(iID, caption);}
-
-    RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
-        return new TestRemoteForm(Adapter,BL);
-    }
-    
-}
-
-class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
-
-    // в EJB кто-то должен сказать где брать Adapter, а где BusinessLogics
-    TestRemoteForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
-        super(Adapter,BL);
+    TestNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
+        super(iID, caption);
 
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.ArticleGroup);
         obj1.OutName = "группа товаров";
@@ -533,7 +527,7 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
         obj2.OutName = "товар";
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
         obj3.OutName = "документ";
-        
+
         GroupObjectImplement gv = new GroupObjectImplement();
         GroupObjectImplement gv2 = new GroupObjectImplement();
         GroupObjectImplement gv3 = new GroupObjectImplement();
@@ -547,29 +541,29 @@ class TestRemoteForm extends RemoteForm<TestBusinessLogics> {
         gv.GID = 1;
         gv2.GID = 2;
         gv3.GID = 3;
-        
+
         Set<String> Obj2Set = new HashSet();
         Obj2Set.add("гр. тов");
         Set<String> Obj3Set = new HashSet();
         Obj3Set.add("имя");
         Obj3Set.add("дата док.");
-        
+
         BL.FillSingleViews(obj1,this,null);
         Map<String,PropertyObjectImplement> Obj2Props = BL.FillSingleViews(obj2,this,Obj2Set);
         Map<String,PropertyObjectImplement> Obj3Props = BL.FillSingleViews(obj3,this,Obj3Set);
-        
+
         PropertyObjectImplement QImpl = BL.AddPropView(this,BL.Quantity,gv3,obj3,obj2);
         BL.AddPropView(this,BL.GP,gv3,obj3,obj2);
         BL.AddPropView(this,BL.PrihQuantity,gv3,obj3,obj2);
         BL.AddPropView(this,BL.RashQuantity,gv3,obj3,obj2);
         BL.AddPropView(this,BL.GSum,gv3,obj3,obj2);
-        
+
 //        fbv.AddObjectSeek(obj3,13);
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
 
 //        AddFilter(new NotNullFilter(QImpl));
 //        addFilter(new CompareFilter(Obj2Props.get("гр. тов"),0,new ObjectValueLink(obj1)));
-        
+
 //        fbv.AddObjectSeek(obj3,13);
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
 
@@ -586,7 +580,7 @@ class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     RemoteForm<TestBusinessLogics> CreateForm(DataAdapter Adapter, TestBusinessLogics BL) throws SQLException {
         return new SimpleRemoteForm(Adapter,BL);
     }
-    
+
 }
 
 class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
@@ -597,7 +591,7 @@ class SimpleRemoteForm extends RemoteForm<TestBusinessLogics> {
 
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
         obj1.OutName = "товар";
-        
+
         GroupObjectImplement gv = new GroupObjectImplement();
 
         gv.add(obj1);

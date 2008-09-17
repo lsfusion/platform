@@ -63,7 +63,7 @@ class ObjectImplement {
     
     // идентификатор (в рамках формы)
     int ID = 0;
-    
+
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
         return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):new ValueSourceExpr(idObject));
     }
@@ -83,10 +83,9 @@ class GroupObjectValue extends GroupObjectMap<Integer> {
 
 class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
-    GroupObjectImplement() {
-        MapFilters = new HashSet();
-        MapOrders = new ArrayList();
-        Filters = new HashSet();
+    public void addObject(ObjectImplement object) {
+        add(object);
+        object.GroupTo = this;
     }
 
     Integer Order = 0;
@@ -100,11 +99,11 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     // закэшированные
     
     // вообще все фильтры
-    Set<Filter> MapFilters;
-    List<PropertyObjectImplement> MapOrders;
+    Set<Filter> MapFilters = new HashSet();
+    List<PropertyObjectImplement> MapOrders = new ArrayList();
     
     // с активным интерфейсом
-    Set<Filter> Filters;
+    Set<Filter> Filters = new HashSet();
     LinkedHashMap<PropertyObjectImplement,Boolean> Orders = new LinkedHashMap();
     
     boolean UpKeys, DownKeys;
@@ -116,7 +115,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     int Updated = (1<<3);
 
     int PageSize = 30;
-    
+
     void Out(GroupObjectValue Value) {
         for(ObjectImplement Object : this)
             System.out.print(" "+Object.OutName+" = "+Value.get(Object));
@@ -243,6 +242,13 @@ class PropertyView {
         View = iView;
         ToDraw = iToDraw;
         ID = iID;
+    }
+
+    public PropertyView(PropertyView navigatorProperty) {
+
+        ID = navigatorProperty.ID;
+        View = navigatorProperty.View;
+        ToDraw = navigatorProperty.ToDraw;
     }
 
     void Out() {
@@ -439,41 +445,25 @@ class PropertyValueLink extends ValueLink {
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-abstract class RemoteForm<T extends BusinessLogics<T>> {
+class RemoteForm<T extends BusinessLogics<T>> {
+
+    private final int ID;
+    int getID() { return ID; }
 
     T BL;
 
     DataSession Session;
 
-    // чисто для getNavigator
-    DataAdapter Adapter;
-
     Set<ObjectProperty> ChangedProps = new HashSet();
-    RemoteForm(DataAdapter iAdapter,T iBL) throws SQLException {
+    RemoteForm(int iID, DataAdapter iAdapter,T iBL) throws SQLException {
+
+        ID = iID;
+
         BL = iBL;
-        Adapter = iAdapter;
 
         Session = BL.createSession(iAdapter);
 
         StructUpdated = true;
-    }
-
-    // счетчик идентивикаторов
-    int IDCount = 0;
-
-    int GenID(int Offs) {
-        return IDCount + Offs;
-    }
-
-    int IDShift(int Offs) {
-        IDCount += Offs;
-        return IDCount;
-    }
-
-    void AddGroup(GroupObjectImplement Group) {
-        Groups.add(Group);
-        Group.Order = Groups.size();
-        for(ObjectImplement Object : Group) Object.GroupTo = Group;
     }
 
     List<GroupObjectImplement> Groups = new ArrayList();
@@ -510,16 +500,6 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         return null;
     }
 
-    public Class getFormClass(Class parentClass, int classID) {
-        if (parentClass.ID == classID) return parentClass;
-        for (Class childClass : parentClass.Childs) {
-            Class cls = getFormClass(childClass, classID);
-            if (cls != null) return cls;
-        }
-        return null;
-    }
-
-
     // это будут Bean'овские интерфейсы
 
     public void ChangeObject(Integer groupID, byte[] value) throws SQLException {
@@ -545,15 +525,18 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
                 Group.Updated = Group.Updated | (1<<0);
             }
+            objectChanged(Object.Class, idObject);
         }
     }
+
+    protected void objectChanged(Class cls, Integer objectID) {};
 
     public byte[] getBaseClassByteArray(int objectID) {
         return ByteArraySerializer.serializeClass(getObjectImplement(objectID).BaseClass);
     }
 
     public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteArraySerializer.serializeListClass(getFormClass(getObjectImplement(objectID).BaseClass, classID).Childs);
+        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.FindClassID(classID).Childs);
     }
 
     public void ChangeGridClass(int objectID,int idClass) throws SQLException {
@@ -663,7 +646,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
 
     public void AddObject(int objectID, int classID) throws SQLException {
         ObjectImplement object = getObjectImplement(objectID);
-        AddObject(object, (classID == -1) ? null : getFormClass(object.BaseClass, classID));
+        AddObject(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
     }
 
     public void AddObject(ObjectImplement Object, Class cls) throws SQLException {
@@ -712,7 +695,7 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
     public void ChangeClass(int objectID, int classID) throws SQLException {
 
         ObjectImplement object = getObjectImplement(objectID);
-        ChangeClass(object, (classID == -1) ? null : getFormClass(object.BaseClass, classID));
+        ChangeClass(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
 
     }
 
@@ -1460,18 +1443,17 @@ abstract class RemoteForm<T extends BusinessLogics<T>> {
         return Design;
     }
 
-    RemoteNavigator<T> getNavigator(int propertyID) {
-        return getNavigator(getPropertyView(propertyID));
+    public int getClassID(int propertyID) {
+        return getClass(propertyID).ID;
     }
 
-    RemoteNavigator<T> getNavigator(PropertyView propertyView) {
-        return getNavigator(propertyView.View.GetValueClass(propertyView.ToDraw));
+    public Class getClass(int propertyID) {
+        return getClass(getPropertyView(propertyID));
     }
 
-    RemoteNavigator<T> getNavigator(Class cls) {
-        return new RemoteNavigator(Adapter, BL, new HashMap(), cls);
+    public Class getClass(PropertyView propertyView) {
+        return propertyView.View.GetValueClass(propertyView.ToDraw); 
     }
-
 
 }
 

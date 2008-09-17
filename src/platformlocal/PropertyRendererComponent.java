@@ -142,5 +142,9 @@ class BitPropertyRenderer extends JCheckBox
 
         } else
             setBackground(Color.white);
+        
+        if (!hasFocus && value == null) {
+            this.setBackground(Color.lightGray);
+        }
     }
 }
