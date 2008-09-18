@@ -97,7 +97,7 @@ abstract class Source<K,V> {
 
         Statement Statement = Session.Connection.createStatement();
 
-        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
+//        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
         try {
             ResultSet Result = Statement.executeQuery(getSelect(new ArrayList(),new ArrayList(),Session.Syntax));
             try {

@@ -369,7 +369,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             ResultQuery = NewQuery;
         }
 
-        System.out.println("IncChanges - "+OutName);
+//        System.out.println("IncChanges - "+OutName);
 //        ResultQuery.outSelect(Adapter);
         if(!IsPersistent() && XL)
             IncrementSource = ResultQuery;
