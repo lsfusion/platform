@@ -9,6 +9,7 @@ import java.util.*;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
+import java.math.BigDecimal;
 
 // абстрактный класс источников
 abstract class Source<K,V> {
@@ -82,6 +83,13 @@ abstract class Source<K,V> {
 
     }
 
+    Object convertResult(Object Result) {
+        if(Result instanceof BigDecimal)
+            return ((BigDecimal)Result).toBigInteger().intValue();
+        else
+            return Result;
+    }
+
     // из-за templatов сюда кинем
     LinkedHashMap<Map<K,Integer>,Map<V,Object>> executeSelect(DataSession Session) throws SQLException {
 
@@ -89,17 +97,17 @@ abstract class Source<K,V> {
 
         Statement Statement = Session.Connection.createStatement();
 
-//        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
+        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
         try {
             ResultSet Result = Statement.executeQuery(getSelect(new ArrayList(),new ArrayList(),Session.Syntax));
             try {
                 while(Result.next()) {
                     Map<K,Integer> RowKeys = new HashMap();
                     for(K Key : Keys)
-                        RowKeys.put(Key,(Integer)Result.getObject(getKeyName(Key)));
+                        RowKeys.put(Key,(Integer)convertResult(Result.getObject(getKeyName(Key))));
                     Map<V,Object> RowProperties = new HashMap();
                     for(V Property : getProperties())
-                        RowProperties.put(Property,Result.getObject(getPropertyName(Property)));
+                        RowProperties.put(Property,convertResult(Result.getObject(getPropertyName(Property))));
 
                      ExecResult.put(RowKeys,RowProperties);
                 }
@@ -138,6 +146,8 @@ abstract class Source<K,V> {
     // по сути тоже самое что и InsertSelect
     Table createView(DataSession Session,String ViewName,Map<K,KeyField> MapKeys,Map<V,PropertyField> MapProperties) throws SQLException {
 
+        if(1==1) return null;
+
         Table View = new Table(ViewName);
         for(K Key : Keys) {
             KeyField KeyField = new KeyField(getKeyName(Key),"integer");
@@ -162,10 +172,21 @@ class DumbSource<K,V> extends Source<K,V> {
     Map<K,Integer> ValueKeys;
     Map<V,Object> Values;
 
+    Map<K,String> KeyNames = new HashMap();
+    Map<V,String> PropertyNames = new HashMap();
+
     DumbSource(Map<K,Integer> iValueKeys,Map<V,Object> iValues) {
         super(iValueKeys.keySet());
         ValueKeys = iValueKeys;
         Values = iValues;
+
+        int Num = 1;
+        for(K Key : Keys)
+            KeyNames.put(Key,"dumbkey"+(Num++));
+
+        Num = 1;
+        for(V Property : Values.keySet())
+            PropertyNames.put(Property,"dumbprop"+(Num++));
     }
 
     String getSource(SQLSyntax Syntax) {
@@ -211,11 +232,11 @@ class DumbSource<K,V> extends Source<K,V> {
 
     // пока забьем на эту реализацию
     String getKeyName(K Key) {
-        return null;
+        return KeyNames.get(Key);
     }
 
     String getPropertyName(V Property) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return PropertyNames.get(Property);
     }
 
     void outSelect(DataSession Session) throws SQLException {
@@ -231,8 +252,8 @@ class Field {
 
     Field(String iName,String iType) {Name=iName;Type=iType;}
 
-    String GetDeclare() {
-        return Name + " " + Type;
+    String GetDeclare(SQLSyntax Syntax) {
+        return Name + " " + Syntax.convertType(Type);
     }
 }
 
@@ -253,6 +274,8 @@ class Table extends Source<KeyField,PropertyField> {
     String getSource(SQLSyntax Syntax) {
         return Name;
     }
+
+    Set<List<PropertyField>> Indexes = new HashSet();
 
     Collection<PropertyField> getProperties() {
         return Properties;
@@ -1156,8 +1179,8 @@ class OrderedJoinQuery<K,V> extends JoinQuery<K,V> {
         for(Map.Entry<SourceExpr,Boolean> Order : Orders.entrySet())
             OrderString = (OrderString.length()==0?"":OrderString+",") + OrderSelect.get(Order.getKey())+(Up==Order.getValue()?" ASC":" DESC");
 
-        return "SELECT " + Syntax.getTop(Top, ExpressionString + " FROM " + From + (WhereString.length()==0?"":" WHERE " + WhereString) +
-                (OrderString.length()==0?"":" ORDER BY "+OrderString));
+        return "SELECT " + Syntax.getTop(Top, ExpressionString + " FROM " + From,
+                (OrderString.length()==0?"":" ORDER BY "+OrderString),WhereString);
     }
 
     OrderedJoinQuery(Collection<? extends K> iKeys) {super(iKeys);}
@@ -1377,15 +1400,29 @@ class ModifyQuery {
         for(KeyField Key : Table.Keys)
             WhereSelect.add(Table.getSource(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
 
-        String WhereString = "";
-        for(String Where : WhereSelect)
-            WhereString = (WhereString.length()==0?"":WhereString+" AND ") + Where;
+        if(Syntax.isSelectUpdate()) {
+            List<KeyField> KeyOrder = new ArrayList();
+            List<PropertyField> PropertyOrder = new ArrayList();
+            String SelectString = Change.getSelectString(FromSelect,KeySelect,PropertySelect,WhereSelect,KeyOrder,PropertyOrder);
 
-        String SetString = "";
-        for(Map.Entry<PropertyField,String> SetProperty : PropertySelect.entrySet())
-            SetString = (SetString.length()==0?"":SetString+",") + SetProperty.getKey().Name + "=" + SetProperty.getValue();
+            String SetString = "";
+            for(KeyField Field : KeyOrder) 
+                SetString = (SetString.length()==0?"":SetString+",") + Field.Name;
+            for(PropertyField Field : PropertyOrder) 
+                SetString = (SetString.length()==0?"":SetString+",") + Field.Name;
 
-        return "UPDATE " + Syntax.getUpdate(Table.getSource(Syntax)," SET "+SetString,FromSelect,(WhereString.length()==0?"":" WHERE "+WhereString));
+            return "UPDATE " + Table.getSource(Syntax) + " SET ("+SetString+") = ("+SelectString+") WHERE EXISTS ("+SelectString+")";
+        } else {
+            String WhereString = "";
+            for(String Where : WhereSelect)
+                WhereString = (WhereString.length()==0?"":WhereString+" AND ") + Where;
+
+            String SetString = "";
+            for(Map.Entry<PropertyField,String> SetProperty : PropertySelect.entrySet())
+                SetString = (SetString.length()==0?"":SetString+",") + SetProperty.getKey().Name + "=" + SetProperty.getValue();
+
+            return "UPDATE " + Syntax.getUpdate(Table.getSource(Syntax)," SET "+SetString,FromSelect,(WhereString.length()==0?"":" WHERE "+WhereString));
+        }
     }
 
     String getInsertLeftKeys(SQLSyntax Syntax) {

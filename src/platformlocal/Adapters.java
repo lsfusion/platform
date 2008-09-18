@@ -8,8 +8,6 @@ package platformlocal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
 
 interface SQLSyntax {
 
@@ -30,7 +28,7 @@ interface SQLSyntax {
     String getClustered();
     String getCommandEnd();
 
-    String getTop(int Top,String SelectString);
+    String getTop(int Top, String SelectString, String OrderString, String WhereString);
 
     String getNullValue(String DBType);
 
@@ -39,9 +37,27 @@ interface SQLSyntax {
 
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     boolean isNullSafe();
+
+    String convertType(String Type);
+
+    boolean isSelectUpdate();
+
+    boolean noAutoCommit();
 }
 
 abstract class DataAdapter implements SQLSyntax {
+
+    public String convertType(String Type) {
+        return Type;
+    }
+
+    public boolean isSelectUpdate() {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean noAutoCommit() {
+        return false;
+    }
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter();
@@ -51,8 +67,8 @@ abstract class DataAdapter implements SQLSyntax {
         return "NULL";
     }
 
-    public String getTop(int Top,String SelectString) {
-        return (Top==0?"":"TOP "+Top+" ") + SelectString;
+    public String getTop(int Top, String SelectString, String OrderString, String WhereString) {
+        return (Top==0?"":"TOP "+Top+" ") + SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
 
    DataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
@@ -158,18 +174,21 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        try {
         try {
             Connect.createStatement().execute("DROP DATABASE testplat");
         } catch (Exception e) {
             
+        }
+        } catch(Exception e) {            
         }
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://server:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
         Connect.createStatement().execute("USE testplat");
 
         return Connect;
@@ -227,14 +246,14 @@ class PostgreDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:postgresql://server/postgres?user=postgres&password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=postgres&password=11111");
         Connect.createStatement().execute("DROP DATABASE testplat");
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://server/testplat?user=postgres&password=11111");
+        return DriverManager.getConnection("jdbc:postgresql://localhost/testplat?user=postgres&password=11111");
     }
 
     public String getCommandEnd() {
@@ -262,12 +281,110 @@ class PostgreDataAdapter extends DataAdapter {
         return "ROLLBACK";
     }
 
-    public String getTop(int Top,String SelectString) {
-        return SelectString + (Top==0?"":" LIMIT "+Top);
+    public String getTop(int Top, String SelectString, String OrderString, String WhereString) {
+        return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString + (Top==0?"":" LIMIT "+Top);
     }
 
     public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
 //        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
         return "COALESCE("+Expr1+","+Expr2+")";
+    }
+}
+
+
+class OracleDataAdapter extends DataAdapter {
+
+    public String convertType(String Type) {
+        if(Type.equals("integer"))
+            return "NUMBER(5)";
+
+        return Type;
+    }
+
+    public boolean isSelectUpdate() {
+        return true;
+    }
+
+    public boolean noAutoCommit() {
+        return true;
+    }
+
+    OracleDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super();
+    }
+
+    public boolean allowViews() {
+        return true;
+    }
+
+    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
+        // идет как Select Update
+        return null;
+    }
+
+    public String getClassName() {
+        return "oracle.jdbc.driver.OracleDriver";
+    }
+
+    public String getCreateSessionTable(String TableName, String DeclareString, String ConstraintString) {
+        return "CREATE GLOBAL TEMPORARY TABLE "+TableName+" ("+DeclareString+","+ConstraintString+") ON COMMIT PRESERVE ROWS";
+    }
+
+    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+
+        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@server:1521:orcl");
+//        try {
+//        Connect.createStatement().execute("ALTER DATABASE CLOSE");
+//        Connect.createStatement().execute("DROP DATABASE");
+//        } catch(Exception e) {
+//        }
+//        try {
+//        Connect.createStatement().execute("CREATE DATABASE");
+//        } catch(Exception e) {
+//        }
+
+        Connect.close();
+    }
+
+    public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@server:1521:orcl");
+//        Connect.createStatement().execute("USE testplat");
+
+        return Connect;
+    }
+
+    public String getCommandEnd() {
+        return "";
+    }
+
+    public String getClustered() {
+        return "";
+    }
+
+    public String startTransaction() {
+        return null;
+    }
+
+    public String commitTransaction() {
+        return "COMMIT";
+    }
+
+    public String rollbackTransaction() {
+        return "ROLLBACK";
+    }
+
+    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
+        return "NVL("+Expr1+","+Expr2+")";
+    }
+
+    public String getTop(int Top, String SelectString, String OrderString, String WhereString) {
+        if(Top!=0)
+            WhereString = (WhereString.length()==0?"":WhereString+" AND ") + "rownum<=" + Top;
+        return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
+    }
+    
+    public String getNullValue(String DBType) {
+        String EmptyValue = (DBType.equals("integer")?"0":"''");
+        return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
     }
 }

@@ -332,7 +332,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
             DocDate,GrAddV,ArtAddV,BarCode,ExpireDate,Weight;
-    LRP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
+    LJP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
     LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore;
 
     void InitProperties() {
@@ -379,13 +379,13 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LGP RaznSValue = AddGProp(OpValue,true,DocStore,1);
         RaznSValue.Property.OutName = "разн. пр-рас.";
 
-        LRP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
+        LJP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.OutName = "наценка по товару (гр.)";
 
-        LRP ArtActAddV = AddUProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
+        LJP ArtActAddV = AddUProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
         ArtActAddV.Property.OutName = "наценка по товару";
 
-//        LRP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+//        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
         LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
         LMFP Multiply = AddMFProp(2);
@@ -400,21 +400,21 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         GrAddV.Property.OutName = "нац. по гр.";
         ArtAddV.Property.OutName = "нац. перегр.";
 
-        LRP StoreName = AddJProp(Name,1,DocStore,1);
+        LJP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.OutName = "имя склада";
 
-        LRP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
+        LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
         ArtGroupName.Property.OutName = "имя гр. тов.";
 
         LDP ArtGName = AddDProp(stringClass,Article);
         ArtGName.Property.OutName = "при доб. гр. тов.";
         SetDefProp(ArtGName,ArtGroupName,true);
 
-        LRP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
+        LJP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
         DDep.Property.OutName = "предш. док.";
         ((ObjectProperty)DDep.Property).XL = true;
 
-        LRP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
+        LJP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
         QDep.Property.OutName = "изм. баланса";
         ((ObjectProperty)QDep.Property).XL = true;
 
@@ -707,9 +707,9 @@ class LMFP extends LP {
 }
 
 
-class LRP extends LP {
+class LJP extends LP {
 
-    LRP(Property iProperty,int Objects) {
+    LJP(Property iProperty,int Objects) {
         super(iProperty);
         for(int i=0;i<Objects;i++) {
             PropertyInterface Interface = new PropertyInterface();

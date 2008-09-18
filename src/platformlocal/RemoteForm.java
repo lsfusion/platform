@@ -114,7 +114,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
     int Updated = (1<<3);
 
-    int PageSize = 30;
+    int PageSize = 10;
 
     void Out(GroupObjectValue Value) {
         for(ObjectImplement Object : this)
@@ -726,7 +726,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
         String ApplyResult = BL.Apply(Session);
         if(ApplyResult==null)
-            StartNewSession();
+            ChangedProps.clear();
 
         return ApplyResult;
     }
@@ -745,12 +745,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
         for(PropertyView PropView : Properties)
             Result.add(PropView.View.Property);
         return Result;
-    }
-
-    public void StartNewSession() throws SQLException {
-
-        ChangedProps.clear();
-        BL.restartSession(Session);
     }
 
     void Close() throws SQLException {
@@ -1106,8 +1100,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
         for(PropertyView DrawProp : Properties) {
 
-            if(DrawProp.View.Property.OutName.equals("штрих-код") && Cancel)
-                    DrawProp = DrawProp;
             // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
             boolean Read = false;
             boolean CheckClass = false;
@@ -1212,7 +1204,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
             for(PropertyView DrawProp : GroupList)
                 SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Cancel?null:Session,ChangedProps,false));
 
-//            SelectProps.outSelect(Adapter);
+//            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {
@@ -1236,7 +1228,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
         }
         DataChanged = false;
         if(Cancel) {
-            StartNewSession();
+            ChangedProps.clear();
+            BL.restartSession(Session);
             Cancel = false;
         }
 

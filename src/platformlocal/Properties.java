@@ -369,7 +369,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             ResultQuery = NewQuery;
         }
 
-        System.out.println(OutName);
+        System.out.println("IncChanges - "+OutName);
 //        ResultQuery.outSelect(Adapter);
         if(!IsPersistent() && XL)
             IncrementSource = ResultQuery;
@@ -483,14 +483,7 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
     }
 
     void outDataChangesTable(DataSession Session) throws SQLException {
-        JoinQuery<PropertyInterface,PropertyField> Query = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
-
-        Join<KeyField,PropertyField> ChangeJoin = new MapJoin<KeyField,PropertyField,PropertyInterface>(DataTable,DataTableMap,Query);
-        ChangeJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
-
-        Query.Properties.put(ChangeTable.Value,new JoinExpr<KeyField,PropertyField>(ChangeJoin,DataTable.Value,true));
-
-        Query.outSelect(Session);
+        DataTable.outSelect(Session);
     }
 
     @Override
@@ -752,6 +745,22 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
         }
         
         return true;
+    }
+
+    void reCalculateAggregation(DataSession Session) throws SQLException {
+        PropertyField WriteField = Field;
+        Field = null;
+        JoinQuery<PropertyInterface,PropertyField> ReCalculateQuery = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
+        ReCalculateQuery.Properties.put(WriteField,getSourceExpr(ReCalculateQuery.MapKeys,true));
+
+        Map<KeyField,T> MapTable = new HashMap();
+        Table AggrTable = GetTable(MapTable);
+
+        JoinQuery<KeyField,PropertyField> WriteQuery = new JoinQuery<KeyField,PropertyField>(AggrTable.Keys);
+        WriteQuery.Properties.put(WriteField,new JoinExpr<PropertyInterface,PropertyField>(new MapJoin<PropertyInterface,PropertyField,KeyField>(ReCalculateQuery,WriteQuery,(Map<KeyField,PropertyInterface>)MapTable),WriteField,true));
+        Session.ModifyRecords(new ModifyQuery(AggrTable,WriteQuery));
+
+        Field = WriteField;
     }
 }
 
@@ -1164,7 +1173,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
 
             return new JoinExpr<KeyField,PropertyField>(SourceJoin,GroupField,NotNull);
         } else {
-            return new JoinExpr<PropertyInterface,Object>(new Join<PropertyInterface,Object>(getGroupQuery(GroupField),JoinImplement),GroupField,NotNull);
+            return new JoinExpr<PropertyInterface,Object>(new Join<PropertyInterface,Object>(getGroupQuery("grfield"),JoinImplement),"grfield",NotNull);
         }
 
     }
@@ -1970,6 +1979,13 @@ class DataSession {
     
     Map<Integer,List<Class>> NewClasses = new HashMap();
 
+    void restart() {
+        Properties.clear();
+        AddClasses.clear();
+        RemoveClasses.clear();
+        NewClasses.clear();
+    }
+
     void ChangeClass(Integer idObject,Class Class) {
         List<Class> ChangeClasses = NewClasses.get(idObject);
         if(ChangeClasses==null) {
@@ -1980,39 +1996,89 @@ class DataSession {
         ChangeClasses.add(Class);
     }
 
+    boolean InTransaction = false;
+
+    void startTransaction() throws SQLException {
+        InTransaction = true;
+
+        if(!Syntax.noAutoCommit())
+            Execute(Syntax.startTransaction());
+    }
+
+    void rollbackTransaction() throws SQLException {
+        Execute(Syntax.rollbackTransaction());
+
+        InTransaction = false;
+    }
+
+    void commitTransaction() throws SQLException {
+        Execute(Syntax.commitTransaction());
+
+        InTransaction = false;
+    }
+
     void CreateTable(Table Table) throws SQLException {
         String CreateString = "";
         String KeyString = "";
         for(KeyField Key : Table.Keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare();
+            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(Syntax);
             KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
         }
         for(PropertyField Prop : Table.Properties)
-            CreateString = CreateString+',' + Prop.GetDeclare();
+            CreateString = CreateString+',' + Prop.GetDeclare(Syntax);
         CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")";
+
+        try {
+            Execute("DROP TABLE "+Table.Name+" CASCADE CONSTRAINTS");
+        } catch(Exception e) {
+        }
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         Execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
+
+        int IndexNum = 1;
+        for(List<PropertyField> Index : Table.Indexes) {
+            String Columns = "";
+            for(PropertyField IndexField : Index)
+                Columns = (Columns.length()==0?"":Columns+",") + IndexField.Name;
+
+            Execute("CREATE INDEX "+Table.Name+"_idx_"+(IndexNum++)+" ON "+Table.Name+" ("+Columns+")");
+        }
     }
 
     void CreateTemporaryTable(SessionTable Table) throws SQLException {
         String CreateString = "";
         String KeyString = "";
         for(KeyField Key : Table.Keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare();
+            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(Syntax);
             KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
         }
         for(PropertyField Prop : Table.Properties)
-            CreateString = CreateString+',' + Prop.GetDeclare();
-        
-//        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        Execute(Syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")"));
+            CreateString = CreateString+',' + Prop.GetDeclare(Syntax);
+
+        try {
+            Execute("DROP TABLE "+Table.Name+" CASCADE CONSTRAINTS");
+        } catch(Exception e) {
+        }
+
+        try {
+            Execute(Syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")"));
+        } catch(Exception e) {
+        }
     }
 
     void Execute(String ExecuteString) throws SQLException {
         Statement Statement = Connection.createStatement();
 //        System.out.println(ExecuteString+Syntax.getCommandEnd());
         Statement.execute(ExecuteString+Syntax.getCommandEnd());
+        if(!InTransaction && Syntax.noAutoCommit())
+            Statement.execute(Syntax.commitTransaction()+Syntax.getCommandEnd());
+
+        try {
+            Statement.close();
+        } catch(Exception e) {
+
+        }
     }
 
     void InsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {

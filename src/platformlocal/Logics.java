@@ -655,6 +655,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         setSessionChanged(Session,new HashMap());
 
         TableFactory.clearSession(Session);
+        Session.restart();
     }
 
     int SessionCounter = 0;
@@ -759,7 +760,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     String Apply(DataSession Session) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
-        Session.Execute(Session.Syntax.startTransaction());
+        Session.startTransaction();
 
         // сохраним все SessionChanged для транзакции в памяти
         Map<ObjectProperty,Integer> TransactChanged = getSessionChanged(Session);
@@ -777,7 +778,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         if(Constraints!=null) {
             // откатим транзакцию
             setSessionChanged(Session,TransactChanged);
-            Session.Execute(Session.Syntax.rollbackTransaction());
+            Session.rollbackTransaction();
             return Constraints;
         }            
         
@@ -789,7 +790,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             if(Property instanceof DataProperty || Persistents.contains(Property))
                 Property.SaveChanges(Session);
         
-        Session.Execute(Session.Syntax.commitTransaction());
+        Session.commitTransaction();
+        restartSession(Session);
         
         return null;        
     }
@@ -962,9 +964,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return Result;
     }
 
-    LRP AddJProp(LP MainProp, int IntNum, Object ...Params) {
+    LJP AddJProp(LP MainProp, int IntNum, Object ...Params) {
         JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
-        LRP ListProperty = new LRP(Property,IntNum);
+        LJP ListProperty = new LJP(Property,IntNum);
         int MainInt = 0;
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(ListProperty,Params);
         for(PropertyInterfaceImplement Implement : PropImpl) {
@@ -990,7 +992,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return ListProperty;
     }
 
-    LRP AddUProp(int UnionType, int IntNum, Object ...Params) {
+    LJP AddUProp(int UnionType, int IntNum, Object ...Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -1004,7 +1006,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 break;
         }
         
-        LRP ListProperty = new LRP(Property,IntNum);
+        LJP ListProperty = new LJP(Property,IntNum);
 
         for(int i=0;i<Params.length/(IntNum+2);i++) {
             Integer Offs = i*(IntNum+2);
@@ -1103,21 +1105,21 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 PriceSupp.Property.OutName = "цена пост.";
                 GrStQty.Property.OutName = "грт на скл.";
 
-                LRP QtyGrSt = AddJProp(GrStQty,2,ArtToGroup,1,DocStore,2);
+                LJP QtyGrSt = AddJProp(GrStQty,2,ArtToGroup,1,DocStore,2);
                 QtyGrSt.Property.OutName = "тдок - кол-во гр. ск.";
 
-                LRP OstPrice = AddJProp(PriceSupp,2,1,ArtSupplier,1,2);
+                LJP OstPrice = AddJProp(PriceSupp,2,1,ArtSupplier,1,2);
                 OstPrice.Property.OutName = "цена на складе";
 
-                LRP StoreName = AddJProp(Name,1,DocStore,1);
+                LJP StoreName = AddJProp(Name,1,DocStore,1);
                 StoreName.Property.OutName = "имя склада";
-                LRP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
+                LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
                 ArtGroupName.Property.OutName = "имя гр. тов.";
 
-                LRP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
+                LJP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
                 DDep.Property.OutName = "предш. док.";
 
-                LRP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
+                LJP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
                 QDep.Property.OutName = "изм. баланса";
 
                 LGP GSum = AddGProp(QDep,true,2,3);
@@ -1136,7 +1138,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
                 RashArtStore.Property.OutName = "расход по складу";
 
-                LRP OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+                LJP OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
                 OstArtStore.Property.OutName = "остаток по складу";
 
                 LGP OstArt = AddGProp(OstArtStore,true,2);
@@ -1145,7 +1147,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
                 MaxPrih.Property.OutName = "макс. приход по гр. тов.";
 
-                LRP MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+                LJP MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
                 MaxOpStore.Property.OutName = "макс. операция";
 
                 LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
@@ -1263,8 +1265,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                     GrStQty.ChangeProperty(Session, 3,ArticleGroups[1],Stores[0]);
 
                     Apply(Session);
-
-                    restartSession(Session);
 
                     DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[0]);
                     ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[0]);
@@ -1628,6 +1628,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         DataSession Session = createSession(Adapter);
 
+        // сначала вырубим все аггрегации в конце пересчитаем
+        Map<AggregateProperty,PropertyField> SavePersistents = new HashMap();
+        for(AggregateProperty Property : Persistents) {
+            SavePersistents.put(Property,Property.Field);
+            Property.Field = null;
+        }
+        Persistents.clear();
+
         // генерируем классы
         Map<Integer,String> ObjectNames = new HashMap();
         Map<Class,List<Integer>> Objects = new HashMap();
@@ -1718,6 +1726,24 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         System.out.println("Apply");
         Apply(Session);
 
+        Session.startTransaction();
+
+        List<ObjectProperty> DependList = new ArrayList();
+        for(AggregateProperty Property : SavePersistents.keySet()) Property.FillChangedList(DependList,null);
+        // восстановим persistence, пересчитая их
+        for(ObjectProperty ObjectProperty : DependList)
+            if(ObjectProperty instanceof AggregateProperty && SavePersistents.containsKey(ObjectProperty)) {
+                AggregateProperty Property = (AggregateProperty)ObjectProperty;
+
+                System.out.println("Recalculate - "+Property.OutName);
+                
+                Property.Field = SavePersistents.get(Property);
+                Persistents.add(Property);
+                Property.reCalculateAggregation(Session);
+            }
+
+        Session.commitTransaction();
+        
         Session.close();
     }
 }
