@@ -170,7 +170,6 @@ class ClientPropertyView extends ClientCellView {
 
        return baseClass;
     }*/
-    String type;
 
     public int getMinimumWidth() {
 
@@ -372,7 +371,6 @@ class DefaultClientFormView extends ClientFormView {
             clientProperty.caption = property.View.Property.OutName;
             clientProperty.baseClass = ByteArraySerializer.deserializeClientClass(
                                        ByteArraySerializer.serializeClass(property.View.Property.GetValueClass(property.View.Property.GetClassSet(null).get(0))));
-            clientProperty.type = property.View.Property.GetDBType();
 
             mproperties.put(property, clientProperty);
             properties.add(clientProperty);
