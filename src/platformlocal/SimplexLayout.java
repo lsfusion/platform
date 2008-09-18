@@ -152,7 +152,7 @@ public class SimplexLayout implements LayoutManager2 {
 
         hasChanged = false;
         
-        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
+//        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
     }
 
     private Map<Component,SimplexComponentInfo> infos;

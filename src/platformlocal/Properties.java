@@ -325,7 +325,8 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         }
     }
 
-    // базовый метод - ничего не делать, его перегружают только Override и Data
+    // базовые методы - ничего не делать, его перегружают только Override и Data
+    boolean allowChangeProperty(Map<PropertyInterface, ObjectValue> Keys) { return false; }
     void ChangeProperty(Map<PropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {}
     
     // заполняет требования к изменениям
@@ -485,6 +486,9 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
     void outDataChangesTable(DataSession Session) throws SQLException {
         DataTable.outSelect(Session);
     }
+
+    @Override
+    boolean allowChangeProperty(Map<PropertyInterface, ObjectValue> Keys) { return true; }
 
     @Override
     void ChangeProperty(Map<PropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
@@ -1664,19 +1668,34 @@ class OverrideUnionProperty extends UnionProperty {
         QueryIncrementType = GetChangeType(Session);
         return IncrementQuery(Session,QueryIncrementType);
     }
-    
-    @Override
-    void ChangeProperty(Map<PropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
-        // нужно бежать в обратном порядке, там где появится первый 
-        InterfaceClass ChangeClass = new InterfaceClass();
-        for(PropertyInterface Interface : Interfaces)
-            ChangeClass.put(Interface,Keys.get(Interface).Class);
-        
+
+    private PropertyMapImplement getOperand(Map<PropertyInterface, ObjectValue> keys) {
+
+        InterfaceClass changeClass = new InterfaceClass();
+        for(PropertyInterface iface : Interfaces)
+            changeClass.put(iface,keys.get(iface).Class);
+
         for(int i=Operands.size()-1;i>=0;i--) {
-            PropertyMapImplement Operand = Operands.get(i);
-            if(Operand.MapGetValueClass(ChangeClass)!=null)
-                Operand.MapChangeProperty(Keys,NewValue,Session);
+            PropertyMapImplement operand = Operands.get(i);
+            if(operand.MapGetValueClass(changeClass)!=null) {
+                return operand;
+            }
         }
+
+        return null;
+    }
+
+    @Override
+    boolean allowChangeProperty(Map<PropertyInterface, ObjectValue> keys) {
+        return getOperand(keys) != null;
+    }
+
+    @Override
+    void ChangeProperty(Map<PropertyInterface, ObjectValue> keys, Object newValue, DataSession session) throws SQLException {
+
+        PropertyMapImplement operand = getOperand(keys);
+        if (operand != null)
+            operand.MapChangeProperty(keys,newValue,session);
     }
 }
 

@@ -68,11 +68,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
                 super.objectChanged(cls, objectID);
                 addCacheObject(cls, objectID);
             }
-
         };
 
         Map<GroupObjectImplement, GroupObjectImplement> gnvrm = new HashMap();
         Map<ObjectImplement, ObjectImplement> onvrm = new HashMap();
+        Map<PropertyObjectImplement, PropertyObjectImplement> pnvrm = new HashMap();
 
         remoteForm.Groups = new ArrayList();
         for (GroupObjectImplement navigatorGroupObject : (List<GroupObjectImplement>)navigatorForm.Groups) {
@@ -80,6 +80,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             GroupObjectImplement groupObject = new GroupObjectImplement();
 
             groupObject.GID = navigatorGroupObject.GID;
+            groupObject.Order = navigatorGroupObject.Order;
             for (ObjectImplement navigatorObject : navigatorGroupObject) {
 
                 ObjectImplement object = new ObjectImplement(navigatorObject.ID, navigatorObject.BaseClass);
@@ -108,7 +109,34 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             property.ID = navigatorProperty.ID;
 
             remoteForm.Properties.add(property);
+            pnvrm.put(navigatorPropObject, propObject);
         }
+
+        remoteForm.fixedFilters = new HashSet();
+
+        for (Filter navigatorFilter : (Set<Filter>)navigatorForm.fixedFilters) {
+
+            ValueLink value = null;
+
+            ValueLink navigatorValue = navigatorFilter.Value;
+
+            if (navigatorValue instanceof UserValueLink) {
+                value = new UserValueLink(((UserValueLink)navigatorValue).Value);
+            }
+
+            if (navigatorValue instanceof ObjectValueLink) {
+                value = new UserValueLink(onvrm.get(((ObjectValueLink)navigatorValue).Object));
+            }
+
+            if (navigatorValue instanceof PropertyValueLink) {
+                value = new PropertyValueLink(pnvrm.get(((PropertyValueLink)navigatorValue).Property));
+            }
+
+            Filter filter = new Filter(pnvrm.get(navigatorFilter.Property), navigatorFilter.Compare, value);
+            remoteForm.fixedFilters.add(filter);
+        }
+
+        remoteForm.filters = new HashSet(remoteForm.fixedFilters);
 
         for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.Groups)
             for (ObjectImplement object : groupObject) {
@@ -225,6 +253,9 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     List<GroupObjectImplement> Groups = new ArrayList();
     List<PropertyView> Properties = new ArrayList();
+
+    Set<Filter> fixedFilters = new HashSet();
+    public void addFixedFilter(Filter filter) { fixedFilters.add(filter); }
 
     // счетчик идентивикаторов
     int IDCount = 0;

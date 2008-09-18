@@ -448,6 +448,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         SumMaxArt = AddGProp(MaxOpStore,true,2);
         SumMaxArt.Property.OutName = "макс. операция (сумма)";
+
     }
 
     void InitConstraints() {
@@ -625,6 +626,8 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
         BL.AddPropView(this,BL.GP,gv2,obj1,obj2);
         BL.AddPropView(this,BL.PrihQuantity,gv2,obj1,obj2);
         BL.AddPropView(this,BL.RashQuantity,gv2,obj1,obj2);
+
+        addFixedFilter(new Filter(QImpl, 5, new UserValueLink(0)));
 //        BL.AddPropView(this,BL.GSum,gv2,obj1,obj2);
 
 //        fbv.AddObjectSeek(obj3,13);

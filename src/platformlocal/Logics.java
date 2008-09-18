@@ -675,7 +675,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     BitClass bitClass;
 
     TableFactory TableFactory;
-    Collection<Property> Properties = new ArrayList();
+    List<Property> Properties = new ArrayList();
     Set<AggregateProperty> Persistents = new HashSet();
     Map<ObjectProperty,Constraint> Constraints = new HashMap();
 

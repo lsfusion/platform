@@ -38,8 +38,8 @@ import com.toedter.calendar.JTextFieldDateEditor;
 
 interface ClientCellViewTable {
 
+    boolean isDataChanging();
     ClientCellView getCellView(int row, int col);
-
 }
 
 public class ClientForm extends JPanel {
@@ -270,8 +270,8 @@ public class ClientForm extends JPanel {
         if (!objectValue.equals(models.get(groupObject).getCurrentObject())) {
 
 //            System.out.println("oldval : " + models.get(groupObject).getCurrentObject().toString());
-            models.get(groupObject).setCurrentObject(objectValue, true);
-            System.out.println("Change Object - setCurrentObject : " + (System.currentTimeMillis()-st));
+//            models.get(groupObject).setCurrentObject(objectValue, true);
+//            System.out.println("Change Object - setCurrentObject : " + (System.currentTimeMillis()-st));
 //            System.out.println("newval : " + objectValue.toString());
 
             try {
@@ -281,7 +281,7 @@ public class ClientForm extends JPanel {
             }
             applyFormChanges();
         }
-        System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
+//        System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
 
     }
 
@@ -560,10 +560,10 @@ public class ClientForm extends JPanel {
     
             boolean realChange = !value.equals(currentObject);
 
-            if (currentObject != null)
+/*            if (currentObject != null)
                 System.out.println("view - oldval : " + currentObject.toString() + " ; userChange " + userChange.toString() );
             if (value != null)
-                System.out.println("view - newval : " + value.toString() + " ; userChange " + userChange.toString());
+                System.out.println("view - newval : " + value.toString() + " ; userChange " + userChange.toString());*/
             
             currentObject = value;
             
@@ -698,9 +698,18 @@ public class ClientForm extends JPanel {
                                                          int column) {
                 
                 value = ivalue;
-                
-                ClientCellView property = ((ClientCellViewTable)table).getCellView(row, column);
+
+                ClientCellViewTable cellTable = (ClientCellViewTable)table;
+
+                ClientCellView property = cellTable.getCellView(row, column);
+
+                if (cellTable.isDataChanging() && property instanceof ClientPropertyView && !remoteForm.allowChangeProperty(property.ID)) {
+                    this.stopCellEditing();
+                    return null;
+                }
+
                 editingCell = property;
+
                 currentComp = property.getEditorComponent(ClientForm.this);
                 
                 if (currentComp != null) {
@@ -751,6 +760,10 @@ public class ClientForm extends JPanel {
                 value = ivalue;
 
                 view.repaint();
+            }
+
+            protected boolean isDataChanging() {
+                return true;
             }
 
             protected void cellValueChanged(Object ivalue) {
@@ -848,6 +861,10 @@ public class ClientForm extends JPanel {
                             cellValueChanged(value);
                         }
 
+                    }
+
+                    public boolean isDataChanging() {
+                        return CellModel.this.isDataChanging();
                     }
 
                     public ClientCellView getCellView(int row, int col) {
@@ -1027,7 +1044,7 @@ public class ClientForm extends JPanel {
             }
 
             private void addGroupObjectID() {
-                System.out.println("addGroupObjectID");
+//                System.out.println("addGroupObjectID");
                 for (ClientObjectImplement object : groupObject) {
                     table.addColumn(object.objectIDView);
                 }
@@ -1039,7 +1056,7 @@ public class ClientForm extends JPanel {
             }
 
             private void removeGroupObjectID() {
-                System.out.println("removeGroupObjectID");
+//                System.out.println("removeGroupObjectID");
                 for (ClientObjectImplement object : groupObject) {
                     table.removeColumn(object.objectIDView);
                 }
@@ -1084,7 +1101,7 @@ public class ClientForm extends JPanel {
             
             private void updateTable() {
 
-                System.out.println("CreateColumns");
+//                System.out.println("CreateColumns");
                 table.createDefaultColumnsFromModel();
                 for (ClientCellView property : table.gridColumns) {
 
@@ -1205,7 +1222,7 @@ public class ClientForm extends JPanel {
                         // конечно кривова-то определять порядок по номеру в листе, но потом надо будет сделать по другому
                         int ind = formView.order.indexOf(property), ins = 0;
 
-                        while (icp.hasNext() && formView.properties.indexOf(icp.next()) < ind) { ins++; }
+                        while (icp.hasNext() && formView.order.indexOf(icp.next()) < ind) { ins++; }
 
                         gridColumns.add(ins, property);
 
@@ -1240,10 +1257,10 @@ public class ClientForm extends JPanel {
 
                     //надо сдвинуть ViewPort - иначе дергаться будет
 
-                    System.out.println("setGridObjects" + oldindex + " - " + newindex);
+//                    System.out.println("setGridObjects" + oldindex + " - " + newindex);
                     if (newindex != -1) {
 
-                        System.out.println("setgridobjects + leadselection");
+//                        System.out.println("setgridobjects + leadselection");
                         getSelectionModel().setLeadSelectionIndex(newindex);
 
                         if (oldindex != -1 && newindex != oldindex) {
@@ -1273,8 +1290,11 @@ public class ClientForm extends JPanel {
                     int newindex = gridRows.indexOf(value);
                     if (newindex != -1 && newindex != oldindex) {
                         //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
-                        changeSelection(newindex, 0, false, false);
-//                        getSelectionModel().setLeadSelectionIndex(newindex);
+
+                        if (getColumnModel().getSelectionModel().getLeadSelectionIndex() == -1)
+                            changeSelection(newindex, 0, false, false);
+                        else
+                            getSelectionModel().setLeadSelectionIndex(newindex);
                     }
 
                 }
@@ -1577,6 +1597,10 @@ public class ClientForm extends JPanel {
                                 valueLink = ivalueLink;
 
                                 cell = new CellModel(iproperty) {
+
+                                    protected boolean isDataChanging() {
+                                        return false;
+                                    }
 
                                     protected void cellValueChanged(Object ivalue) {
                                         super.cellValueChanged(ivalue);
@@ -1995,6 +2019,10 @@ public class ClientForm extends JPanel {
 
                         return gridColumns.get(colModel);
                     }
+                }
+
+                public boolean isDataChanging() {
+                    return true;
                 }
 
                 public ClientCellView getCellView(int row, int col) {

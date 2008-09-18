@@ -471,7 +471,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
     List<PropertyView> Properties = new ArrayList();
 
     // Set чтобы сравнивать удобнее было бы
-    Set<Filter> Filters = new HashSet();
     LinkedHashMap<PropertyObjectImplement,Boolean> Orders = new LinkedHashMap();
 
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
@@ -564,12 +563,15 @@ class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     // флаги изменения фильтров\порядков чисто для ускорения
-    boolean StructUpdated = false;
+    boolean StructUpdated = true;
     // фильтры !null (св-во), св-во - св-во, св-во - объект, класс св-ва (для < > в том числе)?,
 
-    public void clearFilter() {
-        Filters.clear();
+    Set<Filter> fixedFilters = new HashSet();
+    Set<Filter> filters = new HashSet();
 
+    public void clearFilter() {
+        
+        filters = new HashSet(fixedFilters);
         StructUpdated = true;
     }
 
@@ -578,8 +580,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     public void addFilter(Filter addFilter) {
-        Filters.add(addFilter);
 
+        filters.add(addFilter);
         StructUpdated = true;
     }
 
@@ -621,17 +623,30 @@ class RemoteForm<T extends BusinessLogics<T>> {
     // пометка что изменилось св-во
     boolean DataChanged = false;
 
-    public void ChangeProperty(PropertyObjectImplement Property,Object Value) throws SQLException {
+    private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement property) {
 
-        ObjectProperty ChangeProperty = Property.Property;
-        Map<PropertyInterface,ObjectValue> Keys = new HashMap();
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
-            ObjectImplement Object = Property.Mapping.get(Interface);
-            Keys.put(Interface,new ObjectValue(Object.idObject,Object.Class));
+        ObjectProperty changeProperty = property.Property;
+        Map<PropertyInterface,ObjectValue> keys = new HashMap();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)changeProperty.Interfaces) {
+            ObjectImplement object = property.Mapping.get(Interface);
+            keys.put(Interface,new ObjectValue(object.idObject,object.Class));
         }
 
+        return keys;
+    }
+
+    public boolean allowChangeProperty(int propertyID) {
+        return allowChangeProperty(getPropertyView(propertyID).View);
+    }
+
+    boolean allowChangeProperty(PropertyObjectImplement property) {
+        return property.Property.allowChangeProperty(fillPropertyInterface(property));
+    }
+
+    public void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
+
         // изменяем св-во
-        ChangeProperty.ChangeProperty(Keys,Value,Session);
+        property.Property.ChangeProperty(fillPropertyInterface(property),value,Session);
 
         DataChanged = true;
     }
@@ -791,7 +806,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 Group.MapOrders = new ArrayList();
             }
             // фильтры
-            for(Filter Filt : Filters)
+            for(Filter Filt : filters)
                 Filt.GetApplyObject().MapFilters.add(Filt);
 
             // порядки
@@ -1233,7 +1248,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
             Cancel = false;
         }
 
-        Result.Out(this);
+//        Result.Out(this);
 
         return Result;
     }
