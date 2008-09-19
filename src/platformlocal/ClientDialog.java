@@ -2,8 +2,6 @@ package platformlocal;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
@@ -35,7 +33,8 @@ public class ClientDialog extends JDialog {
         navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
 
         navigatorPanel.add(navigator);
-        navigatorPanel.add(navigator.relevantNavigator);
+        navigatorPanel.add(navigator.relevantFormNavigator);
+        navigatorPanel.add(navigator.relevantClassNavigator);
 
         add(navigatorPanel, BorderLayout.LINE_START);
 
@@ -61,7 +60,7 @@ public class ClientDialog extends JDialog {
         if (value != null)
             navigator.remoteNavigator.addCacheObject(classID, value);
         
-        setCurrentForm(navigator.remoteNavigator.getDefaultForm());
+        setCurrentForm(navigator.remoteNavigator.getDefaultForm(classID));
     }
 
     public Object objectChosen() {
@@ -73,6 +72,8 @@ public class ClientDialog extends JDialog {
     }
 
     public void setCurrentForm(int formID) {
+
+        if (formID == -1) return;
 
         if (currentForm != null) remove(currentForm);
         try {

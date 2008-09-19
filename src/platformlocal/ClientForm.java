@@ -281,6 +281,8 @@ public class ClientForm extends JPanel {
             }
             applyFormChanges();
         }
+
+        clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
 //        System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
 
     }

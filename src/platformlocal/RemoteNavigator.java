@@ -29,16 +29,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         classCache = iclassCache;
     }
 
-    public static int NAVIGATORGROUP_RELEVANT = -2;
+    public final static int NAVIGATORGROUP_RELEVANTFORM = -2;
+    public final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
 
     List<NavigatorElement> GetElements(int groupID) {
-        if (groupID == NAVIGATORGROUP_RELEVANT) {
-            if (currentForm == null)
-                return new ArrayList();
-            else
-                return new ArrayList(currentForm.relevantElements);
-        } else
-            return GetElements(BL.BaseGroup.getNavigatorGroup(groupID));
+
+        switch (groupID) {
+            case (NAVIGATORGROUP_RELEVANTFORM) :
+                if (currentForm == null)
+                    return new ArrayList();
+                else
+                    return new ArrayList(currentForm.relevantElements);
+            case (NAVIGATORGROUP_RELEVANTCLASS) :
+                if (currentClass == null)
+                    return new ArrayList();
+                else
+                    return new ArrayList(currentClass.relevantElements);
+            default :
+                return GetElements(BL.BaseGroup.getNavigatorGroup(groupID));
+        }
     }
 
     List<NavigatorElement> GetElements(NavigatorGroup Group) {
@@ -52,10 +61,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         return ByteArraySerializer.serializeListNavigatorElement(GetElements(groupID));
     }
 
-    //используется для RelevantNavigator
+    //используется для RelevantFormNavigator
     NavigatorForm<T> currentForm;
-    void changeCurrentForm(int formID) {
+    boolean changeCurrentForm(int formID) {
+
+        if (currentForm != null && currentForm.ID == formID) return false;
+
         currentForm = BL.BaseGroup.getNavigatorForm(formID);
+        return true;
+    }
+
+    //используется для RelevantClassNavigator
+    Class currentClass;
+    boolean changeCurrentClass(int classID) {
+
+        if (currentClass != null && currentClass.ID == classID) return false;
+
+        currentClass = BL.objectClass.FindClassID(classID);
+        return true;
     }
 
 //    RemoteForm<T> lastOpenedForm;
@@ -186,14 +209,24 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         return -1;
     } */
 
-    String getCaption(int FormID){
+    String getCaption(int formID){
 
         // инстанцирует форму
-        return BL.BaseGroup.getNavigatorForm(FormID).caption;
+        return BL.BaseGroup.getNavigatorForm(formID).caption;
     }
 
-    public int getDefaultForm() {
-        return 1;
+    public int getDefaultForm(int classID) {
+
+        List<NavigatorElement> relevant = BL.objectClass.FindClassID(classID).relevantElements;
+
+        if (relevant == null) return -1;
+
+        for (NavigatorElement element : relevant) {
+            if (element instanceof NavigatorForm)
+                return element.ID;
+        }
+
+        return -1;
     }
 
 }
@@ -284,8 +317,8 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     }
 
     ArrayList<NavigatorElement> relevantElements = new ArrayList();
-    void addRelevantForm(NavigatorForm relevantForm) {
-        relevantElements.add(relevantForm);
+    void addRelevantElement(NavigatorElement relevantElement) {
+        relevantElements.add(relevantElement);
     }
 
 }

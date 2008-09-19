@@ -186,6 +186,12 @@ abstract class Class {
     // получает рандомный объект
     abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
     abstract Object getRandomObject(Map<Class, List<Integer>> Objects,Random Randomizer,Integer Diap) throws SQLException;
+
+    ArrayList<NavigatorElement> relevantElements = new ArrayList();
+    void addRelevantElement(NavigatorElement relevantElement) {
+        relevantElements.add(relevantElement);
+    }
+
 }
 
 // класс который можно сравнивать

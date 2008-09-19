@@ -5,11 +5,9 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.tree.*;
 import java.util.List;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.*;
-import java.sql.SQLException;
 
 abstract class AbstractNavigator extends JPanel {
 
@@ -125,12 +123,14 @@ abstract class AbstractNavigator extends JPanel {
 
 public abstract class ClientNavigator extends AbstractNavigator {
 
-    RelevantNavigator relevantNavigator;
+    RelevantFormNavigator relevantFormNavigator;
+    RelevantClassNavigator relevantClassNavigator;
 
     public ClientNavigator(RemoteNavigator iremoteNavigator) {
         super(iremoteNavigator);
 
-        relevantNavigator = new RelevantNavigator(iremoteNavigator);
+        relevantFormNavigator = new RelevantFormNavigator(iremoteNavigator);
+        relevantClassNavigator = new RelevantClassNavigator(iremoteNavigator);
     }
 
     protected List<ClientNavigatorElement> getNodeElements(int groupID) {
@@ -139,13 +139,18 @@ public abstract class ClientNavigator extends AbstractNavigator {
     }
 
     public void changeCurrentForm(int formID) {
-        remoteNavigator.changeCurrentForm(formID);
-        relevantNavigator.tree.createRootNode();
+        if (remoteNavigator.changeCurrentForm(formID))
+            relevantFormNavigator.tree.createRootNode();
     }
 
-    class RelevantNavigator extends AbstractNavigator {
+    public void changeCurrentClass(int classID) {
+        if (remoteNavigator.changeCurrentClass(classID))
+            relevantClassNavigator.tree.createRootNode();
+    }
 
-        public RelevantNavigator(RemoteNavigator iremoteNavigator) {
+    class RelevantFormNavigator extends AbstractNavigator {
+
+        public RelevantFormNavigator(RemoteNavigator iremoteNavigator) {
             super(iremoteNavigator);
         }
 
@@ -155,7 +160,24 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
         protected List<ClientNavigatorElement> getNodeElements(int groupID) {
             return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray((groupID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANT : groupID));
+                                                remoteNavigator.GetElementsByteArray((groupID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : groupID));
+        }
+
+    }
+
+    class RelevantClassNavigator extends AbstractNavigator {
+
+        public RelevantClassNavigator(RemoteNavigator iremoteNavigator) {
+            super(iremoteNavigator);
+        }
+
+        public void openForm(ClientNavigatorForm element) {
+            ClientNavigator.this.openForm(element);
+        }
+
+        protected List<ClientNavigatorElement> getNodeElements(int groupID) {
+            return ByteArraySerializer.deserializeListClientNavigatorElement(
+                                                remoteNavigator.GetElementsByteArray((groupID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : groupID));
         }
 
     }

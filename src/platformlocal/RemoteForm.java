@@ -1467,6 +1467,9 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return propertyView.View.GetValueClass(propertyView.ToDraw); 
     }
 
+    public int getObjectClassID(Integer objectID) {
+        return getObjectImplement(objectID).Class.ID;
+    }
 }
 
 // поле для отрисовки отчета

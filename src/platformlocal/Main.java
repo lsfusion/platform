@@ -515,10 +515,16 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         NavigatorForm test2Form = new Test2NavigatorForm(3,"Test Form 3", this);
         group2.AddChild(test2Form);
 
-        testForm.addRelevantForm(simpleForm);
-        testForm.addRelevantForm(test2Form);
+        testForm.addRelevantElement(simpleForm);
+        testForm.addRelevantElement(test2Form);
 
-        simpleForm.addRelevantForm(testForm);
+        simpleForm.addRelevantElement(testForm);
+
+        PrihDocument.addRelevantElement(testForm);
+        RashDocument.addRelevantElement(simpleForm);
+
+        Article.addRelevantElement(test2Form);
+        ArticleGroup.addRelevantElement(testForm);
     }
 }
 

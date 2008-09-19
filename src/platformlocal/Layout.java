@@ -5,20 +5,12 @@ import bibliothek.gui.dock.*;
 import bibliothek.gui.dock.event.DockFrontendAdapter;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
 import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
-import bibliothek.gui.dock.title.*;
-import bibliothek.gui.dock.themes.ThemeFactory;
-import bibliothek.gui.dock.themes.BasicTheme;
-import bibliothek.gui.dock.themes.nostack.NoStackTitleFactory;
-import bibliothek.gui.dock.util.IconManager;
-import bibliothek.gui.dock.util.Priority;
 import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
 import bibliothek.gui.dock.action.actions.SimpleButtonAction;
 import bibliothek.gui.dock.action.LocationHint;
 import bibliothek.gui.dock.action.DefaultDockActionSource;
 import bibliothek.gui.dock.action.ActionGuard;
 import bibliothek.gui.dock.action.DockActionSource;
-import bibliothek.gui.dock.layout.PredefinedDockSituation;
-import bibliothek.gui.dock.layout.DockSituation;
 import bibliothek.gui.dock.control.SingleParentRemover;
 import bibliothek.util.xml.XElement;
 import bibliothek.notes.view.menu.ThemeMenu;
@@ -32,7 +24,6 @@ import java.util.*;
 import java.io.*;
 
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
@@ -121,8 +112,11 @@ class Layout extends JFrame implements ComponentCollector {
         // нужно обязательно до Drop чтобы появились крестики
         Frontend.add(mainNavigatorForm,"Navigator");
 
-        NavigatorDockable relevantNavigatorForm = new NavigatorDockable(mainNavigator.relevantNavigator, "Связанные формы");
-        Frontend.add(relevantNavigatorForm,"relevantNavigator");
+        NavigatorDockable relevantFormNavigatorForm = new NavigatorDockable(mainNavigator.relevantFormNavigator, "Связанные формы");
+        Frontend.add(relevantFormNavigatorForm,"relevantFormNavigator");
+
+        NavigatorDockable relevantClassNavigatorForm = new NavigatorDockable(mainNavigator.relevantClassNavigator, "Классовые формы");
+        Frontend.add(relevantClassNavigatorForm,"relevantClassNavigator");
 
         DefaultDockable logPanel = new DefaultDockable(Log.getPanel(), "Log");
         Frontend.add(logPanel, "Log");
@@ -145,7 +139,8 @@ class Layout extends JFrame implements ComponentCollector {
             read();
         } catch (IOException e) {
             SplitStation.drop(mainNavigatorForm);
-            SplitStation.drop(relevantNavigatorForm);
+            SplitStation.drop(relevantFormNavigatorForm);
+            SplitStation.drop(relevantClassNavigatorForm);
             SplitStation.drop(logPanel);
             SplitStation.drop(StackStation);
         }
