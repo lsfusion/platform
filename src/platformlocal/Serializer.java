@@ -380,12 +380,15 @@ class Serializer {
         outStream.writeInt(listElements.size());
 
         for (NavigatorElement element : listElements) {
-            if (element instanceof NavigatorGroup)
+            if (element instanceof NavigatorForm) {
                 outStream.writeByte(0);
+                outStream.writeBoolean(((NavigatorForm)element).isPrintForm);
+            }
             else
                 outStream.writeByte(1);
             outStream.writeInt(element.ID);
             outStream.writeUTF(element.caption);
+            outStream.writeBoolean(element.allowChildren());
         }
 
     }
@@ -401,13 +404,16 @@ class Serializer {
             int type = inStream.readByte();
 
             ClientNavigatorElement element;
-            if (type == 0)
-                element = new ClientNavigatorGroup();
-            else
+            if (type == 0) {
                 element = new ClientNavigatorForm();
+                element.isPrintForm = inStream.readBoolean();
+            }
+            else
+                element = new ClientNavigatorElement();
 
             element.ID = inStream.readInt();
             element.caption = inStream.readUTF();
+            element.hasChilds = inStream.readBoolean();
 
             listElements.add(element);
         }

@@ -7,9 +7,15 @@ import javax.swing.tree.*;
 import java.util.List;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.*;
 
 abstract class AbstractNavigator extends JPanel {
+
+    // Icons - загружаем один раз, для экономии
+    private final ImageIcon formIcon = new ImageIcon(getClass().getResource("images/form.gif"));
+    private final ImageIcon reportIcon = new ImageIcon(getClass().getResource("images/report.gif"));
 
     RemoteNavigator remoteNavigator;
 
@@ -38,6 +44,8 @@ abstract class AbstractNavigator extends JPanel {
 
         public NavigatorTree() {
 
+            setToggleClickCount(-1);
+            
             model = new DefaultTreeModel(null);
 
             setModel(model);
@@ -56,20 +64,19 @@ abstract class AbstractNavigator extends JPanel {
 
                 public void mouseReleased(MouseEvent e) {
                     if (e.getClickCount() == 2) {
-
-                        TreePath path = getSelectionPath();
-                        if (path == null) return;
-
-                        DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-                        if (node == null) return;
-
-                        Object nodeObject = node.getUserObject();
-                        if (! (nodeObject instanceof ClientNavigatorForm)) return;
-
-                        openForm((ClientNavigatorForm) nodeObject);
+                        changeCurrentElement();
                     }
                 }
 
+            });
+
+            addKeyListener(new KeyAdapter() {
+
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        changeCurrentElement();
+                    }
+                }
             });
 
             createRootNode();
@@ -85,6 +92,21 @@ abstract class AbstractNavigator extends JPanel {
             expandPath(new TreePath(rootNode));
         }
 
+        private void changeCurrentElement() {
+
+            TreePath path = getSelectionPath();
+            if (path == null) return;
+
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+            if (node == null) return;
+
+            Object nodeObject = node.getUserObject();
+            if (! (nodeObject instanceof ClientNavigatorForm)) return;
+
+            openForm((ClientNavigatorForm) nodeObject);
+
+        }
+
         private void addNodeElements(DefaultMutableTreeNode parent) {
 
             DefaultMutableTreeNode firstChild = (DefaultMutableTreeNode)parent.getFirstChild();
@@ -93,20 +115,22 @@ abstract class AbstractNavigator extends JPanel {
             parent.removeAllChildren();
 
             Object nodeObject = parent.getUserObject();
-            if (nodeObject != null && ! (nodeObject instanceof ClientNavigatorGroup) ) return;
+            if (nodeObject != null && ! (nodeObject instanceof ClientNavigatorElement) ) return;
 
-            ClientNavigatorGroup group = (ClientNavigatorGroup) nodeObject;
+            ClientNavigatorElement element = (ClientNavigatorElement) nodeObject;
 
-            int groupID = (group == null) ? -1 : group.ID;
-            List<ClientNavigatorElement> elements = getNodeElements(groupID);
+            if (element != null && !element.allowChildren()) return;
 
-            for (ClientNavigatorElement element : elements) {
+            int elementID = (element == null) ? -1 : element.ID;
+            List<ClientNavigatorElement> elements = getNodeElements(elementID);
+
+            for (ClientNavigatorElement child : elements) {
 
                 DefaultMutableTreeNode node;
-                node = new DefaultMutableTreeNode(element, element.allowChildren());
+                node = new DefaultMutableTreeNode(child, child.allowChildren());
                 parent.add(node);
 
-                if (element.allowChildren())
+                if (child.allowChildren())
                     node.add(new ExpandingTreeNode());
 
             }
@@ -115,9 +139,39 @@ abstract class AbstractNavigator extends JPanel {
 
         }
 
+        public void updateUI() {
+            super.updateUI();
+
+            //так делается, потому что оказывается, что все чтение UI у них в DefaultTreeCellRenderer написано в конструкторе !!!!
+            setCellRenderer(new DefaultTreeCellRenderer() {
+
+                public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
+                                                              boolean expanded, boolean leaf, int row,
+                                                              boolean hasFocus) {
+
+                    Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                    if (node != null) {
+
+                        Object nodeObject = node.getUserObject();
+                        if (nodeObject != null && nodeObject instanceof ClientNavigatorForm) {
+
+                            ClientNavigatorForm form = (ClientNavigatorForm) nodeObject;
+                            setIcon(form.isPrintForm ? reportIcon : formIcon);
+                        }
+
+                    }
+
+                    return comp;
+
+                }
+
+            });
+        }
     }
 
-    abstract protected List<ClientNavigatorElement> getNodeElements(int groupID);
+    abstract protected List<ClientNavigatorElement> getNodeElements(int elementID);
 
 }
 
@@ -133,9 +187,9 @@ public abstract class ClientNavigator extends AbstractNavigator {
         relevantClassNavigator = new RelevantClassNavigator(iremoteNavigator);
     }
 
-    protected List<ClientNavigatorElement> getNodeElements(int groupID) {
+    protected List<ClientNavigatorElement> getNodeElements(int elementID) {
         return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray(groupID));
+                                                remoteNavigator.GetElementsByteArray(elementID));
     }
 
     public void changeCurrentForm(int formID) {
@@ -158,9 +212,9 @@ public abstract class ClientNavigator extends AbstractNavigator {
             ClientNavigator.this.openForm(element);
         }
 
-        protected List<ClientNavigatorElement> getNodeElements(int groupID) {
+        protected List<ClientNavigatorElement> getNodeElements(int elementID) {
             return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray((groupID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : groupID));
+                                                remoteNavigator.GetElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : elementID));
         }
 
     }
@@ -175,37 +229,28 @@ public abstract class ClientNavigator extends AbstractNavigator {
             ClientNavigator.this.openForm(element);
         }
 
-        protected List<ClientNavigatorElement> getNodeElements(int groupID) {
+        protected List<ClientNavigatorElement> getNodeElements(int elementID) {
             return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray((groupID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : groupID));
+                                                remoteNavigator.GetElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : elementID));
         }
 
     }
 
 }
 
-abstract class ClientNavigatorElement {
+class ClientNavigatorElement {
 
     int ID;
     String caption;
 
-    abstract boolean allowChildren();
+    boolean hasChilds = false;
+    boolean allowChildren() { return hasChilds; };
+
+    public boolean isPrintForm = false;
 
     public String toString() { return caption; }
 
 }
 
-class ClientNavigatorGroup extends ClientNavigatorElement {
-
-
-    boolean allowChildren() {
-        return true;
-    }
-}
-
 class ClientNavigatorForm extends ClientNavigatorElement {
-
-    boolean allowChildren() {
-        return false;
-    }
 }

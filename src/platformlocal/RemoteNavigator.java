@@ -32,9 +32,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     public final static int NAVIGATORGROUP_RELEVANTFORM = -2;
     public final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
 
-    List<NavigatorElement> GetElements(int groupID) {
+    List<NavigatorElement> GetElements(int elementID) {
 
-        switch (groupID) {
+        switch (elementID) {
             case (NAVIGATORGROUP_RELEVANTFORM) :
                 if (currentForm == null)
                     return new ArrayList();
@@ -46,15 +46,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
                 else
                     return new ArrayList(currentClass.relevantElements);
             default :
-                return GetElements(BL.BaseGroup.getNavigatorGroup(groupID));
+                return GetElements(BL.baseElement.getNavigatorElement(elementID));
         }
     }
 
-    List<NavigatorElement> GetElements(NavigatorGroup Group) {
-        // пока без релевантностей
-        if(Group==null) Group = BL.BaseGroup;
+    List<NavigatorElement> GetElements(NavigatorElement element) {
 
-        return new ArrayList(Group.Childs);
+        if (element == null) element = BL.baseElement;
+
+        return new ArrayList(element.childs);
     }
 
     public byte[] GetElementsByteArray(int groupID) {
@@ -67,7 +67,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         if (currentForm != null && currentForm.ID == formID) return false;
 
-        currentForm = BL.BaseGroup.getNavigatorForm(formID);
+        currentForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
         return true;
     }
 
@@ -84,7 +84,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 //    RemoteForm<T> lastOpenedForm;
     RemoteForm<T> CreateForm(int formID) throws SQLException {
 
-        NavigatorForm navigatorForm = BL.BaseGroup.getNavigatorForm(formID);
+        NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
         RemoteForm remoteForm = new RemoteForm(formID, Adapter, BL) {
 
             protected void objectChanged(Class cls, Integer objectID) {
@@ -212,7 +212,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     String getCaption(int formID){
 
         // инстанцирует форму
-        return BL.BaseGroup.getNavigatorForm(formID).caption;
+        return BL.baseElement.getNavigatorElement(formID).caption;
     }
 
     public int getDefaultForm(int classID) {
@@ -233,48 +233,29 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
 // создаются в бизнес-логике
 
-abstract class NavigatorElement<T extends BusinessLogics<T>> {
+class NavigatorElement<T extends BusinessLogics<T>> {
 
     int ID;
     String caption = "";
 
     public NavigatorElement(int iID, String icaption) { ID = iID; caption = icaption; }
 
-    // пока так потом может через Map
-    abstract NavigatorForm<T> getNavigatorForm(int FormID);
 
-}
-
-class NavigatorGroup<T extends BusinessLogics<T>> extends NavigatorElement<T> {
-    
-    NavigatorGroup(int iID, String caption) {
-        super(iID, caption);
-        Childs = new ArrayList();
+    List<NavigatorElement<T>> childs = new ArrayList();
+    void addChild(NavigatorElement<T> child) {
+        childs.add(child);
     }
-    
-    void AddChild(NavigatorElement<T> Child) {
-
-        Childs.add(Child);
-    }
-    
-    Collection<NavigatorElement<T>> Childs;
-
-    NavigatorGroup<T> getNavigatorGroup(int groupID) {
-        for(NavigatorElement<T> child : Childs) {
-            if (child instanceof NavigatorGroup) {
-                if (child.ID == groupID) return (NavigatorGroup)child;
-                NavigatorGroup<T> group = ((NavigatorGroup)child).getNavigatorGroup(groupID);
-                if(group!=null) return group;
-            }
-        }
-
-        return null;
+    public boolean allowChildren() {
+        return !childs.isEmpty();
     }
 
-    NavigatorForm<T> getNavigatorForm(int FormID) {
-        for(NavigatorElement<T> Child : Childs) {
-            NavigatorForm<T> Form = Child.getNavigatorForm(FormID);
-            if(Form!=null) return Form;
+    NavigatorElement<T> getNavigatorElement(int elementID) {
+
+        if (ID == elementID) return this;
+
+        for(NavigatorElement<T> child : childs) {
+            NavigatorElement<T> element = child.getNavigatorElement(elementID);
+            if (element != null) return element;
         }
 
         return null;
@@ -307,14 +288,10 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
         Group.Order = Groups.size();
     }
 
-    NavigatorForm(int iID, String caption) { super(iID, caption); }
+    boolean isPrintForm;
 
-    NavigatorForm<T> getNavigatorForm(int FormID) {
-        if(FormID==ID)
-            return this;
-        else
-            return null;
-    }
+    NavigatorForm(int iID, String caption) { this(iID, caption, false); }
+    NavigatorForm(int iID, String caption, boolean iisPrintForm) { super(iID, caption); isPrintForm = iisPrintForm; }
 
     ArrayList<NavigatorElement> relevantElements = new ArrayList();
     void addRelevantElement(NavigatorElement relevantElement) {

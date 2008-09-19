@@ -500,20 +500,23 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitNavigators() {
 
-        NavigatorGroup group1 = new NavigatorGroup<TestBusinessLogics>(1,"Group 1");
-        NavigatorGroup group2 = new NavigatorGroup<TestBusinessLogics>(2,"Group 2");
+        createDefaultClassForms(objectClass, baseElement);
 
-        BaseGroup.AddChild(group1);
-        BaseGroup.AddChild(group2);
+        NavigatorElement group1 = new NavigatorElement<TestBusinessLogics>(1,"Group 1");
+        NavigatorElement group2 = new NavigatorElement<TestBusinessLogics>(2,"Group 2");
 
-        NavigatorForm testForm = new TestNavigatorForm(1,"Test Form 1", this);
-        group1.AddChild(testForm);
+        baseElement.addChild(group1);
+        baseElement.addChild(group2);
 
-        NavigatorForm simpleForm = new SimpleNavigatorForm(2,"Test Form 2", this);
-        group2.AddChild(simpleForm);
+        NavigatorForm testForm = new TestNavigatorForm(3,"Test Form 1", this);
+        group1.addChild(testForm);
 
-        NavigatorForm test2Form = new Test2NavigatorForm(3,"Test Form 3", this);
-        group2.AddChild(test2Form);
+        NavigatorForm simpleForm = new SimpleNavigatorForm(4,"Test Form 2", this);
+        testForm.addChild(simpleForm);
+        simpleForm.isPrintForm = true;
+
+        NavigatorForm test2Form = new Test2NavigatorForm(5,"Test Form 3", this);
+        group2.addChild(test2Form);
 
         testForm.addRelevantElement(simpleForm);
         testForm.addRelevantElement(test2Form);
@@ -525,6 +528,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         Article.addRelevantElement(test2Form);
         ArticleGroup.addRelevantElement(testForm);
+
     }
 }
 

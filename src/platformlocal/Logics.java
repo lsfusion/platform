@@ -527,7 +527,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             TableFactory.IncludeIntoGraph(Include);
         }         
         
-        BaseGroup = new NavigatorGroup<T>(0, "Base Group");
+        baseElement = new NavigatorElement<T>(0, "Base Group");
         
         InitLogics();
         InitImplements();
@@ -555,7 +555,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         InitIndexes();
     }
 
-    NavigatorGroup<T> BaseGroup;
+    NavigatorElement<T> baseElement;
     
     abstract void InitNavigators();
     
@@ -1745,6 +1745,36 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Session.commitTransaction();
         
         Session.close();
+    }
+
+    public void createDefaultClassForms(Class cls, NavigatorElement parent) {
+
+        NavigatorElement node = new ClassNavigatorForm(this, cls);
+        parent.addChild(node);
+        cls.addRelevantElement(node);
+
+        for (Class child : cls.Childs) {
+            createDefaultClassForms(child, node);
+        }
+    }
+}
+
+class ClassNavigatorForm extends NavigatorForm {
+
+    ClassNavigatorForm(BusinessLogics BL, Class cls) {
+        super(cls.ID + 2134232, cls.caption);
+
+        ObjectImplement object = new ObjectImplement(IDShift(1),cls);
+        object.OutName = cls.caption;
+
+        GroupObjectImplement groupObject = new GroupObjectImplement();
+
+        groupObject.addObject(object);
+        addGroup(groupObject);
+        groupObject.GID = 4;
+
+        BL.FillSingleViews(object,this,null);
+
     }
 }
 
