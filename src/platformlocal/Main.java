@@ -518,6 +518,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         NavigatorForm test2Form = new Test2NavigatorForm(5,"Test Form 3", this);
         group2.addChild(test2Form);
 
+        NavigatorForm integralForm = new IntegralNavigatorForm(6, "Integral Form", this);
+        group2.addChild(integralForm);
+
         testForm.addRelevantElement(simpleForm);
         testForm.addRelevantElement(test2Form);
 
@@ -586,6 +589,15 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 //        fbv.AddOrder(Obj3Props.get("имя"));
 //        fbv.AddOrder(Obj3Props.get("дата док."));
 
+//        richDesign.getGroupObject()
+
+        DefaultClientFormView formView = new DefaultClientFormView(this);
+        formView.get(gv).defaultViewType = true;
+        formView.get(gv).singleViewType = true;
+
+        richDesign = formView;
+
+
     }
 
 }
@@ -651,6 +663,35 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
 //        fbv.AddOrder(Obj3Props.get("имя"));
 //        fbv.AddOrder(Obj3Props.get("дата док."));
+    }
+
+}
+
+class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
+
+    IntegralNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
+        super(iID, caption);
+
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.dateClass);
+        obj1.OutName = "дата 1";
+
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.dateClass);
+        obj2.OutName = "дата 2";
+
+        GroupObjectImplement gv = new GroupObjectImplement();
+
+        gv.addObject(obj1);
+        gv.addObject(obj2);
+        addGroup(gv);
+        gv.GID = 334;
+
+        DefaultClientFormView formView = new DefaultClientFormView(this);
+        formView.get(gv).defaultViewType = true;
+        formView.get(gv).singleViewType = true;
+
+        richDesign = formView;
+
+//        BL.FillSingleViews(obj1,this,null);
     }
 
 }

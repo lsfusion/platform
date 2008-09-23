@@ -23,8 +23,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.io.*;
 
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
 
@@ -99,9 +99,21 @@ class Layout extends JFrame implements ComponentCollector {
         DefaultStation = StackStation;
 
         ClientNavigator mainNavigator = new ClientNavigator(Navigator) {
+
             public void openForm(ClientNavigatorForm element) {
                 try {
                     Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            public void openRelevantForm(ClientNavigatorForm element) {
+                try {
+                    if (element.isPrintForm)
+                        Main.Layout.DefaultStation.drop(new ReportDockable(element.ID, this));
+                    else
+                        Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -448,22 +460,82 @@ class NavigatorDockable extends DefaultDockable {
 // уничтожаемые формы
 abstract class FormDockable extends DefaultDockable {
 
-    FormDockable(String Caption) {super(Caption);}
-    FormDockable(Component Component,String Caption) {super(Component,Caption);}
+    int formID;
+
+    FormDockable(int iformID, ClientNavigator navigator) throws SQLException {
+        this(iformID);
+
+        createActiveComponent(navigator);
+    }
+
+    FormDockable(int iformID, ClientNavigator navigator, RemoteForm remoteForm) throws SQLException {
+        this(iformID);
+
+        createActiveComponent(navigator, remoteForm);
+    }
+
+    FormDockable(int iformID) {
+        formID = iformID;
+    }
+
+    void createActiveComponent(ClientNavigator navigator) throws SQLException {
+        createActiveComponent(navigator, navigator.remoteNavigator.CreateForm(formID));
+    }
+
+    void createActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
+        setActiveComponent(getActiveComponent(navigator, remoteForm), navigator.remoteNavigator.getCaption(formID));
+    }
+
+    void setActiveComponent(Component comp, String caption) {
+
+        setTitleText(caption);
+        add(comp);
+    }
+
+    Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) { return null; }
+
+//    FormDockable(String Caption) {super(Caption);}
+//    FormDockable(Component Component,String Caption) {super(Component,Caption);}
 
     // закрываются пользователем
     abstract void closed();
+
 }
 
 class ReportDockable extends FormDockable {
 
-    ReportDockable(JasperPrint Print) {
-        super(new JRViewer(Print),"Report");
+    public ReportDockable(int iformID, ClientNavigator navigator) throws SQLException {
+        super(iformID, navigator);
+    }
+
+    public ReportDockable(int iformID, ClientNavigator navigator, RemoteForm remoteForm) throws SQLException {
+        super(iformID, navigator, remoteForm);
     }
 
     // из файла
     ReportDockable(String FileName,String Directory) throws JRException {
-        super(new JRViewer((JasperPrint)JRLoader.loadObject(Directory+FileName)),FileName);
+        super(0);
+
+        setActiveComponent(new JRViewer((JasperPrint)JRLoader.loadObject(Directory+FileName)),FileName);
+    }
+
+    @Override
+    Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
+
+        JasperDesign design = remoteForm.GetReportDesign();
+        try {
+
+            JasperReport report = JasperCompileManager.compileReport(design);
+            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),remoteForm.ReadData());
+            return new JRViewer(print);
+
+        } catch (JRException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     // закрываются пользователем
@@ -474,26 +546,14 @@ class ReportDockable extends FormDockable {
 
 class ClientFormDockable extends FormDockable {
 
-    int FormID;
-    ClientNavigator navigator;
-
-    ClientFormDockable(int iFormID,ClientNavigator inavigator) throws SQLException {
-        super("Form");
-        FormID = iFormID;
-        navigator = inavigator;
+    ClientFormDockable(int iformID, ClientNavigator inavigator) throws SQLException {
+        super(iformID, inavigator);
         setFactoryID(ClientFormFactory.FACTORY_ID);
-
-        setFormID(iFormID);
     }
 
-    Component ActiveComponent;
-
-    void setFormID(int iFormID) throws SQLException {
-
-        if(ActiveComponent!=null) remove(ActiveComponent);
-        setTitleText(navigator.remoteNavigator.getCaption(FormID));
-        ActiveComponent = (new ClientForm(navigator.remoteNavigator.CreateForm(FormID), navigator));
-        add(ActiveComponent);
+    @Override
+    Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
+        return new ClientForm(remoteForm, navigator);
     }
 
     // закрываются пользователем
@@ -516,7 +576,7 @@ class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
     }
 
     public Integer getLayout(ClientFormDockable clientFormDockable, Map<Dockable, Integer> dockableIntegerMap) {
-        return clientFormDockable.FormID;
+        return clientFormDockable.formID;
     }
 
     public void setLayout(ClientFormDockable clientFormDockable, Integer integer, Map<Integer, Dockable> integerDockableMap) {
@@ -524,11 +584,11 @@ class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
     }
 
     public void setLayout(ClientFormDockable clientFormDockable, Integer integer) {
-        try {
+/*        try {
             clientFormDockable.setFormID(integer);
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        }*/
     }
 
     public ClientFormDockable layout(Integer integer, Map<Integer, Dockable> integerDockableMap) {

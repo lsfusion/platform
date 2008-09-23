@@ -202,6 +202,15 @@ public abstract class ClientNavigator extends AbstractNavigator {
             relevantClassNavigator.tree.createRootNode();
     }
 
+    public void openRelevantForm(ClientNavigatorForm form) {
+        openForm(form);
+    }
+
+    public void openClassForm(ClientNavigatorForm form) {
+        openRelevantForm(form);
+    }
+
+
     class RelevantFormNavigator extends AbstractNavigator {
 
         public RelevantFormNavigator(RemoteNavigator iremoteNavigator) {
@@ -209,7 +218,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         }
 
         public void openForm(ClientNavigatorForm element) {
-            ClientNavigator.this.openForm(element);
+            openRelevantForm(element);
         }
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
@@ -226,7 +235,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         }
 
         public void openForm(ClientNavigatorForm element) {
-            ClientNavigator.this.openForm(element);
+            openClassForm(element);
         }
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {

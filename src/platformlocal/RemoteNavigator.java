@@ -161,6 +161,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.filters = new HashSet(remoteForm.fixedFilters);
 
+        remoteForm.richDesign = navigatorForm.getRichDesign();
+
         for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.Groups)
             for (ObjectImplement object : groupObject) {
                 int objectID = classCache.getObject(object.BaseClass);
@@ -169,8 +171,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             }
 
         return remoteForm;
-/*        lastOpenedForm = remoteForm;
-        return lastOpenedForm;*/
     }
     
     private ClassCache classCache;
@@ -190,24 +190,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     public int getCacheObject(Class cls) {
         return classCache.getObject(cls);
     }
-
-
-
-/*
-    Class leadClass;
-    int getLeadObject() {
-
-        return classCache.getObject(leadClass);
-
-        for (GroupObjectImplement group : lastOpenedForm.Groups) {
-            for (ObjectImplement object : group) {
-                if (leadClass.IsParent(object.objectClass))
-                    return object.idObject;
-            }
-        }
-
-        return -1;
-    } */
 
     String getCaption(int formID){
 
@@ -293,10 +275,15 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     NavigatorForm(int iID, String caption) { this(iID, caption, false); }
     NavigatorForm(int iID, String caption, boolean iisPrintForm) { super(iID, caption); isPrintForm = iisPrintForm; }
 
+    ClientFormView richDesign;
+    ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; } 
+
     ArrayList<NavigatorElement> relevantElements = new ArrayList();
     void addRelevantElement(NavigatorElement relevantElement) {
         relevantElements.add(relevantElement);
     }
+
+
 
 }
 

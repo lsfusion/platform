@@ -5,36 +5,20 @@
 
 package platformlocal;
 
-import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.view.JRViewer;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
-import java.text.*;
-import java.io.ObjectOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ByteArrayOutputStream;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import javax.swing.JTextField;
 import javax.swing.*;
-import javax.swing.text.NumberFormatter;
-import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.*;
 import javax.swing.table.*;
-
-import bibliothek.gui.dock.DefaultDockable;
-import com.toedter.calendar.JDateChooser;
-import com.toedter.calendar.JTextFieldDateEditor;
 
 interface ClientCellViewTable {
 
@@ -246,7 +230,7 @@ public class ClientForm extends JPanel {
         }
 
         for (ClientGroupObjectImplement groupObject : formChanges.Objects.keySet()) {
-            models.get(groupObject).setCurrentObject(formChanges.Objects.get(groupObject),false);
+            models.get(groupObject).setCurrentGroupObject(formChanges.Objects.get(groupObject),false);
         }
 
         // Затем их свойства
@@ -263,22 +247,27 @@ public class ClientForm extends JPanel {
 
     }
 
-    void changeObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
+    void changeGroupObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
 
-        long st = System.currentTimeMillis();
+//        long st = System.currentTimeMillis();
 
-        if (!objectValue.equals(models.get(groupObject).getCurrentObject())) {
+        ClientGroupObjectValue curObjectValue = models.get(groupObject).getCurrentObject();
+
+        if (!objectValue.equals(curObjectValue)) {
 
 //            System.out.println("oldval : " + models.get(groupObject).getCurrentObject().toString());
-//            models.get(groupObject).setCurrentObject(objectValue, true);
-//            System.out.println("Change Object - setCurrentObject : " + (System.currentTimeMillis()-st));
+//            models.get(groupObject).setCurrentGroupObject(objectValue, true);
+//            System.out.println("Change Object - setCurrentGroupObject : " + (System.currentTimeMillis()-st));
 //            System.out.println("newval : " + objectValue.toString());
 
             try {
-                remoteForm.ChangeObject(groupObject.GID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
+                remoteForm.ChangeGroupObject(groupObject.GID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
+            models.get(groupObject).setCurrentGroupObject(objectValue,true);
+
             applyFormChanges();
         }
 
@@ -298,7 +287,23 @@ public class ClientForm extends JPanel {
                 e.printStackTrace();
             }
             applyFormChanges();
+        } else {
+
+            ClientObjectImplement object = ((ClientObjectView)property).object;
+
+            try {
+                remoteForm.ChangeObject(object.ID, (Integer)value);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            models.get(property.groupObject).setCurrentObject(object,(Integer)value,false);
+
+            applyFormChanges();
+
+            clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(object.ID));
         }
+
     }
 
     void addObject(ClientObjectImplement object, ClientClass cls) {
@@ -358,45 +363,30 @@ public class ClientForm extends JPanel {
     private void changeFind(List<ClientFilter> conditions) {
     }
 
+    Map<ClientGroupObjectImplement, List<ClientFilter>> currentFilters = new HashMap();
+    
+    private void changeFilter(ClientGroupObjectImplement groupObject, List<ClientFilter> conditions) {
 
-    private void changeFilter(List<ClientFilter> conditions) {
+        currentFilters.put(groupObject, conditions);
 
         remoteForm.clearFilter();
-        for (ClientFilter filter : conditions) {
-            remoteForm.addFilter(ByteArraySerializer.serializeClientFilter(filter));
-        }
+
+        for (List<ClientFilter> listFilter : currentFilters.values())
+            for (ClientFilter filter : listFilter) {
+                remoteForm.addFilter(ByteArraySerializer.serializeClientFilter(filter));
+            }
 
         applyFormChanges();
     }
 
     void print() {
 
-
-        JasperDesign Design = remoteForm.GetReportDesign();
-        JasperReport Report;
         try {
-            Report = JasperCompileManager.compileReport(Design);
-            JasperPrint Print = JasperFillManager.fillReport(Report,new HashMap(),remoteForm.ReadData());
-            Main.Layout.DefaultStation.drop(new ReportDockable(Print));
-/*            JFrame DrawPrint = new JFrame("Report");
-            DrawPrint.getContentPane().add(Viewer);
-            DrawPrint.setSize(800,600);
-            DrawPrint.setVisible(true);
-            DrawPrint.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);*/
-
-/*
-            JRXlsExporter ToExcel = new JRXlsExporter();
-            ToExcel.setParameter(JRExporterParameter.JASPER_PRINT, Print);
-            ToExcel.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, "report.xls");
-            ToExcel.exportReport();
-*/
-        } catch (JRException e) {
-            e.printStackTrace();
+            Main.Layout.DefaultStation.drop(new ReportDockable(remoteForm.getID(), clientNavigator, remoteForm));
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-//        JasperCompileManager.writeReportToXmlFile(Report,"report.xml");
-//        JasperExportManager.exportReportToPdfFile(Print, "report.pdf");
+
     }
 
     boolean saveChanges() {
@@ -485,7 +475,7 @@ public class ClientForm extends JPanel {
 
         ClientCellView currentCell;
 
-        Boolean classView = false;
+        Boolean classView;
 
         public GroupObjectModel(ClientGroupObjectImplement igroupObject) {
 
@@ -499,8 +489,15 @@ public class ClientForm extends JPanel {
 
                 objects.put(object, new ObjectModel(object));
             }
-            
-            setClassView(true, false);
+
+            classView = !groupObject.defaultViewType;
+            setClassView(groupObject.defaultViewType, false);
+
+            try {
+                remoteForm.ChangeClassView(groupObject.GID, classView);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         
         public void setClassView(Boolean iclassView, boolean userChange) {
@@ -558,7 +555,7 @@ public class ClientForm extends JPanel {
             return currentObject;
         }
         
-        public void setCurrentObject(ClientGroupObjectValue value, Boolean userChange) {
+        public void setCurrentGroupObject(ClientGroupObjectValue value, Boolean userChange) {
     
             boolean realChange = !value.equals(currentObject);
 
@@ -577,7 +574,17 @@ public class ClientForm extends JPanel {
             }
             
         }
-        
+
+        public void setCurrentObject(ClientObjectImplement object, Integer value, boolean userChange) {
+
+            if (currentObject == null) return;
+
+            ClientGroupObjectValue curValue = (ClientGroupObjectValue) currentObject.clone();
+
+            curValue.put(object, value);
+            setCurrentGroupObject(curValue, userChange);
+        }
+
         public void setPanelPropertyValue(ClientPropertyView property, Object value) {
             
             panel.setPropertyValue(property, value);
@@ -624,6 +631,7 @@ public class ClientForm extends JPanel {
             });
 
         }
+
 
         // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
         class ClientAbstractCellRenderer extends JComponent
@@ -898,7 +906,9 @@ public class ClientForm extends JPanel {
                     models.put(object.objectIDView, idmodel);
 
                 }
-                setGroupObjectIDValue(currentObject);
+
+                if (currentObject != null)
+                    setGroupObjectIDValue(currentObject);
                 
             }
             
@@ -1198,7 +1208,7 @@ public class ClientForm extends JPanel {
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
-                            changeObject(groupObject, model.getSelectedObject());
+                            changeGroupObject(groupObject, model.getSelectedObject());
                         }
                     });
 
@@ -1880,7 +1890,7 @@ public class ClientForm extends JPanel {
                     }
 
                     public void applyQuery() {
-                        changeFilter(conditions);
+                        changeFilter(groupObject, conditions);
                         super.applyQuery();
                     }
 

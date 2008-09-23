@@ -501,31 +501,40 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     // это будут Bean'овские интерфейсы
 
-    public void ChangeObject(Integer groupID, byte[] value) throws SQLException {
+    public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
         GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
-        ChangeObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
+        ChangeGroupObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
     }
 
-    public void ChangeObject(GroupObjectImplement Group,GroupObjectValue Value) throws SQLException {
+    public void ChangeGroupObject(GroupObjectImplement group,GroupObjectValue value) throws SQLException {
         // проставим все объектам метки изменений
-        for(ObjectImplement Object : Group) {
-            Integer idObject = Value.get(Object);
-            if(Object.idObject!=idObject) {
-                // запишем объект
-                Object.idObject = idObject;
-                Object.Updated = Object.Updated | (1<<0);
-
-                // запишем класс объекта
-                Class ObjectClass = BL.GetClass(Session, idObject);
-                if(Object.Class!=ObjectClass) {
-                    Object.Class = ObjectClass;
-                    Object.Updated = Object.Updated | (1<<1);
-                }
-
-                Group.Updated = Group.Updated | (1<<0);
+        for(ObjectImplement object : group) {
+            Integer idObject = value.get(object);
+            if(object.idObject != idObject) {
+                ChangeObject(object, idObject);
             }
-            objectChanged(Object.Class, idObject);
         }
+    }
+
+    public void ChangeObject(Integer objectID, Integer value) throws SQLException {
+        ChangeObject(getObjectImplement(objectID), value);
+    }
+
+    private void ChangeObject(ObjectImplement object, Integer value) throws SQLException {
+
+        object.idObject = value;
+        object.Updated = object.Updated | (1<<0);
+
+        // запишем класс объекта
+        Class objectClass = BL.GetClass(Session, value);
+        if(object.Class != objectClass) {
+            object.Class = objectClass;
+            object.Updated = object.Updated | (1<<1);
+        }
+
+        object.GroupTo.Updated = object.GroupTo.Updated | (1<<0);
+
+        objectChanged(object.Class, value);
     }
 
     protected void objectChanged(Class cls, Integer objectID) {};
@@ -570,7 +579,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
     Set<Filter> filters = new HashSet();
 
     public void clearFilter() {
-        
+
         filters = new HashSet(fixedFilters);
         StructUpdated = true;
     }
@@ -954,7 +963,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 if(!Group.GridClassView) {
                     // если панель и ObjectSeeks "полный", то просто меняем объект и ничего не читаем
                     Result.Objects.put(Group,ObjectSeeks);
-                    ChangeObject(Group,ObjectSeeks);
+                    ChangeGroupObject(Group,ObjectSeeks);
                 } else {
                     // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
                     if(NotEnoughOrders && ObjectSeeks.size()==Group.size() && Orders.size() > 0) {
@@ -1101,9 +1110,9 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     if(ActiveRow>=0) {
                         // нашли ряд его выбираем
                         Result.Objects.put(Group,Group.Keys.get(ActiveRow));
-                        ChangeObject(Group,Group.Keys.get(ActiveRow));
+                        ChangeGroupObject(Group,Group.Keys.get(ActiveRow));
                     } else
-                        ChangeObject(Group,new GroupObjectValue());
+                        ChangeGroupObject(Group,new GroupObjectValue());
                 }
             }
         }
@@ -1248,7 +1257,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
             Cancel = false;
         }
 
-//        Result.Out(this);
+        Result.Out(this);
 
         return Result;
     }
@@ -1257,8 +1266,9 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return ByteArraySerializer.serializeClientFormView(GetRichDesign());
     }
 
+    ClientFormView richDesign;
     public ClientFormView GetRichDesign() {
-        return new DefaultClientFormView(this);
+        return richDesign;
     }
 
     // считывает все данные (для отчета)

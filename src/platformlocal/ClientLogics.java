@@ -19,6 +19,9 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
 
     Integer GID = 0;
 
+    boolean singleViewType = false;
+    boolean defaultViewType = true;
+
     ClientGridView gridView = new ClientGridView();
     ClientFunctionView addView = new ClientFunctionView();
     ClientFunctionView changeClassView = new ClientFunctionView();
@@ -113,6 +116,8 @@ abstract class ClientCellView extends ClientComponentView {
     
     Integer ID = 0;
 
+    public ClientClass baseClass;
+
     ClientGroupObjectImplement groupObject;
     
     Dimension minimumSize;
@@ -122,7 +127,7 @@ abstract class ClientCellView extends ClientComponentView {
     String caption;
 
     public int getMinimumWidth() {
-        return getPreferredWidth();
+        return baseClass.getMinimumWidth();
     }
 
     public int getMinimumHeight() {
@@ -136,7 +141,7 @@ abstract class ClientCellView extends ClientComponentView {
     }
 
     public int getPreferredWidth() {
-        return 50;
+        return baseClass.getPreferredWidth();
     }
     
     public int getPreferredHeight() {
@@ -150,8 +155,16 @@ abstract class ClientCellView extends ClientComponentView {
     }
     
     transient protected PropertyRendererComponent renderer;
-    abstract public PropertyRendererComponent getRendererComponent(ClientForm form);
-    abstract public PropertyEditorComponent getEditorComponent(ClientForm form);
+    public PropertyRendererComponent getRendererComponent(ClientForm form) {
+
+        if (renderer == null) renderer = baseClass.getRendererComponent(getFormat());
+
+        return renderer;
+    }
+
+    public PropertyEditorComponent getEditorComponent(ClientForm form) {
+        return baseClass.getEditorComponent(form, getFormat());
+    }
 
     Format format;
     public Format getFormat() { return format; }
@@ -162,55 +175,19 @@ abstract class ClientCellView extends ClientComponentView {
 
 class ClientPropertyView extends ClientCellView {
 
-    public ClientClass baseClass;
-
-/*    public ClientClass getBaseClass(ClientForm form) {
-
-       if (baseClass == null) baseClass = ByteArraySerializer.deserializeClientClass(form.remoteForm.getPropertyClassByteArray(ID));
-
-       return baseClass;
-    }*/
-
-    public int getMinimumWidth() {
-
-        return baseClass.getMinimumWidth();
-    }
-
-    public int getPreferredWidth() {
-
-        return baseClass.getPreferredWidth();
-    }
-
-    public PropertyRendererComponent getRendererComponent(ClientForm form) {
-        
-        if (renderer == null) renderer = baseClass.getRendererComponent(getFormat());
-
-        return renderer;
-    }
-    
-    public PropertyEditorComponent getEditorComponent(ClientForm form) {
-
-        return baseClass.getEditorComponent(form, getFormat());
-    }
-
 }
 
 class ClientObjectView extends ClientCellView {
 
-    public PropertyRendererComponent getRendererComponent(ClientForm form) {
-        
-        if (renderer == null) {
-            renderer = new QuantityPropertyRenderer(getFormat());
-        }
-        
-        return renderer;
-        
-    }
-    
+    ClientObjectImplement object;
+
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
-        
-        form.switchClassView(groupObject);
-        return null;
+
+        if (!groupObject.singleViewType) {
+            form.switchClassView(groupObject);
+            return null;
+        } else
+            return super.getEditorComponent(form);
     }
     
 }
@@ -254,7 +231,19 @@ class ClientFormView implements Serializable {
 
 class DefaultClientFormView extends ClientFormView {
 
-    public DefaultClientFormView(RemoteForm remoteForm) {
+    private transient Map<GroupObjectImplement, ClientGroupObjectImplement> mgroupObjects = new HashMap();
+    public ClientGroupObjectImplement get(GroupObjectImplement groupObject) { return mgroupObjects.get(groupObject); }
+
+    private transient Map<ObjectImplement, ClientObjectImplement> mobjects = new HashMap();
+    public ClientObjectImplement get(ObjectImplement object) { return mobjects.get(object); }
+
+    private transient Map<PropertyView, ClientPropertyView> mproperties = new HashMap();
+    public ClientPropertyView get(PropertyView property) { return mproperties.get(property); }
+
+    private transient Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
+    private transient Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
+
+    public DefaultClientFormView(NavigatorForm navigatorForm) {
 
         ClientContainerView mainContainer = new ClientContainerView();
         mainContainer.outName = "mainContainer";
@@ -262,14 +251,7 @@ class DefaultClientFormView extends ClientFormView {
 
         containers.add(mainContainer);
 
-        Map<GroupObjectImplement, ClientGroupObjectImplement> mgroupObjects = new HashMap();
-        Map<ObjectImplement, ClientObjectImplement> mobjects = new HashMap();
-        Map<PropertyView, ClientPropertyView> mproperties = new HashMap();
-
-        Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
-        Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
-
-        for (GroupObjectImplement group : (List<GroupObjectImplement>)remoteForm.Groups) {
+        for (GroupObjectImplement group : (List<GroupObjectImplement>)navigatorForm.Groups) {
 
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             clientGroup.GID = group.GID;
@@ -280,7 +262,7 @@ class DefaultClientFormView extends ClientFormView {
             ClientContainerView groupContainer = new ClientContainerView();
             groupContainer.outName = "groupContainer " + group.get(0).OutName;
             groupContainer.container = mainContainer;
-            groupContainer.constraints.order = remoteForm.Groups.indexOf(group);
+            groupContainer.constraints.order = navigatorForm.Groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
             groupContainer.constraints.insetsInside = new Insets(0,0,4,0);
 
@@ -336,6 +318,7 @@ class DefaultClientFormView extends ClientFormView {
 
                 clientObject.objectIDView.ID = object.ID;
                 clientObject.objectIDView.groupObject = clientGroup;
+                clientObject.objectIDView.object = clientObject;
 
                 clientObject.objectIDView.container = panelContainer;
                 clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
@@ -343,6 +326,9 @@ class DefaultClientFormView extends ClientFormView {
 
                 clientObject.caption = object.OutName;
                 clientObject.objectIDView.caption = object.OutName;
+
+                clientObject.objectIDView.baseClass = ByteArraySerializer.deserializeClientClass(
+                                           ByteArraySerializer.serializeClass(object.BaseClass));
 
                 clientObject.classView.container = gridContainer;
                 clientObject.classView.constraints.order = 0;
@@ -358,13 +344,13 @@ class DefaultClientFormView extends ClientFormView {
             }
         }
 
-        for (PropertyView property : (List<PropertyView>)remoteForm.Properties) {
+        for (PropertyView property : (List<PropertyView>)navigatorForm.Properties) {
 
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.ID = property.ID;
 
             clientProperty.groupObject = mgroupObjects.get(property.ToDraw);
-            clientProperty.constraints.order = remoteForm.Properties.indexOf(property);
+            clientProperty.constraints.order = navigatorForm.Properties.indexOf(property);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             //временно
@@ -382,7 +368,7 @@ class DefaultClientFormView extends ClientFormView {
 
         ClientContainerView formButtonContainer = new ClientContainerView();
         formButtonContainer.container = mainContainer;
-        formButtonContainer.constraints.order = remoteForm.Groups.size();
+        formButtonContainer.constraints.order = navigatorForm.Groups.size();
         formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         containers.add(formButtonContainer);
