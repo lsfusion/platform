@@ -260,7 +260,7 @@ class DefaultClientFormView extends ClientFormView {
             groupObjects.add(clientGroup);
 
             ClientContainerView groupContainer = new ClientContainerView();
-            groupContainer.outName = "groupContainer " + group.get(0).OutName;
+            groupContainer.outName = "groupContainer " + group.get(0).caption;
             groupContainer.container = mainContainer;
             groupContainer.constraints.order = navigatorForm.Groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
@@ -270,7 +270,7 @@ class DefaultClientFormView extends ClientFormView {
             containers.add(groupContainer);
 
             ClientContainerView gridContainer = new ClientContainerView();
-            gridContainer.outName = "gridContainer " + group.get(0).OutName;
+            gridContainer.outName = "gridContainer " + group.get(0).caption;
             gridContainer.container = groupContainer;
             gridContainer.constraints.order = 0;
             gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
@@ -278,18 +278,18 @@ class DefaultClientFormView extends ClientFormView {
             containers.add(gridContainer);
 
             ClientContainerView panelContainer = new ClientContainerView();
-            panelContainer.outName = "panelContainer " + group.get(0).OutName;
+            panelContainer.outName = "panelContainer " + group.get(0).caption;
             panelContainer.container = groupContainer;
             panelContainer.constraints.order = 1;
             panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
 
-            panelContainer.title = group.get(0).OutName;
+            panelContainer.title = group.get(0).caption;
 
             panelContainers.put(clientGroup, panelContainer);
             containers.add(panelContainer);
 
             ClientContainerView buttonContainer = new ClientContainerView();
-            buttonContainer.outName = "buttonContainer " + group.get(0).OutName;
+            buttonContainer.outName = "buttonContainer " + group.get(0).caption;
             buttonContainer.container = groupContainer;
             buttonContainer.constraints.order = 2;
             buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
@@ -324,8 +324,8 @@ class DefaultClientFormView extends ClientFormView {
                 clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
                 clientObject.objectIDView.constraints.insetsSibling = new Insets(0,0,2,2);
 
-                clientObject.caption = object.OutName;
-                clientObject.objectIDView.caption = object.OutName;
+                clientObject.caption = object.caption;
+                clientObject.objectIDView.caption = object.caption;
 
                 clientObject.objectIDView.baseClass = ByteArraySerializer.deserializeClientClass(
                                            ByteArraySerializer.serializeClass(object.BaseClass));
@@ -354,7 +354,7 @@ class DefaultClientFormView extends ClientFormView {
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             //временно
-            clientProperty.caption = property.View.Property.OutName;
+            clientProperty.caption = property.View.Property.caption;
             clientProperty.baseClass = ByteArraySerializer.deserializeClientClass(
                                        ByteArraySerializer.serializeClass(property.View.Property.GetValueClass(property.View.Property.GetClassSet(null).get(0))));
 

@@ -347,107 +347,107 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ArtAddV = AddDProp(quantityClass,Article);
 
         BarCode = AddDProp(quantityClass,Article);
-        BarCode.Property.OutName = "штрих-код";
+        BarCode.Property.caption = "штрих-код";
 
         ExpireDate = AddDProp(dateClass,Article);
-        ExpireDate.Property.OutName = "срок годн.";
+        ExpireDate.Property.caption = "срок годн.";
 
         Weight = AddDProp(bitClass,Article);
-        Weight.Property.OutName = "вес.";
+        Weight.Property.caption = "вес.";
 
         LDP AbsQuantity = AddCProp(null, quantityClass,Document,Article);
-        AbsQuantity.Property.OutName = "абст. кол-во";
+        AbsQuantity.Property.caption = "абст. кол-во";
 
         LDP IsGrmat = AddCProp(0, quantityClass,Article);
-        IsGrmat.Property.OutName = "признак товара";
+        IsGrmat.Property.caption = "признак товара";
 
         FilledProperty = AddUProp(0,1,1,IsGrmat,1,1,ArtToGroup,1);
-        FilledProperty.Property.OutName = "заполнение гр. тов.";
+        FilledProperty.Property.caption = "заполнение гр. тов.";
 
         // сделаем Quantity перегрузкой
         Quantity = AddUProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
         LDP RashValue = AddCProp(-1, quantityClass,RashDocument);
-        RashValue.Property.OutName = "призн. расхода";
+        RashValue.Property.caption = "призн. расхода";
 
         LDP PrihValue = AddCProp(1, quantityClass,PrihDocument);
-        PrihValue.Property.OutName = "призн. прихода";
+        PrihValue.Property.caption = "призн. прихода";
 
         OpValue = AddUProp(2,1,1,RashValue,1,1,PrihValue,1);
-        OpValue.Property.OutName = "общ. призн.";
+        OpValue.Property.caption = "общ. призн.";
 
         LGP RaznSValue = AddGProp(OpValue,true,DocStore,1);
-        RaznSValue.Property.OutName = "разн. пр-рас.";
+        RaznSValue.Property.caption = "разн. пр-рас.";
 
         LJP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
-        RGrAddV.Property.OutName = "наценка по товару (гр.)";
+        RGrAddV.Property.caption = "наценка по товару (гр.)";
 
         LJP ArtActAddV = AddUProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
-        ArtActAddV.Property.OutName = "наценка по товару";
+        ArtActAddV.Property.caption = "наценка по товару";
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
         LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
         LMFP Multiply = AddMFProp(2);
 
-        Name.Property.OutName = "имя";
-        DocStore.Property.OutName = "склад";
-        Quantity.Property.OutName = "кол-во";
-        PrihQuantity.Property.OutName = "кол-во прих.";
-        RashQuantity.Property.OutName = "кол-во расх.";
-        ArtToGroup.Property.OutName = "гр. тов";
-        DocDate.Property.OutName = "дата док.";
-        GrAddV.Property.OutName = "нац. по гр.";
-        ArtAddV.Property.OutName = "нац. перегр.";
+        Name.Property.caption = "имя";
+        DocStore.Property.caption = "склад";
+        Quantity.Property.caption = "кол-во";
+        PrihQuantity.Property.caption = "кол-во прих.";
+        RashQuantity.Property.caption = "кол-во расх.";
+        ArtToGroup.Property.caption = "гр. тов";
+        DocDate.Property.caption = "дата док.";
+        GrAddV.Property.caption = "нац. по гр.";
+        ArtAddV.Property.caption = "нац. перегр.";
 
         LJP StoreName = AddJProp(Name,1,DocStore,1);
-        StoreName.Property.OutName = "имя склада";
+        StoreName.Property.caption = "имя склада";
 
         LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
-        ArtGroupName.Property.OutName = "имя гр. тов.";
+        ArtGroupName.Property.caption = "имя гр. тов.";
 
         LDP ArtGName = AddDProp(stringClass,Article);
-        ArtGName.Property.OutName = "при доб. гр. тов.";
+        ArtGName.Property.caption = "при доб. гр. тов.";
         SetDefProp(ArtGName,ArtGroupName,true);
 
         LJP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
-        DDep.Property.OutName = "предш. док.";
+        DDep.Property.caption = "предш. док.";
         ((ObjectProperty)DDep.Property).XL = true;
 
         LJP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
-        QDep.Property.OutName = "изм. баланса";
+        QDep.Property.caption = "изм. баланса";
         ((ObjectProperty)QDep.Property).XL = true;
 
         GSum = AddGProp(QDep,true,2,3);
-        GSum.Property.OutName = "остаток до операции";
+        GSum.Property.caption = "остаток до операции";
 
         GP = AddGProp(Quantity,true,DocStore,1,2);
-        GP.Property.OutName = "сумм кол-во док. тов.";
+        GP.Property.caption = "сумм кол-во док. тов.";
         GAP = AddGProp(GP,true,2);
-        GAP.Property.OutName = "сумм кол-во тов.";
+        GAP.Property.caption = "сумм кол-во тов.";
         G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
-        G2P.Property.OutName = "скл-гр. тов";
+        G2P.Property.caption = "скл-гр. тов";
 
         PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
-        PrihArtStore.Property.OutName = "приход по складу";
+        PrihArtStore.Property.caption = "приход по складу";
 
         RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
-        RashArtStore.Property.OutName = "расход по складу";
+        RashArtStore.Property.caption = "расход по складу";
 
         OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-        OstArtStore.Property.OutName = "остаток по складу";
+        OstArtStore.Property.caption = "остаток по складу";
 
         OstArt = AddGProp(OstArtStore,true,2);
-        OstArt.Property.OutName = "остаток по товару";
+        OstArt.Property.caption = "остаток по товару";
 
         MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
-        MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+        MaxPrih.Property.caption = "макс. приход по гр. тов.";
 
         MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
-        MaxOpStore.Property.OutName = "макс. операция";
+        MaxOpStore.Property.caption = "макс. операция";
 
         SumMaxArt = AddGProp(MaxOpStore,true,2);
-        SumMaxArt.Property.OutName = "макс. операция (сумма)";
+        SumMaxArt.Property.caption = "макс. операция (сумма)";
 
     }
 
@@ -541,11 +541,11 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         super(iID, caption);
 
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.ArticleGroup);
-        obj1.OutName = "группа товаров";
+        obj1.caption = "группа товаров";
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
-        obj2.OutName = "товар";
+        obj2.caption = "товар";
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
-        obj3.OutName = "документ";
+        obj3.caption = "документ";
 
         GroupObjectImplement gv = new GroupObjectImplement();
         GroupObjectImplement gv2 = new GroupObjectImplement();
@@ -608,7 +608,7 @@ class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         super(iID, caption);
 
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
-        obj1.OutName = "товар";
+        obj1.caption = "товар";
 
         GroupObjectImplement gv = new GroupObjectImplement();
 
@@ -627,9 +627,9 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
         super(iID, caption);
 
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Document);
-        obj1.OutName = "документ";
+        obj1.caption = "документ";
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
-        obj2.OutName = "товар";
+        obj2.caption = "товар";
 
         GroupObjectImplement gv = new GroupObjectImplement();
         GroupObjectImplement gv2 = new GroupObjectImplement();
@@ -673,10 +673,10 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         super(iID, caption);
 
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.dateClass);
-        obj1.OutName = "дата 1";
+        obj1.caption = "дата 1";
 
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.dateClass);
-        obj2.OutName = "дата 2";
+        obj2.caption = "дата 2";
 
         GroupObjectImplement gv = new GroupObjectImplement();
 

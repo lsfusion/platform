@@ -37,7 +37,7 @@ abstract class ValueConstraint extends Constraint {
 
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
-            String ResultString = "Ограничение на св-во "+Property.OutName+" нарушено"+'\n';
+            String ResultString = "Ограничение на св-во "+Property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                 ResultString += "   Объекты : ";
                 for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
@@ -110,7 +110,7 @@ class UniqueConstraint extends Constraint {
 
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
-            String ResultString = "Уникальное ограничение на св-во "+Property.OutName+" нарушено"+'\n';
+            String ResultString = "Уникальное ограничение на св-во "+Property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<Object,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                 ResultString += "   Объекты (1,2) : ";
                 for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)

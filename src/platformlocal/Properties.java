@@ -129,8 +129,7 @@ abstract class Property<T extends PropertyInterface> {
     
     abstract public String GetDBType();
     
-    // для отладки
-    String OutName = "";
+    String caption = "";
     
     abstract boolean HasChanges(DataSession Session);
 
@@ -144,7 +143,7 @@ abstract class Property<T extends PropertyInterface> {
     }
     
     void Out(DataSession Session) throws SQLException {
-        System.out.println(OutName);
+        System.out.println(caption);
         getOutSelect("value").outSelect(Session);
     }
 }
@@ -370,7 +369,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             ResultQuery = NewQuery;
         }
 
-//        System.out.println("IncChanges - "+OutName);
+//        System.out.println("IncChanges - "+caption);
 //        ResultQuery.outSelect(Adapter);
         if(!IsPersistent() && XL)
             IncrementSource = ResultQuery;

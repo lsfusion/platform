@@ -107,7 +107,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             for (ObjectImplement navigatorObject : navigatorGroupObject) {
 
                 ObjectImplement object = new ObjectImplement(navigatorObject.ID, navigatorObject.BaseClass);
-                object.OutName = navigatorObject.OutName;
+                object.caption = navigatorObject.caption;
 
                 groupObject.addObject(object);
                 onvrm.put(navigatorObject, object);

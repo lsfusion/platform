@@ -58,8 +58,7 @@ class ObjectImplement {
 
     GroupObjectImplement GroupTo;
 
-    // чисто для отладки
-    String OutName = "";
+    String caption = "";
     
     // идентификатор (в рамках формы)
     int ID = 0;
@@ -118,7 +117,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
     void Out(GroupObjectValue Value) {
         for(ObjectImplement Object : this)
-            System.out.print(" "+Object.OutName+" = "+Value.get(Object));
+            System.out.print(" "+Object.caption +" = "+Value.get(Object));
     }
     
     GroupObjectValue GetObjectValue() {
@@ -252,7 +251,7 @@ class PropertyView {
     }
 
     void Out() {
-        System.out.print(View.Property.OutName);
+        System.out.print(View.Property.caption);
     }
 
     // идентификатор (в рамках формы)
@@ -1354,13 +1353,13 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
             // сначала все коды
             for(ObjectImplement Object : Group)
-                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.OutName,"integer"));
+                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,"integer"));
 
             // бежим по всем свойствам входящим в объектам
             for(PropertyView Property : Properties) {
                 GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
                 if(DrawProp==Group)
-                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.OutName,Property.View.Property.GetDBType()));
+                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.GetDBType()));
             }
 
             JRDesignBand Band = new JRDesignBand();

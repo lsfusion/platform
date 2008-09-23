@@ -856,7 +856,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     boolean CheckPersistent(DataSession Session) throws SQLException {
         for(AggregateProperty Property : Persistents) {
-            if(!Property.CheckAggregation(Session,Property.OutName))
+            if(!Property.CheckAggregation(Session,Property.caption))
                 return false;
 //            Property.Out(Adapter);
         }
@@ -878,8 +878,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                     PropertyImplement.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),Object);
                     Form.Properties.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.GroupTo));
                     
-                    if(Names!=null && Names.contains(DrawProp.OutName))
-                        Result.put(DrawProp.OutName,PropertyImplement);
+                    if(Names!=null && Names.contains(DrawProp.caption))
+                        Result.put(DrawProp.caption,PropertyImplement);
                 }
             }
         }
@@ -1094,64 +1094,64 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
                 LMFP Multiply = AddMFProp(2);
 
-                Name.Property.OutName = "имя";
-                DocStore.Property.OutName = "склад";
-                Quantity.Property.OutName = "кол-во";
-                PrihQuantity.Property.OutName = "кол-во прих.";
-                RashQuantity.Property.OutName = "кол-во расх.";
-                ArtToGroup.Property.OutName = "гр. тов";
-                DocDate.Property.OutName = "дата док.";
-                ArtSupplier.Property.OutName = "тек. пост.";
-                PriceSupp.Property.OutName = "цена пост.";
-                GrStQty.Property.OutName = "грт на скл.";
+                Name.Property.caption = "имя";
+                DocStore.Property.caption = "склад";
+                Quantity.Property.caption = "кол-во";
+                PrihQuantity.Property.caption = "кол-во прих.";
+                RashQuantity.Property.caption = "кол-во расх.";
+                ArtToGroup.Property.caption = "гр. тов";
+                DocDate.Property.caption = "дата док.";
+                ArtSupplier.Property.caption = "тек. пост.";
+                PriceSupp.Property.caption = "цена пост.";
+                GrStQty.Property.caption = "грт на скл.";
 
                 LJP QtyGrSt = AddJProp(GrStQty,2,ArtToGroup,1,DocStore,2);
-                QtyGrSt.Property.OutName = "тдок - кол-во гр. ск.";
+                QtyGrSt.Property.caption = "тдок - кол-во гр. ск.";
 
                 LJP OstPrice = AddJProp(PriceSupp,2,1,ArtSupplier,1,2);
-                OstPrice.Property.OutName = "цена на складе";
+                OstPrice.Property.caption = "цена на складе";
 
                 LJP StoreName = AddJProp(Name,1,DocStore,1);
-                StoreName.Property.OutName = "имя склада";
+                StoreName.Property.caption = "имя склада";
                 LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
-                ArtGroupName.Property.OutName = "имя гр. тов.";
+                ArtGroupName.Property.caption = "имя гр. тов.";
 
                 LJP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
-                DDep.Property.OutName = "предш. док.";
+                DDep.Property.caption = "предш. док.";
 
                 LJP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
-                QDep.Property.OutName = "изм. баланса";
+                QDep.Property.caption = "изм. баланса";
 
                 LGP GSum = AddGProp(QDep,true,2,3);
-                GSum.Property.OutName = "остаток до операции";
+                GSum.Property.caption = "остаток до операции";
 
                 LGP GP = AddGProp(Quantity,true,DocStore,1,2);
-                GP.Property.OutName = "сумм кол-во док. тов.";
+                GP.Property.caption = "сумм кол-во док. тов.";
                 LGP GAP = AddGProp(GP,true,2);
-                GAP.Property.OutName = "сумм кол-во тов.";
+                GAP.Property.caption = "сумм кол-во тов.";
                 LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
-                G2P.Property.OutName = "скл-гр. тов";
+                G2P.Property.caption = "скл-гр. тов";
 
                 LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
-                PrihArtStore.Property.OutName = "приход по складу";
+                PrihArtStore.Property.caption = "приход по складу";
 
                 LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
-                RashArtStore.Property.OutName = "расход по складу";
+                RashArtStore.Property.caption = "расход по складу";
 
                 LJP OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-                OstArtStore.Property.OutName = "остаток по складу";
+                OstArtStore.Property.caption = "остаток по складу";
 
                 LGP OstArt = AddGProp(OstArtStore,true,2);
-                OstArt.Property.OutName = "остаток по товару";
+                OstArt.Property.caption = "остаток по товару";
 
                 LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
-                MaxPrih.Property.OutName = "макс. приход по гр. тов.";
+                MaxPrih.Property.caption = "макс. приход по гр. тов.";
 
                 LJP MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
-                MaxOpStore.Property.OutName = "макс. операция";
+                MaxOpStore.Property.caption = "макс. операция";
 
                 LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
-                SumMaxArt.Property.OutName = "сумма макс. операция";
+                SumMaxArt.Property.caption = "сумма макс. операция";
 
                 if(Persistent) {
     /*                Persistents.add((AggregateProperty)GP.Property);
@@ -1671,7 +1671,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             if(AbstractProperty instanceof DataProperty) {
                 DataProperty Property = (DataProperty)AbstractProperty;
 
-                System.out.println(Property.OutName);
+                System.out.println(Property.caption);
 
                 Set<DataPropertyInterface> InterfaceNotNull = PropNotNull.get(Property);
                 if(InterfaceNotNull==null) InterfaceNotNull = new HashSet(); 
@@ -1735,7 +1735,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             if(ObjectProperty instanceof AggregateProperty && SavePersistents.containsKey(ObjectProperty)) {
                 AggregateProperty Property = (AggregateProperty)ObjectProperty;
 
-                System.out.println("Recalculate - "+Property.OutName);
+                System.out.println("Recalculate - "+Property.caption);
                 
                 Property.Field = SavePersistents.get(Property);
                 Persistents.add(Property);
@@ -1765,7 +1765,7 @@ class ClassNavigatorForm extends NavigatorForm {
         super(cls.ID + 2134232, cls.caption);
 
         ObjectImplement object = new ObjectImplement(IDShift(1),cls);
-        object.OutName = cls.caption;
+        object.caption = cls.caption;
 
         GroupObjectImplement groupObject = new GroupObjectImplement();
 
