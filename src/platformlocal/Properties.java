@@ -89,11 +89,33 @@ class PropertyInterface implements PropertyInterfaceImplement {
     }
 }
 
+class PropertyNode {
 
-abstract class Property<T extends PropertyInterface> {
+    PropertyGroup parent;
+    PropertyGroup getParent() { return parent; }
+
+}
+
+class PropertyGroup extends PropertyNode{
+
+    String caption;
+
+    PropertyGroup(String icaption) {
+        caption = icaption;
+    }
+
+    Collection<PropertyNode> properties = new ArrayList<PropertyNode>();
+    void add(PropertyNode prop) {
+        properties.add(prop);
+        prop.parent = this;
+    }
+
+}
+
+abstract class Property<T extends PropertyInterface> extends PropertyNode {
 
     int ID=0;
-    
+
     // чтобы подчеркнуть что не направленный
     Collection<T> Interfaces = new ArrayList();
     // кэшируем здесь а не в JoinList потому как быстрее

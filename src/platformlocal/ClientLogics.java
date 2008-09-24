@@ -240,8 +240,9 @@ class DefaultClientFormView extends ClientFormView {
     private transient Map<PropertyView, ClientPropertyView> mproperties = new HashMap();
     public ClientPropertyView get(PropertyView property) { return mproperties.get(property); }
 
-    private transient Map<ClientGroupObjectImplement, ClientContainerView> groupContainers = new HashMap();
+    private transient Map<ClientGroupObjectImplement, ClientContainerView> groupObjectContainers = new HashMap();
     private transient Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
+    private transient Map<ClientGroupObjectImplement, Map<PropertyGroup, ClientContainerView>> groupPropertyContainers = new HashMap();
 
     public DefaultClientFormView(NavigatorForm navigatorForm) {
 
@@ -266,7 +267,7 @@ class DefaultClientFormView extends ClientFormView {
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
             groupContainer.constraints.insetsInside = new Insets(0,0,4,0);
 
-            groupContainers.put(clientGroup, groupContainer);
+            groupObjectContainers.put(clientGroup, groupContainer);
             containers.add(groupContainer);
 
             ClientContainerView gridContainer = new ClientContainerView();
@@ -346,10 +347,12 @@ class DefaultClientFormView extends ClientFormView {
 
         for (PropertyView property : (List<PropertyView>)navigatorForm.Properties) {
 
+            ClientGroupObjectImplement groupObject = mgroupObjects.get(property.ToDraw);
+
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.ID = property.ID;
 
-            clientProperty.groupObject = mgroupObjects.get(property.ToDraw);
+            clientProperty.groupObject = groupObject;
             clientProperty.constraints.order = navigatorForm.Properties.indexOf(property);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
@@ -361,7 +364,34 @@ class DefaultClientFormView extends ClientFormView {
             mproperties.put(property, clientProperty);
             properties.add(clientProperty);
 
-            clientProperty.container = panelContainers.get(clientProperty.groupObject);
+            ClientComponentView childComponent = clientProperty;
+
+            PropertyGroup groupProperty = property.View.Property.getParent();
+            while (groupProperty != null) {
+
+                if (!groupPropertyContainers.containsKey(groupObject))
+                    groupPropertyContainers.put(groupObject, new HashMap());
+
+                ClientContainerView groupPropertyContainer;
+                if (groupPropertyContainers.get(groupObject).containsKey(groupProperty))
+                    groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupProperty);
+                else {
+                    groupPropertyContainer = new ClientContainerView();
+                    groupPropertyContainers.get(groupObject).put(groupProperty, groupPropertyContainer);
+                }
+                
+                groupPropertyContainer.constraints.order = clientProperty.constraints.order;
+                groupPropertyContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+                groupPropertyContainer.title = groupProperty.caption;
+
+                containers.add(groupPropertyContainer);
+
+                childComponent.container = groupPropertyContainer;
+                childComponent = groupPropertyContainer;
+                groupProperty = groupProperty.getParent();
+            }
+
+            childComponent.container = panelContainers.get(clientProperty.groupObject);
 
             order.add(clientProperty);
         }

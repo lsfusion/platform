@@ -337,35 +337,63 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitProperties() {
 
+        PropertyGroup groupArticleG = new PropertyGroup("Группа");
+        PropertyGroup groupArticleA = new PropertyGroup("Атрибуты");
+        PropertyGroup groupArticleC = new PropertyGroup("Ценовые параметры");
+        PropertyGroup groupArticleS = new PropertyGroup("Показатели");
+
         Name = AddDProp(stringClass, objectClass);
+        Name.Property.caption = "имя";
+        groupArticleA.add(Name.Property);
+
         DocStore = AddDProp(Store,Document);
+        DocStore.Property.caption = "склад";
+
         PrihQuantity = AddDProp(quantityClass,PrihDocument,Article);
+        PrihQuantity.Property.caption = "кол-во прих.";
+
         RashQuantity = AddDProp(quantityClass,RashDocument,Article);
+        RashQuantity.Property.caption = "кол-во расх.";
+
         ArtToGroup = AddDProp(ArticleGroup,Article);
+        ArtToGroup.Property.caption = "гр. тов";
+        groupArticleG.add(ArtToGroup.Property);
+
         DocDate = AddDProp(quantityClass,Document);
+        DocDate.Property.caption = "дата док.";
+
         GrAddV = AddDProp(quantityClass,ArticleGroup);
+        GrAddV.Property.caption = "нац. по гр.";
+
         ArtAddV = AddDProp(quantityClass,Article);
+        ArtAddV.Property.caption = "нац. перегр.";
+        groupArticleC.add(ArtAddV.Property);
 
         BarCode = AddDProp(quantityClass,Article);
         BarCode.Property.caption = "штрих-код";
+        groupArticleA.add(BarCode.Property);
 
         ExpireDate = AddDProp(dateClass,Article);
         ExpireDate.Property.caption = "срок годн.";
+        groupArticleA.add(ExpireDate.Property);
 
         Weight = AddDProp(bitClass,Article);
         Weight.Property.caption = "вес.";
+        groupArticleA.add(Weight.Property);
 
         LDP AbsQuantity = AddCProp(null, quantityClass,Document,Article);
         AbsQuantity.Property.caption = "абст. кол-во";
 
         LDP IsGrmat = AddCProp(0, quantityClass,Article);
         IsGrmat.Property.caption = "признак товара";
+        groupArticleA.add(IsGrmat.Property);
 
         FilledProperty = AddUProp(0,1,1,IsGrmat,1,1,ArtToGroup,1);
         FilledProperty.Property.caption = "заполнение гр. тов.";
 
         // сделаем Quantity перегрузкой
         Quantity = AddUProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+        Quantity.Property.caption = "кол-во";
 
         LDP RashValue = AddCProp(-1, quantityClass,RashDocument);
         RashValue.Property.caption = "призн. расхода";
@@ -381,30 +409,23 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LJP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.caption = "наценка по товару (гр.)";
+        groupArticleG.add(RGrAddV.Property);
 
         LJP ArtActAddV = AddUProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
         ArtActAddV.Property.caption = "наценка по товару";
+        groupArticleC.add(ArtActAddV.Property);
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
         LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
         LMFP Multiply = AddMFProp(2);
 
-        Name.Property.caption = "имя";
-        DocStore.Property.caption = "склад";
-        Quantity.Property.caption = "кол-во";
-        PrihQuantity.Property.caption = "кол-во прих.";
-        RashQuantity.Property.caption = "кол-во расх.";
-        ArtToGroup.Property.caption = "гр. тов";
-        DocDate.Property.caption = "дата док.";
-        GrAddV.Property.caption = "нац. по гр.";
-        ArtAddV.Property.caption = "нац. перегр.";
-
         LJP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.caption = "имя склада";
 
         LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
         ArtGroupName.Property.caption = "имя гр. тов.";
+        groupArticleG.add(ArtGroupName.Property);
 
         LDP ArtGName = AddDProp(stringClass,Article);
         ArtGName.Property.caption = "при доб. гр. тов.";
