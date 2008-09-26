@@ -154,14 +154,14 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
                 // придется создавать запрос чтобы ключи перекодировать
                 JoinQuery<KeyField,PropertyField> AddQuery = ResultQuery.newJoinQuery(1);
-                Join<KeyField,PropertyField> AddJoin = new Join<KeyField,PropertyField>(TableFactory.AddClassTable.getClassJoin(Session,Object.GridClass));
+                Join<KeyField,PropertyField> AddJoin = new Join<KeyField,PropertyField>(TableFactory.AddClassTable.getClassJoin(Session,Object.GridClass),true);
                 AddJoin.Joins.put(TableFactory.AddClassTable.Object,AddQuery.MapKeys.get(TableFactory.ObjectTable.Key));
                 AddQuery.Wheres.add(new JoinWhere(AddJoin));
 
                 ObjectQuery = ResultQuery;
             }
 
-            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(ObjectQuery);
+            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(ObjectQuery,true);
             ObjectJoin.Joins.put(TableFactory.ObjectTable.Key,Query.MapKeys.get(Object));
             Query.Wheres.add(new JoinWhere(ObjectJoin));
 
@@ -525,7 +525,12 @@ class RemoteForm<T extends BusinessLogics<T>> {
         object.Updated = object.Updated | (1<<0);
 
         // запишем класс объекта
-        Class objectClass = BL.GetClass(Session, value);
+        Class objectClass = null;
+        if(object.BaseClass instanceof ObjectClass)
+            objectClass = BL.getObjectClass(Session, value);
+        else
+            objectClass = object.BaseClass;
+
         if(object.Class != objectClass) {
             object.Class = objectClass;
             object.Updated = object.Updated | (1<<1);
@@ -687,7 +692,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         FixedObjects.put(SibObject,SibObject.idObject);
                     } else {
                         if(SibObject!=Object) {
-                            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(BL.TableFactory.ObjectTable.getClassJoin(SibObject.GridClass));
+                            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(BL.TableFactory.ObjectTable.getClassJoin(SibObject.GridClass),true);
                             ObjectJoin.Joins.put(BL.TableFactory.ObjectTable.Key,SubQuery.MapKeys.get(SibObject));
                             SubQuery.Wheres.add(new JoinWhere(ObjectJoin));
                         } else
@@ -935,6 +940,11 @@ class RemoteForm<T extends BusinessLogics<T>> {
             if(UpdateKeys) {
                 // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
 
+                // проверим на интегральные классы в Group'e
+                for(ObjectImplement Object : Group)
+                    if(ObjectSeeks.get(Object)==null && Object.BaseClass instanceof IntegralClass)
+                        ObjectSeeks.put(Object,1);
+
                 // докидываем Join'ами (INNER) фильтры, порядки
 
                 // уберем все некорректности в Seekах :
@@ -1052,6 +1062,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         else
                             ActiveRow = KeyResult.size()-1;
                     }
+                    // так как тот же запрос надо перекомпилировать его
+                    SelectKeys.Compiled = false;
                     // потом Ascending
                     if(Direction==0 || Direction==2) {
                         if(OrderSources.size()>0) {
@@ -1061,7 +1073,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         }
 
                         SelectKeys.Up = false;
-//                        SelectKeys.outSelect(Adapter);
+                        SelectKeys.outSelect(Session);
                         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Session);
                         if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
                         KeyResult.putAll(ExecuteList);
@@ -1210,13 +1222,16 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 Result.PanelProperties.put(DrawProp,ResultProps.get(DrawProp));
         }
 
-        for(GroupObjectImplement Group : GroupProps.keySet()) {
+        for(GroupObjectImplement Group : Groups) {
+            if(!GroupProps.keySet().contains(Group))
+                continue;
+
             Collection<PropertyView> GroupList = GroupProps.get(Group);
 
             JoinQuery<ObjectImplement,PropertyView> SelectProps = new JoinQuery<ObjectImplement,PropertyView>(Group);
 
             ViewTable KeyTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-            Join<KeyField,PropertyField> KeyJoin = new Join<KeyField,PropertyField>(KeyTable);
+            Join<KeyField,PropertyField> KeyJoin = new Join<KeyField,PropertyField>(KeyTable,true);
 
             ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
             for(ObjectImplement Object : Group)
@@ -1227,7 +1242,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
             for(PropertyView DrawProp : GroupList)
                 SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Cancel?null:Session,ChangedProps,false));
 
-//            SelectProps.outSelect(Session);
+            System.out.println(Group.iterator().next().caption);
+            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {

@@ -171,9 +171,9 @@ class ObjectTable extends Table {
         if(idObject==null) return null;
 
         JoinQuery<Object,String> Query = new JoinQuery<Object,String>();
-        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
+        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
         JoinTable.Joins.put(Key,new ValueSourceExpr(idObject));
-        Query.Properties.put("classid",new JoinExpr<KeyField,PropertyField>(JoinTable,Class,true));
+        Query.Properties.put("classid",JoinTable.Exprs.get(Class));
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
         if(Result.size()>0)
             return (Integer)Result.values().iterator().next().get("classid");
@@ -187,7 +187,7 @@ class ObjectTable extends Table {
         ChangeClass.FillSetID(SetID);
 
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(Keys);
-        ClassQuery.Wheres.add(new FieldSetValueWhere(new JoinExpr<KeyField,PropertyField>(new UniJoin<KeyField,PropertyField>(this,ClassQuery),Class,true),SetID));
+        ClassQuery.Wheres.add(new FieldSetValueWhere((new UniJoin<KeyField,PropertyField>(this,ClassQuery,true)).Exprs.get(Class),SetID));
 
         return ClassQuery;
     }
@@ -212,9 +212,9 @@ class IDTable extends Table {
     Integer GenerateID(DataSession Adapter) throws SQLException {
         // читаем
         JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
-        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
+        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
         JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
-        Query.Properties.put(Value,new JoinExpr<KeyField,PropertyField>(JoinTable,Value,true));
+        Query.Properties.put(Value,JoinTable.Exprs.get(Value));
 
         Query.Wheres.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,0));
 
@@ -353,7 +353,7 @@ class ChangeClassTable extends ChangeTable {
         ObjectKeys.add(Object);
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(ObjectKeys);
 
-        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this);
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this,true);
         ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
         ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID));
 
@@ -378,7 +378,7 @@ class RemoveClassTable extends ChangeClassTable {
     }
 
     void excludeJoin(JoinQuery<?,?> Query, DataSession Session,Class ChangeClass,SourceExpr Join) {
-        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass));
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass),false);
         ClassJoin.Joins.put(Object,Join);
 
         Query.Wheres.add(new ExcludeJoinWhere(ClassJoin));
@@ -515,10 +515,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         TableFactory = new TableFactory();
 
         objectClass = new ObjectClass(0, "Базовый класс");
+        integralClass = new IntegralClass(2, "Число");
         stringClass = new StringClass(1, "Строка");
-        quantityClass = new QuantityClass(2, "Число");
+        quantityClass = new QuantityClass(2, "Кол-во");
+        quantityClass.AddParent(integralClass);
         dateClass = new DateClass(3, "Дата");
+        dateClass.AddParent(integralClass);
         bitClass = new BitClass(4, "Бит");
+        bitClass.AddParent(integralClass);
 
         for(int i=0;i<TableFactory.MaxInterface;i++) {
             TableImplement Include = new TableImplement();
@@ -564,7 +568,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     }
 
     // получает класс по ID объекта
-    Class GetClass(DataSession Session, Integer idObject) throws SQLException {
+    Class getObjectClass(DataSession Session, Integer idObject) throws SQLException {
         // сначала получаем idClass
         if(Session.NewClasses.containsKey(idObject)) {
             List<Class> ChangeClasses = Session.NewClasses.get(idObject);
@@ -668,6 +672,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return Session;
     }
 
+    IntegralClass integralClass;
     ObjectClass objectClass;
     StringClass stringClass;
     QuantityClass quantityClass;
@@ -922,14 +927,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         StringFormulaProperty Property = null;
         Property = new StringFormulaProperty(Formula,Filter);
-        LSFP ListProperty = new LSFP(Property, quantityClass,Params);
+        LSFP ListProperty = new LSFP(Property, integralClass,Params);
         Properties.add(Property);
         return ListProperty;
     }
 
     LMFP AddMFProp(Integer Params) {
         MultiplyFormulaProperty Property = new MultiplyFormulaProperty();
-        LMFP ListProperty = new LMFP(Property, quantityClass,Params);
+        LMFP ListProperty = new LMFP(Property, integralClass,Params);
         Properties.add(Property);
         return ListProperty;
     }

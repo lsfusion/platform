@@ -221,7 +221,7 @@ class BitClass extends IntegralClass {
     BitClass(Integer iID, String caption) {super(iID, caption);}
 }
 
-class StringClass extends Class {    
+class StringClass extends Class {
 
     StringClass(Integer iID, String caption) {super(iID, caption);}
 

@@ -79,6 +79,31 @@ class MapBuilder<T,V> {
         recBuildCombination(Map,(new ArrayList(Map.keySet())).listIterator(),Result,new HashMap<T,V>());
         return Result;
     }
+
+    void recBuildPairs(Collection<? extends V> Set,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
+        if(!iT.hasNext()) {
+            Result.add((Map<T,V>)CurrentMap.clone());
+            return;
+        }
+
+        T Current = iT.next();
+
+        for(V toV : Set)
+            if(!CurrentMap.values().contains(toV)){
+                CurrentMap.put(Current,toV);
+                recBuildPairs(Set,iT,Result,CurrentMap);
+                CurrentMap.remove(Current);
+            }
+
+        iT.previous();
+    }
+
+    Collection<Map<T,V>> buildPairs(Collection<? extends T> Set1,Collection<? extends V> Set2) {
+        if(Set1.size()!=Set2.size()) return null;
+        Collection<Map<T,V>> Result = new ArrayList<Map<T,V>>();
+        recBuildPairs(Set2,(new ArrayList(Set1)).listIterator(),Result,new HashMap<T,V>());
+        return Result;
+    }
 }
 
 class MapUtils<T,V> {
@@ -94,6 +119,13 @@ class MapUtils<T,V> {
         
     }
     
+}
+
+class MapExtend {
+    static void removeAll(Map<?,?> Map,Set<?> Keys) {
+        for(Object Key : Keys)
+            Map.remove(Key);
+    }
 }
 
 class Pair<Class1, Class2> {
