@@ -1073,7 +1073,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         }
 
                         SelectKeys.Up = false;
-                        SelectKeys.outSelect(Session);
+//                        SelectKeys.outSelect(Session);
                         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Session);
                         if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
                         KeyResult.putAll(ExecuteList);
@@ -1243,7 +1243,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 SelectProps.Properties.put(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Cancel?null:Session,ChangedProps,false));
 
             System.out.println(Group.iterator().next().caption);
-            SelectProps.outSelect(Session);
+//            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {
@@ -1272,7 +1272,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
             Cancel = false;
         }
 
-        Result.Out(this);
+//        Result.Out(this);
 
         return Result;
     }

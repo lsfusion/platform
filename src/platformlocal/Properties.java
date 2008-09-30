@@ -168,8 +168,17 @@ abstract class Property<T extends PropertyInterface> extends PropertyNode {
         System.out.println(caption);
         getOutSelect("value").outSelect(Session);
     }
-}
 
+    boolean isObject() {
+        // нужно также проверить
+        for(InterfaceClass InterfaceClass : GetClassSet(null))
+            for(Class Interface : InterfaceClass.values())
+                if(!(Interface instanceof ObjectClass))
+                    return false;
+
+        return true;
+    }    
+}
 
 abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
 
@@ -185,7 +194,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     // 1 - +
     // 2 - new\prev
     Map<DataSession,Integer> SessionChanged;
-    
+
     boolean HasChanges(DataSession Session) {
         return SessionChanged.containsKey(Session);
     }
@@ -200,6 +209,9 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
         // 0 и 1 = 2
         // 1 и 1 = 1
         // 2 и x = 2
+        if(!SessionChanged.containsKey(Session))
+            return;
+            // throw new RuntimeException("Was Not Changed");
         Integer PrevType = GetChangeType(Session);
         if(PrevType!=null && !PrevType.equals(ChangeType)) ChangeType = 2;
         SessionChanged.put(Session,ChangeType);
@@ -391,12 +403,18 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
             ResultQuery = NewQuery;
         }
 
+//        System.out.println("IncChanges CURR - "+caption);
+//        Out(Session);
 //        System.out.println("IncChanges - "+caption);
-//        ResultQuery.outSelect(Adapter);
+//        ResultQuery.outSelect(Session);
         if(!IsPersistent() && XL)
             IncrementSource = ResultQuery;
         else {
-            Session.InsertSelect(modifyIncrementChanges(ResultQuery,ChangeType));
+//            try {
+                Session.InsertSelect(modifyIncrementChanges(ResultQuery,ChangeType));
+//            } catch(Exception e) {
+//                IncrementSource = IncrementSource;
+//            }
             IncrementSource = null;
         }
     }
@@ -544,7 +562,8 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
     
     // заполняет список, возвращает есть ли изменения
     public boolean FillChangedList(List<ObjectProperty> ChangedProperties, DataSession Session) {
-        // если null то значит полный список запрашивают 
+        if(ChangedProperties.contains(this)) return true;
+        // если null то значит полный список запрашивают
         if(Session==null) return true;
 
         boolean Changed = false;
@@ -577,7 +596,7 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
 
         // если на изм. надо предыдущее изменение иначе просто на =
         // пока неясно после реализации QueryIncrementChanged станет яснее
-        if(DefaultProperty!=null)
+        if(DefaultProperty!=null && DefaultProperty.HasChanges(Session))
             DefaultProperty.SetChangeType(Session,OnDefaultChange?2:0);
     }
 
@@ -709,9 +728,17 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
     boolean CheckAggregation(DataSession Session,String Caption) throws SQLException {
         JoinQuery<PropertyInterface, String> AggrSelect;
         AggrSelect = getOutSelect("value");
+//        if(caption.equals("MG 651") || caption.equals("OL 128")) {
+//            System.out.println("AGGR - "+caption);
+//            AggrSelect.outSelect(Session);
+//        }
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> AggrResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = true;
         AggrSelect = getOutSelect("value");
+//        if(caption.equals("MG 651") || caption.equals("OL 128")) {
+//            System.out.println("RECALCULATE - "+caption);
+//        AggrSelect.outSelect(Session);
+//        }
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> CalcResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = false;
 
@@ -720,8 +747,8 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             Map<PropertyInterface,Integer> Row = i.next();
             
             boolean ToRemove = false;
-            for(Object Value : Row.values())
-                if(Value==null) {
+            for(Integer Value : Row.values())
+                if(Value==null) {  //|| Value.equals(0)
                     ToRemove = true;
                     break;
                 }
@@ -730,7 +757,9 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
                 i.remove();
             else {
                 Object Value =  AggrResult.get(Row).get("value");
+                if(Value==null) i.remove();
                 if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
+                if(Value instanceof Long && ((Long)Value).intValue()==0) i.remove();
                 if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
             }
         }
@@ -741,7 +770,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
 
             boolean ToRemove = false;
             for(Object Value : Row.values())
-                if(Value==null) {
+                if(Value==null) { // || Value.equals(0)
                     ToRemove = true;
                     break;
                 }
@@ -750,7 +779,9 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
                 i.remove();
             else {
                 Object Value = CalcResult.get(Row).get("value");
+                if(Value==null) i.remove();
                 if(Value instanceof Integer && ((Integer)Value).equals(0)) i.remove();
+                if(Value instanceof Long && ((Long)Value).intValue()==0) i.remove();
                 if(Value instanceof String && ((String)Value).trim().length()==0) i.remove();
             }
         }
@@ -763,10 +794,6 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             System.out.println("----Calc-----");
             for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : CalcResult.entrySet())
                 System.out.println(Row);
-            while(i.hasNext())
-                System.out.println(i.next());
-            
-            return false;
         }
         
         return true;
@@ -843,7 +870,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                     joinObjects(Query,ValueInterface);
 
             Query.Properties.put(ChangeTable.Value,new StaticNullSourceExpr(ChangeTable.Value.Type));
-            Query.Properties.put(ChangeTable.PrevValue,(Value==null?new StaticNullSourceExpr(ValueClass.GetDBType()):new ValueSourceExpr(Value)));
+            Query.Properties.put(ChangeTable.PrevValue,ValueSourceExpr.getExpr(Value,ValueClass.GetDBType()));
         }
 
         List<DataPropertyInterface> AddInterfaces = new ArrayList();
@@ -872,7 +899,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
             }
             
             Query.Properties.put(ChangeTable.PrevValue,new StaticNullSourceExpr(ChangeTable.PrevValue.Type));
-            Query.Properties.put(ChangeTable.Value,(Value==null?new StaticNullSourceExpr(ValueClass.GetDBType()):new ValueSourceExpr(Value)));
+            Query.Properties.put(ChangeTable.Value,ValueSourceExpr.getExpr(Value,ValueClass.GetDBType()));
         }
         
         QueryIncrementType = 2;
@@ -887,7 +914,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                 
         for(DataPropertyInterface ValueInterface : Interfaces)
             joinObjects(Query,ValueInterface);
-        Query.Properties.put(ValueString,(Value==null?new StaticNullSourceExpr(ValueClass.GetDBType()):new ValueSourceExpr(Value)));
+        Query.Properties.put(ValueString,ValueSourceExpr.getExpr(Value,ValueClass.GetDBType()));
 
         return (new Join<PropertyInterface,String>(Query,JoinImplement,NotNull)).Exprs.get(ValueString);
     }
@@ -1057,17 +1084,31 @@ class JoinProperty extends AggregateProperty<PropertyInterface> {
         if(ChangedProperties.size()==0) {
             ((ObjectProperty)Implements.Property).SetChangeType(Session,ChangeType);
         } else {
-            if(Implements.Property.HasChanges(Session)) 
-                ((ObjectProperty)Implements.Property).SetChangeType(Session,0);
+            int ReqType = (implementAllInterfaces()?0:2);
 
-            for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces) { 
+            if(Implements.Property.HasChanges(Session)) 
+                ((ObjectProperty)Implements.Property).SetChangeType(Session,ReqType);
+
+            for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces) {
                 PropertyInterfaceImplement Interface = Implements.Mapping.get(ImpInterface);
                 if(Interface.MapHasChanges(Session)) // значит PropertyMapImplement на ObjectProperty
-                    ((ObjectProperty)(((PropertyMapImplement)Interface).Property)).SetChangeType(Session,(Implements.Property instanceof MultiplyFormulaProperty && ChangeType==1?1:0)) ;
+                    ((ObjectProperty)(((PropertyMapImplement)Interface).Property)).SetChangeType(Session,(Implements.Property instanceof MultiplyFormulaProperty && ChangeType==1?1:ReqType)) ;
             }
         }
     }
-    
+
+    // 
+    boolean implementAllInterfaces() {
+        Set<PropertyInterface> ImplementInterfaces = new HashSet();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Implements.Property.Interfaces) {
+            PropertyInterfaceImplement InterfaceImplement = Implements.Mapping.get(Interface);
+            if(InterfaceImplement instanceof PropertyMapImplement)
+                ImplementInterfaces.addAll(((PropertyMapImplement)InterfaceImplement).Mapping.values());
+        }
+
+        return ImplementInterfaces.size()==Interfaces.size();
+    }
+
     // инкрементные св-ва
     Query<PropertyInterface, PropertyField> QueryIncrementChanged(DataSession Session) {
         
@@ -1085,6 +1126,23 @@ class JoinProperty extends AggregateProperty<PropertyInterface> {
         
         // конечный результат, с ключами и выражением
         UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,(MultiplyJoin?1:3)); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
+
+        if(!implementAllInterfaces() && ChangedProperties.size()>0) {
+            // если имплементятся не все интерфейсы надо еще со старым за Join'ить чтобы за null'ить значения по недостающим ключам
+            QueryIncrementType = 2;
+            UnionQuery<PropertyInterface, PropertyField> PrevQuery = ResultQuery.newUnionQuery(3, 1);
+            // если есть интерфейсы основного св-ва надо заnull'ить старые значения
+            for(PropertyInterface ChangeInterface : ChangedProperties) {
+                JoinQuery<PropertyInterface,PropertyField> Query = PrevQuery.newJoinQuery(1);
+                // JoinImplement'ы основного св-ва
+                Map<PropertyInterface,SourceExpr> MapJoinImplement = new HashMap();
+                for(PropertyInterface ImplementInterface : (Collection<PropertyInterface>)Implements.Property.Interfaces)
+                    MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).mapSourceExpr(Query.MapKeys,true,(ImplementInterface==ChangeInterface?Session:null),(ImplementInterface==ChangeInterface?2:0)));
+
+                Query.Properties.put(ChangeTable.PrevValue,Implements.Property.getSourceExpr(MapJoinImplement,true));
+                Query.Properties.put(ChangeTable.Value,new StaticNullSourceExpr(Implements.Property.GetDBType()));
+            }
+        }
 
         // строим все подмножества св-в в лексикографическом порядке
         ListIterator<List<PropertyInterface>> il = (new SetBuilder<PropertyInterface>()).BuildSubSetList(ChangedProperties).listIterator();
@@ -1323,6 +1381,29 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         
         return ChangedProperties;
     }
+
+    void outIncrementState(DataSession Session) throws SQLException {
+
+        System.out.println("THIS CURR : ");
+        GroupProperty.Out(Session);
+        System.out.println("THIS CHANGES : "+GroupProperty.GetChangeType(Session));
+        GroupProperty.OutChangesTable(Session);
+
+        System.out.println("GP CURR : ");
+        GroupProperty.Out(Session);
+        System.out.println("GP CHANGES : "+GroupProperty.GetChangeType(Session));
+        GroupProperty.OutChangesTable(Session);
+
+        for(GroupPropertyInterface Interface : Interfaces) {
+            if(Interface.Implement instanceof PropertyMapImplement) {
+                PropertyMapImplement PropertyImplement = (PropertyMapImplement)Interface.Implement;
+                System.out.println("IG CURR : "+PropertyImplement);
+                PropertyImplement.Property.Out(Session);
+                System.out.println("IG CHANGES : "+PropertyImplement+" "+PropertyImplement.Property.GetChangeType(Session));
+                PropertyImplement.Property.OutChangesTable(Session);
+            }
+        }
+    }
 }
 
 class SumGroupProperty extends GroupProperty {
@@ -1396,6 +1477,16 @@ class MaxGroupProperty extends GroupProperty {
         // ничего не изменилось вываливаемся
         if(ChangedProperties.size()==0 && !GroupProperty.HasChanges(Session)) return;
 
+/*        if(caption.equals("MG 580"))
+            caption = caption;
+        System.out.println("IncChanges M 0 - "+caption);
+        Out(Session);
+
+        System.out.println("Group Property WAS - "+GroupProperty.caption);
+        GroupProperty.Out(Session);
+        System.out.println("Group Property Changed - "+GroupProperty.caption);
+        GroupProperty.OutChangesTable(Session);
+  */
         // нужно посчитать для группировок, MAX из ушедших (по старым значениям GroupProperty, Interface'ов) - аналогия 3 из Sum только еще основное св-во тоже задействуем
         // G/A(2) P(false) (без SS)(false) (без общ.)(false) =(null) MAX(=)
         // для группировок MAX из пришедших (по новым значениям все) - аналогия 2
@@ -1431,7 +1522,8 @@ class MaxGroupProperty extends GroupProperty {
         // то есть пропускаем (пришедшие>старых значений) или (ушедшие=старых значений)
         ResultQuery.Wheres.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,1),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
 
-//        Adapter.OutSelect(ResultQuery);
+//        System.out.println("IncChanges M 1 - "+caption);
+//        ResultQuery.outSelect(Session);
         Session.InsertSelect(modifyIncrementChanges(ResultQuery,3));
 
         // для всех ушедших=старые значения (а они всегда <=) и пришедшие<старых значений обновляем по LEFT JOIN с запросом
@@ -1450,7 +1542,15 @@ class MaxGroupProperty extends GroupProperty {
 
         UpdateQuery.Properties.put(ChangeTable.Value,(new UniJoin<PropertyInterface,PropertyField>(IncrementQuery(Session,ChangeTable.Value,ChangedProperties,2,true,true,true),UpdateQuery,false)).Exprs.get(ChangeTable.Value));
 
+//        System.out.println("IncChanges M 2 - "+caption);
+//        UpdateQuery.outSelect(Session);
         Session.UpdateRecords(modifyIncrementChanges(UpdateQuery,0));
+
+//        System.out.println("IncChanges M 3 - "+caption);
+//        ChangeTable.outSelect(Session);
+
+//        if(caption.equals("MG 651"))
+//            outIncrementState(Session);
 
         // помечаем изменение в сессии на 2 вручную
         SessionChanged.put(Session,2);
@@ -1585,7 +1685,8 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
             Map<PropertyMapImplement,SourceExpr> PrevValues = new HashMap();
             
             for(PropertyMapImplement Operand : ChangedProps) {
-                ResultValues.put(Operand,Operand.mapSourceExpr(Query.MapKeys,true,Session,ValueType==1?1:0));
+                SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys,true,Session,ValueType==1?1:0);
+                ResultValues.put(Operand,OperandExpr);
                 if(ValueType==2) PrevValues.put(Operand,Operand.mapSourceExpr(Query.MapKeys,true,Session,2));
             }
             
@@ -1804,13 +1905,9 @@ class MultiplyFormulaProperty extends FormulaProperty<FormulaPropertyInterface> 
 
     SourceExpr proceedSourceExpr(Map<PropertyInterface,SourceExpr> JoinImplement,boolean NotNull) {
 
-        FormulaSourceExpr Source = new FormulaSourceExpr("");
-        int ParamNum=0;
-        for(FormulaPropertyInterface Interface : Interfaces) {
-            String Param = "prm" + ParamNum++;
-            Source.Formula = (Source.Formula.length()==0?"":Source.Formula+'*') + Param;
-            Source.Params.put(Param,JoinImplement.get(Interface));
-        }
+        MultiplySourceExpr Source = new MultiplySourceExpr();
+        for(FormulaPropertyInterface Interface : Interfaces)
+            Source.Operands.add(JoinImplement.get(Interface));
 
         return Source;
     }
@@ -2108,8 +2205,12 @@ class DataSession {
 
     void Execute(String ExecuteString) throws SQLException {
         Statement Statement = Connection.createStatement();
-        System.out.println(ExecuteString+Syntax.getCommandEnd());
-        Statement.execute(ExecuteString+Syntax.getCommandEnd());
+//        System.out.println(ExecuteString+Syntax.getCommandEnd());
+        try {
+            Statement.execute(ExecuteString+Syntax.getCommandEnd());
+        } finally {
+            Statement.close();
+        }
         if(!InTransaction && Syntax.noAutoCommit())
             Statement.execute(Syntax.commitTransaction()+Syntax.getCommandEnd());
 
@@ -2171,7 +2272,11 @@ class DataSession {
     }
 
     void UpdateRecords(ModifyQuery Modify) throws SQLException {
-        Execute(Modify.getUpdate(Syntax));
+//        try {
+            Execute(Modify.getUpdate(Syntax));
+//        } catch(SQLException e) {
+//            Execute(Modify.getUpdate(Syntax));
+//        }
     }
 
     void InsertSelect(ModifyQuery Modify) throws SQLException {

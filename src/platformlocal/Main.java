@@ -103,6 +103,14 @@ public class Main {
 
         if(1==1) return;*/
 
+/*        int a=1;
+        while(a==1) {
+            System.out.println("Opened");
+            new TestBusinessLogics(1);
+            System.out.println("Closed");
+            new TestBusinessLogics(0);
+        }
+  */
 /*        UnionQuery<KeyField,PropertyField> Union = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
 
         JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);
@@ -170,7 +178,7 @@ public class Main {
             BL.FillDB(Session);
             Session.close();
 
-            BL.FillData(Adapter);
+            BL.fillData(Adapter);
 
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL);
@@ -216,8 +224,16 @@ public class Main {
 
 class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
+    TestBusinessLogics() {
+        super();
+    }
+
+    TestBusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super(TestType);
+    }
+
     // заполняет тестовую базу
-    void FillData(DataAdapter Adapter) throws SQLException {
+    void fillData(DataAdapter Adapter) throws SQLException {
 
         Map<Class,Integer> ClassQuantity = new HashMap();
 /*        ClassQuantity.put(Article,1000);
@@ -570,7 +586,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     void InitTables() {
         TableImplement Include;
 
-        Include = new TableImplement();
+/*        Include = new TableImplement();
         Include.add(new DataPropertyInterface(Article));
         TableFactory.IncludeIntoGraph(Include);
         Include = new TableImplement();
@@ -586,7 +602,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(Article));
         Include.add(new DataPropertyInterface(Store));
-        TableFactory.IncludeIntoGraph(Include);
+        TableFactory.IncludeIntoGraph(Include);*/
     }
 
     void InitIndexes() {

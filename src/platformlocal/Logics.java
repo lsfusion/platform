@@ -8,6 +8,7 @@ package platformlocal;
 import java.sql.SQLException;
 
 import java.util.*;
+import static java.lang.Thread.sleep;
 
 class TableImplement extends ArrayList<DataPropertyInterface> {
     // заполняются пока автоматически
@@ -511,7 +512,7 @@ class TableFactory extends TableImplement{
 
 abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
-    BusinessLogics() {
+    void initBase() {
         TableFactory = new TableFactory();
 
         objectClass = new ObjectClass(0, "Базовый класс");
@@ -532,12 +533,55 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         }         
         
         baseElement = new NavigatorElement<T>(0, "Base Group");
-        
+    }
+
+    // по умолчанию с полным стартом
+    BusinessLogics() {
+        initBase();
+
         InitLogics();
         InitImplements();
         InitNavigators();
     }
-    
+
+    // тестирующий конструктор
+    BusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        initBase();
+
+        if(TestType>=1) {
+            InitLogics();
+            if(TestType>=2)
+                InitImplements();
+        }
+
+        Random RandomSeed = new Random();
+        long Seed = RandomSeed.nextInt(10000);
+//        Seed = 7651;// 6445; //1359 //7651
+//        Seed = 1359;// 6445; //1359 //7651
+        System.out.println("Random seed - "+Seed);
+
+        Random Randomizer = new Random(Seed);
+
+        DataAdapter Adapter = DataAdapter.getDefault();
+
+        if(TestType<1) {
+            RandomClasses(Randomizer);
+            RandomProperties(Randomizer);
+        }
+
+        if(TestType<2) {
+            RandomImplement(Randomizer);
+            RandomPersistent(Randomizer);
+        }
+
+        DataSession Session = createSession(Adapter);
+        FillDB(Session);
+        Session.close();
+
+        // запустить ChangeDBTest
+        ChangeDBTest(Adapter,20,Randomizer);
+    }
+
     abstract void InitClasses();
     abstract void InitProperties();
     abstract void InitConstraints();
@@ -829,7 +873,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
             if(Property instanceof DataProperty || (Property instanceof AggregateProperty && Persistents.contains(Property))) {
                 Table Table = ((ObjectProperty)Property).GetTable(null);
-  
+
                 Integer PropNum = Tables.get(Table);
                 if(PropNum==null) PropNum = 1;
                 PropNum = PropNum + 1;
@@ -1040,247 +1084,31 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
         }        
     }
-    
+
+    void fillData(DataAdapter Adapter) throws SQLException {
+    }
+
     // генерирует белую БЛ
-    void OpenTest(boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
+    void OpenTest(DataAdapter Adapter,boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
 
         if(Classes) {
-            Class Base = new ObjectClass(3, "Базовый объект");
-            Base.AddParent(objectClass);
-            Class Article = new ObjectClass(4, "Товар");
-            Article.AddParent(Base);
-            Class Store = new ObjectClass(5, "Склад");
-            Store.AddParent(Base);
-            Class Document = new ObjectClass(6, "Документ");
-            Document.AddParent(Base);
-            Class PrihDocument = new ObjectClass(7, "Приходный документ");
-            PrihDocument.AddParent(Document);
-            Class RashDocument = new ObjectClass(8, "Расходный документ");
-            RashDocument.AddParent(Document);
-            Class ArticleGroup = new ObjectClass(9, "Группа товаров");
-            ArticleGroup.AddParent(Base);
-            Class Supplier = new ObjectClass(10, "Поставщик");
-            Supplier.AddParent(Base);
+            InitClasses();
 
-            TableImplement Include;
-            
-            if(Implements) {
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Article));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Store));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(ArticleGroup));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Article));
-                Include.add(new DataPropertyInterface(Document));
-                TableFactory.IncludeIntoGraph(Include);
-                Include = new TableImplement();
-                Include.add(new DataPropertyInterface(Article));
-                Include.add(new DataPropertyInterface(Store));
-                TableFactory.IncludeIntoGraph(Include);
-            }
-            
-            if(Properties) {
-                LDP Name = AddDProp(stringClass,Base);
-                LDP DocStore = AddDProp(Store,Document);
-                LDP Quantity = AddDProp(quantityClass,Document,Article);
-                LDP PrihQuantity = AddDProp(quantityClass,PrihDocument,Article);
-                LDP RashQuantity = AddDProp(quantityClass,RashDocument,Article);
-                LDP ArtToGroup = AddDProp(ArticleGroup,Article);
-                LDP DocDate = AddDProp(quantityClass,Document);
-                LDP ArtSupplier = AddDProp(Supplier,Article,Store);
-                LDP PriceSupp = AddDProp(quantityClass,Article,Supplier);
-                LDP GrStQty = AddDProp(quantityClass,ArticleGroup,Store);
-
-                LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
-                LMFP Multiply = AddMFProp(2);
-
-                Name.Property.caption = "имя";
-                DocStore.Property.caption = "склад";
-                Quantity.Property.caption = "кол-во";
-                PrihQuantity.Property.caption = "кол-во прих.";
-                RashQuantity.Property.caption = "кол-во расх.";
-                ArtToGroup.Property.caption = "гр. тов";
-                DocDate.Property.caption = "дата док.";
-                ArtSupplier.Property.caption = "тек. пост.";
-                PriceSupp.Property.caption = "цена пост.";
-                GrStQty.Property.caption = "грт на скл.";
-
-                LJP QtyGrSt = AddJProp(GrStQty,2,ArtToGroup,1,DocStore,2);
-                QtyGrSt.Property.caption = "тдок - кол-во гр. ск.";
-
-                LJP OstPrice = AddJProp(PriceSupp,2,1,ArtSupplier,1,2);
-                OstPrice.Property.caption = "цена на складе";
-
-                LJP StoreName = AddJProp(Name,1,DocStore,1);
-                StoreName.Property.caption = "имя склада";
-                LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
-                ArtGroupName.Property.caption = "имя гр. тов.";
-
-                LJP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
-                DDep.Property.caption = "предш. док.";
-
-                LJP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
-                QDep.Property.caption = "изм. баланса";
-
-                LGP GSum = AddGProp(QDep,true,2,3);
-                GSum.Property.caption = "остаток до операции";
-
-                LGP GP = AddGProp(Quantity,true,DocStore,1,2);
-                GP.Property.caption = "сумм кол-во док. тов.";
-                LGP GAP = AddGProp(GP,true,2);
-                GAP.Property.caption = "сумм кол-во тов.";
-                LGP G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
-                G2P.Property.caption = "скл-гр. тов";
-
-                LGP PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
-                PrihArtStore.Property.caption = "приход по складу";
-
-                LGP RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
-                RashArtStore.Property.caption = "расход по складу";
-
-                LJP OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-                OstArtStore.Property.caption = "остаток по складу";
-
-                LGP OstArt = AddGProp(OstArtStore,true,2);
-                OstArt.Property.caption = "остаток по товару";
-
-                LGP MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
-                MaxPrih.Property.caption = "макс. приход по гр. тов.";
-
-                LJP MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
-                MaxOpStore.Property.caption = "макс. операция";
-
-                LGP SumMaxArt = AddGProp(MaxOpStore,true,2);
-                SumMaxArt.Property.caption = "сумма макс. операция";
-
-                if(Persistent) {
-    /*                Persistents.add((AggregateProperty)GP.Property);
-                    Persistents.add((AggregateProperty)GAP.Property);
-                    Persistents.add((AggregateProperty)G2P.Property);
-                    Persistents.add((AggregateProperty)GSum.Property);
-                    Persistents.add((AggregateProperty)OstArtStore.Property);
-                    Persistents.add((AggregateProperty)OstArt.Property);
-                    Persistents.add((AggregateProperty)MaxPrih.Property);
-                    Persistents.add((AggregateProperty)MaxOpStore.Property);
-                    Persistents.add((AggregateProperty)SumMaxArt.Property);
-                    Persistents.add((AggregateProperty)OstPrice.Property);*/
-                    Persistents.add((AggregateProperty)QtyGrSt.Property);
-                }
+            if(Implements)
+                InitImplements();
                 
+            if(Properties) {
+                InitProperties();
+
+                if(Persistent)
+                    InitPersistents();
+
                 if(Changes) {
-                    DataAdapter ad = DataAdapter.getDefault();
-
-                    DataSession Session = createSession(ad);
-                    
+                    DataSession Session = createSession(Adapter);
                     FillDB(Session);
+                    Session.close();
 
-                    Integer i;
-                    Integer[] Articles = new Integer[6];
-                    for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session, Article);
-
-                    Integer[] Stores = new Integer[2];
-                    for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session, Store);
-
-                    Integer[] PrihDocuments = new Integer[6];
-                    for(i=0;i<PrihDocuments.length;i++) {
-                        PrihDocuments[i] = AddObject(Session, PrihDocument);
-                        Name.ChangeProperty(Session, "ПР ДОК "+i.toString(), PrihDocuments[i]);
-                    }
-
-                    Integer[] RashDocuments = new Integer[6];
-                    for(i=0;i<RashDocuments.length;i++) {
-                        RashDocuments[i] = AddObject(Session, RashDocument);
-                        Name.ChangeProperty(Session, "РАСХ ДОК "+i.toString(), RashDocuments[i]);
-                    }
-
-                    Integer[] ArticleGroups = new Integer[2];
-                    for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session, ArticleGroup);
-
-                    Name.ChangeProperty(Session, "КОЛБАСА", Articles[0]);
-                    Name.ChangeProperty(Session, "ТВОРОГ", Articles[1]);
-                    Name.ChangeProperty(Session, "МОЛОКО", Articles[2]);
-                    Name.ChangeProperty(Session, "ОБУВЬ", Articles[3]);
-                    Name.ChangeProperty(Session, "ДЖЕМПЕР", Articles[4]);
-                    Name.ChangeProperty(Session, "МАЙКА", Articles[5]);
-
-                    Name.ChangeProperty(Session, "СКЛАД", Stores[0]);
-                    Name.ChangeProperty(Session, "ТЗАЛ", Stores[1]);
-
-                    Name.ChangeProperty(Session, "ПРОДУКТЫ", ArticleGroups[0]);
-                    Name.ChangeProperty(Session, "ОДЕЖДА", ArticleGroups[1]);
-
-                    DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[0]);
-                    DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[1]);
-                    DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[2]);
-                    DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[3]);
-                    DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[4]);
-
-                    DocStore.ChangeProperty(Session, Stores[1],RashDocuments[0]);
-                    DocStore.ChangeProperty(Session, Stores[1],RashDocuments[1]);
-                    DocStore.ChangeProperty(Session, Stores[0],RashDocuments[2]);
-                    DocStore.ChangeProperty(Session, Stores[0],RashDocuments[3]);
-                    DocStore.ChangeProperty(Session, Stores[1],RashDocuments[4]);
-
-            //        DocStore.ChangeProperty(ad,Stores[1],Documents[5]);
-
-                    DocDate.ChangeProperty(Session, 1001,PrihDocuments[0]);
-                    DocDate.ChangeProperty(Session, 1001,RashDocuments[0]);
-                    DocDate.ChangeProperty(Session, 1008,PrihDocuments[1]);
-                    DocDate.ChangeProperty(Session, 1009,RashDocuments[1]);
-                    DocDate.ChangeProperty(Session, 1010,RashDocuments[2]);
-                    DocDate.ChangeProperty(Session, 1011,RashDocuments[3]);
-                    DocDate.ChangeProperty(Session, 1012,PrihDocuments[2]);
-                    DocDate.ChangeProperty(Session, 1014,PrihDocuments[3]);
-                    DocDate.ChangeProperty(Session, 1016,RashDocuments[4]);
-                    DocDate.ChangeProperty(Session, 1018,PrihDocuments[4]);
-
-                    ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[0]);
-                    ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[1]);
-                    ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[2]);
-                    ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[3]);
-                    ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[4]);
-
-                    // Quantity
-                    PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[0],Articles[0]);
-                    RashQuantity.ChangeProperty(Session, 5,RashDocuments[0],Articles[0]);
-                    RashQuantity.ChangeProperty(Session, 3,RashDocuments[1],Articles[0]);
-
-                    PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[1]);
-                    PrihQuantity.ChangeProperty(Session, 2,PrihDocuments[1],Articles[1]);
-                    PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[1]);
-                    RashQuantity.ChangeProperty(Session, 14,RashDocuments[2],Articles[1]);
-
-                    PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[3],Articles[2]);
-                    RashQuantity.ChangeProperty(Session, 2,RashDocuments[1],Articles[2]);
-                    RashQuantity.ChangeProperty(Session, 10,RashDocuments[3],Articles[2]);
-                    PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[4],Articles[2]);
-
-                    PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[3],Articles[3]);
-
-                    RashQuantity.ChangeProperty(Session, 4,RashDocuments[2],Articles[4]);
-                    RashQuantity.ChangeProperty(Session, 4,RashDocuments[3],Articles[4]);
-
-                    GrStQty.ChangeProperty(Session, 5,ArticleGroups[0],Stores[0]);
-                    GrStQty.ChangeProperty(Session, 4,ArticleGroups[0],Stores[1]);
-                    GrStQty.ChangeProperty(Session, 3,ArticleGroups[1],Stores[0]);
-
-                    Apply(Session);
-
-                    DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[0]);
-                    ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[0]);
-                    
-                    Apply(Session);
-
-//                    TableFactory.ReCalculateAggr = true;
-//                    QtyGrSt.Property.Out(ad);
-//                    TableFactory.ReCalculateAggr = false;
-//                    QtyGrSt.Property.Out(ad);
-                    CheckPersistent(Session);
+                    fillData(Adapter);
                 }
             }
 
@@ -1293,8 +1121,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<Class> ObjClasses = new ArrayList();
         ObjClasses.add(objectClass);
         for(int i=0;i<CustomClasses;i++) {
-            Class Class = new ObjectClass(i+3, "Случайный класс");
-            int Parents = Randomizer.nextInt(6) + 1;
+            Class Class = new ObjectClass(i+99993, "Случайный класс"+i);
+            int Parents = Randomizer.nextInt(2) + 1;
             for(int j=0;j<Parents;j++) {
                 Class.AddParent(ObjClasses.get(Randomizer.nextInt(ObjClasses.size())));
             }
@@ -1312,19 +1140,20 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<ObjectProperty> RandObjProps = new ArrayList();
         
         StringFormulaProperty Dirihle = new StringFormulaProperty("prm1<prm2",true);
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(objectClass,"prm1"));
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(objectClass,"prm2"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(integralClass,"prm1"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(integralClass,"prm2"));
         RandProps.add(Dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty();
-        Multiply.Interfaces.add(new FormulaPropertyInterface(objectClass));
-        Multiply.Interfaces.add(new FormulaPropertyInterface(objectClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(integralClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(integralClass));
         RandProps.add(Multiply);
 
         int DataPropCount = Randomizer.nextInt(15)+1;
         for(int i=0;i<DataPropCount;i++) {
             // DataProperty
             DataProperty DataProp = new DataProperty(TableFactory,Classes.get(Randomizer.nextInt(Classes.size())));
+            DataProp.caption = "Data Property " + i;
             // генерируем классы
             int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
             for(int j=0;j<IntCount;j++)
@@ -1406,7 +1235,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                     Property = new MaxGroupProperty(TableFactory,GroupProp);
                     ResType = "MG";
                 }
-                
+
                 boolean Correct = true;                
                 List<PropertyInterface> GroupInt = new ArrayList(GroupProp.Interfaces);
                 int GroupCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
@@ -1453,7 +1282,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                     ResType = "OL";
                 }
                 }
-                
+
                 int OpIntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<OpIntCount;j++)
                     Property.Interfaces.add(new PropertyInterface());
@@ -1483,6 +1312,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                        
 
             if(GenProp!=null) {
+                GenProp.caption = ResType + " " + i;
                 // проверим что есть в интерфейсе и покрыты все ключи
                 Iterator<InterfaceClass> ic = GenProp.GetClassSet(null).iterator();
                 if(ic.hasNext() && ic.next().keySet().size()==GenProp.Interfaces.size()) {
@@ -1516,51 +1346,26 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     
     // случайным образом генерирует постоянные аггрегации
     void RandomPersistent(Random Randomizer) {
-        
+
+        Persistents.clear();
+
         // сначала список получим
         List<AggregateProperty> AggrProperties = new ArrayList();
         for(Property Property : Properties) {
-            if(Property instanceof AggregateProperty)
+            if(Property instanceof AggregateProperty && Property.isObject())
                 AggrProperties.add((AggregateProperty)Property);
         }
         
         int PersistentNum = Randomizer.nextInt(AggrProperties.size())+1;
         for(int i=0;i<PersistentNum;i++)
             Persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
-    }
-    
-    void FullDBTest()  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        
-        // сгенерить классы
-        // сгенерить св-ва
-        // сгенерить физ. модель
-        // сгенерить persistent аггрегации
-//        OpenTest(false,false,false,false,false);
 
-        DataAdapter Adapter = DataAdapter.getDefault();
-        OpenTest(true,true,false,false,false);
-//        if(true) return;
+        for(AggregateProperty Property : AggrProperties)
+//            if(Property.caption.equals("R 1"))
+            Persistents.add(Property);        
+     }
 
-        Random Randomizer = new Random();
-//        Randomizer.setSeed(1000);
-
-        while(true) {
-//            RandomClasses(Randomizer);
-
-//            RandomProperties(Randomizer);
-            
-            RandomImplement(Randomizer);
-
-            RandomPersistent(Randomizer);
-
-            FillDB(createSession(Adapter));
-
-            // запустить ChangeDBTest
-            ChangeDBTest(Adapter,20,Randomizer);
-        }
-    }
-    
-    
+    static int ChangeDBIteration = 0;
     void ChangeDBTest(DataAdapter Adapter,Integer MaxIterations,Random Randomizer) throws SQLException {
         
         // сначала список получим
@@ -1572,22 +1377,32 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         DataSession Session = createSession(Adapter);
 
-//        Randomizer.setSeed(1);
-        int Iterations = 2;
-        while(Iterations<MaxIterations) {
-            System.out.println(Iterations++);
+        List<Class> AddClasses = new ArrayList();
+        objectClass.FillClassList(AddClasses);
+        for(Class AddClass : AddClasses) {
+            if(AddClass instanceof ObjectClass) {
+                int ObjectAdd = Randomizer.nextInt(10)+1;
+                for(int ia=0;ia<ObjectAdd;ia++)
+                    AddObject(Session, AddClass);
+            }
+        }
 
-            restartSession(Session);
+        Apply(Session);
+
+//        Randomizer.setSeed(1);
+        int Iterations = 1;
+        while(Iterations<MaxIterations) {
+            ChangeDBIteration = Iterations;
+            System.out.println("Iteration" + Iterations++);
 
             // будем также рандомно создавать объекты
-            List<Class> AddClasses = new ArrayList();
+            AddClasses = new ArrayList();
             objectClass.FillClassList(AddClasses);
-            int ObjectAdd = Randomizer.nextInt(2)+1;
+            int ObjectAdd = Randomizer.nextInt(5);
             for(int ia=0;ia<ObjectAdd;ia++) {
                 Class AddClass = AddClasses.get(Randomizer.nextInt(AddClasses.size()));
-                if(AddClass instanceof ObjectClass) {
+                if(AddClass instanceof ObjectClass)
                     AddObject(Session, AddClass);
-                }
             }
 
             int PropertiesChanged = Randomizer.nextInt(8)+1;
@@ -1625,8 +1440,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 
                 
             Apply(Session);
-//            CheckPersistent(Adapter);
+            CheckPersistent(Session);
         }
+
+        Session.close();
     }
 
     void autoFillDB(DataAdapter Adapter, Map<Class, Integer> ClassQuantity, Map<DataProperty, Integer> PropQuantity, Map<DataProperty, Set<DataPropertyInterface>> PropNotNull) throws SQLException {

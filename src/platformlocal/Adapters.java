@@ -37,10 +37,11 @@ interface SQLSyntax {
 
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     boolean isNullSafe();
+    boolean isGreatest();
 
     String convertType(String Type);
 
-    boolean isSelectUpdate();
+    int UpdateModel();
 
     boolean noAutoCommit();
 }
@@ -51,8 +52,8 @@ abstract class DataAdapter implements SQLSyntax {
         return Type;
     }
 
-    public boolean isSelectUpdate() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    public int UpdateModel() {
+        return 0;
     }
 
     public boolean noAutoCommit() {
@@ -101,6 +102,10 @@ abstract class DataAdapter implements SQLSyntax {
 
     public String getSessionTableName(String TableName) {
         return TableName;
+    }
+
+    public boolean isGreatest() {
+        return true;
     }
 }
 
@@ -158,6 +163,10 @@ class MSSQLDataAdapter extends DataAdapter {
 
     MSSQLDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super();
+    }
+
+    public int UpdateModel() {
+        return 1;
     }
 
     public boolean allowViews() {
@@ -224,6 +233,10 @@ class MSSQLDataAdapter extends DataAdapter {
     public boolean isNullSafe() {
         return false;
     }
+
+    public boolean isGreatest() {
+        return false;
+    }
 }
 
 class PostgreDataAdapter extends DataAdapter {
@@ -285,9 +298,14 @@ class PostgreDataAdapter extends DataAdapter {
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString + (Top==0?"":" LIMIT "+Top);
     }
 
+    // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
+    public boolean isNullSafe() {
+        return false;
+    }
+
     public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
-//        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
-        return "COALESCE("+Expr1+","+Expr2+")";
+        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
+//        return "COALESCE("+Expr1+","+Expr2+")";
     }
 }
 
@@ -301,8 +319,8 @@ class OracleDataAdapter extends DataAdapter {
         return Type;
     }
 
-    public boolean isSelectUpdate() {
-        return true;
+    public int UpdateModel() {
+        return 2;
     }
 
     public boolean noAutoCommit() {
