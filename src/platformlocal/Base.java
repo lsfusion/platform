@@ -121,10 +121,15 @@ class MapUtils<T,V> {
     
 }
 
-class MapExtend {
+class CollectionExtend {
     static void removeAll(Map<?,?> Map,Set<?> Keys) {
         for(Object Key : Keys)
             Map.remove(Key);
+    }
+
+    static void removeAll(Collection<?> From,Collection<?> Remove) {
+        for(Object Key : Remove)
+            From.remove(Key);
     }
 }
 
