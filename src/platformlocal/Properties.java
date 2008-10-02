@@ -728,16 +728,16 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
     boolean CheckAggregation(DataSession Session,String Caption) throws SQLException {
         JoinQuery<PropertyInterface, String> AggrSelect;
         AggrSelect = getOutSelect("value");
-//        if(caption.equals("MG 651") || caption.equals("OL 128")) {
+//        if(caption.equals("MG 459") || caption.equals("OL 128")) {
 //            System.out.println("AGGR - "+caption);
 //            AggrSelect.outSelect(Session);
 //        }
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> AggrResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = true;
         AggrSelect = getOutSelect("value");
-//        if(caption.equals("MG 651") || caption.equals("OL 128")) {
+//        if(caption.equals("MG 459") || caption.equals("OL 128")) {
 //            System.out.println("RECALCULATE - "+caption);
-//        AggrSelect.outSelect(Session);
+//            AggrSelect.outSelect(Session);
 //        }
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> CalcResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = false;
@@ -794,6 +794,9 @@ abstract class AggregateProperty<T extends PropertyInterface> extends ObjectProp
             System.out.println("----Calc-----");
             for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : CalcResult.entrySet())
                 System.out.println(Row);
+//
+//            ((GroupProperty)this).outIncrementState(Session);
+//            Session = Session;
         }
         
         return true;
@@ -1477,7 +1480,9 @@ class MaxGroupProperty extends GroupProperty {
         // ничего не изменилось вываливаемся
         if(ChangedProperties.size()==0 && !GroupProperty.HasChanges(Session)) return;
 
-/*        if(caption.equals("MG 580"))
+        StartChangeTable(Session);
+/*
+        if(caption.equals("MG 459"))
             caption = caption;
         System.out.println("IncChanges M 0 - "+caption);
         Out(Session);
@@ -1486,6 +1491,7 @@ class MaxGroupProperty extends GroupProperty {
         GroupProperty.Out(Session);
         System.out.println("Group Property Changed - "+GroupProperty.caption);
         GroupProperty.OutChangesTable(Session);
+        outIncrementState(Session);
   */
         // нужно посчитать для группировок, MAX из ушедших (по старым значениям GroupProperty, Interface'ов) - аналогия 3 из Sum только еще основное св-во тоже задействуем
         // G/A(2) P(false) (без SS)(false) (без общ.)(false) =(null) MAX(=)
@@ -1494,7 +1500,6 @@ class MaxGroupProperty extends GroupProperty {
         // объединим кинув ушедшие (sys) и пришедшие (new)
         // расчитать старые для всех измененных (LEFT JOIN'им с старым View/persistent таблицей) JoinSelect(на true) (prev)
 
-        StartChangeTable(Session);
         // конечный результат, с ключами и выражением
         JoinQuery<PropertyInterface,PropertyField> ResultQuery = new JoinQuery<PropertyInterface,PropertyField>(Interfaces);
 
@@ -1549,7 +1554,7 @@ class MaxGroupProperty extends GroupProperty {
 //        System.out.println("IncChanges M 3 - "+caption);
 //        ChangeTable.outSelect(Session);
 
-//        if(caption.equals("MG 651"))
+//        if(caption.equals("MG 459"))
 //            outIncrementState(Session);
 
         // помечаем изменение в сессии на 2 вручную
@@ -2208,6 +2213,8 @@ class DataSession {
 //        System.out.println(ExecuteString+Syntax.getCommandEnd());
         try {
             Statement.execute(ExecuteString+Syntax.getCommandEnd());
+//        } catch(SQLException e) {
+//            e = e;
         } finally {
             Statement.close();
         }

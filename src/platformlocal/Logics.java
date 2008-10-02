@@ -558,6 +558,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         long Seed = RandomSeed.nextInt(10000);
 //        Seed = 7651;// 6445; //1359 //7651
 //        Seed = 1359;// 6445; //1359 //7651
+//        Seed = 3949;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -579,7 +580,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Session.close();
 
         // запустить ChangeDBTest
-        ChangeDBTest(Adapter,20,Randomizer);
+        try {
+            ChangeDBTest(Adapter,20,Randomizer);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     abstract void InitClasses();
@@ -1389,9 +1394,18 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         Apply(Session);
 
+        long PrevTime = System.currentTimeMillis();
+        
 //        Randomizer.setSeed(1);
         int Iterations = 1;
         while(Iterations<MaxIterations) {
+
+            long CurrentTime = System.currentTimeMillis();
+            if(CurrentTime-PrevTime>=4000)
+                break;
+
+            PrevTime = CurrentTime;
+
             ChangeDBIteration = Iterations;
             System.out.println("Iteration" + Iterations++);
 
@@ -1437,7 +1451,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 /*            for(DataProperty Property : Session.Properties) {
                 Property.OutChangesTable(Adapter, Session);
             }*/
-                
                 
             Apply(Session);
             CheckPersistent(Session);

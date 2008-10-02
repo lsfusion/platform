@@ -198,6 +198,10 @@ abstract class Source<K,V> {
         } else {
             if(Keys.size()!=Merge.Keys.size()) return null;
 
+            if(Merge instanceof JoinQuery && !(this instanceof JoinQuery))
+                // нужно перевернуть MapKeys вызвать proceedMerge у JoinQuery, а затем перевернуть
+                return ((JoinQuery) Merge).reverseMerge(this, MergeKeys, MergeProps);
+
             return proceedMerge(Merge, MergeKeys, MergeProps);
         }
     }
@@ -271,6 +275,15 @@ abstract class Source<K,V> {
         Query.Properties.putAll(SourceJoin.Exprs);
         Query.compile();
 
+        return Query;
+    }
+
+    // оборачивает Source в JoinQuery 
+    JoinQuery<K, V> getJoinQuery() {
+        JoinQuery<K,V> Query = new JoinQuery<K,V>(Keys);
+        Join<K,V> SourceJoin = new UniJoin<K,V>(this,Query,true);
+        Query.Properties.putAll(SourceJoin.Exprs);
+        Query.compile();
         return Query;
     }
 }
@@ -609,6 +622,32 @@ class Join<J,U> {
 
         return null;
     }
+
+    public String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<SourceExpr, String> KeyValues) {
+
+        Set<KeyExpr> JoinExprs = new HashSet(KeyValues.keySet());
+        // проверим сначала что в Join'ах только не пересекающиеся keyExpr'ы
+        for(SourceExpr JoinExpr : Joins.values())
+            if(!(JoinExpr instanceof KeyExpr) || !JoinExprs.add((KeyExpr) JoinExpr))
+                return null;
+
+        // для этого получаем fillSelect' Join'а
+        // в JoinExpr'ах подменяем SourceString'и на PropertySelect
+        // в KeyExpr'ах на KeySelect
+        Map<J,String> KeySelect = new HashMap();
+        Map<U,String> PropertySelect = new HashMap();
+        String From = Source.fillSelect(KeySelect,PropertySelect,WhereSelect,Syntax);
+        // если там не KeyExpr, то уже глюк
+        for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
+            ((KeyExpr)MapJoin.getValue()).Source = KeySelect.get(MapJoin.getKey());
+        // закинем KeyValues
+        for(Map.Entry<SourceExpr,String> KeyValue : KeyValues.entrySet())
+            ((KeyExpr)KeyValue.getKey()).Source = KeyValue.getValue();
+        for(Map.Entry<U,JoinExpr<J,U>> MapExpr : Exprs.entrySet())
+            MapExpr.getValue().StringSource = PropertySelect.get(MapExpr.getKey());
+
+        return From;
+    }
 }
 
 class MapJoin<J,U,K> extends Join<J,U> {
@@ -713,7 +752,11 @@ class JoinExpr<J,U> extends ObjectExpr {
         From.fillJoins(Joins,Wheres);
     }
 
+    // для fillSingleSelect'а
+    String StringSource = null;
     String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
+        if(StringSource!=null) return StringSource;
+        
         return From.Source.getPropertyString(Property,JoinAlias.get(From));
     }
 
@@ -811,36 +854,71 @@ class StaticNullSourceExpr extends SourceExpr {
     }
 }
 
+class CoeffExpr<T> {
+    T Expr;
+    Integer Coeff;
+
+    CoeffExpr(T iExpr, Integer iCoeff) {
+        Expr = iExpr;
+        Coeff = iCoeff;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CoeffExpr coeffExpr = (CoeffExpr) o;
+
+        if (Coeff != null ? !Coeff.equals(coeffExpr.Coeff) : coeffExpr.Coeff != null) return false;
+        if (!Expr.equals(coeffExpr.Expr)) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = Expr.hashCode();
+        result = 31 * result + (Coeff != null ? Coeff.hashCode() : 0);
+        return result;
+    }
+}
+
+class ListCoeffExpr<T> extends ArrayList<CoeffExpr<T>> {
+    void put(T Expr,Integer Coeff) {
+        add(new CoeffExpr<T>(Expr,Coeff));
+    }
+}
+
 class UnionSourceExpr extends SourceExpr {
 
-    UnionSourceExpr(int iOperator) {Operator=iOperator;Operands=new LinkedHashMap();}
-    UnionSourceExpr(int iOperator,LinkedHashMap<SourceExpr,Integer> iOperands) {Operator=iOperator;Operands=iOperands;}
+    UnionSourceExpr(int iOperator) {Operator=iOperator;Operands= new ListCoeffExpr<SourceExpr>();}
+    UnionSourceExpr(int iOperator,ListCoeffExpr<SourceExpr> iOperands) {Operator=iOperator;Operands=iOperands;}
 
     // 0 - MAX
     // 1 - +
     // 2 - ISNULL
     int Operator;
-    LinkedHashMap<SourceExpr,Integer> Operands;
+    ListCoeffExpr<SourceExpr> Operands;
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         LinkedHashMap<String,Integer> StringOperands = new LinkedHashMap<String,Integer>();
-        for(Map.Entry<SourceExpr,Integer> Operand : Operands.entrySet())
-            StringOperands.put(Operand.getKey().getSource(JoinAlias, Syntax),Operand.getValue());
+        for(CoeffExpr<SourceExpr> Operand : Operands)
+            StringOperands.put(Operand.Expr.getSource(JoinAlias, Syntax),Operand.Coeff);
 
         return UnionQuery.getExpr(StringOperands,Operator,false, Syntax);
     }
 
     String getDBType() {
-        return Operands.keySet().iterator().next().getDBType();
+        return Operands.iterator().next().Expr.getDBType();
     }
 
     SourceExpr proceedTranslate(Map<SourceExpr, SourceExpr> Translated) {
         boolean ChangedOperands = false;
-        LinkedHashMap<SourceExpr,Integer> TransOperands = new LinkedHashMap();
-        for(Map.Entry<SourceExpr,Integer> Operand : Operands.entrySet()) {
-            SourceExpr TransOperand = Operand.getKey().translate(Translated);
-            TransOperands.put(TransOperand,Operand.getValue());
-            ChangedOperands = ChangedOperands || TransOperand != Operand.getKey();
+        ListCoeffExpr<SourceExpr> TransOperands = new ListCoeffExpr<SourceExpr>();
+        for(CoeffExpr<SourceExpr> Operand : Operands) {
+            SourceExpr TransOperand = Operand.Expr.translate(Translated);
+            TransOperands.put(TransOperand,Operand.Coeff);
+            ChangedOperands = ChangedOperands || TransOperand != Operand.Expr;
         }
 
         if(!ChangedOperands)
@@ -851,13 +929,13 @@ class UnionSourceExpr extends SourceExpr {
 
 
     void fillJoins(List<Join> Joins,Set<Where> Wheres) {
-        for(SourceExpr Operand : Operands.keySet())
-            Operand.fillJoins(Joins,Wheres);
+        for(CoeffExpr<SourceExpr> Operand : Operands)
+            Operand.Expr.fillJoins(Joins,Wheres);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
-        for(SourceExpr Operand : Operands.keySet())
-            Operand.fillObjectExprs(Exprs);
+        for(CoeffExpr<SourceExpr> Operand : Operands)
+            Operand.Expr.fillObjectExprs(Exprs);
     }
 
     public boolean equals(Object o) {
@@ -1740,7 +1818,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 //                ((Query)Join.Source).compile();
             Join.Source.compileJoins(Join, Translated, SourceWheres, TranslatedJoins, false);
 
-//        checkTranslate(Translated,TranslatedJoins);
+        checkTranslate(Translated,TranslatedJoins);
 
         // протолкнем внутрь значения
         for(Join Join : TranslatedJoins)
@@ -1783,7 +1861,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             MergedJoins.add(ToMerge);
         }
 
-//        checkTranslate(Translated,MergedJoins);
+        checkTranslate(Translated,MergedJoins);
 
         // перетранслируем все
         Joins = MergedJoins;
@@ -1854,6 +1932,14 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // накапливаем карты слияний , по умолчанию в этот Map закидываем KeyExpr'ы, затем они накапливаются
         // также надо затем слить Property причем сравнив чтобы не дать одинаковые
 
+        int InnerCount = 0;
+        for(Join Join : Joins)
+            if(Join.Inner) InnerCount++;
+
+        // если один иннер оператор и нету Source'ов
+        if(!(Merge instanceof SelectQuery) && InnerCount==1 && SourceWheres.size()==0)
+            return proceedMerge(Merge.getJoinQuery(),MergeKeys,MergeProps);
+
         if(!(Merge instanceof JoinQuery)) return null;
 
         JoinQuery<?,?> MergeJoin = (JoinQuery<?,?>) Merge;
@@ -1861,9 +1947,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // также надо бы проверить на кол-во Inner Join'ов, а также SourceWherers совпадает
         if(SourceWheres.size()!=MergeJoin.SourceWheres.size()) return null;
 
-        int InnerCount = 0;
-        for(Join Join : Joins)
-            if(Join.Inner) InnerCount++;
         int InnerMergeCount = 0;
         for(Join Join : MergeJoin.Joins)
             if(Join.Inner) InnerMergeCount++;
@@ -1948,10 +2031,65 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         } else
             super.compileJoins(Join, Translated, JoinWheres, TranslatedJoins, Outer);
     }
-    
+
+    // заполняет Select для одного Join'а
+    String fillSingleSelect(Join<?,?> SingleJoin,Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
+        if(!SingleJoin.Inner) return null;
+
+        String From = SingleJoin.fillSingleSelect(WhereSelect,Syntax,KeyValues);
+        if(From==null) return null;
+
+        fillSources(null,KeySelect,PropertySelect,WhereSelect,Syntax);
+
+        // скинем Source'ы
+        for(JoinExpr<?, ?> MapExpr : SingleJoin.Exprs.values())
+            MapExpr.StringSource = null;
+
+        return From;
+    }
+
+    // считывает с заполненными ключами\алиасами значения
+    void fillSources(Map<Join,String> JoinAlias,Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
+        // проверим что все KeyExpr'ы заполнились
+        // формально надо отдельно от Left Join'ов проверять но например в JoinProperty при инкрементных изменениях нужно именно Left Join ключей
+        for(SourceExpr Key : MapKeys.values())
+            if(((KeyExpr<K>)Key).Source==null)
+                throw new RuntimeException("не хватает ключей");
+
+        // ключи заполняем
+        for(Map.Entry<K,SourceExpr> MapKey : MapKeys.entrySet())
+            KeySelect.put(MapKey.getKey(),((KeyExpr<K>)MapKey.getValue()).Source);
+        // погнали Properties заполнять
+        for(Map.Entry<V,SourceExpr> JoinProp : Properties.entrySet()) {
+            String PropertyValue = JoinProp.getValue().getSource(JoinAlias, Syntax);
+            if(PropertyValue.equals("NULL"))
+                PropertyValue = Syntax.getNullValue(JoinProp.getValue().getDBType());
+            PropertySelect.put(JoinProp.getKey(),PropertyValue);
+        }
+
+        // exclude'ы запишем в Where
+        for(Join Join : Joins)
+            if(Join.Exclude)
+                WhereSelect.add(Join.Source.getInSelectString(JoinAlias.get(Join)) + " IS NULL");
+
+        for(SourceWhere Where : SourceWheres)
+            WhereSelect.add(Where.getSource(JoinAlias, Syntax));
+
+        // Source'ы в KeyExpr надо сбросить
+        for(SourceExpr Key : MapKeys.values())
+            ((KeyExpr<K>)Key).Source = null;
+    }
+
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
 
         compile();
+
+        // если у нас ровно один Inner Join, то возьмем за основу его fillSelect
+        if(Joins.size()==1) {
+            String SingleFrom = fillSingleSelect(Joins.iterator().next(), KeySelect, PropertySelect, WhereSelect, Syntax);
+            if(SingleFrom!=null)
+                return SingleFrom;
+        }
 
         // закинем KeyValues
         for(Map.Entry<SourceExpr,String> KeyValue : KeyValues.entrySet())
@@ -1980,36 +2118,47 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(KeyExpr<K> NullKey : InnerNullKeys)
             WhereSelect.add("NOT "+NullKey.Source+" IS NULL");
 
-        // проверим что все KeyExpr'ы заполнились
-        // формально надо отдельно от Left Join'ов проверять но например в JoinProperty при инкрементных изменениях нужно именно Left Join ключей
-        for(SourceExpr Key : MapKeys.values())
-            if(((KeyExpr<K>)Key).Source==null)
-                throw new RuntimeException("не хватает ключей");
-
-        // ключи заполняем
-        for(Map.Entry<K,SourceExpr> MapKey : MapKeys.entrySet())
-            KeySelect.put(MapKey.getKey(),((KeyExpr<K>)MapKey.getValue()).Source);
-        // погнали Properties заполнять
-        for(Map.Entry<V,SourceExpr> JoinProp : Properties.entrySet()) {
-            String PropertyValue = JoinProp.getValue().getSource(JoinAlias, Syntax);
-            if(PropertyValue.equals("NULL"))
-                PropertyValue = Syntax.getNullValue(JoinProp.getValue().getDBType()); 
-            PropertySelect.put(JoinProp.getKey(),PropertyValue);
-        }
-
-        // exclude'ы запишем в Where
-        for(Join Join : Joins)
-            if(Join.Exclude)
-                WhereSelect.add(Join.Source.getKeyString(Join.Source.Keys.iterator().next(),JoinAlias.get(Join)) + " IS NULL");
-
-        for(SourceWhere Where : SourceWheres)
-            WhereSelect.add(Where.getSource(JoinAlias, Syntax));
-
-        // Source'ы в KeyExpr надо сбросить
-        for(SourceExpr Key : MapKeys.values())
-            ((KeyExpr<K>)Key).Source = null;
+        fillSources(JoinAlias, KeySelect, PropertySelect, WhereSelect, Syntax);
 
         return From;
+    }
+
+    public Source<?,Object> reverseMerge(Source<?,?> Merge, Map<?,K> MergeKeys, Map<Object, Object> MergeProps) {
+
+        Map<K,Object> ReverseKeys = new HashMap();
+        for(Map.Entry<?,K> MapKey : MergeKeys.entrySet())
+            ReverseKeys.put(MapKey.getValue(),MapKey.getKey());
+
+        Map<Object,Object> ReverseProps = new HashMap();
+        Source<K, Object> ReverseSource = proceedMerge(Merge, ReverseKeys, ReverseProps);
+        if(ReverseSource==null) return null;
+
+        // создадим JoinQuery для перекодирования ключей
+        JoinQuery<?,Object> MergedSource = new JoinQuery<Object,Object>(Merge.Keys);
+        Join<K,Object> ReverseJoin = new Join<K,Object>(ReverseSource,true);
+        for(Map.Entry<K,Object> MapKey : ReverseKeys.entrySet())
+            ReverseJoin.Joins.put(MapKey.getKey(),MergedSource.MapKeys.get(MapKey.getValue()));
+
+        // закидываем св-ва параметра Merge
+        Map<Object,Object> ProceedProps = new HashMap();
+        for(Map.Entry<Object,Object> MapProperty : ReverseProps.entrySet()) {
+            MergedSource.Properties.put(MapProperty.getKey(),ReverseJoin.Exprs.get(MapProperty.getValue()));
+            ProceedProps.put(MapProperty.getValue(),MapProperty.getKey());
+        }
+
+        // закидываем свои св-ва
+        for(V Property : Properties.keySet()) {
+            Object ReverseProp = ProceedProps.get(Property);
+            if(ReverseProp==null) {
+                ReverseProp = new Object();
+                MergedSource.Properties.put(ReverseProp,ReverseJoin.Exprs.get(Property));
+            }
+            MergeProps.put(Property,ReverseProp);
+        }
+
+        MergedSource.compile();
+
+        return MergedSource;
     }
 }
 
@@ -2134,7 +2283,7 @@ class PropertyUnion<K,V> extends SourceUnion<K> {
 }
 
 class OperationUnion<K> extends SourceUnion<K> {
-    LinkedHashMap<SourceUnion<K>,Integer> Operands = new LinkedHashMap();
+    ListCoeffExpr<SourceUnion<K>> Operands = new ListCoeffExpr<SourceUnion<K>>();
     int Operator;
 
     OperationUnion(int iOperator) {
@@ -2144,8 +2293,8 @@ class OperationUnion<K> extends SourceUnion<K> {
     SourceExpr translateExpr(Map<Source<K, Object>, Join<K, ?>> MapJoins, Map<SourceExpr, SourceExpr> Translated) {
         UnionSourceExpr UnionExpr = new UnionSourceExpr(Operator);
 
-        for(Map.Entry<SourceUnion<K>,Integer> Operand : Operands.entrySet())
-            UnionExpr.Operands.put(Operand.getKey().translateExpr(MapJoins, Translated),Operand.getValue());
+        for(CoeffExpr<SourceUnion<K>> Operand : Operands)
+            UnionExpr.Operands.put(Operand.Expr.translateExpr(MapJoins, Translated),Operand.Coeff);
 
         return UnionExpr;
     }
@@ -2153,8 +2302,8 @@ class OperationUnion<K> extends SourceUnion<K> {
     SourceUnion proceedTranslate(Map<PropertyUnion, SourceUnion> ToTranslate, Map<SourceUnion, SourceUnion> Translated) {
         OperationUnion<K> TranslateUnion = new OperationUnion<K>(Operator);
 
-        for(Map.Entry<SourceUnion<K>,Integer> Operand : Operands.entrySet())
-            TranslateUnion.Operands.put(Operand.getKey().translate(ToTranslate, Translated),Operand.getValue());
+        for(CoeffExpr<SourceUnion<K>> Operand : Operands)
+            TranslateUnion.Operands.put(Operand.Expr.translate(ToTranslate, Translated),Operand.Coeff);
 
         return TranslateUnion;
     }
@@ -2163,20 +2312,20 @@ class OperationUnion<K> extends SourceUnion<K> {
         if(Operator<=2) {
             // обычный оператор
             LinkedHashMap<String,Integer> StringOperands = new LinkedHashMap<String,Integer>();
-            for(Map.Entry<SourceUnion<K>,Integer> Operand : Operands.entrySet())
-                StringOperands.put(Operand.getKey().getString(MapAliases, Syntax),Operand.getValue());
+            for(CoeffExpr<SourceUnion<K>> Operand : Operands)
+                StringOperands.put(Operand.Expr.getString(MapAliases, Syntax),Operand.Coeff);
 
             return UnionQuery.getExpr(StringOperands,Operator,false,Syntax);
         } else {
             // оператор выбора
             String SourceExpr = null;
-            for(Map.Entry<SourceUnion<K>,Integer> Operand : Operands.entrySet()) {
-                Integer Coeff = Operand.getValue();
+            for(CoeffExpr<SourceUnion<K>> Operand : Operands) {
+                Integer Coeff = Operand.Coeff;
                 String PrevExpr = SourceExpr;
-                SourceExpr = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString())) + Operand.getKey().getString(MapAliases, Syntax);
+                SourceExpr = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString())) + Operand.Expr.getString(MapAliases, Syntax);
                 if(PrevExpr!=null) {
                     Collection<Source> Sources = new ArrayList();
-                    Operand.getKey().fillSources(Sources);
+                    Operand.Expr.fillSources(Sources);
                     Collection<String> IsNulls = new ArrayList();
                     for(Source Source : Sources)
                         IsNulls.add(Source.getInSelectString(MapAliases.get(Source)));
@@ -2190,22 +2339,22 @@ class OperationUnion<K> extends SourceUnion<K> {
     }
 
     void fillSources(Collection<Source> Sources) {
-        for(SourceUnion<K> Operand : Operands.keySet())
-            Operand.fillSources(Sources);
+        for(CoeffExpr<SourceUnion<K>> Operand : Operands)
+            Operand.Expr.fillSources(Sources);
     }
 
     boolean findOperator(int ToFind) {
         if(Operator==ToFind) return true;
 
-        for(SourceUnion<K> Operand : Operands.keySet())
-            if(Operand.findOperator(ToFind))
+        for(CoeffExpr<SourceUnion<K>> Operand : Operands)
+            if(Operand.Expr.findOperator(ToFind))
                 return true;
 
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String getDBType() {
-        return Operands.keySet().iterator().next().getDBType();
+        return Operands.iterator().next().Expr.getDBType();
     }
 
     public boolean equals(Object o) {
@@ -2230,7 +2379,7 @@ class OperationUnion<K> extends SourceUnion<K> {
 
 // пока сделаем так что у UnionQuery одинаковые ключи
 class UnionQuery<K,V> extends SelectQuery<K,V> {
-    LinkedHashMap<Source<K,V>,Integer> Unions = new LinkedHashMap();
+    ListCoeffExpr<Source<K,V>> Unions = new ListCoeffExpr<Source<K, V>>();
     // как в List 0 - MAX, 1 - SUM, 2 - NVL, плюс 3 - если есть в Source
     int Operator;
 
@@ -2273,7 +2422,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         for(Map.Entry<String,Integer> Operand : Operands.entrySet()) {
             Integer Coeff = Operand.getValue();
             if(Coeff==null) Coeff = 1;
-            String OperandString = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString()));
+            String OperandString = (Coeff==1?"":(Coeff==-1?"-":Coeff.toString()+"*"));
             if(Operator==1 && Operands.size()>1) {
                 OperandString += Syntax.isNULL(Operand.getKey(),"0", false);
                 SumNull = (SumNull.length()==0?"":SumNull+" AND ") + Operand.getKey() + " IS NULL ";
@@ -2325,6 +2474,10 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
 
         compile();
+
+        // если операнд один сделаем JoinQuery, он его "раскроет"
+        if(Operands.size()==1)
+            return getJoinQuery().fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
         Map<K,LinkedHashMap<String,Integer>> UnionKeys = new HashMap();
 
@@ -2404,8 +2557,8 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         else {
             Set<V> ValueSet = new HashSet();
 
-            for(Source<K,V> Union : Unions.keySet())
-                ValueSet.addAll(Union.getProperties());
+            for(CoeffExpr<Source<K, V>> Union : Unions)
+                ValueSet.addAll(Union.Expr.getProperties());
 
             return ValueSet;
         }
@@ -2416,9 +2569,9 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         if(Compiled)
             return Operations.get(Property).getDBType();
         else
-            for(Source<K,V> Union : Unions.keySet())
-                if(Union.getProperties().contains(Property))
-                    return Union.getDBType(Property);
+            for(CoeffExpr<Source<K, V>> Union : Unions)
+                if(Union.Expr.getProperties().contains(Property))
+                    return Union.Expr.getDBType(Property);
 
         return null;
     }
@@ -2485,21 +2638,12 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         return false;
     }
 
-    Map<PropertyUnion,SourceUnion> getTranslator(UnionQuery<?,?> Result, Map<Source, Source> MapSources) {
-
-        Map<PropertyUnion,SourceUnion> Translated = new HashMap();
-        for(Map.Entry<Source<K,Object>,Map<Object,PropertyUnion<K,Object>>> Operand : Operands.entrySet())
-            for(Map.Entry<Object,PropertyUnion<K,Object>> UnionProp : Operand.getValue().entrySet())
-                Translated.put(UnionProp.getValue(),Result.Operands.get(MapSources.get(Operand.getKey())).get(UnionProp.getKey()));
-
-        return Translated;
-    }
-
     Source<K, Object> proceedMerge(Source<?, ?> Merge, Map<K, ?> MergeKeys, Map<Object, Object> MergeProps) {
 
         if(!(Merge instanceof UnionQuery)) return null;
 
         UnionQuery MergeUnion = (UnionQuery)Merge;
+        if(Operands.size()!=MergeUnion.Operands.size()) return null;
 
         // сливаем все Source
         Set<Source<K,Object>> MergedSources = new HashSet();
@@ -2514,7 +2658,10 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             Map<SourceUnion,Object> BackOperations = new HashMap();
 
             // транслируем старые PropertyUnion на новые
-            Map<PropertyUnion,SourceUnion> ToTranslate = getTranslator(Result,MapSources);
+            Map<PropertyUnion,SourceUnion> ToTranslate = new HashMap();
+            for(Map.Entry<Source<K,Object>,Map<Object,PropertyUnion<K,Object>>> Operand : Operands.entrySet())
+                for(Map.Entry<Object,PropertyUnion<K,Object>> UnionProp : Operand.getValue().entrySet())
+                    ToTranslate.put(UnionProp.getValue(), Result.Operands.get(MapSources.get(Operand.getKey())).get(UnionProp.getKey()));
             Map<SourceUnion,SourceUnion> Translated = new HashMap();
             for(Map.Entry<V,SourceUnion<K>> MapProp : Operations.entrySet()) {
                 SourceUnion TransOperation = MapProp.getValue().translate(ToTranslate,Translated);
@@ -2523,7 +2670,12 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
                 BackOperations.put(TransOperation,MapProp.getKey());
             }
 
-            ToTranslate = MergeUnion.getTranslator(Result,MapMergedSources);
+            ToTranslate = new HashMap();
+            for(Map.Entry<Source<Object,Object>,Map<Object,PropertyUnion<Object,Object>>> Operand : ((UnionQuery<Object,Object>)MergeUnion).Operands.entrySet()) {
+                Map<Object, Object> MapProps = MergedSourceProps.get(Operand.getKey());
+                for(Map.Entry<Object,PropertyUnion<Object,Object>> UnionProp : Operand.getValue().entrySet())
+                    ToTranslate.put(UnionProp.getValue(), Result.Operands.get(MapMergedSources.get(Operand.getKey())).get(MapProps.get(UnionProp.getKey())));
+            }
             Translated = new HashMap();
             for(Map.Entry<Object,SourceUnion<Object>> MapProp : ((UnionQuery<Object,Object>)MergeUnion).Operations.entrySet()) {
                 SourceUnion TransOperation = MapProp.getValue().translate(ToTranslate,Translated);
@@ -2546,17 +2698,17 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         // нужно заполнить Operands, Operations
         // придется вручную перекастить
         Collection<Source<K,Object>> CastList = new ArrayList<Source<K,Object>>();
-        for(Source<K, V> Source : Unions.keySet())
-            CastList.add((Source<K,Object>) Source);
+        for(CoeffExpr<Source<K, V>> Source : Unions)
+            CastList.add((Source<K,Object>) Source.Expr);
 
         setOperands(CastList);
         Operations = new HashMap();
         for(V Property: getProperties()) {
             OperationUnion<K> Operation = new OperationUnion<K>(Operator);
             // нужно в порядке Unions бежать
-            for(Map.Entry<Source<K,V>,Integer> MapUnion : Unions.entrySet()) {
-                if(MapUnion.getKey().getProperties().contains(Property))
-                    Operation.Operands.put(Operands.get(MapUnion.getKey()).get(Property), MapUnion.getValue());
+            for(CoeffExpr<Source<K, V>> MapUnion : Unions) {
+                if(MapUnion.Expr.getProperties().contains(Property))
+                    Operation.Operands.add(new CoeffExpr<SourceUnion<K>>(Operands.get(MapUnion.Expr).get(Property), MapUnion.Coeff));
             }
             Operations.put(Property,Operation);
         }
@@ -2686,7 +2838,7 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
         // если Merge'ся From'ы
         if(!(Merge instanceof GroupQuery)) return null;
 
-        if(1==1) return null;
+//        if(1==1) return null;
 
         GroupQuery<?,?,?> MergeGroup = (GroupQuery<?,?,?>)Merge;
         if(Keys.size()!=MergeGroup.Keys.size()) return null;
@@ -2701,16 +2853,19 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
             if(MergedFrom!=null) {
                 // проверим что ключи совпали
                 boolean KeyMatch = true;
-                for(Object Key : MergeGroup.Keys)
-                    KeyMatch = KeyMatch && Keys.contains(FromMergeProps.get(Key));
+                for(K Key : Keys)
+                    KeyMatch = KeyMatch && Key.equals(FromMergeProps.get(MergeKeys.get(Key)));
 
                 if(KeyMatch) {
                     Map<Object,Integer> MergedProperties = new HashMap(Properties);
-                    for(Map.Entry<?,Integer> MergeProp : MergeGroup.Properties.entrySet())
-                        MergedProperties.put(FromMergeProps.get(MergeProp.getKey()),MergeProp.getValue());
+                    for(Map.Entry<?,Integer> MergeProp : MergeGroup.Properties.entrySet()) {
+                        Object MapProp = FromMergeProps.get(MergeProp.getKey());
+                        MergedProperties.put(MapProp,MergeProp.getValue());
+                        MergeProps.put(MergeProp.getKey(),MapProp);
+                    }
 
                     GroupQuery<Object, K, Object> Result = new GroupQuery<Object, K, Object>(Keys, MergedFrom, MergedProperties);
-                    Result.Compiled = true;
+                    Result.compile();
                     return Result;
                 }
             }
