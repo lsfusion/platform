@@ -55,7 +55,7 @@ public class Main {
 
         JoinQuery<KeyField,Object> JoinGroupQuery = new JoinQuery<KeyField,Object>(Table1.Keys);
         Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery,true);
-        JoinGroupQuery.Properties.put(Table1Prop1,TableJoin.Exprs.get(Table1Prop1));
+        JoinGroupQuery.Properties.put(Table1Prop1,TableJoin.Wheres.get(Table1Prop1));
         JoinGroupQuery.Properties.put(Table1Key1,JoinGroupQuery.MapKeys.get(Table1Key2));
         GroupQuery<Object,KeyField,PropertyField> GroupQuery = new GroupQuery<Object,KeyField,PropertyField>(UnionKeys,JoinGroupQuery,Table1Prop1,1);
         UnionQ.Unions.put(GroupQuery,2);
@@ -66,31 +66,31 @@ public class Main {
 
         JoinQuery<KeyField,Object> JoinGroupQuery2 = new JoinQuery<KeyField,Object>(Table1.Keys);
         Join<KeyField,PropertyField> TableJoin2 = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery2,true);
-        JoinGroupQuery2.Properties.put(Table1Prop2,TableJoin2.Exprs.get(Table1Prop2));
+        JoinGroupQuery2.Properties.put(Table1Prop2,TableJoin2.Wheres.get(Table1Prop2));
         JoinGroupQuery2.Properties.put(Table1Key1,JoinGroupQuery2.MapKeys.get(Table1Key1));
         List<KeyField> GroupKeys2 = new ArrayList();
         GroupKeys2.add(Table1Key1);
         GroupQuery<Object,KeyField,PropertyField> GroupQuery2 = new GroupQuery<Object,KeyField,PropertyField>(GroupKeys2,JoinGroupQuery2,Table1Prop2,1);
 
         Join<KeyField,PropertyField> GroupJoin = new UniJoin<KeyField,PropertyField>(GroupQuery2,JoinUnion,true);
-        JoinUnion.Properties.put(Table1Prop1,GroupJoin.Exprs.get(Table1Prop2));
+        JoinUnion.Properties.put(Table1Prop1,GroupJoin.Wheres.get(Table1Prop2));
 
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2,false);
         Table2Join.Joins.put(Table2Key1,JoinUnion.MapKeys.get(Table1Key1));
-        JoinUnion.Properties.put(Table2Prop2,Table2Join.Exprs.get(Table2Prop2));
+        JoinUnion.Properties.put(Table2Prop2,Table2Join.Wheres.get(Table2Prop2));
 */
 /*
 //        Join<KeyField,PropertyField> Table2Join = new UniJoin<KeyField,PropertyField>(Table1,Query,true);
-//        Query.Properties.put(Table1Prop2,Table2Join.Exprs.get(Table1Prop2));
+//        Query.Properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table1,false);
         Table2Join.Joins.put(Table1Key1,Query.MapKeys.get(Table1Key2));
         Table2Join.Joins.put(Table1Key2,Query.MapKeys.get(Table1Key1));
-        Query.Properties.put(Table1Prop2,Table2Join.Exprs.get(Table1Prop2));
+        Query.Properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
 
 //        Join<KeyField,PropertyField> Table3Join = new Join<KeyField,PropertyField>(Table1,true);
 //        Table3Join.Joins.put(Table1Key1,Query.MapKeys.get(Table1Key2));
 //        Table3Join.Joins.put(Table1Key2,Query.MapKeys.get(Table1Key1));
-//        Query.Properties.put(Table1Prop3,Table3Join.Exprs.get(Table1Prop3));
+//        Query.Properties.put(Table1Prop3,Table3Join.Wheres.get(Table1Prop3));
 
         Collection<String> SubKeys = new ArrayList();
         SubKeys.add("zkey1");
@@ -100,32 +100,32 @@ public class Main {
         JoinQuery<String,String> SubQuery = SubUnion.newJoinQuery(1);
         Join<KeyField,PropertyField> Table2Join1 = new Join<KeyField,PropertyField>(Table2,true);
         Table2Join1.Joins.put(Table2Key1,SubQuery.MapKeys.get("zkey1"));
-        SubQuery.Properties.put("zprop1",Table2Join1.Exprs.get(Table2Prop2));
+        SubQuery.Properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
 
         Join<KeyField,PropertyField> Table2Join2 = new Join<KeyField,PropertyField>(Table1,true);
         Table2Join2.Joins.put(Table1Key1,SubQuery.MapKeys.get("zkey1"));
         Table2Join2.Joins.put(Table1Key2,SubQuery.MapKeys.get("zkey2"));
-        SubQuery.Properties.put("zprop2",Table2Join2.Exprs.get(Table1Prop3));
-//        SubQuery.Wheres.add(new FieldExprCompareWhere(Table2Join1.Exprs.get(Table2Prop1),11,0));
+        SubQuery.Properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop3));
+//        SubQuery.Wheres.add(new FieldExprCompareWhere(Table2Join1.Wheres.get(Table2Prop1),11,0));
 //        SubQuery.Wheres.add(new FieldExprCompareWhere(SubQuery.MapKeys.get("zkey1"),11,0));
 
         SubQuery = SubUnion.newJoinQuery(1);
         Table2Join1 = new Join<KeyField,PropertyField>(Table2,true);
         Table2Join1.Joins.put(Table2Key1,SubQuery.MapKeys.get("zkey1"));
-        SubQuery.Properties.put("zprop1",Table2Join1.Exprs.get(Table2Prop2));
+        SubQuery.Properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
 
         Table2Join2 = new Join<KeyField,PropertyField>(Table1,true);
         Table2Join2.Joins.put(Table1Key1,SubQuery.MapKeys.get("zkey1"));
         Table2Join2.Joins.put(Table1Key2,SubQuery.MapKeys.get("zkey2"));
-        SubQuery.Properties.put("zprop2",Table2Join2.Exprs.get(Table1Prop2));
+        SubQuery.Properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop2));
 //        SubQuery.Wheres.add(new FieldExprCompareWhere(SubQuery.MapKeys.get("zkey1"),11,0));
 
         Join<String,String> SubJoin = new Join<String, String>(SubUnion,false);
-//        SubJoin.Joins.put("zkey1",TableJoin.Exprs.get(Table1Prop4));
-//        SubJoin.Joins.put("zkey2",TableJoin.Exprs.get(Table1Prop3));
+//        SubJoin.Joins.put("zkey1",TableJoin.Wheres.get(Table1Prop4));
+//        SubJoin.Joins.put("zkey2",TableJoin.Wheres.get(Table1Prop3));
         SubJoin.Joins.put("zkey1",Query.MapKeys.get(Table1Key1));
         SubJoin.Joins.put("zkey2",Query.MapKeys.get(Table1Key2));
-        Query.Properties.put(Table1Prop4,SubJoin.Exprs.get("zprop2"));*/
+        Query.Properties.put(Table1Prop4,SubJoin.Wheres.get("zprop2"));*/
 
 //        System.out.println((new ModifyQuery(Table1,UnionQ)).getInsertSelect(Syntax));
 //        System.out.println(Query.getSelect(new ArrayList(),new ArrayList(),Adapter));
@@ -138,8 +138,10 @@ public class Main {
             new TestBusinessLogics(1);
             System.out.println("Closed");
             new TestBusinessLogics(0);
+            System.out.println("Suspicious");
+            new TestBusinessLogics(-1);
         }
-  */       
+  */
 /*        UnionQuery<KeyField,PropertyField> Union = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
 
         JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);
@@ -525,7 +527,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP Dirihle = AddSFProp("prm1<prm2",true,2);
+        LSFP Dirihle = AddWSFProp("prm1<prm2",2);
         LMFP Multiply = AddMFProp(2);
 
         LJP StoreName = AddJProp(Name,1,DocStore,1);
@@ -578,7 +580,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         SumMaxArt = AddGProp(MaxOpStore,true,2);
         SumMaxArt.Property.caption = "макс. операция (сумма)";
 
-        LSFP Between = AddSFProp("prm1>=prm2 AND prm1<=prm3",true,3);
+        LSFP Between = AddWSFProp("prm1>=prm2 AND prm1<=prm3",3);
         LJP DokBetweenDate = AddJProp(Between,3,DocDate,1,2,3);
         DokBetweenDate.Property.caption = "документ в интервале";
 

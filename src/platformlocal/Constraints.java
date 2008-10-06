@@ -32,8 +32,8 @@ abstract class ValueConstraint extends Constraint {
 
         SourceExpr ValueExpr = Property.getChangedSourceExpr(Changed.MapKeys,Session,0);
         // закинем условие на то что мы ищем
-        Changed.Wheres.add(new FieldExprCompareWhere(ValueExpr,(Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
-        Changed.Properties.put("value",ValueExpr);
+        Changed.add(new FieldExprCompareWhere(ValueExpr,(Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
+        Changed.add("value",ValueExpr);
 
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
@@ -88,9 +88,9 @@ class UniqueConstraint extends Constraint {
         SourceExpr PrevExpr = Property.getUpdatedSourceExpr(MapPrev,Session,true);
 
         // равны значения
-        Changed.Wheres.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,0));
+        Changed.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,0));
         // значения не NULL
-        Changed.Wheres.add(new SourceIsNullWhere(ChangedExpr,true));
+        Changed.add(new SourceIsNullWhere(ChangedExpr,true));
 
         // не равны ключи
         SourceWhere OrDiffKeys = null;
@@ -105,8 +105,8 @@ class UniqueConstraint extends Constraint {
             else
                 OrDiffKeys = new FieldOPWhere(KeyDiff,OrDiffKeys,false);
         }
-        Changed.Wheres.add(OrDiffKeys);
-        Changed.Properties.put("value",ChangedExpr);
+        Changed.add(OrDiffKeys);
+        Changed.add("value",ChangedExpr);
 
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {

@@ -174,7 +174,7 @@ class ObjectTable extends Table {
         JoinQuery<Object,String> Query = new JoinQuery<Object,String>();
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
         JoinTable.Joins.put(Key,new ValueSourceExpr(idObject));
-        Query.Properties.put("classid",JoinTable.Exprs.get(Class));
+        Query.add("classid",JoinTable.Exprs.get(Class));
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
         if(Result.size()>0)
             return (Integer)Result.values().iterator().next().get("classid");
@@ -188,7 +188,7 @@ class ObjectTable extends Table {
         ChangeClass.FillSetID(SetID);
 
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(Keys);
-        ClassQuery.Wheres.add(new FieldSetValueWhere((new UniJoin<KeyField,PropertyField>(this,ClassQuery,true)).Exprs.get(Class),SetID));
+        ClassQuery.add(new FieldSetValueWhere((new UniJoin<KeyField,PropertyField>(this,ClassQuery,true)).Exprs.get(Class),SetID));
 
         return ClassQuery;
     }
@@ -215,9 +215,9 @@ class IDTable extends Table {
         JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
         JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
-        Query.Properties.put(Value,JoinTable.Exprs.get(Value));
+        Query.add(Value,JoinTable.Exprs.get(Value));
 
-        Query.Wheres.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,0));
+        Query.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,0));
 
         Integer FreeID = (Integer)Query.executeSelect(Adapter).values().iterator().next().get(Value);
 
@@ -358,7 +358,7 @@ class ChangeClassTable extends ChangeTable {
         ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
         ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID));
 
-        ClassQuery.Wheres.add(new JoinWhere(ClassJoin));
+        ClassQuery.add(ClassJoin.InJoin);
 
         return ClassQuery;
     }
@@ -382,7 +382,7 @@ class RemoveClassTable extends ChangeClassTable {
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass),false);
         ClassJoin.Joins.put(Object,Join);
 
-        Query.Wheres.add(new ExcludeJoinWhere(ClassJoin));
+        Query.add(new NotWhere(ClassJoin.InJoin));
     }
 
 }
@@ -544,6 +544,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         InitNavigators();
     }
 
+    static int LastSuspicious = 0;
+
     // тестирующий конструктор
     BusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         initBase();
@@ -554,11 +556,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 InitImplements();
         }
 
-        Random RandomSeed = new Random();
-        long Seed = RandomSeed.nextInt(10000);
-//        Seed = 7651;// 6445; //1359 //7651
-//        Seed = 1359;// 6445; //1359 //7651
-//        Seed = 3949;
+        Integer Seed;
+        List<Integer> ProceedSeeds = new ArrayList();
+        int[] Suspicious = {3949,387,7651,6445,1359,8760};
+        if(TestType>=0 || LastSuspicious>=Suspicious.length)
+            Seed = (new Random()).nextInt(10000);
+        else
+            Seed = Suspicious[LastSuspicious++];        
+
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -972,10 +977,17 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return ListProperty;
     }
 
-    LSFP AddSFProp(String Formula,boolean Filter,Integer Params) {
+    LSFP AddSFProp(String Formula,Integer Params) {
 
-        StringFormulaProperty Property = null;
-        Property = new StringFormulaProperty(Formula,Filter);
+        StringFormulaProperty Property = new StringFormulaProperty(Formula);
+        LSFP ListProperty = new LSFP(Property, integralClass,Params);
+        Properties.add(Property);
+        return ListProperty;
+    }
+
+    LSFP AddWSFProp(String Formula,Integer Params) {
+
+        WhereStringFormulaProperty Property = new WhereStringFormulaProperty(Formula);
         LSFP ListProperty = new LSFP(Property, integralClass,Params);
         Properties.add(Property);
         return ListProperty;
@@ -1144,7 +1156,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<Property> RandProps = new ArrayList();
         List<ObjectProperty> RandObjProps = new ArrayList();
         
-        StringFormulaProperty Dirihle = new StringFormulaProperty("prm1<prm2",true);
+        StringFormulaProperty Dirihle = new WhereStringFormulaProperty("prm1<prm2");
         Dirihle.Interfaces.add(new StringFormulaPropertyInterface(integralClass,"prm1"));
         Dirihle.Interfaces.add(new StringFormulaPropertyInterface(integralClass,"prm2"));
         RandProps.add(Dirihle);
@@ -1365,9 +1377,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(int i=0;i<PersistentNum;i++)
             Persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
 
-        for(AggregateProperty Property : AggrProperties)
+//        for(AggregateProperty Property : AggrProperties)
 //            if(Property.caption.equals("R 1"))
-            Persistents.add(Property);        
+//            Persistents.add(Property);        
      }
 
     static int ChangeDBIteration = 0;
