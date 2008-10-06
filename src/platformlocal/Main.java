@@ -55,30 +55,32 @@ public class Main {
 
         JoinQuery<KeyField,Object> JoinGroupQuery = new JoinQuery<KeyField,Object>(Table1.Keys);
         Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery,true);
-        JoinGroupQuery.Properties.put(Table1Prop1,TableJoin.Wheres.get(Table1Prop1));
-        JoinGroupQuery.Properties.put(Table1Key1,JoinGroupQuery.MapKeys.get(Table1Key2));
+        JoinGroupQuery.add(Table1Prop1,TableJoin.Exprs.get(Table1Prop1));
+        JoinGroupQuery.add(Table1Key1,JoinGroupQuery.MapKeys.get(Table1Key1));
         GroupQuery<Object,KeyField,PropertyField> GroupQuery = new GroupQuery<Object,KeyField,PropertyField>(UnionKeys,JoinGroupQuery,Table1Prop1,1);
-        UnionQ.Unions.put(GroupQuery,2);
+        UnionQ.add(GroupQuery,2);
 
         // 2-й запрс
 
-        JoinQuery<KeyField, PropertyField> JoinUnion = UnionQ.newJoinQuery(-5);
+        JoinQuery<KeyField, PropertyField> JoinUnion = new JoinQuery<KeyField, PropertyField>(UnionKeys);
 
         JoinQuery<KeyField,Object> JoinGroupQuery2 = new JoinQuery<KeyField,Object>(Table1.Keys);
         Join<KeyField,PropertyField> TableJoin2 = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery2,true);
-        JoinGroupQuery2.Properties.put(Table1Prop2,TableJoin2.Wheres.get(Table1Prop2));
-        JoinGroupQuery2.Properties.put(Table1Key1,JoinGroupQuery2.MapKeys.get(Table1Key1));
+        JoinGroupQuery2.add(Table1Prop2,TableJoin2.Exprs.get(Table1Prop2));
+        JoinGroupQuery2.add(Table1Key1,JoinGroupQuery2.MapKeys.get(Table1Key1));
         List<KeyField> GroupKeys2 = new ArrayList();
         GroupKeys2.add(Table1Key1);
         GroupQuery<Object,KeyField,PropertyField> GroupQuery2 = new GroupQuery<Object,KeyField,PropertyField>(GroupKeys2,JoinGroupQuery2,Table1Prop2,1);
 
         Join<KeyField,PropertyField> GroupJoin = new UniJoin<KeyField,PropertyField>(GroupQuery2,JoinUnion,true);
-        JoinUnion.Properties.put(Table1Prop1,GroupJoin.Wheres.get(Table1Prop2));
+        JoinUnion.add(Table1Prop1,GroupJoin.Exprs.get(Table1Prop2));
 
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2,false);
         Table2Join.Joins.put(Table2Key1,JoinUnion.MapKeys.get(Table1Key1));
-        JoinUnion.Properties.put(Table2Prop2,Table2Join.Wheres.get(Table2Prop2));
-*/
+        JoinUnion.add(Table2Prop2,Table2Join.Exprs.get(Table2Prop2));
+
+        UnionQ.add(JoinUnion,-5);
+  */
 /*
 //        Join<KeyField,PropertyField> Table2Join = new UniJoin<KeyField,PropertyField>(Table1,Query,true);
 //        Query.Properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));

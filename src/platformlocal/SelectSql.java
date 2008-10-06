@@ -257,9 +257,7 @@ abstract class Source<K,V> {
                 Query.add(Property.getKey(),Property.getValue());
         }
         Query.add((new Join<V,Object>(new DumbSource<V,Object>((Map<V,Integer>) MergeValues, new HashMap()),DumbMap, true)).InJoin);
-        Query.compile();
-
-        return Query;
+        return Query.compile();
     }
 
     // возвращает источник с "проставленными" ключами со значениями 
@@ -272,18 +270,19 @@ abstract class Source<K,V> {
         for(Map.Entry<K,Integer> MapKey : MergeKeys.entrySet())
             SourceJoin.Joins.put(MapKey.getKey(),new ValueSourceExpr(MapKey.getValue()));
         Query.addAll(SourceJoin.Exprs);
-        Query.compile();
-
-        return Query;
+        return Query.compile();
     }
 
     // оборачивает Source в JoinQuery 
-    JoinQuery<K, V> getJoinQuery() {
+    Source<K, V> getJoinQuery() {
         JoinQuery<K,V> Query = new JoinQuery<K,V>(Keys);
         Join<K,V> SourceJoin = new UniJoin<K,V>(this,Query,true);
         Query.addAll(SourceJoin.Exprs);
-        Query.compile();
-        return Query;
+        return Query.compile();
+    }
+
+    Source<K, V> compile() {
+        return this;
     }
 }
 
@@ -473,23 +472,17 @@ abstract class Query<K,V> extends Source<K,V> {
     }
 
     // скомпилирован ли запрос
-    boolean Compiled = false;
+    Source<K,V> Compiled = null;
 
-    void compile() {
-        if(!Compiled) {
-            proceedCompile();
-            Compiled = true;
-        }
+    Source<K, V> compile() {
+        if(Compiled==null)
+            Compiled = proceedCompile();
+
+        return Compiled;
     }
 
     // компилирует - запрос - приводит к выполняемой структуре, оптимизирует
-    abstract void proceedCompile();
-
-    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<SourceWhere> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
-        compile();
-
-        super.compileJoins(Join, Translated, JoinWheres, TranslatedJoins, Outer);    //To change body of overridden methods use File | Settings | File Templates.
-    }
+    abstract Source<K, V> proceedCompile();
 }
 
 class Join<J,U> {
@@ -528,12 +521,12 @@ class Join<J,U> {
         InJoin = new JoinWhere(this);
     }
 
-    void fillJoins(List<Join> Joins, Set<SourceWhere> Wheres) {
-        if(!Joins.contains(this)) {
-            for(SourceExpr Join : this.Joins.values())
-                Join.fillJoins(Joins,Wheres);
+    void fillJoins(List<Join> FillJoins, Set<SourceWhere> Wheres) {
+        if(!FillJoins.contains(this)) {
+            for(SourceExpr Join : Joins.values())
+                Join.fillJoins(FillJoins,Wheres);
 
-            Joins.add(this);
+            FillJoins.add(this);
         }
     }
 
@@ -2027,16 +2020,16 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     }
 
 
-    void proceedCompile() {
+    Source<K, V> proceedCompile() {
 
         // из всех Properties,Wheres вытягивают Joins, InnerJoins, SourceWhere        
         ExprTranslator Translated = new ExprTranslator();
         List<Join> TranslatedJoins = new ArrayList();
 
-        for(Join Join : Joins)
-//            if(Join.Source instanceof Query)
-//                ((Query)Join.Source).compile();
+        for(Join Join : Joins) {
+            Join.Source = Join.Source.compile();
             Join.Source.compileJoins(Join, Translated, Wheres, TranslatedJoins, false);
+        }
 
 //        checkTranslate(Translated,TranslatedJoins);
 
@@ -2099,6 +2092,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             if(Key!=ValueKey)
                 KeyValues.put(Key,((ValueSourceExpr)ValueKey).getStringValue());
         }
+
+        return this;
     }
 
     private boolean recMerge(ListIterator<Join> RecJoin, Collection<Join> ToMergeJoins, ExprTranslator Translated, ExprTranslator MergeTranslated, Set<Join> ProceededJoins, Set<Join> MergedJoins, List<Join> TranslatedJoins) {
@@ -2164,7 +2159,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         if(InnerCount!=InnerMergeCount) return null;
 
         JoinQuery<K,Object> Result = new JoinQuery<K,Object>(Keys);
-        Result.Compiled = true;
+        Result.Compiled = Result;
 
         // попытаемся все ключи помапить друг на друга
         Set<Join> ProceededJoins = new HashSet();
@@ -2220,8 +2215,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
     // перетранслирует
     void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<SourceWhere> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
-
-        compile();
 
         // если есть JoinQuery (пока если Left без Wheres) то доливаем все Join'ы с сооты. Map'ами, JoinExpr заменяем на SourceExpr'ы с перебитыми KeyExpr'ами и соотв. JoinRxpr'ами
         Outer = Outer || !Join.Inner;
@@ -2294,7 +2287,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
 
-        compile();
+        if(compile()!=this) return compile().fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
         // если у нас ровно один Inner Join, то возьмем за основу его fillSelect
         if(Joins.size()==1) {
@@ -2354,7 +2347,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // закидываем св-ва параметра Merge
         Map<Object,Object> ProceedProps = new HashMap();
         for(Map.Entry<Object,Object> MapProperty : ReverseProps.entrySet()) {
-            MergedSource.Properties.put(MapProperty.getKey(),ReverseJoin.Exprs.get(MapProperty.getValue()));
+            MergedSource.add(MapProperty.getKey(),ReverseJoin.Exprs.get(MapProperty.getValue()));
             ProceedProps.put(MapProperty.getValue(),MapProperty.getKey());
         }
 
@@ -2363,14 +2356,12 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             Object ReverseProp = ProceedProps.get(Property);
             if(ReverseProp==null) {
                 ReverseProp = new Object();
-                MergedSource.Properties.put(ReverseProp,ReverseJoin.Exprs.get(Property));
+                MergedSource.add(ReverseProp,ReverseJoin.Exprs.get(Property));
             }
             MergeProps.put(Property,ReverseProp);
         }
 
-        MergedSource.compile();
-
-        return MergedSource;
+        return MergedSource.compile();
     }
 }
 
@@ -2677,7 +2668,6 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
     UnionQuery(Collection<? extends K> iKeys,Collection<Union<K,Object>> iOperands) {
         super(iKeys);
         Operands = iOperands;
-        Compiled = true;
     }
 
     // Safe - кдючи чисто никаких чисел типа 1 с которыми проблемы
@@ -2739,14 +2729,13 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
 
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
 
-        compile();
+        if(compile()!=this) return compile().fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
         // если операнд один сделаем JoinQuery, он его "раскроет"
         if(Operands.size()==1)
             return getJoinQuery().fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
         Map<K,ListCoeffExpr<String>> UnionKeys = new HashMap();
-
         Map<Union<K,Object>,String> MapAliases = new HashMap();
 
         // сначала сделаем Collection Full Join'а чтобы таблицы были первыми
@@ -2832,8 +2821,6 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
 
     void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<SourceWhere> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
 
-        compile();
-
         // если есть UnionQuery не в Inner Join'ах или же у UnionQuery один операнд то из операндов делаем Join'ы, JoinExpr'ы заменяем на UnionSourceExpr'ы из UnionQuery с проставленными JoinExpr'ами
         Outer = Outer || !Join.Inner;
         if((Outer || Operands.size()==1)) {
@@ -2899,7 +2886,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         if(Operands.size()!=MergeUnion.Operands.size()) return null;
 
         UnionQuery<K,Object> Result = new UnionQuery<K,Object>(Keys,0);
-        Result.Compiled = true;
+        Result.Compiled = Result;
 
         // сливаем все Source
         Map<PropertyUnion,ExprUnion> ToTranslate = new HashMap();
@@ -2937,12 +2924,10 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    void proceedCompile() {
-        // компилируем все Query
+    Source<K, V> proceedCompile() {
+        // компилируем все операнды
         for(Union<K, Object> Operand : Operands)
-            // все SelectQuery компилируем
-            if(Operand.Source instanceof Query)
-                ((Query)Operand.Source).compile();
+            Operand.Source = Operand.Source.compile();
 
 //        if(1==1) return;
 
@@ -3000,6 +2985,8 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             Operation.setValue(Operation.getValue().translate(ToTranslate,Translated));
 
 //        checkTranslate(new HashMap(),Operands);
+
+        return this;
     }
 
     void checkTranslate(Map<PropertyUnion, ExprUnion> ToTranslate,Collection<Union<K,Object>> TranslatedUnions) {
@@ -3025,6 +3012,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         }
 
         UnionQuery<K,V> MergedQuery = new UnionQuery<K,V>(CompileKeys,MergedOperands);
+        MergedQuery.Compiled = MergedQuery;
 
         Map<ExprUnion, ExprUnion> Translated = new HashMap();
         for(Map.Entry<V, ExprUnion<K>> MapOperation : Operations.entrySet())
@@ -3096,8 +3084,7 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
                     }
 
                     GroupQuery<Object, K, Object> Result = new GroupQuery<Object, K, Object>(Keys, MergedFrom, MergedProperties);
-                    Result.compile();
-                    return Result;
+                    return Result.compile();
                 }
             }
         }
@@ -3127,13 +3114,12 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
 
     Source<K, V> mergeKeyValue(Map<K, Integer> MergeKeys, Collection<K> CompileKeys) {
         GroupQuery<B, K, V> Result = new GroupQuery<B, K, V>(CompileKeys, From.mergePropertyValue(MergeKeys), Properties);
-        Result.compile();
-        return Result;
+        return Result.compile();
     }
 
-    void proceedCompile() {
-        if(From instanceof Query)
-            ((Query)From).compile();
+    Source<K, V> proceedCompile() {
+        From = From.compile();
+        return this;
     }
 }
 
