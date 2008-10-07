@@ -357,8 +357,7 @@ class ChangeClassTable extends ChangeTable {
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this,true);
         ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
         ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID));
-
-        ClassQuery.add(ClassJoin.InJoin);
+        ClassQuery.add(ClassJoin);
 
         return ClassQuery;
     }
@@ -381,7 +380,6 @@ class RemoveClassTable extends ChangeClassTable {
     void excludeJoin(JoinQuery<?,?> Query, DataSession Session,Class ChangeClass,SourceExpr Join) {
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass),false);
         ClassJoin.Joins.put(Object,Join);
-
         Query.add(new NotWhere(ClassJoin.InJoin));
     }
 
@@ -911,6 +909,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         DumbTable.Keys.add(new KeyField("dumb","integer"));
         Session.CreateTable(DumbTable);
         Session.Execute("INSERT INTO dumb (dumb) VALUES (1)");
+
+        Table EmptyTable = new Table("empty");
+        EmptyTable.Keys.add(new KeyField("dumb","integer"));
+        Session.CreateTable(EmptyTable);
     }
     
     boolean CheckPersistent(DataSession Session) throws SQLException {

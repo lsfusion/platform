@@ -243,6 +243,12 @@ abstract class Source<K,V> {
         TranslatedJoins.add(Join.translate(Translated, Translated, Outer));
     }
 
+    // записывается в Union'ы
+    void compileUnions(Union<K, V> Union, Map<PropertyUnion,ExprUnion> ToTranslate, Collection<Union<K, Object>> TranslatedUnions) {
+
+        TranslatedUnions.add((Union<K, Object>) Union);
+    }
+
     // возвращает источник без заданных выражений, но только с объектами им равными (короче устанавливает фильтр)
     Source<K,V> mergePropertyValue(Map<? extends V, Integer> MergeValues) {
         
@@ -256,7 +262,7 @@ abstract class Source<K,V> {
             else
                 Query.add(Property.getKey(),Property.getValue());
         }
-        Query.add((new Join<V,Object>(new DumbSource<V,Object>((Map<V,Integer>) MergeValues, new HashMap()),DumbMap, true)).InJoin);
+        Query.add(new Join<V,Object>(new DumbSource<V,Object>((Map<V,Integer>) MergeValues, new HashMap()),DumbMap, true));
         return Query.compile();
     }
 
@@ -279,6 +285,14 @@ abstract class Source<K,V> {
         Join<K,V> SourceJoin = new UniJoin<K,V>(this,Query,true);
         Query.addAll(SourceJoin.Exprs);
         return Query.compile();
+    }
+
+    Source<K,V> getEmptySource() {
+
+        Map<V,String> NullProps = new HashMap();
+        for(V Property : getProperties())
+            NullProps.put(Property,getDBType(Property));
+        return new EmptySource<K,V>(Keys,NullProps);
     }
 
     Source<K, V> compile() {
@@ -366,32 +380,51 @@ class DumbSource<K,V> extends Source<K,V> {
     }
 }
 
-class EmptySource<K> extends Source<K,Object> {
+class EmptySource<K,V> extends Source<K,V> {
 
-    Object NullValue = new Object();
-    String DBType;
+    Map<V,String> NullProps;
 
-    EmptySource(Collection<? extends K> iKeys,String iDBType) {
+    EmptySource(Collection<? extends K> iKeys,Map<V,String> iNullProps) {
         super(iKeys);
-        DBType = iDBType;
+        NullProps = iNullProps;
+    }
+
+    public EmptySource(Collection<? extends K> iKeys,V Property,String DBType) {
+        super(iKeys);
+        NullProps = new HashMap();
+        NullProps.put(Property,DBType);
     }
 
     String getSource(SQLSyntax Syntax) {
         return "empty";
     }
 
-    Collection<Object> getProperties() {
-        List<Object> Result = new ArrayList();
-        Result.add(NullValue);
-        return Result;
+    Collection<V> getProperties() {
+        return NullProps.keySet();
     }
 
-    String getDBType(Object Property) {
-        return DBType;  //To change body of implemented methods use File | Settings | File Templates.
+    String getDBType(V Property) {
+        return NullProps.get(Property);
     }
 
     String getKeyString(K Key, String Alias) {
-        return "NULL";
+        return NullSourceExpr.STRING;
+    }
+
+    String getPropertyString(V Value, String Alias) {
+        return NullSourceExpr.STRING;
+    }
+
+    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<SourceWhere> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
+
+        for(SourceExpr JoinExpr : Join.Exprs.values())
+            Translated.put(JoinExpr,new NullSourceExpr(JoinExpr.getDBType()));
+        Translated.put(Join.InJoin,new FalseWhere());
+    }
+
+    void compileUnions(Union<K, V> Union, Map<PropertyUnion, ExprUnion> ToTranslate, Collection<Union<K, Object>> TranslatedUnions) {
+        for(PropertyUnion<K, V> Expr : Union.Exprs.values())
+            ToTranslate.put(Expr,new EmptyUnion<K>(Expr.getDBType()));
     }
 }
 // таблицы\Views
@@ -501,9 +534,7 @@ class Join<J,U> {
     Join(Source<J,U> iSource,boolean iInner) {
         Source = iSource;
         Inner = iInner;
-
         InJoin = new JoinWhere(this);
-
         for(U Property : Source.getProperties())
             Exprs.put(Property,new JoinExpr<J,U>(this,Property));
 
@@ -512,13 +543,12 @@ class Join<J,U> {
 
     Join(Source<J,U> iSource,Map<J,SourceExpr> iJoins,boolean iInner) {
         Source = iSource;
+        Inner = iInner;
+        InJoin = new JoinWhere(this);
         for(U Property : Source.getProperties())
             Exprs.put(Property,new JoinExpr<J,U>(this,Property));
 
         Joins = iJoins;
-        Inner = iInner;
-
-        InJoin = new JoinWhere(this);
     }
 
     void fillJoins(List<Join> FillJoins, Set<SourceWhere> Wheres) {
@@ -552,7 +582,7 @@ class Join<J,U> {
             }
         }
 
-        return SourceString + (WhereSelect==null?" ON "+(JoinString.length()==0?"1=1":JoinString):"");
+        return SourceString + (WhereSelect==null?" ON "+(JoinString.length()==0?StaticWhere.TRUE:JoinString):"");
     }
 
     Join<J,U> translate(ExprTranslator Translated, ExprTranslator JoinTranslated,boolean ForceOuter) {
@@ -663,6 +693,16 @@ class Join<J,U> {
                 Source = Source.mergeKeyValue(MergeKeys,Joins.keySet());
             }
         }
+    }
+
+    boolean isEmpty(ExprTranslator Translated) {
+        if(Source instanceof EmptySource) return true;
+
+        for(SourceExpr Join : Joins.values())
+            if(Join.translate(Translated) instanceof NullSourceExpr)
+                return true;
+
+        return false;
     }
 }
 
@@ -851,19 +891,21 @@ class ValueSourceExpr extends SourceExpr {
     }
 
     static SourceExpr getExpr(Object Value,String DBType) {
-        return (Value==null?new StaticNullSourceExpr(DBType):new ValueSourceExpr(Value));
+        return (Value==null?new NullSourceExpr(DBType):new ValueSourceExpr(Value));
     }
 }
 
-class StaticNullSourceExpr extends SourceExpr {
+class NullSourceExpr extends SourceExpr {
 
     String DBType;
-    StaticNullSourceExpr(String iDBType) {
+    NullSourceExpr(String iDBType) {
         DBType = iDBType;
     }
 
+    final static String STRING = "NULL";
+
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return "NULL";
+        return STRING;
     }
 
     void fillJoins(List<Join> Joins, Set<SourceWhere> Wheres) {
@@ -886,7 +928,7 @@ class StaticNullSourceExpr extends SourceExpr {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        StaticNullSourceExpr that = (StaticNullSourceExpr) o;
+        NullSourceExpr that = (NullSourceExpr) o;
 
         if (!DBType.equals(that.DBType)) return false;
 
@@ -1085,6 +1127,7 @@ class SelectWhereExpr extends SourceExpr {
     }
 }
 
+// null перегоняет в Empty
 class NullEmptySourceExpr extends SourceExpr {
 
     NullEmptySourceExpr(SourceExpr iExpr) {Expr=iExpr;}
@@ -1100,7 +1143,10 @@ class NullEmptySourceExpr extends SourceExpr {
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return Syntax.isNULL(Expr.getSource(JoinAlias, Syntax),(Expr.getDBType().equals("integer")?"0":"''"), false);
+        String ExprSource = Expr.getSource(JoinAlias, Syntax);
+        String EmptySource = Expr.getDBType().equals("integer") ? "0" : "''";
+        if(ExprSource.equals(NullSourceExpr.STRING)) return EmptySource;
+        return Syntax.isNULL(ExprSource, EmptySource, false);
     }
 
     String getDBType() {
@@ -1131,9 +1177,10 @@ class NullEmptySourceExpr extends SourceExpr {
     }
 }
 
-class NullSourceExpr extends SourceExpr {
+// возвращает Null нужен чисто чтобы "протолкнуть" Joins
+class NullJoinSourceExpr extends SourceExpr {
 
-    NullSourceExpr(SourceExpr iExpr) {Expr=iExpr;}
+    NullJoinSourceExpr(SourceExpr iExpr) {Expr=iExpr;}
 
     SourceExpr Expr;
 
@@ -1146,7 +1193,7 @@ class NullSourceExpr extends SourceExpr {
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return "NULL";
+        return NullSourceExpr.STRING;
     }
 
     String getDBType() {
@@ -1158,14 +1205,14 @@ class NullSourceExpr extends SourceExpr {
         if(TransExpr==Expr)
             return this;
         else
-            return new NullSourceExpr(TransExpr);
+            return new NullJoinSourceExpr(TransExpr);
     }
 
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        NullSourceExpr that = (NullSourceExpr) o;
+        NullJoinSourceExpr that = (NullJoinSourceExpr) o;
 
         if (!Expr.equals(that.Expr)) return false;
 
@@ -1206,10 +1253,11 @@ class CaseWhenSourceExpr extends SourceExpr {
 
     static String getExpr(String WhereSource,String TrueSource,String FalseSource,SQLSyntax Syntax) {
 
-        if(TrueSource.equals("NULL") && FalseSource.equals("NULL"))
-            return "NULL";
-        else
-            return "(CASE WHEN " + WhereSource + " THEN " + TrueSource + " ELSE " + FalseSource + " END)";
+        if(WhereSource.equals(StaticWhere.TRUE)) return TrueSource;
+        if(WhereSource.equals(StaticWhere.FALSE)) return FalseSource;
+        if(TrueSource.equals(NullSourceExpr.STRING) && FalseSource.equals(NullSourceExpr.STRING)) return NullSourceExpr.STRING;
+
+        return "(CASE WHEN " + WhereSource + " THEN " + TrueSource + " ELSE " + FalseSource + " END)";
     }
 
     String getDBType() {
@@ -1267,7 +1315,12 @@ class IsNullSourceExpr extends SourceExpr {
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return Syntax.isNULL(PrimaryExpr.getSource(JoinAlias, Syntax),SecondaryExpr.getSource(JoinAlias, Syntax), false);
+        String PrimarySource = PrimaryExpr.getSource(JoinAlias, Syntax);
+        String SecondarySource = SecondaryExpr.getSource(JoinAlias, Syntax);
+        if(PrimarySource.equals(NullSourceExpr.STRING)) return SecondarySource;
+        if(SecondarySource.equals(NullSourceExpr.STRING)) return PrimarySource;
+        
+        return Syntax.isNULL(PrimarySource, SecondarySource, false);
     }
 
     String getDBType() {
@@ -1408,6 +1461,7 @@ class MultiplySourceExpr extends SourceExpr {
         String Source = "";
         for(SourceExpr Operand : Operands) {
             String OperandSource = Operand.getSource(JoinAlias, Syntax);
+            if(OperandSource.equals(NullSourceExpr.STRING)) return NullSourceExpr.STRING;
             if(!OperandSource.equals("1"))
                 Source = (Source.length()==0?"":Source+"*") + OperandSource;
         }
@@ -1477,10 +1531,7 @@ class FormulaWhereSourceExpr extends SourceExpr {
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         // если NotNull нефиг 2 раза проверять
-        if(NotNull)
-            return "1";
-        else
-            return "CASE WHEN " + FormulaWhere.getSource(JoinAlias, Syntax) + " THEN 1 ELSE NULL END";
+        return CaseWhenSourceExpr.getExpr((NotNull?StaticWhere.TRUE:FormulaWhere.getSource(JoinAlias, Syntax)),"1",NullSourceExpr.STRING,Syntax);
     }
 
     String getDBType() {
@@ -1542,9 +1593,9 @@ class JoinWhere extends SourceWhere {
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         if(From.Inner)
-            return "1=1";
+            return StaticWhere.TRUE;
         else
-            return "NOT " + From.Source.getInSelectString(JoinAlias.get(From)) + " IS NULL";
+            return SourceIsNullWhere.getExpr(From.Source.getInSelectString(JoinAlias.get(From)),Syntax,true);
     }
 
     SourceWhere proceedTranslate(ExprTranslator Translated) {
@@ -1552,11 +1603,10 @@ class JoinWhere extends SourceWhere {
     }
 }
 
-class TrueWhere extends SourceWhere {
+abstract class StaticWhere extends SourceWhere {
 
-    public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return "1=1";
-    }
+    final static String TRUE = "1=1";
+    final static String FALSE = "1<>1";
 
     public SourceWhere proceedTranslate(ExprTranslator Translated) {
         return this;
@@ -1569,6 +1619,20 @@ class TrueWhere extends SourceWhere {
     }
 }
 
+class TrueWhere extends StaticWhere {
+
+    public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
+        return TRUE;
+    }
+}
+
+class FalseWhere extends StaticWhere {
+
+    public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
+        return FALSE;
+    }
+}
+
 class FieldExprCompareWhere extends SourceWhere {
 
     SourceExpr Source;
@@ -1578,7 +1642,10 @@ class FieldExprCompareWhere extends SourceWhere {
     FieldExprCompareWhere(SourceExpr iSource,Object iValue,int iCompare) {Source=iSource;Value=iValue;Compare=iCompare;}
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return Source.getSource(JoinAlias, Syntax) + (Compare==0?"=":(Compare==1?">":(Compare==2?"<":(Compare==3?">=":(Compare==4?"<=":"<>"))))) + (Value instanceof String?"'"+Value+"'":(Value instanceof SourceExpr?((SourceExpr)Value).getSource(JoinAlias, Syntax):Value.toString()));
+        String KeySource = Source.getSource(JoinAlias, Syntax);
+        String ValueSource = Value instanceof String ? "'" + Value + "'" : (Value instanceof SourceExpr ? ((SourceExpr) Value).getSource(JoinAlias, Syntax) : Value.toString());
+        if(KeySource.equals(ValueSource)) return ((Compare==0 || Compare==3 || Compare==4)?StaticWhere.TRUE:StaticWhere.FALSE);
+        return KeySource + (Compare==0?"=":(Compare==1?">":(Compare==2?"<":(Compare==3?">=":(Compare==4?"<=":"<>"))))) + ValueSource;
     }
 
     public SourceWhere proceedTranslate(ExprTranslator Translated) {
@@ -1633,7 +1700,12 @@ class SourceIsNullWhere extends SourceWhere {
     boolean Not;
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return (Not?"NOT ":"") + Source.getSource(JoinAlias, Syntax) + " IS NULL";
+        return getExpr(Source.getSource(JoinAlias,Syntax),Syntax,Not);
+    }
+
+    static String getExpr(String SourceString,SQLSyntax Syntax,boolean Not) {
+        if(SourceString.equals(NullSourceExpr.STRING)) return Not?StaticWhere.FALSE:StaticWhere.TRUE;
+        return (Not?NotWhere.PREFIX:"") + SourceString + " IS NULL";
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1678,23 +1750,27 @@ class FieldOPWhere extends SourceWhere {
     SourceWhere Op1, Op2;
     boolean And;
 
-    static SourceWhere getExpr(Collection<SourceWhere> Wheres, boolean And) {
+    static SourceWhere getWhere(Collection<SourceWhere> Wheres, boolean And) {
         // делаем OR на InJoin'ы этих Source'ов
         SourceWhere AllWheres = null;
         for(SourceWhere Where : Wheres) {
-            if(AllWheres==null)
-                AllWheres = Where;
-            else
-                AllWheres = new FieldOPWhere(Where, AllWheres, false);
+            if(Where instanceof TrueWhere) {
+                if(!And) return Where;
+            } else
+            if(Where instanceof FalseWhere) {
+                if(And) return Where;
+            } else
+                AllWheres = (AllWheres==null?Where:new FieldOPWhere(Where, AllWheres, false));
         }
 
-        if(AllWheres==null) {
-            AllWheres = new TrueWhere();
-            if(And)
-                return new NotWhere(AllWheres);
-        }
+        return (AllWheres==null?(And?new FalseWhere():new TrueWhere()):AllWheres);
+    }
 
-        return AllWheres;
+    static String getExpr(String Op1Source,String Op2Source, boolean And) {
+        if(Op1Source.equals(StaticWhere.TRUE)) return And?Op2Source:StaticWhere.TRUE;
+        if(Op1Source.equals(StaticWhere.FALSE)) return And?StaticWhere.FALSE:Op2Source;
+        return "(" + Op1Source + " " + (And?"AND":"OR") + " " + Op2Source + ")";
+
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1708,7 +1784,7 @@ class FieldOPWhere extends SourceWhere {
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return "(" + Op1.getSource(JoinAlias, Syntax) + " " + (And?"AND":"OR") + " " + Op2.getSource(JoinAlias, Syntax) + ")";
+        return getExpr(Op1.getSource(JoinAlias,Syntax),Op2.getSource(JoinAlias, Syntax),And);
     }
 
     public SourceWhere proceedTranslate(ExprTranslator Translated) {
@@ -1750,8 +1826,15 @@ class NotWhere extends SourceWhere {
         Where = iWhere;
     }
 
+    final static String PREFIX = "NOT ";
+
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return "NOT " + Where.getSource(JoinAlias, Syntax);
+        String WhereSource = Where.getSource(JoinAlias, Syntax);
+        if(WhereSource.equals(StaticWhere.TRUE)) return StaticWhere.FALSE;
+        if(WhereSource.equals(StaticWhere.FALSE)) return StaticWhere.TRUE;
+        // изврат конечно, но лень еще один уровень абстракции прошивать
+        if(WhereSource.startsWith(PREFIX)) return WhereSource.substring(PREFIX.length());
+        return PREFIX + WhereSource;
     }
 
     public SourceWhere proceedTranslate(ExprTranslator Translated) {
@@ -1778,11 +1861,15 @@ class FieldSetValueWhere extends SourceWhere {
     Collection<Integer> SetValues;
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        String ListString = "";
-        for(Integer Value : SetValues)
-            ListString = (ListString.length()==0?"":ListString+',') + Value;
-
-        return Expr.getSource(JoinAlias, Syntax) + " IN (" + ListString + ")";
+        String ExprSource = Expr.getSource(JoinAlias, Syntax);
+        if(SetValues.contains(ExprSource))
+            return StaticWhere.TRUE;
+        else {
+            String ListString = "";
+            for(Integer Value : SetValues)
+                ListString = (ListString.length()==0?"":ListString+',') + Value;
+            return ExprSource + " IN (" + ListString + ")";
+        }
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1850,12 +1937,9 @@ class FormulaSourceWhere extends SourceWhere {
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
 
         String SourceString = Formula;
-        Iterator<String> i = Params.keySet().iterator();
 
-        while (i.hasNext()) {
-            String Prm = i.next();
-            SourceString = SourceString.replace(Prm,Params.get(Prm).getSource(JoinAlias, Syntax));
-        }
+        for(Map.Entry<String,SourceExpr> Prm : Params.entrySet())
+            SourceString = SourceString.replace(Prm.getKey(), Prm.getValue().getSource(JoinAlias, Syntax));
 
          return SourceString;
      }
@@ -1899,11 +1983,11 @@ class FormulaSourceWhere extends SourceWhere {
     }
 }
 
-abstract class SelectQuery<K,V> extends Query<K,V> {
+abstract class
+        SelectQuery<K,V> extends Query<K,V> {
 
     SelectQuery() {super();}
     SelectQuery(Collection<? extends K> iKeys) {super(iKeys);}
-
 }
 
 class ExprTranslator extends HashMap<SourceJoin,SourceJoin> {
@@ -1928,7 +2012,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     List<Join> Joins = new ArrayList();
 
     void add(V Property,SourceExpr Expr) {
-        // сразу же Join'ы дополнительные Wheres закинем
         Expr.fillJoins(Joins,Wheres);
         Properties.put(Property,Expr);
     }
@@ -1939,12 +2022,12 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     }
 
     void add(SourceWhere Where) {
-
         Where.fillJoins(Joins,Wheres);
+        Wheres.add(Where);
+    }
 
-        // если JoinWhere то он нафиг не нужен в Where 
-        if(!(Where instanceof JoinWhere && ((JoinWhere)Where).From.Inner))
-            Wheres.add(Where);
+    void add(Join Join) {
+        Join.fillJoins(Joins,Wheres);
     }
 
     private Map<SourceExpr,String> KeyValues = new HashMap();
@@ -1981,7 +2064,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Join<K,Object> DumbJoin = new Join<K,Object>(new DumbSource<K,Object>(KeyValues,new HashMap()),true);
         for(K Object : KeyValues.keySet())
             DumbJoin.Joins.put(Object,MapKeys.get(Object));
-        add(DumbJoin.InJoin);
+        add(DumbJoin);
     }
 
     void checkExprs(Collection<ObjectExpr> Exprs,List<Join> TranslatedJoins) {
@@ -2025,10 +2108,14 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // из всех Properties,Wheres вытягивают Joins, InnerJoins, SourceWhere        
         ExprTranslator Translated = new ExprTranslator();
         List<Join> TranslatedJoins = new ArrayList();
+        Collection<SourceWhere> QueryWheres = new ArrayList(Wheres);
 
         for(Join Join : Joins) {
             Join.Source = Join.Source.compile();
-            Join.Source.compileJoins(Join, Translated, Wheres, TranslatedJoins, false);
+            if(Join.isEmpty(Translated) && Join.Inner)
+                return getEmptySource();
+            else
+                Join.Source.compileJoins(Join, Translated, QueryWheres, TranslatedJoins, false);
         }
 
 //        checkTranslate(Translated,TranslatedJoins);
@@ -2077,7 +2164,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
             MapProperty.setValue(MapProperty.getValue().translate(Translated));
         Set<SourceWhere> TranslatedWheres = new HashSet();
-        for(SourceWhere Where : Wheres)
+        for(SourceWhere Where : QueryWheres)
             TranslatedWheres.add(Where.translate(Translated));
         Wheres = TranslatedWheres;
 
@@ -2234,7 +2321,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             for(Join CompileJoin : Joins)
                 if(CompileJoin.Inner)
                     CompileInJoin.add(CompileJoin.InJoin);
-            Translated.put(Join.InJoin,FieldOPWhere.getExpr(CompileInJoin,true).translate(Translated));
+            Translated.put(Join.InJoin,FieldOPWhere.getWhere(CompileInJoin,true).translate(Translated));
             // хакинем перекодирование значение
             for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
                 Translated.put(Join.Exprs.get(MapProperty.getKey()),MapProperty.getValue().translate(Translated));
@@ -2272,13 +2359,16 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // погнали Properties заполнять
         for(Map.Entry<V,SourceExpr> JoinProp : Properties.entrySet()) {
             String PropertyValue = JoinProp.getValue().getSource(JoinAlias, Syntax);
-            if(PropertyValue.equals("NULL"))
+            if(PropertyValue.equals(NullSourceExpr.STRING))
                 PropertyValue = Syntax.getNullValue(JoinProp.getValue().getDBType());
             PropertySelect.put(JoinProp.getKey(),PropertyValue);
         }
 
-        for(SourceWhere Where : Wheres)
-            WhereSelect.add(Where.getSource(JoinAlias, Syntax));
+        for(SourceWhere Where : Wheres) {
+            String WhereString = Where.getSource(JoinAlias, Syntax);
+            if(!WhereString.equals(StaticWhere.TRUE))
+                WhereSelect.add(WhereString);
+        }
 
         // Source'ы в KeyExpr надо сбросить
         for(SourceExpr Key : MapKeys.values())
@@ -2321,7 +2411,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
         // нужно доставать ключи из LEFT JOIN'а и кидать на NOT NULL
         for(KeyExpr<K> NullKey : InnerNullKeys)
-            WhereSelect.add("NOT "+NullKey.Source+" IS NULL");
+            WhereSelect.add(SourceIsNullWhere.getExpr(NullKey.Source,Syntax,true));
 
         fillSources(JoinAlias, KeySelect, PropertySelect, WhereSelect, Syntax);
 
@@ -2447,9 +2537,36 @@ abstract class ExprUnion<K> {
 
     // по сути следующие 2 метода для 3-го оператора
     abstract void fillUnions(Collection<Union> Unions);
-    abstract boolean findOperator(int ToFind);
 
     abstract public String getDBType();
+}
+
+class EmptyUnion<K> extends ExprUnion<K> {
+
+    String DBType;
+
+    EmptyUnion(String iDBType) {
+        DBType = iDBType;
+    }
+
+    SourceExpr translateExpr(Map<Union<K, Object>, Join<K, ?>> MapJoins, ExprTranslator Translated) {
+        return new NullSourceExpr(DBType);
+    }
+
+    ExprUnion proceedTranslate(Map<PropertyUnion, ExprUnion> ToTranslate, Map<ExprUnion, ExprUnion> Translated) {
+        return this;
+    }
+
+    String getString(Map<Union<K, Object>, String> MapAliases, SQLSyntax Syntax) {
+        return NullSourceExpr.STRING;
+    }
+
+    void fillUnions(Collection<Union> Unions) {
+    }
+
+    public String getDBType() {
+        return DBType;
+    }
 }
 
 class PropertyUnion<K,V> extends ExprUnion<K> {
@@ -2479,10 +2596,6 @@ class PropertyUnion<K,V> extends ExprUnion<K> {
 
     void fillUnions(Collection<Union> Unions) {
         Unions.add(From);
-    }
-
-    boolean findOperator(int ToFind) {
-        return false;
     }
 
     public String getDBType() {
@@ -2518,7 +2631,7 @@ class OperationUnion<K> extends ExprUnion<K> {
                 for(Union Union : Unions)
                     InJoins.add(MapJoins.get(Union).InJoin.translate(Translated));
                 
-                UnionExpr.Operands.add(new CoeffExpr<SelectWhereOperand>(new SelectWhereOperand(FieldOPWhere.getExpr(InJoins,true),Operand.Expr.translateExpr(MapJoins, Translated)),Operand.Coeff));
+                UnionExpr.Operands.add(new CoeffExpr<SelectWhereOperand>(new SelectWhereOperand(FieldOPWhere.getWhere(InJoins,true),Operand.Expr.translateExpr(MapJoins, Translated)),Operand.Coeff));
             }
 
             return UnionExpr;
@@ -2554,7 +2667,7 @@ class OperationUnion<K> extends ExprUnion<K> {
                     // когда есть хоть в одном источнике
                     String NotInSource = "";
                     for(Union Union : Unions)
-                        NotInSource = (NotInSource.length()==0?"":NotInSource+" AND ") + Union.Source.getInSelectString(MapAliases.get(Union)) + " IS NULL";
+                        NotInSource = (NotInSource.length()==0?"":NotInSource+" AND ") + SourceIsNullWhere.getExpr(Union.Source.getInSelectString(MapAliases.get(Union)),Syntax,false);
 
                     SourceExpr = CaseWhenSourceExpr.getExpr(NotInSource, PrevExpr, SourceExpr, Syntax);
                 }
@@ -2567,16 +2680,6 @@ class OperationUnion<K> extends ExprUnion<K> {
     void fillUnions(Collection<Union> Unions) {
         for(CoeffExpr<ExprUnion<K>> Operand : Operands)
             Operand.Expr.fillUnions(Unions);
-    }
-
-    boolean findOperator(int ToFind) {
-        if(Operator==ToFind) return true;
-
-        for(CoeffExpr<ExprUnion<K>> Operand : Operands)
-            if(Operand.Expr.findOperator(ToFind))
-                return true;
-
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String getDBType() {
@@ -2645,26 +2748,13 @@ class Union<K,V> {
 class UnionQuery<K,V> extends SelectQuery<K,V> {
     // как в List 0 - MAX, 1 - SUM, 2 - NVL, плюс 3 - если есть в Source
 
-    UnionQuery(Collection<? extends K> iKeys,int iDefaultOperator) {super(iKeys); DefaultOperator=iDefaultOperator;}
-
-    // "скомпилированные" св-ва
     Collection<Union<K,Object>> Operands = new ArrayList();
     Map<V, ExprUnion<K>> Operations = new HashMap();
 
-/*    Map<Object,PropertyUnion<K,Object>> getOperandMap(Source<K,Object> Operand) {
-        Map<Object,PropertyUnion<K,Object>> Properties = new HashMap();
-        for(Object Property : Operand.getProperties())
-            Properties.put(Property,new PropertyUnion<K, Object>(Property,Operand));
-        return Properties;
+    UnionQuery(Collection<? extends K> iKeys,int iDefaultOperator) {
+        super(iKeys);
+        DefaultOperator=iDefaultOperator;
     }
-
-    private void setOperands(Collection<Source<K,Object>> OperandSet) {
-        Operands = new HashMap();
-        for(Source<K,Object> Operand : OperandSet)
-            Operands.put(Operand,getOperandMap(Operand));
-    }
-  */
-    // скомпилированный конструктор
     UnionQuery(Collection<? extends K> iKeys,Collection<Union<K,Object>> iOperands) {
         super(iKeys);
         Operands = iOperands;
@@ -2674,14 +2764,20 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
     static String getExpr(List<CoeffExpr<String>> Operands, int Operator, boolean Safe, SQLSyntax Syntax) {
         String Result = "";
         String SumNull = "";
-        for(CoeffExpr<String> Operand : Operands) {
-            if(Operand.Expr.startsWith("null"))
-                Operand = Operand;
 
+        // вырежем null'ы именно заранее потому как Sum интересует кол-во операндов
+        for(Iterator<CoeffExpr<String>> i = Operands.iterator();i.hasNext();)
+            if(i.next().Expr.equals(NullSourceExpr.STRING))
+                i.remove();
+
+        if(Operands.size()==0)
+            return NullSourceExpr.STRING;
+        
+        for(CoeffExpr<String> Operand : Operands) {
             String OperandString = Operand.getCoeff();
             if(Operator==1 && Operands.size()>1) {
                 OperandString += Syntax.isNULL(Operand.Expr,"0", false);
-                SumNull = (SumNull.length()==0?"":SumNull+" AND ") + Operand.Expr + " IS NULL ";
+                SumNull = (SumNull.length()==0?"":SumNull+" AND ") + SourceIsNullWhere.getExpr(Operand.Expr,Syntax,false);
             } else
                 OperandString += Operand.Expr;
 
@@ -2690,7 +2786,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             } else {
                 switch(Operator) {
                     case 2:
-                        if(!OperandString.equals("NULL")) {
+                        if(!OperandString.equals(NullSourceExpr.STRING)) {
                             if(!Safe && !Syntax.isNullSafe())
                                 Result = Syntax.isNULL(OperandString,Result,true);
                             else
@@ -2701,11 +2797,11 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
                         Result = Result+(Operand.Coeff==null || Operand.Coeff>=0?"+":"") + OperandString;
                         break;
                     case 0:
-                        if(!OperandString.equals("NULL")) {
+                        if(!OperandString.equals(NullSourceExpr.STRING)) {
                             if(Syntax.isGreatest())
                                 Result = OperandString + "," + Result;
                             else
-                                Result = "CASE WHEN "+OperandString+" IS NULL OR "+Result+">"+OperandString+" THEN "+Result+" ELSE "+OperandString+" END";
+                                Result = CaseWhenSourceExpr.getExpr(FieldOPWhere.getExpr(SourceIsNullWhere.getExpr(OperandString,Syntax,false),Result+">"+OperandString,false),Result,OperandString,Syntax);
                         }
                         break;
                 }
@@ -2722,7 +2818,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             return "GREATEST(" + Result + ")";
         else
         if(Operator==1)
-            return "(CASE WHEN " + SumNull + " THEN NULL ELSE " + Result + " END )";
+            return CaseWhenSourceExpr.getExpr(SumNull,NullSourceExpr.STRING,Result,Syntax);
         else
             return "("+Result+")";
     }
@@ -2770,19 +2866,16 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
                     JoinKeySource.put(KeySource,1);
                 }
 
-                FromSource = " FULL JOIN " + FromSource + " ON " + (JoinOn.length()==0?"1=1":JoinOn);
+                FromSource = " FULL JOIN " + FromSource + " ON " + (JoinOn.length()==0?StaticWhere.TRUE:JoinOn);
             }
 
             From += FromSource;
         }
 
-        // ключи
+        // ключи (по NVL)
         for(K Key : Keys)
             KeySelect.put(Key,getExpr(UnionKeys.get(Key),2,true,Syntax));
         
-        // ключи надо по NVL(2) делать, выражения по оператору
-        // для Operator <=2
-
         for(Map.Entry<V, ExprUnion<K>> Property : Operations.entrySet())
             PropertySelect.put(Property.getKey(),Property.getValue().getString(MapAliases, Syntax));
 
@@ -2837,12 +2930,20 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             List<SourceWhere> CompileInJoin = new ArrayList();
             for(Join CompileJoin : OperandJoins.values())
                 CompileInJoin.add(CompileJoin.InJoin);
-            Translated.put(Join.InJoin,FieldOPWhere.getExpr(CompileInJoin,false).translate(Translated));
+            Translated.put(Join.InJoin,FieldOPWhere.getWhere(CompileInJoin,false).translate(Translated));
             /// все выражений протранслируем
             for(V Property : getProperties())
                 Translated.put(Join.Exprs.get(Property),Operations.get(Property).translateExpr(OperandJoins, Translated));
         } else
             super.compileJoins(Join, Translated, JoinWheres, TranslatedJoins, Outer);
+    }
+
+    void compileUnions(Union<K, V> Union, Map<PropertyUnion, ExprUnion> ToTranslate, Collection<Union<K, Object>> TranslatedUnions) {
+
+        TranslatedUnions.addAll(Operands);
+        // закинем перекодирования (Map'а св-в)
+        for(Map.Entry<V,PropertyUnion<K,V>> MapProperty : Union.Exprs.entrySet())
+            ToTranslate.put(MapProperty.getValue(),Operations.get(MapProperty.getKey()));
     }
 
     private boolean recMerge(ListIterator<Union<K, Object>> RecUnion, Collection<Union> ToMergeUnions, Map<K, ?> MergeKeys, Map<PropertyUnion,ExprUnion> ToTranslate, Map<PropertyUnion,ExprUnion> ToMergeTranslate, Set<Union> MergedUnions, Collection<Union<K,Object>> TranslatedUnions) {
@@ -2931,20 +3032,17 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
 
 //        if(1==1) return;
 
+        Collection<Union<K,Object>> TranslatedOperands = new ArrayList();
         // по всем операндам (SelectQuery) компилируем их
         // если есть UnionQuery то доливаем все операнды туда где был старый Source
         Map<PropertyUnion, ExprUnion> ToTranslate = new HashMap();
-        for(Union<K, Object> Operand : new ArrayList<Union<K, Object>>(Operands)) {
-            if(Operand.Source instanceof UnionQuery) {
-                Operands.remove(Operand);
-
-                UnionQuery<K,Object> UnionOperand = (UnionQuery<K,Object>)Operand.Source;
-                Operands.addAll(UnionOperand.Operands);
-                // закинем перекодирования (Map'а св-в)
-                for(Map.Entry<Object,PropertyUnion<K,Object>> MapProperty : Operand.Exprs.entrySet())
-                    ToTranslate.put(MapProperty.getValue(),UnionOperand.Operations.get(MapProperty.getKey()));
-            }
+        for(Union<K, Object> Operand : Operands) {
+            Operand.Source = Operand.Source.compile();
+            Operand.Source.compileUnions(Operand, ToTranslate, TranslatedOperands);
         }
+
+        if(TranslatedOperands.size()==0)
+            return getEmptySource();
 
 //        checkTranslate(ToTranslate,Operands);
 
@@ -2958,8 +3056,8 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         // слитыве операнды
         Collection<Union<K,Object>> MergedOperands = new ArrayList();
 
-        while(Operands.size()>0) {
-            Iterator<Union<K, Object>> itOperand = Operands.iterator();
+        while(TranslatedOperands.size()>0) {
+            Iterator<Union<K, Object>> itOperand = TranslatedOperands.iterator();
             // берем первый элемент, ишем с кем слить
             Union<K, Object> ToMerge = itOperand.next();
             itOperand.remove();
@@ -3044,7 +3142,7 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
             String KeyExpr = FromPropertySelect.get(Key);
             KeySelect.put(Key,KeyExpr);
             if(!From.isNotNullProperty(Key))
-                WhereSelect.add("NOT "+KeyExpr+" IS NULL");
+                WhereSelect.add(SourceIsNullWhere.getExpr(KeyExpr,Syntax,true));
             GroupBy = (GroupBy.length()==0?"":GroupBy+",") + KeyExpr;
         }
         for(Map.Entry<V,Integer> Property : Properties.entrySet())
@@ -3170,7 +3268,7 @@ class ModifyQuery {
                 JoinQuery<KeyField, PropertyField> UpdateQuery = new JoinQuery<KeyField, PropertyField>(Table.Keys);
                 Join<KeyField, PropertyField> TableJoin = new UniJoin<KeyField, PropertyField>(Table, UpdateQuery, true);
                 TableJoin.NoAlias = true;
-                UpdateQuery.add(TableJoin.InJoin);
+                UpdateQuery.add(TableJoin);
 
                 Join<KeyField, PropertyField> ChangeJoin = new UniJoin<KeyField, PropertyField>(Change, UpdateQuery, true);
                 for(PropertyField ChangeField : Change.getProperties())
@@ -3199,7 +3297,7 @@ class ModifyQuery {
         // делаем для этого еще один запрос
         JoinQuery<KeyField,PropertyField> LeftKeysQuery = new JoinQuery<KeyField,PropertyField>(Table.Keys);
         // при Join'им ModifyQuery
-        LeftKeysQuery.add((new UniJoin<KeyField,PropertyField>(Change,LeftKeysQuery,true)).InJoin);
+        LeftKeysQuery.add(new UniJoin<KeyField,PropertyField>(Change,LeftKeysQuery,true));
         // исключим ключи которые есть
         LeftKeysQuery.add(new NotWhere((new UniJoin<KeyField,PropertyField>(Table,LeftKeysQuery,false)).InJoin));
 
