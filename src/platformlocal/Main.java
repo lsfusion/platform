@@ -268,18 +268,6 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     // заполняет тестовую базу
     void fillData(DataAdapter Adapter) throws SQLException {
 
-        Map<Class,Integer> ClassQuantity = new HashMap();
-/*        ClassQuantity.put(Article,1000);
-        ClassQuantity.put(ArticleGroup,50);
-        ClassQuantity.put(Store,5);
-        ClassQuantity.put(PrihDocument,500);
-        ClassQuantity.put(RashDocument,2000); */
-        ClassQuantity.put(Article,10);
-        ClassQuantity.put(ArticleGroup,2);
-        ClassQuantity.put(Store,2);
-        ClassQuantity.put(PrihDocument,10);
-        ClassQuantity.put(RashDocument,20);
-
         Map<DataProperty,Integer> PropQuantity = new HashMap();
         Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls = new HashMap();
 
@@ -289,6 +277,23 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ArtToGroup.putNotNulls(PropNotNulls,0);
         PrihQuantity.putNotNulls(PropNotNulls,0);
         RashQuantity.putNotNulls(PropNotNulls,0);
+
+        Map<Class,Integer> ClassQuantity = new HashMap();
+/*        ClassQuantity.put(Article,1000);
+        ClassQuantity.put(ArticleGroup,50);
+        ClassQuantity.put(Store,5);
+        ClassQuantity.put(PrihDocument,500);
+        ClassQuantity.put(RashDocument,2000);*/
+/*        ClassQuantity.put(Article,100);
+        ClassQuantity.put(ArticleGroup,5);
+        ClassQuantity.put(Store,4);
+        ClassQuantity.put(PrihDocument,50);
+        ClassQuantity.put(RashDocument,200);*/
+        ClassQuantity.put(Article,10);
+        ClassQuantity.put(ArticleGroup,2);
+        ClassQuantity.put(Store,2);
+        ClassQuantity.put(PrihDocument,10);
+        ClassQuantity.put(RashDocument,20);
 
         PropQuantity.put((DataProperty)PrihQuantity.Property,10);
         PropQuantity.put((DataProperty)RashQuantity.Property,3);
@@ -529,8 +534,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP Dirihle = AddWSFProp("prm1<prm2",2);
+        LSFP NotZero = AddWSFProp("prm1<>0",1);        
+        LSFP Less = AddWSFProp("prm1<prm2",2);
         LMFP Multiply = AddMFProp(2);
+        LMFP Multiply3 = AddMFProp(3);
 
         LJP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.caption = "имя склада";
@@ -543,11 +550,14 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ArtGName.Property.caption = "при доб. гр. тов.";
         SetDefProp(ArtGName,ArtGroupName,true);
 
-        LJP DDep = AddJProp(Dirihle,2,DocDate,1,DocDate,2);
+        LJP InDoc = AddJProp(NotZero,2,Quantity,1,2);
+        InDoc.Property.caption = "товар в док.";        
+
+        LJP DDep = AddJProp(Less,2,DocDate,1,DocDate,2);
         DDep.Property.caption = "предш. док.";
         ((ObjectProperty)DDep.Property).XL = true;
 
-        LJP QDep = AddJProp(Multiply,3,DDep,1,2,Quantity,1,3);
+        LJP QDep = AddJProp(Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
         QDep.Property.caption = "изм. баланса";
         ((ObjectProperty)QDep.Property).XL = true;
 
@@ -608,6 +618,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Persistents.add((AggregateProperty)GAP.Property);
         Persistents.add((AggregateProperty)G2P.Property);
         Persistents.add((AggregateProperty)GSum.Property);
+//        Persistents.add((AggregateProperty)Quantity.Property);
         Persistents.add((AggregateProperty)OstArtStore.Property);
         Persistents.add((AggregateProperty)OstArt.Property);
         Persistents.add((AggregateProperty)MaxPrih.Property);

@@ -1037,6 +1037,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
                     SelectKeys.Top = Group.PageSize*3/(Direction==2?2:1);
 
+                    // откопируем в сторону запрос чтобы еще раз потом использовать
                     OrderedJoinQuery<ObjectImplement,PropertyObjectImplement> SelectAscKeys = (Direction==2?SelectKeys.copy():SelectKeys);
                     // сначала Descending загоним
                     Group.DownKeys = false;
@@ -1062,7 +1063,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         if(OrderSources.size()==0)
                             ActiveRow = KeyResult.size()-1;
                     }
-                    // так как тот же запрос надо перекомпилировать его
                     SelectKeys = SelectAscKeys;
                     // потом Ascending
                     if(Direction==0 || Direction==2) {
