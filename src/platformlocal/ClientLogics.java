@@ -359,7 +359,7 @@ class DefaultClientFormView extends ClientFormView {
             //временно
             clientProperty.caption = property.View.Property.caption;
             clientProperty.baseClass = ByteArraySerializer.deserializeClientClass(
-                                       ByteArraySerializer.serializeClass(property.View.Property.GetValueClass(property.View.Property.GetClassSet(null).get(0))));
+                                       ByteArraySerializer.serializeClass(property.View.Property.getBaseClass()));
 
             mproperties.put(property, clientProperty);
             properties.add(clientProperty);

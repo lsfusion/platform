@@ -1372,7 +1372,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
             for(PropertyView Property : Properties) {
                 GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
                 if(DrawProp==Group)
-                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.GetDBType()));
+                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getDBType()));
             }
 
             JRDesignBand Band = new JRDesignBand();

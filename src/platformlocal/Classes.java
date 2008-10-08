@@ -13,6 +13,24 @@ import java.util.*;
  * @author ME
  */
 abstract class Class {
+
+    static IntegralClass integralClass;
+    static StringClass stringClass;
+    static QuantityClass quantityClass;
+    static DateClass dateClass;
+    static BitClass bitClass;
+
+    static {
+        integralClass = new IntegralClass(2, "Число");
+        stringClass = new StringClass(1, "Строка");
+        quantityClass = new QuantityClass(2, "Кол-во");
+        quantityClass.AddParent(integralClass);
+        dateClass = new DateClass(3, "Дата");
+        dateClass.AddParent(integralClass);
+        bitClass = new BitClass(4, "Бит");
+        bitClass.AddParent(integralClass);
+    }
+
     Collection<Class> Parents;
     List<Class> Childs;
     

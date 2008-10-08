@@ -514,14 +514,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         TableFactory = new TableFactory();
 
         objectClass = new ObjectClass(0, "Базовый класс");
-        integralClass = new IntegralClass(2, "Число");
-        stringClass = new StringClass(1, "Строка");
-        quantityClass = new QuantityClass(2, "Кол-во");
-        quantityClass.AddParent(integralClass);
-        dateClass = new DateClass(3, "Дата");
-        dateClass.AddParent(integralClass);
-        bitClass = new BitClass(4, "Бит");
-        bitClass.AddParent(integralClass);
 
         for(int i=0;i<TableFactory.MaxInterface;i++) {
             TableImplement Include = new TableImplement();
@@ -724,12 +716,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return Session;
     }
 
-    IntegralClass integralClass;
     ObjectClass objectClass;
-    StringClass stringClass;
-    QuantityClass quantityClass;
-    DateClass dateClass;
-    BitClass bitClass;
 
     TableFactory TableFactory;
     List<Property> Properties = new ArrayList();
@@ -887,7 +874,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 PropNum = PropNum + 1;
                 Tables.put(Table, PropNum);
 
-                PropertyField PropField = new PropertyField("prop"+PropNum.toString(),Property.GetDBType());
+                PropertyField PropField = new PropertyField("prop"+PropNum.toString(),Property.getDBType());
                 Table.Properties.add(PropField);
                 ((ObjectProperty)Property).Field = PropField;
             }
@@ -979,25 +966,25 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return ListProperty;
     }
 
-    LSFP AddSFProp(String Formula,Integer Params) {
+    LSFP AddSFProp(String Formula,IntegralClass ...Params) {
 
         StringFormulaProperty Property = new StringFormulaProperty(Formula);
-        LSFP ListProperty = new LSFP(Property, integralClass,Params);
+        LSFP ListProperty = new LSFP(Property, Params);
         Properties.add(Property);
         return ListProperty;
     }
 
-    LSFP AddWSFProp(String Formula,Integer Params) {
+    LSFP AddWSFProp(String Formula,IntegralClass ...Params) {
 
         WhereStringFormulaProperty Property = new WhereStringFormulaProperty(Formula);
-        LSFP ListProperty = new LSFP(Property, integralClass,Params);
+        LSFP ListProperty = new LSFP(Property, Params);
         Properties.add(Property);
         return ListProperty;
     }
 
-    LMFP AddMFProp(Integer Params) {
+    LMFP AddMFProp(IntegralClass ...Params) {
         MultiplyFormulaProperty Property = new MultiplyFormulaProperty();
-        LMFP ListProperty = new LMFP(Property, integralClass,Params);
+        LMFP ListProperty = new LMFP(Property, Params);
         Properties.add(Property);
         return ListProperty;
     }
@@ -1159,13 +1146,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         List<ObjectProperty> RandObjProps = new ArrayList();
         
         StringFormulaProperty Dirihle = new WhereStringFormulaProperty("prm1<prm2");
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(integralClass,"prm1"));
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(integralClass,"prm2"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.quantityClass,"prm1"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.quantityClass,"prm2"));
         RandProps.add(Dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty();
-        Multiply.Interfaces.add(new FormulaPropertyInterface(integralClass));
-        Multiply.Interfaces.add(new FormulaPropertyInterface(integralClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.quantityClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.quantityClass));
         RandProps.add(Multiply);
 
         int DataPropCount = Randomizer.nextInt(15)+1;

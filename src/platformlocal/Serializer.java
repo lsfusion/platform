@@ -293,9 +293,6 @@ class Serializer {
         if (cls instanceof DateClass) outStream.writeByte(3);
         if (cls instanceof BitClass) outStream.writeByte(4);
 
-        // временно так
-        if (cls instanceof IntegralClass && !(cls instanceof QuantityClass) && !(cls instanceof DateClass) && !(cls instanceof BitClass)) outStream.writeByte(2);
-
         outStream.writeInt(cls.ID);
         outStream.writeUTF(cls.caption);
         outStream.writeBoolean(!cls.Childs.isEmpty());

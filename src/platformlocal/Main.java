@@ -459,49 +459,49 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         PropertyGroup groupArticleC = new PropertyGroup("Ценовые параметры");
         PropertyGroup groupArticleS = new PropertyGroup("Показатели");
 
-        Name = AddDProp(stringClass, objectClass);
+        Name = AddDProp(Class.stringClass, objectClass);
         Name.Property.caption = "имя";
         groupArticleA.add(Name.Property);
 
         DocStore = AddDProp(Store,Document);
         DocStore.Property.caption = "склад";
 
-        PrihQuantity = AddDProp(quantityClass,PrihDocument,Article);
+        PrihQuantity = AddDProp(Class.quantityClass,PrihDocument,Article);
         PrihQuantity.Property.caption = "кол-во прих.";
 
-        RashQuantity = AddDProp(quantityClass,RashDocument,Article);
+        RashQuantity = AddDProp(Class.quantityClass,RashDocument,Article);
         RashQuantity.Property.caption = "кол-во расх.";
 
         ArtToGroup = AddDProp(ArticleGroup,Article);
         ArtToGroup.Property.caption = "гр. тов";
         groupArticleG.add(ArtToGroup.Property);
 
-        DocDate = AddDProp(dateClass,Document);
+        DocDate = AddDProp(Class.dateClass,Document);
         DocDate.Property.caption = "дата док.";
 
-        GrAddV = AddDProp(quantityClass,ArticleGroup);
+        GrAddV = AddDProp(Class.quantityClass,ArticleGroup);
         GrAddV.Property.caption = "нац. по гр.";
 
-        ArtAddV = AddDProp(quantityClass,Article);
+        ArtAddV = AddDProp(Class.quantityClass,Article);
         ArtAddV.Property.caption = "нац. перегр.";
         groupArticleC.add(ArtAddV.Property);
 
-        BarCode = AddDProp(quantityClass,Article);
+        BarCode = AddDProp(Class.quantityClass,Article);
         BarCode.Property.caption = "штрих-код";
         groupArticleA.add(BarCode.Property);
 
-        ExpireDate = AddDProp(dateClass,Article);
+        ExpireDate = AddDProp(Class.dateClass,Article);
         ExpireDate.Property.caption = "срок годн.";
         groupArticleA.add(ExpireDate.Property);
 
-        Weight = AddDProp(bitClass,Article);
+        Weight = AddDProp(Class.bitClass,Article);
         Weight.Property.caption = "вес.";
         groupArticleA.add(Weight.Property);
 
-        LDP AbsQuantity = AddCProp(null, quantityClass,Document,Article);
+        LDP AbsQuantity = AddCProp(null,Class.quantityClass,Document,Article);
         AbsQuantity.Property.caption = "абст. кол-во";
 
-        LDP IsGrmat = AddCProp(0, quantityClass,Article);
+        LDP IsGrmat = AddCProp(0,Class.quantityClass,Article);
         IsGrmat.Property.caption = "признак товара";
         groupArticleA.add(IsGrmat.Property);
 
@@ -512,10 +512,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Quantity = AddUProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
         Quantity.Property.caption = "кол-во";
 
-        LDP RashValue = AddCProp(-1, quantityClass,RashDocument);
+        LDP RashValue = AddCProp(-1,Class.quantityClass,RashDocument);
         RashValue.Property.caption = "призн. расхода";
 
-        LDP PrihValue = AddCProp(1, quantityClass,PrihDocument);
+        LDP PrihValue = AddCProp(1,Class.quantityClass,PrihDocument);
         PrihValue.Property.caption = "призн. прихода";
 
         OpValue = AddUProp(2,1,1,RashValue,1,1,PrihValue,1);
@@ -534,10 +534,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP NotZero = AddWSFProp("prm1<>0",1);        
-        LSFP Less = AddWSFProp("prm1<prm2",2);
-        LMFP Multiply = AddMFProp(2);
-        LMFP Multiply3 = AddMFProp(3);
+        LSFP NotZero = AddWSFProp("prm1<>0",Class.integralClass);
+        LSFP Less = AddWSFProp("prm1<prm2",Class.integralClass,Class.integralClass);
+        LMFP Multiply = AddMFProp(Class.quantityClass,Class.bitClass);
+        LMFP Multiply3 = AddMFProp(Class.bitClass,Class.quantityClass,Class.bitClass);
 
         LJP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.caption = "имя склада";
@@ -546,7 +546,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ArtGroupName.Property.caption = "имя гр. тов.";
         groupArticleG.add(ArtGroupName.Property);
 
-        LDP ArtGName = AddDProp(stringClass,Article);
+        LDP ArtGName = AddDProp(Class.stringClass,Article);
         ArtGName.Property.caption = "при доб. гр. тов.";
         SetDefProp(ArtGName,ArtGroupName,true);
 
@@ -592,8 +592,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         SumMaxArt = AddGProp(MaxOpStore,true,2);
         SumMaxArt.Property.caption = "макс. операция (сумма)";
 
-        LSFP Between = AddWSFProp("prm1>=prm2 AND prm1<=prm3",3);
-        LJP DokBetweenDate = AddJProp(Between,3,DocDate,1,2,3);
+        LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",Class.dateClass,Class.dateClass,Class.dateClass);
+        LJP DokBetweenDate = AddJProp(BetweenDate,3,DocDate,1,2,3);
         DokBetweenDate.Property.caption = "документ в интервале";
 
         LJP RashBetweenDate = AddJProp(Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
@@ -826,10 +826,10 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     IntegralNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.dateClass);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),Class.dateClass);
         obj1.caption = "дата 1";
 
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.dateClass);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.dateClass);
         obj2.caption = "дата 2";
 
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Article);
@@ -903,10 +903,11 @@ class LDP extends LP {
 
 class LSFP extends LP {
 
-    LSFP(Property iProperty,IntegralClass iClass,int Objects) {
+    LSFP(Property iProperty,IntegralClass ...Classes) {
         super(iProperty);
-        for(int i=0;i<Objects;i++) {
-            StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(iClass,"prm"+(i+1));
+        int Prm=1;
+        for(IntegralClass Class : Classes) {
+            StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(Class,"prm"+Prm++);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
         }
@@ -915,10 +916,11 @@ class LSFP extends LP {
 
 class LMFP extends LP {
 
-    LMFP(Property iProperty,IntegralClass iClass,int Objects) {
+    LMFP(Property iProperty,IntegralClass ...Classes) {
         super(iProperty);
-        for(int i=0;i<Objects;i++) {
-            FormulaPropertyInterface Interface = new FormulaPropertyInterface(iClass);
+        int Prm=1;
+        for(IntegralClass Class : Classes) {
+            FormulaPropertyInterface Interface = new FormulaPropertyInterface(Class);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
         }

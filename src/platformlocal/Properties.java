@@ -148,8 +148,15 @@ abstract class Property<T extends PropertyInterface> extends PropertyNode {
     // возвращает то и только то мн-во интерфейсов которые заведомо дают этот интерфейс (GetValueClass >= ReqValue)
     // если null то когда в принципе дает значение
     abstract public InterfaceClassSet GetClassSet(Class ReqValue);
-    
-    abstract public String GetDBType();
+
+    // получает базовый класс чтобы определять
+    Class getBaseClass() {
+        return GetValueClass(GetClassSet(null).get(0));
+    }
+
+    public String getDBType() {
+        return getBaseClass().GetDBType();
+    }
     
     String caption = "";
     
@@ -223,7 +230,7 @@ abstract class ObjectProperty<T extends PropertyInterface> extends Property<T> {
     IncrementChangeTable ChangeTable;
     
     void FillChangeTable() {
-        ChangeTable = TableFactory.GetChangeTable(Interfaces.size(),GetDBType());
+        ChangeTable = TableFactory.GetChangeTable(Interfaces.size(), getDBType());
         ChangeTableMap = new HashMap();
         Iterator<KeyField> io = ChangeTable.Objects.iterator();
         for(T Interface : Interfaces)
@@ -505,16 +512,12 @@ class DataProperty extends ObjectProperty<DataPropertyInterface> {
         return Result;
     }
 
-    public String GetDBType() {
-        return Value.GetDBType();
-    }
-
     // свойства для "ручных" изменений пользователем
     DataChangeTable DataTable;
     Map<KeyField,PropertyInterface> DataTableMap = null;
 
     void FillDataTable() {
-        DataTable = TableFactory.GetDataChangeTable(Interfaces.size(),GetDBType());
+        DataTable = TableFactory.GetDataChangeTable(Interfaces.size(), getDBType());
         // если нету Map'a построим
         DataTableMap = new HashMap();
         Iterator<KeyField> io = DataTable.Objects.iterator();
@@ -958,17 +961,6 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
 
         return Result;
     }
-
-    public String GetDBType() {
-        return ValueClass.GetDBType();
-/*        if(Value==null || Value instanceof Integer)
-            return "integer";
-
-        if(Value instanceof String)
-            return "char(50)";
-        
-        return null;*/
-    }
 }
 
 class PropertyMapImplement extends PropertyImplement<ObjectProperty,PropertyInterface> implements PropertyInterfaceImplement {
@@ -1157,7 +1149,7 @@ class JoinProperty extends AggregateProperty<PropertyInterface> {
                     MapJoinImplement.put(ImplementInterface,Implements.Mapping.get(ImplementInterface).mapSourceExpr(Query.MapKeys,true,(ImplementInterface==ChangeInterface?Session:null),(ImplementInterface==ChangeInterface?2:0)));
 
                 Query.add(ChangeTable.PrevValue,Implements.Property.getSourceExpr(MapJoinImplement,true));
-                Query.add(ChangeTable.Value,new NullSourceExpr(Implements.Property.GetDBType()));
+                Query.add(ChangeTable.Value,new NullSourceExpr(Implements.Property.getDBType()));
                 ResultQuery.add(Query,1);
             }
         }
@@ -1195,10 +1187,6 @@ class JoinProperty extends AggregateProperty<PropertyInterface> {
         return ResultQuery;
     }
 
-    public String GetDBType() {
-        return Implements.Property.GetDBType();
-    }
-    
     // заполняет список, возвращает есть ли изменения
     public boolean FillChangedList(List<ObjectProperty> ChangedProperties, DataSession Session) {
         if(ChangedProperties.contains(this)) return true;
@@ -1325,10 +1313,6 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
         return Result;
     }
 
-    public String GetDBType() {
-        return GroupProperty.GetDBType();
-    }
-    
     // заполняет список, возвращает есть ли изменения
     public boolean FillChangedList(List<ObjectProperty> ChangedProperties, DataSession Session) {
         if(ChangedProperties.contains(this)) return true;
@@ -1372,7 +1356,7 @@ abstract class GroupProperty extends AggregateProperty<GroupPropertyInterface> {
                 il = ChangedList.listIterator();
             }
 
-            // если не пустое скипаем
+            // если не пустое и не идем по изменениям основного св-ва скипаем
             if(!(InterfaceEmptySet || GroupOp==1)) 
                 il.next();
 
@@ -1638,10 +1622,6 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
         return Result;
     }
 
-    public String GetDBType() {
-        return Operands.iterator().next().Property.GetDBType();        
-    }
-
     boolean FillChangedList(List<ObjectProperty> ChangedProperties, DataSession Session) {
         if(ChangedProperties.contains(this)) return true;
 
@@ -1858,10 +1838,15 @@ class FormulaPropertyInterface extends PropertyInterface {
 abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Property<T> {
  
     public Class GetValueClass(InterfaceClass Class) {
-        for(T Interface : Interfaces)
+
+        Class Result = null;
+        for(T Interface : Interfaces) {
             if(!Class.get(Interface).IsParent(Interface.Class)) return null;
-        
-        return Interfaces.iterator().next().Class;
+            if(Result==null || !(Interface.Class instanceof BitClass))
+                Result = Interface.Class;
+        }
+
+        return Result;
     }
 
     public InterfaceClassSet GetClassSet(Class ReqValue) {
@@ -1871,12 +1856,8 @@ abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Prope
             ResultSet.put(Interface,Interface.Class);
 
         InterfaceClassSet Result = new InterfaceClassSet();
-        if(ReqValue==null || Interfaces.iterator().next().Class.IsParent(ReqValue)) Result.add(ResultSet);
+        if(ReqValue==null || GetValueClass(ResultSet).IsParent(ReqValue)) Result.add(ResultSet);
         return Result;
-    }
-
-    public String GetDBType() {
-        return Interfaces.iterator().next().Class.GetDBType();
     }
 
     boolean HasChanges(DataSession Session) {
@@ -1922,6 +1903,14 @@ class WhereStringFormulaProperty extends StringFormulaProperty {
     
     WhereStringFormulaProperty(String iFormula) {
         super(iFormula);
+    }
+
+    public Class GetValueClass(InterfaceClass ValueClass) {
+        
+        for(StringFormulaPropertyInterface Interface : Interfaces)
+            if(!ValueClass.get(Interface).IsParent(Interface.Class)) return null;
+
+        return Class.bitClass;
     }
 
     SourceExpr proceedSourceExpr(Map<PropertyInterface, SourceExpr> JoinImplement, boolean NotNull) {
