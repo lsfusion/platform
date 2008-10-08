@@ -136,7 +136,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
         return Result;
     }
 
-    void fillSourceSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,TableFactory TableFactory, DataSession Session,Set<ObjectProperty> ChangedProps) {
+    void fillSourceSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup,TableFactory TableFactory, DataSession Session,Set<Property> ChangedProps) {
 
         // фильтры первыми потому как ограничивают ключи
         for(Filter Filt : Filters) Filt.fillSelect(Query,ClassGroup,Session,ChangedProps);
@@ -172,8 +172,8 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     }
 }
 
-class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImplement> {
-    PropertyObjectImplement(ObjectProperty iProperty) {super(iProperty);}
+class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
+    PropertyObjectImplement(Property iProperty) {super(iProperty);}
 
     // получает Grid в котором рисоваться
     GroupObjectImplement GetApplyObject() {
@@ -218,7 +218,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectProperty,ObjectImp
         return false;
     }
 
-    SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session, Set<ObjectProperty> ChangedProps,boolean NotNull) {
+    SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session, Set<Property> ChangedProps,boolean NotNull) {
 
         Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
 
@@ -336,7 +336,7 @@ class Filter {
         return Property.GetApplyObject();
     }
 
-    boolean DataUpdated(Set<ObjectProperty> ChangedProps) {
+    boolean DataUpdated(Set<Property> ChangedProps) {
         return ChangedProps.contains(Property.Property);
     }
 
@@ -360,7 +360,7 @@ class Filter {
         return Value.ObjectUpdated(ClassGroup);
     }
 
-    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup, DataSession Session,Set<ObjectProperty> ChangedProps) {
+    void fillSelect(JoinQuery<ObjectImplement,?> Query,Set<GroupObjectImplement> ClassGroup, DataSession Session,Set<Property> ChangedProps) {
         Query.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session,ChangedProps,true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,ChangedProps),Compare));
     }
 }
@@ -373,7 +373,7 @@ abstract class ValueLink {
 
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {return false;}
 
-    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps);
+    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<Property> ChangedProps);
 }
 
 
@@ -383,7 +383,7 @@ class UserValueLink extends ValueLink {
 
     UserValueLink(Object iValue) {Value=iValue;}
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<Property> ChangedProps) {
         return new ValueSourceExpr(Value);
     }
 }
@@ -409,7 +409,7 @@ class ObjectValueLink extends ValueLink {
         return ((Object.Updated & (1<<0))!=0);
     }
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<Property> ChangedProps) {
         return Object.getSourceExpr(ClassGroup,ClassSource);
     }
 }
@@ -435,7 +435,7 @@ class PropertyValueLink extends ValueLink {
         return Property.ObjectUpdated(ClassGroup);
     }
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<ObjectProperty> ChangedProps) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<Property> ChangedProps) {
         return Property.getSourceExpr(ClassGroup,ClassSource,Session,ChangedProps,true);
     }
 }
@@ -454,7 +454,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     DataSession Session;
 
-    Set<ObjectProperty> ChangedProps = new HashSet();
+    Set<Property> ChangedProps = new HashSet();
     RemoteForm(int iID, DataAdapter iAdapter,T iBL) throws SQLException {
 
         ID = iID;
@@ -639,7 +639,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement property) {
 
-        ObjectProperty changeProperty = property.Property;
+        Property changeProperty = property.Property;
         Map<PropertyInterface,ObjectValue> keys = new HashMap();
         for(PropertyInterface Interface : (Collection<PropertyInterface>)changeProperty.Interfaces) {
             ObjectImplement object = property.Mapping.get(Interface);
@@ -708,7 +708,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Session);
                 // изменяем св-ва
                 for(Entry<Map<ObjectImplement,Integer>,Map<String,Object>> Row : Result.entrySet()) {
-                    ObjectProperty ChangeProperty = Filter.Property.Property;
+                    Property ChangeProperty = Filter.Property.Property;
                     Map<PropertyInterface,ObjectValue> Keys = new HashMap();
                     for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
@@ -768,9 +768,9 @@ class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     // получаем все аггрегированные св-ва задействованные на форме
-    Set<ObjectProperty> GetProperties() {
+    Set<Property> GetProperties() {
 
-        Set<ObjectProperty> Result = new HashSet();
+        Set<Property> Result = new HashSet();
         for(PropertyView PropView : Properties)
             Result.add(PropView.View.Property);
         return Result;

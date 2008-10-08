@@ -412,7 +412,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     PropertyObjectImplement AddPropView(NavigatorForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
-        PropertyObjectImplement PropImpl = new PropertyObjectImplement((ObjectProperty)ListProp.Property);
+        PropertyObjectImplement PropImpl = new PropertyObjectImplement(ListProp.Property);
 
         ListIterator<PropertyInterface> i = ListProp.ListInterfaces.listIterator();
         for(ObjectImplement Object : Params) {
@@ -555,11 +555,11 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LJP DDep = AddJProp(Less,2,DocDate,1,DocDate,2);
         DDep.Property.caption = "предш. док.";
-        ((ObjectProperty)DDep.Property).XL = true;
+        DDep.Property.XL = true;
 
         LJP QDep = AddJProp(Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
         QDep.Property.caption = "изм. баланса";
-        ((ObjectProperty)QDep.Property).XL = true;
+        QDep.Property.XL = true;
 
         GSum = AddGProp(QDep,true,2,3);
         GSum.Property.caption = "остаток до операции";
@@ -606,9 +606,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitConstraints() {
 /*
-        Constraints.put((ObjectProperty)OstArtStore.Property,new PositiveConstraint());
-        Constraints.put((ObjectProperty)FilledProperty.Property,new NotEmptyConstraint());
-        Constraints.put((ObjectProperty)BarCode.Property,new UniqueConstraint());
+        Constraints.put((Property)OstArtStore.Property,new PositiveConstraint());
+        Constraints.put((Property)FilledProperty.Property,new NotEmptyConstraint());
+        Constraints.put((Property)BarCode.Property,new UniqueConstraint());
 */
     }
 

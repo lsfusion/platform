@@ -16,7 +16,7 @@ import java.util.*;
 // constraint
 abstract class Constraint {
     
-    abstract String Check(DataSession Session, ObjectProperty Property) throws SQLException;
+    abstract String Check(DataSession Session, Property Property) throws SQLException;
 
 }
 
@@ -26,7 +26,7 @@ abstract class ValueConstraint extends Constraint {
 
     int Invalid;
 
-    String Check(DataSession Session, ObjectProperty Property) throws SQLException {
+    String Check(DataSession Session, Property Property) throws SQLException {
 
         JoinQuery<PropertyInterface,String> Changed = new JoinQuery<PropertyInterface,String>(Property.Interfaces);
 
@@ -69,7 +69,7 @@ class PositiveConstraint extends ValueConstraint {
 // >= 0
 class UniqueConstraint extends Constraint {
     
-    String Check(DataSession Session, ObjectProperty Property) throws SQLException {
+    String Check(DataSession Session, Property Property) throws SQLException {
         
         // надо проверить для каждого что старых нету
         // изменения JOIN'им (ст. запрос FULL JOIN новый) ON изм. зн = новому зн. WHERE код изм. = код нов. и ключи не равны и зн. не null
