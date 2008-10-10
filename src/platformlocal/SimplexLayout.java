@@ -36,7 +36,7 @@ public class SimplexLayout implements LayoutManager2 {
     Dimension oldDimension;
     Map<List<Component>,Map<Component, Rectangle>> cache = new HashMap();
 
-    List<Component> components = new ArrayList();
+    List<Component> allComponents = new ArrayList();
     Map<Component,SimplexConstraints> constraints = new HashMap();
     
     private Container mainContainer;
@@ -52,13 +52,13 @@ public class SimplexLayout implements LayoutManager2 {
     }
     
     public void addLayoutComponent(String name, Component comp) {
-        if (components.indexOf(comp) == -1) components.add(comp);
+        if (allComponents.indexOf(comp) == -1) allComponents.add(comp);
         constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
         hasChanged = true;
     }
 
     public void addLayoutComponent(Component comp, Object constr) {
-        if (components.indexOf(comp) == -1) components.add(comp);
+        if (allComponents.indexOf(comp) == -1) allComponents.add(comp);
         if (constr != null)
             constraints.put(comp, (SimplexConstraints)constr);
         else
@@ -68,7 +68,7 @@ public class SimplexLayout implements LayoutManager2 {
     }
     
     public void removeLayoutComponent(Component comp) {
-        components.remove(comp);
+        allComponents.remove(comp);
         constraints.remove(comp);
 //        System.out.println("removeLayoutComp");
         hasChanged = true;
@@ -86,6 +86,18 @@ public class SimplexLayout implements LayoutManager2 {
         return new Dimension(10000,10000);
     }
     
+    List<Component> components;
+    boolean fillVisibleComponents() {
+
+        components = new ArrayList();
+        for (Component component : allComponents) {
+            if (component.isVisible())
+                components.add(component);
+        }
+
+        return components.isEmpty();
+
+    }
 
     public void layoutContainer(final Container parent) {
 
@@ -94,7 +106,8 @@ public class SimplexLayout implements LayoutManager2 {
         long stl = System.currentTimeMillis();
 
         if (parent != mainContainer) return;
-        if (components.isEmpty()) return;
+
+        if (fillVisibleComponents()) return;
 
         if (parent.getSize().equals(oldDimension)) {
 
@@ -337,7 +350,7 @@ public class SimplexLayout implements LayoutManager2 {
 //        List<Integer> extraObjFnc;
         
         for (Component component : components) {
-            
+
             Dimension pref = component.getPreferredSize();
             
             SimplexComponentInfo info = infos.get(component);

@@ -102,7 +102,7 @@ class Layout extends JFrame implements ComponentCollector {
 
             public void openForm(ClientNavigatorForm element) {
                 try {
-                    Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this));
+                    Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this, false));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -111,9 +111,9 @@ class Layout extends JFrame implements ComponentCollector {
             public void openRelevantForm(ClientNavigatorForm element) {
                 try {
                     if (element.isPrintForm)
-                        Main.Layout.DefaultStation.drop(new ReportDockable(element.ID, this));
+                        Main.Layout.DefaultStation.drop(new ReportDockable(element.ID, this, true));
                     else
-                        Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this));
+                        Main.Layout.DefaultStation.drop(new ClientFormDockable(element.ID, this, true));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -462,10 +462,10 @@ abstract class FormDockable extends DefaultDockable {
 
     int formID;
 
-    FormDockable(int iformID, ClientNavigator navigator) throws SQLException {
+    FormDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws SQLException {
         this(iformID);
 
-        createActiveComponent(navigator);
+        createActiveComponent(navigator, currentSession);
     }
 
     FormDockable(int iformID, ClientNavigator navigator, RemoteForm remoteForm) throws SQLException {
@@ -478,8 +478,8 @@ abstract class FormDockable extends DefaultDockable {
         formID = iformID;
     }
 
-    void createActiveComponent(ClientNavigator navigator) throws SQLException {
-        createActiveComponent(navigator, navigator.remoteNavigator.CreateForm(formID));
+    void createActiveComponent(ClientNavigator navigator, boolean currentSession) throws SQLException {
+        createActiveComponent(navigator, navigator.remoteNavigator.CreateForm(formID, currentSession));
     }
 
     void createActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
@@ -504,8 +504,8 @@ abstract class FormDockable extends DefaultDockable {
 
 class ReportDockable extends FormDockable {
 
-    public ReportDockable(int iformID, ClientNavigator navigator) throws SQLException {
-        super(iformID, navigator);
+    public ReportDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws SQLException {
+        super(iformID, navigator, currentSession);
     }
 
     public ReportDockable(int iformID, ClientNavigator navigator, RemoteForm remoteForm) throws SQLException {
@@ -546,8 +546,8 @@ class ReportDockable extends FormDockable {
 
 class ClientFormDockable extends FormDockable {
 
-    ClientFormDockable(int iformID, ClientNavigator inavigator) throws SQLException {
-        super(iformID, inavigator);
+    ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws SQLException {
+        super(iformID, inavigator, currentSession);
         setFactoryID(ClientFormFactory.FACTORY_ID);
     }
 
@@ -597,7 +597,7 @@ class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
 
     public ClientFormDockable layout(Integer integer) {
         try {
-            return new ClientFormDockable(integer,navigator);
+            return new ClientFormDockable(integer, navigator, false);
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }

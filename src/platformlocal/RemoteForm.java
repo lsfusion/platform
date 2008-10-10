@@ -455,13 +455,13 @@ class RemoteForm<T extends BusinessLogics<T>> {
     DataSession Session;
 
     Set<Property> ChangedProps = new HashSet();
-    RemoteForm(int iID, DataAdapter iAdapter,T iBL) throws SQLException {
+    RemoteForm(int iID, DataAdapter iAdapter,T iBL, DataSession iSession) throws SQLException {
 
         ID = iID;
 
         BL = iBL;
 
-        Session = BL.createSession(iAdapter);
+        Session = iSession;
 
         StructUpdated = true;
     }
@@ -1492,6 +1492,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
     public int getObjectClassID(Integer objectID) {
         return getObjectImplement(objectID).Class.ID;
     }
+
+    public void gainedFocus() { }
 }
 
 // поле для отрисовки отчета

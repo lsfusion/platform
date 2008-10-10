@@ -80,7 +80,7 @@ public class ClientDialog extends JDialog {
 
         if (currentForm != null) remove(currentForm);
         try {
-            currentForm = new ClientForm(navigator.remoteNavigator.CreateForm(formID), navigator) {
+            currentForm = new ClientForm(navigator.remoteNavigator.CreateForm(formID, true), navigator) {
 
                 boolean okPressed() {
                     if (super.okPressed()) {

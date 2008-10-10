@@ -192,9 +192,8 @@ public abstract class ClientNavigator extends AbstractNavigator {
                                                 remoteNavigator.GetElementsByteArray(elementID));
     }
 
-    public void changeCurrentForm(int formID) {
-        if (remoteNavigator.changeCurrentForm(formID))
-            relevantFormNavigator.tree.createRootNode();
+    public void currentFormChanged() {
+        relevantFormNavigator.tree.createRootNode();
     }
 
     public void changeCurrentClass(int classID) {

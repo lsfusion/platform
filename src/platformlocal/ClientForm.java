@@ -79,7 +79,8 @@ public class ClientForm extends JPanel {
                     if (hasFocus != newHasFocus) {
                         hasFocus = newHasFocus;
                         if (hasFocus) {
-                            clientNavigator.changeCurrentForm(remoteForm.getID());
+                            remoteForm.gainedFocus();
+                            clientNavigator.currentFormChanged();
                         }
                     }
                 }
@@ -2067,46 +2068,50 @@ public class ClientForm extends JPanel {
 
                 object = iobject;
 
-                String extraCaption = ((groupObject.size() > 1) ? ("(" + object.caption + ")") : "");
-
-                buttonAdd = new JButton("Добавить" + extraCaption);
-                buttonAdd.setFocusable(false);
-                buttonAdd.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        addObject(object, classModel.getDerivedClass());
-                    }
-
-                });
-
-                formLayout.add(groupObject.addView, buttonAdd);
-
-                buttonDel = new JButton("Удалить" + extraCaption);
-                buttonDel.setFocusable(false);
-                buttonDel.addActionListener(new ActionListener() {
-
-                    public void actionPerformed(ActionEvent e) {
-                        changeClass(object, null);
-                    }
-
-                });
-
-                formLayout.add(groupObject.delView, buttonDel);
-
                 classModel = new ClassModel(object.classView);
 
-                if (classModel.rootClass.hasChilds) {
-                    buttonChangeClass = new JButton("Изменить класс" + extraCaption);
-                    buttonChangeClass.setFocusable(false);
-                    buttonChangeClass.addActionListener(new ActionListener() {
+                if (classModel.rootClass instanceof ClientObjectClass) {
+
+                    String extraCaption = ((groupObject.size() > 1) ? ("(" + object.caption + ")") : "");
+
+                    buttonAdd = new JButton("Добавить" + extraCaption);
+                    buttonAdd.setFocusable(false);
+                    buttonAdd.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
-                            changeClass(object, classModel.getSelectedClass());
+                            addObject(object, classModel.getDerivedClass());
                         }
 
                     });
 
-                    formLayout.add(groupObject.changeClassView, buttonChangeClass);
+                    formLayout.add(groupObject.addView, buttonAdd);
+
+                    buttonDel = new JButton("Удалить" + extraCaption);
+                    buttonDel.setFocusable(false);
+                    buttonDel.addActionListener(new ActionListener() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            changeClass(object, null);
+                        }
+
+                    });
+
+                    formLayout.add(groupObject.delView, buttonDel);
+
+                    if (classModel.rootClass.hasChilds) {
+                        buttonChangeClass = new JButton("Изменить класс" + extraCaption);
+                        buttonChangeClass.setFocusable(false);
+                        buttonChangeClass.addActionListener(new ActionListener() {
+
+                            public void actionPerformed(ActionEvent e) {
+                                changeClass(object, classModel.getSelectedClass());
+                            }
+
+                        });
+
+                        formLayout.add(groupObject.changeClassView, buttonChangeClass);
+                    }
+
                 }
 
             }
@@ -2400,7 +2405,7 @@ public class ClientForm extends JPanel {
 
         private boolean add(ClientComponentView component, Component view) {
             if (!contviews.get(component.container).isAncestorOf(view)) {
-                contviews.get(component.container).add(view, component.constraints);
+                contviews.get(component.container).addComponent(view, component.constraints);
                 contviews.get(component.container).repaint();
                 return true;
             } else
@@ -2409,7 +2414,7 @@ public class ClientForm extends JPanel {
 
         private boolean remove(ClientComponentView component, Component view) {
            if (contviews.get(component.container).isAncestorOf(view)) {
-                contviews.get(component.container).remove(view);
+                contviews.get(component.container).removeComponent(view);
                 contviews.get(component.container).repaint();
                 return true;
            } else
@@ -2437,7 +2442,46 @@ public class ClientForm extends JPanel {
 
                 setPreferredSize(new Dimension(10000, 10000));
 
+                setVisible(false);
+
             }
+
+            public void addComponent(Component comp, Object constraints) {
+
+                add(comp, constraints);
+                incrementComponentCount();
+            }
+
+            public void removeComponent(Component comp) {
+
+                remove(comp);
+                decrementComponentCount();
+            }
+
+            int compCount = 0;
+            private void incrementComponentCount() {
+
+                if (compCount == 0)
+                    setVisible(true);
+
+                compCount++;
+
+                Container parent = getParent();
+                if (parent instanceof ContainerView)
+                    ((ContainerView)parent).incrementComponentCount();
+            }
+
+            private void decrementComponentCount() {
+
+                compCount--;
+                if (compCount == 0)
+                    setVisible(false);
+
+                Container parent = getParent();
+                if (parent instanceof ContainerView)
+                    ((ContainerView)parent).decrementComponentCount();
+            }
+
         }
     }
 }

@@ -39,7 +39,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
                 if (currentForm == null)
                     return new ArrayList();
                 else
-                    return new ArrayList(currentForm.relevantElements);
+                    return new ArrayList(((NavigatorForm)BL.baseElement.getNavigatorElement(currentForm.getID())).relevantElements);
             case (NAVIGATORGROUP_RELEVANTCLASS) :
                 if (currentClass == null)
                     return new ArrayList();
@@ -62,14 +62,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
     //используется для RelevantFormNavigator
-    NavigatorForm<T> currentForm;
-    boolean changeCurrentForm(int formID) {
-
-        if (currentForm != null && currentForm.ID == formID) return false;
-
-        currentForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
-        return true;
-    }
+    RemoteForm<T> currentForm;
 
     //используется для RelevantClassNavigator
     Class currentClass;
@@ -82,14 +75,26 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
 //    RemoteForm<T> lastOpenedForm;
-    RemoteForm<T> CreateForm(int formID) throws SQLException {
+    RemoteForm<T> CreateForm(int formID, boolean currentSession) throws SQLException {
 
         NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
-        RemoteForm remoteForm = new RemoteForm(formID, Adapter, BL) {
+
+        DataSession session;
+        if (currentSession && currentForm != null)
+            session = currentForm.Session;
+        else
+            session = BL.createSession(Adapter);
+
+        RemoteForm remoteForm = new RemoteForm(formID, Adapter, BL, session) {
 
             protected void objectChanged(Class cls, Integer objectID) {
                 super.objectChanged(cls, objectID);
                 addCacheObject(cls, objectID);
+            }
+
+            public void gainedFocus() {
+                super.gainedFocus();
+                currentForm = this;
             }
         };
 

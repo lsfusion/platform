@@ -155,7 +155,7 @@ class DateConverter {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        return calendar.get(Calendar.YEAR) * 10000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DATE);       
+        return (calendar.get(Calendar.YEAR) - 2000) * 10000 + calendar.get(Calendar.MONTH) * 100 + calendar.get(Calendar.DATE);
     }
 
     public static Date intToDate(int num) {
@@ -163,7 +163,7 @@ class DateConverter {
         if (num == 0) return null;
         
         Calendar calendar = Calendar.getInstance();
-        calendar.set(num / 10000, (num / 100) % 100, num % 100);
+        calendar.set(num / 10000 + 2000, (num / 100) % 100, num % 100);
         return calendar.getTime();
     }
 
