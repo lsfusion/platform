@@ -336,10 +336,13 @@ public class SimplexLayout implements LayoutManager2 {
     private void fillObjFunction(LpSolve solver) throws LpSolveException {
 
         solver.addColumn(new double[0]);
+
         int colmaxw = solver.getNcolumns();
+        boolean fillmaxw = false;
 
         solver.addColumn(new double[0]);
         int colmaxh = solver.getNcolumns();
+        boolean fillmaxh = false;
         
         List<Double> objFnc = new ArrayList();
         for (int i = 0; i < solver.getNcolumns()+1; i++)
@@ -359,36 +362,44 @@ public class SimplexLayout implements LayoutManager2 {
             
             if (constraint.fillHorizontal > 0) {
                 solver.addConstraintex(3, new double[] {1, -1, -1 * constraint.fillHorizontal}, new int[] {info.R, info.L, colmaxw}, LpSolve.GE, 0);
+                fillmaxw = true;
             } else {
-                
-                solver.addColumn(new double[0]);
-                int var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.width+1.0);
-                solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.GE, 0);
-                objFnc.add(-1.0);
 
-                solver.addColumn(new double[0]);
-                var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.width+1.0);
-                solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.LE, 0);
-                objFnc.add(1.0);
+                if (constraint.fillHorizontal == 0) {
+
+                    solver.addColumn(new double[0]);
+                    int var = solver.getNcolumns();
+                    solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.width+1.0);
+                    solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.GE, 0);
+                    objFnc.add(-1.0);
+
+                    solver.addColumn(new double[0]);
+                    var = solver.getNcolumns();
+                    solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.width+1.0);
+                    solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.LE, 0);
+                    objFnc.add(1.0);
+                }
             }
                 
             if (constraint.fillVertical > 0) {
                 solver.addConstraintex(3, new double[] {1, -1, -1 * constraint.fillVertical}, new int[] {info.B, info.T, colmaxh}, LpSolve.GE, 0);
+                fillmaxh = true;
             } else {
-                
-                solver.addColumn(new double[0]);
-                int var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height);
-                solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.GE, 0);
-                objFnc.add(-1.0);
 
-                solver.addColumn(new double[0]);
-                var = solver.getNcolumns();
-                solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height);
-                solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.LE, 0);
-                objFnc.add(1.0);
+                if (constraint.fillVertical == 0) {
+                    
+                    solver.addColumn(new double[0]);
+                    int var = solver.getNcolumns();
+                    solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height);
+                    solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.GE, 0);
+                    objFnc.add(-1.0);
+
+                    solver.addColumn(new double[0]);
+                    var = solver.getNcolumns();
+                    solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height);
+                    solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.LE, 0);
+                    objFnc.add(1.0);
+                }
             }
             objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -0.5 : 0.0));
             objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -0.5 : 0.0));
@@ -397,8 +408,8 @@ public class SimplexLayout implements LayoutManager2 {
                     
         }
         
-        objFnc.set(colmaxw, 2.0);
-        objFnc.set(colmaxh, 2.0);
+        objFnc.set(colmaxw, (fillmaxw) ? 2.0 : 0.0);
+        objFnc.set(colmaxh, (fillmaxh) ? 2.0 : 0.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)
@@ -606,8 +617,8 @@ class SimplexSolverDirections {
             B = startColumn + varCount;
         }
 
-        if (varCount > 1)
-            System.out.println("LPSolve : addVariables - " + varCount);
+//        if (varCount > 1)
+//            System.out.println("LPSolve : addVariables - " + varCount);
         
         //задаем базовое ограничение
         double[] coeffs = new double[varCount];

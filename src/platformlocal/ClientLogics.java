@@ -382,6 +382,8 @@ class DefaultClientFormView extends ClientFormView {
                 
                 groupPropertyContainer.constraints.order = clientProperty.constraints.order;
                 groupPropertyContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+                groupPropertyContainer.constraints.fillVertical = -1;
+                groupPropertyContainer.constraints.fillHorizontal = -1;
                 groupPropertyContainer.title = groupProperty.caption;
 
                 containers.add(groupPropertyContainer);

@@ -17,6 +17,7 @@ import java.util.Set;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class SwingUtils {
@@ -77,6 +78,21 @@ class ClientFormTable extends JTable {
 
     }
 
+    // Решение проблемы конфликта JTable и DockingFrames
+    // Так сделано, чтобы setNextFocusableComponent в super.prepareEditor "словил" не DockFocusTraversalPolicy
+    // у BasicDockableDisplayer (так как он при этом зацикливается), а DefaultFocusTraversalPolicy у JTable.
+
+    @Override
+    public Component prepareEditor(TableCellEditor editor, int row, int column) {
+        setFocusCycleRoot(true);
+        return super.prepareEditor(editor, row, column);
+    }
+
+    @Override
+    public void removeEditor() {
+        super.removeEditor();
+        setFocusCycleRoot(false);
+    }
 }
 
 class SingleCellTable extends ClientFormTable {

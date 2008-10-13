@@ -88,6 +88,10 @@ public class ClientForm extends JPanel {
             }
         });
 
+/*        this.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
+        Container cont = getFocusCycleRootAncestor();
+        if (cont != null)
+            cont.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());*/
 
 /*        this.setFocusable(true);
 //        this.setRequestFocusEnabled(true);
@@ -98,6 +102,7 @@ public class ClientForm extends JPanel {
 //                clientNavigator.changeCurrentForm(this);
             }
         });*/
+
     }
 
     private boolean hasFocus = false;
@@ -518,8 +523,13 @@ public class ClientForm extends JPanel {
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
-                    if (userChange)
-                        panel.getObjectIDView(0).requestFocusInWindow();
+                    if (userChange) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                panel.getObjectIDView(0).requestFocusInWindow();
+                            }
+                        });
+                    }
 //                    panel.requestFocusInWindow();
                 }
 
@@ -926,7 +936,7 @@ public class ClientForm extends JPanel {
             }
 
             private Component getObjectIDView(int ind) {
-                return models.get(groupObject.get(ind).objectIDView).view;
+                return models.get(groupObject.get(ind).objectIDView).view.table;
             }
 
             private void setGroupObjectIDValue(ClientGroupObjectValue value) {
@@ -2448,8 +2458,8 @@ public class ClientForm extends JPanel {
 
             public void addComponent(Component comp, Object constraints) {
 
-                add(comp, constraints);
                 incrementComponentCount();
+                add(comp, constraints);
             }
 
             public void removeComponent(Component comp) {

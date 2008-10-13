@@ -2,6 +2,8 @@ package platformlocal;
 
 import bibliothek.gui.*;
 import bibliothek.gui.dock.*;
+import bibliothek.gui.dock.themes.basic.BasicDockableDisplayer;
+import bibliothek.gui.dock.station.DockableDisplayer;
 import bibliothek.gui.dock.event.DockFrontendAdapter;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
 import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
@@ -169,7 +171,74 @@ class Layout extends JFrame implements ComponentCollector {
             }
         });
 
+/*        String[] columnNames = {"First Name",
+                                "Last Name",
+                                "Sport",
+                                "# of Years",
+                                "Vegetarian"};
+
+        Object[][] data = {
+            {"Mary", "Campione",
+             "Snowboarding", new Integer(5), new Boolean(false)},
+            {"Alison", "Huml",
+             "Rowing", new Integer(3), new Boolean(true)},
+            {"Kathy", "Walrath",
+             "Knitting", new Integer(2), new Boolean(false)},
+            {"Sharon", "Zakhour",
+             "Speed reading", new Integer(20), new Boolean(true)},
+            {"Philip", "Milne",
+             "Pool", new Integer(10), new Boolean(false)}
+        };
+
+        final JTable table = new JTable(data, columnNames);
+        table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+        table.setFillsViewportHeight(true);
+
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        final JButton button = new JButton("Test");
+        button.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+
+                JButton butt1 = new JButton();
+                JButton butt2 = new JButton();
+                panel.add(butt1);
+                butt1.setNextFocusableComponent(table);
+                table.setNextFocusableComponent(button);
+//                butt1.setNextFocusableComponent(null);
+                panel.remove(butt1);
+//                table.setNextFocusableComponent(table);
+            }
+        });
+        
+        panel.add(table);
+        panel.add(button);
+
+        DefaultDockable dock = new DefaultDockable(panel, "Table");
+
         setVisible(true);
+
+        SplitStation.drop(dock);
+
+        for (DockableDisplayer displayer : SplitStation.getDisplayers()) {
+            if (displayer instanceof BasicDockableDisplayer) {
+                ((BasicDockableDisplayer)displayer).setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
+            }
+        }
+        Container cont = table.getFocusCycleRootAncestor();
+        cont.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
+
+        panel.setFocusCycleRoot(true);
+//        panel.setFocusTraversalPolicyProvider(true);
+        panel.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
+
+//        Container cont = table.getFocusCycleRootAncestor();
+        System.out.println(cont);
+        System.out.println(cont.getFocusTraversalPolicy());
+        table.setNextFocusableComponent(button);
+        System.out.println(cont.getFocusTraversalPolicy()); */
     }
 
     void write() throws IOException {
