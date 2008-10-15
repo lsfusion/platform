@@ -28,10 +28,16 @@ class SetBuilder<T> {
     }
     
     // строит список подмн-в в лексикографическом порядке
-    List<List<T>> BuildSubSetList(List<T> BuildSet) {
+    List<List<T>> BuildSubSetList(Collection<T> BuildSet) {
+
+        List<T> BuildList;
+        if(BuildSet instanceof List)
+            BuildList = (List<T>)BuildSet;
+        else
+            BuildList = new ArrayList<T>(BuildSet);
 
         List<List<T>> Result = new ArrayList();
-        RecFillSubSetList(BuildSet,0,Result,new ArrayList());
+        RecFillSubSetList(BuildList,0,Result,new ArrayList());
         return Result;
     }
 }
