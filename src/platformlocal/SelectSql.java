@@ -112,6 +112,7 @@ abstract class Source<K,V> {
     LinkedHashMap<Map<K,Integer>,Map<V,Object>> executeSelect(DataSession Session) throws SQLException {
 
         LinkedHashMap<Map<K,Integer>,Map<V,Object>> ExecResult = new LinkedHashMap();
+        if(compile() instanceof EmptySource) return ExecResult;
 
         Statement Statement = Session.Connection.createStatement();
 
@@ -279,12 +280,16 @@ abstract class Source<K,V> {
         return Query.compile();
     }
 
-    // оборачивает Source в JoinQuery 
-    Source<K, V> getJoinQuery() {
+    JoinQuery<K,V> getJoinQuery() {
         JoinQuery<K,V> Query = new JoinQuery<K,V>(Keys);
         Join<K,V> SourceJoin = new UniJoin<K,V>(this,Query,true);
         Query.addAll(SourceJoin.Exprs);
-        return Query.compile();
+        return Query;
+    }
+
+    // оборачивает Source в JoinQuery 
+    Source<K, V> getCompiledJoinQuery() {
+        return getJoinQuery().compile();
     }
 
     Source<K,V> getEmptySource() {
@@ -1253,6 +1258,9 @@ class CaseWhenSourceExpr extends SourceExpr {
 
     static String getExpr(String WhereSource,String TrueSource,String FalseSource,SQLSyntax Syntax) {
 
+        if(WhereSource.length()==0)
+            WhereSource = WhereSource;
+
         if(WhereSource.equals(StaticWhere.TRUE)) return TrueSource;
         if(WhereSource.equals(StaticWhere.FALSE)) return FalseSource;
         if(TrueSource.equals(NullSourceExpr.STRING) && FalseSource.equals(NullSourceExpr.STRING)) return NullSourceExpr.STRING;
@@ -2016,8 +2024,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Properties.put(Property,Expr);
     }
 
-    public void addAll(Map<V,? extends SourceExpr> AllProperties) {
-        for(Map.Entry<V,? extends SourceExpr> MapProp : AllProperties.entrySet())
+    public void addAll(Map<? extends V,? extends SourceExpr> AllProperties) {
+        for(Map.Entry<? extends V,? extends SourceExpr> MapProp : AllProperties.entrySet())
             add(MapProp.getKey(),MapProp.getValue());
     }
 
@@ -2231,7 +2239,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
         // если один иннер оператор и нету Source'ов
         if(!(Merge instanceof SelectQuery) && InnerCount==1 && Wheres.size()==0)
-            return proceedMerge(Merge.getJoinQuery(),MergeKeys,MergeProps);
+            return proceedMerge(Merge.getCompiledJoinQuery(),MergeKeys,MergeProps);
 
         if(!(Merge instanceof JoinQuery)) return null;
 
@@ -2403,15 +2411,11 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Collection<KeyExpr<K>> InnerNullKeys = new ArrayList();
         for(SourceExpr Key : MapKeys.values())
             if(((KeyExpr<K>)Key).Source==null)
-                InnerNullKeys.add((KeyExpr<K>)Key);
+                throw new RuntimeException("Not Enough Inner Keys");
 
         for(Join Join : Joins)
             if(!Join.Inner)
                 From = From + " LEFT JOIN " + Join.getFrom(JoinAlias,null, Syntax);
-
-        // нужно доставать ключи из LEFT JOIN'а и кидать на NOT NULL
-        for(KeyExpr<K> NullKey : InnerNullKeys)
-            WhereSelect.add(SourceIsNullWhere.getExpr(NullKey.Source,Syntax,true));
 
         fillSources(JoinAlias, KeySelect, PropertySelect, WhereSelect, Syntax);
 
@@ -2665,9 +2669,9 @@ class OperationUnion<K> extends ExprUnion<K> {
                     Collection<Union> Unions = new ArrayList();
                     Operand.Expr.fillUnions(Unions);
                     // когда есть хоть в одном источнике
-                    String NotInSource = "";
+                    String NotInSource = StaticWhere.TRUE;
                     for(Union Union : Unions)
-                        NotInSource = (NotInSource.length()==0?"":NotInSource+" AND ") + SourceIsNullWhere.getExpr(Union.Source.getInSelectString(MapAliases.get(Union)),Syntax,false);
+                        NotInSource = FieldOPWhere.getExpr(NotInSource,SourceIsNullWhere.getExpr(Union.Source.getInSelectString(MapAliases.get(Union)),Syntax,false),true);
 
                     SourceExpr = CaseWhenSourceExpr.getExpr(NotInSource, PrevExpr, SourceExpr, Syntax);
                 }
@@ -2829,7 +2833,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
 
         // если операнд один сделаем JoinQuery, он его "раскроет"
         if(Operands.size()==1)
-            return getJoinQuery().fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
+            return getCompiledJoinQuery().fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
         Map<K,ListCoeffExpr<String>> UnionKeys = new HashMap();
         Map<Union<K,Object>,String> MapAliases = new HashMap();
@@ -2883,10 +2887,10 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
     }
 
     int DefaultOperator;
-    void add(Source<K,V> Source,Integer Coeff) {
+    void add(Source<? extends K,V> Source,Integer Coeff) {
 
         // докидываем с DefaultOperator'ом
-        Union<K,V> Union = new Union<K,V>(Source);
+        Union<K,V> Union = new Union<K,V>((Source<K,V>) Source);
         Operands.add((Union<K,Object>) Union);
         for(Map.Entry<V,PropertyUnion<K,V>> MapExpr : Union.Exprs.entrySet()) {
             OperationUnion<K> ToAddExpr = null;
@@ -3217,7 +3221,10 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
 
     Source<K, V> proceedCompile() {
         From = From.compile();
-        return this;
+        if(From instanceof EmptySource)
+            return getEmptySource();
+        else
+            return this;
     }
 }
 

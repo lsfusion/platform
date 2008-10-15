@@ -139,7 +139,11 @@ public class Main {
             System.out.println("Opened");
             new TestBusinessLogics(1);
             System.out.println("Closed");
-            new TestBusinessLogics(0);
+//            try {
+                new TestBusinessLogics(0);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
             System.out.println("Suspicious");
             new TestBusinessLogics(-1);
         }
@@ -591,6 +595,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         SumMaxArt = AddGProp(MaxOpStore,true,2);
         SumMaxArt.Property.caption = "макс. операция (сумма)";
+
+        LGP ArtMaxQty = AddGProp(Quantity,false,2);
+        ArtMaxQty.Property.caption = "макс. кол-во";
 
         LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",Class.dateClass,Class.dateClass,Class.dateClass);
         LJP DokBetweenDate = AddJProp(BetweenDate,3,DocDate,1,2,3);

@@ -260,8 +260,14 @@ class PostgreDataAdapter extends DataAdapter {
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Connection Connect = DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=postgres&password=11111");
-        Connect.createStatement().execute("DROP DATABASE testplat");
-        Connect.createStatement().execute("CREATE DATABASE testplat");
+        try {
+            Connect.createStatement().execute("DROP DATABASE testplat");
+        } catch (SQLException e) {
+        }
+        try {
+            Connect.createStatement().execute("CREATE DATABASE testplat");
+        } catch (SQLException e) {
+        }
         Connect.close();
     }
 

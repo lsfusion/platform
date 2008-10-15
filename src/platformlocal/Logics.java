@@ -534,7 +534,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         InitNavigators();
     }
 
-    static int LastSuspicious = 0;
+    static Set<Integer> WereSuspicious = new HashSet();
 
     // тестирующий конструктор
     BusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
@@ -548,11 +548,18 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         Integer Seed;
         List<Integer> ProceedSeeds = new ArrayList();
-        int[] Suspicious = {3949,387,7651,6445,1359,8760};
-        if(TestType>=0 || LastSuspicious>=Suspicious.length)
+        int[] Suspicious = {3949,387,7651,6445,1359,8760,9684,7559,7420,1965,4518};
+        if(TestType>=0 || WereSuspicious.size()>=Suspicious.length)
             Seed = (new Random()).nextInt(10000);
-        else
-            Seed = Suspicious[LastSuspicious++];        
+        else {
+            while(true) {
+                Seed = Suspicious[(new Random()).nextInt(Suspicious.length)];
+                if(!WereSuspicious.contains(Seed)) {
+                    WereSuspicious.add(Seed);
+                    break;
+                }
+            }
+        }
 
         System.out.println("Random seed - "+Seed);
 
@@ -737,7 +744,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         // DataProperty (при AddClasses - новые(если были)+ст.зн.) Property
         // DataProperty (при RemoveClasses)
         List<Property> UpdateList = new ArrayList();
-        for(Property Property : ToUpdateProperties) Property.FillChangedList(UpdateList,Session);
+        for(Property Property : ToUpdateProperties) Property.fillChangedList(UpdateList,Session);
 
         // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
         // потом реализуем
@@ -748,6 +755,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         while(il.hasNext()) {
             Property = il.next();
             Property.SessionChanged.put(Session,null);
+
+            Session.PropertyAddClasses.put(Property,new InterfaceAddClasses());
+            Session.PropertyAddValues.put(Property,new AddClasses());
         }
         // пробежим по которым надо поставим 0
         for(Property UpdateProperty : ToUpdateProperties) UpdateProperty.SetChangeType(Session,0);
@@ -831,7 +841,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(Property Property : ChangedList)
             if(Property instanceof DataProperty || Persistents.contains(Property))
                 Property.SaveChanges(Session);
-        
+/*
+        System.out.println("All Changes");
+        for(List<IncrementChangeTable> ListTables : TableFactory.ChangeTables)
+           for(ChangeObjectTable ChangeTable : ListTables) ChangeTable.outSelect(Session);
+  */      
         Session.commitTransaction();
         restartSession(Session);
         
@@ -881,11 +895,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
         // построим в нужном порядке AggregateProperty и будем заполнять их
         List<Property> UpdateList = new ArrayList();
-        for(AggregateProperty Property : AggrProperties) Property.FillChangedList(UpdateList,null);
+        for(AggregateProperty Property : AggrProperties) Property.fillChangedList(UpdateList,null);
         Integer ViewNum = 0;
         for(Property Property : UpdateList) {
-            if(Property instanceof GroupProperty)
-                ((GroupProperty)Property).FillDB(Session,ViewNum++);
+//            if(Property instanceof GroupProperty)
+//                ((GroupProperty)Property).FillDB(Session,ViewNum++);
         }
         
         // создадим dumb
@@ -1074,20 +1088,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return ListProperty;
     }
 
-    void RegGClass(LGP GroupProp,Object ...iParams) {
-        int iInt=0;
-        boolean bInt=true;
-        for(Object i : iParams) {
-            if(bInt) {
-                iInt = (Integer)i-1;
-                bInt = false;
-            } else {
-                ((GroupProperty)GroupProp.Property).ToClasses.put(GroupProp.GroupProperty.ListInterfaces.get(iInt),(Class)i);
-                bInt = true;
-            }
-        }        
-    }
-
     void fillData(DataAdapter Adapter) throws SQLException {
     }
 
@@ -1184,7 +1184,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
                 List<PropertyInterface> RelPropInt = new ArrayList();
                 int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<IntCount;j++) {
-                    PropertyInterface Interface = new PropertyInterface();
+                    JoinPropertyInterface Interface = new JoinPropertyInterface();
                     RelProp.Interfaces.add(Interface);
                     RelPropInt.add(Interface);
                 }
@@ -1314,7 +1314,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
                        
 
-            if(GenProp!=null) {
+            if(GenProp!=null && GenProp.getBaseClass()!=null) {
                 GenProp.caption = ResType + " " + i;
                 // проверим что есть в интерфейсе и покрыты все ключи
                 Iterator<InterfaceClass> ic = GenProp.GetClassSet(null).iterator();
@@ -1365,7 +1365,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
 
 //        for(AggregateProperty Property : AggrProperties)
 //            if(Property.caption.equals("R 1"))
-//            Persistents.add(Property);        
+//            Persistents.add(Property);
      }
 
     static int ChangeDBIteration = 0;
@@ -1562,7 +1562,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Session.startTransaction();
 
         List<Property> DependList = new ArrayList();
-        for(AggregateProperty Property : SavePersistents.keySet()) Property.FillChangedList(DependList,null);
+        for(AggregateProperty Property : SavePersistents.keySet()) Property.fillChangedList(DependList,null);
         // восстановим persistence, пересчитая их
         for(Property DependProperty : DependList)
             if(DependProperty instanceof AggregateProperty && SavePersistents.containsKey(DependProperty)) {
