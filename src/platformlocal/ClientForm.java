@@ -1287,7 +1287,7 @@ public class ClientForm extends JPanel {
                         getSelectionModel().setLeadSelectionIndex(newindex);
 
                         if (oldindex != -1 && newindex != oldindex) {
-                        
+
                             final Point ViewPos = pane.getViewport().getViewPosition();
                             final int dltpos = (newindex-oldindex) * getRowHeight();
                             ViewPos.y += dltpos;

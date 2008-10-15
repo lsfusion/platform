@@ -657,20 +657,20 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return property.Property.allowChangeProperty(fillPropertyInterface(property));
     }
 
-    public void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
-
-        // изменяем св-во
-        property.Property.ChangeProperty(fillPropertyInterface(property),value,Session);
-
-        DataChanged = true;
-    }
-
     public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
         ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObjectValue(object));
     }
 
     public void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
         ChangeProperty(Property.View,Value);
+    }
+
+    public void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
+
+        // изменяем св-во
+        property.Property.ChangeProperty(fillPropertyInterface(property),value,Session);
+
+        DataChanged = true;
     }
 
     public void AddObject(int objectID, int classID) throws SQLException {
@@ -920,18 +920,18 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     Direction = 1;
                     UpdateKeys = true;
 
-                    if(Group.PageSize*2<Group.Keys.size()) {
-                        ObjectSeeks = Group.Keys.get(Group.PageSize*2);
+                    if(Group.PageSize*2-1<Group.Keys.size()) {
+                        ObjectSeeks = Group.Keys.get(Group.PageSize*2-1);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
                 } else {
                 // наоборот вниз
-                if(KeyNum>Group.Keys.size()-Group.PageSize && Group.DownKeys) {
+                if(KeyNum>=Group.Keys.size()-Group.PageSize && Group.DownKeys) {
                     Direction = 0;
                     UpdateKeys = true;
 
-                    if(Group.Keys.size()-2*Group.PageSize>=0) {
-                        ObjectSeeks = Group.Keys.get(Group.Keys.size()-2*Group.PageSize);
+                    if(Group.Keys.size()-Group.PageSize*2>=0) {
+                        ObjectSeeks = Group.Keys.get(Group.Keys.size()-Group.PageSize*2);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
                 }
@@ -950,10 +950,10 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
                 // уберем все некорректности в Seekах :
                 // корректно если : PropertySeeks = Orders или (Orders.sublist(PropertySeeks.size) = PropertySeeks и ObjectSeeks - пустое)
-                // если Orders.sublist(PropertySeeks.size) != Orders, тогда дочитываем ObjectSeeks полностью
+                // если Orders.sublist(PropertySeeks.size) != PropertySeeks, тогда дочитываем ObjectSeeks полностью
                 // выкидываем лишние PropertySeeks, дочитываем недостающие Orders в PropertySeeks
                 // также если панель то тупо прочитаем объект
-                boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(Orders.keySet()) || ((PropertySeeks.size()<Orders.size() && (new HashSet((new ArrayList(Orders.keySet())).subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
+                boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(Group.Orders.keySet()) || ((PropertySeeks.size()<Group.Orders.size() && (new HashSet((new ArrayList(Group.Orders.keySet())).subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
                 if((NotEnoughOrders || !Group.GridClassView) && ObjectSeeks.size()<Group.size()) {
                     // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
                     OrderedJoinQuery<ObjectImplement,Object> SelectKeys = new OrderedJoinQuery<ObjectImplement,Object>(Group);
@@ -976,15 +976,15 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     ChangeGroupObject(Group,ObjectSeeks);
                 } else {
                     // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
-                    if(NotEnoughOrders && ObjectSeeks.size()==Group.size() && Orders.size() > 0) {
+                    if(NotEnoughOrders && ObjectSeeks.size()==Group.size() && Group.Orders.size() > 0) {
                         JoinQuery<ObjectImplement,PropertyObjectImplement> OrderQuery = new JoinQuery<ObjectImplement,PropertyObjectImplement>(ObjectSeeks.keySet());
                         OrderQuery.putDumbJoin(ObjectSeeks);
 
-                        for(PropertyObjectImplement Order : Orders.keySet())
+                        for(PropertyObjectImplement Order : Group.Orders.keySet())
                             OrderQuery.add(Order,Order.getSourceExpr(Group.GetClassGroup(),OrderQuery.MapKeys,Session,ChangedProps,false));
 
                         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.executeSelect(Session);
-                        for(PropertyObjectImplement Order : Orders.keySet())
+                        for(PropertyObjectImplement Order : Group.Orders.keySet())
                             PropertySeeks.put(Order,ResultOrders.values().iterator().next().get(Order));
                     }
 
@@ -1004,7 +1004,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         if(PropertySeeks.containsKey(ToOrder.getKey())) {
                             OrderSources.add(OrderExpr);
                             OrderWheres.add(PropertySeeks.get(ToOrder.getKey()));
-                            OrderDirs.add(Orders.get(ToOrder.getKey()));
+                            OrderDirs.add(ToOrder.getValue());
                         }
                         // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
                         SelectKeys.add(ToOrder.getKey(),OrderExpr);
