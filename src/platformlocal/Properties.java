@@ -1729,72 +1729,110 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
         
         return ChangedProperties;
     }
-    
-    Query<PropertyInterface,PropertyField> IncrementQuery(DataSession Session,int ValueType) {
+
+    // определяет AddClasses подмн-ва и что все операнды пересекаются
+    InterfaceAddClasses<PropertyInterface> getAddClasses(DataSession Session,List<PropertyMapImplement> ChangedProps) {
+
+        InterfaceAddClasses<PropertyInterface> InterfaceClasses = new InterfaceAddClasses<PropertyInterface>();
+        for(PropertyMapImplement Operand : ChangedProps) {
+            if(!intersect(Operand,ChangedProps)) return null;
+            InterfaceClasses.or(Operand.mapAddClasses(Session));
+        }
+
+        return InterfaceClasses;
+    }
+
+
+    Source<? extends PropertyInterface, PropertyField> QueryIncrementChanged(DataSession Session) {
+
+        QueryIncrementType = getIncrementType(Session);
         //      	0                   1                           2
         //Max(0)	значение,SS,LJ      не может быть               значение,SS,LJ,prevv
         //Sum(1)	значение,SS,LJ      значение,без SS, без LJ     значение,SS,LJ,prevv
         //Override(2)	значение,SS,LJ      старое поле=null,SS, LJ     значение,SS,LJ,prevv
 
+        InterfaceAddClasses<PropertyInterface> ResultClasses = new InterfaceAddClasses<PropertyInterface>();
+
         // неструктурно как и все оптимизации
         
-        List<PropertyMapImplement> ChangedProperties = GetChangedProperties(Session);
-        
-        boolean SumList = (Operator==1 && ValueType==1);
-        
-        // конечный результат, с ключами и выражением 
-        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,SumList?1:3);
+        if(Operator==1 && QueryIncrementType==1) {
+            UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,1);
 
-        ListIterator<List<PropertyMapImplement>> il = null;
-        if(SumList) {
-            // Sum, 1 - без SS
-            List<List<PropertyMapImplement>> ChangedList = new ArrayList();
-            ChangedList.add(new ArrayList());
-            for(PropertyMapImplement Operand : ChangedProperties) {
-                List<PropertyMapImplement> SingleList = new ArrayList();
-                SingleList.add(Operand);
-                ChangedList.add(SingleList);
+            for(PropertyMapImplement Operand : GetChangedProperties(Session)) {
+                JoinQuery<PropertyInterface,PropertyField> Query = new JoinQuery<PropertyInterface, PropertyField>(Interfaces);
+                Query.add(ChangeTable.Value,Operand.mapSourceExpr(Query.MapKeys,true,Session,1));
+                ResultQuery.add(Query,Coeffs.get(Operand));
+
+                ResultClasses.and(Operand.mapAddClasses(Session));
             }
-            il = ChangedList.listIterator();
-        } else
-            il = (new SetBuilder<PropertyMapImplement>()).BuildSubSetList(ChangedProperties).listIterator();
-            // здесь надо вырезать для оптимизации лишние
 
+            return ResultQuery;
+        } else {
+            Source<PropertyInterface,PropertyField> ChangeQuery = getChange(Session,QueryIncrementType==1?1:0,ChangeTable.Value,ResultClasses);
+            if(QueryIncrementType==2) {
+                UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,3);
+                ResultQuery.add(ChangeQuery,1);
+                ResultQuery.add(getChange(Session,2,ChangeTable.PrevValue,ResultClasses),1);
+                return ResultQuery;
+            } else
+                return ChangeQuery;
+        }
+    }
+
+    Source<PropertyInterface,PropertyField> getChange(DataSession Session, int MapType, PropertyField Value, InterfaceAddClasses<PropertyInterface> ResultClasses) {
+
+        UnionQuery<PropertyInterface,PropertyField> ResultQuery = new UnionQuery<PropertyInterface,PropertyField>(Interfaces,3);
+
+        ListIterator<List<PropertyMapImplement>> il = (new SetBuilder<PropertyMapImplement>()).BuildSubSetList(GetChangedProperties(Session)).listIterator();
         // пропустим пустое подмн-во
         il.next();
         while(il.hasNext()) {
             List<PropertyMapImplement> ChangedProps = il.next();
 
+            // проверим что все попарно пересекаются по классам, заодно строим InterfaceAddClasses<T> св-в
+            InterfaceAddClasses<PropertyInterface> InterfaceClasses = getAddClasses(Session,ChangedProps);
+            if(InterfaceClasses==null) continue;
+            ResultClasses.and(InterfaceClasses);
+
             JoinQuery<PropertyInterface,PropertyField> Query = new JoinQuery<PropertyInterface, PropertyField>(Interfaces);
-
             UnionSourceExpr ResultExpr = new UnionSourceExpr(Operator);
-            UnionSourceExpr PrevExpr = (ValueType==2?new UnionSourceExpr(Operator):null);
-
+            // именно в порядке операндов (для Overrid'а важно)
             for(PropertyMapImplement Operand : Operands) {
-                if(!ChangedProps.contains(Operand) && SumList) continue;
-                // здесь надо отрезать только те которые могут в принципе пересекаться по классам
-                SourceExpr OperandExpr;
-                SourceExpr PrevOperandExpr = null;
-                if(ChangedProps.contains(Operand)) {
-                    OperandExpr = Operand.mapSourceExpr(Query.MapKeys,true,Session,ValueType==1?1:0);
-                    if(ValueType==2) PrevOperandExpr = Operand.mapSourceExpr(Query.MapKeys,true,Session,2);
-                } else {
-                    OperandExpr = Operand.mapSourceExpr(Query.MapKeys,false,null,0);
-                    if(Operator==2 && ValueType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
-                        OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new NullSourceExpr(OperandExpr.getDBType()),new ValueSourceExpr(0));
-                    if(ValueType==2) PrevOperandExpr = Operand.mapSourceExpr(Query.MapKeys,false,null,2);
+                if(ChangedProps.contains(Operand))
+                    ResultExpr.Operands.put(Operand.mapSourceExpr(Query.MapKeys,true,Session,MapType),Coeffs.get(Operand));
+                else {
+                    // не измененное св-во - проверяем что не пересекается по классам, а также что не isRequired InterfaceAddClasses
+                    if(intersect(Operand,ChangedProps) && !Operand.mapIsRequired(InterfaceClasses)) {
+                        SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys,false,null,0);
+                        if(Operator==2 && MapType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
+                            OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new NullSourceExpr(OperandExpr.getDBType()),new ValueSourceExpr(0));
+                        ResultExpr.Operands.put(OperandExpr,Coeffs.get(Operand));
+                    }
                 }
-                ResultExpr.Operands.put(OperandExpr,Coeffs.get(Operand));
-                if(ValueType==2) PrevExpr.Operands.put(PrevOperandExpr,Coeffs.get(Operand));
             }
-
-            Query.add(ChangeTable.Value,ResultExpr);
-            if(ValueType==2) Query.add(ChangeTable.PrevValue,PrevExpr);
-
+            Query.add(Value,ResultExpr);
             ResultQuery.add(Query,1);
         }
-        
+
         return ResultQuery;
+    }
+
+    boolean intersect(PropertyMapImplement Operand, Collection<PropertyMapImplement> Operands) {
+        for(PropertyMapImplement IntersectOperand : Operands) {
+            if(!intersect(Operand,IntersectOperand)) return false;
+            if(Operand==IntersectOperand) return true;
+        }
+        return true;
+    }
+
+    // проверяет пересекаются по классам операнды или нет
+    boolean intersect(PropertyMapImplement Operand, PropertyMapImplement IntersectOperand) {
+        return Operand.MapGetClassSet(null).AndSet(IntersectOperand.MapGetClassSet(null)).size() > 0;
+//        return true;
+    }
+
+    int getIncrementType(DataSession Session) {
+        return GetChangeType(Session);
     }
 }
 
@@ -1814,13 +1852,9 @@ class SumUnionProperty extends UnionProperty {
         }
     }
 
-    Source<? extends PropertyInterface, PropertyField> QueryIncrementChanged(DataSession Session) {
-        
-        QueryIncrementType = (IsPersistent()?1:GetChangeType(Session));
-        return IncrementQuery(Session,QueryIncrementType);
+    int getIncrementType(DataSession Session) {
+        return (IsPersistent()?1:GetChangeType(Session));
     }
-    
-    
 }
 
 class MaxUnionProperty extends UnionProperty {
@@ -1838,10 +1872,8 @@ class MaxUnionProperty extends UnionProperty {
         }
     }
 
-    Source<? extends PropertyInterface, PropertyField> QueryIncrementChanged(DataSession Session) {
-
-        QueryIncrementType = (IsPersistent() || GetChangeType(Session)==0?0:2);
-        return IncrementQuery(Session,QueryIncrementType);
+    int getIncrementType(DataSession Session) {
+        return (IsPersistent() || GetChangeType(Session)==0?0:2);
     }
 }
 
@@ -1856,12 +1888,6 @@ class OverrideUnionProperty extends UnionProperty {
             if(Operand.MapHasChanges(Session)) 
                 Operand.Property.SetChangeType(Session,GetChangeType(Session));
         }
-    }
-
-    Source<? extends PropertyInterface, PropertyField> QueryIncrementChanged(DataSession Session) {
-
-        QueryIncrementType = GetChangeType(Session);
-        return IncrementQuery(Session,QueryIncrementType);
     }
 
     private PropertyMapImplement getOperand(Map<PropertyInterface, ObjectValue> keys) {
@@ -2420,6 +2446,10 @@ class InterfaceAddClasses<T extends PropertyInterface> extends HashMap<T,AddClas
 
     void or(InterfaceAddClasses ToAdd) {
     }
+
+    void and(InterfaceAddClasses ToAdd) {
+    }
+
 }
 
 class MapRead {

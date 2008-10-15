@@ -139,11 +139,11 @@ public class Main {
             System.out.println("Opened");
             new TestBusinessLogics(1);
             System.out.println("Closed");
-//            try {
+            try {
                 new TestBusinessLogics(0);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             System.out.println("Suspicious");
             new TestBusinessLogics(-1);
         }
