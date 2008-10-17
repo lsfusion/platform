@@ -2020,6 +2020,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     List<Join> Joins = new ArrayList();
 
     void add(V Property,SourceExpr Expr) {
+        if(Expr==null)
+            Expr = Expr;
         Expr.fillJoins(Joins,Wheres);
         Properties.put(Property,Expr);
     }
@@ -2038,7 +2040,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Join.fillJoins(Joins,Wheres);
     }
 
-    private Map<SourceExpr,String> KeyValues = new HashMap();
+    Map<SourceExpr,String> KeyValues = new HashMap();
 
     JoinQuery() {super();}
     JoinQuery(Collection<? extends K> iKeys) {
@@ -2181,7 +2183,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             Join.pushJoinValues();
 
         // проверим если вдруг Translat'ился ключ закинем сразу в Source
-        KeyValues = new HashMap();
         for(SourceExpr Key : MapKeys.values()) {
             SourceExpr ValueKey = Key.translate(Translated);
             if(Key!=ValueKey)
@@ -2475,6 +2476,7 @@ class OrderedJoinQuery<K,V> extends JoinQuery<K,V> {
         Query.Wheres.addAll(Wheres);
         Query.Properties.putAll(Properties);
         Query.Joins.addAll(Joins);
+        Query.KeyValues.putAll(KeyValues);
         for(SourceExpr Order : Orders.keySet())
             Query.add(Order,Order);
 

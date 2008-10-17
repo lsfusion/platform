@@ -1735,7 +1735,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
 
         InterfaceAddClasses<PropertyInterface> InterfaceClasses = new InterfaceAddClasses<PropertyInterface>();
         for(PropertyMapImplement Operand : ChangedProps) {
-            if(!intersect(Operand,ChangedProps)) return null;
+            if(!intersect(Session, Operand,ChangedProps)) return null;
             InterfaceClasses.or(Operand.mapAddClasses(Session));
         }
 
@@ -1802,7 +1802,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
                     ResultExpr.Operands.put(Operand.mapSourceExpr(Query.MapKeys,true,Session,MapType),Coeffs.get(Operand));
                 else {
                     // не измененное св-во - проверяем что не пересекается по классам, а также что не isRequired InterfaceAddClasses
-                    if(intersect(Operand,ChangedProps) && !Operand.mapIsRequired(InterfaceClasses)) {
+                    if(intersect(Session, Operand,ChangedProps) && !Operand.mapIsRequired(InterfaceClasses)) {
                         SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys,false,null,0);
                         if(Operator==2 && MapType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
                             OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new NullSourceExpr(OperandExpr.getDBType()),new ValueSourceExpr(0));
@@ -1817,17 +1817,18 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
         return ResultQuery;
     }
 
-    boolean intersect(PropertyMapImplement Operand, Collection<PropertyMapImplement> Operands) {
+    boolean intersect(DataSession Session, PropertyMapImplement Operand, Collection<PropertyMapImplement> Operands) {
         for(PropertyMapImplement IntersectOperand : Operands) {
-            if(!intersect(Operand,IntersectOperand)) return false;
             if(Operand==IntersectOperand) return true;
+            if(!intersect(Session, Operand,IntersectOperand)) return false;
         }
         return true;
     }
 
     // проверяет пересекаются по классам операнды или нет
-    boolean intersect(PropertyMapImplement Operand, PropertyMapImplement IntersectOperand) {
-        return Operand.MapGetClassSet(null).AndSet(IntersectOperand.MapGetClassSet(null)).size() > 0;
+    boolean intersect(DataSession Session, PropertyMapImplement Operand, PropertyMapImplement IntersectOperand) {
+        return (Session.AddClasses.size() > 0 && Session.RemoveClasses.size() > 0) &&
+               Operand.MapGetClassSet(null).AndSet(IntersectOperand.MapGetClassSet(null)).size() > 0;
 //        return true;
     }
 
