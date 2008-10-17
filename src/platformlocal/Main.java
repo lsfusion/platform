@@ -293,11 +293,11 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ClassQuantity.put(Store,4);
         ClassQuantity.put(PrihDocument,50);
         ClassQuantity.put(RashDocument,200);*/
-        ClassQuantity.put(Article,10);
-        ClassQuantity.put(ArticleGroup,2);
-        ClassQuantity.put(Store,2);
-        ClassQuantity.put(PrihDocument,10);
-        ClassQuantity.put(RashDocument,20);
+        ClassQuantity.put(Article,20);
+        ClassQuantity.put(ArticleGroup,3);
+        ClassQuantity.put(Store,3);
+        ClassQuantity.put(PrihDocument,30);
+        ClassQuantity.put(RashDocument,50);
 
         PropQuantity.put((DataProperty)PrihQuantity.Property,10);
         PropQuantity.put((DataProperty)RashQuantity.Property,3);
@@ -452,7 +452,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
             DocDate,GrAddV,ArtAddV,BarCode,ExpireDate,Weight;
     LJP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
-    LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore;
+    LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore,ArtDateRash;
 
     LGP RashArtInt;
 
@@ -607,7 +607,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         RashBetweenDate.Property.caption = "расх. кол-во в интервале";
 
         RashArtInt = AddGProp(RashBetweenDate,true,1,3,4);
-        RashArtInt.Property.caption = "расход по товару"; 
+        RashArtInt.Property.caption = "расход по товару";
+
+        ArtDateRash = AddGProp(RashQuantity, true, DocDate, 1, 2);
+        ArtDateRash.Property.caption = "реал. за день";
 
     }
 
@@ -682,6 +685,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         NavigatorForm integralForm = new IntegralNavigatorForm(6, "Integral Form", this);
         group2.addChild(integralForm);
 
+        NavigatorForm articleDateForm = new ArticleDateNavigatorForm(7, "Article/Date", this);
+        group2.addChild(articleDateForm);
+
         testForm.addRelevantElement(simpleForm);
         testForm.addRelevantElement(test2Form);
 
@@ -753,8 +759,8 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 //        richDesign.getGroupObject()
 
         DefaultClientFormView formView = new DefaultClientFormView(this);
-        formView.get(gv).defaultViewType = true;
-        formView.get(gv).singleViewType = true;
+//        formView.get(gv).defaultViewType = true;
+//        formView.get(gv).singleViewType = true;
 
         richDesign = formView;
 
@@ -861,6 +867,44 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         DefaultClientFormView formView = new DefaultClientFormView(this);
         formView.get(gv).defaultViewType = false;
         formView.get(gv).singleViewType = true;
+
+        richDesign = formView;
+
+    }
+
+}
+
+class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
+
+    ArticleDateNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
+        super(iID, caption);
+
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
+        obj1.caption = "товар";
+
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.dateClass);
+        obj2.caption = "дата";
+
+        GroupObjectImplement gv = new GroupObjectImplement();
+        GroupObjectImplement gv2 = new GroupObjectImplement();
+
+        gv.addObject(obj1);
+        addGroup(gv);
+        gv.GID = 336;
+
+        gv2.addObject(obj2);
+        addGroup(gv2);
+        gv2.GID = 337;
+
+        BL.FillSingleViews(obj1,this,null);
+
+        PropertyObjectImplement QImpl = BL.AddPropView(this, BL.ArtDateRash, gv2, obj2, obj1);
+
+        addFixedFilter(new Filter(QImpl, 5, new UserValueLink(0)));
+
+        DefaultClientFormView formView = new DefaultClientFormView(this);
+//        formView.get(gv).defaultViewType = false;
+//        formView.get(gv).singleViewType = true;
 
         richDesign = formView;
 

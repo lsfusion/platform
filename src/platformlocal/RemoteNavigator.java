@@ -302,8 +302,17 @@ class ClassCache extends LinkedHashMap<Class, Integer> {
     }
 
     public Integer put(Class cls, Integer value) {
+
+        if (cls == null) {
+            throw new RuntimeException("Unable to put null key to cache");
+        }
+        
         if (containsKey(cls)) remove(cls);
-        return super.put(cls, value);
+        
+        if (value != null)
+            return super.put(cls, value);
+        else
+            return null;
     }
 
     public Integer getObject(Class cls) {

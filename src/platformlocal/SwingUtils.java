@@ -92,6 +92,7 @@ class ClientFormTable extends JTable {
     public void removeEditor() {
         super.removeEditor();
         setFocusCycleRoot(false);
+        setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
     }
 }
 
