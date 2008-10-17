@@ -85,7 +85,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         else
             session = BL.createSession(Adapter);
 
-        RemoteForm remoteForm = new RemoteForm(formID, Adapter, BL, session) {
+        RemoteForm remoteForm = new RemoteForm(formID, BL, session) {
 
             protected void objectChanged(Class cls, Integer objectID) {
                 super.objectChanged(cls, objectID);

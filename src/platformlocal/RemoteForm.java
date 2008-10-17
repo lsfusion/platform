@@ -457,8 +457,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     DataSession Session;
 
-    Set<Property> ChangedProps = new HashSet();
-    RemoteForm(int iID, DataAdapter iAdapter,T iBL, DataSession iSession) throws SQLException {
+    RemoteForm(int iID, T iBL, DataSession iSession) throws SQLException {
 
         ID = iID;
 
@@ -468,6 +467,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
         StructUpdated = true;
     }
+
+    Set<Property> ChangedProps = new HashSet();
 
     List<GroupObjectImplement> Groups = new ArrayList();
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
@@ -479,15 +480,48 @@ class RemoteForm<T extends BusinessLogics<T>> {
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
     Map<PropertyView,Boolean> InterfacePool = new HashMap();
 
-    // Методы, которые по ID находят объект
-    public GroupObjectImplement getGroupObjectImplement(int groupID) {
+    // --------------------------------------------------------------------------------------- //
+    // ----------------------------------- PUBLIC интерфейс ---------------------------------- //
+    // --------------------------------------------------------------------------------------- //
+
+    // ----------------------------------- Получение информации ------------------------------ //
+
+    public byte[] getBaseClassByteArray(int objectID) {
+        return ByteArraySerializer.serializeClass(getObjectImplement(objectID).BaseClass);
+    }
+    public byte[] getChildClassesByteArray(int objectID, int classID) {
+        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.FindClassID(classID).Childs);
+    }
+
+    // ----------------------------------- Управляющие воздействия --------------------------- //
+
+    public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
+        GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
+        ChangeGroupObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
+    }
+
+    public void ChangeObject(Integer objectID, Integer value) throws SQLException {
+        ChangeObject(getObjectImplement(objectID), value);
+    }
+
+    public void ChangeGridClass(int objectID,int idClass) throws SQLException {
+        ChangeGridClass(getObjectImplement(objectID), idClass);
+    }
+
+    // --------------------------------------------------------------------------------------- //
+    // ----------------------------------- PRIVATE интерфейс --------------------------------- //
+    // --------------------------------------------------------------------------------------- //
+
+    // ----------------------------------- Поиск объектов по ID ------------------------------ //
+
+    private GroupObjectImplement getGroupObjectImplement(int groupID) {
         for (GroupObjectImplement groupObject : Groups)
             if (groupObject.GID == groupID)
                 return groupObject;
         return null;
     }
 
-    public ObjectImplement getObjectImplement(int objectID) {
+    private ObjectImplement getObjectImplement(int objectID) {
         for (GroupObjectImplement groupObject : Groups)
             for (ObjectImplement object : groupObject)
                 if (object.ID == objectID)
@@ -495,21 +529,16 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return null;
     }
 
-    public PropertyView getPropertyView(int propertyID) {
+    private PropertyView getPropertyView(int propertyID) {
         for (PropertyView property : Properties)
             if (property.ID == propertyID)
                 return property;
         return null;
     }
 
-    // это будут Bean'овские интерфейсы
+    // ----------------------------------- Управляющие воздействия --------------------------- //
 
-    public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
-        GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
-        ChangeGroupObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
-    }
-
-    public void ChangeGroupObject(GroupObjectImplement group,GroupObjectValue value) throws SQLException {
+    private void ChangeGroupObject(GroupObjectImplement group,GroupObjectValue value) throws SQLException {
         // проставим все объектам метки изменений
         for(ObjectImplement object : group) {
             Integer idObject = value.get(object);
@@ -517,10 +546,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 ChangeObject(object, idObject);
             }
         }
-    }
-
-    public void ChangeObject(Integer objectID, Integer value) throws SQLException {
-        ChangeObject(getObjectImplement(objectID), value);
     }
 
     private void ChangeObject(ObjectImplement object, Integer value) throws SQLException {
@@ -547,21 +572,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
             objectChanged(object.Class, value);
     }
 
-    protected void objectChanged(Class cls, Integer objectID) {};
+    private void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
 
-    public byte[] getBaseClassByteArray(int objectID) {
-        return ByteArraySerializer.serializeClass(getObjectImplement(objectID).BaseClass);
-    }
-
-    public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.FindClassID(classID).Childs);
-    }
-
-    public void ChangeGridClass(int objectID,int idClass) throws SQLException {
-        ChangeGridClass(getObjectImplement(objectID), idClass);
-    }
-
-    public void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
         Class GridClass = BL.objectClass.FindClassID(idClass);
         if(Object.GridClass==GridClass) return;
         if(GridClass==null) throw new RuntimeException();
@@ -570,6 +582,11 @@ class RemoteForm<T extends BusinessLogics<T>> {
         // помечаем что в группе изменися класс одного из объектов
         Object.GroupTo.Updated = Object.GroupTo.Updated | (1<<3);
     }
+
+    // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- // 
+
+    // В дальнейшем наверное надо будет переделать на Listener'ы... 
+    protected void objectChanged(Class cls, Integer objectID) {};
 
     public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
         ChangeClassView(getGroupObjectImplement(groupID), show);
