@@ -54,7 +54,12 @@ class ObjectImplement {
     Class GridClass;
 
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
-    int Updated = (1<<3);
+
+    static int UPDATED_OBJECT = (1 << 0);
+    static int UPDATED_CLASS = (1 << 1);
+    static int UPDATED_GRIDCLASS = (1 << 3);
+
+    int Updated = UPDATED_GRIDCLASS;
 
     GroupObjectImplement GroupTo;
 
@@ -111,7 +116,13 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     Map<GroupObjectValue,Map<PropertyObjectImplement,Object>> KeyOrders = null;
 
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
-    int Updated = (1<<3);
+
+    static int UPDATED_OBJECT = (1 << 0);
+    static int UPDATED_KEYS = (1 << 2);
+    static int UPDATED_GRIDCLASS = (1 << 3);
+    static int UPDATED_CLASSVIEW = (1 << 4);
+
+    int Updated = UPDATED_GRIDCLASS;
 
     int PageSize = 20;
 
@@ -208,7 +219,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
     // проверяет на то что изменился верхний объект
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : Mapping.values())
-            if(IntObject.GroupTo!=ClassGroup && ((IntObject.Updated & (1<<0))!=0)) return true;
+            if(IntObject.GroupTo!=ClassGroup && ((IntObject.Updated & ObjectImplement.UPDATED_OBJECT)!=0)) return true;
 
         return false;
     }
@@ -216,7 +227,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
     // изменился хоть один из классов интерфейса (могло повлиять на вхождение в интерфейс)
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : Mapping.values())
-            if(((IntObject.Updated & (1<<(IntObject.GroupTo==ClassGroup?3:1))))!=0) return true;
+            if(((IntObject.Updated & ((IntObject.GroupTo==ClassGroup)?ObjectImplement.UPDATED_CLASS:ObjectImplement.UPDATED_CLASS)))!=0) return true;
 
         return false;
     }
@@ -404,12 +415,12 @@ class ObjectValueLink extends ValueLink {
 
     @Override
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
-        return ((Object.Updated & (1<<1))!=0);
+        return ((Object.Updated & ObjectImplement.UPDATED_CLASS)!=0);
     }
 
     @Override
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
-        return ((Object.Updated & (1<<0))!=0);
+        return ((Object.Updated & ObjectImplement.UPDATED_OBJECT)!=0);
     }
 
     SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement,SourceExpr> ClassSource, DataSession Session,Set<Property> ChangedProps) {
@@ -769,8 +780,9 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     private void ChangeObject(ObjectImplement object, Integer value) throws SQLException {
 
+        if (object.idObject == value) return;
+
         object.idObject = value;
-        object.Updated = object.Updated | (1<<0);
 
         // запишем класс объекта
         Class objectClass = null;
@@ -780,12 +792,16 @@ class RemoteForm<T extends BusinessLogics<T>> {
             objectClass = object.BaseClass;
 
         if(object.Class != objectClass) {
+
             object.Class = objectClass;
-            object.Updated = object.Updated | (1<<1);
+
+            object.Updated = object.Updated | ObjectImplement.UPDATED_CLASS;
         }
 
-        object.GroupTo.Updated = object.GroupTo.Updated | (1<<0);
+        object.Updated = object.Updated | ObjectImplement.UPDATED_OBJECT;
+        object.GroupTo.Updated = object.GroupTo.Updated | GroupObjectImplement.UPDATED_OBJECT;
 
+        // сообщаем всем, кто следит
         // если object.Class == null, то значит объект удалили
         if (object.Class != null)
             objectChanged(object.Class, value);
@@ -794,19 +810,24 @@ class RemoteForm<T extends BusinessLogics<T>> {
     private void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
 
         Class GridClass = BL.objectClass.FindClassID(idClass);
-        if(Object.GridClass==GridClass) return;
+        if(Object.GridClass == GridClass) return;
+
         if(GridClass==null) throw new RuntimeException();
         Object.GridClass = GridClass;
-        Object.Updated = Object.Updated | (1<<3);
-        // помечаем что в группе изменися класс одного из объектов
-        Object.GroupTo.Updated = Object.GroupTo.Updated | (1<<3);
+
+        // расставляем пометки
+        Object.Updated = Object.Updated | ObjectImplement.UPDATED_GRIDCLASS;
+        Object.GroupTo.Updated = Object.GroupTo.Updated | GroupObjectImplement.UPDATED_GRIDCLASS;
+
     }
 
     private void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
 
         if(Group.GridClassView == Show) return;
         Group.GridClassView = Show;
-        Group.Updated = Group.Updated | (1<<4);
+        
+        // расставляем пометки
+        Group.Updated = Group.Updated | GroupObjectImplement.UPDATED_CLASSVIEW;
 
     }
 
@@ -920,6 +941,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
             ChangeObject(Object, null);
         }
 
+        Object.Updated = Object.Updated | ObjectImplement.UPDATED_CLASS;
+
         DataChanged = true;
     }
 
@@ -982,7 +1005,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     // рекурсия для генерации порядка
-    SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
+    private SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
 
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
@@ -1050,7 +1073,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
         for(GroupObjectImplement Group : Groups) {
             // если изменились :
             // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3)
-            boolean UpdateKeys = ((Group.Updated & (1<<3))!=0);
+            boolean UpdateKeys = ((Group.Updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0);
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
             // фильтры
             // если изменилась структура или кто-то изменил класс, перепроверяем
@@ -1108,6 +1131,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
             Map<PropertyObjectImplement,Object> PropertySeeks = new HashMap();
             GroupObjectValue ObjectSeeks = Group.GetObjectValue();
             int Direction;
+            boolean hasMoreKeys = true;
+
             if (ObjectSeeks.containsValue(null)) {
                 ObjectSeeks = new GroupObjectValue();
                 Direction = 0;
@@ -1130,14 +1155,14 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 }
             }
 
-            if(!UpdateKeys && (Group.Updated & (1<<4))!=0) {
+            if(!UpdateKeys && (Group.Updated & GroupObjectImplement.UPDATED_CLASSVIEW) !=0) {
                // изменился "классовый" вид перечитываем св-ва
                 ObjectSeeks = Group.GetObjectValue();
                 UpdateKeys = true;
                 Direction = 2;
             }
 
-            if(!UpdateKeys && Group.GridClassView && (Group.Updated & (1<<0))!=0) {
+            if(!UpdateKeys && Group.GridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
                 // листание - объекты стали близки к краю (idObject не далеко от края - надо хранить список не базу же дергать) - изменился объект
                 int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
                 // если меньше PageSize осталось и сверху есть ключи
@@ -1145,18 +1170,31 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     Direction = 1;
                     UpdateKeys = true;
 
-                    if(Group.PageSize*2-1<Group.Keys.size()) {
-                        ObjectSeeks = Group.Keys.get(Group.PageSize*2-1);
+                    int lowestInd = Group.PageSize*2-1;
+                    if (lowestInd >= Group.Keys.size()) {
+                        lowestInd = Group.Keys.size()-1;
+                        hasMoreKeys = false;
+                    }
+
+                    if(lowestInd < Group.Keys.size()) {
+                        ObjectSeeks = Group.Keys.get(lowestInd);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
+                    
                 } else {
                 // наоборот вниз
                 if(KeyNum>=Group.Keys.size()-Group.PageSize && Group.DownKeys) {
                     Direction = 0;
                     UpdateKeys = true;
 
-                    if(Group.Keys.size()-Group.PageSize*2>=0) {
-                        ObjectSeeks = Group.Keys.get(Group.Keys.size()-Group.PageSize*2);
+                    int highestInd = Group.Keys.size()-Group.PageSize*2;
+                    if (highestInd < 0) {
+                        highestInd = 0;
+                        hasMoreKeys = false;
+                    }
+
+                    if (highestInd < Group.Keys.size()) {
+                        ObjectSeeks = Group.Keys.get(highestInd);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
                 }
@@ -1270,7 +1308,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     if(Direction==1 || Direction==2) {
                         if(OrderSources.size()>0) {
                             SelectKeys.add(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,false,0));
-                            Group.DownKeys = true;
+                            Group.DownKeys = hasMoreKeys;
                         }
 
                         SelectKeys.Up = true;
@@ -1298,7 +1336,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     if(Direction==0 || Direction==2) {
                         if(OrderSources.size()>0) {
                             SelectKeys.add(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,true,0));
-                            if(Direction!=2) Group.UpKeys = true;
+                            if(Direction!=2) Group.UpKeys = hasMoreKeys;
                         }
 
                         SelectKeys.Up = false;
@@ -1344,7 +1382,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
                     Result.GridObjects.put(Group,Group.Keys);
 
-                    Group.Updated = (Group.Updated | (1<<2));
+                    Group.Updated = (Group.Updated | GroupObjectImplement.UPDATED_KEYS);
 
                     // если ряд никто не подставил и ключи есть пробуем старый найти
 //                    if(ActiveRow<0 && Group.Keys.size()>0)
@@ -1380,18 +1418,18 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
             if(DrawProp.ToDraw!=null) {
                 // если рисуемся в какой-то вид и обновился источник насильно перечитываем все св-ва
-                Read = ((DrawProp.ToDraw.Updated & ((1<<2)+(1<<4)))!=0);
+                Read = ((DrawProp.ToDraw.Updated & (GroupObjectImplement.UPDATED_KEYS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0);
                 Boolean PrevPool = InterfacePool.get(DrawProp);
                 InInterface = (PrevPool==null?0:(PrevPool?2:1));
             }
 
             for(ObjectImplement Object : DrawProp.View.Mapping.values())  {
-                if(Object.GroupTo!=DrawProp.ToDraw) {
+                if(Object.GroupTo != DrawProp.ToDraw) {
                     // "верхние" объекты интересует только изменение объектов\классов
-                    if((Object.Updated & 1<<0)!=0) {
+                    if((Object.Updated & ObjectImplement.UPDATED_OBJECT)!=0) {
                         // изменился верхний объект, перечитываем
                         Read = true;
-                        if(((Object.Updated)& 1<<1)!=0) {
+                        if((Object.Updated & ObjectImplement.UPDATED_CLASS)!=0) {
                             // изменился класс объекта перепроверяем все
                             if(DrawProp.ToDraw!=null) CheckClass = true;
                             CheckObject = true;
@@ -1399,13 +1437,13 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     }
                 } else {
                     // изменился объект и св-во не было классовым
-                    if((Object.Updated & 1<<0)!=0 && InInterface!=2) {
+                    if((Object.Updated & ObjectImplement.UPDATED_OBJECT)!=0 && InInterface!=2) {
                         Read = true;
                         // изменися класс объекта
-                        if(((Object.Updated)& 1<<1)!=0) CheckObject = true;
+                        if((Object.Updated & ObjectImplement.UPDATED_CLASS)!=0) CheckObject = true;
                     }
                     // изменение общего класса
-                    if((Object.Updated & 1<<3)!=0) CheckClass = true;
+                    if((Object.Updated & ObjectImplement.UPDATED_GRIDCLASS)!=0) CheckClass = true;
                 }
             }
 
