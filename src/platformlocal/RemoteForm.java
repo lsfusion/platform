@@ -514,14 +514,14 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     // ----------------------------------- Поиск объектов по ID ------------------------------ //
 
-    private GroupObjectImplement getGroupObjectImplement(int groupID) {
+    GroupObjectImplement getGroupObjectImplement(int groupID) {
         for (GroupObjectImplement groupObject : Groups)
             if (groupObject.GID == groupID)
                 return groupObject;
         return null;
     }
 
-    private ObjectImplement getObjectImplement(int objectID) {
+    ObjectImplement getObjectImplement(int objectID) {
         for (GroupObjectImplement groupObject : Groups)
             for (ObjectImplement object : groupObject)
                 if (object.ID == objectID)
@@ -529,7 +529,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return null;
     }
 
-    private PropertyView getPropertyView(int propertyID) {
+    PropertyView getPropertyView(int propertyID) {
         for (PropertyView property : Properties)
             if (property.ID == propertyID)
                 return property;
