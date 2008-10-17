@@ -474,26 +474,42 @@ class RemoteForm<T extends BusinessLogics<T>> {
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     List<PropertyView> Properties = new ArrayList();
 
-    // Set чтобы сравнивать удобнее было бы
-    LinkedHashMap<PropertyView,Boolean> Orders = new LinkedHashMap();
-
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
     Map<PropertyView,Boolean> InterfacePool = new HashMap();
 
     // --------------------------------------------------------------------------------------- //
-    // ----------------------------------- PUBLIC интерфейс ---------------------------------- //
+    // --------------------- Фасад для работы с примитивными данными ------------------------- //
     // --------------------------------------------------------------------------------------- //
 
+    // ----------------------------------- Инициализация ------------------------------------- //
+
+    public byte[] GetRichDesignByteArray() {
+        return ByteArraySerializer.serializeClientFormView(GetRichDesign());
+    }
+
     // ----------------------------------- Получение информации ------------------------------ //
+
+    public int getObjectClassID(Integer objectID) {
+        return getObjectImplement(objectID).Class.ID;
+    }
 
     public byte[] getBaseClassByteArray(int objectID) {
         return ByteArraySerializer.serializeClass(getObjectImplement(objectID).BaseClass);
     }
+
     public byte[] getChildClassesByteArray(int objectID, int classID) {
         return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.FindClassID(classID).Childs);
     }
 
-    // ----------------------------------- Управляющие воздействия --------------------------- //
+    public int getPropertyClassID(int propertyID) {
+        return getPropertyClass(propertyID).ID;
+    }
+
+    public byte[] getPropertyClassByteArray(int propertyID) {
+        return ByteArraySerializer.serializeClass(getPropertyClass(getPropertyView(propertyID)));
+    }
+
+    // ----------------------------------- Навигация ----------------------------------------- //
 
     public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
         GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
@@ -508,8 +524,50 @@ class RemoteForm<T extends BusinessLogics<T>> {
         ChangeGridClass(getObjectImplement(objectID), idClass);
     }
 
+    public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
+        ChangeClassView(getGroupObjectImplement(groupID), show);
+    }
+
+    // Фильтры
+
+    public void addFilter(byte[] state) {
+        addFilter(ByteArraySerializer.deserializeFilter(state, this));
+    }
+
+    // Порядки
+
+    public void ChangeOrder(int propertyID, int modiType) {
+        ChangeOrder(getPropertyView(propertyID), modiType);
+    }
+
+    // -------------------------------------- Изменение данных ----------------------------------- //
+
+    public void AddObject(int objectID, int classID) throws SQLException {
+        ObjectImplement object = getObjectImplement(objectID);
+        AddObject(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
+    }
+
+    public void ChangeClass(int objectID, int classID) throws SQLException {
+
+        ObjectImplement object = getObjectImplement(objectID);
+        ChangeClass(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
+    }
+
+    public boolean allowChangeProperty(int propertyID) {
+        return allowChangeProperty(getPropertyView(propertyID).View);
+    }
+
+    public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
+        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObjectValue(object));
+    }
+
+    // ----------------------- Применение изменений ------------------------------- //
+    public byte[] getFormChangesByteArray() throws SQLException {
+        return ByteArraySerializer.serializeFormChanges(EndApply());
+    }
+
     // --------------------------------------------------------------------------------------- //
-    // ----------------------------------- PRIVATE интерфейс --------------------------------- //
+    // ----------------------------------- Управляющий интерфейс ----------------------------- //
     // --------------------------------------------------------------------------------------- //
 
     // ----------------------------------- Поиск объектов по ID ------------------------------ //
@@ -536,7 +594,168 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return null;
     }
 
-    // ----------------------------------- Управляющие воздействия --------------------------- //
+    Class getPropertyClass(int propertyID) {
+        return getPropertyClass(getPropertyView(propertyID));
+    }
+
+    Class getPropertyClass(PropertyView propertyView) {
+        return propertyView.View.GetValueClass(propertyView.ToDraw);
+    }
+
+    // ----------------------------------- Инициализация ------------------------------------- //
+
+    public ClientFormView richDesign;
+
+    private ClientFormView GetRichDesign() {
+        return richDesign;
+    }
+
+    // возвращает какие объекты фиксируются
+    public Set<GroupObjectImplement> GetReportObjects() {
+        return new HashSet(Groups);
+    }
+
+    // получает XML отчета
+    public JasperDesign GetReportDesign() {
+        // итак цель сделать генерацию XML
+        // бежим по GroupObjectImplement
+        JasperDesign Design = new JasperDesign();
+        int PageWidth = 595-40;
+//        Design.setPageWidth(PageWidth);
+        Design.setName("Report");
+
+	JRDesignStyle Style = new JRDesignStyle();
+	Style.setName("Arial_Normal");
+	Style.setDefault(true);
+	Style.setFontName("Arial");
+	Style.setFontSize(12);
+	Style.setPdfFontName("c:\\windows\\fonts\\tahoma.ttf");
+	Style.setPdfEncoding("Cp1251");
+	Style.setPdfEmbedded(false);
+        try {
+            Design.addStyle(Style);
+        } catch(JRException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+
+        for(GroupObjectImplement Group : Groups) {
+            Collection<ReportDrawField> DrawFields = new ArrayList();
+
+            // сначала все коды
+            for(ObjectImplement Object : Group)
+                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,"integer"));
+
+            // бежим по всем свойствам входящим в объектам
+            for(PropertyView Property : Properties) {
+                GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
+                if(DrawProp==Group)
+                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getDBType()));
+            }
+
+            JRDesignBand Band = new JRDesignBand();
+            int BandHeight = 20;
+            Band.setHeight(BandHeight);
+
+            boolean Detail = (Group==Groups.get(Groups.size()-1));
+            JRDesignBand PageHeadBand = null;
+            int PageHeadHeight = 20;
+            if(Detail) {
+                // создадим PageHead
+                PageHeadBand = new JRDesignBand();
+                PageHeadBand.setHeight(PageHeadHeight);
+                Design.setPageHeader(PageHeadBand);
+
+                Design.setDetail(Band);
+            } else {
+                // создадим группу
+		JRDesignGroup DesignGroup = new JRDesignGroup();
+		DesignGroup.setName("Group"+Group.GID);
+       		JRDesignExpression GroupExpr = new JRDesignExpression();
+		GroupExpr.setValueClass(java.lang.String.class);
+		String GroupString = "";
+                for(ObjectImplement Object : Group)
+                    GroupString = (GroupString.length()==0?"":GroupString+"+\" \"+")+"String.valueOf($F{obj"+Object.ID+"})";
+                GroupExpr.setText(GroupString);
+
+                DesignGroup.setExpression(GroupExpr);
+                DesignGroup.setGroupHeader(Band);
+
+                try {
+                    Design.addGroup(DesignGroup);
+                } catch(JRException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            // узнаем общую ширину чтобы пропорционально считать ()
+            int TotalWidth = 0;
+            for(ReportDrawField Draw : DrawFields) {
+                if(!Detail) TotalWidth += Draw.GetCaptionWidth();
+                TotalWidth += Draw.Width;
+            }
+
+
+            int Left = 0;
+            for(ReportDrawField Draw : DrawFields) {
+                // закидываем сначала Field
+       		JRDesignField JRField = new JRDesignField();
+		JRField.setName(Draw.ID);
+		JRField.setValueClassName(Draw.ValueClass.getName());
+                try {
+                    Design.addField(JRField);
+                } catch(JRException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+                int DrawWidth = PageWidth*Draw.Width/TotalWidth;
+
+                JRDesignStaticText DrawCaption = new JRDesignStaticText();
+		DrawCaption.setText(Draw.Caption);
+                DrawCaption.setX(Left);
+                DrawCaption.setY(0);
+
+                if(Detail) {
+                    DrawCaption.setWidth(DrawWidth);
+                    DrawCaption.setHeight(PageHeadHeight);
+                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
+                    PageHeadBand.addElement(DrawCaption);
+                } else {
+                    int CaptWidth = PageWidth*Draw.GetCaptionWidth()/TotalWidth;
+                    DrawCaption.setWidth(CaptWidth);
+                    DrawCaption.setHeight(BandHeight);
+                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_LEFT);
+                    Left += CaptWidth;
+                    Band.addElement(DrawCaption);
+                }
+                DrawCaption.setStretchType(JRDesignStaticText.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
+
+                JRDesignTextField DrawText = new JRDesignTextField();
+                DrawText.setX(Left);
+                DrawText.setY(0);
+                DrawText.setWidth(DrawWidth);
+                DrawText.setHeight(BandHeight);
+                DrawText.setHorizontalAlignment(Draw.Alignment);
+                Left += DrawWidth;
+
+		JRDesignExpression DrawExpr = new JRDesignExpression();
+		DrawExpr.setValueClass(Draw.ValueClass);
+		DrawExpr.setText("$F{"+Draw.ID+"}");
+		DrawText.setExpression(DrawExpr);
+                Band.addElement(DrawText);
+
+                DrawText.setStretchWithOverflow(true);
+            }
+        }
+
+        return Design;
+    }
+
+    // ----------------------------------- Навигация ----------------------------------------- //
+
+    // поиски по свойствам\объектам
+    public Map<PropertyObjectImplement,Object> UserPropertySeeks = new HashMap();
+    public Map<ObjectImplement,Integer> UserObjectSeeks = new HashMap();
 
     private void ChangeGroupObject(GroupObjectImplement group,GroupObjectValue value) throws SQLException {
         // проставим все объектам метки изменений
@@ -583,27 +802,23 @@ class RemoteForm<T extends BusinessLogics<T>> {
         Object.GroupTo.Updated = Object.GroupTo.Updated | (1<<3);
     }
 
-    // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- // 
+    private void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
 
-    // В дальнейшем наверное надо будет переделать на Listener'ы... 
-    protected void objectChanged(Class cls, Integer objectID) {};
-
-    public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
-        ChangeClassView(getGroupObjectImplement(groupID), show);
-    }
-
-    public void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
-        if(Group.GridClassView==Show) return;
+        if(Group.GridClassView == Show) return;
         Group.GridClassView = Show;
         Group.Updated = Group.Updated | (1<<4);
+
     }
 
+    // Фильтры
+
     // флаги изменения фильтров\порядков чисто для ускорения
-    boolean StructUpdated = true;
+    private boolean StructUpdated = true;
     // фильтры !null (св-во), св-во - св-во, св-во - объект, класс св-ва (для < > в том числе)?,
 
-    Set<Filter> fixedFilters = new HashSet();
-    Set<Filter> filters = new HashSet();
+    public Set<Filter> fixedFilters = new HashSet();
+
+    private Set<Filter> filters = new HashSet();
 
     public void clearFilter() {
 
@@ -611,27 +826,22 @@ class RemoteForm<T extends BusinessLogics<T>> {
         StructUpdated = true;
     }
 
-    public void addFilter(byte[] state) {
-        addFilter(ByteArraySerializer.deserializeFilter(state, this));
-    }
-
-    public void addFilter(Filter addFilter) {
+    private void addFilter(Filter addFilter) {
 
         filters.add(addFilter);
         StructUpdated = true;
     }
 
+    // Порядки
 
     public static int ORDER_REPLACE = 1;
     public static int ORDER_ADD = 2;
     public static int ORDER_REMOVE = 3;
     public static int ORDER_DIR = 4;
 
-    public void ChangeOrder(int propertyID, int modiType) {
-        ChangeOrder(getPropertyView(propertyID), modiType);
-    }
+    private LinkedHashMap<PropertyView,Boolean> Orders = new LinkedHashMap();
 
-    public void ChangeOrder(PropertyView propertyView, int modiType) {
+    private void ChangeOrder(PropertyView propertyView, int modiType) {
 
         if (modiType == ORDER_REMOVE)
             Orders.remove(propertyView);
@@ -650,54 +860,15 @@ class RemoteForm<T extends BusinessLogics<T>> {
         StructUpdated = true;
     }
 
-    // пометка что изменилось св-во
-    boolean DataChanged = false;
+    // -------------------------------------- Изменение данных ----------------------------------- //
 
-    private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement property) {
+    // пометка что изменились данные
+    private boolean DataChanged = false;
 
-        Property changeProperty = property.Property;
-        Map<PropertyInterface,ObjectValue> keys = new HashMap();
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)changeProperty.Interfaces) {
-            ObjectImplement object = property.Mapping.get(Interface);
-            keys.put(Interface,new ObjectValue(object.idObject,object.Class));
-        }
-
-        return keys;
-    }
-
-    public boolean allowChangeProperty(int propertyID) {
-        return allowChangeProperty(getPropertyView(propertyID).View);
-    }
-
-    boolean allowChangeProperty(PropertyObjectImplement property) {
-        return property.Property.allowChangeProperty(fillPropertyInterface(property));
-    }
-
-    public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
-        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObjectValue(object));
-    }
-
-    public void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
-        ChangeProperty(Property.View,Value);
-    }
-
-    public void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
-
-        // изменяем св-во
-        property.Property.ChangeProperty(fillPropertyInterface(property),value,Session);
-
-        DataChanged = true;
-    }
-
-    public void AddObject(int objectID, int classID) throws SQLException {
-        ObjectImplement object = getObjectImplement(objectID);
-        AddObject(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
-    }
-
-    public void AddObject(ObjectImplement Object, Class cls) throws SQLException {
+    private void AddObject(ObjectImplement Object, Class cls) throws SQLException {
         // пока тупо в базу
         Integer AddID = BL.AddObject(Session, cls);
-        
+
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter Filter : Object.GroupTo.Filters) {
@@ -740,21 +911,74 @@ class RemoteForm<T extends BusinessLogics<T>> {
         DataChanged = true;
     }
 
-    public void ChangeClass(int objectID, int classID) throws SQLException {
-
-        ObjectImplement object = getObjectImplement(objectID);
-        ChangeClass(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
-
-    }
-
     public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
+
         BL.ChangeClass(Session, Object.idObject,Class);
 
+        // Если объект удалили, то сбрасываем текущий объект в null
         if (Class == null) {
             ChangeObject(Object, null);
         }
 
         DataChanged = true;
+    }
+
+    private boolean allowChangeProperty(PropertyObjectImplement property) {
+        return property.Property.allowChangeProperty(fillPropertyInterface(property));
+    }
+
+    private void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
+        ChangeProperty(Property.View,Value);
+    }
+
+    private void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
+
+        // изменяем св-во
+        property.Property.ChangeProperty(fillPropertyInterface(property),value,Session);
+
+        DataChanged = true;
+    }
+
+    // Применение изменений
+
+    public String SaveChanges() throws SQLException {
+
+        String ApplyResult = BL.Apply(Session);
+        if(ApplyResult==null)
+            ChangedProps.clear();
+
+        return ApplyResult;
+    }
+
+    private boolean Cancel = false;
+
+    public void CancelChanges() {
+
+        Cancel = true;
+
+        DataChanged = true;
+    }
+
+    // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- //
+
+    // В дальнейшем наверное надо будет переделать на Listener'ы... 
+    protected void objectChanged(Class cls, Integer objectID) {}
+    protected void gainedFocus() { }
+
+    // --------------------------------------------------------------------------------------- //
+    // ----------------------------------- PRIVATE интерфейс --------------------------------- //
+    // --------------------------------------------------------------------------------------- //
+
+    private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement property) {
+
+        Property changeProperty = property.Property;
+        Map<PropertyInterface,ObjectValue> keys = new HashMap();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)changeProperty.Interfaces) {
+            ObjectImplement object = property.Mapping.get(Interface);
+            keys.put(Interface,new ObjectValue(object.idObject,object.Class));
+        }
+
+        return keys;
     }
 
     // рекурсия для генерации порядка
@@ -774,25 +998,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
             return OrderWhere;
     }
 
-    // применяет изменения
-    public String SaveChanges() throws SQLException {
-
-        String ApplyResult = BL.Apply(Session);
-        if(ApplyResult==null)
-            ChangedProps.clear();
-
-        return ApplyResult;
-    }
-
-    boolean Cancel = false;
-    public void CancelChanges() {
-        Cancel = true;
-
-        DataChanged = true;
-    }
-
     // получаем все аггрегированные св-ва задействованные на форме
-    Set<Property> GetProperties() {
+    private Set<Property> GetProperties() {
 
         Set<Property> Result = new HashSet();
         for(PropertyView PropView : Properties)
@@ -808,23 +1015,11 @@ class RemoteForm<T extends BusinessLogics<T>> {
         }
     }
 
-    // поиски по свойствам\объектам
-    Map<PropertyObjectImplement,Object> UserPropertySeeks = new HashMap();
-    Map<ObjectImplement,Integer> UserObjectSeeks = new HashMap();
+    // --------------------------------------------------------------------------------------- //
+    // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
+    // --------------------------------------------------------------------------------------- //
 
-    void AddPropertySeek(PropertyObjectImplement Property, Object Value) {
-        UserPropertySeeks.put(Property,Value);
-    }
-
-    void AddObjectSeek(ObjectImplement Object, Integer Value) {
-        UserObjectSeeks.put(Object,Value);
-    }
-
-    public byte[] getFormChangesByteArray() throws SQLException {
-        return ByteArraySerializer.serializeFormChanges(EndApply());
-    }
-
-    public FormChanges EndApply() throws SQLException {
+    private FormChanges EndApply() throws SQLException {
 
         FormChanges Result = new FormChanges();
 
@@ -1321,18 +1516,9 @@ class RemoteForm<T extends BusinessLogics<T>> {
             Cancel = false;
         }
 
-        Result.Out(this);
+//        Result.Out(this);
 
         return Result;
-    }
-
-    public byte[] GetRichDesignByteArray() {
-        return ByteArraySerializer.serializeClientFormView(GetRichDesign());
-    }
-
-    ClientFormView richDesign;
-    public ClientFormView GetRichDesign() {
-        return richDesign;
     }
 
     // считывает все данные (для отчета)
@@ -1384,168 +1570,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return Result;
     }
 
-    // возвращает какие объекты фиксируются
-    Set<GroupObjectImplement> GetReportObjects() {
-        return new HashSet(Groups);
-    }
-
-    // получает XML отчета
-    JasperDesign GetReportDesign() {
-        // итак цель сделать генерацию XML
-        // бежим по GroupObjectImplement
-        JasperDesign Design = new JasperDesign();
-        int PageWidth = 595-40;
-//        Design.setPageWidth(PageWidth);
-        Design.setName("Report");
-
-	JRDesignStyle Style = new JRDesignStyle();
-	Style.setName("Arial_Normal");
-	Style.setDefault(true);
-	Style.setFontName("Arial");
-	Style.setFontSize(12);
-	Style.setPdfFontName("c:\\windows\\fonts\\tahoma.ttf");
-	Style.setPdfEncoding("Cp1251");
-	Style.setPdfEmbedded(false);
-        try {
-            Design.addStyle(Style);
-        } catch(JRException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-
-        for(GroupObjectImplement Group : Groups) {
-            Collection<ReportDrawField> DrawFields = new ArrayList();
-
-            // сначала все коды
-            for(ObjectImplement Object : Group)
-                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,"integer"));
-
-            // бежим по всем свойствам входящим в объектам
-            for(PropertyView Property : Properties) {
-                GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
-                if(DrawProp==Group)
-                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getDBType()));
-            }
-
-            JRDesignBand Band = new JRDesignBand();
-            int BandHeight = 20;
-            Band.setHeight(BandHeight);
-
-            boolean Detail = (Group==Groups.get(Groups.size()-1));
-            JRDesignBand PageHeadBand = null;
-            int PageHeadHeight = 20;
-            if(Detail) {
-                // создадим PageHead
-                PageHeadBand = new JRDesignBand();
-                PageHeadBand.setHeight(PageHeadHeight);
-                Design.setPageHeader(PageHeadBand);
-
-                Design.setDetail(Band);
-            } else {
-                // создадим группу
-		JRDesignGroup DesignGroup = new JRDesignGroup();
-		DesignGroup.setName("Group"+Group.GID);
-       		JRDesignExpression GroupExpr = new JRDesignExpression();
-		GroupExpr.setValueClass(java.lang.String.class);
-		String GroupString = "";
-                for(ObjectImplement Object : Group)
-                    GroupString = (GroupString.length()==0?"":GroupString+"+\" \"+")+"String.valueOf($F{obj"+Object.ID+"})";
-                GroupExpr.setText(GroupString);
-
-                DesignGroup.setExpression(GroupExpr);
-                DesignGroup.setGroupHeader(Band);
-
-                try {
-                    Design.addGroup(DesignGroup);
-                } catch(JRException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-
-            // узнаем общую ширину чтобы пропорционально считать ()
-            int TotalWidth = 0;
-            for(ReportDrawField Draw : DrawFields) {
-                if(!Detail) TotalWidth += Draw.GetCaptionWidth();
-                TotalWidth += Draw.Width;
-            }
-
-
-            int Left = 0;
-            for(ReportDrawField Draw : DrawFields) {
-                // закидываем сначала Field
-       		JRDesignField JRField = new JRDesignField();
-		JRField.setName(Draw.ID);
-		JRField.setValueClassName(Draw.ValueClass.getName());
-                try {
-                    Design.addField(JRField);
-                } catch(JRException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                int DrawWidth = PageWidth*Draw.Width/TotalWidth;
-
-                JRDesignStaticText DrawCaption = new JRDesignStaticText();
-		DrawCaption.setText(Draw.Caption);
-                DrawCaption.setX(Left);
-                DrawCaption.setY(0);
-
-                if(Detail) {
-                    DrawCaption.setWidth(DrawWidth);
-                    DrawCaption.setHeight(PageHeadHeight);
-                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
-                    PageHeadBand.addElement(DrawCaption);
-                } else {
-                    int CaptWidth = PageWidth*Draw.GetCaptionWidth()/TotalWidth;
-                    DrawCaption.setWidth(CaptWidth);
-                    DrawCaption.setHeight(BandHeight);
-                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_LEFT);
-                    Left += CaptWidth;
-                    Band.addElement(DrawCaption);
-                }
-                DrawCaption.setStretchType(JRDesignStaticText.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
-
-                JRDesignTextField DrawText = new JRDesignTextField();
-                DrawText.setX(Left);
-                DrawText.setY(0);
-                DrawText.setWidth(DrawWidth);
-                DrawText.setHeight(BandHeight);
-                DrawText.setHorizontalAlignment(Draw.Alignment);
-                Left += DrawWidth;
-
-		JRDesignExpression DrawExpr = new JRDesignExpression();
-		DrawExpr.setValueClass(Draw.ValueClass);
-		DrawExpr.setText("$F{"+Draw.ID+"}");
-		DrawText.setExpression(DrawExpr);
-                Band.addElement(DrawText);
-
-                DrawText.setStretchWithOverflow(true);
-            }
-        }
-
-        return Design;
-    }
-
-    public int getPropertyClassID(int propertyID) {
-        return getPropertyClass(propertyID).ID;
-    }
-
-    public byte[] getPropertyClassByteArray(int propertyID) {
-        return ByteArraySerializer.serializeClass(getPropertyClass(getPropertyView(propertyID)));
-    }
-
-    public Class getPropertyClass(int propertyID) {
-        return getPropertyClass(getPropertyView(propertyID));
-    }
-
-    public Class getPropertyClass(PropertyView propertyView) {
-        return propertyView.View.GetValueClass(propertyView.ToDraw); 
-    }
-
-    public int getObjectClassID(Integer objectID) {
-        return getObjectImplement(objectID).Class.ID;
-    }
-
-    public void gainedFocus() { }
 }
 
 // поле для отрисовки отчета

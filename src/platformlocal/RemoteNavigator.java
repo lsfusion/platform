@@ -164,7 +164,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             remoteForm.fixedFilters.add(filter);
         }
 
-        remoteForm.filters = new HashSet(remoteForm.fixedFilters);
+        remoteForm.clearFilter();
 
         remoteForm.richDesign = navigatorForm.getRichDesign();
 
