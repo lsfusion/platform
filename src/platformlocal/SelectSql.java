@@ -371,7 +371,7 @@ class DumbSource<K,V> extends Source<K,V> {
                 JoinTranslated.put(JoinExpr,new ValueSourceExpr(ValueKey.getValue()));
                 // если св-во также докидываем в фильтр
                 if(!(JoinExpr instanceof KeyExpr))
-                    JoinWheres.add(new FieldExprCompareWhere(JoinExpr,ValueKey.getValue(),0));
+                    JoinWheres.add(new FieldExprCompareWhere(JoinExpr,ValueKey.getValue(),FieldExprCompareWhere.EQUALS));
             }
             Translated.merge(JoinTranslated);
 
@@ -1645,6 +1645,14 @@ class FieldExprCompareWhere extends SourceWhere {
 
     SourceExpr Source;
     Object Value;
+
+    static int EQUALS = 0;
+    static int GREATER = 1;
+    static int LESS = 2;
+    static int GREATER_EQUALS = 3;
+    static int LESS_EQUALS = 4;
+    static int NOT_EQUALS = 5;
+
     int Compare;
 
     FieldExprCompareWhere(SourceExpr iSource,Object iValue,int iCompare) {Source=iSource;Value=iValue;Compare=iCompare;}
@@ -1652,8 +1660,8 @@ class FieldExprCompareWhere extends SourceWhere {
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         String KeySource = Source.getSource(JoinAlias, Syntax);
         String ValueSource = Value instanceof String ? "'" + Value + "'" : (Value instanceof SourceExpr ? ((SourceExpr) Value).getSource(JoinAlias, Syntax) : Value.toString());
-        if(KeySource.equals(ValueSource)) return ((Compare==0 || Compare==3 || Compare==4)?StaticWhere.TRUE:StaticWhere.FALSE);
-        return KeySource + (Compare==0?"=":(Compare==1?">":(Compare==2?"<":(Compare==3?">=":(Compare==4?"<=":"<>"))))) + ValueSource;
+        if(KeySource.equals(ValueSource)) return ((Compare==EQUALS || Compare==GREATER_EQUALS || Compare==LESS_EQUALS)?StaticWhere.TRUE:StaticWhere.FALSE);
+        return KeySource + (Compare==EQUALS?"=":(Compare==GREATER?">":(Compare==LESS?"<":(Compare==GREATER_EQUALS?">=":(Compare==LESS_EQUALS?"<=":"<>"))))) + ValueSource;
     }
 
     public SourceWhere proceedTranslate(ExprTranslator Translated) {

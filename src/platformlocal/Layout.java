@@ -2,8 +2,6 @@ package platformlocal;
 
 import bibliothek.gui.*;
 import bibliothek.gui.dock.*;
-import bibliothek.gui.dock.themes.basic.BasicDockableDisplayer;
-import bibliothek.gui.dock.station.DockableDisplayer;
 import bibliothek.gui.dock.event.DockFrontendAdapter;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
 import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
@@ -545,6 +543,7 @@ abstract class FormDockable extends DefaultDockable {
 
     FormDockable(int iformID) {
         formID = iformID;
+        setFactoryID(ClientFormFactory.FACTORY_ID);
     }
 
     void createActiveComponent(ClientNavigator navigator, boolean currentSession) throws SQLException {
@@ -591,7 +590,7 @@ class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
 
-        JasperDesign design = remoteForm.GetReportDesign();
+        JasperDesign design = remoteForm.GetReportDesign();//ByteArraySerializer.deserializeReportDesign(remoteForm.GetReportDesignByteArray());
         try {
 
             JasperReport report = JasperCompileManager.compileReport(design);
@@ -617,7 +616,6 @@ class ClientFormDockable extends FormDockable {
 
     ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws SQLException {
         super(iformID, inavigator, currentSession);
-        setFactoryID(ClientFormFactory.FACTORY_ID);
     }
 
     @Override
@@ -631,7 +629,7 @@ class ClientFormDockable extends FormDockable {
     }
 }
 
-class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
+class ClientFormFactory implements DockFactory<FormDockable,Integer> {
 
     ClientNavigator navigator;
     ClientFormFactory(ClientNavigator inavigator) {
@@ -644,15 +642,15 @@ class ClientFormFactory implements DockFactory<ClientFormDockable,Integer> {
         return FACTORY_ID;
     }
 
-    public Integer getLayout(ClientFormDockable clientFormDockable, Map<Dockable, Integer> dockableIntegerMap) {
-        return clientFormDockable.formID;
+    public Integer getLayout(FormDockable formDockable, Map<Dockable, Integer> dockableIntegerMap) {
+        return formDockable.formID;
     }
 
-    public void setLayout(ClientFormDockable clientFormDockable, Integer integer, Map<Integer, Dockable> integerDockableMap) {
-        setLayout(clientFormDockable,integer);
+    public void setLayout(FormDockable formDockable, Integer integer, Map<Integer, Dockable> integerDockableMap) {
+        setLayout(formDockable,integer);
     }
 
-    public void setLayout(ClientFormDockable clientFormDockable, Integer integer) {
+    public void setLayout(FormDockable formDockable, Integer integer) {
 /*        try {
             clientFormDockable.setFormID(integer);
         } catch (SQLException e) {

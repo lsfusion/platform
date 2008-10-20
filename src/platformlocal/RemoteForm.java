@@ -19,20 +19,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
-import net.sf.jasperreports.engine.design.JRDesignBand;
-import net.sf.jasperreports.engine.design.JRDesignExpression;
-import net.sf.jasperreports.engine.design.JRDesignField;
-import net.sf.jasperreports.engine.design.JRDesignGroup;
-import net.sf.jasperreports.engine.design.JRDesignStaticText;
-import net.sf.jasperreports.engine.design.JRDesignStyle;
-import net.sf.jasperreports.engine.design.JRDesignTextField;
 import net.sf.jasperreports.engine.design.JasperDesign;
 
 
@@ -498,6 +489,10 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return ByteArraySerializer.serializeClientFormView(GetRichDesign());
     }
 
+    public byte[] GetReportDesignByteArray() {
+        return ByteArraySerializer.serializeReportDesign(GetReportDesign());
+    }
+
     // ----------------------------------- Получение информации ------------------------------ //
 
     public int getObjectClassID(Integer objectID) {
@@ -616,150 +611,21 @@ class RemoteForm<T extends BusinessLogics<T>> {
     // ----------------------------------- Инициализация ------------------------------------- //
 
     public ClientFormView richDesign;
-
+    // возвращает клиентские настройки формы
     private ClientFormView GetRichDesign() {
         return richDesign;
     }
 
-    // возвращает какие объекты фиксируются
-    public Set<GroupObjectImplement> GetReportObjects() {
-        return new HashSet(Groups);
+    public Set<GroupObjectImplement> reportObjects;
+    // возвращает какие объекты отчета фиксируются
+    private Set<GroupObjectImplement> getReportObjects() {
+        return reportObjects;
     }
 
-    // получает XML отчета
+    public JasperDesign reportDesign;
+    // возвращает структуру печатной формы
     public JasperDesign GetReportDesign() {
-        // итак цель сделать генерацию XML
-        // бежим по GroupObjectImplement
-        JasperDesign Design = new JasperDesign();
-        int PageWidth = 595-40;
-//        Design.setPageWidth(PageWidth);
-        Design.setName("Report");
-
-	JRDesignStyle Style = new JRDesignStyle();
-	Style.setName("Arial_Normal");
-	Style.setDefault(true);
-	Style.setFontName("Arial");
-	Style.setFontSize(12);
-	Style.setPdfFontName("c:\\windows\\fonts\\tahoma.ttf");
-	Style.setPdfEncoding("Cp1251");
-	Style.setPdfEmbedded(false);
-        try {
-            Design.addStyle(Style);
-        } catch(JRException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-
-        for(GroupObjectImplement Group : Groups) {
-            Collection<ReportDrawField> DrawFields = new ArrayList();
-
-            // сначала все коды
-            for(ObjectImplement Object : Group)
-                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,"integer"));
-
-            // бежим по всем свойствам входящим в объектам
-            for(PropertyView Property : Properties) {
-                GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
-                if(DrawProp==Group)
-                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getDBType()));
-            }
-
-            JRDesignBand Band = new JRDesignBand();
-            int BandHeight = 20;
-            Band.setHeight(BandHeight);
-
-            boolean Detail = (Group==Groups.get(Groups.size()-1));
-            JRDesignBand PageHeadBand = null;
-            int PageHeadHeight = 20;
-            if(Detail) {
-                // создадим PageHead
-                PageHeadBand = new JRDesignBand();
-                PageHeadBand.setHeight(PageHeadHeight);
-                Design.setPageHeader(PageHeadBand);
-
-                Design.setDetail(Band);
-            } else {
-                // создадим группу
-		JRDesignGroup DesignGroup = new JRDesignGroup();
-		DesignGroup.setName("Group"+Group.GID);
-       		JRDesignExpression GroupExpr = new JRDesignExpression();
-		GroupExpr.setValueClass(java.lang.String.class);
-		String GroupString = "";
-                for(ObjectImplement Object : Group)
-                    GroupString = (GroupString.length()==0?"":GroupString+"+\" \"+")+"String.valueOf($F{obj"+Object.ID+"})";
-                GroupExpr.setText(GroupString);
-
-                DesignGroup.setExpression(GroupExpr);
-                DesignGroup.setGroupHeader(Band);
-
-                try {
-                    Design.addGroup(DesignGroup);
-                } catch(JRException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-
-            // узнаем общую ширину чтобы пропорционально считать ()
-            int TotalWidth = 0;
-            for(ReportDrawField Draw : DrawFields) {
-                if(!Detail) TotalWidth += Draw.GetCaptionWidth();
-                TotalWidth += Draw.Width;
-            }
-
-
-            int Left = 0;
-            for(ReportDrawField Draw : DrawFields) {
-                // закидываем сначала Field
-       		JRDesignField JRField = new JRDesignField();
-		JRField.setName(Draw.ID);
-		JRField.setValueClassName(Draw.ValueClass.getName());
-                try {
-                    Design.addField(JRField);
-                } catch(JRException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                int DrawWidth = PageWidth*Draw.Width/TotalWidth;
-
-                JRDesignStaticText DrawCaption = new JRDesignStaticText();
-		DrawCaption.setText(Draw.Caption);
-                DrawCaption.setX(Left);
-                DrawCaption.setY(0);
-
-                if(Detail) {
-                    DrawCaption.setWidth(DrawWidth);
-                    DrawCaption.setHeight(PageHeadHeight);
-                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
-                    PageHeadBand.addElement(DrawCaption);
-                } else {
-                    int CaptWidth = PageWidth*Draw.GetCaptionWidth()/TotalWidth;
-                    DrawCaption.setWidth(CaptWidth);
-                    DrawCaption.setHeight(BandHeight);
-                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_LEFT);
-                    Left += CaptWidth;
-                    Band.addElement(DrawCaption);
-                }
-                DrawCaption.setStretchType(JRDesignStaticText.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
-
-                JRDesignTextField DrawText = new JRDesignTextField();
-                DrawText.setX(Left);
-                DrawText.setY(0);
-                DrawText.setWidth(DrawWidth);
-                DrawText.setHeight(BandHeight);
-                DrawText.setHorizontalAlignment(Draw.Alignment);
-                Left += DrawWidth;
-
-		JRDesignExpression DrawExpr = new JRDesignExpression();
-		DrawExpr.setValueClass(Draw.ValueClass);
-		DrawExpr.setText("$F{"+Draw.ID+"}");
-		DrawText.setExpression(DrawExpr);
-                Band.addElement(DrawText);
-
-                DrawText.setStretchWithOverflow(true);
-            }
-        }
-
-        return Design;
+        return reportDesign;
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -1010,13 +876,32 @@ class RemoteForm<T extends BusinessLogics<T>> {
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
         boolean Last = !(Index+1<OrderSources.size());
-        int CompareIndex = (OrderDirs.get(Index)?2:1);
-        SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,(Down?(Last?CompareIndex+2:CompareIndex):3-CompareIndex));
+
+        int CompareIndex;
+        if (OrderDirs.get(Index)) {
+            if (Down) {
+                if (Last)
+                    CompareIndex = FieldExprCompareWhere.LESS_EQUALS;
+                else
+                    CompareIndex = FieldExprCompareWhere.LESS;
+            } else
+                CompareIndex = FieldExprCompareWhere.GREATER;
+        } else {
+            if (Down) {
+                if (Last)
+                    CompareIndex = FieldExprCompareWhere.GREATER_EQUALS;
+                else
+                    CompareIndex = FieldExprCompareWhere.GREATER;
+            } else
+                CompareIndex = FieldExprCompareWhere.LESS;
+        }
+        SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,CompareIndex);
+
         if(!Last) {
             SourceWhere NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1);
 
             // >A OR (=A AND >B)
-            return new FieldOPWhere(OrderWhere,new FieldOPWhere(new FieldExprCompareWhere(OrderExpr,OrderValue,0),NextWhere,true),false);
+            return new FieldOPWhere(OrderWhere,new FieldOPWhere(new FieldExprCompareWhere(OrderExpr,OrderValue,FieldExprCompareWhere.EQUALS),NextWhere,true),false);
         } else
             return OrderWhere;
     }
@@ -1041,6 +926,10 @@ class RemoteForm<T extends BusinessLogics<T>> {
     // --------------------------------------------------------------------------------------- //
     // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
     // --------------------------------------------------------------------------------------- //
+
+    private static int DIRECTION_DOWN = 0;
+    private static int DIRECTION_UP = 1;
+    private static int DIRECTION_CENTER = 2;
 
     private FormChanges EndApply() throws SQLException {
 
@@ -1135,23 +1024,23 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
             if (ObjectSeeks.containsValue(null)) {
                 ObjectSeeks = new GroupObjectValue();
-                Direction = 0;
+                Direction = DIRECTION_DOWN;
             } else
-                Direction = 2;
+                Direction = DIRECTION_CENTER;
 
             // один раз читаем не так часто делается, поэтому не будем как с фильтрами
             for(PropertyObjectImplement Property : UserPropertySeeks.keySet()) {
                 if(Property.GetApplyObject()==Group) {
                     PropertySeeks.put(Property,UserPropertySeeks.get(Property));
                     UpdateKeys = true;
-                    Direction = 2;
+                    Direction = DIRECTION_CENTER;
                 }
             }
             for(ObjectImplement Object : UserObjectSeeks.keySet()) {
                 if(Object.GroupTo==Group) {
                     ObjectSeeks.put(Object,UserObjectSeeks.get(Object));
                     UpdateKeys = true;
-                    Direction = 2;
+                    Direction = DIRECTION_CENTER;
                 }
             }
 
@@ -1159,7 +1048,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                // изменился "классовый" вид перечитываем св-ва
                 ObjectSeeks = Group.GetObjectValue();
                 UpdateKeys = true;
-                Direction = 2;
+                Direction = DIRECTION_CENTER;
             }
 
             if(!UpdateKeys && Group.GridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
@@ -1167,7 +1056,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
                 // если меньше PageSize осталось и сверху есть ключи
                 if(KeyNum<Group.PageSize && Group.UpKeys) {
-                    Direction = 1;
+                    Direction = DIRECTION_UP;
                     UpdateKeys = true;
 
                     int lowestInd = Group.PageSize*2-1;
@@ -1184,7 +1073,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                 } else {
                 // наоборот вниз
                 if(KeyNum>=Group.Keys.size()-Group.PageSize && Group.DownKeys) {
-                    Direction = 0;
+                    Direction = DIRECTION_DOWN;
                     UpdateKeys = true;
 
                     int highestInd = Group.Keys.size()-Group.PageSize*2;
@@ -1223,7 +1112,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     SelectKeys.putDumbJoin(ObjectSeeks);
                     Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.TableFactory,Session,ChangedProps);
                     for(Entry<PropertyObjectImplement,Object> Property : PropertySeeks.entrySet())
-                        SelectKeys.add(new FieldExprCompareWhere(Property.getKey().getSourceExpr(Group.GetClassGroup(),SelectKeys.MapKeys,Session,ChangedProps,true),Property.getValue(),0));
+                        SelectKeys.add(new FieldExprCompareWhere(Property.getKey().getSourceExpr(Group.GetClassGroup(),SelectKeys.MapKeys,Session,ChangedProps,true),Property.getValue(),FieldExprCompareWhere.EQUALS));
 
                     // докидываем найденные ключи
                     SelectKeys.Top = 1;
@@ -1298,14 +1187,14 @@ class RemoteForm<T extends BusinessLogics<T>> {
                     // результат
                     LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> KeyResult = new LinkedHashMap();
 
-                    SelectKeys.Top = Group.PageSize*3/(Direction==2?2:1);
+                    SelectKeys.Top = Group.PageSize*3/(Direction==DIRECTION_CENTER?2:1);
 
                     // откопируем в сторону запрос чтобы еще раз потом использовать
                     OrderedJoinQuery<ObjectImplement,PropertyObjectImplement> SelectAscKeys = (Direction==2?SelectKeys.copy():SelectKeys);
                     // сначала Descending загоним
                     Group.DownKeys = false;
                     Group.UpKeys = false;
-                    if(Direction==1 || Direction==2) {
+                    if(Direction==DIRECTION_UP || Direction==DIRECTION_CENTER) {
                         if(OrderSources.size()>0) {
                             SelectKeys.add(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,false,0));
                             Group.DownKeys = hasMoreKeys;
@@ -1325,18 +1214,15 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         // проверка чтобы не сбить объект при листании и неправильная (потому как после 2 поиска может получится что надо с 0 без Seek'а перечитывать)
 //                        if(OrderSources.size()==0)
                         // сделано так, чтобы при ненайденном объекте текущий объект смещался вверх, а не вниз
-                        if (KeyResult.size() > 1)
-                            ActiveRow = KeyResult.size()-1;
-                        else
-                            ActiveRow = KeyResult.size()-1;
-                        
+                        ActiveRow = KeyResult.size()-1;
+
                     }
                     SelectKeys = SelectAscKeys;
                     // потом Ascending
-                    if(Direction==0 || Direction==2) {
+                    if(Direction==DIRECTION_DOWN || Direction==DIRECTION_CENTER) {
                         if(OrderSources.size()>0) {
                             SelectKeys.add(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,true,0));
-                            if(Direction!=2) Group.UpKeys = hasMoreKeys;
+                            if(Direction!=DIRECTION_CENTER) Group.UpKeys = hasMoreKeys;
                         }
 
                         SelectKeys.Up = false;
@@ -1346,7 +1232,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
                         KeyResult.putAll(ExecuteList);
                         Group.DownKeys = (ExecuteList.size()==SelectKeys.Top);
 
-                        if ((Direction == 0 || ActiveRow == -1) && KeyResult.size() > 0)
+                        if ((Direction == DIRECTION_DOWN || ActiveRow == -1) && KeyResult.size() > 0)
                             ActiveRow = 0;
                     }
 
@@ -1560,9 +1446,10 @@ class RemoteForm<T extends BusinessLogics<T>> {
     }
 
     // считывает все данные (для отчета)
-    FormData ReadData() throws SQLException {
+    public FormData ReadData() throws SQLException {
 
-        Set<GroupObjectImplement> ReportObjects = GetReportObjects();
+        Set<GroupObjectImplement> ReportObjects = getReportObjects();
+
         Collection<ObjectImplement> ReadObjects = new ArrayList();
         for(GroupObjectImplement Group : ReportObjects)
             ReadObjects.addAll(Group);
@@ -1571,16 +1458,20 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
         OrderedJoinQuery<ObjectImplement,PropertyView> Query = new OrderedJoinQuery<ObjectImplement,PropertyView>(ReadObjects);
 
-        for(GroupObjectImplement Group : ReportObjects) {
-            // не фиксированные ключи
-            Group.fillSourceSelect(Query,ReportObjects,BL.TableFactory,Session,ChangedProps);
+        for(GroupObjectImplement Group : Groups) {
 
-            // закинем Order'ы
-            for(Map.Entry<PropertyObjectImplement,Boolean> Order : Group.Orders.entrySet())
-                Query.Orders.put(Order.getKey().getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false),Order.getValue());
+            if (ReportObjects.contains(Group)) {
+                
+                // не фиксированные ключи
+                Group.fillSourceSelect(Query,ReportObjects,BL.TableFactory,Session,ChangedProps);
 
-            for(ObjectImplement Object : Group)
-                Query.Orders.put(Object.getSourceExpr(ReportObjects,Query.MapKeys),false);
+                // закинем Order'ы
+                for(Map.Entry<PropertyObjectImplement,Boolean> Order : Group.Orders.entrySet())
+                    Query.Orders.put(Order.getKey().getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false),Order.getValue());
+
+                for(ObjectImplement Object : Group)
+                    Query.Orders.put(Object.getSourceExpr(ReportObjects,Query.MapKeys),false);
+            }
         }
 
         FormData Result = new FormData();
@@ -1604,6 +1495,8 @@ class RemoteForm<T extends BusinessLogics<T>> {
             for(PropertyView Property : Properties)
                 Result.Properties.get(Property.ID).put(GroupValue,Row.getValue().get(Property));
         }
+
+//        Result.Out();
 
         return Result;
     }

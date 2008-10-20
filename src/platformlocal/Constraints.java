@@ -53,17 +53,17 @@ abstract class ValueConstraint extends Constraint {
 
 // != 0 или !="      "
 class EmptyConstraint extends ValueConstraint {
-    EmptyConstraint() {super(5);}
+    EmptyConstraint() {super(FieldExprCompareWhere.NOT_EQUALS);}
 }
 
 // <= 0 или <= ''
 class NotEmptyConstraint extends ValueConstraint {
-    NotEmptyConstraint() {super(4);}
+    NotEmptyConstraint() {super(FieldExprCompareWhere.LESS_EQUALS);}
 }
 
 // < 0
 class PositiveConstraint extends ValueConstraint {
-    PositiveConstraint() {super(2);}
+    PositiveConstraint() {super(FieldExprCompareWhere.LESS);}
 }
 
 // >= 0
@@ -88,7 +88,7 @@ class UniqueConstraint extends Constraint {
         SourceExpr PrevExpr = Property.getUpdatedSourceExpr(MapPrev,Session,true);
 
         // равны значения
-        Changed.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,0));
+        Changed.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,FieldExprCompareWhere.EQUALS));
         // значения не NULL
         Changed.add(new SourceIsNullWhere(ChangedExpr,true));
 
@@ -99,7 +99,7 @@ class UniqueConstraint extends Constraint {
         Integer KeyNum = 0;
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             // не равны ключи
-            SourceWhere KeyDiff = new FieldExprCompareWhere(MapChange.get(Interface),MapPrev.get(Interface),5);
+            SourceWhere KeyDiff = new FieldExprCompareWhere(MapChange.get(Interface),MapPrev.get(Interface),FieldExprCompareWhere.NOT_EQUALS);
             if(OrDiffKeys==null)
                 OrDiffKeys = KeyDiff;
             else

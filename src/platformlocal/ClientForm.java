@@ -1493,8 +1493,8 @@ public class ClientForm extends JPanel {
 
 //                            add(Box.createHorizontalStrut(4));
 
-                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=",0), new Pair(">",1), new Pair("<",2),
-                                                                             new Pair(">=",3), new Pair("<=",4), new Pair("<>",5)};
+                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=",FieldExprCompareWhere.EQUALS), new Pair(">",FieldExprCompareWhere.GREATER), new Pair("<",FieldExprCompareWhere.LESS),
+                                                                             new Pair(">=",FieldExprCompareWhere.GREATER_EQUALS), new Pair("<=",FieldExprCompareWhere.LESS_EQUALS), new Pair("<>",FieldExprCompareWhere.NOT_EQUALS)};
                             compareView = new QueryConditionComboBox(comparisons);
                             add(compareView);
 

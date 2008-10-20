@@ -7,6 +7,8 @@ package platformlocal;
 
 // навигатор работает с абстрактной BL
 
+import net.sf.jasperreports.engine.design.JasperDesign;
+
 import java.sql.SQLException;
 import java.util.*;
 
@@ -168,6 +170,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.richDesign = navigatorForm.getRichDesign();
 
+        remoteForm.reportObjects = new HashSet();
+        Set<GroupObjectImplement> reportObjects = navigatorForm.getReportObjects();
+        for (GroupObjectImplement group : reportObjects)
+            remoteForm.reportObjects.add(gnvrm.get(group));
+
+        remoteForm.reportDesign = navigatorForm.getReportDesign();
+
         for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.Groups)
             for (ObjectImplement object : groupObject) {
                 int objectID = classCache.getObject(object.BaseClass);
@@ -281,7 +290,13 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     NavigatorForm(int iID, String caption, boolean iisPrintForm) { super(iID, caption); isPrintForm = iisPrintForm; }
 
     ClientFormView richDesign;
-    ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; } 
+    ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; }
+
+    Set<GroupObjectImplement> reportObjects;
+    Set<GroupObjectImplement> getReportObjects() { if (reportObjects == null) return new HashSet(Groups); else return reportObjects; } 
+
+    JasperDesign reportDesign;
+    JasperDesign getReportDesign() { if (reportDesign == null) return new DefaultJasperDesign(this); else return reportDesign; }
 
     ArrayList<NavigatorElement> relevantElements = new ArrayList();
     void addRelevantElement(NavigatorElement relevantElement) {

@@ -1,5 +1,7 @@
 package platformlocal;
 
+import net.sf.jasperreports.engine.design.JasperDesign;
+
 import java.io.*;
 import java.util.*;
 
@@ -454,6 +456,40 @@ class ByteArraySerializer extends Serializer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    public static byte[] serializeReportDesign(JasperDesign jasperDesign) {
+
+        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
+            objectStream.writeObject(jasperDesign);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static JasperDesign deserializeReportDesign(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+
+        try {
+            ObjectInputStream dataStream = new ObjectInputStream(inStream);
+            try {
+                return (JasperDesign)dataStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return null;
     }
 

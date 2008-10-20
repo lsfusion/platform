@@ -650,7 +650,7 @@ class DataProperty extends Property<DataPropertyInterface> {
                     PrevExpr = new NullEmptySourceExpr(PrevExpr);
                     
                     // new, не равно prev
-                    Query.add(new FieldExprCompareWhere(NewExpr,PrevExpr,5));
+                    Query.add(new FieldExprCompareWhere(NewExpr,PrevExpr,FieldExprCompareWhere.NOT_EQUALS));
                     ResultQuery.add(Query,1);
                 }
             }
@@ -1599,7 +1599,7 @@ ChangeQuery.add(IncrementQuery(Session,ChangeTable.SysValue,ChangedProperties,2,
         // null ассоциируется с -бесконечностью
         // удаляем всех пришедших<=старых значений и ушедшие<старых значений
         // то есть пропускаем (пришедшие>старых значений) или (ушедшие=старых значений)
-        ResultQuery.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,1),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
+        ResultQuery.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,FieldExprCompareWhere.GREATER),new FieldExprCompareWhere(OldValue,PrevValue,FieldExprCompareWhere.EQUALS),false));
 
 //        System.out.println("IncChanges M 1 - "+caption);
 //        ResultQuery.outSelect(Session);
@@ -1617,7 +1617,7 @@ ChangeQuery.add(IncrementQuery(Session,ChangeTable.SysValue,ChangedProperties,2,
         OldValue = new IsNullSourceExpr(ChangesJoin.Exprs.get(ChangeTable.SysValue),MinValue);
         PrevValue = new IsNullSourceExpr(ChangesJoin.Exprs.get(ChangeTable.PrevValue),MinValue);
 
-        UpdateQuery.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,2),new FieldExprCompareWhere(OldValue,PrevValue,0),false));
+        UpdateQuery.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,FieldExprCompareWhere.LESS),new FieldExprCompareWhere(OldValue,PrevValue,FieldExprCompareWhere.EQUALS),false));
 
         List<MapChangedRead> NewRead = new ArrayList(); NewRead.add(getPrevious(Session)); NewRead.addAll(getChange(Session));
         UpdateQuery.add(ChangeTable.Value,(new UniJoin<PropertyInterface,PropertyField>(getGroupQuery(NewRead,ChangeTable.Value),UpdateQuery,false)).Exprs.get(ChangeTable.Value));

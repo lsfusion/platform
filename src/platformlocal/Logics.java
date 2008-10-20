@@ -217,7 +217,7 @@ class IDTable extends Table {
         JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
         Query.add(Value,JoinTable.Exprs.get(Value));
 
-        Query.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,0));
+        Query.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,FieldExprCompareWhere.EQUALS));
 
         Integer FreeID = (Integer)Query.executeSelect(Adapter).values().iterator().next().get(Value);
 
