@@ -590,11 +590,11 @@ class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
 
-        JasperDesign design = remoteForm.GetReportDesign();//ByteArraySerializer.deserializeReportDesign(remoteForm.GetReportDesignByteArray());
+        JasperDesign design = ByteArraySerializer.deserializeReportDesign(remoteForm.getReportDesignByteArray());
         try {
 
             JasperReport report = JasperCompileManager.compileReport(design);
-            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),remoteForm.ReadData());
+            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),ByteArraySerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
             return new JRViewer(print);
 
         } catch (JRException e) {

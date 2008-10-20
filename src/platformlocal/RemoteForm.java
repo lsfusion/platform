@@ -17,6 +17,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.io.Serializable;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
 
@@ -485,13 +486,18 @@ class RemoteForm<T extends BusinessLogics<T>> {
 
     // ----------------------------------- Инициализация ------------------------------------- //
 
-    public byte[] GetRichDesignByteArray() {
+    public byte[] getRichDesignByteArray() {
         return ByteArraySerializer.serializeClientFormView(GetRichDesign());
     }
 
-    public byte[] GetReportDesignByteArray() {
+    public byte[] getReportDesignByteArray() {
         return ByteArraySerializer.serializeReportDesign(GetReportDesign());
     }
+
+    public byte[] getReportDataByteArray() throws SQLException {
+        return ByteArraySerializer.serializeReportData(getReportData());
+    }
+
 
     // ----------------------------------- Получение информации ------------------------------ //
 
@@ -614,12 +620,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
     // возвращает клиентские настройки формы
     private ClientFormView GetRichDesign() {
         return richDesign;
-    }
-
-    public Set<GroupObjectImplement> reportObjects;
-    // возвращает какие объекты отчета фиксируются
-    private Set<GroupObjectImplement> getReportObjects() {
-        return reportObjects;
     }
 
     public JasperDesign reportDesign;
@@ -854,8 +854,16 @@ class RemoteForm<T extends BusinessLogics<T>> {
     protected void objectChanged(Class cls, Integer objectID) {}
     protected void gainedFocus() { }
 
+    void Close() throws SQLException {
+
+        for(GroupObjectImplement Group : Groups) {
+            ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
+            DropTable.DropViewID(Session, Group.GID);
+        }
+    }
+
     // --------------------------------------------------------------------------------------- //
-    // ----------------------------------- PRIVATE интерфейс --------------------------------- //
+    // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
     // --------------------------------------------------------------------------------------- //
 
     private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement property) {
@@ -914,18 +922,6 @@ class RemoteForm<T extends BusinessLogics<T>> {
             Result.add(PropView.View.Property);
         return Result;
     }
-
-    void Close() throws SQLException {
-
-        for(GroupObjectImplement Group : Groups) {
-            ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-            DropTable.DropViewID(Session, Group.GID);
-        }
-    }
-
-    // --------------------------------------------------------------------------------------- //
-    // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
-    // --------------------------------------------------------------------------------------- //
 
     private static int DIRECTION_DOWN = 0;
     private static int DIRECTION_UP = 1;
@@ -1445,8 +1441,20 @@ class RemoteForm<T extends BusinessLogics<T>> {
         return Result;
     }
 
+    // возвращает какие объекты отчета фиксируются
+    private Set<GroupObjectImplement> getReportObjects() {
+
+        Set<GroupObjectImplement> reportObjects = new HashSet();
+        for (GroupObjectImplement group : Groups) {
+            if (group.GridClassView)
+                reportObjects.add(group);
+        }
+
+        return reportObjects;
+    }
+
     // считывает все данные (для отчета)
-    public FormData ReadData() throws SQLException {
+    private ReportData getReportData() throws SQLException {
 
         Set<GroupObjectImplement> ReportObjects = getReportObjects();
 
@@ -1474,7 +1482,7 @@ class RemoteForm<T extends BusinessLogics<T>> {
             }
         }
 
-        FormData Result = new FormData();
+        ReportData Result = new ReportData();
 
         for(PropertyView Property : Properties) {
             Query.add(Property,Property.View.getSourceExpr(ReportObjects,Query.MapKeys,Session,ChangedProps,false));
@@ -1531,7 +1539,7 @@ class ReportDrawField {
 }
 
 // считанные данные (должен быть интерфейс Serialize)
-class FormData implements JRDataSource {
+class ReportData implements JRDataSource, Serializable {
     
     List<Map<Integer,Integer>> ReadOrder = new ArrayList();
     Map<Integer,Map<Map<Integer,Integer>,Object>> Properties = new HashMap();

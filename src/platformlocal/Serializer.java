@@ -493,6 +493,40 @@ class ByteArraySerializer extends Serializer {
         return null;
     }
 
+    public static byte[] serializeReportData(ReportData reportData) {
+
+        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
+            objectStream.writeObject(reportData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static ReportData deserializeReportData(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+
+        try {
+            ObjectInputStream dataStream = new ObjectInputStream(inStream);
+            try {
+                return (ReportData)dataStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     // -------------------------------------- Сериализация данных формы -------------------------------------------- //
 
     public static byte[] serializeFormChanges(FormChanges formChanges) {

@@ -22,7 +22,7 @@ public class DefaultJasperDesign extends JasperDesign {
         Style.setName("Arial_Normal");
         Style.setDefault(true);
         Style.setFontName("Arial");
-        Style.setFontSize(12);
+        Style.setFontSize(8);
         Style.setPdfFontName("c:\\windows\\fonts\\tahoma.ttf");
         Style.setPdfEncoding("Cp1251");
         Style.setPdfEmbedded(false);
@@ -142,6 +142,7 @@ public class DefaultJasperDesign extends JasperDesign {
             }
         }
 
+        setOrientation(JasperDesign.ORIENTATION_LANDSCAPE);
     }
 
 }

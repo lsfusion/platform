@@ -60,7 +60,7 @@ public class ClientForm extends JPanel {
 
 //        getFrame().setTitle(caption);
 
-        byte[] state = remoteForm.GetRichDesignByteArray();
+        byte[] state = remoteForm.getRichDesignByteArray();
         Log.incrementBytesReceived(state.length);
         formView = ByteArraySerializer.deserializeClientFormView(state);
 

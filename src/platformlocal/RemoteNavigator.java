@@ -170,11 +170,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.richDesign = navigatorForm.getRichDesign();
 
-        remoteForm.reportObjects = new HashSet();
-        Set<GroupObjectImplement> reportObjects = navigatorForm.getReportObjects();
-        for (GroupObjectImplement group : reportObjects)
-            remoteForm.reportObjects.add(gnvrm.get(group));
-
         remoteForm.reportDesign = navigatorForm.getReportDesign();
 
         for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.Groups)
@@ -291,9 +286,6 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     ClientFormView richDesign;
     ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; }
-
-    Set<GroupObjectImplement> reportObjects;
-    Set<GroupObjectImplement> getReportObjects() { if (reportObjects == null) return new HashSet(Groups); else return reportObjects; } 
 
     JasperDesign reportDesign;
     JasperDesign getReportDesign() { if (reportDesign == null) return new DefaultJasperDesign(this); else return reportDesign; }
