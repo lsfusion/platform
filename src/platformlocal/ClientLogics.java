@@ -5,10 +5,8 @@
 
 package platformlocal;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.awt.*;
 import java.text.Format;
 import java.text.NumberFormat;
@@ -202,8 +200,10 @@ class ClientFormView implements Serializable {
     List<ClientGroupObjectImplement> groupObjects = new ArrayList();
     List<ClientObjectImplement> objects = new ArrayList();
     List<ClientPropertyView> properties = new ArrayList();
-    
+
     List<ClientContainerView> containers = new ArrayList();
+
+    LinkedHashMap<ClientPropertyView,Boolean> defaultOrders = new LinkedHashMap();
 
     ClientFunctionView printView = new ClientFunctionView();
     ClientFunctionView applyView = new ClientFunctionView();

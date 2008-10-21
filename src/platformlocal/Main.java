@@ -426,6 +426,17 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         return PropImpl;
     }
 
+    PropertyView findPropView(NavigatorForm fbv, PropertyObjectImplement prop) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : (List<PropertyView>)fbv.Properties) {
+            if (propView.View == prop)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
     Class ArticleGroup;
     Class Document;
     Class Article;
@@ -761,6 +772,7 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         DefaultClientFormView formView = new DefaultClientFormView(this);
 //        formView.get(gv).defaultViewType = true;
 //        formView.get(gv).singleViewType = true;
+//        formView.defaultOrders.put(formView.get(BL.findPropView(this,QImpl)), true);
 
         richDesign = formView;
 

@@ -88,21 +88,6 @@ public class ClientForm extends JPanel {
             }
         });
 
-/*        this.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
-        Container cont = getFocusCycleRootAncestor();
-        if (cont != null)
-            cont.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());*/
-
-/*        this.setFocusable(true);
-//        this.setRequestFocusEnabled(true);
-        addFocusListener(new FocusAdapter() {
-
-            public void focusGained(FocusEvent e) {
-                System.out.println("focusGained");
-//                clientNavigator.changeCurrentForm(this);
-            }
-        });*/
-
     }
 
     private boolean hasFocus = false;
@@ -195,6 +180,14 @@ public class ClientForm extends JPanel {
 
         ActionMap am = getActionMap();
         am.put("okPressed", okAction);
+
+        // Применяем порядки по умолчанию
+        for (Map.Entry<ClientPropertyView, Boolean> entry : formView.defaultOrders.entrySet()) {
+            models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteForm.ORDER_ADD);
+            if (!entry.getValue()) {
+                models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteForm.ORDER_DIR);
+            }
+        }
 
     }
 
@@ -1145,6 +1138,49 @@ public class ClientForm extends JPanel {
                 
             }
 
+            List<ClientPropertyView> orders = new ArrayList();
+            List<Boolean> orderDirections = new ArrayList();
+
+            void changeGridOrder(ClientPropertyView property, int modiType) {
+
+                if (modiType == RemoteForm.ORDER_REPLACE) {
+
+                    changeOrder(property, RemoteForm.ORDER_REPLACE);
+
+                    orders.clear();
+                    orderDirections.clear();
+
+                    orders.add(property);
+                    orderDirections.add(true);
+                }
+
+                if (modiType == RemoteForm.ORDER_ADD) {
+
+                    changeOrder(property, RemoteForm.ORDER_REPLACE);
+
+                    orders.add(property);
+                    orderDirections.add(true);
+                }
+
+                if (modiType == RemoteForm.ORDER_DIR) {
+
+                    changeOrder(property, RemoteForm.ORDER_DIR);
+
+                    int ordNum = orders.indexOf(property);
+                    orderDirections.set(ordNum, !orderDirections.get(ordNum));
+                }
+
+                if (modiType == RemoteForm.ORDER_REMOVE) {
+
+                    changeOrder(property, RemoteForm.ORDER_REMOVE);
+
+                    int ordNum = orders.indexOf(property);
+                    orders.remove(ordNum);
+                    orderDirections.remove(ordNum);
+                }
+
+            }
+
             public class Table extends ClientFormTable
                                implements ClientCellViewTable {
 
@@ -1152,9 +1188,6 @@ public class ClientForm extends JPanel {
                 List<ClientGroupObjectValue> gridRows = new ArrayList();
                 Map<ClientCellView,Map<ClientGroupObjectValue,Object>> gridValues = new HashMap();
 
-                List<ClientPropertyView> orders = new ArrayList();
-                List<Boolean> orderDirections = new ArrayList();
-                
                 Model model;
                 JTableHeader header;
 
@@ -1972,23 +2005,15 @@ public class ClientForm extends JPanel {
 
                                 int ordNum = orders.indexOf(property);
                                 if (ordNum == -1) {
-                                    if (e.getButton() == MouseEvent.BUTTON1) {
-                                        changeOrder(property, RemoteForm.ORDER_REPLACE);
-                                        orders.clear();
-                                    } else
-                                        changeOrder(property, RemoteForm.ORDER_ADD);
-
-                                    orders.add(property);
-                                    orderDirections.add(true);
-
+                                    if (e.getButton() == MouseEvent.BUTTON1)
+                                        changeGridOrder(property, RemoteForm.ORDER_REPLACE);
+                                     else
+                                        changeGridOrder(property, RemoteForm.ORDER_ADD);
                                 } else {
                                     if (e.getButton() == MouseEvent.BUTTON1) {
-                                        orderDirections.set(ordNum, !orderDirections.get(ordNum));
-                                        changeOrder(property, RemoteForm.ORDER_DIR);
+                                        changeGridOrder(property, RemoteForm.ORDER_DIR);
                                     } else {
-                                        changeOrder(property, RemoteForm.ORDER_REMOVE);
-                                        orders.remove(ordNum);
-                                        orderDirections.remove(ordNum);
+                                        changeGridOrder(property, RemoteForm.ORDER_REMOVE);
                                     }
                                 }
 
