@@ -242,6 +242,12 @@ class Serializer {
             return;
         }
 
+        if (object instanceof Boolean) {
+            outStream.writeByte(5);
+            outStream.writeBoolean((Boolean)object);
+            return;
+        }
+
         throw new IOException();
     }
 
@@ -254,8 +260,7 @@ class Serializer {
         }
 
         if (objectType == 1) {
-
-            return (Integer)inStream.readInt();
+            return inStream.readInt();
         }
 
         if (objectType == 2) {
@@ -263,13 +268,15 @@ class Serializer {
         }
 
         if (objectType == 3) {
-
             return inStream.readDouble();
         }
 
         if (objectType == 4) {
-
             return inStream.readLong();
+        }
+
+        if (objectType == 5) {
+            return inStream.readBoolean();
         }
 
         throw new IOException();

@@ -59,7 +59,7 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
             ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
         }*/
 
-        NumberFormatter formatter = new NumberFormatter((NumberFormat) ((format == null) ? NumberFormat.getInstance() : format)) {
+        NumberFormatter formatter = new NumberFormatter(format) {
 
             public Object stringToValue(String text) throws ParseException {
                 if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".")) return null;
@@ -95,13 +95,14 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
 
         Object value = this.getValue();
 
-        if (value instanceof Integer)
+        return value;
+/*        if (value instanceof Integer)
             return value;
 
         if (value instanceof Long)
             return ((Long) value).intValue();
 
-        return null;
+        return null; */
     }
 
 }
@@ -282,13 +283,13 @@ class BitPropertyEditor extends JCheckBox
 
     public void setCellEditorValue(Object value) {
         if (value != null)
-            setSelected((Integer) value != 0);
+            setSelected((Boolean)value);
     }
 
     public Object getCellEditorValue() {
 
         if (isNull) return null;
-        return (isSelected()) ? 1 : 0;
+        return isSelected();
     }
 }
 

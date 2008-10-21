@@ -130,7 +130,7 @@ class BitPropertyRenderer extends JCheckBox
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null)
-            setSelected((Integer)value != 0);
+            setSelected((Boolean)value);
         else
             setSelected(false);
 
