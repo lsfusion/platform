@@ -1649,14 +1649,6 @@ class MaxUnionProperty extends UnionProperty {
 
     MaxUnionProperty(TableFactory iTableFactory) {super(iTableFactory,0);}
 
-    void fillRequiredChanges(Map<Property, Integer> RequiredTypes) {
-        // если pers или 0 - Operand на ->0 - IncrementQuery(0), возвр. 0 - (на подчищение - если (1 или 2) LEFT JOIN'им старые)
-        // иначе (не pers и (1 или 2)) - Operand на ->2 - IncrementQuery(2), возвр. 2
-
-        for(PropertyMapImplement Operand : Operands)
-            Operand.Property.setChangeType(RequiredTypes,IsPersistent() || RequiredTypes.get(this)==0?0:2);
-    }
-
     int getIncrementType(int RequiredType) {
         return (IsPersistent() || RequiredType==0?0:2);
     }
@@ -1665,13 +1657,6 @@ class MaxUnionProperty extends UnionProperty {
 class OverrideUnionProperty extends UnionProperty {
 
     OverrideUnionProperty(TableFactory iTableFactory) {super(iTableFactory,2);}
-
-    void fillRequiredChanges(Map<Property, Integer> RequiredTypes) {
-        // Operand на ->I - IncrementQuery(I) возвр. I
-
-        for(PropertyMapImplement Operand : Operands)
-            Operand.Property.setChangeType(RequiredTypes,RequiredTypes.get(this));
-    }
 
     private PropertyMapImplement getOperand(Map<PropertyInterface, ObjectValue> keys) {
 
