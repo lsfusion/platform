@@ -230,8 +230,14 @@ class Serializer {
             return;
         }
 
-        if (object instanceof Long) {
+        if (object instanceof Double) {
             outStream.writeByte(3);
+            outStream.writeDouble((Double)object);
+            return;
+        }
+
+        if (object instanceof Long) {
+            outStream.writeByte(4);
             outStream.writeLong((Long)object);
             return;
         }
@@ -258,7 +264,12 @@ class Serializer {
 
         if (objectType == 3) {
 
-            return (Long)inStream.readLong();
+            return inStream.readDouble();
+        }
+
+        if (objectType == 4) {
+
+            return inStream.readLong();
         }
 
         throw new IOException();
@@ -294,6 +305,8 @@ class Serializer {
         if (cls instanceof IntegerClass) outStream.writeByte(2);
         if (cls instanceof DateClass) outStream.writeByte(3);
         if (cls instanceof BitClass) outStream.writeByte(4);
+        if (cls instanceof DoubleClass) outStream.writeByte(5);
+        if (cls instanceof LongClass) outStream.writeByte(6);
 
         outStream.writeInt(cls.ID);
         outStream.writeUTF(cls.caption);
@@ -309,9 +322,11 @@ class Serializer {
         switch (clsType) {
             case 0 : cls = new ClientObjectClass(); break;
             case 1 : cls = new ClientStringClass(); break;
-            case 2 : cls = new ClientQuantityClass(); break;
+            case 2 : cls = new ClientIntegerClass(); break;
             case 3 : cls = new ClientDateClass(); break;
             case 4 : cls = new ClientBitClass(); break;
+            case 5 : cls = new ClientDoubleClass(); break;
+            case 6 : cls = new ClientLongClass(); break;
             default : throw new IOException();
         }
 

@@ -457,7 +457,7 @@ class ClientObjectClass extends ClientClass {
 
     public int getPreferredWidth() { return 45; }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new QuantityPropertyRenderer(format); } ;
+    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
     public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new ObjectPropertyEditor(form); }
 }
 
@@ -470,12 +470,12 @@ class ClientStringClass extends ClientClass {
     public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new StringPropertyEditor(); }
 }
 
-class ClientQuantityClass extends ClientClass {
+class ClientIntegerClass extends ClientClass {
 
     public int getPreferredWidth() { return 45; }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new QuantityPropertyRenderer(format); } ;
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new QuantityPropertyEditor((NumberFormat)format); }
+    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format); }
 }
 
 class ClientDateClass extends ClientClass {
@@ -492,6 +492,22 @@ class ClientBitClass extends ClientClass {
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); } ;
     public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new BitPropertyEditor(); }
+}
+
+class ClientDoubleClass extends ClientClass {
+
+    public int getPreferredWidth() { return 45; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format); }
+}
+
+class ClientLongClass extends ClientClass {
+
+    public int getPreferredWidth() { return 45; }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format); }
 }
 
 // -------------------------------------- Фильтры ------------------------------ //
