@@ -843,10 +843,13 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // В дальнейшем наверное надо будет переделать на Listener'ы...
     protected void objectChanged(Class cls, Integer objectID) {}
-    protected void gainedFocus() { }
+    protected void gainedFocus() {
+        DataChanged = true;
+    }
 
     void Close() throws SQLException {
 
+        Session.IncrementChanges.remove(this);
         for(GroupObjectImplement Group : Groups) {
             ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
             DropTable.DropViewID(Session, Group.GID);
