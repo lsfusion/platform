@@ -83,20 +83,20 @@ public class ClientDialog extends JDialog {
             currentForm = new ClientForm(navigator.remoteNavigator.CreateForm(formID, true), navigator) {
 
                 boolean okPressed() {
-                    if (super.okPressed()) {
+//                    if (super.okPressed()) {
                         objectChosen = true;
                         ClientDialog.this.setVisible(false);
                         return true;
-                    } else
-                        return false;
+//                    } else
+//                        return false;
                 }
 
                 boolean closePressed() {
-                    if (super.closePressed()) {
+//                    if (super.closePressed()) {
                         ClientDialog.this.setVisible(false);
                         return true;
-                    } else
-                        return false;
+//                    } else
+//                        return false;
                 }
             };
         } catch (SQLException e) {
