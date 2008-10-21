@@ -175,3 +175,14 @@ class DateConverter {
 
 
 }
+
+class BaseUtils {
+
+    public static boolean compareObjects(Object obj1, Object obj2) {
+
+        if (obj1 == null)
+            return obj2 == null;
+        else
+            return obj1.equals(obj2);
+    }
+}

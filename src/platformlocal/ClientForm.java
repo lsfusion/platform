@@ -877,6 +877,7 @@ public class ClientForm extends JPanel {
 
                         public void setValueAt(Object value, int row, int col) {
 //                            System.out.println("setValueAt");
+                            if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
                             cellValueChanged(value);
                         }
 
@@ -2053,6 +2054,8 @@ public class ClientForm extends JPanel {
                     }
                     
                     public void setValueAt(Object value, int row, int col) {
+                        
+                        if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
                         changeProperty(gridColumns.get(col),value);
                     }
                     
