@@ -2024,8 +2024,6 @@ class DataSession  {
     ObjectClass ObjectClass;
 
     int ID = 0;
-    public Map<DataProperty,InterfaceAddClasses> PropertyAddClasses = new HashMap();
-    public Map<DataProperty,AddClasses> PropertyAddValues = new HashMap();
 
     DataSession(DataAdapter Adapter,int iID,TableFactory iTableFactory,ObjectClass iObjectClass) throws SQLException{
 
@@ -2058,6 +2056,7 @@ class DataSession  {
 
         TableFactory.clearSession(this);
         Changes = new DataChanges();
+        NewClasses = new HashMap();
 
         PropertyChanges = new HashMap();
     }

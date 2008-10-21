@@ -16,15 +16,21 @@ abstract class Class {
 
     static IntegralClass integralClass;
     static StringClass stringClass;
-    static QuantityClass quantityClass;
+    static IntegerClass integerClass;
+    static LongClass longClass;
+    static DoubleClass doubleClass;
     static DateClass dateClass;
     static BitClass bitClass;
 
     static {
         integralClass = new IntegralClass(2, "Число");
         stringClass = new StringClass(1, "Строка");
-        quantityClass = new QuantityClass(2, "Кол-во");
-        quantityClass.AddParent(integralClass);
+        integerClass = new IntegerClass(2, "Кол-во");
+        integerClass.AddParent(integralClass);
+        longClass = new LongClass(2, "Кол-во");
+        longClass.AddParent(integralClass);
+        doubleClass = new DoubleClass(2, "Кол-во");
+        doubleClass.AddParent(integralClass);
         dateClass = new DateClass(3, "Дата");
         dateClass.AddParent(integralClass);
         bitClass = new BitClass(4, "Бит");
@@ -214,7 +220,7 @@ abstract class Class {
 class IntegralClass extends Class {
     
     IntegralClass(Integer iID, String caption) {super(iID, caption);}
-    
+
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         return Randomizer.nextInt(Diap*Diap+1);
     }
@@ -229,8 +235,24 @@ class IntegralClass extends Class {
 }
 
 // класс который можно суммировать
-class QuantityClass extends IntegralClass {    
-    QuantityClass(Integer iID, String caption) {super(iID, caption);}
+class IntegerClass extends IntegralClass {
+    IntegerClass(Integer iID, String caption) {super(iID, caption);}
+}
+
+class LongClass extends IntegralClass {
+    LongClass(Integer iID, String caption) {super(iID, caption);}
+
+    Type getType() {
+        return Type.Long;
+    }
+}
+
+class DoubleClass extends IntegralClass {
+    DoubleClass(Integer iID, String caption) {super(iID, caption);}
+
+    Type getType() {
+        return Type.Double;
+    }
 }
 
 class DateClass extends IntegralClass {
@@ -239,6 +261,10 @@ class DateClass extends IntegralClass {
 
 class BitClass extends IntegralClass {
     BitClass(Integer iID, String caption) {super(iID, caption);}
+
+    Type getType() {
+        return Type.Bit;
+    }
 }
 
 class StringClass extends Class {
@@ -281,6 +307,9 @@ abstract class Type {
 
     static StringType String = new StringType();
     static IntegerType Integer = new IntegerType();
+    static LongType Long = new LongType();
+    static DoubleType Double = new DoubleType();
+    static BitType Bit = new BitType();
     static Type Object;
     static Type System;
 
@@ -294,6 +323,9 @@ abstract class Type {
 
         Enum.add(Integer);
         Enum.add(String);
+        Enum.add(Long);
+        Enum.add(Double);
+        Enum.add(Bit);
     }
 
     abstract String getDB();
@@ -301,7 +333,6 @@ abstract class Type {
     abstract Object getMinValue();
     abstract String getEmptyString();
     abstract Object getEmptyValue();
-
 
     static Type getObjectType(Object Value) {
         if(Value==null)
@@ -343,15 +374,7 @@ class StringType extends Type {
     }
 }
 
-class IntegerType extends Type {
-
-    String getDB() {
-        return "integer";
-    }
-
-    Object getMinValue() {
-        return -99999999;
-    }
+abstract class IntegralType extends Type {
 
     String getEmptyString() {
         return "0";
@@ -365,3 +388,49 @@ class IntegerType extends Type {
         return Value.toString();
     }
 }
+
+class IntegerType extends IntegralType {
+
+    String getDB() {
+        return "integer";
+    }
+
+    Object getMinValue() {
+        return java.lang.Integer.MIN_VALUE;
+    }
+
+}
+
+class LongType extends IntegralType {
+
+    String getDB() {
+        return "long";
+    }
+
+    Object getMinValue() {
+        return java.lang.Long.MIN_VALUE;
+    }
+}
+
+class DoubleType extends IntegralType {
+
+    String getDB() {
+        return "double";
+    }
+
+    Object getMinValue() {
+        return java.lang.Double.MIN_VALUE;
+    }
+}
+
+class BitType extends IntegralType {
+
+    String getDB() {
+        return "bit";
+    }
+
+    Object getMinValue() {
+        return 0;
+    }
+}
+

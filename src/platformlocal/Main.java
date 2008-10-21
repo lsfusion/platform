@@ -481,10 +481,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         DocStore = AddDProp(Store,Document);
         DocStore.Property.caption = "склад";
 
-        PrihQuantity = AddDProp(Class.quantityClass,PrihDocument,Article);
+        PrihQuantity = AddDProp(Class.integerClass,PrihDocument,Article);
         PrihQuantity.Property.caption = "кол-во прих.";
 
-        RashQuantity = AddDProp(Class.quantityClass,RashDocument,Article);
+        RashQuantity = AddDProp(Class.integerClass,RashDocument,Article);
         RashQuantity.Property.caption = "кол-во расх.";
 
         ArtToGroup = AddDProp(ArticleGroup,Article);
@@ -494,14 +494,14 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         DocDate = AddDProp(Class.dateClass,Document);
         DocDate.Property.caption = "дата док.";
 
-        GrAddV = AddDProp(Class.quantityClass,ArticleGroup);
+        GrAddV = AddDProp(Class.integerClass,ArticleGroup);
         GrAddV.Property.caption = "нац. по гр.";
 
-        ArtAddV = AddDProp(Class.quantityClass,Article);
+        ArtAddV = AddDProp(Class.integerClass,Article);
         ArtAddV.Property.caption = "нац. перегр.";
         groupArticleC.add(ArtAddV.Property);
 
-        BarCode = AddDProp(Class.quantityClass,Article);
+        BarCode = AddDProp(Class.integerClass,Article);
         BarCode.Property.caption = "штрих-код";
         groupArticleA.add(BarCode.Property);
 
@@ -513,10 +513,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Weight.Property.caption = "вес.";
         groupArticleA.add(Weight.Property);
 
-        LDP AbsQuantity = AddCProp(null,Class.quantityClass,Document,Article);
+        LDP AbsQuantity = AddCProp(null,Class.integerClass,Document,Article);
         AbsQuantity.Property.caption = "абст. кол-во";
 
-        LDP IsGrmat = AddCProp(0,Class.quantityClass,Article);
+        LDP IsGrmat = AddCProp(0,Class.integerClass,Article);
         IsGrmat.Property.caption = "признак товара";
         groupArticleA.add(IsGrmat.Property);
 
@@ -527,10 +527,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Quantity = AddUProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
         Quantity.Property.caption = "кол-во";
 
-        LDP RashValue = AddCProp(-1,Class.quantityClass,RashDocument);
+        LDP RashValue = AddCProp(-1,Class.integerClass,RashDocument);
         RashValue.Property.caption = "призн. расхода";
 
-        LDP PrihValue = AddCProp(1,Class.quantityClass,PrihDocument);
+        LDP PrihValue = AddCProp(1,Class.integerClass,PrihDocument);
         PrihValue.Property.caption = "призн. прихода";
 
         OpValue = AddUProp(2,1,1,RashValue,1,1,PrihValue,1);
@@ -551,8 +551,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 //
         LSFP NotZero = AddWSFProp("prm1<>0",Class.integralClass);
         LSFP Less = AddWSFProp("prm1<prm2",Class.integralClass,Class.integralClass);
-        LMFP Multiply = AddMFProp(Class.quantityClass,Class.bitClass);
-        LMFP Multiply3 = AddMFProp(Class.bitClass,Class.quantityClass,Class.bitClass);
+        LMFP Multiply = AddMFProp(Class.integerClass,Class.bitClass);
+        LMFP Multiply3 = AddMFProp(Class.bitClass,Class.integerClass,Class.bitClass);
 
         LJP StoreName = AddJProp(Name,1,DocStore,1);
         StoreName.Property.caption = "имя склада";

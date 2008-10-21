@@ -291,7 +291,7 @@ class Serializer {
 
         if (cls instanceof ObjectClass) outStream.writeByte(0);
         if (cls instanceof StringClass) outStream.writeByte(1);
-        if (cls instanceof QuantityClass) outStream.writeByte(2);
+        if (cls instanceof IntegerClass) outStream.writeByte(2);
         if (cls instanceof DateClass) outStream.writeByte(3);
         if (cls instanceof BitClass) outStream.writeByte(4);
 

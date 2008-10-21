@@ -993,13 +993,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         List<Property> RandObjProps = new ArrayList();
         
         StringFormulaProperty Dirihle = new WhereStringFormulaProperty(TableFactory,"prm1<prm2");
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.quantityClass,"prm1"));
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.quantityClass,"prm2"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.integerClass,"prm1"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.integerClass,"prm2"));
         RandProps.add(Dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(TableFactory);
-        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.quantityClass));
-        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.quantityClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.integerClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.integerClass));
         RandProps.add(Multiply);
 
         int DataPropCount = Randomizer.nextInt(15)+1;
