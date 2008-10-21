@@ -302,17 +302,12 @@ class DataChangeTable extends ChangeObjectTable {
 class IncrementChangeTable extends ChangeObjectTable {
 
     PropertyField PrevValue;
-    // системное поля, по сути для MaxGroupProperty
-    PropertyField SysValue;
-    
+
     IncrementChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
         super("inc",iObjects,iDBType,DBTypes);
 
         PrevValue = new PropertyField("prevvalue",DBTypes.get(iDBType));
         Properties.add(PrevValue);
-
-        SysValue = new PropertyField("sysvalue",DBTypes.get(iDBType));
-        Properties.add(SysValue);
     }
 }
 
@@ -333,16 +328,19 @@ class ChangeClassTable extends ChangeTable {
         Keys.add(Class);
     }
     
-    void ChangeClass(DataSession ChangeSession, Integer idObject, Collection<Class> Classes) throws SQLException {
+    void changeClass(DataSession ChangeSession, Integer idObject, Collection<Class> Classes,boolean Drop) throws SQLException {
 
         for(Class Change : Classes) {
-            Map<KeyField,Integer> InsertKeys = new HashMap();
-            InsertKeys.put(Object,idObject);
-            InsertKeys.put(Class,Change.ID);
-            ChangeSession.InsertRecord(this,InsertKeys,new HashMap());
+            Map<KeyField,Integer> ChangeKeys = new HashMap();
+            ChangeKeys.put(Object,idObject);
+            ChangeKeys.put(Class,Change.ID);
+            if(Drop)
+                ChangeSession.deleteKeyRecords(this,ChangeKeys);
+            else
+                ChangeSession.InsertRecord(this,ChangeKeys,new HashMap());
         }
     }
-    
+
     void DropSession(DataSession ChangeSession) throws SQLException {
         Map<KeyField,Integer> ValueKeys = new HashMap();
         ChangeSession.deleteKeyRecords(this,ValueKeys);
@@ -508,7 +506,7 @@ class TableFactory extends TableImplement{
     }
 }
 
-abstract class BusinessLogics<T extends BusinessLogics<T>> {
+abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUpdateView {
     
     void initBase() {
         TableFactory = new TableFactory();
@@ -561,6 +559,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
             }
         }
 
+        Seed = 4518;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -618,20 +617,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         Properties.add(Property);
     }
 
-    // получает класс по ID объекта
-    Class getObjectClass(DataSession Session, Integer idObject) throws SQLException {
-        // сначала получаем idClass
-        if(Session.NewClasses.containsKey(idObject)) {
-            List<Class> ChangeClasses = Session.NewClasses.get(idObject);
-            return ChangeClasses.get(ChangeClasses.size()-1);
-        } else
-            return readClass(Session,idObject);
-    }
-
-    Class readClass(DataSession Session, Integer idObject) throws SQLException {
-        return objectClass.FindClassID(TableFactory.ObjectTable.GetClassID(Session,idObject));
-    }
-    
     Integer AddObject(DataSession Session, Class Class) throws SQLException {
 
         Integer FreeID = TableFactory.IDTable.GenerateID(Session);
@@ -644,83 +629,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     void ChangeClass(DataSession Session, Integer idObject, Class Class) throws SQLException {
         
         // запишем объекты, которые надо будет сохранять
-        Session.ChangeClass(idObject,Class);
+        Session.changeClass(idObject,Class);
     }
     
-    void UpdateClassChanges(DataSession Session) throws SQLException {
-
-        // дропнем старую сессию
-        TableFactory.AddClassTable.DropSession(Session);
-        TableFactory.RemoveClassTable.DropSession(Session);
-        Session.AddClasses.clear();
-        Session.RemoveClasses.clear();
-        
-        for(Integer idObject : Session.NewClasses.keySet()) {
-            // дальше нужно построить "разницу" какие классы ушли и записать в соответствующую таблицу
-            
-            Set<Class> TempRemoveClasses = new HashSet();
-            
-            ListIterator<Class> ic = Session.NewClasses.get(idObject).listIterator();
-            Class NewClass = ic.next();
-            if(NewClass==null) NewClass = objectClass;
-            while(ic.hasNext()) {
-                Class NextClass = ic.next();
-                if(NextClass==null) NextClass = objectClass;
-                NextClass.GetDiffSet(NewClass,null,TempRemoveClasses);
-                NewClass = NextClass;
-            }
-
-            // узнаем старый класс
-            Collection<Class> AddClasses = new ArrayList();
-            Set<Class> RemoveClasses = new HashSet();
-            NewClass.GetDiffSet(readClass(Session,idObject),AddClasses,RemoveClasses);
-            Session.AddClasses.addAll(AddClasses);
-            
-            // вырежем все из AddClasses
-            TempRemoveClasses.removeAll(AddClasses);
-            RemoveClasses.addAll(TempRemoveClasses);
-            Session.RemoveClasses.addAll(RemoveClasses);
-
-            // собсно в сессию надо записать все изм. объекты
-            TableFactory.AddClassTable.ChangeClass(Session,idObject,AddClasses);
-            TableFactory.RemoveClassTable.ChangeClass(Session,idObject,RemoveClasses);
-        }
-    }
-    
-    void SaveClassChanges(DataSession Session) throws SQLException {
-    
-        for(Integer idObject : Session.NewClasses.keySet()) {
-            Map<KeyField,Integer> InsertKeys = new HashMap();
-            InsertKeys.put(TableFactory.ObjectTable.Key, idObject);
-            Map<PropertyField,Object> InsertProps = new HashMap();
-            List<Class> ChangeClasses = Session.NewClasses.get(idObject);
-            Class ChangeClass = ChangeClasses.get(ChangeClasses.size()-1);
-            Object Value = null;
-            if(ChangeClass!=null) Value = ChangeClass.ID;
-            InsertProps.put(TableFactory.ObjectTable.Class,Value);
-        
-            Session.UpdateInsertRecord(TableFactory.ObjectTable,InsertKeys,InsertProps);
-        }        
-    }
-
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
-    void restartSession(DataSession Session) throws SQLException {
-        // дропает сессию
-        // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
-        setSessionChanged(Session,new HashMap());
-
-        TableFactory.clearSession(Session);
-        Session.restart();
-    }
-
     int SessionCounter = 0;
     DataSession createSession(DataAdapter Adapter) throws SQLException {
-        // дропает сессию
-        // вычищает из всех св-в ссылки на нее появившиеся в процессе UpdateAggregations
-        DataSession Session = new DataSession(Adapter,SessionCounter++);
-        TableFactory.fillSession(Session);
-
-        return Session;
+        return new DataSession(Adapter,SessionCounter++,TableFactory,objectClass);
     }
 
     ObjectClass objectClass;
@@ -730,59 +645,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
     Set<AggregateProperty> Persistents = new HashSet();
     Map<Property,Constraint> Constraints = new HashMap();
 
-    // последний параметр
-    List<Property> UpdateAggregations(Collection<Property> ToUpdateProperties, DataSession Session) throws SQLException {
-        // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
-
-        // update'им изменения классов
-        UpdateClassChanges(Session);
-
-        // нужно из графа зависимостей выделить направленный список object св-в (здесь из предположения что список запрашиваемых аггрегаций меньше общего во много раз)
-        // все необходимые AggregateProperty - Apply (Persistents+Constraints), Bean (AggregateProperty в бине)
-        // все необходимые DataProperty - Apply (все DataProperty), а для Bean'а (DataProperty в бине)
-        // DataProperty (при изм. - новые зн.) Property   (только в бине, в Apply не актуально - не факт при расчете себестоимости может иметь смысл)
-        // DataProperty (при AddClasses - новые(если были)+ст.зн.) Property
-        // DataProperty (при RemoveClasses)
-        List<Property> UpdateList = new ArrayList();
-        for(Property Property : ToUpdateProperties) Property.fillChangedList(UpdateList,Session);
-
-        // здесь бежим слева направо определяем изм. InterfaceClassSet (в DataProperty они первичны) - удаляем сразу те у кого null (правда это может убить всю ветку)
-        // потом реализуем
-
-        // пробежим вперед пометим свойства которые изменились, но неясно на что
-        ListIterator<Property> il = UpdateList.listIterator();
-        Property Property = null;
-        while(il.hasNext()) {
-            Property = il.next();
-            Property.SessionChanged.put(Session,null);
-
-            Session.PropertyAddClasses.put(Property,new InterfaceAddClasses());
-            Session.PropertyAddValues.put(Property,new AddClasses());
-        }
-        // пробежим по которым надо поставим 0
-        for(Property UpdateProperty : ToUpdateProperties) UpdateProperty.SetChangeType(Session,0);
-
-        // бежим по списку (в обратном порядке) заполняем требования, 
-        while(Property!=null) {
-            Property.FillRequiredChanges(Session);
-
-            if(il.hasPrevious())
-                Property = il.previous();
-            else
-                Property = null;
-        }
-        
-        // запускаем IncrementChanges для этого списка
-        for(Property UpdateProperty : UpdateList) UpdateProperty.IncrementChanges(Session);
-        
-        return UpdateList;
-    }
-    
     // проверяет Constraints
     String CheckConstraints(DataSession Session) throws SQLException {
 
         for(Property Property : Constraints.keySet())
-            if(Property.HasChanges(Session)) {
+            if(Session.PropertyChanges.containsKey(Property)) {
                 String ConstraintResult = Constraints.get(Property).Check(Session,Property);
                 if(ConstraintResult!=null) return ConstraintResult;
             }
@@ -790,64 +657,43 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         return null;
     }
 
-    Map<Property,Integer> getSessionChanged(DataSession Session) {
-
-        Map<Property,Integer> Result = new HashMap();
-        for(Property<?> Property : Properties)
-            Result.put(Property,Property.SessionChanged.get(Session));
-
-        return Result;
-    }
-
-    void setSessionChanged(DataSession Session,Map<Property,Integer> SessionChanged) {
-
-        for(Property Property : Properties) {
-            Integer ChangeType = SessionChanged.get(Property);
-            if(ChangeType==null)
-                Property.SessionChanged.remove(Session);
-            else
-                Property.SessionChanged.put(Session,ChangeType);
-        }
-    }
-    
-    String Apply(DataSession Session) throws SQLException {
-        // делается UpdateAggregations (для мн-ва persistent+constraints)
-        Session.startTransaction();
-
-        // сохраним все SessionChanged для транзакции в памяти
-        Map<Property,Integer> TransactChanged = getSessionChanged(Session);
-        
-        // создадим общий список из Persistents + Constraints с AggregateProperty's + DataProperties
+    public Collection<Property> getUpdateProperties() {
         Collection<Property> UpdateList = new HashSet(Persistents);
         UpdateList.addAll(Constraints.keySet());
         for(Property Property : Properties)
             if(Property instanceof DataProperty) UpdateList.add(Property);
+        return UpdateList;
+    }
 
-        List<Property> ChangedList = UpdateAggregations(UpdateList,Session);
+    String Apply(DataSession Session) throws SQLException {
+        // делается UpdateAggregations (для мн-ва persistent+constraints)
+        Session.startTransaction();
+
+        List<Property> ChangedList = Session.update(this,new HashSet());
+        Session.IncrementChanges.remove(this);
 
         // проверим Constraints
         String Constraints = CheckConstraints(Session);
         if(Constraints!=null) {
             // откатим транзакцию
-            setSessionChanged(Session,TransactChanged);
             Session.rollbackTransaction();
             return Constraints;
         }            
         
         // записываем Data, затем Persistents в таблицы из сессии
-        SaveClassChanges(Session);
+        Session.saveClassChanges();
         
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property Property : ChangedList)
             if(Property instanceof DataProperty || Persistents.contains(Property))
-                Property.SaveChanges(Session);
+                Session.PropertyChanges.get(Property).apply(Session);
 /*
         System.out.println("All Changes");
         for(List<IncrementChangeTable> ListTables : TableFactory.ChangeTables)
            for(ChangeObjectTable ChangeTable : ListTables) ChangeTable.outSelect(Session);
   */      
         Session.commitTransaction();
-        restartSession(Session);
+        Session.restart(false);
         
         return null;        
     }
@@ -1363,9 +1209,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> {
         for(int i=0;i<PersistentNum;i++)
             Persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
 
-//        for(AggregateProperty Property : AggrProperties)
+        for(AggregateProperty Property : AggrProperties)
 //            if(Property.caption.equals("R 1"))
-//            Persistents.add(Property);
+            Persistents.add(Property);
      }
 
     static int ChangeDBIteration = 0;

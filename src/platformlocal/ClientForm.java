@@ -424,7 +424,11 @@ public class ClientForm extends JPanel {
 
         if (formHasChanged) {
 
-            remoteForm.CancelChanges();
+            try {
+                remoteForm.CancelChanges();
+            } catch (SQLException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
             dataReset();
             applyFormChanges();
         }

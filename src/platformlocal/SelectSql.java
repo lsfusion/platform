@@ -2028,8 +2028,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     List<Join> Joins = new ArrayList();
 
     void add(V Property,SourceExpr Expr) {
-        if(Expr==null)
-            Expr = Expr;
         Expr.fillJoins(Joins,Wheres);
         Properties.put(Property,Expr);
     }

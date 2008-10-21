@@ -30,7 +30,7 @@ abstract class ValueConstraint extends Constraint {
 
         JoinQuery<PropertyInterface,String> Changed = new JoinQuery<PropertyInterface,String>(Property.Interfaces);
 
-        SourceExpr ValueExpr = Property.getChangedSourceExpr(Changed.MapKeys,Session,0);
+        SourceExpr ValueExpr = Session.PropertyChanges.get(Property).getExpr(Changed.MapKeys,0);
         // закинем условие на то что мы ищем
         Changed.add(new FieldExprCompareWhere(ValueExpr,(Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
         Changed.add("value",ValueExpr);
@@ -84,8 +84,8 @@ class UniqueConstraint extends Constraint {
             MapPrev.put(Interface,Changed.addKey(new Object()));
         }
 
-        SourceExpr ChangedExpr = Property.getChangedSourceExpr(MapChange,Session,0);
-        SourceExpr PrevExpr = Property.getUpdatedSourceExpr(MapPrev,Session,true);
+        SourceExpr ChangedExpr = Session.PropertyChanges.get(Property).getExpr(MapChange,0);
+        SourceExpr PrevExpr = Session.getSourceExpr(Property,MapPrev,true);
 
         // равны значения
         Changed.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,FieldExprCompareWhere.EQUALS));
