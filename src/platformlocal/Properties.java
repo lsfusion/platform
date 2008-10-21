@@ -246,7 +246,7 @@ abstract class Property<T extends PropertyInterface> extends PropertyNode {
         JoinQuery<T,PropertyField> Query = new JoinQuery<T,PropertyField>(Interfaces);
 
         Join<KeyField,PropertyField> ChangeJoin = new MapJoin<KeyField,PropertyField,T>(ChangeTable,Query,ChangeTableMap,true);
-        ChangeJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
+        ChangeJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID,ChangeTable.Property.Type));
 
         Query.add(ChangeTable.Value,ChangeJoin.Exprs.get(ChangeTable.Value));
         Query.add(ChangeTable.PrevValue,ChangeJoin.Exprs.get(ChangeTable.PrevValue));
@@ -342,7 +342,7 @@ abstract class Property<T extends PropertyInterface> extends PropertyNode {
             // откуда читать
             JoinQuery<T,PropertyField> ReadQuery = new JoinQuery<T,PropertyField>(Interfaces);
             Join<KeyField,PropertyField> ReadJoin = new MapJoin<KeyField,PropertyField,T>(ChangeTable,ReadQuery,ChangeTableMap,true);
-            ReadJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID));
+            ReadJoin.Joins.put(ChangeTable.Property,new ValueSourceExpr(ID,ChangeTable.Property.Type));
 
             JoinQuery<KeyField,PropertyField> WriteQuery = new JoinQuery<KeyField,PropertyField>(ChangeTable.Keys);
             Join<T,PropertyField> WriteJoin = new MapJoin<T,PropertyField,KeyField>(Source,ChangeTableMap,WriteQuery,true);
@@ -596,7 +596,7 @@ class DataProperty extends Property<DataPropertyInterface> {
 
         // GetChangedFrom
         Join<KeyField,PropertyField> DataJoin = new MapJoin<KeyField,PropertyField,DataPropertyInterface>(DataTable,DataTableMap,DataQuery,true);
-        DataJoin.Joins.put(DataTable.Property,new ValueSourceExpr(ID));
+        DataJoin.Joins.put(DataTable.Property,new ValueSourceExpr(ID,DataTable.Property.Type));
 
         SourceExpr DataExpr = DataJoin.Exprs.get(DataTable.Value);
         DataQuery.add(ChangeTable.Value,DataExpr);
@@ -623,7 +623,7 @@ class DataProperty extends Property<DataPropertyInterface> {
             Join<KeyField,PropertyField> RemoveJoin = new Join<KeyField,PropertyField>(TableFactory.RemoveClassTable.getClassJoin(Session,Value),true);
             RemoveJoin.Joins.put(TableFactory.RemoveClassTable.Object,getSourceExpr((Map<PropertyInterface,SourceExpr>)(Map<? extends PropertyInterface,SourceExpr>)Query.MapKeys,true));
             Query.add(RemoveJoin);
-            Query.add(ChangeTable.Value,new NullSourceExpr(ChangeTable.Value.Type));
+            Query.add(ChangeTable.Value,new ValueSourceExpr(null,ChangeTable.Value.Type));
             ResultQuery.add(Query,1);
         }
 
@@ -797,8 +797,8 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                 if(ValueInterface!=ChangedInterface)
                     joinObjects(Query,ValueInterface);
 
-            Query.add(ChangeTable.Value,new NullSourceExpr(ChangeTable.Value.Type));
-            Query.add(ChangeTable.PrevValue,ValueSourceExpr.getExpr(Value,ValueClass.getType()));
+            Query.add(ChangeTable.Value,new ValueSourceExpr(null,ChangeTable.Value.Type));
+            Query.add(ChangeTable.PrevValue,new ValueSourceExpr(Value,ValueClass.getType()));
 
             ResultQuery.add(Query,1);
         }
@@ -828,8 +828,8 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                 }
             }
 
-            Query.add(ChangeTable.PrevValue,new NullSourceExpr(ChangeTable.PrevValue.Type));
-            Query.add(ChangeTable.Value,ValueSourceExpr.getExpr(Value,ValueClass.getType()));
+            Query.add(ChangeTable.PrevValue,new ValueSourceExpr(null,ChangeTable.PrevValue.Type));
+            Query.add(ChangeTable.Value,new ValueSourceExpr(Value,ValueClass.getType()));
 
             ResultQuery.add(Query,1);
         }
@@ -850,7 +850,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
 
             for(DataPropertyInterface ValueInterface : Interfaces)
                 joinObjects(Query,ValueInterface);
-            Query.add(ValueString,ValueSourceExpr.getExpr(Value,ValueClass.getType()));
+            Query.add(ValueString,new ValueSourceExpr(Value,ValueClass.getType()));
             Source = Query;
         }
 
@@ -1066,7 +1066,7 @@ class JoinProperty extends MapProperty<JoinPropertyInterface,PropertyInterface,J
             if(QueryIncrementType==2) {
                 // все значения в PrevValue, а в Value - значение Null
                 JoinQuery<JoinPropertyInterface, PropertyField> PrevSource = getMapQuery(getPreviousImplements(Session),ChangeTable.PrevValue,DumbChange,false).getJoinQuery();
-                PrevSource.add(ChangeTable.Value,new NullSourceExpr(Implements.Property.getType()));
+                PrevSource.add(ChangeTable.Value,new ValueSourceExpr(null,Implements.Property.getType()));
                 ResultQuery.add(PrevSource,1);
             }
 
@@ -1594,7 +1594,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
                     if(intersect(Session, Operand,ChangedProps) && !Operand.mapIsRequired(DumbChange.Interface.getInteraceAddClasses())) {
                         SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys,false);
                         if(Operator==2 && MapType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
-                            OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new NullSourceExpr(OperandExpr.getType()),new ValueSourceExpr(0));
+                            OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new ValueSourceExpr(null,OperandExpr.getType()),new ValueSourceExpr(0,OperandExpr.getType()));
                         ResultExpr.Operands.put(OperandExpr,Coeffs.get(Operand));
                     }
                 }
@@ -2314,12 +2314,15 @@ class DataSession  {
         Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table,true);
         // сначала закинем KeyField'ы и прогоним Select
         for(KeyField Key : Table.Keys)
-            TableJoin.Joins.put(Key,new ValueSourceExpr(KeyFields.get(Key)));
+            TableJoin.Joins.put(Key,new ValueSourceExpr(KeyFields.get(Key),Key.Type));
         IsRecQuery.add(TableJoin);
 
         if(IsRecQuery.executeSelect(this).size()>0) {
+            Map<PropertyField,TypedObject> TypedPropFields = new HashMap();
+            for(Map.Entry<PropertyField,Object> MapProp : PropFields.entrySet())
+                TypedPropFields.put(MapProp.getKey(),new TypedObject(MapProp.getValue(),MapProp.getKey().Type));
             // есть запись нужно Update лупить
-            UpdateRecords(new ModifyQuery(Table,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
+            UpdateRecords(new ModifyQuery(Table,new DumbSource<KeyField,PropertyField>(KeyFields,TypedPropFields)));
         } else
             // делаем Insert
             InsertRecord(Table,KeyFields,PropFields);

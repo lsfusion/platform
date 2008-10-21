@@ -275,7 +275,7 @@ abstract class Source<K,V> {
         for(Map.Entry<K,SourceExpr> MapKey : Query.MapKeys.entrySet())
             SourceJoin.Joins.put(MapKey.getKey(),MapKey.getValue());
         for(Map.Entry<K,Integer> MapKey : MergeKeys.entrySet())
-            SourceJoin.Joins.put(MapKey.getKey(),new ValueSourceExpr(MapKey.getValue()));
+            SourceJoin.Joins.put(MapKey.getKey(),new ValueSourceExpr(MapKey.getValue(),Type.Object));
         Query.addAll(SourceJoin.Exprs);
         return Query.compile();
     }
@@ -305,13 +305,30 @@ abstract class Source<K,V> {
     }
 }
 
+class TypedObject {
+    Object Value;
+    Type Type;
+
+    TypedObject(Object iValue, Type iType) {
+        Value = iValue;
+        Type = iType;
+    }
+
+    String getString() {
+        if(Value==null)
+            return Type.NULL;
+        else
+            return Type.getString(Value);
+    }
+}
+
 // постоянный источник из одной записи
 class DumbSource<K,V> extends Source<K,V> {
 
     Map<K,Integer> ValueKeys;
-    Map<V,Object> Values;
+    Map<V,TypedObject> Values;
 
-    DumbSource(Map<K,Integer> iValueKeys,Map<V,Object> iValues) {
+    DumbSource(Map<K,Integer> iValueKeys,Map<V,TypedObject> iValues) {
         super(iValueKeys.keySet());
         ValueKeys = iValueKeys;
         Values = iValues;
@@ -339,14 +356,14 @@ class DumbSource<K,V> extends Source<K,V> {
     }
 
     Type getType(V Property) {
-        return Type.getObjectType(Values.get(Property));
+        return Values.get(Property).Type;
     }
 
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
         for(Map.Entry<K,Integer> ValueKey : ValueKeys.entrySet())
             KeySelect.put(ValueKey.getKey(),ValueKey.getValue().toString());
-        for(Map.Entry<V,Object> Value : Values.entrySet())
-            PropertySelect.put(Value.getKey(),(Value.getValue()==null?"NULL":(Value.getValue() instanceof String?"'"+Value.getValue()+"'":Value.getValue().toString())));
+        for(Map.Entry<V,TypedObject> Value : Values.entrySet())
+            PropertySelect.put(Value.getKey(),Value.getValue().getString());
 
         return "dumb";
     }
@@ -361,7 +378,7 @@ class DumbSource<K,V> extends Source<K,V> {
             ExprTranslator JoinTranslated = new ExprTranslator();
             for(Map.Entry<K,Integer> ValueKey : ValueKeys.entrySet()) {
                 SourceExpr JoinExpr = Join.Joins.get(ValueKey.getKey()).translate(Translated);
-                JoinTranslated.put(JoinExpr,new ValueSourceExpr(ValueKey.getValue()));
+                JoinTranslated.put(JoinExpr,new ValueSourceExpr(ValueKey.getValue(),Type.Object));
                 // если св-во также докидываем в фильтр
                 if(!(JoinExpr instanceof KeyExpr))
                     JoinWheres.add(new FieldExprCompareWhere(JoinExpr,ValueKey.getValue(),FieldExprCompareWhere.EQUALS));
@@ -369,8 +386,8 @@ class DumbSource<K,V> extends Source<K,V> {
             Translated.merge(JoinTranslated);
 
             // все свои значения также затранслируем
-            for(Map.Entry<V,Object> MapValue : Values.entrySet())
-                Translated.put(Join.Exprs.get(MapValue.getKey()),Type.getValueExpr(MapValue.getValue()));
+            for(Map.Entry<V,TypedObject> MapValue : Values.entrySet())
+                Translated.put(Join.Exprs.get(MapValue.getKey()),new ValueSourceExpr(MapValue.getValue()));
 
             // после чего дальше даже не компилируемся - proceedCompile словит транслированные ключи
         } else
@@ -406,17 +423,17 @@ class EmptySource<K,V> extends Source<K,V> {
     }
 
     String getKeyString(K Key, String Alias) {
-        return NullSourceExpr.STRING;
+        return Type.NULL;
     }
 
     String getPropertyString(V Value, String Alias) {
-        return NullSourceExpr.STRING;
+        return Type.NULL;
     }
 
     void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
 
         for(SourceExpr JoinExpr : Join.Exprs.values())
-            Translated.put(JoinExpr,new NullSourceExpr(JoinExpr.getType()));
+            Translated.put(JoinExpr,new ValueSourceExpr(null,JoinExpr.getType()));
         Translated.put(Join.InJoin,new FalseWhere());
     }
 
@@ -684,7 +701,7 @@ class Join<J,U> {
             Map<J,Integer> MergeKeys = new HashMap();
             for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
                 if(MapJoin.getValue() instanceof ValueSourceExpr)
-                    MergeKeys.put(MapJoin.getKey(), (Integer) ((ValueSourceExpr)MapJoin.getValue()).Value);
+                    MergeKeys.put(MapJoin.getKey(), (Integer) ((ValueSourceExpr)MapJoin.getValue()).Object.Value);
 
             if(MergeKeys.size() > 0) {
                 CollectionExtend.removeAll(Joins,MergeKeys.keySet());
@@ -696,9 +713,11 @@ class Join<J,U> {
     boolean isEmpty(ExprTranslator Translated) {
         if(Source instanceof EmptySource) return true;
 
-        for(SourceExpr Join : Joins.values())
-            if(Join.translate(Translated) instanceof NullSourceExpr)
+        for(SourceExpr Join : Joins.values()) {
+            SourceExpr JoinExpr = Join.translate(Translated);
+            if(JoinExpr instanceof ValueSourceExpr && ((ValueSourceExpr)JoinExpr).Object.Value == null)
                 return true;
+        }
 
         return false;
     }
@@ -843,20 +862,16 @@ class JoinExpr<J,U> extends ObjectExpr {
 // формулы
 class ValueSourceExpr extends SourceExpr {
 
-    Object Value;
-    ValueSourceExpr(Object iValue) {
-        Value=iValue;
+    TypedObject Object;
+    ValueSourceExpr(TypedObject iObject) {
+        Object = iObject;
     }
-
-    String getStringValue() {
-        if(Value instanceof String)
-            return "'" + Value + "'";
-        else
-            return Value.toString();
+    ValueSourceExpr(Object Value,Type Type) {
+        Object = new TypedObject(Value,Type);
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return getStringValue();
+        return Object.getString();
     }
 
     void fillJoins(List<Join> Joins, Set<Where> Wheres) {
@@ -868,7 +883,7 @@ class ValueSourceExpr extends SourceExpr {
     }
 
     Type getType() {
-        return Type.getObjectType(Value);
+        return Object.Type;
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -881,62 +896,13 @@ class ValueSourceExpr extends SourceExpr {
 
         ValueSourceExpr that = (ValueSourceExpr) o;
 
-        if (Value != null ? !Value.equals(that.Value) : that.Value != null) return false;
+        if (Object != null ? !Object.equals(that.Object) : that.Object != null) return false;
 
         return true;
     }
 
     public int hashCode() {
-        return (Value != null ? Value.hashCode() : 0);
-    }
-
-    static SourceExpr getExpr(Object Value, Type DBType) {
-        return (Value==null?new NullSourceExpr(DBType):new ValueSourceExpr(Value));
-    }
-}
-
-class NullSourceExpr extends SourceExpr {
-
-    Type DBType;
-    NullSourceExpr(Type iDBType) {
-        DBType = iDBType;
-    }
-
-    final static String STRING = "NULL";
-
-    public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return STRING;
-    }
-
-    void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    void fillObjectExprs(Collection<ObjectExpr> Exprs) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    Type getType() {
-        return DBType;
-    }
-
-    public SourceExpr proceedTranslate(ExprTranslator Translated) {
-        return this;
-    }
-
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        NullSourceExpr that = (NullSourceExpr) o;
-
-        if (!DBType.equals(that.DBType)) return false;
-
-        return true;
-    }
-
-    public int hashCode() {
-        return DBType.hashCode();
+        return (Object != null ? Object.hashCode() : 0);
     }
 }
 
@@ -1145,7 +1111,7 @@ class NullEmptySourceExpr extends SourceExpr {
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         String ExprSource = Expr.getSource(JoinAlias, Syntax);
         String EmptySource = Expr.getType().getEmptyString();
-        if(ExprSource.equals(NullSourceExpr.STRING)) return EmptySource;
+        if(ExprSource.equals(Type.NULL)) return EmptySource;
         return Syntax.isNULL(ExprSource, EmptySource, false);
     }
 
@@ -1193,7 +1159,7 @@ class NullJoinSourceExpr extends SourceExpr {
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return NullSourceExpr.STRING;
+        return Type.NULL;
     }
 
     Type getType() {
@@ -1258,7 +1224,7 @@ class CaseWhenSourceExpr extends SourceExpr {
 
         if(WhereSource.equals(StaticWhere.TRUE)) return TrueSource;
         if(WhereSource.equals(StaticWhere.FALSE)) return FalseSource;
-        if(TrueSource.equals(NullSourceExpr.STRING) && FalseSource.equals(NullSourceExpr.STRING)) return NullSourceExpr.STRING;
+        if(TrueSource.equals(Type.NULL) && FalseSource.equals(Type.NULL)) return Type.NULL;
 
         return "(CASE WHEN " + WhereSource + " THEN " + TrueSource + " ELSE " + FalseSource + " END)";
     }
@@ -1320,8 +1286,8 @@ class IsNullSourceExpr extends SourceExpr {
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         String PrimarySource = PrimaryExpr.getSource(JoinAlias, Syntax);
         String SecondarySource = SecondaryExpr.getSource(JoinAlias, Syntax);
-        if(PrimarySource.equals(NullSourceExpr.STRING)) return SecondarySource;
-        if(SecondarySource.equals(NullSourceExpr.STRING)) return PrimarySource;
+        if(PrimarySource.equals(Type.NULL)) return SecondarySource;
+        if(SecondarySource.equals(Type.NULL)) return PrimarySource;
         
         return Syntax.isNULL(PrimarySource, SecondarySource, false);
     }
@@ -1464,7 +1430,7 @@ class MultiplySourceExpr extends SourceExpr {
         String Source = "";
         for(SourceExpr Operand : Operands) {
             String OperandSource = Operand.getSource(JoinAlias, Syntax);
-            if(OperandSource.equals(NullSourceExpr.STRING)) return NullSourceExpr.STRING;
+            if(OperandSource.equals(Type.NULL)) return Type.NULL;
             if(!OperandSource.equals("1"))
                 Source = (Source.length()==0?"":Source+"*") + OperandSource;
         }
@@ -1534,7 +1500,7 @@ class FormulaWhereSourceExpr extends SourceExpr {
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         // если NotNull нефиг 2 раза проверять
-        return CaseWhenSourceExpr.getExpr((NotNull?StaticWhere.TRUE:FormulaWhere.getSource(JoinAlias, Syntax)),"1",NullSourceExpr.STRING,Syntax);
+        return CaseWhenSourceExpr.getExpr((NotNull?StaticWhere.TRUE:FormulaWhere.getSource(JoinAlias, Syntax)),"1",Type.NULL,Syntax);
     }
 
     Type getType() {
@@ -1719,7 +1685,7 @@ class SourceIsNullWhere extends Where {
     }
 
     static String getExpr(String SourceString,SQLSyntax Syntax,boolean Not) {
-        if(SourceString.equals(NullSourceExpr.STRING)) return Not?StaticWhere.FALSE:StaticWhere.TRUE;
+        if(SourceString.equals(Type.NULL)) return Not?StaticWhere.FALSE:StaticWhere.TRUE;
         return (Not?NotWhere.PREFIX:"") + SourceString + " IS NULL";
     }
 
@@ -2191,7 +2157,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(SourceExpr Key : MapKeys.values()) {
             SourceExpr ValueKey = Key.translate(Translated);
             if(Key!=ValueKey)
-                KeyValues.put(Key,((ValueSourceExpr)ValueKey).getStringValue());
+                KeyValues.put(Key,((ValueSourceExpr)ValueKey).Object.getString());
         }
 
         return this;
@@ -2373,7 +2339,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // погнали Properties заполнять
         for(Map.Entry<V,SourceExpr> JoinProp : Properties.entrySet()) {
             String PropertyValue = JoinProp.getValue().getSource(JoinAlias, Syntax);
-            if(PropertyValue.equals(NullSourceExpr.STRING))
+            if(PropertyValue.equals(Type.NULL))
                 PropertyValue = Syntax.getNullValue(JoinProp.getValue().getType());
             PropertySelect.put(JoinProp.getKey(),PropertyValue);
         }
@@ -2561,7 +2527,7 @@ class EmptyUnion<K> extends ExprUnion<K> {
     }
 
     SourceExpr translateExpr(Map<Union<K, Object>, Join<K, ?>> MapJoins, ExprTranslator Translated) {
-        return new NullSourceExpr(DBType);
+        return new ValueSourceExpr(null,DBType);
     }
 
     ExprUnion proceedTranslate(Map<PropertyUnion, ExprUnion> ToTranslate, Map<ExprUnion, ExprUnion> Translated) {
@@ -2569,7 +2535,7 @@ class EmptyUnion<K> extends ExprUnion<K> {
     }
 
     String getString(Map<Union<K, Object>, String> MapAliases, SQLSyntax Syntax) {
-        return NullSourceExpr.STRING;
+        return Type.NULL;
     }
 
     void fillUnions(Collection<Union> Unions) {
@@ -2778,11 +2744,11 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
 
         // вырежем null'ы именно заранее потому как Sum интересует кол-во операндов
         for(Iterator<CoeffExpr<String>> i = Operands.iterator();i.hasNext();)
-            if(i.next().Expr.equals(NullSourceExpr.STRING))
+            if(i.next().Expr.equals(Type.NULL))
                 i.remove();
 
         if(Operands.size()==0)
-            return NullSourceExpr.STRING;
+            return Type.NULL;
         
         for(CoeffExpr<String> Operand : Operands) {
             String OperandString = Operand.getCoeff();
@@ -2797,7 +2763,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             } else {
                 switch(Operator) {
                     case 2:
-                        if(!OperandString.equals(NullSourceExpr.STRING)) {
+                        if(!OperandString.equals(Type.NULL)) {
                             if(!Safe && !Syntax.isNullSafe())
                                 Result = Syntax.isNULL(OperandString,Result,true);
                             else
@@ -2808,7 +2774,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
                         Result = Result+(Operand.Coeff==null || Operand.Coeff>=0?"+":"") + OperandString;
                         break;
                     case 0:
-                        if(!OperandString.equals(NullSourceExpr.STRING)) {
+                        if(!OperandString.equals(Type.NULL)) {
                             if(Syntax.isGreatest())
                                 Result = OperandString + "," + Result;
                             else
@@ -2829,7 +2795,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             return "GREATEST(" + Result + ")";
         else
         if(Operator==1)
-            return CaseWhenSourceExpr.getExpr(SumNull,NullSourceExpr.STRING,Result,Syntax);
+            return CaseWhenSourceExpr.getExpr(SumNull,Type.NULL,Result,Syntax);
         else
             return "("+Result+")";
     }

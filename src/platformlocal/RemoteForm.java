@@ -61,7 +61,7 @@ class ObjectImplement {
     int ID = 0;
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
-        return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):new ValueSourceExpr(idObject));
+        return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):new ValueSourceExpr(idObject,Type.Object));
     }
 }
 
@@ -397,7 +397,7 @@ class UserValueLink extends ValueLink {
     UserValueLink(Object iValue) {Value=iValue;}
 
     SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, Type DBType) {
-        return ValueSourceExpr.getExpr(Value,DBType);
+        return new ValueSourceExpr(Value,DBType);
     }
 }
 
@@ -1421,7 +1421,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
             for(ObjectImplement Object : Group)
                 KeyJoin.Joins.put(ikt.next(),SelectProps.MapKeys.get(Object));
-            KeyJoin.Joins.put(KeyTable.View,new ValueSourceExpr(getGroupObjectGID(Group)));
+            KeyJoin.Joins.put(KeyTable.View,new ValueSourceExpr(getGroupObjectGID(Group),KeyTable.View.Type));
             SelectProps.add(KeyJoin);
 
             for(PropertyView DrawProp : GroupList)

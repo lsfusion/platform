@@ -284,6 +284,8 @@ abstract class Type {
     static Type Object;
     static Type System;
 
+    static String NULL = "NULL";
+
     static List<Type> Enum = new ArrayList();
 
     static {
@@ -311,13 +313,11 @@ abstract class Type {
             return String;
     }
 
-    static SourceExpr getValueExpr(Object Value) {
-        return ValueSourceExpr.getExpr(Value,getObjectType(Value));
+    SourceExpr getMinValueExpr() {
+        return new ValueSourceExpr(getMinValue(),this);
     }
 
-    SourceExpr getMinValueExpr() {
-        return ValueSourceExpr.getExpr(getMinValue(),this);
-    }
+    abstract public String getString(Object Value);
 }
 
 class StringType extends Type {
@@ -337,6 +337,10 @@ class StringType extends Type {
     Object getEmptyValue() {
         return "";
     }
+
+    public String getString(Object Value) {
+        return "'" + Value + "'";
+    }
 }
 
 class IntegerType extends Type {
@@ -355,5 +359,9 @@ class IntegerType extends Type {
 
     Object getEmptyValue() {
         return 0;
+    }
+
+    public String getString(Object Value) {
+        return Value.toString();
     }
 }

@@ -173,7 +173,7 @@ class ObjectTable extends Table {
 
         JoinQuery<Object,String> Query = new JoinQuery<Object,String>();
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
-        JoinTable.Joins.put(Key,new ValueSourceExpr(idObject));
+        JoinTable.Joins.put(Key,new ValueSourceExpr(idObject,Key.Type));
         Query.add("classid",JoinTable.Exprs.get(Class));
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
         if(Result.size()>0)
@@ -231,8 +231,8 @@ class IDTable extends Table {
         // замещаем
         Map<KeyField,Integer> KeyFields = new HashMap();
         KeyFields.put(Key,idType);
-        Map<PropertyField,Object> PropFields = new HashMap();
-        PropFields.put(Value,FreeID+1);
+        Map<PropertyField,TypedObject> PropFields = new HashMap();
+        PropFields.put(Value,new TypedObject(FreeID+1,Value.Type));
         dataSession.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
         return FreeID+1;
     }
@@ -361,7 +361,7 @@ class ChangeClassTable extends ChangeTable {
 
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this,true);
         ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
-        ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID));
+        ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID,Class.Type));
         ClassQuery.add(ClassJoin);
 
         return ClassQuery;
