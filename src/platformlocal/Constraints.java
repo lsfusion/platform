@@ -32,7 +32,7 @@ abstract class ValueConstraint extends Constraint {
 
         SourceExpr ValueExpr = Session.PropertyChanges.get(Property).getExpr(Changed.MapKeys,0);
         // закинем условие на то что мы ищем
-        Changed.add(new FieldExprCompareWhere(ValueExpr,(Property.ChangeTable.Value.Type.equals("integer")?0:""),Invalid));
+        Changed.add(new FieldExprCompareWhere(ValueExpr,Property.ChangeTable.Value.Type.getEmptyValue(),Invalid));
         Changed.add("value",ValueExpr);
 
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
@@ -93,13 +93,13 @@ class UniqueConstraint extends Constraint {
         Changed.add(new SourceIsNullWhere(ChangedExpr,true));
 
         // не равны ключи
-        SourceWhere OrDiffKeys = null;
+        Where OrDiffKeys = null;
         
         Map<PropertyInterface,String> KeyFields = new HashMap();
         Integer KeyNum = 0;
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             // не равны ключи
-            SourceWhere KeyDiff = new FieldExprCompareWhere(MapChange.get(Interface),MapPrev.get(Interface),FieldExprCompareWhere.NOT_EQUALS);
+            Where KeyDiff = new FieldExprCompareWhere(MapChange.get(Interface),MapPrev.get(Interface),FieldExprCompareWhere.NOT_EQUALS);
             if(OrDiffKeys==null)
                 OrDiffKeys = KeyDiff;
             else

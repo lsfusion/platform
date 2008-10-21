@@ -651,7 +651,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     void InitTables() {
         TableImplement Include;
 
-/*        Include = new TableImplement();
+        Include = new TableImplement();
         Include.add(new DataPropertyInterface(Article));
         TableFactory.IncludeIntoGraph(Include);
         Include = new TableImplement();
@@ -667,7 +667,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(Article));
         Include.add(new DataPropertyInterface(Store));
-        TableFactory.IncludeIntoGraph(Include);*/
+        TableFactory.IncludeIntoGraph(Include);
     }
 
     void InitIndexes() {

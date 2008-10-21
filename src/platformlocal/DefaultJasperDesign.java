@@ -38,13 +38,13 @@ public class DefaultJasperDesign extends JasperDesign {
 
             // сначала все коды
             for(ObjectImplement Object : Group)
-                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,"integer"));
+                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,Type.Object));
 
             // бежим по всем свойствам входящим в объектам
             for(PropertyView Property : (List<PropertyView>)navigatorForm.Properties) {
                 GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
                 if(DrawProp==Group)
-                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getDBType()));
+                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getType()));
             }
 
             JRDesignBand Band = new JRDesignBand();

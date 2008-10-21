@@ -183,8 +183,8 @@ abstract class Property<T extends PropertyInterface> extends PropertyNode {
             return null;
     }
 
-    public String getDBType() {
-        return getBaseClass().GetDBType();
+    public Type getType() {
+        return getBaseClass().getType();
     }
 
     String caption = "";
@@ -235,7 +235,7 @@ abstract class Property<T extends PropertyInterface> extends PropertyNode {
     IncrementChangeTable ChangeTable;
 
     void FillChangeTable() {
-        ChangeTable = TableFactory.GetChangeTable(Interfaces.size(), getDBType());
+        ChangeTable = TableFactory.GetChangeTable(Interfaces.size(), getType());
         ChangeTableMap = new HashMap();
         Iterator<KeyField> io = ChangeTable.Objects.iterator();
         for(T Interface : Interfaces)
@@ -457,7 +457,7 @@ class DataProperty extends Property<DataPropertyInterface> {
     Map<KeyField,DataPropertyInterface> DataTableMap = null;
 
     void FillDataTable() {
-        DataTable = TableFactory.GetDataChangeTable(Interfaces.size(), getDBType());
+        DataTable = TableFactory.GetDataChangeTable(Interfaces.size(), getType());
         // если нету Map'a построим
         DataTableMap = new HashMap();
         Iterator<KeyField> io = DataTable.Objects.iterator();
@@ -798,7 +798,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                     joinObjects(Query,ValueInterface);
 
             Query.add(ChangeTable.Value,new NullSourceExpr(ChangeTable.Value.Type));
-            Query.add(ChangeTable.PrevValue,ValueSourceExpr.getExpr(Value,ValueClass.GetDBType()));
+            Query.add(ChangeTable.PrevValue,ValueSourceExpr.getExpr(Value,ValueClass.getType()));
 
             ResultQuery.add(Query,1);
         }
@@ -829,7 +829,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
             }
 
             Query.add(ChangeTable.PrevValue,new NullSourceExpr(ChangeTable.PrevValue.Type));
-            Query.add(ChangeTable.Value,ValueSourceExpr.getExpr(Value,ValueClass.GetDBType()));
+            Query.add(ChangeTable.Value,ValueSourceExpr.getExpr(Value,ValueClass.getType()));
 
             ResultQuery.add(Query,1);
         }
@@ -844,13 +844,13 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         Source<PropertyInterface,String> Source;
         // если null то возвращает EmptySource
         if(Value==null)
-            Source = new EmptySource<PropertyInterface,String>(Interfaces,ValueString,ValueClass.GetDBType());
+            Source = new EmptySource<PropertyInterface,String>(Interfaces,ValueString,ValueClass.getType());
         else {
             JoinQuery<PropertyInterface,String> Query = new JoinQuery<PropertyInterface,String>(Interfaces);
 
             for(DataPropertyInterface ValueInterface : Interfaces)
                 joinObjects(Query,ValueInterface);
-            Query.add(ValueString,ValueSourceExpr.getExpr(Value,ValueClass.GetDBType()));
+            Query.add(ValueString,ValueSourceExpr.getExpr(Value,ValueClass.getType()));
             Source = Query;
         }
 
@@ -1066,7 +1066,7 @@ class JoinProperty extends MapProperty<JoinPropertyInterface,PropertyInterface,J
             if(QueryIncrementType==2) {
                 // все значения в PrevValue, а в Value - значение Null
                 JoinQuery<JoinPropertyInterface, PropertyField> PrevSource = getMapQuery(getPreviousImplements(Session),ChangeTable.PrevValue,DumbChange,false).getJoinQuery();
-                PrevSource.add(ChangeTable.Value,new NullSourceExpr(Implements.Property.getDBType()));
+                PrevSource.add(ChangeTable.Value,new NullSourceExpr(Implements.Property.getType()));
                 ResultQuery.add(PrevSource,1);
             }
 
@@ -1103,9 +1103,9 @@ class JoinProperty extends MapProperty<JoinPropertyInterface,PropertyInterface,J
         Query.add(Value,Read.getMapExpr(getMapProperty(),Implements));
     }
 
-    Map<PropertyField, String> getMapNullProps(PropertyField Value) {
-        Map<PropertyField, String> NullProps = new HashMap();
-        NullProps.put(Value,getDBType());
+    Map<PropertyField, Type> getMapNullProps(PropertyField Value) {
+        Map<PropertyField, Type> NullProps = new HashMap();
+        NullProps.put(Value, getType());
         return NullProps;
     }
 
@@ -1314,12 +1314,12 @@ abstract class GroupProperty extends MapProperty<GroupPropertyInterface,Property
         Query.add(Value,Read.getMapExpr(GroupProperty,Query.MapKeys));
     }
 
-    Map<Object, String> getMapNullProps(Object Value) {
-        Map<Object, String> NullProps = new HashMap();
-        NullProps.put(Value,getDBType());
+    Map<Object, Type> getMapNullProps(Object Value) {
+        Map<Object, Type> NullProps = new HashMap();
+        NullProps.put(Value, getType());
         InterfaceClass InterfaceClass = GetClassSet(null).get(0);
         for(Map.Entry<PropertyInterface,Class> Interface : InterfaceClass.entrySet())
-            NullProps.put(Interface.getKey(),Interface.getValue().GetDBType());
+            NullProps.put(Interface.getKey(),Interface.getValue().getType());
         return NullProps;
     }
 
@@ -1404,7 +1404,7 @@ class MaxGroupProperty extends GroupProperty {
         //      a) ушедшие (previmp и prevmap) = старые (sourceexpr) LJ (prev+change) (вообще и пришедшие <= старых)
         //      b) пришедшие (change) > старых (sourceexpr)
 
-        PropertyField PrevMapValue = new PropertyField("drop","integer");
+        PropertyField PrevMapValue = new PropertyField("drop",Type.Integer);
 
         UnionQuery<GroupPropertyInterface,PropertyField> ChangeQuery = new UnionQuery<GroupPropertyInterface,PropertyField>(Interfaces,3);
 
@@ -1424,12 +1424,9 @@ class MaxGroupProperty extends GroupProperty {
         SuspiciousQuery.add(PrevMapValue,OldValue);
         SuspiciousQuery.add(ChangeTable.PrevValue,PrevValue);
 
-        ValueSourceExpr MinValue = new ValueSourceExpr(-99999999);
-        NewValue = new IsNullSourceExpr(NewValue,MinValue);
-        OldValue = new IsNullSourceExpr(OldValue,MinValue);
-        PrevValue = new IsNullSourceExpr(PrevValue,MinValue);
-
-        SuspiciousQuery.add(new FieldOPWhere(new FieldExprCompareWhere(NewValue,PrevValue,FieldExprCompareWhere.GREATER),new FieldExprCompareWhere(OldValue,PrevValue,FieldExprCompareWhere.EQUALS),false));
+        SuspiciousQuery.add(new FieldOPWhere(
+                new FieldExprCompareWhere(NewValue.getNullMinExpr(),PrevValue.getNullMinExpr(),FieldExprCompareWhere.GREATER),
+                new FieldExprCompareWhere(OldValue.getNullMinExpr(),PrevValue.getNullMinExpr(),FieldExprCompareWhere.EQUALS),false));
 
         JoinQuery<GroupPropertyInterface,PropertyField> UpdateQuery = new JoinQuery<GroupPropertyInterface,PropertyField>(Interfaces);
         UniJoin<GroupPropertyInterface, PropertyField> ChangesJoin = new UniJoin<GroupPropertyInterface,PropertyField>(SuspiciousQuery,UpdateQuery,true);
@@ -1597,7 +1594,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
                     if(intersect(Session, Operand,ChangedProps) && !Operand.mapIsRequired(DumbChange.Interface.getInteraceAddClasses())) {
                         SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys,false);
                         if(Operator==2 && MapType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
-                            OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new NullSourceExpr(OperandExpr.getDBType()),new ValueSourceExpr(0));
+                            OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new NullSourceExpr(OperandExpr.getType()),new ValueSourceExpr(0));
                         ResultExpr.Operands.put(OperandExpr,Coeffs.get(Operand));
                     }
                 }
@@ -2558,7 +2555,7 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
     }
 
     // получает св-ва для запроса
-    abstract Map<OM,String> getMapNullProps(OM Value);
+    abstract Map<OM, Type> getMapNullProps(OM Value);
 
     // ВЫПОЛНЕНИЕ СПИСКА ИТЕРАЦИЙ
 

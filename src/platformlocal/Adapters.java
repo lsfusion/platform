@@ -30,7 +30,7 @@ interface SQLSyntax {
 
     String getTop(int Top, String SelectString, String OrderString, String WhereString);
 
-    String getNullValue(String DBType);
+    String getNullValue(Type DBType);
 
     String getSessionTableName(String TableName);
     String getCreateSessionTable(String TableName,String DeclareString,String ConstraintString);
@@ -39,7 +39,7 @@ interface SQLSyntax {
     boolean isNullSafe();
     boolean isGreatest();
 
-    String convertType(String Type);
+    String convertType(Type Type);
 
     int UpdateModel();
 
@@ -48,8 +48,8 @@ interface SQLSyntax {
 
 abstract class DataAdapter implements SQLSyntax {
 
-    public String convertType(String Type) {
-        return Type;
+    public String convertType(Type Type) {
+        return Type.getDB();
     }
 
     public int UpdateModel() {
@@ -64,7 +64,7 @@ abstract class DataAdapter implements SQLSyntax {
         return new PostgreDataAdapter();
     }
 
-    public String getNullValue(String DBType) {
+    public String getNullValue(Type DBType) {
         return "NULL";
     }
 
@@ -283,8 +283,8 @@ class PostgreDataAdapter extends DataAdapter {
         return "";
     }
 
-    public String getNullValue(String DBType) {
-        String EmptyValue = (DBType.equals("integer")?"0":"''");
+    public String getNullValue(Type DBType) {
+        String EmptyValue = (DBType instanceof IntegerType?"0":"''");
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
     }
 
@@ -318,11 +318,11 @@ class PostgreDataAdapter extends DataAdapter {
 
 class OracleDataAdapter extends DataAdapter {
 
-    public String convertType(String Type) {
-        if(Type.equals("integer"))
+    public String convertType(Type Type) {
+        if(Type instanceof IntegerType)
             return "NUMBER(5)";
 
-        return Type;
+        return super.convertType(Type);
     }
 
     public int UpdateModel() {
@@ -407,8 +407,8 @@ class OracleDataAdapter extends DataAdapter {
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
     
-    public String getNullValue(String DBType) {
-        String EmptyValue = (DBType.equals("integer")?"0":"''");
+    public String getNullValue(Type DBType) {
+        String EmptyValue = (DBType instanceof IntegerType?"0":"''");
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
     }
 }

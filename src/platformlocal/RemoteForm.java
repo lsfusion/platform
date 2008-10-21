@@ -25,7 +25,6 @@ import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
-import net.sf.jasperreports.engine.design.JRDesignBand;
 import net.sf.jasperreports.engine.design.JasperDesign;
 
 
@@ -368,7 +367,7 @@ class Filter {
     }
 
     void fillSelect(JoinQuery<ObjectImplement, ?> Query, Set<GroupObjectImplement> ClassGroup, DataSession Session) {
-        Query.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session, true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,Property.Property.getDBType()),Compare));
+        Query.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session, true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,Property.Property.getType()),Compare));
     }
 }
 
@@ -380,7 +379,7 @@ abstract class ValueLink {
 
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {return false;}
 
-    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, String DBType);
+    abstract SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, Type DBType);
 }
 
 
@@ -390,7 +389,7 @@ class UserValueLink extends ValueLink {
 
     UserValueLink(Object iValue) {Value=iValue;}
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, String DBType) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, Type DBType) {
         return ValueSourceExpr.getExpr(Value,DBType);
     }
 }
@@ -416,7 +415,7 @@ class ObjectValueLink extends ValueLink {
         return ((Object.Updated & ObjectImplement.UPDATED_OBJECT)!=0);
     }
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, String DBType) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, Type DBType) {
         return Object.getSourceExpr(ClassGroup,ClassSource);
     }
 }
@@ -442,7 +441,7 @@ class PropertyValueLink extends ValueLink {
         return Property.ObjectUpdated(ClassGroup);
     }
 
-    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, String DBType) {
+    SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, Type DBType) {
         return Property.getSourceExpr(ClassGroup,ClassSource,Session, true);
     }
 }
@@ -776,7 +775,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                 SubQuery.putDumbJoin(FixedObjects);
 
-                SubQuery.add("newvalue",Filter.Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session,Filter.Property.Property.getDBType()));
+                SubQuery.add("newvalue",Filter.Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session,Filter.Property.Property.getType()));
 
                 LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Session);
                 // изменяем св-ва
@@ -873,7 +872,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     // рекурсия для генерации порядка
-    private SourceWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
+    private Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
 
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
@@ -897,10 +896,10 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             } else
                 CompareIndex = FieldExprCompareWhere.LESS;
         }
-        SourceWhere OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,CompareIndex);
+        Where OrderWhere = new FieldExprCompareWhere(OrderExpr,OrderValue,CompareIndex);
 
         if(!Last) {
-            SourceWhere NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1);
+            Where NextWhere = GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1);
 
             // >A OR (=A AND >B)
             return new FieldOPWhere(OrderWhere,new FieldOPWhere(new FieldExprCompareWhere(OrderExpr,OrderValue,FieldExprCompareWhere.EQUALS),NextWhere,true),false);
@@ -1509,10 +1508,10 @@ class ReportDrawField {
     int Width;
     byte Alignment;
 
-    ReportDrawField(String iID,String iCaption,String DBType) {
+    ReportDrawField(String iID,String iCaption,Type DBType) {
         ID = iID;
         Caption = iCaption;
-        if(DBType.equals("integer")) {
+        if(DBType instanceof IntegerType) {
             ValueClass = java.lang.Integer.class;
             Width = 7;
             Alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;

@@ -162,9 +162,9 @@ class ObjectTable extends Table {
     
     ObjectTable() {
         super("objects");
-        Key = new KeyField("object","integer");
+        Key = new KeyField("object",Type.Object);
         Keys.add(Key);
-        Class = new PropertyField("class","integer");
+        Class = new PropertyField("class",Type.System);
         Properties.add(Class);
     };
     
@@ -201,10 +201,10 @@ class IDTable extends Table {
     
     IDTable() {
         super("idtable");
-        Key = new KeyField("id","integer");
+        Key = new KeyField("id",Type.System);
         Keys.add(Key);
         
-        Value = new PropertyField("value","integer");
+        Value = new PropertyField("value",Type.System);
         Properties.add(Value);
     }
 
@@ -237,12 +237,12 @@ class ViewTable extends SessionTable {
         super("viewtable"+iObjects.toString());
         Objects = new ArrayList();
         for(Integer i=0;i<iObjects;i++) {
-            KeyField ObjKeyField = new KeyField("object"+i,"integer");
+            KeyField ObjKeyField = new KeyField("object"+i,Type.Object);
             Objects.add(ObjKeyField);
             Keys.add(ObjKeyField);
         }
         
-        View = new KeyField("viewid","integer");
+        View = new KeyField("viewid",Type.System);
         Keys.add(View);
     }
             
@@ -274,28 +274,28 @@ class ChangeObjectTable extends ChangeTable {
     KeyField Property;
     PropertyField Value;
     
-    ChangeObjectTable(String TablePrefix,Integer iObjects,Integer iDBType,List<String> DBTypes) {
+    ChangeObjectTable(String TablePrefix,Integer iObjects,Integer iDBType) {
         super(TablePrefix+"changetable"+iObjects+"t"+iDBType);
 
         Objects = new ArrayList();
         for(Integer i=0;i<iObjects;i++) {
-            KeyField ObjKeyField = new KeyField("object"+i,"integer");
+            KeyField ObjKeyField = new KeyField("object"+i,Type.Object);
             Objects.add(ObjKeyField);
             Keys.add(ObjKeyField);
         }
         
-        Property = new KeyField("property","integer");
+        Property = new KeyField("property",Type.System);
         Keys.add(Property);
         
-        Value = new PropertyField("value",DBTypes.get(iDBType));
+        Value = new PropertyField("value",Type.Enum.get(iDBType));
         Properties.add(Value);
     }
 }
 
 class DataChangeTable extends ChangeObjectTable {
 
-    DataChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
-        super("data",iObjects,iDBType,DBTypes);
+    DataChangeTable(Integer iObjects,Integer iDBType) {
+        super("data",iObjects,iDBType);
     }
 }
 
@@ -303,10 +303,10 @@ class IncrementChangeTable extends ChangeObjectTable {
 
     PropertyField PrevValue;
 
-    IncrementChangeTable(Integer iObjects,Integer iDBType,List<String> DBTypes) {
-        super("inc",iObjects,iDBType,DBTypes);
+    IncrementChangeTable(Integer iObjects,Integer iDBType) {
+        super("inc",iObjects,iDBType);
 
-        PrevValue = new PropertyField("prevvalue",DBTypes.get(iDBType));
+        PrevValue = new PropertyField("prevvalue",Type.Enum.get(iDBType));
         Properties.add(PrevValue);
     }
 }
@@ -321,10 +321,10 @@ class ChangeClassTable extends ChangeTable {
     ChangeClassTable(String iTable) {
         super(iTable);
 
-        Object = new KeyField("object","integer");
+        Object = new KeyField("object",Type.Object);
         Keys.add(Object);
 
-        Class = new KeyField("class","integer");
+        Class = new KeyField("class",Type.System);
         Keys.add(Class);
     }
     
@@ -398,15 +398,13 @@ class TableFactory extends TableImplement{
     boolean ReCalculateAggr = false;
     boolean Crash = false;
     
-    IncrementChangeTable GetChangeTable(Integer Objects, String DBType) {
-        return ChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
+    IncrementChangeTable GetChangeTable(Integer Objects, Type DBType) {
+        return ChangeTables.get(Objects-1).get(Type.Enum.indexOf(DBType));
     }
     
-    DataChangeTable GetDataChangeTable(Integer Objects, String DBType) {
-        return DataChangeTables.get(Objects-1).get(DBTypes.indexOf(DBType));
+    DataChangeTable GetDataChangeTable(Integer Objects, Type DBType) {
+        return DataChangeTables.get(Objects-1).get(Type.Enum.indexOf(DBType));
     }
-
-    List<String> DBTypes;
 
     int MaxBeanObjects = 3;
     int MaxInterface = 4;
@@ -424,22 +422,18 @@ class TableFactory extends TableImplement{
         for(int i=1;i<=MaxBeanObjects;i++)
             ViewTables.add(new ViewTable(i));
 
-        DBTypes = new ArrayList();
-        DBTypes.add("integer");
-        DBTypes.add("char(50)");
-        
         for(int i=1;i<=MaxInterface;i++) {
             List<IncrementChangeTable> ObjChangeTables = new ArrayList();
             ChangeTables.add(ObjChangeTables);
-            for(int j=0;j<DBTypes.size();j++)
-                ObjChangeTables.add(new IncrementChangeTable(i,j,DBTypes));
+            for(int j=0;j<Type.Enum.size();j++)
+                ObjChangeTables.add(new IncrementChangeTable(i,j));
         }
 
         for(int i=1;i<=MaxInterface;i++) {
             List<DataChangeTable> ObjChangeTables = new ArrayList();
             DataChangeTables.add(ObjChangeTables);
-            for(int j=0;j<DBTypes.size();j++)
-                ObjChangeTables.add(new DataChangeTable(i,j,DBTypes));
+            for(int j=0;j<Type.Enum.size();j++)
+                ObjChangeTables.add(new DataChangeTable(i,j));
         }
     }
 
@@ -460,7 +454,7 @@ class TableFactory extends TableImplement{
             Integer FieldNum = 0;
             for(DataPropertyInterface Interface : Node) {
                 FieldNum++;
-                KeyField Field = new KeyField("key"+FieldNum.toString(),"integer");
+                KeyField Field = new KeyField("key"+FieldNum.toString(),Type.Object);
                 Node.Table.Keys.add(Field);
                 Node.MapFields.put(Interface,Field);
             }
@@ -731,7 +725,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 PropNum = PropNum + 1;
                 Tables.put(Table, PropNum);
 
-                PropertyField PropField = new PropertyField("prop"+PropNum.toString(),Property.getDBType());
+                PropertyField PropField = new PropertyField("prop"+PropNum.toString(),Property.getType());
                 Table.Properties.add(PropField);
                 Property.Field = PropField;
             }
@@ -750,12 +744,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         
         // создадим dumb
         Table DumbTable = new Table("dumb");
-        DumbTable.Keys.add(new KeyField("dumb","integer"));
+        DumbTable.Keys.add(new KeyField("dumb",Type.System));
         Session.CreateTable(DumbTable);
         Session.Execute("INSERT INTO dumb (dumb) VALUES (1)");
 
         Table EmptyTable = new Table("empty");
-        EmptyTable.Keys.add(new KeyField("dumb","integer"));
+        EmptyTable.Keys.add(new KeyField("dumb",Type.System));
         Session.CreateTable(EmptyTable);
     }
     

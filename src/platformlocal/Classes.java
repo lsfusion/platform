@@ -197,10 +197,8 @@ abstract class Class {
         CommonClassSet3(null,AddClasses,true);
     }
     
-    String GetDBType() {
-        return "integer";
-    }
-    
+    abstract Type getType();
+
     // получает рандомный объект
     abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
     abstract Object getRandomObject(Map<Class, List<Integer>> Objects,Random Randomizer,Integer Diap) throws SQLException;
@@ -224,6 +222,10 @@ class IntegralClass extends Class {
     Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
         return Randomizer.nextInt(Diap);
     }
+
+    Type getType() {
+        return Type.Integer;
+    }
 }
 
 // класс который можно суммировать
@@ -243,9 +245,8 @@ class StringClass extends Class {
 
     StringClass(Integer iID, String caption) {super(iID, caption);}
 
-    @Override
-    String GetDBType() {
-        return "char(50)";
+    Type getType() {
+        return Type.String;
     }
     
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
@@ -269,5 +270,90 @@ class ObjectClass extends Class {
     Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
         List<Integer> ClassObjects = Objects.get(this);
         return ClassObjects.get(Randomizer.nextInt(ClassObjects.size()));
+    }
+
+    Type getType() {
+        return Type.Object;
+    }
+}
+
+abstract class Type {
+
+    static StringType String = new StringType();
+    static IntegerType Integer = new IntegerType();
+    static Type Object;
+    static Type System;
+
+    static List<Type> Enum = new ArrayList();
+
+    static {
+        Object = Integer;
+        System = Integer;
+
+        Enum.add(Integer);
+        Enum.add(String);
+    }
+
+    abstract String getDB();
+
+    abstract Object getMinValue();
+    abstract String getEmptyString();
+    abstract Object getEmptyValue();
+
+
+    static Type getObjectType(Object Value) {
+        if(Value==null)
+            throw new RuntimeException();
+
+        if(Value instanceof Integer)
+            return Integer;
+        else
+            return String;
+    }
+
+    static SourceExpr getValueExpr(Object Value) {
+        return ValueSourceExpr.getExpr(Value,getObjectType(Value));
+    }
+
+    SourceExpr getMinValueExpr() {
+        return ValueSourceExpr.getExpr(getMinValue(),this);
+    }
+}
+
+class StringType extends Type {
+
+    String getDB() {
+        return "char(50)";
+    }
+
+    Object getMinValue() {
+        return "";
+    }
+
+    String getEmptyString() {
+        return "''";
+    }
+
+    Object getEmptyValue() {
+        return "";
+    }
+}
+
+class IntegerType extends Type {
+
+    String getDB() {
+        return "integer";
+    }
+
+    Object getMinValue() {
+        return -99999999;
+    }
+
+    String getEmptyString() {
+        return "0";
+    }
+
+    Object getEmptyValue() {
+        return 0;
     }
 }
