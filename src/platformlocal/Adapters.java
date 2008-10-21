@@ -39,17 +39,47 @@ interface SQLSyntax {
     boolean isNullSafe();
     boolean isGreatest();
 
-    String convertType(Type Type);
-
     int UpdateModel();
 
     boolean noAutoCommit();
+
+    abstract String getStringType();
+
+    abstract String getIntegerType();
+
+    String getLongType();
+
+    String getDoubleType();
+
+    String getBitType();
+
+    String getBitString(Boolean Value);
 }
 
 abstract class DataAdapter implements SQLSyntax {
 
-    public String convertType(Type Type) {
-        return Type.getDB();
+    public String getStringType() {
+        return "char(50)";
+    }
+
+    public String getIntegerType() {
+        return "integer";
+    }
+
+    public String getLongType() {
+        return "long";
+    }
+
+    public String getDoubleType() {
+        return "real";
+    }
+
+    public String getBitType() {
+        return "integer";
+    }
+
+    public String getBitString(Boolean Value) {
+        return (Value?"1":"0");
     }
 
     public int UpdateModel() {
@@ -245,6 +275,10 @@ class PostgreDataAdapter extends DataAdapter {
         super();
     }
 
+    public String getLongType() {
+        return "int8";
+    }
+
     public boolean allowViews() {
         return true;
     }
@@ -318,11 +352,8 @@ class PostgreDataAdapter extends DataAdapter {
 
 class OracleDataAdapter extends DataAdapter {
 
-    public String convertType(Type Type) {
-        if(Type instanceof IntegerType)
-            return "NUMBER(5)";
-
-        return super.convertType(Type);
+    public String getIntegerType() {
+        return "NUMBER(5)";
     }
 
     public int UpdateModel() {

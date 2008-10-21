@@ -9,7 +9,6 @@ import java.util.*;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.math.BigDecimal;
 
 // абстрактный класс источников
 abstract class Source<K,V> {
@@ -97,17 +96,6 @@ abstract class Source<K,V> {
 
     }
 
-    Object convertResult(Object Result) {
-        if(Result instanceof BigDecimal)
-            return ((BigDecimal)Result).toBigInteger().intValue();
-        else
-        if(Result instanceof Long)
-            return ((Long)Result).intValue();
-        else
-            return Result;
-
-    }
-
     // из-за templatов сюда кинем
     LinkedHashMap<Map<K,Integer>,Map<V,Object>> executeSelect(DataSession Session) throws SQLException {
 
@@ -123,10 +111,10 @@ abstract class Source<K,V> {
                 while(Result.next()) {
                     Map<K,Integer> RowKeys = new HashMap();
                     for(K Key : Keys)
-                        RowKeys.put(Key,(Integer)convertResult(Result.getObject(getKeyName(Key))));
+                        RowKeys.put(Key,Type.Object.read(Result.getObject(getKeyName(Key))));
                     Map<V,Object> RowProperties = new HashMap();
                     for(V Property : getProperties())
-                        RowProperties.put(Property,convertResult(Result.getObject(getPropertyName(Property))));
+                        RowProperties.put(Property,getType(Property).read(Result.getObject(getPropertyName(Property))));
 
                      ExecResult.put(RowKeys,RowProperties);
                 }
@@ -314,15 +302,15 @@ class TypedObject {
         Type = iType;
     }
 
-    static String getString(Object Value,Type Type) {
+    static String getString(Object Value, Type Type, SQLSyntax Syntax) {
         if(Value==null)
             return Type.NULL;
         else
-            return Type.getString(Value);
+            return Type.getString(Value,Syntax);
     }
 
-    String getString() {
-        return getString(Value,Type);
+    String getString(SQLSyntax Syntax) {
+        return getString(Value,Type,Syntax);
     }
 }
 
@@ -367,7 +355,7 @@ class DumbSource<K,V> extends Source<K,V> {
         for(Map.Entry<K,Integer> ValueKey : ValueKeys.entrySet())
             KeySelect.put(ValueKey.getKey(),ValueKey.getValue().toString());
         for(Map.Entry<V,TypedObject> Value : Values.entrySet())
-            PropertySelect.put(Value.getKey(),Value.getValue().getString());
+            PropertySelect.put(Value.getKey(),Value.getValue().getString(Syntax));
 
         return "dumb";
     }
@@ -455,7 +443,7 @@ class Field {
     Field(String iName,Type iType) {Name=iName;Type=iType;}
 
     String GetDeclare(SQLSyntax Syntax) {
-        return Name + " " + Syntax.convertType(Type);
+        return Name + " " + Type.getDB(Syntax);
     }
 }
 
@@ -875,7 +863,7 @@ class ValueSourceExpr extends SourceExpr {
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
-        return Object.getString();
+        return Object.getString(Syntax);
     }
 
     void fillJoins(List<Join> Joins, Set<Where> Wheres) {
@@ -2161,7 +2149,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(SourceExpr Key : MapKeys.values()) {
             SourceExpr ValueKey = Key.translate(Translated);
             if(Key!=ValueKey)
-                KeyValues.put(Key,((ValueSourceExpr)ValueKey).Object.getString());
+                KeyValues.put(Key,((ValueSourceExpr)ValueKey).Object.getString(null));
         }
 
         return this;

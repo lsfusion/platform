@@ -501,7 +501,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ArtAddV.Property.caption = "нац. перегр.";
         groupArticleC.add(ArtAddV.Property);
 
-        BarCode = AddDProp(Class.integerClass,Article);
+        BarCode = AddDProp(Class.doubleClass,Article);
         BarCode.Property.caption = "штрих-код";
         groupArticleA.add(BarCode.Property);
 

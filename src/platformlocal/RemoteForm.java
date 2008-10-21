@@ -1452,7 +1452,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         }
         DataChanged = false;
 
-//        Result.Out(this);
+        Result.Out(this);
 
         return Result;
     }

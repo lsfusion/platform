@@ -7,6 +7,7 @@ package platformlocal;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.math.BigDecimal;
 
 /**
  *
@@ -267,11 +268,11 @@ class BitClass extends IntegralClass {
     }
 
     Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
-        return Randomizer.nextInt(2);
+        return Randomizer.nextBoolean();
     }
 
     Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
-        return Randomizer.nextInt(2);
+        return Randomizer.nextBoolean();
     }
 }
 
@@ -311,14 +312,14 @@ class ObjectClass extends Class {
     }
 }
 
-abstract class Type {
+abstract class Type<T> {
 
     static StringType String = new StringType();
     static IntegerType Integer = new IntegerType();
     static LongType Long = new LongType();
     static DoubleType Double = new DoubleType();
     static BitType Bit = new BitType();
-    static Type Object;
+    static IntegerType Object;
     static Type System;
 
     static String NULL = "NULL";
@@ -336,7 +337,7 @@ abstract class Type {
         Enum.add(Bit);
     }
 
-    abstract String getDB();
+    abstract String getDB(SQLSyntax Syntax);
 
     abstract Object getMinValue();
     abstract String getEmptyString();
@@ -356,13 +357,15 @@ abstract class Type {
         return new ValueSourceExpr(getMinValue(),this);
     }
 
-    abstract public String getString(Object Value);
+    abstract public String getString(Object Value, SQLSyntax Syntax);
+
+    abstract T read(Object Value);
 }
 
-class StringType extends Type {
+class StringType extends Type<String> {
 
-    String getDB() {
-        return "char(50)";
+    String getDB(SQLSyntax Syntax) {
+        return Syntax.getStringType();
     }
 
     Object getMinValue() {
@@ -377,12 +380,16 @@ class StringType extends Type {
         return "";
     }
 
-    public String getString(Object Value) {
+    public String getString(Object Value, SQLSyntax Syntax) {
         return "'" + Value + "'";
+    }
+
+    String read(Object Value) {
+        return (String)Value;
     }
 }
 
-abstract class IntegralType extends Type {
+abstract class IntegralType<T> extends Type<T> {
 
     String getEmptyString() {
         return "0";
@@ -392,53 +399,119 @@ abstract class IntegralType extends Type {
         return 0;
     }
 
-    public String getString(Object Value) {
+    public String getString(Object Value, SQLSyntax Syntax) {
         return Value.toString();
     }
 }
 
-class IntegerType extends IntegralType {
+class IntegerType extends IntegralType<Integer> {
 
-    String getDB() {
-        return "integer";
+    String getDB(SQLSyntax Syntax) {
+        return Syntax.getIntegerType();
     }
 
     Object getMinValue() {
         return java.lang.Integer.MIN_VALUE;
     }
 
+    Integer read(Object Value) {
+        if(Value instanceof BigDecimal)
+            return ((BigDecimal)Value).intValue();
+        else
+        if(Value instanceof Double)
+            return ((Double)Value).intValue();
+        else
+        if(Value instanceof Float)
+            return ((Float)Value).intValue();
+        else
+        if(Value instanceof Long)
+            return ((Long)Value).intValue();
+        else
+            return (Integer)Value;
+    }
 }
 
-class LongType extends IntegralType {
+class LongType extends IntegralType<Long> {
 
-    String getDB() {
-        return "long";
+    String getDB(SQLSyntax Syntax) {
+        return Syntax.getLongType();
     }
 
     Object getMinValue() {
         return java.lang.Long.MIN_VALUE;
     }
+
+    Long read(Object Value) {
+        if(Value instanceof BigDecimal)
+            return ((BigDecimal)Value).longValue();
+        else
+        if(Value instanceof Double)
+            return ((Double)Value).longValue();
+        else
+        if(Value instanceof Float)
+            return ((Float)Value).longValue();
+        else
+        if(Value instanceof Integer)
+            return ((Integer)Value).longValue();
+        else
+            return (Long)Value;
+    }
 }
 
-class DoubleType extends IntegralType {
+class DoubleType extends IntegralType<Double> {
 
-    String getDB() {
-        return "double";
+    String getDB(SQLSyntax Syntax) {
+        return Syntax.getDoubleType();
     }
 
     Object getMinValue() {
         return java.lang.Double.MIN_VALUE;
     }
+
+    Double read(Object Value) {
+        if(Value instanceof BigDecimal)
+            return ((BigDecimal)Value).doubleValue();
+        else
+        if(Value instanceof Float)
+            return ((Float)Value).doubleValue();
+        else
+        if(Value instanceof Long)
+            return ((Long)Value).doubleValue();
+        if(Value instanceof Integer)
+            return ((Integer)Value).doubleValue();
+        else
+            return (Double)Value;
+    }
 }
 
-class BitType extends IntegralType {
+class BitType extends IntegralType<Boolean> {
 
-    String getDB() {
-        return "bit";
+    String getDB(SQLSyntax Syntax) {
+        return Syntax.getBitType();
     }
 
     Object getMinValue() {
         return 0;
+    }
+
+    Boolean read(Object Value) {
+        if(Value instanceof BigDecimal)
+            return ((BigDecimal)Value).byteValue()!=0;
+        else
+        if(Value instanceof Double)
+            return ((Double)Value).byteValue()!=0;
+        if(Value instanceof Float)
+            return ((Double)Value).byteValue()!=0;
+        if(Value instanceof Long)
+            return ((Long)Value).byteValue()!=0;
+        if(Value instanceof Integer)
+            return ((Integer)Value).byteValue()!=0;
+        else
+            return (Boolean)Value;
+    }
+
+    public String getString(Object Value, SQLSyntax Syntax) {
+        return Syntax.getBitString((Boolean)Value);
     }
 }
 
