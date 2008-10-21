@@ -915,6 +915,10 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return Result;
     }
 
+    public boolean hasSessionChanges() {
+        return Session.hasChanges();
+    }
+
     private static int DIRECTION_DOWN = 0;
     private static int DIRECTION_UP = 1;
     private static int DIRECTION_CENTER = 2;
@@ -1008,6 +1012,11 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
             // по возврастанию (0), убыванию (1), центру (2) и откуда начинать
             Map<PropertyObjectImplement,Object> PropertySeeks = new HashMap();
+
+            // объект на который будет делаться активным после нахождения ключей
+            GroupObjectValue currentObject = Group.GetObjectValue();
+
+            // объект относительно которого будет устанавливаться фильтр
             GroupObjectValue ObjectSeeks = Group.GetObjectValue();
             int Direction;
             boolean hasMoreKeys = true;
@@ -1029,6 +1038,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             for(ObjectImplement Object : UserObjectSeeks.keySet()) {
                 if(Object.GroupTo==Group) {
                     ObjectSeeks.put(Object,UserObjectSeeks.get(Object));
+                    currentObject.put(Object,UserObjectSeeks.get(Object));
                     UpdateKeys = true;
                     Direction = DIRECTION_CENTER;
                 }
@@ -1061,22 +1071,22 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     }
 
                 } else {
-                // наоборот вниз
-                if(KeyNum>=Group.Keys.size()-Group.PageSize && Group.DownKeys) {
-                    Direction = DIRECTION_DOWN;
-                    UpdateKeys = true;
+                    // наоборот вниз
+                    if(KeyNum>=Group.Keys.size()-Group.PageSize && Group.DownKeys) {
+                        Direction = DIRECTION_DOWN;
+                        UpdateKeys = true;
 
-                    int highestInd = Group.Keys.size()-Group.PageSize*2;
-                    if (highestInd < 0) {
-                        highestInd = 0;
-                        hasMoreKeys = false;
-                    }
+                        int highestInd = Group.Keys.size()-Group.PageSize*2;
+                        if (highestInd < 0) {
+                            highestInd = 0;
+                            hasMoreKeys = false;
+                        }
 
-                    if (highestInd < Group.Keys.size()) {
-                        ObjectSeeks = Group.Keys.get(highestInd);
-                        PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
+                        if (highestInd < Group.Keys.size()) {
+                            ObjectSeeks = Group.Keys.get(highestInd);
+                            PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
+                        }
                     }
-                }
                 }
             }
 
@@ -1265,8 +1275,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 //                        ActiveRow = Group.Keys.indexOf(Group.GetObjectValue());
 
                     // если есть в новых ключах старый ключ, то делаем его активным
-                    if (Group.Keys.contains(Group.GetObjectValue()))
-                        ActiveRow = Group.Keys.indexOf(Group.GetObjectValue());
+                    if (Group.Keys.contains(currentObject))
+                        ActiveRow = Group.Keys.indexOf(currentObject);
 
                     if(ActiveRow>=0) {
                         // нашли ряд его выбираем

@@ -79,8 +79,13 @@ public class ClientForm extends JPanel {
                     if (hasFocus != newHasFocus) {
                         hasFocus = newHasFocus;
                         if (hasFocus) {
+
                             remoteForm.gainedFocus();
                             clientNavigator.currentFormChanged();
+
+                            // если вдруг изменились данные в сессии
+                            applyFormChanges();
+                            dataChanged();
                         }
                     }
                 }
@@ -170,8 +175,6 @@ public class ClientForm extends JPanel {
 
         formLayout.add(formView.closeView, buttonClose);
 
-        dataReset();
-
         //  Have the enter key work the same as the tab key
 		InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
@@ -189,6 +192,7 @@ public class ClientForm extends JPanel {
             }
         }
 
+        dataChanged();
     }
 
     void applyFormChanges() {
@@ -390,13 +394,13 @@ public class ClientForm extends JPanel {
 
     boolean saveChanges() {
 
-        if (formHasChanged) {
+        if (remoteForm.hasSessionChanges()) {
 
             try {
                 String message = remoteForm.SaveChanges();
                 if (message==null) {
                     Log.printSuccessMessage("Изменения были удачно записаны...");
-                    dataReset();
+                    dataChanged();
                 }
                 else {
                     Log.printFailedMessage(message);
@@ -415,14 +419,14 @@ public class ClientForm extends JPanel {
 
     boolean cancelChanges() {
 
-        if (formHasChanged) {
+        if (remoteForm.hasSessionChanges()) {
 
             try {
                 remoteForm.CancelChanges();
             } catch (SQLException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            dataReset();
+            dataChanged();
             applyFormChanges();
         }
 
@@ -438,30 +442,27 @@ public class ClientForm extends JPanel {
     }
 
 
-    private boolean formHasChanged;
     private Color defaultApplyBackground;
 
     private void dataChanged() {
 
-        formHasChanged = true;
-
-        buttonApply.setBackground(Color.green);
-        buttonApply.setEnabled(true);
-        buttonCancel.setEnabled(true);
-
-    }
-
-    private void dataReset() {
-
-        formHasChanged = false;
-
-        if (defaultApplyBackground != null)
-            buttonApply.setBackground(defaultApplyBackground);
-        else
+        if (defaultApplyBackground == null)
             defaultApplyBackground = buttonApply.getBackground();
 
-        buttonApply.setEnabled(false);
-        buttonCancel.setEnabled(false);
+        boolean formHasChanged = remoteForm.hasSessionChanges();
+        
+        if (formHasChanged) {
+
+            buttonApply.setBackground(Color.green);
+            buttonApply.setEnabled(true);
+            buttonCancel.setEnabled(true);
+        } else {
+
+            buttonApply.setBackground(defaultApplyBackground);
+            buttonApply.setEnabled(false);
+            buttonCancel.setEnabled(false);
+        }
+
     }
 
     ClientCellView editingCell;

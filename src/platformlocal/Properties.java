@@ -2014,6 +2014,10 @@ class DataChanges {
         CopyChanges.RemoveClasses.addAll(RemoveClasses);
         return CopyChanges;
     }
+
+    public boolean hasChanges() {
+        return !(Properties.isEmpty() && AddClasses.isEmpty() && RemoveClasses.isEmpty());        
+    }
 }
 
 interface PropertyUpdateView {
@@ -2367,6 +2371,9 @@ class DataSession  {
         Connection.close();
     }
 
+    public boolean hasChanges() {
+        return Changes.hasChanges();
+    }
 }
 
 class AddClasses extends HashSet<Class> {
