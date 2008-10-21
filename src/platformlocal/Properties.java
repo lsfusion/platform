@@ -2269,8 +2269,11 @@ class DataSession  {
 //        System.out.println(ExecuteString+Syntax.getCommandEnd());
         try {
             Statement.execute(ExecuteString+Syntax.getCommandEnd());
-//        } catch(SQLException e) {
+        } catch(SQLException e) {
+//            if(!ExecuteString.startsWith("DROP") && !ExecuteString.startsWith("CREATE")) {
+//            System.out.println(ExecuteString+Syntax.getCommandEnd());
 //            e = e;
+//            }
         } finally {
             Statement.close();
         }
@@ -2299,7 +2302,7 @@ class DataSession  {
         for(Field Prop : PropFields.keySet()) {
             Object Value = PropFields.get(Prop);
             InsertString = InsertString+","+Prop.Name;
-            ValueString = ValueString+","+(Value==null?"NULL":(Value instanceof String?"'"+(String)Value+"'":Value.toString()));
+            ValueString = ValueString+","+TypedObject.getString(PropFields.get(Prop),Prop.Type);
         }
 
         Execute("INSERT INTO "+Table.getSource(Syntax)+" ("+InsertString+") VALUES ("+ValueString+")");

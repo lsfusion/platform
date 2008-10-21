@@ -314,11 +314,15 @@ class TypedObject {
         Type = iType;
     }
 
-    String getString() {
+    static String getString(Object Value,Type Type) {
         if(Value==null)
             return Type.NULL;
         else
             return Type.getString(Value);
+    }
+
+    String getString() {
+        return getString(Value,Type);
     }
 }
 

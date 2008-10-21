@@ -265,6 +265,14 @@ class BitClass extends IntegralClass {
     Type getType() {
         return Type.Bit;
     }
+
+    Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
+        return Randomizer.nextInt(2);
+    }
+
+    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
+        return Randomizer.nextInt(2);
+    }
 }
 
 class StringClass extends Class {
