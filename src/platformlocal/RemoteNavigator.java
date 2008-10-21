@@ -107,9 +107,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         remoteForm.Groups = new ArrayList();
         for (GroupObjectImplement navigatorGroupObject : (List<GroupObjectImplement>)navigatorForm.Groups) {
 
-            GroupObjectImplement groupObject = new GroupObjectImplement();
+            GroupObjectImplement groupObject = new GroupObjectImplement(navigatorGroupObject.ID);
 
-            groupObject.GID = navigatorGroupObject.GID;
             groupObject.Order = navigatorGroupObject.Order;
             for (ObjectImplement navigatorObject : navigatorGroupObject) {
 

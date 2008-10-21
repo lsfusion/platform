@@ -64,7 +64,7 @@ public class DefaultJasperDesign extends JasperDesign {
             } else {
                 // создадим группу
                 JRDesignGroup DesignGroup = new JRDesignGroup();
-                DesignGroup.setName("Group"+Group.GID);
+                DesignGroup.setName("Group"+Group.ID);
                 JRDesignExpression GroupExpr = new JRDesignExpression();
                 GroupExpr.setValueClass(java.lang.String.class);
                 String GroupString = "";

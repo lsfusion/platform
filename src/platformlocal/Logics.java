@@ -208,25 +208,32 @@ class IDTable extends Table {
         Properties.add(Value);
     }
 
-    int ObjectID = 1;
-    
-    Integer GenerateID(DataSession Adapter) throws SQLException {
+    public static int OBJECT = 1;
+    public static int FORM = 2;
+
+    static List<Integer> Enum = new ArrayList();
+    static {
+        Enum.add(OBJECT);
+        Enum.add(FORM);
+    }
+
+    Integer GenerateID(DataSession dataSession, int idType) throws SQLException {
         // читаем
         JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
         JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
         Query.add(Value,JoinTable.Exprs.get(Value));
 
-        Query.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),ObjectID,FieldExprCompareWhere.EQUALS));
+        Query.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),idType,FieldExprCompareWhere.EQUALS));
 
-        Integer FreeID = (Integer)Query.executeSelect(Adapter).values().iterator().next().get(Value);
+        Integer FreeID = (Integer)Query.executeSelect(dataSession).values().iterator().next().get(Value);
 
         // замещаем
         Map<KeyField,Integer> KeyFields = new HashMap();
-        KeyFields.put(Key,ObjectID);
+        KeyFields.put(Key,idType);
         Map<PropertyField,Object> PropFields = new HashMap();
         PropFields.put(Value,FreeID+1);
-        Adapter.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
+        dataSession.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
         return FreeID+1;
     }
 }
@@ -386,7 +393,7 @@ class RemoveClassTable extends ChangeClassTable {
 class TableFactory extends TableImplement{
     
     ObjectTable ObjectTable;
-    IDTable IDTable;
+    IDTable idTable;
     List<ViewTable> ViewTables;
     List<List<DataChangeTable>> DataChangeTables;
     List<List<IncrementChangeTable>> ChangeTables;
@@ -411,7 +418,7 @@ class TableFactory extends TableImplement{
     
     TableFactory() {
         ObjectTable = new ObjectTable();
-        IDTable = new IDTable();
+        idTable = new IDTable();
         ViewTables = new ArrayList();
         ChangeTables = new ArrayList();
         DataChangeTables = new ArrayList();
@@ -461,14 +468,17 @@ class TableFactory extends TableImplement{
         }
 
         Session.CreateTable(ObjectTable);
-        Session.CreateTable(IDTable);
+        Session.CreateTable(idTable);
 
-        // закинем одну запись
-        Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-        InsertKeys.put(IDTable.Key,IDTable.ObjectID);
-        Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
-        InsertProps.put(IDTable.Value,0);
-        Session.InsertRecord(IDTable,InsertKeys,InsertProps);
+        for (Integer idType : IDTable.Enum) {
+            // закинем одну запись
+            Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
+            InsertKeys.put(idTable.Key, idType);
+            Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
+            InsertProps.put(idTable.Value,0);
+            Session.InsertRecord(idTable,InsertKeys,InsertProps);
+        }
+
     }
 
     // заполняет временные таблицы
@@ -613,7 +623,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
     Integer AddObject(DataSession Session, Class Class) throws SQLException {
 
-        Integer FreeID = TableFactory.IDTable.GenerateID(Session);
+        Integer FreeID = TableFactory.idTable.GenerateID(Session, IDTable.OBJECT);
 
         ChangeClass(Session,FreeID,Class);
         
@@ -1440,11 +1450,10 @@ class ClassNavigatorForm extends NavigatorForm {
         ObjectImplement object = new ObjectImplement(IDShift(1),cls);
         object.caption = cls.caption;
 
-        GroupObjectImplement groupObject = new GroupObjectImplement();
+        GroupObjectImplement groupObject = new GroupObjectImplement(IDShift(1));
 
         groupObject.addObject(object);
         addGroup(groupObject);
-        groupObject.GID = 4;
 
         BL.FillSingleViews(object,this,null);
 

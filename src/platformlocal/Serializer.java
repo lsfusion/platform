@@ -157,7 +157,7 @@ class Serializer {
     }
 
     public static void serializeGroupObjectImplement(DataOutputStream outStream, GroupObjectImplement groupObject) throws IOException {
-        outStream.writeInt(groupObject.GID);
+        outStream.writeInt(groupObject.ID);
     }
 
     private static ClientGroupObjectImplement deserializeClientGroupObjectImplement(DataInputStream inStream, ClientFormView clientFormView) throws IOException {

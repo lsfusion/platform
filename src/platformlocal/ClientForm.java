@@ -264,7 +264,7 @@ public class ClientForm extends JPanel {
 //            System.out.println("newval : " + objectValue.toString());
 
             try {
-                remoteForm.ChangeGroupObject(groupObject.GID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
+                remoteForm.ChangeGroupObject(groupObject.ID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -346,7 +346,7 @@ public class ClientForm extends JPanel {
         classView = !models.get(groupObject).classView;
 
         try {
-            remoteForm.ChangeClassView(groupObject.GID, classView);
+            remoteForm.ChangeClassView(groupObject.ID, classView);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -498,7 +498,7 @@ public class ClientForm extends JPanel {
             setClassView(groupObject.defaultViewType, false);
 
             try {
-                remoteForm.ChangeClassView(groupObject.GID, classView);
+                remoteForm.ChangeClassView(groupObject.ID, classView);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -1244,7 +1244,7 @@ public class ClientForm extends JPanel {
 
                 public Table() {
 
-                    ID = groupObject.GID;
+                    ID = groupObject.ID;
 
                     model = new Model();
                     setModel(model);

@@ -15,7 +15,7 @@ import java.io.Serializable;
 class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
                                  implements Serializable {
 
-    Integer GID = 0;
+    Integer ID = 0;
 
     boolean singleViewType = false;
     boolean defaultViewType = true;
@@ -33,7 +33,7 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 23 * hash + (this.GID != null ? this.GID.hashCode() : 0);
+        hash = 23 * hash + (this.ID != null ? this.ID.hashCode() : 0);
         return hash;
     }
     
@@ -218,7 +218,7 @@ class ClientFormView implements Serializable {
 
     public ClientGroupObjectImplement getGroupObject(int id) {
         for (ClientGroupObjectImplement groupObject : groupObjects)
-            if (groupObject.GID == id) return groupObject;
+            if (groupObject.ID == id) return groupObject;
         return null;
     }
 
@@ -255,7 +255,7 @@ class DefaultClientFormView extends ClientFormView {
         for (GroupObjectImplement group : (List<GroupObjectImplement>)navigatorForm.Groups) {
 
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
-            clientGroup.GID = group.GID;
+            clientGroup.ID = group.ID;
 
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);

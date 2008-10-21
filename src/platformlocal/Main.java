@@ -725,9 +725,9 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
         obj3.caption = "документ";
 
-        GroupObjectImplement gv = new GroupObjectImplement();
-        GroupObjectImplement gv2 = new GroupObjectImplement();
-        GroupObjectImplement gv3 = new GroupObjectImplement();
+        GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));
+        GroupObjectImplement gv2 = new GroupObjectImplement(IDShift(1));
+        GroupObjectImplement gv3 = new GroupObjectImplement(IDShift(1));
 
         gv.addObject(obj1);
         gv2.addObject(obj2);
@@ -735,9 +735,6 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         addGroup(gv);
         addGroup(gv2);
         addGroup(gv3);
-        gv.GID = 1;
-        gv2.GID = 2;
-        gv3.GID = 3;
 
         Set<String> Obj2Set = new HashSet();
         Obj2Set.add("гр. тов");
@@ -789,11 +786,10 @@ class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
         obj1.caption = "товар";
 
-        GroupObjectImplement gv = new GroupObjectImplement();
+        GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));
 
         gv.addObject(obj1);
         addGroup(gv);
-        gv.GID = 4;
 
         BL.FillSingleViews(obj1,this,null);
     }
@@ -810,15 +806,13 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
         obj2.caption = "товар";
 
-        GroupObjectImplement gv = new GroupObjectImplement();
-        GroupObjectImplement gv2 = new GroupObjectImplement();
+        GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));
+        GroupObjectImplement gv2 = new GroupObjectImplement(IDShift(1));
 
         gv.addObject(obj1);
         gv2.addObject(obj2);
         addGroup(gv);
         addGroup(gv2);
-        gv.GID = 1;
-        gv2.GID = 2;
 
         BL.FillSingleViews(obj1,this,null);
         BL.FillSingleViews(obj2,this,null);
@@ -860,17 +854,15 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Article);
         obj3.caption = "товар";
 
-        GroupObjectImplement gv = new GroupObjectImplement();
-        GroupObjectImplement gv2 = new GroupObjectImplement();
+        GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));
+        GroupObjectImplement gv2 = new GroupObjectImplement(IDShift(1));
 
         gv.addObject(obj1);
         gv.addObject(obj2);
         addGroup(gv);
-        gv.GID = 334;
 
         gv2.addObject(obj3);
         addGroup(gv2);
-        gv2.GID = 335;
 
         BL.FillSingleViews(obj3,this,null);
 
@@ -897,16 +889,14 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.dateClass);
         obj2.caption = "дата";
 
-        GroupObjectImplement gv = new GroupObjectImplement();
-        GroupObjectImplement gv2 = new GroupObjectImplement();
+        GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));
+        GroupObjectImplement gv2 = new GroupObjectImplement(IDShift(1));
 
         gv.addObject(obj1);
         addGroup(gv);
-        gv.GID = 336;
 
         gv2.addObject(obj2);
         addGroup(gv2);
-        gv2.GID = 337;
 
         BL.FillSingleViews(obj1,this,null);
 

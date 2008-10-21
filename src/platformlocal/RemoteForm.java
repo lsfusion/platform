@@ -79,15 +79,22 @@ class GroupObjectValue extends GroupObjectMap<Integer> {
 
 class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
+    // глобальный идентификатор чтобы писать во ViewTable
+    public final int ID;
+    GroupObjectImplement(int iID) {
+
+        if (iID >= RemoteForm.GID_SHIFT)
+            throw new RuntimeException("ID must be less than " + RemoteForm.GID_SHIFT);
+
+        ID = iID;
+    }
+
     public void addObject(ObjectImplement object) {
         add(object);
         object.GroupTo = this;
     }
 
     Integer Order = 0;
-
-    // глобальный идентификатор чтобы писать во ViewTable
-    int GID = 0;
 
     // классовый вид включен или нет
     Boolean GridClassView = true;
@@ -283,7 +290,7 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
         for(GroupObjectImplement Group : (List<GroupObjectImplement>)bv.Groups) {
             List<GroupObjectValue> GroupGridObjects = GridObjects.get(Group);
             if(GroupGridObjects!=null) {
-                System.out.println(Group.GID+" - Grid Changes");
+                System.out.println(Group.ID +" - Grid Changes");
                 for(GroupObjectValue Value : GroupGridObjects) {
                     Group.Out(Value);
                     System.out.println("");
@@ -292,7 +299,7 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
 
             GroupObjectValue Value = Objects.get(Group);
             if(Value!=null) {
-                System.out.print(Group.GID+" - Object Changes ");
+                System.out.print(Group.ID +" - Object Changes ");
                 Group.Out(Value);
                 System.out.println("");
             }
@@ -453,6 +460,12 @@ class PropertyValueLink extends ValueLink {
 
 class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
+    public static int GID_SHIFT = 100;
+
+    // используется для записи в сессии изменений в базу - требуется глобально уникальный идентификатор
+    private final int GID;
+    private int getGroupObjectGID(GroupObjectImplement group) { return GID * GID_SHIFT + group.ID; }
+
     private final int ID;
     int getID() { return ID; }
 
@@ -469,6 +482,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         Session = iSession;
 
         StructUpdated = true;
+
+        GID = BL.TableFactory.idTable.GenerateID(Session, IDTable.FORM);
     }
 
     List<GroupObjectImplement> Groups = new ArrayList();
@@ -584,7 +599,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     GroupObjectImplement getGroupObjectImplement(int groupID) {
         for (GroupObjectImplement groupObject : Groups)
-            if (groupObject.GID == groupID)
+            if (groupObject.ID == groupID)
                 return groupObject;
         return null;
     }
@@ -851,7 +866,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         Session.IncrementChanges.remove(this);
         for(GroupObjectImplement Group : Groups) {
             ViewTable DropTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-            DropTable.DropViewID(Session, Group.GID);
+            DropTable.DropViewID(Session, getGroupObjectGID(Group));
         }
     }
 
@@ -1240,8 +1255,10 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     Group.KeyOrders = new HashMap();
 
                     // параллельно будем обновлять ключи чтобы Join'ить
+
+                    int groupGID = getGroupObjectGID(Group);
                     ViewTable InsertTable = BL.TableFactory.ViewTables.get(Group.size()-1);
-                    InsertTable.DropViewID(Session, Group.GID);
+                    InsertTable.DropViewID(Session, groupGID);
 
                     for(Entry<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultRow : KeyResult.entrySet()) {
                         GroupObjectValue KeyRow = new GroupObjectValue();
@@ -1249,7 +1266,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                         // закинем сразу ключи для св-в чтобы Join'ить
                         Map<KeyField,Integer> ViewKeyInsert = new HashMap();
-                        ViewKeyInsert.put(InsertTable.View,Group.GID);
+                        ViewKeyInsert.put(InsertTable.View,groupGID);
                         ListIterator<KeyField> ivk = InsertTable.Objects.listIterator();
                         // !!!! важно в Keys сохранить порядок ObjectSeeks
                         for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
@@ -1404,7 +1421,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
             for(ObjectImplement Object : Group)
                 KeyJoin.Joins.put(ikt.next(),SelectProps.MapKeys.get(Object));
-            KeyJoin.Joins.put(KeyTable.View,new ValueSourceExpr(Group.GID));
+            KeyJoin.Joins.put(KeyTable.View,new ValueSourceExpr(getGroupObjectGID(Group)));
             SelectProps.add(KeyJoin);
 
             for(PropertyView DrawProp : GroupList)
