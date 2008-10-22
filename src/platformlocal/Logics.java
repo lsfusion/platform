@@ -648,6 +648,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     List<Property> Properties = new ArrayList();
     Set<AggregateProperty> Persistents = new HashSet();
     Map<Property,Constraint> Constraints = new HashMap();
+    Set<List<Property>> Indexes = new HashSet();
 
     // проверяет Constraints
     String CheckConstraints(DataSession Session) throws SQLException {
@@ -714,6 +715,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Set<DataProperty> DataProperties = new HashSet();
         Collection<AggregateProperty> AggrProperties = new ArrayList();
         Map<Table,Integer> Tables = new HashMap<Table,Integer>();
+        
         // закинем в таблицы(создав там все что надо) св-ва
         for(Property Property : Properties) {
             // ChangeTable'ы заполним
@@ -739,6 +741,19 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 Table.Properties.add(PropField);
                 Property.Field = PropField;
             }
+        }
+
+        //закинем индексы
+        for (List<Property> index : Indexes) {
+
+            Table table = index.get(0).GetTable(null);
+
+            List<PropertyField> tableIndex = new ArrayList();
+            for (Property property : index) {
+                tableIndex.add(property.Field);
+            }
+
+            table.Indexes.add(tableIndex);
         }
 
         for(Table Table : Tables.keySet()) Session.CreateTable(Table);

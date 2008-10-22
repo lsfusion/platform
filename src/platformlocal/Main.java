@@ -675,6 +675,15 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     void InitIndexes() {
+
+        List indexBarCode = new ArrayList();
+        indexBarCode.add(BarCode.Property);
+        Indexes.add(indexBarCode);
+
+        List indexOstArtStore = new ArrayList();
+        indexOstArtStore.add(OstArtStore.Property);
+        Indexes.add(indexOstArtStore);
+
     }
 
     void InitNavigators() {
