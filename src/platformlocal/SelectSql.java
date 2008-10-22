@@ -1356,8 +1356,17 @@ class FormulaSourceExpr extends SourceExpr {
          return SourceString;
      }
 
+    static Type getFormulaType(Collection<SourceExpr> Params) {
+        for(SourceExpr Prm : Params) {
+            Type PrmType = Prm.getType();
+            if(PrmType!=Type.Bit) return PrmType;
+        }
+
+        return Type.Bit;
+    }
+    
     Type getType() {
-        return Params.values().iterator().next().getType();
+        return getFormulaType(Params.values());
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -1434,7 +1443,7 @@ class MultiplySourceExpr extends SourceExpr {
     }
 
     Type getType() {
-        return Operands.iterator().next().getType();
+        return FormulaSourceExpr.getFormulaType(Operands);
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -1496,7 +1505,7 @@ class FormulaWhereSourceExpr extends SourceExpr {
     }
 
     Type getType() {
-        return FormulaWhere.getType();
+        return Type.Bit;
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -1916,10 +1925,6 @@ class FormulaSourceWhere extends Where {
 
          return SourceString;
      }
-
-    Type getType() {
-        return Params.values().iterator().next().getType();
-    }
 
     public Where proceedTranslate(ExprTranslator Translated) {
         boolean ChangedParams = false;

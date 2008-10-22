@@ -318,7 +318,7 @@ class PostgreDataAdapter extends DataAdapter {
     }
 
     public String getNullValue(Type DBType) {
-        String EmptyValue = (DBType instanceof IntegerType?"0":"''");
+        String EmptyValue = DBType.getEmptyString();
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
     }
 
