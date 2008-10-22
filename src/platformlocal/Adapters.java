@@ -71,7 +71,7 @@ abstract class DataAdapter implements SQLSyntax {
     }
 
     public String getDoubleType() {
-        return "real";
+        return "double precision";
     }
 
     public String getBitType() {
@@ -91,7 +91,7 @@ abstract class DataAdapter implements SQLSyntax {
     }
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new PostgreDataAdapter();
+        return new MSSQLDataAdapter();
     }
 
     public String getNullValue(Type DBType) {
@@ -195,6 +195,11 @@ class MSSQLDataAdapter extends DataAdapter {
         super();
     }
 
+    @Override
+    public String getLongType() {
+        return "bigint";
+    }
+
     public int UpdateModel() {
         return 1;
     }
@@ -213,21 +218,21 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://crush:1433;namedPipe=true;User=sa;Password=11111");
         try {
         try {
             Connect.createStatement().execute("DROP DATABASE testplat");
         } catch (Exception e) {
-            
+
         }
-        } catch(Exception e) {            
+        } catch(Exception e) {
         }
         Connect.createStatement().execute("CREATE DATABASE testplat");
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://crush:1433;namedPipe=true;User=sa;Password=11111");
         Connect.createStatement().execute("USE testplat");
 
         return Connect;
@@ -437,7 +442,7 @@ class OracleDataAdapter extends DataAdapter {
             WhereString = (WhereString.length()==0?"":WhereString+" AND ") + "rownum<=" + Top;
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
-    
+
     public String getNullValue(Type DBType) {
         String EmptyValue = DBType.getEmptyString();
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";

@@ -461,7 +461,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
-            DocDate,GrAddV,ArtAddV,BarCode,ExpireDate,Weight;
+            DocDate,GrAddV,ArtAddV,BarCode,Price,ExpireDate,Weight;
     LJP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
     LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore,ArtDateRash;
 
@@ -504,6 +504,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         BarCode = AddDProp(Class.doubleClass,Article);
         BarCode.Property.caption = "штрих-код";
         groupArticleA.add(BarCode.Property);
+
+        Price = AddDProp(Class.longClass,Article);
+        Price.Property.caption = "цена";
+        groupArticleA.add(Price.Property);
 
         ExpireDate = AddDProp(Class.dateClass,Article);
         ExpireDate.Property.caption = "срок годн.";

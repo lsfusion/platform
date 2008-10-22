@@ -475,7 +475,7 @@ class ClientIntegerClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format, Integer.class); }
 }
 
 class ClientDateClass extends ClientClass {
@@ -499,7 +499,7 @@ class ClientDoubleClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format, Double.class); }
 }
 
 class ClientLongClass extends ClientClass {
@@ -507,7 +507,7 @@ class ClientLongClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format, Long.class); }
 }
 
 // -------------------------------------- Фильтры ------------------------------ //

@@ -17,6 +17,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.text.DecimalFormat;
 
 public interface PropertyEditorComponent {
 
@@ -49,11 +50,15 @@ class TextFieldPropertyEditor extends JFormattedTextField {
 class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor(NumberFormat iformat) {
+    public IntegerPropertyEditor(NumberFormat iformat, java.lang.Class<?> valueClass) {
 
         NumberFormat format = iformat;
         if (format == null)
             format = NumberFormat.getInstance();
+
+        if (Double.class.equals(valueClass) && format instanceof DecimalFormat) {
+            ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
+        }
 
 /*        if (format instanceof DecimalFormat) {
             ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
@@ -66,7 +71,8 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
                 return super.stringToValue(text);
             }
         };
-
+        
+        formatter.setValueClass(valueClass);
         formatter.setAllowsInvalid(false);
 
         this.setHorizontalAlignment(JTextField.RIGHT);
