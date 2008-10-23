@@ -50,7 +50,7 @@ public class Main {
         Table2.Properties.add(Table2Prop2);
 
         List<KeyField> UnionKeys = new ArrayList();
-        UnionKeys.add(Table1Key1);        
+        UnionKeys.add(Table1Key1);
         UnionQuery<KeyField,PropertyField> UnionQ = new UnionQuery<KeyField,PropertyField>(UnionKeys,1);
 
         // 1-й запрос
@@ -498,9 +498,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LGP RaznSValue = AddGProp("разн. пр-рас.", OpValue,true,DocStore,1);
 
-        LJP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
-        RGrAddV.Property.caption = "наценка по товару (гр.)";
-        groupArticleG.add(RGrAddV.Property);
+        LJP RGrAddV = AddJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
 
         LJP ArtActAddV = AddUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
         groupArticleC.add(ArtActAddV.Property);
@@ -512,25 +510,19 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LMFP Multiply = AddMFProp(Class.integerClass,Class.bitClass);
         LMFP Multiply3 = AddMFProp(Class.bitClass,Class.integerClass,Class.bitClass);
 
-        LJP StoreName = AddJProp(Name,1,DocStore,1);
-        StoreName.Property.caption = "имя склада";
+        LJP StoreName = AddJProp("имя склада", Name,1,DocStore,1);
 
-        LJP ArtGroupName = AddJProp(Name,1,ArtToGroup,1);
-        ArtGroupName.Property.caption = "имя гр. тов.";
-        groupArticleG.add(ArtGroupName.Property);
+        LJP ArtGroupName = AddJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
         LDP ArtGName = AddDProp("при доб. гр. тов.", Class.stringClass, Article);
         SetDefProp(ArtGName,ArtGroupName,true);
 
-        LJP InDoc = AddJProp(NotZero,2,Quantity,1,2);
-        InDoc.Property.caption = "товар в док.";
+        LJP InDoc = AddJProp("товар в док.", NotZero,2,Quantity,1,2);
 
-        LJP DDep = AddJProp(Less,2,DocDate,1,DocDate,2);
-        DDep.Property.caption = "предш. док.";
+        LJP DDep = AddJProp("предш. док.", Less,2,DocDate,1,DocDate,2);
         DDep.Property.XL = true;
 
-        LJP QDep = AddJProp(Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
-        QDep.Property.caption = "изм. баланса";
+        LJP QDep = AddJProp("изм. баланса", Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
         QDep.Property.XL = true;
 
         GSum = AddGProp("остаток до операции", QDep,true,2,3);
@@ -554,11 +546,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LGP ArtMaxQty = AddGProp("макс. кол-во", Quantity,false,2);
 
         LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",Class.dateClass,Class.dateClass,Class.dateClass);
-        LJP DokBetweenDate = AddJProp(BetweenDate,3,DocDate,1,2,3);
-        DokBetweenDate.Property.caption = "документ в интервале";
+        LJP DokBetweenDate = AddJProp("документ в интервале", BetweenDate,3,DocDate,1,2,3);
 
-        LJP RashBetweenDate = AddJProp(Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
-        RashBetweenDate.Property.caption = "расх. кол-во в интервале";
+        LJP RashBetweenDate = AddJProp("расх. кол-во в интервале", Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
 
         RashArtInt = AddGProp("расход по товару", RashBetweenDate,true,1,3,4);
 

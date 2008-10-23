@@ -796,10 +796,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     // функционал по заполнению св-в по номерам, нужен для BL
 
     LDP AddDProp(String caption, Class Value, Class... Params) {
-        return AddDProp(caption, Value, null, Params);
+        return AddDProp(null, caption, Value, Params);
     }
 
-    LDP AddDProp(String caption, Class Value, PropertyGroup group, Class... Params) {
+    LDP AddDProp(PropertyGroup group, String caption, Class Value, Class... Params) {
         DataProperty Property = new DataProperty(TableFactory,Value);
         Property.caption = caption;
         LDP ListProperty = new LDP(Property);
@@ -887,8 +887,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return Result;
     }
 
-    LJP AddJProp(LP MainProp, int IntNum, Object ...Params) {
+    LJP AddJProp(String caption, LP MainProp, int IntNum, Object... Params) {
+        return AddJProp(null, caption, MainProp, IntNum, Params);
+    }
+
+    LJP AddJProp(PropertyGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
         JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
+        Property.caption = caption;
         LJP ListProperty = new LJP(Property,IntNum);
         int MainInt = 0;
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(ListProperty,Params);
@@ -897,6 +902,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             MainInt++;
         }
         Properties.add(Property);
+
+        if (group != null)
+            group.add(Property);
 
         return ListProperty;
     }

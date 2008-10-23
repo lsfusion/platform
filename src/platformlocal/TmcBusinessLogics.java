@@ -18,8 +18,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     Class outcomeDocument;
 
     Class extIncomeDocument;
+    Class extIncomeDetail;
+
     Class intraDocument;
     Class extOutcomeDocument;
+    Class exchangeDocument;
 
     void InitClasses() {
 
@@ -34,20 +37,34 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         outcomeDocument = new ObjectClass(10, "Расходный документ", quantityDocument);
 
         extIncomeDocument = new ObjectClass(11, "Внешний приход", incomeDocument);
-        intraDocument = new ObjectClass(12, "Внутреннее перемещение", incomeDocument, outcomeDocument);
-        extOutcomeDocument = new ObjectClass(13, "Внешний расход", outcomeDocument);
+        extIncomeDetail = new ObjectClass(12, "Внешний приход (строки)", objectClass);
+
+        intraDocument = new ObjectClass(13, "Внутреннее перемещение", incomeDocument, outcomeDocument);
+        extOutcomeDocument = new ObjectClass(14, "Внешний расход", outcomeDocument);
+        exchangeDocument = new ObjectClass(15, "Пересорт", incomeDocument, outcomeDocument);
+
+
     }
 
-    PropertyGroup baseGroup;
+    PropertyGroup baseGroup, storeGroup, artgrGroup;
 
     LDP name;
     LDP artGroup;
     LDP docDate, docStore;
 
+    LJP artGroupName;
+    LJP docStoreName;
+    LJP intraStoreName;
+
+    LDP extIncDetailArticle, extIncDetailQuantity;
     LDP extIncQuantity;
     LDP intraQuantity, intraStore;
     LDP extOutQuantity;
+    LDP exchangeQuantity;
+    LGP exchIncQuantity, exchOutQuantity;
+
     LJP incQuantity, outQuantity;
+    LJP incStore;
     LGP incStoreQuantity, outStoreQuantity;
     LJP dltStoreQuantity;
 
@@ -56,36 +73,54 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         // -------------------------- Group Properties --------------------- //
 
         baseGroup = new PropertyGroup("Атрибуты");
+        storeGroup = new PropertyGroup("Склад");
+        artgrGroup = new PropertyGroup("Группа товаров");
 
         // -------------------------- Data Properties ---------------------- //
 
-        name = AddDProp("Имя", Class.stringClass, objectClass);
+        name = AddDProp(baseGroup, "Имя", Class.stringClass, objectClass);
 
-        artGroup = AddDProp("Гр. тов.", articleGroup, article);
+        artGroup = AddDProp(artgrGroup, "Гр. тов.", articleGroup, article);
 
-        docDate = AddDProp("Дата", Class.dateClass, document);
-        docStore = AddDProp("Склад", store, document);
+        docDate = AddDProp(baseGroup, "Дата", Class.dateClass, document);
+        docStore = AddDProp(storeGroup, "Склад", store, document);
+
+        intraStore = AddDProp(storeGroup, "Склад назн.", store, intraDocument);
+
+        // -------------------------- Relation Properties ------------------ //
+
+        artGroupName = AddJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
+        docStoreName = AddJProp(storeGroup, "Имя склада", name, 1, docStore, 1);
+        intraStoreName = AddJProp(storeGroup, "Имя склада (назн.)", name, 1, intraStore, 1);
 
         // -------------------------- Движение товара по количествам ---------------------- //
 
-        extIncQuantity = AddDProp("Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
+        extIncDetailArticle = AddDProp(baseGroup, "Товар", article, extIncomeDetail);
+        extIncDetailQuantity = AddDProp(baseGroup, "Кол-во", Class.doubleClass, extIncomeDetail);
 
-        intraQuantity = AddDProp("Кол-во внутр.", Class.doubleClass, intraDocument, article);
-        intraStore = AddDProp("Склад назн.", store, intraDocument);
+        extIncQuantity = AddDProp(baseGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
 
-        extOutQuantity = AddDProp("Кол-во расх.", Class.doubleClass, extOutcomeDocument, article);
+        intraQuantity = AddDProp(baseGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
+
+        extOutQuantity = AddDProp(baseGroup, "Кол-во расх.", Class.doubleClass, extOutcomeDocument, article);
+
+        exchangeQuantity = AddDProp(baseGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
+
+        exchIncQuantity = AddGProp("Прих. перес.", exchangeQuantity, true, 1, 3);
+        exchOutQuantity = AddGProp("Расх. перес.", exchangeQuantity, true, 1, 2); 
 
         LP docIncQuantity = AddCProp("абст. кол-во",null,Class.doubleClass, incomeDocument,article);
-        incQuantity = AddUProp("Кол-во прих.", 2, 2, 1, docIncQuantity, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2);
+        incQuantity = AddUProp("Кол-во прих.", 2, 2, 1, docIncQuantity, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchIncQuantity, 1, 2);
         LP docOutQuantity = AddCProp("абст. кол-во",null,Class.doubleClass, outcomeDocument,article);
-        outQuantity = AddUProp("Кол-во расх.", 2, 2, 1, docOutQuantity, 1, 2, 1, extOutQuantity, 1, 2, 1, intraQuantity, 1, 2);
+        outQuantity = AddUProp("Кол-во расх.", 2, 2, 1, docOutQuantity, 1, 2, 1, extOutQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchOutQuantity, 1, 2);
 
-        incStoreQuantity = AddGProp("Прих. на скл.", incQuantity, true, docStore, 1, 2);
+        incStore = AddUProp("Склад прих.", 2, 1, 1, docStore, 1, 1, intraStore, 1);
+
+        incStoreQuantity = AddGProp("Прих. на скл.", incQuantity, true, incStore, 1, 2);
         outStoreQuantity = AddGProp("Расх. со скл.", outQuantity, true, docStore, 1, 2);
 
         dltStoreQuantity = AddUProp("Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
 //        OstArtStore = AddUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-
 
     }
 
@@ -130,17 +165,44 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         createDefaultClassForms(objectClass, baseElement);
 
-        NavigatorForm extIncForm = new ExtIncNavigatorForm(1, "Внешний приход");
-        baseElement.addChild(extIncForm);
+        NavigatorForm extIncDetailForm = new ExtIncDetailNavigatorForm(10, "Внешний приход");
+        baseElement.addChild(extIncDetailForm);
 
-        NavigatorForm intraForm = new IntraNavigatorForm(2, "Внутреннее перемещение");
+        NavigatorForm extIncForm = new ExtIncNavigatorForm(15, "Внешний приход по товарам");
+        extIncDetailForm.addChild(extIncForm);
+
+        NavigatorForm intraForm = new IntraNavigatorForm(20, "Внутреннее перемещение");
         baseElement.addChild(intraForm);
 
-        NavigatorForm extOutForm = new ExtOutNavigatorForm(3, "Внешний расход");
+        NavigatorForm extOutForm = new ExtOutNavigatorForm(30, "Внешний расход");
         baseElement.addChild(extOutForm);
 
-        NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(4, "Товары по складам");
+        NavigatorForm exchangeForm = new ExchangeNavigatorForm(40, "Пересорт");
+        baseElement.addChild(exchangeForm);
+
+        NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(50, "Товары по складам");
         baseElement.addChild(storeArticleForm);
+    }
+
+    private class ExtIncDetailNavigatorForm extends NavigatorForm {
+
+        public ExtIncDetailNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjDetail = new GroupObjectImplement(IDShift(1));
+
+            ObjectImplement objDoc = new ObjectImplement(IDShift(1), extIncomeDocument, "Документ", gobjDoc);
+            ObjectImplement objDetail = new ObjectImplement(IDShift(1), extIncomeDetail, "Строка", gobjDetail);
+
+            addGroup(gobjDoc);
+            addGroup(gobjDetail);
+
+//            addPropertyView(this, baseGroup, objDoc);
+//            addPropertyView(this, storeGroup, objDoc);
+//            addPropertyView(this, baseGroup, objDetail);
+//            addPropertyView(this, extIncDetailQuantity, objDoc, objDetail);
+        }
     }
 
     private class ExtIncNavigatorForm extends NavigatorForm {
@@ -157,8 +219,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, objDoc);
-            addPropertyView(this, objArt);
+            addPropertyView(this, baseGroup, objDoc);
+            addPropertyView(this, storeGroup, objDoc);
+            addPropertyView(this, baseGroup, objArt);
+            addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, extIncQuantity, objDoc, objArt);
         }
     }
@@ -177,8 +241,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, objDoc);
-            addPropertyView(this, objArt);
+            addPropertyView(this, baseGroup, objDoc);
+            addPropertyView(this, storeGroup, objDoc);
+            addPropertyView(this, baseGroup, objArt);
+            addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, intraQuantity, objDoc, objArt);
         }
     }
@@ -197,9 +263,40 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, objDoc);
-            addPropertyView(this, objArt);
+            addPropertyView(this, baseGroup, objDoc);
+            addPropertyView(this, storeGroup, objDoc);
+            addPropertyView(this, baseGroup, objArt);
+            addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, extOutQuantity, objDoc, objArt);
+        }
+    }
+
+    private class ExchangeNavigatorForm extends NavigatorForm {
+
+        public ExchangeNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjArtFrom = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjArtTo = new GroupObjectImplement(IDShift(1));
+
+            ObjectImplement objDoc = new ObjectImplement(IDShift(1), exchangeDocument, "Документ", gobjDoc);
+            ObjectImplement objArtFrom = new ObjectImplement(IDShift(1), article, "Товар (с)", gobjArtFrom);
+            ObjectImplement objArtTo = new ObjectImplement(IDShift(1), article, "Товар (на)", gobjArtTo);
+
+            addGroup(gobjDoc);
+            addGroup(gobjArtFrom);
+            addGroup(gobjArtTo);
+
+            addPropertyView(this, baseGroup, objDoc);
+            addPropertyView(this, storeGroup, objDoc);
+            addPropertyView(this, baseGroup, objArtFrom);
+            addPropertyView(this, artgrGroup, objArtFrom);
+            addPropertyView(this, baseGroup, objArtTo);
+            addPropertyView(this, artgrGroup, objArtTo);
+            addPropertyView(this, exchIncQuantity, objDoc, objArtFrom);
+            addPropertyView(this, exchOutQuantity, objDoc, objArtFrom);
+            addPropertyView(this, exchangeQuantity, objDoc, objArtFrom, objArtTo);
         }
     }
 
@@ -217,8 +314,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjStore);
             addGroup(gobjArt);
 
-            addPropertyView(this, objStore);
-            addPropertyView(this, objArt);
+            addPropertyView(this, baseGroup, objStore);
+            addPropertyView(this, baseGroup, objArt);
+            addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, objStore, objArt);
         }
     }
@@ -232,8 +330,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         ClassQuantity.put(articleGroup,3);
         ClassQuantity.put(store,3);
         ClassQuantity.put(extIncomeDocument,30);
-        ClassQuantity.put(intraDocument,30);
+        ClassQuantity.put(intraDocument,15);
         ClassQuantity.put(extOutcomeDocument,50);
+        ClassQuantity.put(exchangeDocument,10);
 
         Map<DataProperty, Set<DataPropertyInterface>> PropNotNulls = new HashMap();
         name.putNotNulls(PropNotNulls,0);
@@ -243,6 +342,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         intraStore.putNotNulls(PropNotNulls,0);
 
         Map<DataProperty,Integer> PropQuantity = new HashMap();
+
+        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
+        PropQuantity.put((DataProperty)intraQuantity.Property,15);
+        PropQuantity.put((DataProperty)extOutQuantity.Property,5);
+        PropQuantity.put((DataProperty)exchangeQuantity.Property,14);
 
         autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
     }
