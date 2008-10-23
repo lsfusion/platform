@@ -43,11 +43,13 @@ abstract class Class {
     
     Integer ID;
     String caption;
-    Class(Integer iID, String icaption) {
+    Class(Integer iID, String icaption, Class... parents) {
         ID=iID;
         caption = icaption;
         Parents = new ArrayList<Class>();
         Childs = new ArrayList<Class>();
+
+        for (Class parent : parents) AddParent(parent);
     }
 
     void AddParent(Class ParentClass) {
@@ -295,7 +297,7 @@ class StringClass extends Class {
 }
 
 class ObjectClass extends Class {    
-    ObjectClass(Integer iID, String caption) {super(iID, caption);}
+    ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
     
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());

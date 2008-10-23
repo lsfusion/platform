@@ -629,7 +629,7 @@ class Join<J,U> {
 
         // проверить что кол-во Keys в Source совпадает
 
-        Collection<Map<J, Object>> MapSet = (new MapBuilder<J, Object>()).buildPairs(Source.Keys, Merge.Source.Keys);
+        Collection<Map<J, Object>> MapSet = MapBuilder.buildPairs(Source.Keys, Merge.Source.Keys);
         if(MapSet==null) return null;
 
         for(Map<J,?> MapKeys : MapSet) {
@@ -3135,7 +3135,7 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
         if(Keys.size()!=MergeGroup.Keys.size()) return null;
 
         // попробуем смерджить со всеми мапами пока не получим нужный набор ключей
-        Collection<Map<Object, Object>> MapSet = (new MapBuilder<Object, Object>()).buildPairs(From.Keys, MergeGroup.From.Keys);
+        Collection<Map<Object, Object>> MapSet = MapBuilder.buildPairs(From.Keys, MergeGroup.From.Keys);
         if(MapSet==null) return null;
 
         for(Map<Object,Object> MapKeys : MapSet) {

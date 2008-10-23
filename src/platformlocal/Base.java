@@ -42,9 +42,9 @@ class SetBuilder<T> {
     }
 }
 
-class MapBuilder<T,V> {
+class MapBuilder {
     
-    void RecBuildMap(T[] From,V[] To,int iFr,List<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
+    private static<T,V> void RecBuildMap(T[] From,V[] To,int iFr,List<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
         if(iFr==From.length) {
             Result.add((Map<T,V>)CurrentMap.clone());
             return;
@@ -58,13 +58,13 @@ class MapBuilder<T,V> {
             }
     }
     
-    List<Map<T,V>> BuildMap(T[] From,V[] To) {
+    static <T,V> List<Map<T,V>> BuildMap(T[] From,V[] To) {
         List<Map<T,V>> Result = new ArrayList<Map<T,V>>();
         RecBuildMap(From,To,0,Result,new HashMap<T,V>(0));
         return Result;
     }
 
-    void recBuildCombination(Map<T,Collection<V>> Map,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
+    private static <T,V> void recBuildCombination(Map<T,Collection<V>> Map,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
         if(!iT.hasNext()) {
             Result.add((Map<T,V>)CurrentMap.clone());
             return;
@@ -80,13 +80,13 @@ class MapBuilder<T,V> {
         iT.previous();
     }
 
-    Collection<Map<T,V>> buildCombination(Map<T,Collection<V>> Map) {
+    static <T,V> Collection<Map<T,V>> buildCombination(Map<T,Collection<V>> Map) {
         Collection<Map<T,V>> Result = new ArrayList<Map<T,V>>();
         recBuildCombination(Map,(new ArrayList(Map.keySet())).listIterator(),Result,new HashMap<T,V>());
         return Result;
     }
 
-    void recBuildPairs(Collection<? extends V> Set,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
+    private static <T,V> void recBuildPairs(Collection<? extends V> Set,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
         if(!iT.hasNext()) {
             Result.add((Map<T,V>)CurrentMap.clone());
             return;
@@ -104,11 +104,31 @@ class MapBuilder<T,V> {
         iT.previous();
     }
 
-    Collection<Map<T,V>> buildPairs(Collection<? extends T> Set1,Collection<? extends V> Set2) {
+    static <T,V> Collection<Map<T,V>> buildPairs(Collection<? extends T> Set1,Collection<? extends V> Set2) {
         if(Set1.size()!=Set2.size()) return null;
         Collection<Map<T,V>> Result = new ArrayList<Map<T,V>>();
         recBuildPairs(Set2,(new ArrayList(Set1)).listIterator(),Result,new HashMap<T,V>());
         return Result;
+    }
+
+    private static <T> void recBuildPermutations(Collection<T> col, List<T> cur, Collection<List<T>> result) {
+
+        if (cur.size() == col.size()) { result.add(new ArrayList(cur)); return; }
+
+        for (T element : col) {
+            if (!cur.contains(element)) {
+                cur.add(element);
+                recBuildPermutations(col, cur, result);
+                cur.remove(element);
+            }
+        }
+    }
+
+    public static <T> Collection<List<T>> buildPermutations(Collection<T> col) {
+
+        Collection<List<T>> result = new ArrayList<List<T>>();
+        recBuildPermutations(col, new ArrayList<T>(), result);
+        return result;
     }
 }
 

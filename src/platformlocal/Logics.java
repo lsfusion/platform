@@ -788,38 +788,25 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return true;
     }
 
-    Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {
-        
-        Map<String,PropertyObjectImplement> Result = new HashMap();
-        
-        for(Property DrawProp : Properties) {
-            if(DrawProp.Interfaces.size() == 1) {
-                // проверим что дает хоть одно значение
-                InterfaceClass InterfaceClass = new InterfaceClass();
-                InterfaceClass.put(((Collection<PropertyInterface>)DrawProp.Interfaces).iterator().next(),Object.BaseClass);
-                if(DrawProp.GetValueClass(InterfaceClass)!=null) {
-                    PropertyObjectImplement PropertyImplement = new PropertyObjectImplement(DrawProp);
-                    PropertyImplement.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),Object);
-                    Form.Properties.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.GroupTo));
-                    
-                    if(Names!=null && Names.contains(DrawProp.caption))
-                        Result.put(DrawProp.caption,PropertyImplement);
-                }
-            }
-        }
-        
-        return Result;
-    }
-    
+
     // функционал по заполнению св-в по номерам, нужен для BL
-    
-    LDP AddDProp(Class Value,Class ...Params) {
+
+    LDP AddDProp(String caption, Class Value, Class... Params) {
+        return AddDProp(caption, Value, null, Params);
+    }
+
+    LDP AddDProp(String caption, Class Value, PropertyGroup group, Class... Params) {
         DataProperty Property = new DataProperty(TableFactory,Value);
+        Property.caption = caption;
         LDP ListProperty = new LDP(Property);
         for(Class Int : Params) {
             ListProperty.AddInterface(Int);
         }
         AddDataProperty(Property);
+
+        if (group != null)
+            group.add(Property);
+
         return ListProperty;
     }
     
@@ -832,8 +819,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Property.OnDefaultChange = OnChange;
     }
 
-    LDP AddCProp(Object Value,Class ValueClass,Class ...Params) {
+    LDP AddCProp(String caption, Object Value, Class ValueClass, Class... Params) {
         ClassProperty Property = new ClassProperty(TableFactory,ValueClass,Value);
+        Property.caption = caption;
         LDP ListProperty = new LDP(Property);
         for(Class Int : Params) {
             ListProperty.AddInterface(Int);
@@ -909,21 +897,25 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
     
-    LGP AddGProp(LP GroupProp,boolean Sum,Object ...Params) {
-        GroupProperty Property = null;
+    LGP AddGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
+
+        GroupProperty Property;
         if(Sum)
             Property = new SumGroupProperty(TableFactory,GroupProp.Property);
         else
             Property = new MaxGroupProperty(TableFactory,GroupProp.Property);
+        Property.caption = caption;
+
         LGP ListProperty = new LGP(Property,GroupProp);
         List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(GroupProp,Params);
         for(PropertyInterfaceImplement Implement : PropImpl) ListProperty.AddInterface(Implement);
+
         Properties.add(Property);
         
         return ListProperty;
     }
 
-    LJP AddUProp(int UnionType, int IntNum, Object ...Params) {
+    LJP AddUProp(String caption, int UnionType, int IntNum, Object... Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -936,6 +928,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 Property = new OverrideUnionProperty(TableFactory);
                 break;
         }
+        Property.caption = caption;
         
         LJP ListProperty = new LJP(Property,IntNum);
 
@@ -1390,7 +1383,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                         MapInterfaces.put(Interface,Objects.get(Interface.Class));
 
                 // сначала для всех PropNotNull генерируем все возможные Map<ы>
-                for(Map<DataPropertyInterface,Integer> NotNulls : (new MapBuilder<DataPropertyInterface,Integer>()).buildCombination(MapInterfaces)) {
+                for(Map<DataPropertyInterface,Integer> NotNulls : MapBuilder.buildCombination(MapInterfaces)) {
                     Set<Map<DataPropertyInterface,Integer>> RandomInterfaces = new HashSet();
                     while(RandomInterfaces.size()<Quantity) {
                         Map<DataPropertyInterface,Integer> RandomIteration = new HashMap();
@@ -1456,7 +1449,91 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
     }
 
-    PropertyObjectImplement AddPropView(NavigatorForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
+    void addPropertyView(NavigatorForm form, ObjectImplement... objects) {
+        addPropertyView(form, (PropertyGroup)null, objects);        
+    }
+
+    void addPropertyView(NavigatorForm form, PropertyGroup group, ObjectImplement... objects) {
+
+        for (Property property : Properties) {
+
+            if (group != null && !group.hasChild(property)) continue;
+
+            if (property.Interfaces.size() == objects.length) {
+
+                addPropertyView(form, property, objects);
+            }
+        }
+    }
+
+    void addPropertyView(NavigatorForm form, Property property, ObjectImplement... objects) {
+
+        Collection<List<PropertyInterface>> permutations = MapBuilder.buildPermutations(property.Interfaces);
+
+        for (List<PropertyInterface> mapping : permutations) {
+
+            InterfaceClass propertyInterface = new InterfaceClass();
+            int interfaceCount = 0;
+            for (PropertyInterface iface : mapping) {
+                propertyInterface.put(iface, objects[interfaceCount++].BaseClass);
+            }
+
+            if (property.GetValueClass(propertyInterface) != null) {
+                addPropertyView(form, new LP(property, mapping), objects);
+            }
+        }
+    }
+
+    void addPropertyView(NavigatorForm form, LP property, ObjectImplement... objects) {
+
+        PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.Property);
+
+        ListIterator<PropertyInterface> i = property.ListInterfaces.listIterator();
+        for(ObjectImplement object : objects) {
+            propertyImplement.Mapping.put(i.next(), object);
+        }
+
+        form.Properties.add(new PropertyView(form.IDShift(1),propertyImplement,propertyImplement.GetApplyObject()));
+    }
+
+
+    PropertyView getPropertyView(NavigatorForm form, PropertyObjectImplement prop) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : (List<PropertyView>)form.Properties) {
+            if (propView.View == prop)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
+    // -------------------------------------- Старые интерфейсы --------------------------------------------------- //
+
+    Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {
+
+        Map<String,PropertyObjectImplement> Result = new HashMap();
+
+        for(Property DrawProp : Properties) {
+            if(DrawProp.Interfaces.size() == 1) {
+                // проверим что дает хоть одно значение
+                InterfaceClass InterfaceClass = new InterfaceClass();
+                InterfaceClass.put(((Collection<PropertyInterface>)DrawProp.Interfaces).iterator().next(),Object.BaseClass);
+                if(DrawProp.GetValueClass(InterfaceClass)!=null) {
+                    PropertyObjectImplement PropertyImplement = new PropertyObjectImplement(DrawProp);
+                    PropertyImplement.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),Object);
+                    Form.Properties.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.GroupTo));
+
+                    if(Names!=null && Names.contains(DrawProp.caption))
+                        Result.put(DrawProp.caption,PropertyImplement);
+                }
+            }
+        }
+
+        return Result;
+    }
+
+    PropertyObjectImplement addPropertyView(NavigatorForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
         PropertyObjectImplement PropImpl = new PropertyObjectImplement(ListProp.Property);
 
         ListIterator<PropertyInterface> i = ListProp.ListInterfaces.listIterator();
@@ -1467,17 +1544,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return PropImpl;
     }
 
-    PropertyView findPropView(NavigatorForm fbv, PropertyObjectImplement prop) {
-
-        PropertyView resultPropView = null;
-        for (PropertyView propView : (List<PropertyView>)fbv.Properties) {
-            if (propView.View == prop)
-                resultPropView = propView;
-        }
-
-        return resultPropView;
-    }
-    
 }
 
 class ClassNavigatorForm extends NavigatorForm {
@@ -1499,10 +1565,16 @@ class ClassNavigatorForm extends NavigatorForm {
 }
 
 class LP {
+
     LP(Property iProperty) {
-        Property=iProperty;
-        ListInterfaces = new ArrayList<PropertyInterface>();
+        this(iProperty, new ArrayList<PropertyInterface>());
     }
+
+    LP(Property iProperty, List<PropertyInterface> iListInterfaces) {
+        Property=iProperty;
+        ListInterfaces = iListInterfaces;
+    }
+
     Property Property;
     List<PropertyInterface> ListInterfaces;
 }

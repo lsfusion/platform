@@ -120,6 +120,14 @@ class PropertyGroup extends PropertyNode{
         prop.parent = this;
     }
 
+    boolean hasChild(PropertyNode prop) {
+        for (PropertyNode child : properties) {
+            if (child == prop) return true;
+            if (child instanceof PropertyGroup && ((PropertyGroup)child).hasChild(prop)) return true;
+        }
+        return false;
+    }
+
 }
 
 abstract class Property<T extends PropertyInterface> extends PropertyNode {

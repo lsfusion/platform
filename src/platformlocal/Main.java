@@ -209,7 +209,7 @@ public class Main {
 
             DataAdapter Adapter = DataAdapter.getDefault();
 
-            TestBusinessLogics BL = new TestBusinessLogics();
+            BusinessLogics BL = new TmcBusinessLogics();
 
             DataSession Session = BL.createSession(Adapter);
             BL.FillDB(Session);
@@ -424,18 +424,12 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitClasses() {
 
-        Article = new ObjectClass(4, "Товар");
-        Article.AddParent(objectClass);
-        Store = new ObjectClass(5, "Склад");
-        Store.AddParent(objectClass);
-        Document = new ObjectClass(6, "Документ");
-        Document.AddParent(objectClass);
-        PrihDocument = new ObjectClass(7, "Приходный документ");
-        PrihDocument.AddParent(Document);
-        RashDocument = new ObjectClass(8, "Расходный документ");
-        RashDocument.AddParent(Document);
-        ArticleGroup = new ObjectClass(9, "Группа товаров");
-        ArticleGroup.AddParent(objectClass);
+        Article = new ObjectClass(4, "Товар", objectClass);
+        Store = new ObjectClass(5, "Склад", objectClass);
+        Document = new ObjectClass(6, "Документ", objectClass);
+        PrihDocument = new ObjectClass(7, "Приходный документ", Document);
+        RashDocument = new ObjectClass(8, "Расходный документ", Document);
+        ArticleGroup = new ObjectClass(9, "Группа товаров", objectClass);
     }
 
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
@@ -452,81 +446,61 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         PropertyGroup groupArticleC = new PropertyGroup("Ценовые параметры");
         PropertyGroup groupArticleS = new PropertyGroup("Показатели");
 
-        Name = AddDProp(Class.stringClass, objectClass);
-        Name.Property.caption = "имя";
+        Name = AddDProp("имя", Class.stringClass, objectClass);
         groupArticleA.add(Name.Property);
 
-        DocStore = AddDProp(Store,Document);
-        DocStore.Property.caption = "склад";
+        DocStore = AddDProp("склад", Store, Document);
 
-        PrihQuantity = AddDProp(Class.integerClass,PrihDocument,Article);
+        PrihQuantity = AddDProp("кол-во прих.", Class.integerClass, PrihDocument, Article);
         PrihQuantity.Property.caption = "кол-во прих.";
 
-        RashQuantity = AddDProp(Class.integerClass,RashDocument,Article);
-        RashQuantity.Property.caption = "кол-во расх.";
+        RashQuantity = AddDProp("кол-во расх.", Class.integerClass, RashDocument, Article);
 
-        ArtToGroup = AddDProp(ArticleGroup,Article);
-        ArtToGroup.Property.caption = "гр. тов";
+        ArtToGroup = AddDProp("гр. тов.", ArticleGroup, Article);
         groupArticleG.add(ArtToGroup.Property);
 
-        DocDate = AddDProp(Class.dateClass,Document);
-        DocDate.Property.caption = "дата док.";
+        DocDate = AddDProp("дата док.", Class.dateClass, Document);
 
-        GrAddV = AddDProp(Class.integerClass,ArticleGroup);
-        GrAddV.Property.caption = "нац. по гр.";
+        GrAddV = AddDProp("нац. по гр.", Class.integerClass, ArticleGroup);
 
-        ArtAddV = AddDProp(Class.integerClass,Article);
-        ArtAddV.Property.caption = "нац. перегр.";
+        ArtAddV = AddDProp("нац. перегр.", Class.integerClass, Article);
         groupArticleC.add(ArtAddV.Property);
 
-        BarCode = AddDProp(Class.doubleClass,Article);
-        BarCode.Property.caption = "штрих-код";
+        BarCode = AddDProp("штрих-код", Class.doubleClass, Article);
         groupArticleA.add(BarCode.Property);
 
-        Price = AddDProp(Class.longClass,Article);
-        Price.Property.caption = "цена";
+        Price = AddDProp("цена", Class.longClass, Article);
         groupArticleA.add(Price.Property);
 
-        ExpireDate = AddDProp(Class.dateClass,Article);
-        ExpireDate.Property.caption = "срок годн.";
+        ExpireDate = AddDProp("срок годн.", Class.dateClass, Article);
         groupArticleA.add(ExpireDate.Property);
 
-        Weight = AddDProp(Class.bitClass,Article);
-        Weight.Property.caption = "вес.";
+        Weight = AddDProp("вес.", Class.bitClass, Article);
         groupArticleA.add(Weight.Property);
 
-        LDP AbsQuantity = AddCProp(null,Class.integerClass,Document,Article);
-        AbsQuantity.Property.caption = "абст. кол-во";
+        LDP AbsQuantity = AddCProp("абст. кол-во",null,Class.integerClass,Document,Article);
 
-        LDP IsGrmat = AddCProp(0,Class.integerClass,Article);
-        IsGrmat.Property.caption = "признак товара";
+        LDP IsGrmat = AddCProp("признак товара",0,Class.integerClass,Article);
         groupArticleA.add(IsGrmat.Property);
 
-        FilledProperty = AddUProp(0,1,1,IsGrmat,1,1,ArtToGroup,1);
-        FilledProperty.Property.caption = "заполнение гр. тов.";
+        FilledProperty = AddUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
 
         // сделаем Quantity перегрузкой
-        Quantity = AddUProp(2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
-        Quantity.Property.caption = "кол-во";
+        Quantity = AddUProp("кол-во",2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LDP RashValue = AddCProp(-1,Class.integerClass,RashDocument);
-        RashValue.Property.caption = "призн. расхода";
+        LDP RashValue = AddCProp("призн. расхода",-1,Class.integerClass,RashDocument);
 
-        LDP PrihValue = AddCProp(1,Class.integerClass,PrihDocument);
-        PrihValue.Property.caption = "призн. прихода";
+        LDP PrihValue = AddCProp("призн. прихода",1,Class.integerClass,PrihDocument);
 
-        OpValue = AddUProp(2,1,1,RashValue,1,1,PrihValue,1);
-        OpValue.Property.caption = "общ. призн.";
+        OpValue = AddUProp("общ. призн.", 2,1,1,RashValue,1,1,PrihValue,1);
 
-        LGP RaznSValue = AddGProp(OpValue,true,DocStore,1);
-        RaznSValue.Property.caption = "разн. пр-рас.";
+        LGP RaznSValue = AddGProp("разн. пр-рас.", OpValue,true,DocStore,1);
 
         LJP RGrAddV = AddJProp(GrAddV,1,ArtToGroup,1);
         RGrAddV.Property.caption = "наценка по товару (гр.)";
         groupArticleG.add(RGrAddV.Property);
 
-        LJP ArtActAddV = AddUProp(2,1,1,RGrAddV,1,1,ArtAddV,1);
-        ArtActAddV.Property.caption = "наценка по товару";
+        LJP ArtActAddV = AddUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
         groupArticleC.add(ArtActAddV.Property);
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
@@ -543,8 +517,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ArtGroupName.Property.caption = "имя гр. тов.";
         groupArticleG.add(ArtGroupName.Property);
 
-        LDP ArtGName = AddDProp(Class.stringClass,Article);
-        ArtGName.Property.caption = "при доб. гр. тов.";
+        LDP ArtGName = AddDProp("при доб. гр. тов.", Class.stringClass, Article);
         SetDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = AddJProp(NotZero,2,Quantity,1,2);
@@ -558,39 +531,25 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         QDep.Property.caption = "изм. баланса";
         QDep.Property.XL = true;
 
-        GSum = AddGProp(QDep,true,2,3);
-        GSum.Property.caption = "остаток до операции";
+        GSum = AddGProp("остаток до операции", QDep,true,2,3);
 
-        GP = AddGProp(Quantity,true,DocStore,1,2);
-        GP.Property.caption = "сумм кол-во док. тов.";
-        GAP = AddGProp(GP,true,2);
-        GAP.Property.caption = "сумм кол-во тов.";
-        G2P = AddGProp(Quantity,true,DocStore,1,ArtToGroup,2);
-        G2P.Property.caption = "скл-гр. тов";
+        GP = AddGProp("сумм кол-во док. тов.", Quantity,true,DocStore,1,2);
+        GAP = AddGProp("сумм кол-во тов.", GP,true,2);
+        G2P = AddGProp("скл-гр. тов", Quantity,true,DocStore,1,ArtToGroup,2);
 
-        PrihArtStore = AddGProp(PrihQuantity,true,DocStore,1,2);
-        PrihArtStore.Property.caption = "приход по складу";
+        PrihArtStore = AddGProp("приход по складу", PrihQuantity,true,DocStore,1,2);
+        RashArtStore = AddGProp("расход по складу", RashQuantity,true,DocStore,1,2);
+        OstArtStore = AddUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
 
-        RashArtStore = AddGProp(RashQuantity,true,DocStore,1,2);
-        RashArtStore.Property.caption = "расход по складу";
+        OstArt = AddGProp("остаток по товару", OstArtStore,true,2);
 
-        OstArtStore = AddUProp(1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
-        OstArtStore.Property.caption = "остаток по складу";
+        MaxPrih = AddGProp("макс. приход по гр. тов.", PrihQuantity,false,DocStore,1,ArtToGroup,2);
 
-        OstArt = AddGProp(OstArtStore,true,2);
-        OstArt.Property.caption = "остаток по товару";
+        MaxOpStore = AddUProp("макс. операция", 0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
 
-        MaxPrih = AddGProp(PrihQuantity,false,DocStore,1,ArtToGroup,2);
-        MaxPrih.Property.caption = "макс. приход по гр. тов.";
+        SumMaxArt = AddGProp("макс. операция (сумма)", MaxOpStore,true,2);
 
-        MaxOpStore = AddUProp(0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
-        MaxOpStore.Property.caption = "макс. операция";
-
-        SumMaxArt = AddGProp(MaxOpStore,true,2);
-        SumMaxArt.Property.caption = "макс. операция (сумма)";
-
-        LGP ArtMaxQty = AddGProp(Quantity,false,2);
-        ArtMaxQty.Property.caption = "макс. кол-во";
+        LGP ArtMaxQty = AddGProp("макс. кол-во", Quantity,false,2);
 
         LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",Class.dateClass,Class.dateClass,Class.dateClass);
         LJP DokBetweenDate = AddJProp(BetweenDate,3,DocDate,1,2,3);
@@ -599,11 +558,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LJP RashBetweenDate = AddJProp(Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
         RashBetweenDate.Property.caption = "расх. кол-во в интервале";
 
-        RashArtInt = AddGProp(RashBetweenDate,true,1,3,4);
-        RashArtInt.Property.caption = "расход по товару";
+        RashArtInt = AddGProp("расход по товару", RashBetweenDate,true,1,3,4);
 
-        ArtDateRash = AddGProp(RashQuantity, true, DocDate, 1, 2);
-        ArtDateRash.Property.caption = "реал. за день";
+        ArtDateRash = AddGProp("реал. за день", RashQuantity, true, DocDate, 1, 2);
 
     }
 
@@ -737,11 +694,11 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         Map<String,PropertyObjectImplement> Obj2Props = BL.FillSingleViews(obj2,this,Obj2Set);
         Map<String,PropertyObjectImplement> Obj3Props = BL.FillSingleViews(obj3,this,Obj3Set);
 
-        PropertyObjectImplement QImpl = BL.AddPropView(this,BL.Quantity,gv3,obj3,obj2);
-        BL.AddPropView(this,BL.GP,gv3,obj3,obj2);
-        BL.AddPropView(this,BL.PrihQuantity,gv3,obj3,obj2);
-        BL.AddPropView(this,BL.RashQuantity,gv3,obj3,obj2);
-        BL.AddPropView(this,BL.GSum,gv3,obj3,obj2);
+        PropertyObjectImplement QImpl = BL.addPropertyView(this,BL.Quantity,gv3,obj3,obj2);
+        BL.addPropertyView(this,BL.GP,gv3,obj3,obj2);
+        BL.addPropertyView(this,BL.PrihQuantity,gv3,obj3,obj2);
+        BL.addPropertyView(this,BL.RashQuantity,gv3,obj3,obj2);
+        BL.addPropertyView(this,BL.GSum,gv3,obj3,obj2);
 
 //        fbv.AddObjectSeek(obj3,13);
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
@@ -760,7 +717,7 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         DefaultClientFormView formView = new DefaultClientFormView(this);
 //        formView.get(gv).defaultViewType = true;
 //        formView.get(gv).singleViewType = true;
-//        formView.defaultOrders.put(formView.get(BL.findPropView(this,QImpl)), true);
+//        formView.defaultOrders.put(formView.get(BL.getPropertyView(this,QImpl)), true);
 
         richDesign = formView;
 
@@ -808,13 +765,13 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
         BL.FillSingleViews(obj1,this,null);
         BL.FillSingleViews(obj2,this,null);
 
-        PropertyObjectImplement QImpl = BL.AddPropView(this,BL.Quantity,gv2,obj1,obj2);
-        BL.AddPropView(this,BL.GP,gv2,obj1,obj2);
-        BL.AddPropView(this,BL.PrihQuantity,gv2,obj1,obj2);
-        BL.AddPropView(this,BL.RashQuantity,gv2,obj1,obj2);
+        PropertyObjectImplement QImpl = BL.addPropertyView(this,BL.Quantity,gv2,obj1,obj2);
+        BL.addPropertyView(this,BL.GP,gv2,obj1,obj2);
+        BL.addPropertyView(this,BL.PrihQuantity,gv2,obj1,obj2);
+        BL.addPropertyView(this,BL.RashQuantity,gv2,obj1,obj2);
 
         addFixedFilter(new Filter(QImpl, 5, new UserValueLink(0)));
-//        BL.AddPropView(this,BL.GSum,gv2,obj1,obj2);
+//        BL.addPropertyView(this,BL.GSum,gv2,obj1,obj2);
 
 //        fbv.AddObjectSeek(obj3,13);
 //        fbv.AddPropertySeek(Obj3Props.get("имя"),"ПРОДУКТЫ");
@@ -857,7 +814,7 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
         BL.FillSingleViews(obj3,this,null);
 
-        BL.AddPropView(this,BL.RashArtInt,gv2,obj3,obj1,obj2);
+        BL.addPropertyView(this,BL.RashArtInt,gv2,obj3,obj1,obj2);
 
         DefaultClientFormView formView = new DefaultClientFormView(this);
         formView.get(gv).defaultViewType = false;
@@ -891,7 +848,7 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
         BL.FillSingleViews(obj1,this,null);
 
-        PropertyObjectImplement QImpl = BL.AddPropView(this, BL.ArtDateRash, gv2, obj2, obj1);
+        PropertyObjectImplement QImpl = BL.addPropertyView(this, BL.ArtDateRash, gv2, obj2, obj1);
 
         addFixedFilter(new Filter(QImpl, 5, new UserValueLink(0)));
 

@@ -31,10 +31,21 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 class ObjectImplement {
 
-    ObjectImplement(int iID,Class iBaseClass) {
+    ObjectImplement(int iID, Class iBaseClass, String iCaption, GroupObjectImplement groupObject) {
+        this(iID, iBaseClass, iCaption);
+
+        groupObject.addObject(this);
+    }
+
+    ObjectImplement(int iID, Class iBaseClass, String iCaption) {
         ID = iID;
         BaseClass = iBaseClass;
         GridClass = BaseClass;
+        caption = iCaption;
+    }
+
+    ObjectImplement(int iID, Class iBaseClass) {
+        this(iID, iBaseClass, "");
     }
 
     // выбранный объект, класс выбранного объекта
@@ -1428,7 +1439,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 SelectProps.add(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Session,false));
 
 //            System.out.println(Group.iterator().next().caption);
-//            SelectProps.outSelect(Session);
+            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {
