@@ -515,12 +515,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     void initBase() {
         TableFactory = new TableFactory();
 
-        objectClass = new ObjectClass(0, "Базовый класс");
+        objectClass = new ObjectClass(0, "Объект");
+        objectClass.AddParent(Class.baseClass);
 
         for(int i=0;i<TableFactory.MaxInterface;i++) {
             TableImplement Include = new TableImplement();
             for(int j=0;j<=i;j++)
-                Include.add(new DataPropertyInterface(objectClass));
+                Include.add(new DataPropertyInterface(j,Class.baseClass));
             TableFactory.IncludeIntoGraph(Include);
         }         
         
@@ -563,7 +564,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             }
         }
 
-        Seed = 4518;
+//        Seed = 4518;
+//        Seed = 8796;
+//        Seed = 8636;
+//        Seed = 3441;
+        Seed = 9273;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -684,10 +689,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             Session.rollbackTransaction();
             return Constraints;
         }            
-        
-        // записываем Data, затем Persistents в таблицы из сессии
+
         Session.saveClassChanges();
-        
+
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property Property : ChangedList)
             if(Property instanceof DataProperty || Persistents.contains(Property))
@@ -978,7 +982,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     
     // случайным образом генерирует классы
     void RandomClasses(Random Randomizer) {
-        int CustomClasses = Randomizer.nextInt(20);//
+        int CustomClasses = Randomizer.nextInt(5);//20
         List<Class> ObjClasses = new ArrayList();
         ObjClasses.add(objectClass);
         for(int i=0;i<CustomClasses;i++) {
@@ -1001,13 +1005,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         List<Property> RandObjProps = new ArrayList();
         
         StringFormulaProperty Dirihle = new WhereStringFormulaProperty(TableFactory,"prm1<prm2");
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.integerClass,"prm1"));
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(Class.integerClass,"prm2"));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(0,Class.integerClass));
+        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(1,Class.integerClass));
         RandProps.add(Dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(TableFactory);
-        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.integerClass));
-        Multiply.Interfaces.add(new FormulaPropertyInterface(Class.integerClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(0,Class.integerClass));
+        Multiply.Interfaces.add(new FormulaPropertyInterface(1,Class.integerClass));
         RandProps.add(Multiply);
 
         int DataPropCount = Randomizer.nextInt(15)+1;
@@ -1018,7 +1022,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             // генерируем классы
             int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
             for(int j=0;j<IntCount;j++)
-                DataProp.Interfaces.add(new DataPropertyInterface(Classes.get(Randomizer.nextInt(Classes.size()))));
+                DataProp.Interfaces.add(new DataPropertyInterface(j,Classes.get(Randomizer.nextInt(Classes.size()))));
 
             RandProps.add(DataProp);
             RandObjProps.add(DataProp);
@@ -1026,7 +1030,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         System.out.print("Создание аггрег. св-в ");
                 
-        int PropCount = Randomizer.nextInt(1000)+1;
+        int PropCount = Randomizer.nextInt(30)+1; // 1000
         for(int i=0;i<PropCount;i++) {
 //            int RandClass = Randomizer.nextInt(10);
 //            int PropClass = (RandClass>7?0:(RandClass==8?1:2));
@@ -1042,7 +1046,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 List<PropertyInterface> RelPropInt = new ArrayList();
                 int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<IntCount;j++) {
-                    JoinPropertyInterface Interface = new JoinPropertyInterface();
+                    JoinPropertyInterface Interface = new JoinPropertyInterface(j);
                     RelProp.Interfaces.add(Interface);
                     RelPropInt.add(Interface);
                 }
@@ -1122,7 +1126,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                         Implement = ImpProp;
                     }
                     
-                    Property.Interfaces.add(new GroupPropertyInterface(Implement));
+                    Property.Interfaces.add(new GroupPropertyInterface(j,Implement));
                 }
                 
                 if(Correct)
@@ -1146,7 +1150,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
                 int OpIntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
                 for(int j=0;j<OpIntCount;j++)
-                    Property.Interfaces.add(new PropertyInterface());
+                    Property.Interfaces.add(new PropertyInterface(j));
         
                 boolean Correct = true;
                 List<PropertyInterface> OpInt = new ArrayList(Property.Interfaces);
@@ -1200,7 +1204,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             TableImplement Include = new TableImplement();
             int ObjCount = Randomizer.nextInt(3)+1;
             for(int ioc=0;ioc<ObjCount;ioc++)
-                Include.add(new DataPropertyInterface(Classes.get(Randomizer.nextInt(Classes.size()))));
+                Include.add(new DataPropertyInterface(ioc,Classes.get(Randomizer.nextInt(Classes.size()))));
             TableFactory.IncludeIntoGraph(Include);               
         }        
     }
@@ -1348,10 +1352,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     ObjectNames.put(idObject,FillClass.caption+" "+(i+1));
                 }
 
-                Set<Class> Parents = new HashSet();
+                Set<ObjectClass> Parents = new HashSet();
                 FillClass.fillParents(Parents);
 
-                for(Class Class : Parents)
+                for(ObjectClass Class : Parents)
                     Objects.get(Class).addAll(ListObjects);
             }
 
@@ -1584,7 +1588,7 @@ class LDP extends LP {
     LDP(Property iProperty) {super(iProperty);}
 
     void AddInterface(Class InClass) {
-        DataPropertyInterface Interface = new DataPropertyInterface(InClass);
+        DataPropertyInterface Interface = new DataPropertyInterface(ListInterfaces.size(),InClass);
         ListInterfaces.add(Interface);
         Property.Interfaces.add(Interface);
     }
@@ -1614,9 +1618,8 @@ class LSFP extends LP {
 
     LSFP(Property iProperty,IntegralClass ...Classes) {
         super(iProperty);
-        int Prm=1;
         for(IntegralClass Class : Classes) {
-            StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(Class,"prm"+Prm++);
+            StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(ListInterfaces.size(),Class);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
         }
@@ -1627,9 +1630,8 @@ class LMFP extends LP {
 
     LMFP(Property iProperty,IntegralClass ...Classes) {
         super(iProperty);
-        int Prm=1;
         for(IntegralClass Class : Classes) {
-            FormulaPropertyInterface Interface = new FormulaPropertyInterface(Class);
+            FormulaPropertyInterface Interface = new FormulaPropertyInterface(ListInterfaces.size(),Class);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
         }
@@ -1642,7 +1644,7 @@ class LJP extends LP {
     LJP(Property iProperty,int Objects) {
         super(iProperty);
         for(int i=0;i<Objects;i++) {
-            PropertyInterface Interface = new PropertyInterface();
+            PropertyInterface Interface = new PropertyInterface(i);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
         }
@@ -1658,7 +1660,7 @@ class LGP extends LP {
     }
 
     void AddInterface(PropertyInterfaceImplement Implement) {
-        GroupPropertyInterface Interface = new GroupPropertyInterface(Implement);
+        GroupPropertyInterface Interface = new GroupPropertyInterface(ListInterfaces.size(),Implement);
         ListInterfaces.add(Interface);
         Property.Interfaces.add(Interface);
     }

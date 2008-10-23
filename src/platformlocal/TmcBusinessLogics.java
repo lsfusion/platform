@@ -100,25 +100,25 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         TableImplement Include;
 
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(article));
+        Include.add(new DataPropertyInterface(0,article));
         TableFactory.IncludeIntoGraph(Include);
 
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(store));
+        Include.add(new DataPropertyInterface(0,store));
         TableFactory.IncludeIntoGraph(Include);
 
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(articleGroup));
+        Include.add(new DataPropertyInterface(0,articleGroup));
         TableFactory.IncludeIntoGraph(Include);
 
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(article));
-        Include.add(new DataPropertyInterface(document));
+        Include.add(new DataPropertyInterface(0,article));
+        Include.add(new DataPropertyInterface(0,document));
         TableFactory.IncludeIntoGraph(Include);
 
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(article));
-        Include.add(new DataPropertyInterface(store));
+        Include.add(new DataPropertyInterface(0,article));
+        Include.add(new DataPropertyInterface(0,store));
         TableFactory.IncludeIntoGraph(Include);
 
     }

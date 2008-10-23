@@ -21,6 +21,8 @@ public class Main {
 
     static Layout Layout;
 
+    static DataAdapter Adapter;
+
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
 /*        DataAdapter Syntax = DataAdapter.getDefault();
@@ -136,16 +138,16 @@ public class Main {
 
 /*        int a=1;
         while(a==1) {
-            System.out.println("Opened");
-            new TestBusinessLogics(1);
+//            System.out.println("Opened");
+//            new TestBusinessLogics(1);
             System.out.println("Closed");
             try {
                 new TestBusinessLogics(0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("Suspicious");
-            new TestBusinessLogics(-1);
+//            System.out.println("Suspicious");
+//            new TestBusinessLogics(-1);
         }
   */
 /*        UnionQuery<KeyField,PropertyField> Union = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
@@ -207,7 +209,7 @@ public class Main {
 
         try {
 
-            DataAdapter Adapter = DataAdapter.getDefault();
+            Adapter = DataAdapter.getDefault();
 
             BusinessLogics BL = new TmcBusinessLogics();
 
@@ -521,7 +523,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         SetDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = AddJProp(NotZero,2,Quantity,1,2);
-        InDoc.Property.caption = "товар в док.";        
+        InDoc.Property.caption = "товар в док.";
 
         LJP DDep = AddJProp(Less,2,DocDate,1,DocDate,2);
         DDep.Property.caption = "предш. док.";
@@ -591,21 +593,21 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         TableImplement Include;
 
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(Article));
+        Include.add(new DataPropertyInterface(0,Article));
         TableFactory.IncludeIntoGraph(Include);
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(Store));
+        Include.add(new DataPropertyInterface(0,Store));
         TableFactory.IncludeIntoGraph(Include);
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(ArticleGroup));
+        Include.add(new DataPropertyInterface(0,ArticleGroup));
         TableFactory.IncludeIntoGraph(Include);
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(Article));
-        Include.add(new DataPropertyInterface(Document));
+        Include.add(new DataPropertyInterface(0,Article));
+        Include.add(new DataPropertyInterface(0,Document));
         TableFactory.IncludeIntoGraph(Include);
         Include = new TableImplement();
-        Include.add(new DataPropertyInterface(Article));
-        Include.add(new DataPropertyInterface(Store));
+        Include.add(new DataPropertyInterface(0,Article));
+        Include.add(new DataPropertyInterface(0,Store));
         TableFactory.IncludeIntoGraph(Include);
     }
 

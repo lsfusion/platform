@@ -15,6 +15,7 @@ import java.math.BigDecimal;
  */
 abstract class Class {
 
+    static BaseClass baseClass;
     static IntegralClass integralClass;
     static StringClass stringClass;
     static IntegerClass integerClass;
@@ -24,17 +25,20 @@ abstract class Class {
     static BitClass bitClass;
 
     static {
-        integralClass = new IntegralClass(2, "Число");
-        stringClass = new StringClass(1, "Строка");
-        integerClass = new IntegerClass(2, "Кол-во");
+        baseClass = new BaseClass(1000000, "Базовый класс");
+        integralClass = new IntegralClass(1000001, "Число");
+        integralClass.AddParent(baseClass);
+        stringClass = new StringClass(1000002, "Строка");
+        stringClass.AddParent(baseClass);
+        integerClass = new IntegerClass(1000003, "Кол-во");
         integerClass.AddParent(integralClass);
-        longClass = new LongClass(2, "Кол-во");
+        longClass = new LongClass(1000004, "Кол-во");
         longClass.AddParent(integralClass);
-        doubleClass = new DoubleClass(2, "Кол-во");
+        doubleClass = new DoubleClass(1000005, "Кол-во");
         doubleClass.AddParent(integralClass);
-        dateClass = new DateClass(3, "Дата");
+        dateClass = new DateClass(1000006, "Дата");
         dateClass.AddParent(integralClass);
-        bitClass = new BitClass(4, "Бит");
+        bitClass = new BitClass(1000007, "Бит");
         bitClass.AddParent(integralClass);
     }
 
@@ -50,6 +54,10 @@ abstract class Class {
         Childs = new ArrayList<Class>();
 
         for (Class parent : parents) AddParent(parent);
+    }
+
+    public String toString() {
+        return ID + " " + caption;
     }
 
     void AddParent(Class ParentClass) {
@@ -134,14 +142,8 @@ abstract class Class {
     }
 
     // заполняет список классов
-    void fillParents(Collection<Class> ParentSet) {
-        if (ParentSet.contains(ID))
-            return;
-
-        ParentSet.add(this);
-
-        for(Class Parent : Parents)
-            Parent.fillParents(ParentSet);
+    void fillParents(Collection<ObjectClass> ParentSet) {
+        return;
     }
 
     // получает классы у которого есть оба интерфейса
@@ -205,7 +207,7 @@ abstract class Class {
 
         CommonClassSet3(null,AddClasses,true);
     }
-    
+
     abstract Type getType();
 
     // получает рандомный объект
@@ -217,6 +219,25 @@ abstract class Class {
         relevantElements.add(relevantElement);
     }
 
+}
+
+class BaseClass extends Class {
+
+    BaseClass(Integer iID, String iCaption) {
+        super(iID, iCaption);
+    }
+
+    Type getType() {
+        return Type.Integer;
+    }// получает рандомный объект
+
+    Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
 
 // класс который можно сравнивать
@@ -311,6 +332,16 @@ class ObjectClass extends Class {
 
     Type getType() {
         return Type.Object;
+    }
+
+    void fillParents(Collection<ObjectClass> ParentSet) {
+        if (ParentSet.contains(ID))
+            return;
+
+        ParentSet.add(this);
+
+        for(Class Parent : Parents)
+            Parent.fillParents(ParentSet);
     }
 }
 

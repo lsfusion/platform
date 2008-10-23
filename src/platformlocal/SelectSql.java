@@ -138,12 +138,12 @@ abstract class Source<K,V> {
 
         for(Map.Entry<Map<K,Integer>,Map<V,Object>> RowMap : Result.entrySet()) {
             for(K Key : Keys) {
-                System.out.print(getKeyName(Key)+"-"+RowMap.getKey().get(Key));
+                System.out.print(Key+"-"+RowMap.getKey().get(Key)); 
                 System.out.print(" ");
             }
             System.out.print("---- ");
             for(V Property : getProperties()) {
-                System.out.print(RowMap.getValue().get(Property));
+                System.out.print(Property+"-"+RowMap.getValue().get(Property));
                 System.out.print(" ");
             }
 
@@ -227,7 +227,7 @@ abstract class Source<K,V> {
     }
 
     // записывается в Join'ы
-    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
+    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> TranslatedWheres, Collection<Join> TranslatedJoins, boolean Outer) {
         
         TranslatedJoins.add(Join.translate(Translated, Translated, Outer));
     }
@@ -364,7 +364,7 @@ class DumbSource<K,V> extends Source<K,V> {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
+    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> TranslatedWheres, Collection<Join> TranslatedJoins, boolean Outer) {
 
         if(Join.Inner) {
             ExprTranslator JoinTranslated = new ExprTranslator();
@@ -373,7 +373,7 @@ class DumbSource<K,V> extends Source<K,V> {
                 JoinTranslated.put(JoinExpr,new ValueSourceExpr(ValueKey.getValue(),Type.Object));
                 // если св-во также докидываем в фильтр
                 if(!(JoinExpr instanceof KeyExpr))
-                    JoinWheres.add(new FieldExprCompareWhere(JoinExpr,ValueKey.getValue(),FieldExprCompareWhere.EQUALS));
+                    TranslatedWheres.add(new FieldExprCompareWhere(JoinExpr,ValueKey.getValue(),FieldExprCompareWhere.EQUALS));
             }
             Translated.merge(JoinTranslated);
 
@@ -383,7 +383,7 @@ class DumbSource<K,V> extends Source<K,V> {
 
             // после чего дальше даже не компилируемся - proceedCompile словит транслированные ключи
         } else
-            super.compileJoins(Join, Translated, JoinWheres, TranslatedJoins, Outer);
+            super.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, Outer);
     }
 }
 
@@ -422,7 +422,7 @@ class EmptySource<K,V> extends Source<K,V> {
         return Type.NULL;
     }
 
-    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
+    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> TranslatedWheres, Collection<Join> TranslatedJoins, boolean Outer) {
 
         for(SourceExpr JoinExpr : Join.Exprs.values())
             Translated.put(JoinExpr,new ValueSourceExpr(null,JoinExpr.getType()));
@@ -444,6 +444,10 @@ class Field {
 
     String GetDeclare(SQLSyntax Syntax) {
         return Name + " " + Type.getDB(Syntax);
+    }
+
+    public String toString() {
+        return Name;
     }
 }
 
@@ -2086,14 +2090,14 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // из всех Properties,Wheres вытягивают Joins, InnerJoins, Where
         ExprTranslator Translated = new ExprTranslator();
         List<Join> TranslatedJoins = new ArrayList();
-        Collection<Where> QueryWheres = new ArrayList(Wheres);
+        Set<Where> TranslatedWheres = new HashSet();
 
         for(Join Join : Joins) {
             Join.Source = Join.Source.compile();
             if(Join.isEmpty(Translated) && Join.Inner)
                 return getEmptySource();
             else
-                Join.Source.compileJoins(Join, Translated, QueryWheres, TranslatedJoins, false);
+                Join.Source.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, false);
         }
 
 //        checkTranslate(Translated,TranslatedJoins);
@@ -2141,8 +2145,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Joins = MergedJoins;
         for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
             MapProperty.setValue(MapProperty.getValue().translate(Translated));
-        Set<Where> TranslatedWheres = new HashSet();
-        for(Where Where : QueryWheres)
+        for(Where Where : Wheres)
             TranslatedWheres.add(Where.translate(Translated));
         Wheres = TranslatedWheres;
 
@@ -2278,7 +2281,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     }
 
     // перетранслирует
-    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
+    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> TranslatedWheres, Collection<Join> TranslatedJoins, boolean Outer) {
 
         // если есть JoinQuery (пока если Left без Wheres) то доливаем все Join'ы с сооты. Map'ами, JoinExpr заменяем на SourceExpr'ы с перебитыми KeyExpr'ами и соотв. JoinRxpr'ами
         Outer = Outer || !Join.Inner;
@@ -2289,9 +2292,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
             // нужно также рекурсию гнать на случай LJ (A J (B FJ C))
             for(Join CompileJoin : Joins)
-                CompileJoin.Source.compileJoins(CompileJoin, Translated, JoinWheres, TranslatedJoins, Outer);
-
-            JoinWheres.addAll(Wheres);
+                CompileJoin.Source.compileJoins(CompileJoin, Translated, TranslatedWheres, TranslatedJoins, Outer);
 
             // InJoin'ы заменим на AND Inner InJoin'ов
             List<Where> CompileInJoin = new ArrayList();
@@ -2302,8 +2303,11 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             // хакинем перекодирование значение
             for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
                 Translated.put(Join.Exprs.get(MapProperty.getKey()),MapProperty.getValue().translate(Translated));
+
+            for(Where Where : Wheres)
+                TranslatedWheres.add(Where.translate(Translated));
         } else
-            super.compileJoins(Join, Translated, JoinWheres, TranslatedJoins, Outer);
+            super.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, Outer);
     }
 
     // заполняет Select для одного Join'а
@@ -2886,7 +2890,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         return Operations.get(Property).getType();
     }
 
-    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> JoinWheres, Collection<Join> TranslatedJoins, boolean Outer) {
+    void compileJoins(Join<K, V> Join, ExprTranslator Translated, Collection<Where> TranslatedWheres, Collection<Join> TranslatedJoins, boolean Outer) {
 
         // если есть UnionQuery не в Inner Join'ах или же у UnionQuery один операнд то из операндов делаем Join'ы, JoinExpr'ы заменяем на UnionSourceExpr'ы из UnionQuery с проставленными JoinExpr'ами
         Outer = Outer || !Join.Inner;
@@ -2897,7 +2901,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
                 Join<K,Object> JoinOperand = new Join<K,Object>(Operand.Source,Join.Joins,!Outer);
                 OperandJoins.put(Operand,JoinOperand);
 
-                Operand.Source.compileJoins(JoinOperand, Translated, JoinWheres, TranslatedJoins, Outer);
+                Operand.Source.compileJoins(JoinOperand, Translated, TranslatedWheres, TranslatedJoins, Outer);
             }
 
             // InJoin'ы заменим на OR Inner InJoin'ов
@@ -2909,7 +2913,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             for(V Property : getProperties())
                 Translated.put(Join.Exprs.get(Property),Operations.get(Property).translateExpr(OperandJoins, Translated));
         } else
-            super.compileJoins(Join, Translated, JoinWheres, TranslatedJoins, Outer);
+            super.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, Outer);
     }
 
     void compileUnions(Union<K, V> Union, Map<PropertyUnion, ExprUnion> ToTranslate, Collection<Union<K, Object>> TranslatedUnions) {
