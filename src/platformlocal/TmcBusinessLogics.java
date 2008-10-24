@@ -158,10 +158,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         LSFP percent = AddSFProp("prm1*prm2/100", Class.doubleClass, Class.doubleClass);
         extIncDetailCalcSumVAT = AddJProp("Сумма НДС (расч.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVAT, 1);
 
-        extIncDetailCalcSumPay = AddUProp("Всего с НДС (расч.)", 1, 1, 1, extIncDetailCalcSum, 1, 1, extIncDetailCalcSumVAT, 1);
-
         extIncDetailSumVAT = AddDProp(incSumsGroup, "Сумма НДС", Class.doubleClass, extIncomeDetail);
         setDefProp(extIncDetailSumVAT, extIncDetailCalcSumVAT, true);
+
+        extIncDetailCalcSumPay = AddUProp("Всего с НДС (расч.)", 1, 1, 1, extIncDetailCalcSum, 1, 1, extIncDetailSumVAT, 1);
 
         extIncDetailSumPay = AddDProp(incSumsGroup, "Всего с НДС", Class.doubleClass, extIncomeDetail);
         setDefProp(extIncDetailSumPay, extIncDetailCalcSumPay, true);
