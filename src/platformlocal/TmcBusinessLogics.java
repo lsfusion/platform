@@ -7,6 +7,14 @@ import java.util.Set;
 
 public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
+    public TmcBusinessLogics() {
+        super();
+    }
+
+    public TmcBusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super(TestType);
+    }
+
     Class article;
     Class articleGroup;
 

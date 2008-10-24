@@ -138,8 +138,8 @@ public class Main {
 
 /*        int a=1;
         while(a==1) {
-//            System.out.println("Opened");
-//            new TestBusinessLogics(1);
+            System.out.println("Opened");
+            new TmcBusinessLogics(1);
             System.out.println("Closed");
             try {
                 new TestBusinessLogics(0);

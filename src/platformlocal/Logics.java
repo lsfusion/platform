@@ -565,10 +565,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
 
 //        Seed = 4518;
-//        Seed = 8796;
-//        Seed = 8636;
-//        Seed = 3441;
-        Seed = 9273;
+//        Seed = 3936;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -990,11 +987,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     
     // случайным образом генерирует классы
     void RandomClasses(Random Randomizer) {
-        int CustomClasses = Randomizer.nextInt(5);//20
+        int CustomClasses = Randomizer.nextInt(20);//
         List<Class> ObjClasses = new ArrayList();
         ObjClasses.add(objectClass);
         for(int i=0;i<CustomClasses;i++) {
-            Class Class = new ObjectClass(i+99993, "Случайный класс"+i);
+            Class Class = new ObjectClass(i+10000, "Случайный класс"+i);
             int Parents = Randomizer.nextInt(2) + 1;
             for(int j=0;j<Parents;j++) {
                 Class.AddParent(ObjClasses.get(Randomizer.nextInt(ObjClasses.size())));
@@ -1011,7 +1008,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         
         List<Property> RandProps = new ArrayList();
         List<Property> RandObjProps = new ArrayList();
-        
+        List<Property> RandIntegralProps = new ArrayList();
+
         StringFormulaProperty Dirihle = new WhereStringFormulaProperty(TableFactory,"prm1<prm2");
         Dirihle.Interfaces.add(new StringFormulaPropertyInterface(0,Class.integerClass));
         Dirihle.Interfaces.add(new StringFormulaPropertyInterface(1,Class.integerClass));
@@ -1025,7 +1023,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         int DataPropCount = Randomizer.nextInt(15)+1;
         for(int i=0;i<DataPropCount;i++) {
             // DataProperty
-            DataProperty DataProp = new DataProperty(TableFactory,Classes.get(Randomizer.nextInt(Classes.size())));
+            DataProperty DataProp = new DataProperty(TableFactory,(i%4==0?Class.integerClass:Classes.get(Randomizer.nextInt(Classes.size()))));
             DataProp.caption = "Data Property " + i;
             // генерируем классы
             int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
@@ -1034,11 +1032,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
             RandProps.add(DataProp);
             RandObjProps.add(DataProp);
+            if(DataProp.getBaseClass() instanceof IntegralClass)
+                RandIntegralProps.add(DataProp);    
         }
 
         System.out.print("Создание аггрег. св-в ");
                 
-        int PropCount = Randomizer.nextInt(30)+1; // 1000
+        int PropCount = Randomizer.nextInt(1000)+1; //
         for(int i=0;i<PropCount;i++) {
 //            int RandClass = Randomizer.nextInt(10);
 //            int PropClass = (RandClass>7?0:(RandClass==8?1:2));
@@ -1099,12 +1099,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             
             if(PropClass==1 || PropClass==2) {
                 // группировочное
-                Property GroupProp = RandObjProps.get(Randomizer.nextInt(RandObjProps.size()));
+                Property GroupProp;
                 GroupProperty Property = null;
                 if(PropClass==1) {
+                    GroupProp = RandIntegralProps.get(Randomizer.nextInt(RandIntegralProps.size()));
                     Property = new SumGroupProperty(TableFactory,GroupProp);
                     ResType = "SG";
                 } else {
+                    GroupProp = RandObjProps.get(Randomizer.nextInt(RandObjProps.size()));
                     Property = new MaxGroupProperty(TableFactory,GroupProp);
                     ResType = "MG";
                 }
@@ -1143,7 +1145,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
             if(PropClass==3 || PropClass==4 || PropClass==5) {
                 UnionProperty Property = null;
+                List<Property> RandValProps = RandObjProps;
                 if(PropClass==3) {
+                    RandValProps = RandIntegralProps;
                     Property = new SumUnionProperty(TableFactory);
                     ResType = "SL";
                 } else {
@@ -1164,7 +1168,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 List<PropertyInterface> OpInt = new ArrayList(Property.Interfaces);
                 int OpCount = Randomizer.nextInt(4)+1;
                 for(int j=0;j<OpCount;j++) {
-                    PropertyMapImplement Operand = new PropertyMapImplement(RandObjProps.get(Randomizer.nextInt(RandObjProps.size())));
+                    PropertyMapImplement Operand = new PropertyMapImplement(RandValProps.get(Randomizer.nextInt(RandValProps.size())));
                     if(Operand.Property.Interfaces.size()!=OpInt.size()) {
                         Correct = false;
                         break;
@@ -1192,6 +1196,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     System.out.print(ResType+"-");
                     RandProps.add(GenProp);
                     RandObjProps.add(GenProp);
+                    if(GenProp.getBaseClass() instanceof IntegralClass)
+                        RandIntegralProps.add(GenProp);
                 }
             }
         }
@@ -1233,9 +1239,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         for(int i=0;i<PersistentNum;i++)
             Persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
 
-        for(AggregateProperty Property : AggrProperties)
+//        for(AggregateProperty Property : AggrProperties)
 //            if(Property.caption.equals("R 1"))
-            Persistents.add(Property);
+//            Persistents.add(Property);
      }
 
     static int ChangeDBIteration = 0;

@@ -1441,7 +1441,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 SelectProps.add(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Session,false));
 
 //            System.out.println(Group.iterator().next().caption);
-            SelectProps.outSelect(Session);
+//            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {
@@ -1465,7 +1465,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         }
         DataChanged = false;
 
-        Result.Out(this);
+//        Result.Out(this);
 
         return Result;
     }
