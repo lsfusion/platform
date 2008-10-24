@@ -907,6 +907,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
     
     LGP AddGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
+        return AddGProp(null, caption, GroupProp, Sum, Params);
+    }
+    LGP AddGProp(PropertyGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
 
         GroupProperty Property;
         if(Sum)
@@ -920,6 +923,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         for(PropertyInterfaceImplement Implement : PropImpl) ListProperty.AddInterface(Implement);
 
         Properties.add(Property);
+
+        if (group != null)
+            group.add(Property);
         
         return ListProperty;
     }

@@ -156,7 +156,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             }
 
             if (navigatorValue instanceof PropertyValueLink) {
-                value = new PropertyValueLink(pnvrm.get(((PropertyValueLink)navigatorValue).Property));
+
+                PropertyObjectImplement property = pnvrm.get(((PropertyValueLink)navigatorValue).Property);
+                if (property == null) {
+                    property = new PropertyObjectImplement(((PropertyValueLink)navigatorValue).Property);
+                    // перекодируем Mapping'и свойств
+                    for (Map.Entry<PropertyInterface,ObjectImplement> mapObjects : property.Mapping.entrySet()) {
+                        property.Mapping.put(mapObjects.getKey(), onvrm.get(mapObjects.getValue()));
+                    }
+
+                }
+                value = new PropertyValueLink(property);
             }
 
             PropertyObjectImplement property = pnvrm.get(navigatorFilter.Property);

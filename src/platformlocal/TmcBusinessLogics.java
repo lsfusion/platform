@@ -54,7 +54,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     }
 
-    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup;
+    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, incPrmsGroup;
 
     LDP name;
     LDP artGroup;
@@ -66,7 +66,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP extIncDetailArticleName;
 
     LDP extIncDetailDocument, extIncDetailArticle, extIncDetailQuantity;
-    LDP extIncQuantity;
+    LGP extIncQuantity;
     LDP intraQuantity, intraStore;
     LDP extOutQuantity;
     LDP exchangeQuantity;
@@ -77,6 +77,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP incStoreQuantity, outStoreQuantity;
     LJP dltStoreQuantity;
 
+    LDP extIncDetailPrice, extIncDetailVAT;
+
     void InitProperties() {
 
         // -------------------------- Group Properties --------------------- //
@@ -86,6 +88,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         artgrGroup = new PropertyGroup("Группа товаров");
         storeGroup = new PropertyGroup("Склад");
         quantGroup = new PropertyGroup("Количество");
+        incPrmsGroup = new PropertyGroup("Входные параметры");
 
         // -------------------------- Data Properties ---------------------- //
 
@@ -113,7 +116,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncDetailQuantity = AddDProp(quantGroup, "Кол-во", Class.doubleClass, extIncomeDetail);
 
-        extIncQuantity = AddDProp(quantGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
+//        extIncQuantity = AddDProp(quantGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
+        extIncQuantity = AddGProp(quantGroup, "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         intraQuantity = AddDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
 
@@ -137,6 +141,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         dltStoreQuantity = AddUProp("Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
 //        OstArtStore = AddUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
 
+        // -------------------------- Входные параметры ---------------------------- //
+
+//        extIncDetailPrice = AddDProp(incPrmsGroup, "Цена пост.", Class.integerClass, );
     }
 
     void InitConstraints() {
@@ -365,7 +372,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         Map<DataProperty,Integer> PropQuantity = new HashMap();
 
-        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
+//        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
         PropQuantity.put((DataProperty)intraQuantity.Property,15);
         PropQuantity.put((DataProperty)extOutQuantity.Property,5);
         PropQuantity.put((DataProperty)exchangeQuantity.Property,14);
