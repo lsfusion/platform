@@ -811,7 +811,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
     
-    void SetDefProp(LDP Data,LP Default,boolean OnChange) {
+    void setDefProp(LDP Data,LP Default,boolean OnChange) {
         DataProperty Property = ((DataProperty)Data.Property);
         Property.DefaultProperty = Default.Property;
         for(int i=0;i<Data.ListInterfaces.size();i++)
@@ -931,6 +931,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     LJP AddUProp(String caption, int UnionType, int IntNum, Object... Params) {
+        return AddUProp(null, caption, UnionType, IntNum, Params);
+    }
+    
+    LJP AddUProp(PropertyGroup group, String caption, int UnionType, int IntNum, Object... Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -957,6 +961,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             Property.Coeffs.put(Operand,(Integer)Params[Offs]);
         }
         Properties.add(Property);
+
+        if (group != null)
+            group.add(Property);
 
         return ListProperty;
     }

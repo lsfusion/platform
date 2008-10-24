@@ -515,7 +515,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LJP ArtGroupName = AddJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
         LDP ArtGName = AddDProp("при доб. гр. тов.", Class.stringClass, Article);
-        SetDefProp(ArtGName,ArtGroupName,true);
+        setDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = AddJProp("товар в док.", NotZero,2,Quantity,1,2);
 

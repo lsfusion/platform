@@ -54,7 +54,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     }
 
-    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, incPrmsGroup;
+    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, incPrmsGroup, incSumsGroup;
 
     LDP name;
     LDP artGroup;
@@ -78,6 +78,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP dltStoreQuantity;
 
     LDP extIncDetailPrice, extIncDetailVAT;
+    LJP extIncDetailCalcSum;
+    LJP extIncDetailCalcSumVAT, extIncDetailCalcSumPay;
+    LDP extIncDetailSumVAT, extIncDetailSumPay;
+
+    LGP extIncDocumentSumVAT, extIncDocumentSumPay;
 
     void InitProperties() {
 
@@ -89,6 +94,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         storeGroup = new PropertyGroup("Склад");
         quantGroup = new PropertyGroup("Количество");
         incPrmsGroup = new PropertyGroup("Входные параметры");
+        incSumsGroup = new PropertyGroup("Входные суммы");
 
         // -------------------------- Data Properties ---------------------- //
 
@@ -143,7 +149,25 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // -------------------------- Входные параметры ---------------------------- //
 
-//        extIncDetailPrice = AddDProp(incPrmsGroup, "Цена пост.", Class.integerClass, );
+        extIncDetailPrice = AddDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, extIncomeDetail);
+        extIncDetailVAT = AddDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, extIncomeDetail);
+
+        LMFP multiplyDI = AddMFProp(Class.doubleClass, Class.doubleClass);
+        extIncDetailCalcSum = AddJProp(incSumsGroup, "Сумма пост.", multiplyDI, 1, extIncDetailQuantity, 1, extIncDetailPrice, 1);
+
+        LSFP percent = AddSFProp("prm1*prm2/100", Class.doubleClass, Class.doubleClass);
+        extIncDetailCalcSumVAT = AddJProp("Сумма НДС (расч.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVAT, 1);
+
+        extIncDetailCalcSumPay = AddUProp("Всего с НДС (расч.)", 1, 1, 1, extIncDetailCalcSum, 1, 1, extIncDetailCalcSumVAT, 1);
+
+        extIncDetailSumVAT = AddDProp(incSumsGroup, "Сумма НДС", Class.doubleClass, extIncomeDetail);
+        setDefProp(extIncDetailSumVAT, extIncDetailCalcSumVAT, true);
+
+        extIncDetailSumPay = AddDProp(incSumsGroup, "Всего с НДС", Class.doubleClass, extIncomeDetail);
+        setDefProp(extIncDetailSumPay, extIncDetailCalcSumPay, true);
+
+        extIncDocumentSumVAT = AddGProp(incSumsGroup, "Сумма НДС", extIncDetailSumVAT, true, extIncDetailDocument, 1);
+        extIncDocumentSumPay = AddGProp(incSumsGroup, "Всего с НДС", extIncDetailSumPay, true, extIncDetailDocument, 1);
     }
 
     void InitConstraints() {
@@ -222,8 +246,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(this, baseGroup, objDoc);
             addPropertyView(this, storeGroup, objDoc);
+            addPropertyView(this, incSumsGroup, objDoc);
             addPropertyView(this, artclGroup, objDetail);
             addPropertyView(this, quantGroup, objDetail);
+            addPropertyView(this, incPrmsGroup, objDetail);
+            addPropertyView(this, incSumsGroup, objDetail);
 
             PropertyObjectImplement detDocument = addPropertyObjectImplement(extIncDetailDocument, objDetail);
             addFixedFilter(new Filter(detDocument, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objDoc)));
@@ -369,6 +396,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailDocument.putNotNulls(PropNotNulls,0);
         extIncDetailArticle.putNotNulls(PropNotNulls,0);
         extIncDetailQuantity.putNotNulls(PropNotNulls,0);
+        extIncDetailPrice.putNotNulls(PropNotNulls,0);
+        extIncDetailVAT.putNotNulls(PropNotNulls,0);
 
         Map<DataProperty,Integer> PropQuantity = new HashMap();
 
