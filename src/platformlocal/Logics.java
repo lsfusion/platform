@@ -1496,7 +1496,17 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
     }
 
-    void addPropertyView(NavigatorForm form, LP property, ObjectImplement... objects) {
+    PropertyView addPropertyView(NavigatorForm form, LP property, ObjectImplement... objects) {
+
+        PropertyObjectImplement propertyImplement = addPropertyObjectImplement(property, objects);
+        PropertyView propertyView = new PropertyView(form.IDShift(1),propertyImplement,propertyImplement.GetApplyObject());
+
+        form.Properties.add(propertyView);
+
+        return propertyView;
+    }
+
+    PropertyObjectImplement addPropertyObjectImplement(LP property, ObjectImplement... objects) {
 
         PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.Property);
 
@@ -1505,7 +1515,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             propertyImplement.Mapping.put(i.next(), object);
         }
 
-        form.Properties.add(new PropertyView(form.IDShift(1),propertyImplement,propertyImplement.GetApplyObject()));
+        return propertyImplement;
     }
 
 

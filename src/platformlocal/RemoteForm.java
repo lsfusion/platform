@@ -197,6 +197,8 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 }
 
 class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
+
+    PropertyObjectImplement(PropertyObjectImplement iProperty) { super(iProperty); }
     PropertyObjectImplement(Property iProperty) {super(iProperty);}
 
     // получает Grid в котором рисоваться

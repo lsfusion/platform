@@ -129,13 +129,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             PropertyObjectImplement navigatorPropObject = navigatorProperty.View;
 
             PropertyObjectImplement propObject = new PropertyObjectImplement(navigatorPropObject.Property);
-            propObject.Mapping = new HashMap();
             for (Map.Entry<PropertyInterface, ObjectImplement> entry : navigatorPropObject.Mapping.entrySet()) {
                 propObject.Mapping.put(entry.getKey(), onvrm.get(entry.getValue()));
             }
 
             PropertyView property = new PropertyView(navigatorProperty.ID, propObject, gnvrm.get(navigatorProperty.ToDraw));
-            property.ID = navigatorProperty.ID;
 
             remoteForm.Properties.add(property);
             pnvrm.put(navigatorPropObject, propObject);
@@ -154,14 +152,27 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             }
 
             if (navigatorValue instanceof ObjectValueLink) {
-                value = new UserValueLink(onvrm.get(((ObjectValueLink)navigatorValue).Object));
+                value = new ObjectValueLink(onvrm.get(((ObjectValueLink)navigatorValue).Object));
             }
 
             if (navigatorValue instanceof PropertyValueLink) {
                 value = new PropertyValueLink(pnvrm.get(((PropertyValueLink)navigatorValue).Property));
             }
 
-            Filter filter = new Filter(pnvrm.get(navigatorFilter.Property), navigatorFilter.Compare, value);
+            PropertyObjectImplement property = pnvrm.get(navigatorFilter.Property);
+
+            //если свойство не найдено, по сути используется только в фильтре, а в Properties даже не попало
+            //ту же штуку надо и в PropertyValueLink вообще-то сделать
+            if (property == null) {
+                property = new PropertyObjectImplement(navigatorFilter.Property);
+                // перекодируем Mapping'и свойств
+                for (Map.Entry<PropertyInterface,ObjectImplement> mapObjects : property.Mapping.entrySet()) {
+                    property.Mapping.put(mapObjects.getKey(), onvrm.get(mapObjects.getValue()));
+                }
+            }
+
+
+            Filter filter = new Filter(property, navigatorFilter.Compare, value);
             remoteForm.fixedFilters.add(filter);
         }
 

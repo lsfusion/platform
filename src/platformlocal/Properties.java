@@ -34,6 +34,11 @@ class ObjectValue {
 
 class PropertyImplement<T> {
     
+    PropertyImplement(PropertyImplement<T> iProperty) {
+        Property = iProperty.Property;
+        Mapping = new HashMap<PropertyInterface,T>(iProperty.Mapping);
+    }
+
     PropertyImplement(Property iProperty) {
         Property = iProperty;
         Mapping = new HashMap<PropertyInterface,T>();

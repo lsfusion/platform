@@ -46,7 +46,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     }
 
-    PropertyGroup baseGroup, storeGroup, artgrGroup;
+    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup;
 
     LDP name;
     LDP artGroup;
@@ -55,8 +55,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP artGroupName;
     LJP docStoreName;
     LJP intraStoreName;
+    LJP extIncDetailArticleName;
 
-    LDP extIncDetailArticle, extIncDetailQuantity;
+    LDP extIncDetailDocument, extIncDetailArticle, extIncDetailQuantity;
     LDP extIncQuantity;
     LDP intraQuantity, intraStore;
     LDP extOutQuantity;
@@ -73,8 +74,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         // -------------------------- Group Properties --------------------- //
 
         baseGroup = new PropertyGroup("Атрибуты");
-        storeGroup = new PropertyGroup("Склад");
+        artclGroup = new PropertyGroup("Товар");
         artgrGroup = new PropertyGroup("Группа товаров");
+        storeGroup = new PropertyGroup("Склад");
+        quantGroup = new PropertyGroup("Количество");
 
         // -------------------------- Data Properties ---------------------- //
 
@@ -87,24 +90,28 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         intraStore = AddDProp(storeGroup, "Склад назн.", store, intraDocument);
 
+        extIncDetailDocument = AddDProp(null, "Документ", extIncomeDocument, extIncomeDetail);
+        extIncDetailArticle = AddDProp(artclGroup, "Товар", article, extIncomeDetail);
+        
         // -------------------------- Relation Properties ------------------ //
 
         artGroupName = AddJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
         docStoreName = AddJProp(storeGroup, "Имя склада", name, 1, docStore, 1);
         intraStoreName = AddJProp(storeGroup, "Имя склада (назн.)", name, 1, intraStore, 1);
 
+        extIncDetailArticleName = AddJProp(artclGroup, "Имя товара", name, 1, extIncDetailArticle, 1);
+
         // -------------------------- Движение товара по количествам ---------------------- //
 
-        extIncDetailArticle = AddDProp(baseGroup, "Товар", article, extIncomeDetail);
-        extIncDetailQuantity = AddDProp(baseGroup, "Кол-во", Class.doubleClass, extIncomeDetail);
+        extIncDetailQuantity = AddDProp(quantGroup, "Кол-во", Class.doubleClass, extIncomeDetail);
 
-        extIncQuantity = AddDProp(baseGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
+        extIncQuantity = AddDProp(quantGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
 
-        intraQuantity = AddDProp(baseGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
+        intraQuantity = AddDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
 
-        extOutQuantity = AddDProp(baseGroup, "Кол-во расх.", Class.doubleClass, extOutcomeDocument, article);
+        extOutQuantity = AddDProp(quantGroup, "Кол-во расх.", Class.doubleClass, extOutcomeDocument, article);
 
-        exchangeQuantity = AddDProp(baseGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
+        exchangeQuantity = AddDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
         exchIncQuantity = AddGProp("Прих. перес.", exchangeQuantity, true, 1, 3);
         exchOutQuantity = AddGProp("Расх. перес.", exchangeQuantity, true, 1, 2); 
@@ -198,10 +205,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjDetail);
 
-//            addPropertyView(this, baseGroup, objDoc);
-//            addPropertyView(this, storeGroup, objDoc);
-//            addPropertyView(this, baseGroup, objDetail);
-//            addPropertyView(this, extIncDetailQuantity, objDoc, objDetail);
+            addPropertyView(this, baseGroup, objDoc);
+            addPropertyView(this, storeGroup, objDoc);
+            addPropertyView(this, artclGroup, objDetail);
+            addPropertyView(this, quantGroup, objDetail);
+
+            PropertyObjectImplement detDocument = addPropertyObjectImplement(extIncDetailDocument, objDetail);
+            addFixedFilter(new Filter(detDocument, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objDoc)));
         }
     }
 
@@ -329,7 +339,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         ClassQuantity.put(article,20);
         ClassQuantity.put(articleGroup,3);
         ClassQuantity.put(store,3);
-        ClassQuantity.put(extIncomeDocument,30);
+        ClassQuantity.put(extIncomeDocument,20);
+        ClassQuantity.put(extIncomeDetail,50);
         ClassQuantity.put(intraDocument,15);
         ClassQuantity.put(extOutcomeDocument,50);
         ClassQuantity.put(exchangeDocument,10);
@@ -340,6 +351,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         docDate.putNotNulls(PropNotNulls,0);
         docStore.putNotNulls(PropNotNulls,0);
         intraStore.putNotNulls(PropNotNulls,0);
+        extIncDetailDocument.putNotNulls(PropNotNulls,0);
+        extIncDetailArticle.putNotNulls(PropNotNulls,0);
+        extIncDetailQuantity.putNotNulls(PropNotNulls,0);
 
         Map<DataProperty,Integer> PropQuantity = new HashMap();
 
