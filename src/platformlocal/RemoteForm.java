@@ -6,17 +6,8 @@
 package platformlocal;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.*;
 import java.io.Serializable;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
@@ -388,6 +379,13 @@ class Filter {
 
     void fillSelect(JoinQuery<ObjectImplement, ?> Query, Set<GroupObjectImplement> ClassGroup, DataSession Session) {
         Query.add(new FieldExprCompareWhere(Property.getSourceExpr(ClassGroup,Query.MapKeys,Session, true),Value.getValueExpr(ClassGroup,Query.MapKeys,Session,Property.Property.getType()),Compare));
+    }
+
+    public Collection<? extends Property> getProperties() {
+        Collection<Property> Result = Collections.singletonList(Property.Property);        
+        if(Value instanceof PropertyValueLink)
+            Result.add(((PropertyValueLink)Value).Property.Property);
+        return Result;
     }
 }
 
@@ -940,6 +938,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         Set<Property> Result = new HashSet();
         for(PropertyView PropView : Properties)
             Result.add(PropView.View.Property);
+        for(Filter Filter : fixedFilters)
+            Result.addAll(Filter.getProperties());
         return Result;
     }
 
