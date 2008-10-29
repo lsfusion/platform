@@ -177,7 +177,7 @@ class DateConverter {
 
     public static int dateToInt(Date date) {
 
-        if (date == null) return 0;
+//        if (date == null) return 0;
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -186,7 +186,7 @@ class DateConverter {
 
     public static Date intToDate(int num) {
 
-        if (num == 0) return null;
+//        if (num == 0) return null;
         
         Calendar calendar = Calendar.getInstance();
         calendar.set(num / 10000 + 2000, (num / 100) % 100, num % 100);

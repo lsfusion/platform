@@ -839,7 +839,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LSFP AddWSFProp(String Formula,IntegralClass ...Params) {
+    LSFP AddWSFProp(String Formula,Class ...Params) {
 
         WhereStringFormulaProperty Property = new WhereStringFormulaProperty(TableFactory,Formula);
         LSFP ListProperty = new LSFP(Property, Params);
@@ -847,7 +847,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LMFP AddMFProp(IntegralClass ...Params) {
+    LMFP AddMFProp(Class ...Params) {
         MultiplyFormulaProperty Property = new MultiplyFormulaProperty(TableFactory);
         LMFP ListProperty = new LMFP(Property, Params);
         Properties.add(Property);
@@ -1653,9 +1653,9 @@ class LDP extends LP {
 
 class LSFP extends LP {
 
-    LSFP(Property iProperty,IntegralClass ...Classes) {
+    LSFP(Property iProperty,Class ...Classes) {
         super(iProperty);
-        for(IntegralClass Class : Classes) {
+        for(Class Class : Classes) {
             StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(ListInterfaces.size(),Class);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
@@ -1665,9 +1665,9 @@ class LSFP extends LP {
 
 class LMFP extends LP {
 
-    LMFP(Property iProperty,IntegralClass ...Classes) {
+    LMFP(Property iProperty,Class ...Classes) {
         super(iProperty);
-        for(IntegralClass Class : Classes) {
+        for(Class Class : Classes) {
             FormulaPropertyInterface Interface = new FormulaPropertyInterface(ListInterfaces.size(),Class);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
