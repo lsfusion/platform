@@ -104,7 +104,7 @@ abstract class Source<K,V> {
 
         Statement Statement = Session.Connection.createStatement();
 
-        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
+//        System.out.println(getSelect(new ArrayList(),new ArrayList(), Session.Syntax));
         try {
             ResultSet Result = Statement.executeQuery(getSelect(new ArrayList(),new ArrayList(),Session.Syntax));
             try {
@@ -300,6 +300,9 @@ class TypedObject {
     TypedObject(Object iValue, Type iType) {
         Value = iValue;
         Type = iType;
+
+//        if(Type instanceof BitType && Value instanceof Integer)
+//            Type = Type;
     }
 
     static String getString(Object Value, Type Type, SQLSyntax Syntax) {
@@ -2102,6 +2105,19 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
 //        checkTranslate(Translated,TranslatedJoins);
 
+        for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
+            MapProperty.setValue(MapProperty.getValue().translate(Translated));
+        for(Where Where : Wheres)
+            TranslatedWheres.add(Where.translate(Translated));
+        // проверим если вдруг Translat'ился ключ закинем сразу в Source
+        for(SourceExpr Key : MapKeys.values()) {
+            SourceExpr ValueKey = Key.translate(Translated);
+            if(Key!=ValueKey)
+                KeyValues.put(Key,((ValueSourceExpr)ValueKey).Object.getString(null));
+        }
+
+        Translated = new ExprTranslator();
+
         // слитые операнды
         List<Join> MergedJoins = new ArrayList();
 
@@ -2145,20 +2161,13 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Joins = MergedJoins;
         for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
             MapProperty.setValue(MapProperty.getValue().translate(Translated));
-        for(Where Where : Wheres)
-            TranslatedWheres.add(Where.translate(Translated));
-        Wheres = TranslatedWheres;
+        Wheres = new HashSet();
+        for(Where Where : TranslatedWheres)
+            Wheres.add(Where.translate(Translated));
 
         // протолкнем внутрь значения
         for(Join Join : Joins)
             Join.pushJoinValues();
-
-        // проверим если вдруг Translat'ился ключ закинем сразу в Source
-        for(SourceExpr Key : MapKeys.values()) {
-            SourceExpr ValueKey = Key.translate(Translated);
-            if(Key!=ValueKey)
-                KeyValues.put(Key,((ValueSourceExpr)ValueKey).Object.getString(null));
-        }
 
         return this;
     }
