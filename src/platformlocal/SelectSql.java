@@ -301,8 +301,8 @@ class TypedObject {
         Value = iValue;
         Type = iType;
 
-//        if(Type instanceof BitType && Value instanceof Integer)
-//            Type = Type;
+        if(Type instanceof BitType && Value instanceof Integer)
+            Type = Type;
     }
 
     static String getString(Object Value, Type Type, SQLSyntax Syntax) {
@@ -1508,7 +1508,7 @@ class FormulaWhereSourceExpr extends SourceExpr {
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         // если NotNull нефиг 2 раза проверять
-        return CaseWhenSourceExpr.getExpr((NotNull?StaticWhere.TRUE:FormulaWhere.getSource(JoinAlias, Syntax)),"1",Type.NULL,Syntax);
+        return CaseWhenSourceExpr.getExpr((NotNull?StaticWhere.TRUE:FormulaWhere.getSource(JoinAlias, Syntax)),Syntax.getBitString(true),Type.NULL,Syntax);
     }
 
     Type getType() {
@@ -2105,6 +2105,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
 //        checkTranslate(Translated,TranslatedJoins);
 
+        // перетранслируем св-ва в основном чтобы не пошли транслироваться (что надо при Merge) в DumbSource'ах константы - убивая тем самым Where 
         for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
             MapProperty.setValue(MapProperty.getValue().translate(Translated));
         for(Where Where : Wheres)

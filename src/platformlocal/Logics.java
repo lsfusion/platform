@@ -566,6 +566,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
 //        Seed = 4518;
 //        Seed = 3936;
+//        Seed = 8907;
+//        Seed = 3037;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -759,15 +761,15 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         for(Table Table : Tables.keySet()) Session.CreateTable(Table);
 
-        // построим в нужном порядке AggregateProperty и будем заполнять их
+/*        // построим в нужном порядке AggregateProperty и будем заполнять их
         List<Property> UpdateList = new ArrayList();
-        for(AggregateProperty Property : AggrProperties) Property.fillChangedList(UpdateList,null);
+        for(AggregateProperty Property : AggrProperties) Property.fillChangedList(UpdateList,null,new HashSet());
         Integer ViewNum = 0;
         for(Property Property : UpdateList) {
 //            if(Property instanceof GroupProperty)
 //                ((GroupProperty)Property).FillDB(Session,ViewNum++);
         }
-        
+  */      
         // создадим dumb
         Table DumbTable = new Table("dumb");
         DumbTable.Keys.add(new KeyField("dumb",Type.System));
@@ -1204,7 +1206,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             if(GenProp!=null && GenProp.getBaseClass()!=null) {
                 GenProp.caption = ResType + " " + i;
                 // проверим что есть в интерфейсе и покрыты все ключи
-                Iterator<InterfaceClass> ic = GenProp.GetClassSet(null).iterator();
+                Iterator<ClassInterface> ic = GenProp.GetClassSet(null).iterator();
                 if(ic.hasNext() && ic.next().keySet().size()==GenProp.Interfaces.size()) {
                     System.out.print(ResType+"-");
                     RandProps.add(GenProp);
@@ -1319,9 +1321,9 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     else
                         ValueClass = ChangeProp.Value;*/
                         
-                    InterfaceClassSet InterfaceSet = ChangeProp.GetClassSet(null);
+                    ClassInterfaceSet InterfaceSet = ChangeProp.GetClassSet(null);
                     // определяем входные классы
-                    InterfaceClass Classes = InterfaceSet.get(Randomizer.nextInt(InterfaceSet.size()));
+                    ClassInterface Classes = InterfaceSet.get(Randomizer.nextInt(InterfaceSet.size()));
                     // генерим рандомные объекты этих классов
                     Map<PropertyInterface,ObjectValue> Keys = new HashMap();
                     for(DataPropertyInterface Interface : ChangeProp.Interfaces)
@@ -1344,6 +1346,17 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
 
         Session.close();
+    }
+
+    static List<Property> getChangedList(Collection<? extends Property> UpdateProps,DataChanges Changes) {
+        List<Property> ChangedList = new ArrayList();
+        for(Property Property : UpdateProps)
+            if(Property instanceof DataProperty)
+                Property.fillChangedList(ChangedList,Changes,new HashSet());
+        for(Property Property : UpdateProps)
+            if(!(Property instanceof DataProperty))
+                Property.fillChangedList(ChangedList,Changes,new HashSet());
+        return ChangedList;        
     }
 
     void autoFillDB(DataAdapter Adapter, Map<Class, Integer> ClassQuantity, Map<DataProperty, Integer> PropQuantity, Map<DataProperty, Set<DataPropertyInterface>> PropNotNull) throws SQLException {
@@ -1450,10 +1463,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         Session.startTransaction();
 
-        List<Property> DependList = new ArrayList();
-        for(AggregateProperty Property : SavePersistents.keySet()) Property.fillChangedList(DependList,null);
         // восстановим persistence, пересчитая их
-        for(Property DependProperty : DependList)
+        for(Property DependProperty : getChangedList(SavePersistents.keySet(),null))
             if(DependProperty instanceof AggregateProperty && SavePersistents.containsKey(DependProperty)) {
                 AggregateProperty Property = (AggregateProperty)DependProperty;
 
@@ -1503,7 +1514,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         for (List<PropertyInterface> mapping : permutations) {
 
-            InterfaceClass propertyInterface = new InterfaceClass();
+            ClassInterface propertyInterface = new ClassInterface();
             int interfaceCount = 0;
             for (PropertyInterface iface : mapping) {
                 propertyInterface.put(iface, objects[interfaceCount++].BaseClass);
@@ -1558,7 +1569,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         for(Property DrawProp : Properties) {
             if(DrawProp.Interfaces.size() == 1) {
                 // проверим что дает хоть одно значение
-                InterfaceClass InterfaceClass = new InterfaceClass();
+                ClassInterface InterfaceClass = new ClassInterface();
                 InterfaceClass.put(((Collection<PropertyInterface>)DrawProp.Interfaces).iterator().next(),Object.BaseClass);
                 if(DrawProp.GetValueClass(InterfaceClass)!=null) {
                     PropertyObjectImplement PropertyImplement = new PropertyObjectImplement(DrawProp);
@@ -1747,7 +1758,7 @@ class LGP extends LP {
                 Map<PropertyInterface,DataPropertyInterface> Impl = im.next();
                 Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
 
-                InterfaceClass ClassImplement = new InterfaceClass();
+                ClassInterface ClassImplement = new ClassInterface();
                 Iterator<PropertyInterface> ip = Prop.Interfaces.iterator();
                 while(ip.hasNext()) {
                     PropertyInterface Interface = ip.next();

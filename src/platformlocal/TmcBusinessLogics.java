@@ -1,9 +1,7 @@
 package platformlocal;
 
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
@@ -134,7 +132,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncDetailDocument = AddDProp(null, "Документ", extIncomeDocument, extIncomeDetail);
         extIncDetailArticle = AddDProp(artclGroup, "Товар", article, extIncomeDetail);
-        
+
         // -------------------------- Relation Properties ------------------ //
 
         artGroupName = AddJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
@@ -157,7 +155,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         exchangeQuantity = AddDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
         exchIncQuantity = AddGProp("Прих. перес.", exchangeQuantity, true, 1, 3);
-        exchOutQuantity = AddGProp("Расх. перес.", exchangeQuantity, true, 1, 2); 
+        exchOutQuantity = AddGProp("Расх. перес.", exchangeQuantity, true, 1, 2);
 
         LP docIncQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, incomeDocument, article);
         incQuantity = AddUProp("Кол-во прих.", 2, 2, 1, docIncQuantity, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchIncQuantity, 1, 2);
@@ -166,8 +164,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         LP docQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, document, article);
         quantity = AddUProp("Кол-во", 2, 2, 1, docQuantity, 1, 2, 1, incQuantity, 1, 2, 1, outQuantity, 1, 2);
-        LSFP notNull = AddWSFProp("((prm1) is not null)",Class.integralClass);
-        notNullQuantity = AddJProp("", notNull, 2, quantity, 1, 2);
+        LSFP notNull = AddWSFProp("((prm1)<>0)",Class.integralClass);
+        notNullQuantity = AddJProp("Есть в док.", notNull, 2, quantity, 1, 2);
 
         incStore = AddUProp("Склад прих.", 2, 1, 1, docStore, 1, 1, intraStore, 1);
 
@@ -193,7 +191,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailCalcSum = AddJProp(incSumsGroup, "Сумма пост.", multiplyDD, 1, extIncDetailQuantity, 1, extIncDetailPriceIn, 1);
 
         LSFP percent = AddSFProp("((prm1*prm2)/100)", Class.doubleClass, Class.doubleClass);
-        LSFP round = AddSFProp("round(prm1,0)", Class.doubleClass);
+        LSFP round = AddSFProp("round(prm1)", Class.doubleClass);
 
         extIncDetailCalcSumVATIn = AddJProp("Сумма НДС (расч.)", round, 1,
                                    AddJProp("Сумма НДС (расч. - неокр.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVATIn, 1), 1);
@@ -246,7 +244,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         changesParams = AddUProp("Изм. парам.", 2, 2, 1, isRevalued, 1, 2, 1, notNullQuantity, 1, 2);
         LMFP multiplyBD = AddMFProp(Class.bitClass, Class.dateClass);
-        LJP changesParamsDate = AddJProp("", multiplyBD, 2, changesParams, 1, 2, primDocDate, 1);
+        LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyBD, 2, changesParams, 1, 2, primDocDate, 1);
         maxChangesParamsDate = AddGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, docStore, 1, 2);
 
 /*        LSFP equalsDD = AddWSFProp("((prm1)=(prm2))", Class.dateClass, Class.dateClass);
@@ -256,13 +254,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         LJP primDocCorStore = AddJProp("", equalsStrStr, 2, docStore, 1, 2); */
 
         LSFP equalsDD = AddWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))", Class.dateClass, Class.dateClass, store, store);
-        LJP primDocIsCor = AddJProp("", equalsDD, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, docStore, 1, 2);
+        LJP primDocIsCor = AddJProp("Док. макс.", equalsDD, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, docStore, 1, 2);
 
         LMFP multiplyBBB = AddMFProp(Class.bitClass, Class.bitClass);
-        LJP primDocIsLast = AddJProp("Посл.", multiplyBBB, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);      
+        LJP primDocIsLast = AddJProp("Посл.", multiplyBBB, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);
 
         LMFP multiplyBPrimDoc = AddMFProp(Class.bitClass, primaryDocument);
-        LJP primDocSelfLast = AddJProp("", multiplyBPrimDoc, 3, primDocIsLast, 1, 2, 3, 1);
+        LJP primDocSelfLast = AddJProp("Тов. док. максю", multiplyBPrimDoc, 3, primDocIsLast, 1, 2, 3, 1);
         maxChangesParamsDoc = AddGProp(baseGroup, "Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
 
         // ------------------------- Перегруженные параметры ------------------------ //
@@ -282,6 +280,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     }
 
     void InitPersistents() {
+        Persistents.add((AggregateProperty)incStoreQuantity.Property);
+        Persistents.add((AggregateProperty)outStoreQuantity.Property);
         Persistents.add((AggregateProperty)maxChangesParamsDate.Property);
         Persistents.add((AggregateProperty)maxChangesParamsDoc.Property);
     }
@@ -315,6 +315,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     }
 
     void InitIndexes() {
+        List<Property> index;
+        
+/*        index = new ArrayList();
+        index.add(primDocDate.Property);
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(maxChangesParamsDate.Property);
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(docStore.Property);
+        Indexes.add(index);*/
     }
 
     void InitNavigators() {
@@ -513,15 +526,17 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void fillData(DataAdapter Adapter) throws SQLException {
 
+        int Modifier = 1000;
+
         Map<Class,Integer> ClassQuantity = new HashMap();
-        ClassQuantity.put(article,20);
-        ClassQuantity.put(articleGroup,3);
-        ClassQuantity.put(store,3);
-        ClassQuantity.put(extIncomeDocument,20);
-        ClassQuantity.put(extIncomeDetail,50);
-        ClassQuantity.put(intraDocument,15);
-        ClassQuantity.put(extOutcomeDocument,50);
-        ClassQuantity.put(exchangeDocument,10);
+        ClassQuantity.put(article,2*Modifier);
+        ClassQuantity.put(articleGroup,((Double)(Modifier*0.3)).intValue());
+        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
+        ClassQuantity.put(extIncomeDocument,Modifier*2);
+        ClassQuantity.put(extIncomeDetail,Modifier*10);
+        ClassQuantity.put(intraDocument,Modifier);
+        ClassQuantity.put(extOutcomeDocument,Modifier*5);
+        ClassQuantity.put(exchangeDocument,Modifier);
 
         Map<DataProperty, Set<DataPropertyInterface>> PropNotNulls = new HashMap();
         name.putNotNulls(PropNotNulls,0);
@@ -539,9 +554,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Map<DataProperty,Integer> PropQuantity = new HashMap();
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
-        PropQuantity.put((DataProperty)intraQuantity.Property,15);
-        PropQuantity.put((DataProperty)extOutQuantity.Property,5);
-        PropQuantity.put((DataProperty)exchangeQuantity.Property,14);
+        PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*2);
+        PropQuantity.put((DataProperty)extOutQuantity.Property,Modifier);
+        PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*2);
 
         autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
     }

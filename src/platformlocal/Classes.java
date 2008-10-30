@@ -147,11 +147,11 @@ abstract class Class {
     }
 
     // получает классы у которого есть оба интерфейса
-    Collection<Class> CommonClassSet(Class ToCommon) {
+    ClassSet CommonClassSet(Class ToCommon) {
         CommonClassSet1(false);
         ToCommon.CommonClassSet2(false,null,false);
 
-        Collection<Class> Result = new ArrayList<Class>();
+        ClassSet Result = new ClassSet();
         CommonClassSet3(Result,null,false);
         return Result;
     }
@@ -524,7 +524,11 @@ class BitType extends IntegralType<Boolean> {
     }
 
     Object getMinValue() {
-        return 0;
+        return false;
+    }
+
+    Object getEmptyValue() {
+        return false;
     }
 
     Boolean read(Object Value) {

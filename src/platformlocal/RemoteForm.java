@@ -203,7 +203,7 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
 
     // получает класс значения
     Class GetValueClass(GroupObjectImplement ClassGroup) {
-        InterfaceClass ClassImplement = new InterfaceClass();
+        ClassInterface ClassImplement = new ClassInterface();
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
             Class ImpClass = (IntObject.GroupTo==ClassGroup?IntObject.GridClass:IntObject.Class);

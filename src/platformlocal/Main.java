@@ -140,12 +140,12 @@ public class Main {
         while(a==1) {
             System.out.println("Opened");
             new TmcBusinessLogics(1);
-            System.out.println("Closed");
-            try {
-                new TestBusinessLogics(0);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+//            System.out.println("Closed");
+//            try {
+//                new TestBusinessLogics(0);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
 //            System.out.println("Suspicious");
 //            new TestBusinessLogics(-1);
         }
