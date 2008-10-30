@@ -124,6 +124,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP storeAdd, storeVATOut, storeLocTax;
     LJP storePriceOut;
 
+    LJP docCurPriceIn, docCurVATIn;
+    LJP docCurAdd, docCurVATOut, docCurLocTax;
+    LJP docCurPriceOut;
+
+    LJP docOverPriceIn, docOverVATIn;
+    LJP docOverAdd, docOverVATOut, docOverLocTax;
+    LJP docOverPriceOut;
+
     void InitProperties() {
 
         // -------------------------- Group Properties --------------------- //
@@ -212,7 +220,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailCalcSum = AddJProp(incSumsGroup, "Сумма пост.", multiplyDD, 1, extIncDetailQuantity, 1, extIncDetailPriceIn, 1);
 
         LSFP percent = AddSFProp("((prm1*prm2)/100)", Class.doubleClass, Class.doubleClass);
-        LSFP round = AddSFProp("round(prm1)", Class.doubleClass);
+        LSFP round = AddSFProp("round(prm1,0)", Class.doubleClass);
 
         extIncDetailCalcSumVATIn = AddJProp("Сумма НДС (расч.)", round, 1,
                                    AddJProp("Сумма НДС (расч. - неокр.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVATIn, 1), 1);
@@ -250,12 +258,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // ------------------------- Фиксирующиеся параметры товара ------------------------- //
 
-        paramsPriceIn = AddDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, paramsDocument, article);
-        paramsVATIn = AddDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, paramsDocument, article);
-        paramsAdd = AddDProp(outPrmsGroup, "Надбавка", Class.doubleClass, paramsDocument, article);
-        paramsVATOut = AddDProp(outPrmsGroup, "НДС прод.", Class.doubleClass, paramsDocument, article);
-        paramsLocTax = AddDProp(outPrmsGroup, "Местн. нал.", Class.doubleClass, paramsDocument, article);
-        paramsPriceOut = AddDProp(outPrmsGroup, "Цена розн.", Class.doubleClass, paramsDocument, article);
+        paramsPriceIn = AddDProp("Цена пост.", Class.doubleClass, paramsDocument, article);
+        paramsVATIn = AddDProp("НДС пост.", Class.doubleClass, paramsDocument, article);
+        paramsAdd = AddDProp("Надбавка", Class.doubleClass, paramsDocument, article);
+        paramsVATOut = AddDProp("НДС прод.", Class.doubleClass, paramsDocument, article);
+        paramsLocTax = AddDProp("Местн. нал.", Class.doubleClass, paramsDocument, article);
+        paramsPriceOut = AddDProp("Цена розн.", Class.doubleClass, paramsDocument, article);
 
         // ------------------------------ Переоценка -------------------------------- //
 
@@ -320,6 +328,20 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         storeVATOut = AddJProp(outPrmsGroup, "НДС прод. (тек.)", primDocVATOut, 2, maxChangesParamsDoc, 1, 2, 2);
         storeLocTax = AddJProp(outPrmsGroup, "Местн. нал. (тек.)", primDocLocTax, 2, maxChangesParamsDoc, 1, 2, 2);
         storePriceOut = AddJProp(outPrmsGroup, "Цена розн. (тек.)", primDocPriceOut, 2, maxChangesParamsDoc, 1, 2, 2);
+
+        docCurPriceIn = AddJProp("Цена пост. (тек.)", storePriceIn, 2, docStore, 1, 2);
+        docCurVATIn = AddJProp("НДС пост. (тек.)", storeVATIn, 2, docStore, 1, 2);
+        docCurAdd = AddJProp("Надбавка (тек.)", storeAdd, 2, docStore, 1, 2);
+        docCurVATOut = AddJProp("НДС прод. (тек.)", storeVATOut, 2, docStore, 1, 2);
+        docCurLocTax = AddJProp("Местн. нал. (тек.)", storeLocTax, 2, docStore, 1, 2);
+        docCurPriceOut = AddJProp("Цена розн. (тек.)", storePriceOut, 2, docStore, 1, 2);
+
+        docOverPriceIn = AddUProp(incPrmsGroup, "Цена пост.", 2, 2, 1, docCurPriceIn, 1, 2, 1, paramsPriceIn, 1, 2);
+        docOverVATIn = AddUProp(incPrmsGroup, "НДС пост.", 2, 2, 1, docCurVATIn, 1, 2, 1, paramsVATIn, 1, 2);
+        docOverAdd = AddUProp(outPrmsGroup, "Надбавка", 2, 2, 1, docCurAdd, 1, 2, 1, paramsAdd, 1, 2);
+        docOverVATOut = AddUProp(outPrmsGroup, "НДС прод.", 2, 2, 1, docCurVATOut, 1, 2, 1, paramsVATOut, 1, 2);
+        docOverLocTax = AddUProp(outPrmsGroup, "Местн. нал.", 2, 2, 1, docCurLocTax, 1, 2, 1, paramsLocTax, 1, 2);
+        docOverPriceOut = AddUProp(outPrmsGroup, "Цена розн.", 2, 2, 1, docCurPriceOut, 1, 2, 1, paramsPriceOut, 1, 2);
 
     }
 
