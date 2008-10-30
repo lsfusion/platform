@@ -91,7 +91,7 @@ abstract class DataAdapter implements SQLSyntax {
     }
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new MSSQLDataAdapter();
+        return new PostgreDataAdapter();
     }
 
     public String getNullValue(Type DBType) {
