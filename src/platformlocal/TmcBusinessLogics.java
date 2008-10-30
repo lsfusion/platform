@@ -52,15 +52,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncomeDocument = new ObjectClass(14, "Внешний приход", incomeDocument, primaryDocument);
         extIncomeDetail = new ObjectClass(15, "Внешний приход (строки)", objectClass);
 
-        intraDocument = new ObjectClass(16, "Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument);
-        extOutcomeDocument = new ObjectClass(17, "Внешний расход", outcomeDocument, secondaryDocument);
-        exchangeDocument = new ObjectClass(18, "Пересорт", incomeDocument, outcomeDocument, secondaryDocument);
+        intraDocument = new ObjectClass(16, "Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument, paramsDocument);
+        extOutcomeDocument = new ObjectClass(17, "Внешний расход", outcomeDocument, secondaryDocument, paramsDocument);
+        exchangeDocument = new ObjectClass(18, "Пересорт", incomeDocument, outcomeDocument, secondaryDocument, paramsDocument);
 
         revalDocument = new ObjectClass(19, "Переоценка", primaryDocument);
 
     }
 
-    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, incPrmsGroup, incSumsGroup, outPrmsGroup;
+    PropertyGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, incPrmsGroup, incSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
 
     LDP name;
     LDP artGroup;
@@ -79,7 +79,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP exchIncQuantity, exchOutQuantity;
 
     LJP incQuantity, outQuantity;
-    LJP quantity, notNullQuantity;
+    LJP quantity, notZeroQuantity;
     LJP incStore;
     LGP incStoreQuantity, outStoreQuantity;
     LJP dltStoreQuantity;
@@ -98,6 +98,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP extIncDetailPriceOut;
 
     LDP isRevalued;
+    LDP revalPriceIn, revalVATIn;
+    LDP revalAddBefore, revalVATOutBefore, revalLocTaxBefore;
+    LDP revalPriceOutBefore;
+    LDP revalAddAfter, revalVATOutAfter, revalLocTaxAfter;
+    LDP revalPriceOutAfter;
 
     LJP changesParams;
     LGP maxChangesParamsDate;
@@ -106,6 +111,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP paramsPriceIn, paramsVATIn;
     LDP paramsAdd, paramsVATOut, paramsLocTax;
     LDP paramsPriceOut;
+
+    LJP extIncPriceIn, extIncVATIn;
+    LJP extIncAdd, extIncVATOut, extIncLocTax;
+    LJP extIncPriceOut;
+
+    LJP primDocPriceIn, primDocVATIn;
+    LJP primDocAdd, primDocVATOut, primDocLocTax;
+    LJP primDocPriceOut;
+
+    LJP storePriceIn, storeVATIn;
+    LJP storeAdd, storeVATOut, storeLocTax;
+    LJP storePriceOut;
 
     void InitProperties() {
 
@@ -119,6 +136,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         incPrmsGroup = new PropertyGroup("Входные параметры");
         incSumsGroup = new PropertyGroup("Входные суммы");
         outPrmsGroup = new PropertyGroup("Выходные параметры");
+        outPrmsGroupBefore = new PropertyGroup("До");
+        outPrmsGroup.add(outPrmsGroupBefore);
+        outPrmsGroupAfter = new PropertyGroup("После");
+        outPrmsGroup.add(outPrmsGroupAfter);
 
         // -------------------------- Data Properties ---------------------- //
 
@@ -164,8 +185,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         LP docQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, document, article);
         quantity = AddUProp("Кол-во", 2, 2, 1, docQuantity, 1, 2, 1, incQuantity, 1, 2, 1, outQuantity, 1, 2);
-        LSFP notNull = AddWSFProp("((prm1)<>0)",Class.integralClass);
-        notNullQuantity = AddJProp("Есть в док.", notNull, 2, quantity, 1, 2);
+        LSFP notZero = AddWSFProp("((prm1)<>0)",Class.integralClass);
+        notZeroQuantity = AddJProp("Есть в док.", notZero, 2, quantity, 1, 2);
 
         incStore = AddUProp("Склад прих.", 2, 1, 1, docStore, 1, 1, intraStore, 1);
 
@@ -229,50 +250,76 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // ------------------------- Фиксирующиеся параметры товара ------------------------- //
 
-        paramsPriceIn = AddDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, paramsDocument);
-        paramsVATIn = AddDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, paramsDocument);
-        paramsAdd = AddDProp(outPrmsGroup, "Надбавка", Class.doubleClass, paramsDocument);
-        paramsVATOut = AddDProp(outPrmsGroup, "НДС прод.", Class.doubleClass, paramsDocument);
-        paramsLocTax = AddDProp(outPrmsGroup, "Местн. нал.", Class.doubleClass, paramsDocument);
-        paramsPriceOut = AddDProp(outPrmsGroup, "Цена розн.", Class.doubleClass, paramsDocument);
+        paramsPriceIn = AddDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, paramsDocument, article);
+        paramsVATIn = AddDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, paramsDocument, article);
+        paramsAdd = AddDProp(outPrmsGroup, "Надбавка", Class.doubleClass, paramsDocument, article);
+        paramsVATOut = AddDProp(outPrmsGroup, "НДС прод.", Class.doubleClass, paramsDocument, article);
+        paramsLocTax = AddDProp(outPrmsGroup, "Местн. нал.", Class.doubleClass, paramsDocument, article);
+        paramsPriceOut = AddDProp(outPrmsGroup, "Цена розн.", Class.doubleClass, paramsDocument, article);
 
         // ------------------------------ Переоценка -------------------------------- //
 
         isRevalued = AddDProp("Переоц.", Class.bitClass, revalDocument, article);
 
+        revalPriceIn = AddDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, revalDocument, article);
+        revalVATIn = AddDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, revalDocument, article);
+        revalAddBefore = AddDProp(outPrmsGroupBefore, "Надбавка (до)", Class.doubleClass, revalDocument, article);
+        revalVATOutBefore = AddDProp(outPrmsGroupBefore, "НДС прод. (до)", Class.doubleClass, revalDocument, article);
+        revalLocTaxBefore = AddDProp(outPrmsGroupBefore, "Местн. нал. (до)", Class.doubleClass, revalDocument, article);
+        revalPriceOutBefore = AddDProp(outPrmsGroupBefore, "Цена розн. (до)", Class.doubleClass, revalDocument, article);
+        revalAddAfter = AddDProp(outPrmsGroupAfter, "Надбавка (после)", Class.doubleClass, revalDocument, article);
+        revalVATOutAfter = AddDProp(outPrmsGroupAfter, "НДС прод. (после)", Class.doubleClass, revalDocument, article);
+        revalLocTaxAfter = AddDProp(outPrmsGroupAfter, "Местн. нал. (после)", Class.doubleClass, revalDocument, article);
+        revalPriceOutAfter = AddDProp(outPrmsGroupAfter, "Цена розн. (после)", Class.doubleClass, revalDocument, article);
+
         // -------------------------- Последний документ ---------------------------- //
 
-        changesParams = AddUProp("Изм. парам.", 2, 2, 1, isRevalued, 1, 2, 1, notNullQuantity, 1, 2);
+        changesParams = AddUProp("Изм. парам.", 2, 2, 1, isRevalued, 1, 2, 1, notZeroQuantity, 1, 2);
         LMFP multiplyBD = AddMFProp(Class.bitClass, Class.dateClass);
         LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyBD, 2, changesParams, 1, 2, primDocDate, 1);
-        maxChangesParamsDate = AddGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, docStore, 1, 2);
-
-/*        LSFP equalsDD = AddWSFProp("((prm1)=(prm2))", Class.dateClass, Class.dateClass);
-        LJP primDocCorDate = AddJProp("", equalsDD, 3, primDocDate, 1, maxChangesParamsDate, 2, 3);
-
-        LSFP equalsStrStr = AddWSFProp("((prm1)=(prm2))", store, store);
-        LJP primDocCorStore = AddJProp("", equalsStrStr, 2, docStore, 1, 2); */
+        maxChangesParamsDate = AddGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, incStore, 1, 2);
 
         LSFP equalsDD = AddWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))", Class.dateClass, Class.dateClass, store, store);
-        LJP primDocIsCor = AddJProp("Док. макс.", equalsDD, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, docStore, 1, 2);
+        LJP primDocIsCor = AddJProp("Док. макс.", equalsDD, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, incStore, 1, 2);
 
-        LMFP multiplyBBB = AddMFProp(Class.bitClass, Class.bitClass);
-        LJP primDocIsLast = AddJProp("Посл.", multiplyBBB, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);
+        LMFP multiplyBB = AddMFProp(Class.bitClass, Class.bitClass);
+        LJP primDocIsLast = AddJProp("Посл.", multiplyBB, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);
 
         LMFP multiplyBPrimDoc = AddMFProp(Class.bitClass, primaryDocument);
         LJP primDocSelfLast = AddJProp("Тов. док. максю", multiplyBPrimDoc, 3, primDocIsLast, 1, 2, 3, 1);
         maxChangesParamsDoc = AddGProp(baseGroup, "Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
 
+        // ------------------------- Параметры по приходу --------------------------- //
+
+        LP bitExtInc = AddCProp("Бит", true, Class.bitClass, extIncomeDetail);
+        LMFP multiplyBDetail = AddMFProp(Class.bitClass, extIncomeDetail);
+        LJP propDetail = AddJProp("", multiplyBDetail, 1, bitExtInc, 1, 1);
+        LGP maxDetail = AddGProp("", propDetail, false, extIncDetailDocument, 1, extIncDetailArticle, 1);
+
+        extIncPriceIn = AddJProp(incPrmsGroup, "Цена пост. (прих.)", extIncDetailPriceIn, 2, maxDetail, 1, 2);
+        extIncVATIn = AddJProp(incPrmsGroup, "НДС пост. (прих.)", extIncDetailVATIn, 2, maxDetail, 1, 2);
+        extIncAdd = AddJProp(outPrmsGroup, "Надбавка (прих.)", extIncDetailAdd, 2, maxDetail, 1, 2);
+        extIncVATOut = AddJProp(outPrmsGroup, "НДС прод. (прих.)", extIncDetailVATOut, 2, maxDetail, 1, 2);
+        extIncLocTax = AddJProp(outPrmsGroup, "Местн. нал. (прих.)", extIncDetailLocTax, 2, maxDetail, 1, 2);
+        extIncPriceOut = AddJProp(outPrmsGroup, "Цена розн. (прих.)", extIncDetailPriceOut, 2, maxDetail, 1, 2);
+
         // ------------------------- Перегруженные параметры ------------------------ //
 
         LP nullPrimDocArt = AddCProp("null", null, Class.doubleClass, primaryDocument, article);
 
-/*        primDocPriceIn = AddUProp("Цена пост. (изм.)", 2, 2, nullPrimDocArt, 1, 2, paramsPriceIn, 1, 2);
-        primDocVATIn = AddUProp("НДС пост. (изм.)", 2, 2, nullPrimDocArt, 1, 2, paramsVATIn, 1, 2);
-        primDocAdd = AddUProp("Надбавка (изм.)", 2, 2, nullPrimDocArt, 1, 2, paramsAdd, 1, 2);
-        primDocVATOut = AddUProp("НДС прод. (изм.)", 2, 2, nullPrimDocArt, 1, 2, paramsVATOut, 1, 2);
-        primDocLocTax = AddUProp("Местн. нал. (изм.)", 2, 2, nullPrimDocArt, 1, 2, paramsLocTax, 1, 2);
-        primDocPriceOut = AddUProp("Цена розн. (изм.)", 2, 2, nullPrimDocArt, 1, 2, paramsPriceOut, 1, 2);*/
+        primDocPriceIn = AddUProp("Цена пост. (изм.)", 2, 2, 1, nullPrimDocArt, 1, 2, 1, paramsPriceIn, 1, 2, 1, extIncPriceIn, 1, 2, 1, revalPriceIn, 1, 2);
+        primDocVATIn = AddUProp("НДС пост. (изм.)", 2, 2, 1, nullPrimDocArt, 1, 2, 1, paramsVATIn, 1, 2, 1, extIncVATIn, 1, 2, 1, revalVATIn, 1, 2);
+        primDocAdd = AddUProp("Надбавка (изм.)", 2, 2, 1, nullPrimDocArt, 1, 2, 1, paramsAdd, 1, 2, 1, extIncAdd, 1, 2, 1, revalAddAfter, 1, 2);
+        primDocVATOut = AddUProp("НДС прод. (изм.)", 2, 2, 1, nullPrimDocArt, 1, 2, 1, paramsVATOut, 1, 2, 1, extIncVATOut, 1, 2, 1, revalVATOutAfter, 1, 2);
+        primDocLocTax = AddUProp("Местн. нал. (изм.)", 2, 2, 1, nullPrimDocArt, 1, 2, 1, paramsLocTax, 1, 2, 1, extIncLocTax, 1, 2, 1, revalLocTaxAfter, 1, 2);
+        primDocPriceOut = AddUProp("Цена розн. (изм.)", 2, 2, 1, nullPrimDocArt, 1, 2, 1, paramsPriceOut, 1, 2, 1, extIncPriceOut, 1, 2, 1, revalPriceOutAfter, 1, 2);
+
+        storePriceIn = AddJProp(incPrmsGroup, "Цена пост. (тек.)", primDocPriceIn, 2, maxChangesParamsDoc, 1, 2, 2);
+        storeVATIn = AddJProp(incPrmsGroup, "НДС пост. (тек.)", primDocVATIn, 2, maxChangesParamsDoc, 1, 2, 2);
+        storeAdd = AddJProp(outPrmsGroup, "Надбавка (тек.)", primDocAdd, 2, maxChangesParamsDoc, 1, 2, 2);
+        storeVATOut = AddJProp(outPrmsGroup, "НДС прод. (тек.)", primDocVATOut, 2, maxChangesParamsDoc, 1, 2, 2);
+        storeLocTax = AddJProp(outPrmsGroup, "Местн. нал. (тек.)", primDocLocTax, 2, maxChangesParamsDoc, 1, 2, 2);
+        storePriceOut = AddJProp(outPrmsGroup, "Цена розн. (тек.)", primDocPriceOut, 2, maxChangesParamsDoc, 1, 2, 2);
 
     }
 
@@ -316,7 +363,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void InitIndexes() {
         List<Property> index;
-        
+
 /*        index = new ArrayList();
         index.add(primDocDate.Property);
         Indexes.add(index);
@@ -403,6 +450,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, baseGroup, objArt);
             addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, extIncQuantity, objDoc, objArt);
+            addPropertyView(this, incPrmsGroup, objDoc, objArt);
+            addPropertyView(this, outPrmsGroup, objDoc, objArt);
         }
     }
 
@@ -425,6 +474,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, baseGroup, objArt);
             addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, intraQuantity, objDoc, objArt);
+            addPropertyView(this, incPrmsGroup, objDoc, objArt);
+            addPropertyView(this, outPrmsGroup, objDoc, objArt);
         }
     }
 
@@ -447,6 +498,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, baseGroup, objArt);
             addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, extOutQuantity, objDoc, objArt);
+            addPropertyView(this, incPrmsGroup, objDoc, objArt);
+            addPropertyView(this, outPrmsGroup, objDoc, objArt);
         }
     }
 
@@ -475,7 +528,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, artgrGroup, objArtTo);
             addPropertyView(this, exchIncQuantity, objDoc, objArtFrom);
             addPropertyView(this, exchOutQuantity, objDoc, objArtFrom);
+            addPropertyView(this, incPrmsGroup, objDoc, objArtFrom);
+            addPropertyView(this, outPrmsGroup, objDoc, objArtFrom);
             addPropertyView(this, exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(this, incPrmsGroup, objDoc, objArtTo);
+            addPropertyView(this, outPrmsGroup, objDoc, objArtTo);
         }
     }
 
@@ -498,6 +555,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, baseGroup, objArt);
             addPropertyView(this, artgrGroup, objArt);
             addPropertyView(this, isRevalued, objDoc, objArt);
+            addPropertyView(this, incPrmsGroup, objDoc, objArt);
+            addPropertyView(this, outPrmsGroupBefore, objDoc, objArt);
+            addPropertyView(this, outPrmsGroupAfter, objDoc, objArt);
         }
     }
 
@@ -526,7 +586,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void fillData(DataAdapter Adapter) throws SQLException {
 
-        int Modifier = 1000;
+        int Modifier = 10;
 
         Map<Class,Integer> ClassQuantity = new HashMap();
         ClassQuantity.put(article,2*Modifier);
@@ -537,6 +597,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         ClassQuantity.put(intraDocument,Modifier);
         ClassQuantity.put(extOutcomeDocument,Modifier*5);
         ClassQuantity.put(exchangeDocument,Modifier);
+        ClassQuantity.put(revalDocument,((Double)(Modifier*0.5)).intValue());
 
         Map<DataProperty, Set<DataPropertyInterface>> PropNotNulls = new HashMap();
         name.putNotNulls(PropNotNulls,0);
