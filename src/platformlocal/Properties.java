@@ -1181,7 +1181,7 @@ class JoinProperty extends MapProperty<JoinPropertyInterface,PropertyInterface,J
             if(PropImplement instanceof JoinPropertyInterface)
                 ToAnd.put((JoinPropertyInterface)PropImplement,Implement.getValue());
             else
-            if(!ImplementChanged.contains(PropImplement)) {
+            if(!ImplementChanged.contains(PropImplement) && (PropImplement instanceof PropertyMapImplement)) {
                 // проверим что getBaseClass
                 Class PropBaseClass = ((PropertyMapImplement)PropImplement).Property.getBaseClass();
                 for(Class AddClass : Implement.getValue())
