@@ -110,6 +110,10 @@ class ClientFunctionView extends ClientComponentView {
     
 }
 
+class ClientRegularFilterGroupView extends ClientFunctionView {
+    RegularFilterGroup filterGroup;
+}
+
 abstract class ClientCellView extends ClientComponentView {
     
     Integer ID = 0;
@@ -151,7 +155,21 @@ abstract class ClientCellView extends ClientComponentView {
         if (preferredSize != null) return preferredSize;
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
-    
+
+    public int getMaximumWidth() {
+        return Integer.MAX_VALUE;
+    }
+
+    public int getMaximumHeight() {
+        return getPreferredHeight();
+    }
+
+    public Dimension getMaximumSize() {
+
+        if (maximumSize != null) return maximumSize;
+        return new Dimension(getMaximumWidth(), getMaximumHeight());
+    }
+
     transient protected PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent(ClientForm form) {
 
@@ -179,6 +197,10 @@ class ClientObjectView extends ClientCellView {
 
     ClientObjectImplement object;
 
+    public int getMaximumWidth() {
+        return getPreferredWidth();
+    }
+
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
 
         if (!groupObject.singleViewType) {
@@ -187,7 +209,7 @@ class ClientObjectView extends ClientCellView {
         } else
             return super.getEditorComponent(form);
     }
-    
+
 }
 
 class ClientFormChanges extends AbstractFormChanges<ClientGroupObjectImplement,ClientGroupObjectValue,ClientPropertyView> {
@@ -204,6 +226,7 @@ class ClientFormView implements Serializable {
     List<ClientContainerView> containers = new ArrayList();
 
     LinkedHashMap<ClientPropertyView,Boolean> defaultOrders = new LinkedHashMap();
+    List<ClientRegularFilterGroupView> regularFilters = new ArrayList();   
 
     ClientFunctionView printView = new ClientFunctionView();
     ClientFunctionView applyView = new ClientFunctionView();
@@ -242,7 +265,8 @@ class DefaultClientFormView extends ClientFormView {
 
     private transient Map<ClientGroupObjectImplement, ClientContainerView> groupObjectContainers = new HashMap();
     private transient Map<ClientGroupObjectImplement, ClientContainerView> panelContainers = new HashMap();
-    private transient Map<ClientGroupObjectImplement, Map<PropertyGroup, ClientContainerView>> groupPropertyContainers = new HashMap();
+    private transient Map<ClientGroupObjectImplement, ClientContainerView> buttonContainers = new HashMap();
+    private transient Map<ClientGroupObjectImplement, Map<AbstractGroup, ClientContainerView>> groupPropertyContainers = new HashMap();
 
     public DefaultClientFormView(NavigatorForm navigatorForm) {
 
@@ -295,6 +319,7 @@ class DefaultClientFormView extends ClientFormView {
             buttonContainer.constraints.order = 2;
             buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
+            buttonContainers.put(clientGroup, buttonContainer);
             containers.add(buttonContainer);
 
             clientGroup.gridView.container = gridContainer;
@@ -321,7 +346,7 @@ class DefaultClientFormView extends ClientFormView {
                 clientObject.objectIDView.groupObject = clientGroup;
                 clientObject.objectIDView.object = clientObject;
 
-                clientObject.objectIDView.container = panelContainer;
+//                clientObject.objectIDView.container = panelContainer;
                 clientObject.objectIDView.constraints.order = -1000 + group.indexOf(object);
                 clientObject.objectIDView.constraints.insetsSibling = new Insets(0,0,2,2);
 
@@ -330,6 +355,8 @@ class DefaultClientFormView extends ClientFormView {
 
                 clientObject.objectIDView.baseClass = ByteArraySerializer.deserializeClientClass(
                                            ByteArraySerializer.serializeClass(object.BaseClass));
+
+                addComponent(clientGroup, clientObject.objectIDView, object.BaseClass.getParent());
 
                 clientObject.classView.container = gridContainer;
                 clientObject.classView.constraints.order = 0;
@@ -364,38 +391,34 @@ class DefaultClientFormView extends ClientFormView {
             mproperties.put(property, clientProperty);
             properties.add(clientProperty);
 
-            ClientComponentView childComponent = clientProperty;
+            addComponent(groupObject, clientProperty, property.View.Property.getParent());
+            order.add(clientProperty);
+        }
 
-            PropertyGroup groupProperty = property.View.Property.getParent();
-            while (groupProperty != null) {
+        for (RegularFilterGroup filterGroup : (List<RegularFilterGroup>)navigatorForm.regularFilterGroups) {
 
-                if (!groupPropertyContainers.containsKey(groupObject))
-                    groupPropertyContainers.put(groupObject, new HashMap());
-
-                ClientContainerView groupPropertyContainer;
-                if (groupPropertyContainers.get(groupObject).containsKey(groupProperty))
-                    groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupProperty);
-                else {
-                    groupPropertyContainer = new ClientContainerView();
-                    groupPropertyContainers.get(groupObject).put(groupProperty, groupPropertyContainer);
+            // ищем самый нижний GroupObjectImplement, к которому применяется фильтр
+            GroupObjectImplement groupObject = null;
+            int order = -1;
+            for (RegularFilter regFilter : filterGroup.filters) {
+                // Если просто кнопка - отменить фильтр
+                if (regFilter.filter == null) continue;
+                GroupObjectImplement propGroupObject = regFilter.filter.Property.GetApplyObject();
+                if (propGroupObject.Order > order) {
+                    order = propGroupObject.Order;
+                    groupObject = propGroupObject;
                 }
-                
-                groupPropertyContainer.constraints.order = clientProperty.constraints.order;
-                groupPropertyContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
-                groupPropertyContainer.constraints.fillVertical = -1;
-                groupPropertyContainer.constraints.fillHorizontal = -1;
-                groupPropertyContainer.title = groupProperty.caption;
-
-                containers.add(groupPropertyContainer);
-
-                childComponent.container = groupPropertyContainer;
-                childComponent = groupPropertyContainer;
-                groupProperty = groupProperty.getParent();
             }
 
-            childComponent.container = panelContainers.get(clientProperty.groupObject);
+            if (groupObject == null) continue;
 
-            order.add(clientProperty);
+            ClientRegularFilterGroupView filterGroupView = new ClientRegularFilterGroupView();
+            filterGroupView.filterGroup = filterGroup;
+            filterGroupView.container = buttonContainers.get(mgroupObjects.get(groupObject));
+            filterGroupView.constraints.order = 3 + navigatorForm.regularFilterGroups.indexOf(filterGroup);
+            filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
+
+            regularFilters.add(filterGroupView);
         }
 
         ClientContainerView formButtonContainer = new ClientContainerView();
@@ -426,6 +449,39 @@ class DefaultClientFormView extends ClientFormView {
         closeView.container = formButtonContainer;
         closeView.constraints.order = 4;
         closeView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
+    }
+
+    private void addComponent(ClientGroupObjectImplement groupObject, ClientComponentView childComponent, AbstractGroup groupAbstract) {
+
+        int order = childComponent.constraints.order;
+
+        while (groupAbstract != null) {
+
+            if (!groupPropertyContainers.containsKey(groupObject))
+                groupPropertyContainers.put(groupObject, new HashMap());
+
+            ClientContainerView groupPropertyContainer;
+            if (groupPropertyContainers.get(groupObject).containsKey(groupAbstract))
+                groupPropertyContainer = groupPropertyContainers.get(groupObject).get(groupAbstract);
+            else {
+
+                groupPropertyContainer = new ClientContainerView();
+                groupPropertyContainers.get(groupObject).put(groupAbstract, groupPropertyContainer);
+                groupPropertyContainer.constraints.order = order;
+                groupPropertyContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+                groupPropertyContainer.constraints.fillVertical = -1;
+                groupPropertyContainer.constraints.fillHorizontal = -1;
+                groupPropertyContainer.title = groupAbstract.caption;
+                containers.add(groupPropertyContainer);
+            }
+
+            childComponent.container = groupPropertyContainer;
+            childComponent = groupPropertyContainer;
+            groupAbstract = groupAbstract.getParent();
+        }
+
+        childComponent.container = panelContainers.get(groupObject);
 
     }
 

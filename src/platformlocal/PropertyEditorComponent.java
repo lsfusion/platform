@@ -67,7 +67,7 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
         NumberFormatter formatter = new NumberFormatter(format) {
 
             public Object stringToValue(String text) throws ParseException {
-                if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".")) return null;
+                if (text.isEmpty() || text.equals("-") || text.equals(",") || text.equals(".") || text.equals("-,") || text.equals("-.")) return null;
                 return super.stringToValue(text);
             }
         };

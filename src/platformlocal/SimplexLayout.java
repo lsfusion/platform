@@ -136,7 +136,7 @@ public class SimplexLayout implements LayoutManager2 {
 
             fillObjFunction(solver);
 
-//            solver.setTimeout(1);
+            solver.setTimeout(2);
             // solve the problem
             long st = System.currentTimeMillis();
 

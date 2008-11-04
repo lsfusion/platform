@@ -16,10 +16,27 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
     Map<DataPropertyInterface,KeyField> MapFields;
 
     TableImplement() {
+        this(null);
+    }
+
+    TableImplement(String iID) {
+        ID = iID;
         Childs = new HashSet<TableImplement>();
         Parents = new HashSet<TableImplement>();
     }
-    
+
+    String ID = null;
+    String getID() {
+
+        if (ID != null) return ID;
+
+        String result = "";
+        for (DataPropertyInterface propint : this) {
+            result += "_" + propint.Class.ID.toString();
+        }
+        return result;
+    }
+
     // кэшированный граф
     Set<TableImplement> Childs;
     Set<TableImplement> Parents;
@@ -139,7 +156,7 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
         System.out.println("");
         
         for(TableImplement Child : Childs) {
-            System.out.print("childs - ");
+            System.out.print("children - ");
             Child.OutClasses();
             System.out.println();
         }
@@ -449,14 +466,12 @@ class TableFactory extends TableImplement{
         RecIncludeIntoGraph(IncludeItem,true,Checks);
     }
     
-    void FillDB(DataSession Session) throws SQLException {
-        Integer TableNum = 0;
+    void FillDB(DataSession Session, boolean createTable) throws SQLException {
         Set<TableImplement> TableImplements = new HashSet<TableImplement>();
         FillSet(TableImplements);
         
         for(TableImplement Node : TableImplements) {
-            TableNum++;
-            Node.Table = new Table("table"+TableNum.toString());
+            Node.Table = new Table("table"+Node.getID());
             Node.MapFields = new HashMap<DataPropertyInterface,KeyField>();
             Integer FieldNum = 0;
             for(DataPropertyInterface Interface : Node) {
@@ -467,16 +482,19 @@ class TableFactory extends TableImplement{
             }
         }
 
-        Session.CreateTable(ObjectTable);
-        Session.CreateTable(idTable);
+        if (createTable) {
 
-        for (Integer idType : IDTable.Enum) {
-            // закинем одну запись
-            Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-            InsertKeys.put(idTable.Key, idType);
-            Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
-            InsertProps.put(idTable.Value,0);
-            Session.InsertRecord(idTable,InsertKeys,InsertProps);
+            Session.CreateTable(ObjectTable);
+            Session.CreateTable(idTable);
+
+            for (Integer idType : IDTable.Enum) {
+                // закинем одну запись
+                Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
+                InsertKeys.put(idTable.Key, idType);
+                Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
+                InsertProps.put(idTable.Value,0);
+                Session.InsertRecord(idTable,InsertKeys,InsertProps);
+            }
         }
 
     }
@@ -511,7 +529,8 @@ class TableFactory extends TableImplement{
 }
 
 abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUpdateView {
-    
+
+    // счетчик идентификаторов
     void initBase() {
         TableFactory = new TableFactory();
 
@@ -585,7 +604,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
 
         DataSession Session = createSession(Adapter);
-        FillDB(Session);
+        FillDB(Session, true);
         Session.close();
 
         // запустить ChangeDBTest
@@ -596,12 +615,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
     }
 
+    abstract void InitGroups();
     abstract void InitClasses();
     abstract void InitProperties();
     abstract void InitConstraints();
     
     // инициализируется логика
     void InitLogics() {
+        InitGroups();
         InitClasses();
         InitProperties();
         InitConstraints();
@@ -706,9 +727,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return null;        
     }
 
-    void FillDB(DataSession Session) throws SQLException {
+    void FillDB(DataSession Session, boolean createTable) throws SQLException {
+
         // инициализируем таблицы
-        TableFactory.FillDB(Session);
+        TableFactory.FillDB(Session, createTable);
 
         // запишем ID'ки
         int IDPropNum = 0;
@@ -759,26 +781,29 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             table.Indexes.add(tableIndex);
         }
 
-        for(Table Table : Tables.keySet()) Session.CreateTable(Table);
+        if (createTable) {
 
-/*        // построим в нужном порядке AggregateProperty и будем заполнять их
-        List<Property> UpdateList = new ArrayList();
-        for(AggregateProperty Property : AggrProperties) Property.fillChangedList(UpdateList,null,new HashSet());
-        Integer ViewNum = 0;
-        for(Property Property : UpdateList) {
-//            if(Property instanceof GroupProperty)
-//                ((GroupProperty)Property).FillDB(Session,ViewNum++);
+            for(Table Table : Tables.keySet()) Session.CreateTable(Table);
+
+    /*        // построим в нужном порядке AggregateProperty и будем заполнять их
+            List<Property> UpdateList = new ArrayList();
+            for(AggregateProperty Property : AggrProperties) Property.fillChangedList(UpdateList,null,new HashSet());
+            Integer ViewNum = 0;
+            for(Property Property : UpdateList) {
+    //            if(Property instanceof GroupProperty)
+    //                ((GroupProperty)Property).FillDB(Session,ViewNum++);
+            }
+      */
+            // создадим dumb
+            Table DumbTable = new Table("dumb");
+            DumbTable.Keys.add(new KeyField("dumb",Type.System));
+            Session.CreateTable(DumbTable);
+            Session.Execute("INSERT INTO dumb (dumb) VALUES (1)");
+
+            Table EmptyTable = new Table("empty");
+            EmptyTable.Keys.add(new KeyField("dumb",Type.System));
+            Session.CreateTable(EmptyTable);
         }
-  */      
-        // создадим dumb
-        Table DumbTable = new Table("dumb");
-        DumbTable.Keys.add(new KeyField("dumb",Type.System));
-        Session.CreateTable(DumbTable);
-        Session.Execute("INSERT INTO dumb (dumb) VALUES (1)");
-
-        Table EmptyTable = new Table("empty");
-        EmptyTable.Keys.add(new KeyField("dumb",Type.System));
-        Session.CreateTable(EmptyTable);
     }
     
     boolean CheckPersistent(DataSession Session) throws SQLException {
@@ -798,7 +823,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return AddDProp(null, caption, Value, Params);
     }
 
-    LDP AddDProp(PropertyGroup group, String caption, Class Value, Class... Params) {
+    LDP AddDProp(AbstractGroup group, String caption, Class Value, Class... Params) {
         DataProperty Property = new DataProperty(TableFactory,Value);
         Property.caption = caption;
         LDP ListProperty = new LDP(Property);
@@ -890,7 +915,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return AddJProp(null, caption, MainProp, IntNum, Params);
     }
 
-    LJP AddJProp(PropertyGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
+    LJP AddJProp(AbstractGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
         JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
         Property.caption = caption;
         LJP ListProperty = new LJP(Property,IntNum);
@@ -911,7 +936,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     LGP AddGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
         return AddGProp(null, caption, GroupProp, Sum, Params);
     }
-    LGP AddGProp(PropertyGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
+    LGP AddGProp(AbstractGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
 
         GroupProperty Property;
         if(Sum)
@@ -936,7 +961,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return AddUProp(null, caption, UnionType, IntNum, Params);
     }
     
-    LJP AddUProp(PropertyGroup group, String caption, int UnionType, int IntNum, Object... Params) {
+    LJP AddUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -990,7 +1015,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
                 if(Changes) {
                     DataSession Session = createSession(Adapter);
-                    FillDB(Session);
+                    FillDB(Session, true);
                     Session.close();
 
                     fillData(Adapter);
@@ -1484,7 +1509,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         NavigatorElement node = new ClassNavigatorForm(this, cls);
         parent.addChild(node);
-        cls.addRelevantElement(node);
+
+        // Проверим, что такой формы еще не было
+        boolean found = false;
+        for (NavigatorElement relNode : cls.relevantElements)
+            if (relNode.ID == node.ID) { found = true; break; }
+        if (!found)
+            cls.addRelevantElement(node);
 
         for (Class child : cls.Childs) {
             createDefaultClassForms(child, node);
@@ -1492,10 +1523,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     void addPropertyView(NavigatorForm form, ObjectImplement... objects) {
-        addPropertyView(form, (PropertyGroup)null, objects);        
+        addPropertyView(form, (AbstractGroup)null, objects);
     }
 
-    void addPropertyView(NavigatorForm form, PropertyGroup group, ObjectImplement... objects) {
+    void addPropertyView(NavigatorForm form, AbstractGroup group, ObjectImplement... objects) {
 
         for (Property property : Properties) {
 
@@ -1529,10 +1560,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     PropertyView addPropertyView(NavigatorForm form, LP property, ObjectImplement... objects) {
 
         PropertyObjectImplement propertyImplement = addPropertyObjectImplement(property, objects);
+        return addPropertyView(form, propertyImplement);
+    }
+
+    PropertyView addPropertyView(NavigatorForm form, PropertyObjectImplement propertyImplement) {
+
         PropertyView propertyView = new PropertyView(form.IDShift(1),propertyImplement,propertyImplement.GetApplyObject());
-
         form.Properties.add(propertyView);
-
         return propertyView;
     }
 
@@ -1554,6 +1588,18 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         PropertyView resultPropView = null;
         for (PropertyView propView : (List<PropertyView>)form.Properties) {
             if (propView.View == prop)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
+
+    PropertyView getPropertyView(NavigatorForm form, Property prop) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : (List<PropertyView>)form.Properties) {
+            if (propView.View.Property == prop)
                 resultPropView = propView;
         }
 

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  *
  * @author ME
  */
-abstract class Class {
+abstract class Class extends AbstractNode {
 
     static BaseClass baseClass;
     static IntegralClass integralClass;
@@ -317,7 +317,9 @@ class StringClass extends Class {
 
 }
 
-class ObjectClass extends Class {    
+class ObjectClass extends Class {
+
+    ObjectClass(AbstractGroup groupAbstract, Integer iID, String caption, Class... parents) {this(iID, caption, parents); groupAbstract.add(this); }
     ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
     
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {

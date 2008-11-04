@@ -18,6 +18,8 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.design.JasperDesign;
 
+import javax.swing.*;
+
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 class ObjectImplement {
@@ -438,6 +440,45 @@ class ObjectValueLink extends ValueLink {
     }
 }
 
+class RegularFilter implements Serializable {
+
+    int ID;
+    transient Filter filter;
+    String name = "";
+    KeyStroke key;
+
+    RegularFilter(int iID, Filter ifilter, String iname, KeyStroke ikey) {
+        ID = iID;
+        filter = ifilter;
+        name = iname;
+        key = ikey;
+    }
+
+    public String toString() {
+        return name;
+    }
+}
+
+class RegularFilterGroup implements Serializable {
+
+    int ID;
+    RegularFilterGroup(int iID) {
+        ID = iID;
+    }
+
+    List<RegularFilter> filters = new ArrayList();
+    void addFilter(RegularFilter filter) {
+        filters.add(filter);
+    }
+
+    RegularFilter getFilter(int filterID) {
+        for (RegularFilter filter : filters)
+            if (filter.ID == filterID)
+                return filter;
+        return null;
+    }
+}
+
 class PropertyValueLink extends ValueLink {
 
     PropertyValueLink(PropertyObjectImplement iProperty) {Property=iProperty;}
@@ -567,7 +608,13 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     // Фильтры
 
     public void addFilter(byte[] state) {
-        addFilter(ByteArraySerializer.deserializeFilter(state, this));
+        addUserFilter(ByteArraySerializer.deserializeFilter(state, this));
+    }
+
+    public void setRegularFilter(int groupID, int filterID) {
+
+        RegularFilterGroup filterGroup = getRegularFilterGroup(groupID);
+        setRegularFilter(filterGroup, filterGroup.getFilter(filterID));
     }
 
     // Порядки
@@ -601,7 +648,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     public byte[] getFormChangesByteArray() throws SQLException {
         return ByteArraySerializer.serializeFormChanges(EndApply());
     }
-
+      
     // --------------------------------------------------------------------------------------- //
     // ----------------------------------- Управляющий интерфейс ----------------------------- //
     // --------------------------------------------------------------------------------------- //
@@ -636,6 +683,13 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     Class getPropertyClass(PropertyView propertyView) {
         return propertyView.View.GetValueClass(propertyView.ToDraw);
+    }
+
+    RegularFilterGroup getRegularFilterGroup(int groupID) {
+        for (RegularFilterGroup filterGroup : regularFilterGroups)
+            if (filterGroup.ID == groupID)
+                return filterGroup;
+        return null;
     }
 
     // ----------------------------------- Инициализация ------------------------------------- //
@@ -728,18 +782,29 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     // фильтры !null (св-во), св-во - св-во, св-во - объект, класс св-ва (для < > в том числе)?,
 
     public Set<Filter> fixedFilters = new HashSet();
+    public List<RegularFilterGroup> regularFilterGroups = new ArrayList();
+    private Set<Filter> userFilters = new HashSet();
 
-    private Set<Filter> filters = new HashSet();
+    public void clearUserFilters() {
 
-    public void clearFilter() {
-
-        filters = new HashSet(fixedFilters);
+        userFilters.clear();
         StructUpdated = true;
     }
 
-    private void addFilter(Filter addFilter) {
+    private void addUserFilter(Filter addFilter) {
 
-        filters.add(addFilter);
+        userFilters.add(addFilter);
+        StructUpdated = true;
+    }
+
+    private Map<RegularFilterGroup, RegularFilter> regularFilterValues = new HashMap();
+    private void setRegularFilter(RegularFilterGroup filterGroup, RegularFilter filter) {
+        
+        if (filter == null || filter.filter == null)
+            regularFilterValues.remove(filterGroup);
+        else
+            regularFilterValues.put(filterGroup, filter);
+
         StructUpdated = true;
     }
 
@@ -972,7 +1037,13 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 Group.MapFilters = new HashSet();
                 Group.MapOrders = new ArrayList();
             }
+
             // фильтры
+            Set<Filter> filters = new HashSet();
+            filters.addAll(fixedFilters);
+            for (RegularFilter regFilter : regularFilterValues.values()) filters.add(regFilter.filter);
+            filters.addAll(userFilters);
+
             for(Filter Filt : filters)
                 Filt.GetApplyObject().MapFilters.add(Filt);
 

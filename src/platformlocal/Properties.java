@@ -114,38 +114,38 @@ class PropertyInterface implements PropertyInterfaceImplement {
     }
 }
 
-class PropertyNode {
+class AbstractNode {
 
-    PropertyGroup parent;
-    PropertyGroup getParent() { return parent; }
+    AbstractGroup parent;
+    AbstractGroup getParent() { return parent; }
 
 }
 
-class PropertyGroup extends PropertyNode{
+class AbstractGroup extends AbstractNode {
 
     String caption;
 
-    PropertyGroup(String icaption) {
+    AbstractGroup(String icaption) {
         caption = icaption;
     }
 
-    Collection<PropertyNode> properties = new ArrayList<PropertyNode>();
-    void add(PropertyNode prop) {
-        properties.add(prop);
+    Collection<AbstractNode> children = new ArrayList<AbstractNode>();
+    void add(AbstractNode prop) {
+        children.add(prop);
         prop.parent = this;
     }
 
-    boolean hasChild(PropertyNode prop) {
-        for (PropertyNode child : properties) {
+    boolean hasChild(AbstractNode prop) {
+        for (AbstractNode child : children) {
             if (child == prop) return true;
-            if (child instanceof PropertyGroup && ((PropertyGroup)child).hasChild(prop)) return true;
+            if (child instanceof AbstractGroup && ((AbstractGroup)child).hasChild(prop)) return true;
         }
         return false;
     }
 
 }
 
-abstract class Property<T extends PropertyInterface> extends PropertyNode {
+abstract class Property<T extends PropertyInterface> extends AbstractNode {
 
     int ID=0;
 

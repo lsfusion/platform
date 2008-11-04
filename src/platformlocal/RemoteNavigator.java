@@ -100,93 +100,36 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             }
         };
 
-        Map<GroupObjectImplement, GroupObjectImplement> gnvrm = new HashMap();
-        Map<ObjectImplement, ObjectImplement> onvrm = new HashMap();
-        Map<PropertyObjectImplement, PropertyObjectImplement> pnvrm = new HashMap();
+        ObjectImplementMapper objectMapper = new ObjectImplementMapper();
+        GroupObjectImplementMapper groupObjectMapper = new GroupObjectImplementMapper(objectMapper);
+        PropertyObjectImplementMapper propertyMapper = new PropertyObjectImplementMapper(objectMapper);
+        FilterMapper filterMapper = new FilterMapper(objectMapper, propertyMapper);
 
         remoteForm.Groups = new ArrayList();
         for (GroupObjectImplement navigatorGroupObject : (List<GroupObjectImplement>)navigatorForm.Groups) {
-
-            GroupObjectImplement groupObject = new GroupObjectImplement(navigatorGroupObject.ID);
-
-            groupObject.Order = navigatorGroupObject.Order;
-            for (ObjectImplement navigatorObject : navigatorGroupObject) {
-
-                ObjectImplement object = new ObjectImplement(navigatorObject.ID, navigatorObject.BaseClass);
-                object.caption = navigatorObject.caption;
-
-                groupObject.addObject(object);
-                onvrm.put(navigatorObject, object);
-            }
-
-            remoteForm.Groups.add(groupObject);
-            gnvrm.put(navigatorGroupObject, groupObject);
+            remoteForm.Groups.add(groupObjectMapper.doMapping(navigatorGroupObject));
         }
 
         remoteForm.Properties = new ArrayList();
         for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.Properties) {
-
-            PropertyObjectImplement navigatorPropObject = navigatorProperty.View;
-
-            PropertyObjectImplement propObject = new PropertyObjectImplement(navigatorPropObject.Property);
-            for (Map.Entry<PropertyInterface, ObjectImplement> entry : navigatorPropObject.Mapping.entrySet()) {
-                propObject.Mapping.put(entry.getKey(), onvrm.get(entry.getValue()));
-            }
-
-            PropertyView property = new PropertyView(navigatorProperty.ID, propObject, gnvrm.get(navigatorProperty.ToDraw));
-
-            remoteForm.Properties.add(property);
-            pnvrm.put(navigatorPropObject, propObject);
+            remoteForm.Properties.add(new PropertyView(navigatorProperty.ID, propertyMapper.doMapping(navigatorProperty.View), groupObjectMapper.doMapping(navigatorProperty.ToDraw)));
         }
 
         remoteForm.fixedFilters = new HashSet();
 
         for (Filter navigatorFilter : (Set<Filter>)navigatorForm.fixedFilters) {
-
-            ValueLink value = null;
-
-            ValueLink navigatorValue = navigatorFilter.Value;
-
-            if (navigatorValue instanceof UserValueLink) {
-                value = new UserValueLink(((UserValueLink)navigatorValue).Value);
-            }
-
-            if (navigatorValue instanceof ObjectValueLink) {
-                value = new ObjectValueLink(onvrm.get(((ObjectValueLink)navigatorValue).Object));
-            }
-
-            if (navigatorValue instanceof PropertyValueLink) {
-
-                PropertyObjectImplement property = pnvrm.get(((PropertyValueLink)navigatorValue).Property);
-                if (property == null) {
-                    property = new PropertyObjectImplement(((PropertyValueLink)navigatorValue).Property);
-                    // перекодируем Mapping'и свойств
-                    for (Map.Entry<PropertyInterface,ObjectImplement> mapObjects : property.Mapping.entrySet()) {
-                        property.Mapping.put(mapObjects.getKey(), onvrm.get(mapObjects.getValue()));
-                    }
-
-                }
-                value = new PropertyValueLink(property);
-            }
-
-            PropertyObjectImplement property = pnvrm.get(navigatorFilter.Property);
-
-            //если свойство не найдено, по сути используется только в фильтре, а в Properties даже не попало
-            //ту же штуку надо и в PropertyValueLink вообще-то сделать
-            if (property == null) {
-                property = new PropertyObjectImplement(navigatorFilter.Property);
-                // перекодируем Mapping'и свойств
-                for (Map.Entry<PropertyInterface,ObjectImplement> mapObjects : property.Mapping.entrySet()) {
-                    property.Mapping.put(mapObjects.getKey(), onvrm.get(mapObjects.getValue()));
-                }
-            }
-
-
-            Filter filter = new Filter(property, navigatorFilter.Compare, value);
-            remoteForm.fixedFilters.add(filter);
+            remoteForm.fixedFilters.add(filterMapper.doMapping(navigatorFilter));
         }
 
-        remoteForm.clearFilter();
+        remoteForm.regularFilterGroups = new ArrayList();
+        for (RegularFilterGroup navigatorGroup : (List<RegularFilterGroup>)navigatorForm.regularFilterGroups) {
+
+            RegularFilterGroup group = new RegularFilterGroup(navigatorGroup.ID);
+            for (RegularFilter filter : navigatorGroup.filters)
+                group.addFilter(new RegularFilter(filter.ID, filterMapper.doMapping(filter.filter), filter.name, filter.key));
+
+            remoteForm.regularFilterGroups.add(group);
+        }
 
         remoteForm.richDesign = navigatorForm.getRichDesign();
 
@@ -201,7 +144,105 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         return remoteForm;
     }
-    
+
+    private class ObjectImplementMapper {
+
+        private Map<ObjectImplement, ObjectImplement> mapper = new HashMap();
+
+        ObjectImplement doMapping(ObjectImplement objKey) {
+
+            if (mapper.containsKey(objKey)) return mapper.get(objKey);
+
+            ObjectImplement objValue = new ObjectImplement(objKey.ID, objKey.BaseClass);
+            objValue.caption = objKey.caption;
+
+            mapper.put(objKey, objValue);
+            return objValue;
+        }
+    }
+
+    private class GroupObjectImplementMapper {
+
+        private Map<GroupObjectImplement, GroupObjectImplement> mapper = new HashMap();
+        ObjectImplementMapper objectMapper;
+
+        public GroupObjectImplementMapper(ObjectImplementMapper iobjectMapper) {
+            objectMapper = iobjectMapper;
+        }
+
+        GroupObjectImplement doMapping(GroupObjectImplement groupKey) {
+
+            if (mapper.containsKey(groupKey)) return mapper.get(groupKey);
+
+            GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID);
+
+            groupValue.Order = groupKey.Order;
+            for (ObjectImplement object : groupKey) {
+                groupValue.addObject(objectMapper.doMapping(object));
+            }
+
+            mapper.put(groupKey, groupValue);
+            return groupValue;
+        }
+    }
+
+    private class PropertyObjectImplementMapper {
+
+        private Map<PropertyObjectImplement, PropertyObjectImplement> mapper = new HashMap();
+        ObjectImplementMapper objectMapper;
+
+        PropertyObjectImplementMapper(ObjectImplementMapper iobjectMapper) {
+            objectMapper = iobjectMapper;
+        }
+
+        PropertyObjectImplement doMapping(PropertyObjectImplement propKey) {
+
+            if (mapper.containsKey(propKey)) return mapper.get(propKey);
+
+            PropertyObjectImplement propValue = new PropertyObjectImplement(propKey.Property);
+            for (Map.Entry<PropertyInterface, ObjectImplement> entry : propKey.Mapping.entrySet()) {
+                propValue.Mapping.put(entry.getKey(), objectMapper.doMapping(entry.getValue()));
+            }
+
+            mapper.put(propKey, propValue);
+            return propValue;
+        }
+    }
+
+    private class FilterMapper {
+
+        private ObjectImplementMapper objectMapper;
+        private PropertyObjectImplementMapper propertyMapper;
+
+        FilterMapper(ObjectImplementMapper iobjectMapper, PropertyObjectImplementMapper ipropertyMapper) {
+            objectMapper = iobjectMapper;
+            propertyMapper = ipropertyMapper;
+        }
+
+        Filter doMapping(Filter filterKey) {
+
+            if (filterKey == null) return null;
+            
+            ValueLink value = null;
+
+            ValueLink navigatorValue = filterKey.Value;
+
+            if (navigatorValue instanceof UserValueLink) {
+                value = new UserValueLink(((UserValueLink)navigatorValue).Value);
+            }
+
+            if (navigatorValue instanceof ObjectValueLink) {
+                value = new ObjectValueLink(objectMapper.doMapping(((ObjectValueLink)navigatorValue).Object));
+            }
+
+            if (navigatorValue instanceof PropertyValueLink) {
+                value = new PropertyValueLink(propertyMapper.doMapping(((PropertyValueLink)navigatorValue).Property));
+            }
+
+            return new Filter(propertyMapper.doMapping(filterKey.Property), filterKey.Compare, value);
+        }
+    }
+
     private ClassCache classCache;
 
     public void addCacheObject(int classID, int value) {
@@ -282,12 +323,11 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     Set<Filter> fixedFilters = new HashSet();
     public void addFixedFilter(Filter filter) { fixedFilters.add(filter); }
 
-    // счетчик идентивикаторов
-    int IDCount = 0;
+    List<RegularFilterGroup> regularFilterGroups = new ArrayList();
+    public void addRegularFilterGroup(RegularFilterGroup group) { regularFilterGroups.add(group); }
 
-    int GenID(int Offs) {
-        return IDCount + Offs;
-    }
+    // счетчик идентификаторов
+    int IDCount = 0;
 
     int IDShift(int Offs) {
         IDCount += Offs;

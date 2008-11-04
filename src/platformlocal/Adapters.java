@@ -105,7 +105,7 @@ abstract class DataAdapter implements SQLSyntax {
    DataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
        java.lang.Class.forName(getClassName());
-       createDB();
+//       createDB();
     }
 
 

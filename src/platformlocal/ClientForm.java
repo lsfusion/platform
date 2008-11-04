@@ -68,6 +68,44 @@ public class ClientForm extends JPanel {
 
         applyFormChanges();
 
+    }
+
+    // ------------------------------------------------------------------------------------ //
+    // ----------------------------------- Инициализация ---------------------------------- //
+    // ------------------------------------------------------------------------------------ //
+
+    private boolean hasFocus = false;
+
+    private FormLayout formLayout;
+
+    Map<ClientGroupObjectImplement, GroupObjectModel> models;
+
+    private JButton buttonPrint;
+    private JButton buttonApply;
+    private JButton buttonCancel;
+    private JButton buttonOK;
+    private JButton buttonClose;
+
+    void initializeForm() {
+
+        formLayout = new FormLayout(formView.containers);
+
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(formLayout.getComponent());
+//        setContentPane(formLayout.getComponent());
+//        setComponent(formLayout.getComponent());
+
+        initializeGroupObjects();
+
+        initializeRegularFilters();
+
+        initializeButtons();
+
+        initializeOrders();
+
+        dataChanged();
+
+        // следим за тем, когда форма становится активной
         final String FOCUS_OWNER_PROPERTY = "permanentFocusOwner";
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(FOCUS_OWNER_PROPERTY, new PropertyChangeListener() {
@@ -95,36 +133,83 @@ public class ClientForm extends JPanel {
 
     }
 
-    private boolean hasFocus = false;
-
-    private FormLayout formLayout;
-
-    Map<ClientGroupObjectImplement, GroupObjectModel> models;
-
-    private JButton buttonPrint;
-    private JButton buttonApply;
-    private JButton buttonCancel;
-    private JButton buttonOK;
-    private JButton buttonClose;
-
-    void initializeForm() {
-
-        formLayout = new FormLayout(formView.containers);
-
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        add(formLayout.getComponent());
-//        setContentPane(formLayout.getComponent());
-//        setComponent(formLayout.getComponent());
+    private void initializeGroupObjects() {
 
         models = new HashMap();
 
         for (ClientGroupObjectImplement groupObject : formView.groupObjects) {
 
             GroupObjectModel model = new GroupObjectModel(groupObject);
-
             models.put(groupObject, model);
         }
+    }
 
+    private void initializeRegularFilters() {
+        InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap am = getActionMap();
+
+        // Проинициализируем регулярные фильтры
+
+        for (ClientRegularFilterGroupView filterGroupView : formView.regularFilters) {
+
+            final RegularFilterGroup filterGroup = filterGroupView.filterGroup;
+
+            if (filterGroup.filters.size() == 1) {
+
+                final RegularFilter singleFilter = filterGroup.filters.get(0);
+
+                final JCheckBox checkBox = new JCheckBox(singleFilter.name);
+                checkBox.addItemListener(new ItemListener() {
+
+                    public void itemStateChanged(ItemEvent e) {
+                        if (e.getStateChange() == ItemEvent.SELECTED)
+                            setRegularFilter(filterGroup, singleFilter);
+                        else
+                            setRegularFilter(filterGroup, null);
+                    }
+                });
+                formLayout.add(filterGroupView, checkBox);
+
+                String filterID = "regularFilter" + filterGroup.ID + singleFilter.ID;
+                im.put(singleFilter.key, filterID);
+                am.put(filterID, new AbstractAction() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        checkBox.setSelected(!checkBox.isSelected());
+                    }
+                });
+            } else {
+
+                final JComboBox comboBox = new JComboBox(filterGroup.filters.toArray());
+                comboBox.addItemListener(new ItemListener() {
+
+                    public void itemStateChanged(ItemEvent e) {
+                        setRegularFilter(filterGroup, (RegularFilter)e.getItem());
+                    }
+                });
+                formLayout.add(filterGroupView, comboBox);
+
+                for (final RegularFilter singleFilter : filterGroup.filters) {
+                    String filterID = "regularFilter" + filterGroup.ID + singleFilter.ID;
+                    im.put(singleFilter.key, filterID);
+                    am.put(filterID, new AbstractAction() {
+
+                        public void actionPerformed(ActionEvent e) {
+                            comboBox.setSelectedItem(singleFilter);
+                        }
+                    });
+                }
+            }
+
+        }
+    }
+
+    private void initializeButtons() {
+
+        InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap am = getActionMap();
+
+        // Добавляем стандартные кнопки
         buttonPrint = new JButton("Печать");
         buttonPrint.addActionListener(new ActionListener() {
 
@@ -162,28 +247,29 @@ public class ClientForm extends JPanel {
             }
         };
 
+        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
+        im.put(altEnter, "okPressed");
+        am.put("okPressed", okAction);
+
         buttonOK = new JButton(okAction);
         formLayout.add(formView.okView, buttonOK);
 
-        buttonClose = new JButton("Закрыть");
-        buttonClose.addActionListener(new ActionListener() {
+        AbstractAction closeAction = new AbstractAction("Закрыть") {
 
             public void actionPerformed(ActionEvent e) {
                 closePressed();
             }
-        });
+        };
 
+        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        im.put(escape, "closePressed");
+        am.put("closePressed", closeAction);
+
+        buttonClose = new JButton(closeAction);
         formLayout.add(formView.closeView, buttonClose);
+    }
 
-        //  Have the enter key work the same as the tab key
-		InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-
-		KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
-        im.put(altEnter, "okPressed");
-
-        ActionMap am = getActionMap();
-        am.put("okPressed", okAction);
-
+    private void initializeOrders() {
         // Применяем порядки по умолчанию
         for (Map.Entry<ClientPropertyView, Boolean> entry : formView.defaultOrders.entrySet()) {
             models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteForm.ORDER_ADD);
@@ -191,8 +277,6 @@ public class ClientForm extends JPanel {
                 models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteForm.ORDER_DIR);
             }
         }
-
-        dataChanged();
     }
 
     void applyFormChanges() {
@@ -372,12 +456,19 @@ public class ClientForm extends JPanel {
 
         currentFilters.put(groupObject, conditions);
 
-        remoteForm.clearFilter();
+        remoteForm.clearUserFilters();
 
         for (List<ClientFilter> listFilter : currentFilters.values())
             for (ClientFilter filter : listFilter) {
                 remoteForm.addFilter(ByteArraySerializer.serializeClientFilter(filter));
             }
+
+        applyFormChanges();
+    }
+
+    private void setRegularFilter(RegularFilterGroup filterGroup, RegularFilter filter) {
+
+        remoteForm.setRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID);
 
         applyFormChanges();
     }
@@ -694,6 +785,9 @@ public class ClientForm extends JPanel {
 
                     if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
 
+                    // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
+                    if (event.getKeyCode() == KeyEvent.VK_ESCAPE) return false;
+
                     //будем считать, что если нажата кнопка ALT то явно пользователь не хочет вводить текст
                     if ((event.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) return false;
 
@@ -852,6 +946,7 @@ public class ClientForm extends JPanel {
 
                         setMinimumSize(key.getMinimumSize());
                         setPreferredSize(key.getPreferredSize());
+                        setMaximumSize(key.getMaximumSize());
                     }
 
                     class PropertyModel extends AbstractTableModel {
@@ -1019,6 +1114,7 @@ public class ClientForm extends JPanel {
                 container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
                 table = new Table();
+                table.getTableHeader().setPreferredSize(new Dimension(1000, 34));
 //                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 //                table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
@@ -1128,8 +1224,9 @@ public class ClientForm extends JPanel {
                 for (ClientCellView property : table.gridColumns) {
 
                     TableColumn column = table.getColumnModel().getColumn(table.gridColumns.indexOf(property));
-                    column.setPreferredWidth(property.getPreferredWidth());
                     column.setMinWidth(property.getMinimumWidth());
+                    column.setPreferredWidth(property.getPreferredWidth());
+                    column.setMaxWidth(property.getMaximumWidth());
                 }
 
                 if (table.gridColumns.size() != 0) {
@@ -1368,11 +1465,6 @@ public class ClientForm extends JPanel {
 
                 }
 
-                private Object getSelectedValue() {
-
-                    return getSelectedValue(getSelectedColumn());
-                }
-
                 private Object getSelectedValue(ClientCellView cell) {
                     return getSelectedValue(gridColumns.indexOf(cell));
                 }
@@ -1381,13 +1473,11 @@ public class ClientForm extends JPanel {
                 private Object getSelectedValue(int col) {
 
                     int row = getSelectedRow();
-                    if (row != -1 && col != -1)
+                    if (row != -1 && row < getRowCount() && col != -1 && col < getColumnCount())
                         return getValueAt(row, col);
                     else
                         return null;
                 }
-
-
 
                 // ---------------------------------------------------------------------------------------------- //
                 // -------------------------------------- Поиски и отборы --------------------------------------- //
@@ -1966,12 +2056,16 @@ public class ClientForm extends JPanel {
                                                                    int row,
                                                                    int column) {
 
+                        if (value instanceof String)
+                            value = "<html>" + value + "</html>";
+
                         Component comp = tableCellRenderer.getTableCellRendererComponent(itable,
                                 value, isSelected, hasFocus, row, column);
                         if (comp instanceof JLabel) {
 
                             JLabel label = (JLabel) comp;
                             label.setHorizontalAlignment(JLabel.CENTER);
+                            label.setVerticalAlignment(JLabel.TOP);
 
                             ClientPropertyView property = table.getPropertyView(row, column);
                             if (property != null) {

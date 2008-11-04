@@ -213,11 +213,19 @@ public class Main {
 
             BusinessLogics BL = new TmcBusinessLogics();
 
-            DataSession Session = BL.createSession(Adapter);
-            BL.FillDB(Session);
-            Session.close();
+            boolean recreateDB = true;
 
-            BL.fillData(Adapter);
+            if (recreateDB) {
+
+                Adapter.createDB();
+
+                DataSession Session = BL.createSession(Adapter);
+                BL.FillDB(Session, true);
+                Session.close();
+
+                BL.fillData(Adapter);
+            } else
+                BL.FillDB(null, false);
 
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL);
@@ -417,6 +425,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
   */
     }
 
+    void InitGroups() {
+
+    }
+
     Class ArticleGroup;
     Class Document;
     Class Article;
@@ -443,10 +455,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     void InitProperties() {
 
-        PropertyGroup groupArticleG = new PropertyGroup("Группа");
-        PropertyGroup groupArticleA = new PropertyGroup("Атрибуты");
-        PropertyGroup groupArticleC = new PropertyGroup("Ценовые параметры");
-        PropertyGroup groupArticleS = new PropertyGroup("Показатели");
+        AbstractGroup groupArticleG = new AbstractGroup("Группа");
+        AbstractGroup groupArticleA = new AbstractGroup("Атрибуты");
+        AbstractGroup groupArticleC = new AbstractGroup("Ценовые параметры");
+        AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
         Name = AddDProp("имя", Class.stringClass, objectClass);
         groupArticleA.add(Name.Property);
