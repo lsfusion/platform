@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
@@ -513,7 +514,37 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         storeArticleForm.addChild(storeArticlePrimDocForm);
     }
 
-    private class ExtIncDetailNavigatorForm extends NavigatorForm {
+    private class TmcNavigatorForm extends NavigatorForm {
+
+        TmcNavigatorForm(int iID, String caption) {
+            super(iID, caption);
+        }
+
+        void addArticleRegularFilterGroup(PropertyObjectImplement documentProp, PropertyObjectImplement... extraProps) {
+
+            RegularFilterGroup filterGroup = new RegularFilterGroup(IDShift(1));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  null,
+                                  "Все",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(documentProp, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+
+            int functionKey = KeyEvent.VK_F9;
+
+            for (PropertyObjectImplement extraProp : extraProps) {
+                filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                      new Filter(extraProp, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                      extraProp.Property.caption,
+                                      KeyStroke.getKeyStroke(functionKey--, 0)));
+            }
+            addRegularFilterGroup(filterGroup);
+        }
+    }
+
+    private class ExtIncDetailNavigatorForm extends TmcNavigatorForm {
 
         public ExtIncDetailNavigatorForm(int ID, String caption) {
             super(ID, caption);
@@ -541,7 +572,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         }
     }
 
-    private class ExtIncNavigatorForm extends NavigatorForm {
+    private class ExtIncNavigatorForm extends TmcNavigatorForm {
 
         public ExtIncNavigatorForm(int ID, String caption) {
             super(ID, caption);
@@ -563,10 +594,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, extIncQuantity, objDoc, objArt);
             addPropertyView(this, incPrmsGroup, objDoc, objArt);
             addPropertyView(this, outPrmsGroup, objDoc, objArt);
+
+            addArticleRegularFilterGroup(getPropertyView(this, extIncQuantity.Property).View);
         }
     }
 
-    private class IntraNavigatorForm extends NavigatorForm {
+    private class IntraNavigatorForm extends TmcNavigatorForm {
 
         public IntraNavigatorForm(int ID, String caption) {
             super(ID, caption);
@@ -589,10 +622,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, incPrmsGroup, objDoc, objArt);
             addPropertyView(this, outPrmsGroup, objDoc, objArt);
 
+            addArticleRegularFilterGroup(getPropertyView(this, intraQuantity.Property).View,
+                                         getPropertyView(this, docOutBalanceQuantity.Property).View,
+                                         getPropertyView(this, docIncBalanceQuantity.Property).View);
         }
     }
 
-    private class ExtOutNavigatorForm extends NavigatorForm {
+    private class ExtOutNavigatorForm extends TmcNavigatorForm {
 
         public ExtOutNavigatorForm(int ID, String caption) {
             super(ID, caption);
@@ -615,39 +651,27 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, incPrmsGroup, objDoc, objArt);
             addPropertyView(this, outPrmsGroup, objDoc, objArt);
 
-            RegularFilterGroup filterGroup = new RegularFilterGroup(IDShift(1));
-            filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  null,
-                                  "Все",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
-                                  "Остатки",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
-            filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, extOutQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
-                                  "Расходуемые позиции",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
-            addRegularFilterGroup(filterGroup);
+            addArticleRegularFilterGroup(getPropertyView(this, extOutQuantity.Property).View,
+                                         getPropertyView(this, docOutBalanceQuantity.Property).View);
         }
     }
 
-    private class ExchangeNavigatorForm extends NavigatorForm {
+    private class ExchangeNavigatorForm extends TmcNavigatorForm {
 
         public ExchangeNavigatorForm(int ID, String caption) {
             super(ID, caption);
 
             GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
-            GroupObjectImplement gobjArtFrom = new GroupObjectImplement(IDShift(1));
             GroupObjectImplement gobjArtTo = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjArtFrom = new GroupObjectImplement(IDShift(1));
 
             ObjectImplement objDoc = new ObjectImplement(IDShift(1), exchangeDocument, "Документ", gobjDoc);
-            ObjectImplement objArtFrom = new ObjectImplement(IDShift(1), article, "Товар (с)", gobjArtFrom);
             ObjectImplement objArtTo = new ObjectImplement(IDShift(1), article, "Товар (на)", gobjArtTo);
+            ObjectImplement objArtFrom = new ObjectImplement(IDShift(1), article, "Товар (с)", gobjArtFrom);
 
             addGroup(gobjDoc);
-            addGroup(gobjArtFrom);
             addGroup(gobjArtTo);
+            addGroup(gobjArtFrom);
 
             addPropertyView(this, baseGroup, objDoc);
             addPropertyView(this, storeGroup, objDoc);
@@ -655,19 +679,62 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 //            addPropertyView(this, artgrGroup, objArtFrom);
             addPropertyView(this, baseGroup, objArtTo);
 //            addPropertyView(this, artgrGroup, objArtTo);
-            addPropertyView(this, docOutBalanceQuantity, objDoc, objArtFrom);
-            addPropertyView(this, exchIncQuantity, objDoc, objArtFrom);
-            addPropertyView(this, exchOutQuantity, objDoc, objArtFrom);
-            addPropertyView(this, incPrmsGroup, objDoc, objArtFrom);
-            addPropertyView(this, outPrmsGroup, objDoc, objArtFrom);
             addPropertyView(this, docOutBalanceQuantity, objDoc, objArtTo);
-            addPropertyView(this, exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(this, exchIncQuantity, objDoc, objArtTo);
+            addPropertyView(this, exchOutQuantity, objDoc, objArtTo);
             addPropertyView(this, incPrmsGroup, objDoc, objArtTo);
             addPropertyView(this, outPrmsGroup, objDoc, objArtTo);
+            addPropertyView(this, docOutBalanceQuantity, objDoc, objArtFrom);
+            addPropertyView(this, exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(this, incPrmsGroup, objDoc, objArtFrom);
+            addPropertyView(this, outPrmsGroup, objDoc, objArtFrom);
+
+            RegularFilterGroup filterGroup = new RegularFilterGroup(IDShift(1));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  null,
+                                  "Все",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, exchIncQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  "Приход",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, exchOutQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  "Расход",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtTo).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  "Остаток",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtTo).View, FieldExprCompareWhere.LESS, new UserValueLink(0)),
+                                  "Отр. остаток",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
+            addRegularFilterGroup(filterGroup);
+
+            filterGroup = new RegularFilterGroup(IDShift(1));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  null,
+                                  "Все",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, exchangeQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  "Остаток",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.GREATER, new UserValueLink(0)),
+                                  "Пол. остаток",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
+            addRegularFilterGroup(filterGroup);
+
         }
     }
 
-    private class RevalueNavigatorForm extends NavigatorForm {
+    private class RevalueNavigatorForm extends TmcNavigatorForm {
 
         public RevalueNavigatorForm(int ID, String caption) {
             super(ID, caption);
@@ -692,7 +759,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         }
     }
 
-    private class StoreArticleNavigatorForm extends NavigatorForm {
+    private class StoreArticleNavigatorForm extends TmcNavigatorForm {
 
         GroupObjectImplement gobjStore, gobjArt;
         ObjectImplement objStore, objArt;

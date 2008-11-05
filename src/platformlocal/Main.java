@@ -213,7 +213,7 @@ public class Main {
 
             BusinessLogics BL = new TmcBusinessLogics();
 
-            boolean recreateDB = true;
+            boolean recreateDB = false;
 
             if (recreateDB) {
 

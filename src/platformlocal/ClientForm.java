@@ -832,7 +832,7 @@ public class ClientForm extends JPanel {
                     Component comp = currentComp.getComponent();
                     if (comp == null) {
                         Object newValue = getCellEditorValue();
-                        if ((value == null && newValue != null) || ! value.equals(newValue))
+                        if (!BaseUtils.compareObjects(value, newValue))
                             table.setValueAt(newValue, row, column);
                     }
                     return comp;
@@ -1143,7 +1143,7 @@ public class ClientForm extends JPanel {
 
                 addGroupObjectActions(table);
 
-                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "addFind");
+                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "addFind");
                 container.getActionMap().put("addFind", new AbstractAction() {
 
                     public void actionPerformed(ActionEvent e) {
@@ -1151,7 +1151,7 @@ public class ClientForm extends JPanel {
                     }
                 });
 
-                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), "addFilter");
+                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "addFilter");
                 container.getActionMap().put("addFilter", new AbstractAction() {
 
                     public void actionPerformed(ActionEvent e) {

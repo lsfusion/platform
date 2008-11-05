@@ -95,6 +95,16 @@ class ClientFormTable extends JTable {
         setFocusCycleRoot(false);
         setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
     }
+
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+
+        boolean consumed = super.processKeyBinding(ks, e, condition, pressed);
+        // Вырежем F2, чтобы startEditing не поглощало его
+        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0))) return false;
+        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0))) return false;
+
+        return consumed;
+    }
 }
 
 class SingleCellTable extends ClientFormTable {

@@ -157,7 +157,7 @@ abstract class ClientCellView extends ClientComponentView {
     }
 
     public int getMaximumWidth() {
-        return Integer.MAX_VALUE;
+        return baseClass.getMaximumWidth();
     }
 
     public int getMaximumHeight() {
@@ -504,6 +504,9 @@ abstract class ClientClass implements Serializable {
     public int getPreferredWidth() {
         return 50;
     }
+    public int getMaximumWidth() {
+        return Integer.MAX_VALUE;
+    }
 
     abstract public PropertyRendererComponent getRendererComponent(Format format);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form, Format format);
@@ -512,6 +515,7 @@ abstract class ClientClass implements Serializable {
 class ClientObjectClass extends ClientClass {
 
     public int getPreferredWidth() { return 45; }
+    public int getMaximumWidth() { return getPreferredWidth(); }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); } ;
     public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new ObjectPropertyEditor(form); }

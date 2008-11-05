@@ -1606,6 +1606,17 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return resultPropView;
     }
 
+    PropertyView getPropertyView(NavigatorForm form, Property prop, GroupObjectImplement groupObject) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : (List<PropertyView>)form.Properties) {
+            if (propView.View.Property == prop && propView.ToDraw == groupObject)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
     // -------------------------------------- Старые интерфейсы --------------------------------------------------- //
 
     Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {
