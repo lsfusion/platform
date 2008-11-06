@@ -229,6 +229,7 @@ class ClientFormView implements Serializable {
     List<ClientRegularFilterGroupView> regularFilters = new ArrayList();   
 
     ClientFunctionView printView = new ClientFunctionView();
+    ClientFunctionView refreshView = new ClientFunctionView();
     ClientFunctionView applyView = new ClientFunctionView();
     ClientFunctionView cancelView = new ClientFunctionView();
     ClientFunctionView okView = new ClientFunctionView();
@@ -432,22 +433,28 @@ class DefaultClientFormView extends ClientFormView {
         printView.constraints.order = 0;
         printView.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
 
+        refreshView.container = formButtonContainer;
+        refreshView.constraints.order = 1;
+        refreshView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
+
         applyView.container = formButtonContainer;
-        applyView.constraints.order = 1;
+        applyView.constraints.order = 2;
         applyView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
 
+        applyView.constraints.insetsSibling = new Insets(0, 8, 0, 0);
+
         cancelView.container = formButtonContainer;
-        cancelView.constraints.order = 2;
+        cancelView.constraints.order = 3;
         cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
 
         okView.constraints.insetsSibling = new Insets(0, 8, 0, 0);
         
         okView.container = formButtonContainer;
-        okView.constraints.order = 3;
+        okView.constraints.order = 4;
         okView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
 
         closeView.container = formButtonContainer;
-        closeView.constraints.order = 4;
+        closeView.constraints.order = 5;
         closeView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
 
     }

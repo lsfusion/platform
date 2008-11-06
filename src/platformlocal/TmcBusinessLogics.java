@@ -112,6 +112,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP intraQuantity;
     LDP extOutQuantity;
     LDP exchangeQuantity;
+    LDP revalBalanceQuantity;
     LGP exchIncQuantity, exchOutQuantity;
 
     LJP incQuantity, outQuantity;
@@ -161,7 +162,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP storeAdd, storeVATOut, storeLocTax;
     LJP storePriceOut;
 
-    LJP docOutBalanceQuantity, docIncBalanceQuantity;
+    LJP docOutBalanceQuantity, docIncBalanceQuantity, docRevBalanceQuantity;
 
     LJP docCurPriceIn, docCurVATIn;
     LJP docCurAdd, docCurVATOut, docCurLocTax;
@@ -175,6 +176,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP revalCurAdd, revalCurVATOut, revalCurLocTax;
     LJP revalCurPriceOut;
 
+    LJP revalOverBalanceQuantity;
     LJP revalOverPriceIn, revalOverVATIn;
     LJP revalOverAddBefore, revalOverVATOutBefore, revalOverLocTaxBefore;
     LJP revalOverPriceOutBefore;
@@ -199,7 +201,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         incStore = AddUProp("Склад прих.", 2, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
         outStore = AddUProp("Склад расх.", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
         LP primDocStoreNull = AddCProp("абст. склад", null, store, primaryDocument);
-        primDocStore = AddUProp("Склад (изм.)", 2, 1, 1, primDocStoreNull, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, revalStore, 1);
+        primDocStore = AddUProp(paramsGroup, "Склад (изм.)", 2, 1, 1, primDocStoreNull, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, revalStore, 1);
         paramsStore = AddUProp("Склад (парам.)", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
         docStore = AddUProp("Склад", 2, 1, 1, extIncStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1, 1, revalStore, 1);
 
@@ -227,6 +229,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         exchangeQuantity = AddDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
+        revalBalanceQuantity = AddDProp(quantGroup, "Остаток", Class.doubleClass, revalDocument, article);
+
         exchIncQuantity = AddGProp("Прих. перес.", exchangeQuantity, true, 1, 3);
         exchOutQuantity = AddGProp("Расх. перес.", exchangeQuantity, true, 1, 2);
 
@@ -236,7 +240,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         outQuantity = AddUProp("Кол-во расх.", 2, 2, 1, docOutQuantity, 1, 2, 1, extOutQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchOutQuantity, 1, 2);
 
         LP docQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, document, article);
-        quantity = AddUProp("Кол-во", 2, 2, 1, docQuantity, 1, 2, 1, incQuantity, 1, 2, 1, outQuantity, 1, 2);
+        quantity = AddUProp(paramsGroup, "Кол-во", 2, 2, 1, docQuantity, 1, 2, 1, revalBalanceQuantity, 1, 2, 1, incQuantity, 1, 2, 1, outQuantity, 1, 2);
 
         LP incPrmsQuantity = AddUProp("Кол-во прих. (парам.)", 2, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2);
         LSFP notZero = AddWSFProp("((prm1)<>0)",Class.integralClass);
@@ -327,7 +331,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         // -------------------------- Последний документ ---------------------------- //
 
         LP primDocArtBitNull = AddCProp("абст. бит", null, Class.bitClass, primaryDocument, article);
-        changesParams = AddUProp("Изм. парам.", 2, 2, 1, primDocArtBitNull, 1, 2, 1, isRevalued, 1, 2, 1, notZeroIncPrmsQuantity, 1, 2);
+        changesParams = AddUProp(paramsGroup, "Изм. парам.", 2, 2, 1, primDocArtBitNull, 1, 2, 1, isRevalued, 1, 2, 1, notZeroIncPrmsQuantity, 1, 2);
         LMFP multiplyBitDate = AddMFProp(Class.bitClass, Class.dateClass);
         LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyBitDate, 2, changesParams, 1, 2, primDocDate, 1);
         maxChangesParamsDate = AddGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, primDocStore, 1, 2);
@@ -376,6 +380,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         docOutBalanceQuantity = AddJProp(balanceGroup, "Остаток (расх.)", balanceStoreQuantity, 2, outStore, 1, 2);
         docIncBalanceQuantity = AddJProp(balanceGroup, "Остаток (прих.)", balanceStoreQuantity, 2, incStore, 1, 2);
+        docRevBalanceQuantity = AddJProp(balanceGroup, "Остаток (переоц.)", balanceStoreQuantity, 2, revalStore, 1, 2);
 
         docCurPriceIn = AddJProp("Цена пост. (тек.)", storePriceIn, 2, paramsStore, 1, 2);
         docCurVATIn = AddJProp("НДС пост. (тек.)", storeVATIn, 2, paramsStore, 1, 2);
@@ -398,6 +403,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         revalCurLocTax = AddJProp("Местн. нал. (тек.)", storeLocTax, 2, revalStore, 1, 2);
         revalCurPriceOut = AddJProp("Цена розн. (тек.)", storePriceOut, 2, revalStore, 1, 2);
 
+        revalOverBalanceQuantity = AddUProp(balanceGroup, "Остаток", 2, 2, 1, docRevBalanceQuantity, 1, 2, 1, revalBalanceQuantity, 1, 2);
         revalOverPriceIn = AddUProp(incPrmsGroupBefore, "Цена пост.", 2, 2, 1, revalCurPriceIn, 1, 2, 1, revalPriceIn, 1, 2);
         revalOverVATIn = AddUProp(incPrmsGroupBefore, "НДС пост.", 2, 2, 1, revalCurVATIn, 1, 2, 1, revalVATIn, 1, 2);
         revalOverAddBefore = AddUProp(outPrmsGroupBefore, "Надбавка (до)", 2, 2, 1, revalCurAdd, 1, 2, 1, revalAddBefore, 1, 2);
@@ -520,7 +526,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             super(iID, caption);
         }
 
-        void addArticleRegularFilterGroup(PropertyObjectImplement documentProp, PropertyObjectImplement... extraProps) {
+        void addArticleRegularFilterGroup(PropertyObjectImplement documentProp, Object documentValue, PropertyObjectImplement... extraProps) {
 
             RegularFilterGroup filterGroup = new RegularFilterGroup(IDShift(1));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
@@ -528,7 +534,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(documentProp, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(documentProp, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(documentValue)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
 
@@ -595,7 +601,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, incPrmsGroup, objDoc, objArt);
             addPropertyView(this, outPrmsGroup, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, extIncQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(this, extIncQuantity.Property).View, 0);
         }
     }
 
@@ -622,7 +628,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, incPrmsGroup, objDoc, objArt);
             addPropertyView(this, outPrmsGroup, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, intraQuantity.Property).View,
+            addArticleRegularFilterGroup(getPropertyView(this, intraQuantity.Property).View, 0, 
                                          getPropertyView(this, docOutBalanceQuantity.Property).View,
                                          getPropertyView(this, docIncBalanceQuantity.Property).View);
         }
@@ -651,7 +657,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, incPrmsGroup, objDoc, objArt);
             addPropertyView(this, outPrmsGroup, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, extOutQuantity.Property).View,
+            addArticleRegularFilterGroup(getPropertyView(this, extOutQuantity.Property).View, 0,
                                          getPropertyView(this, docOutBalanceQuantity.Property).View);
         }
     }
@@ -752,10 +758,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, storeGroup, objDoc);
             addPropertyView(this, baseGroup, objArt);
 //            addPropertyView(this, artgrGroup, objArt);
+            addPropertyView(this, revalOverBalanceQuantity, objDoc, objArt);
             addPropertyView(this, isRevalued, objDoc, objArt);
             addPropertyView(this, incPrmsGroupBefore, objDoc, objArt);
             addPropertyView(this, outPrmsGroupBefore, objDoc, objArt);
             addPropertyView(this, outPrmsGroupAfter, objDoc, objArt);
+
+            addArticleRegularFilterGroup(getPropertyView(this, isRevalued.Property).View, false, 
+                                         getPropertyView(this, revalOverBalanceQuantity.Property).View);
         }
     }
 
@@ -795,11 +805,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjPrimDoc);
 
             addPropertyView(this, baseGroup, objPrimDoc);
-            addPropertyView(this, primDocStore, objPrimDoc);
-            addPropertyView(this, changesParams, objPrimDoc, objArt);
-            addPropertyView(this, quantity, objPrimDoc, objArt);
+//            addPropertyView(this, primDocStore, objPrimDoc);
+//            addPropertyView(this, changesParams, objPrimDoc, objArt);
+//            addPropertyView(this, quantity, objPrimDoc, objArt);
+            addPropertyView(this, paramsGroup, objPrimDoc);
             addPropertyView(this, paramsGroup, objPrimDoc, objArt);
 
+            addFixedFilter(new Filter(getPropertyView(this, changesParams.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(false)));
+            addFixedFilter(new Filter(getPropertyView(this, primDocStore.Property).View, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
+
+            DefaultClientFormView formView = new DefaultClientFormView(this);
+            formView.defaultOrders.put(formView.get(getPropertyView(this, primDocDate.Property)), false);
+            richDesign = formView;
         }
     }
 

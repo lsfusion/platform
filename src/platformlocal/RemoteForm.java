@@ -582,10 +582,6 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return getPropertyClass(propertyID).ID;
     }
 
-    public byte[] getPropertyClassByteArray(int propertyID) {
-        return ByteArraySerializer.serializeClass(getPropertyClass(getPropertyView(propertyID)));
-    }
-
     // ----------------------------------- Навигация ----------------------------------------- //
 
     public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
@@ -917,8 +913,15 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         DataChanged = true;
     }
 
-    // Применение изменений
+    // Обновление данных
+    public void refreshData() {
 
+        for(GroupObjectImplement Group : Groups) {
+            Group.Updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
+        }
+    }
+
+    // Применение изменений
     public String SaveChanges() throws SQLException {
         return BL.Apply(Session);
     }

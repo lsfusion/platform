@@ -81,6 +81,7 @@ public class ClientForm extends JPanel {
     Map<ClientGroupObjectImplement, GroupObjectModel> models;
 
     private JButton buttonPrint;
+    private JButton buttonRefresh;
     private JButton buttonApply;
     private JButton buttonCancel;
     private JButton buttonOK;
@@ -219,6 +220,16 @@ public class ClientForm extends JPanel {
         });
 
         formLayout.add(formView.printView, buttonPrint);
+
+        buttonRefresh = new JButton("Обновить");
+        buttonRefresh.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                refreshData();
+            }
+        });
+
+        formLayout.add(formView.refreshView, buttonRefresh);
 
         buttonApply = new JButton("Применить");
         buttonApply.addActionListener(new ActionListener() {
@@ -481,6 +492,13 @@ public class ClientForm extends JPanel {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
+    }
+
+    void refreshData() {
+
+        remoteForm.refreshData();
+
+        applyFormChanges();
     }
 
     boolean saveChanges() {
@@ -2162,7 +2180,11 @@ public class ClientForm extends JPanel {
                     }
 
                     public ClientCellView getSelectedCell() {
+
                         int colView = getSelectedColumn();
+                        if (colView < 0 || colView >= getColumnCount())
+                            return null;
+
                         int colModel = convertColumnIndexToModel(colView);
                         if (colModel < 0)
                             return null;
