@@ -15,7 +15,7 @@ import java.util.*;
 
 class SetBuilder<T> {
 
-    void RecFillSubSetList(List<T> BuildSet,int Current,List<List<T>> Result,ArrayList<T> CurrentSet) {
+    static <T> void RecFillSubSetList(List<T> BuildSet,int Current,List<List<T>> Result,ArrayList<T> CurrentSet) {
         if(Current>=BuildSet.size()) {
             Result.add((List<T>)CurrentSet.clone());
             return;
@@ -28,7 +28,7 @@ class SetBuilder<T> {
     }
     
     // строит список подмн-в в лексикографическом порядке
-    List<List<T>> BuildSubSetList(Collection<T> BuildSet) {
+    static <T> List<List<T>> buildSubSetList(Collection<T> BuildSet) {
 
         List<T> BuildList;
         if(BuildSet instanceof List)
@@ -156,6 +156,21 @@ class CollectionExtend {
     static void removeAll(Collection<?> From,Collection<?> Remove) {
         for(Object Key : Remove)
             From.remove(Key);
+    }
+
+    static <V> V getRandom(Set<V> ToRandom,Random Randomizer) {
+        int RandomNum = Randomizer.nextInt(ToRandom.size());
+        int CountNum = 0;
+        for(V Object : ToRandom)
+            if(CountNum==RandomNum) return Object;
+        return null;
+    }
+
+    static <T> Set<T> intersect(Set<T> Op1,Set<T> Op2) {
+        Set<T> Result = new HashSet<T>();
+        for(T Element : Op1)
+            if(Op2.contains(Element)) Result.add(Element);
+        return Result;
     }
 }
 

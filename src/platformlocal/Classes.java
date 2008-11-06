@@ -15,31 +15,34 @@ import java.math.BigDecimal;
  */
 abstract class Class extends AbstractNode {
 
-    static BaseClass baseClass;
-    static IntegralClass integralClass;
-    static StringClass stringClass;
-    static IntegerClass integerClass;
+    static BaseClass base;
+    static BaseClass data;
+    static IntegralClass integral;
+    static StringClass string;
+    static IntegerClass integer;
     static LongClass longClass;
     static DoubleClass doubleClass;
-    static DateClass dateClass;
-    static BitClass bitClass;
+    static DateClass date;
+    static BitClass bit;
 
     static {
-        baseClass = new BaseClass(1000000, "Базовый класс");
-        integralClass = new IntegralClass(1000001, "Число");
-        integralClass.AddParent(baseClass);
-        stringClass = new StringClass(1000002, "Строка");
-        stringClass.AddParent(baseClass);
-        integerClass = new IntegerClass(1000003, "Кол-во");
-        integerClass.AddParent(integralClass);
-        longClass = new LongClass(1000004, "Кол-во");
-        longClass.AddParent(integralClass);
-        doubleClass = new DoubleClass(1000005, "Кол-во");
-        doubleClass.AddParent(integralClass);
-        dateClass = new DateClass(1000006, "Дата");
-        dateClass.AddParent(integralClass);
-        bitClass = new BitClass(1000007, "Бит");
-        bitClass.AddParent(integralClass);
+        base = new BaseClass(1000000, "Базовый класс");
+        data = new BaseClass(1000001, "Данные");
+        data.addParent(base);
+        integral = new IntegralClass(1000002, "Число");
+        integral.addParent(data);
+        string = new StringClass(1000003, "Строка");
+        string.addParent(data);
+        integer = new IntegerClass(1000004, "Кол-во");
+        integer.addParent(integral);
+        longClass = new LongClass(1000005, "Кол-во");
+        longClass.addParent(integral);
+        doubleClass = new DoubleClass(1000006, "Кол-во");
+        doubleClass.addParent(integral);
+        date = new DateClass(1000007, "Дата");
+        date.addParent(integral);
+        bit = new BitClass(1000008, "Бит");
+        bit.addParent(integral);
     }
 
     Collection<Class> Parents;
@@ -53,73 +56,55 @@ abstract class Class extends AbstractNode {
         Parents = new ArrayList<Class>();
         Childs = new ArrayList<Class>();
 
-        for (Class parent : parents) AddParent(parent);
+        for (Class parent : parents) addParent(parent);
     }
 
     public String toString() {
         return ID + " " + caption;
     }
 
-    void AddParent(Class ParentClass) {
+    void addParent(Class ParentClass) {
         // проверим что в Parent'ах нету этого класса
         for(Class Parent:Parents) 
-            if(Parent.IsParent(ParentClass)) return;
+            if(Parent.isParent(ParentClass)) return;
         
         Iterator<Class> i = Parents.iterator();
         while(i.hasNext())
-            if(ParentClass.IsParent(i.next())) i.remove();
+            if(ParentClass.isParent(i.next())) i.remove();
             
         Parents.add(ParentClass);
         ParentClass.Childs.add(this);        
     }
 
-    boolean IsParent(Class Class) {
+    boolean isParent(Class Class) {
         if(Class==this) return true;
 
         for(Class Parent : Parents)
-            if (Parent.IsParent(Class)) return true;
+            if (Parent.isParent(Class)) return true;
         
         return false;
     }
     
-    Class FindClassID(Integer idClass) {
+    Class findClassID(Integer idClass) {
         if(ID.equals(idClass)) return this;
 
         for(Class Child : Childs) {
-            Class FindClass = Child.FindClassID(idClass);
+            Class FindClass = Child.findClassID(idClass);
             if(FindClass!=null) return FindClass;
         }
         
         return null;
     }
     
-    Class CommonParent(Class ToCommon) {
-        CommonParent1(1);
-        Class Result = CommonParent2();
-        CommonParent1(0);
-        
+    Set<Class> commonParents(Class ToCommon) {
+        CommonClassSet1(true);
+        ToCommon.CommonClassSet2(false,null,true);
+
+        Set<Class> Result = new HashSet<Class>();
+        CommonClassSet3(Result,null,true);
         return Result;
     }
     
-    // 1-й шаг пометки
-    private void CommonParent1(int SetCheck) {
-        if(Check==SetCheck) return;
-        Check = SetCheck;
-        for(Class Parent : Parents) Parent.CommonParent1(SetCheck);
-    }
-
-    // 2-й шаг выводит в Set, и сбрасывает пометки
-    private Class CommonParent2() {
-        if(Check==1) return this;
-        
-        for(Class Parent : Parents) {
-            Class ParentClass = Parent.CommonParent2();
-            if(ParentClass!=null) return ParentClass;
-        }
-        
-        return null;
-    }
-
     void FillSetID(Collection<Integer> SetID) {
         if (SetID.contains(ID))
             return;
@@ -131,27 +116,26 @@ abstract class Class extends AbstractNode {
     }
 
     // заполняет список классов
-    void FillClassList(List<Class> ClassList) {
-        if (ClassList.contains(ID))
+    void fillChilds(Collection<Class> ClassSet) {
+        if (ClassSet.contains(this))
             return;
         
-        ClassList.add(this);
+        ClassSet.add(this);
         
         for(Class Child : Childs)
-            Child.FillClassList(ClassList);
+            Child.fillChilds(ClassSet);
     }
 
     // заполняет список классов
     void fillParents(Collection<ObjectClass> ParentSet) {
-        return;
     }
 
     // получает классы у которого есть оба интерфейса
-    ClassSet CommonClassSet(Class ToCommon) {
+    Set<Class> commonChilds(Class ToCommon) {
         CommonClassSet1(false);
         ToCommon.CommonClassSet2(false,null,false);
 
-        ClassSet Result = new ClassSet();
+        Set<Class> Result = new HashSet<Class>();
         CommonClassSet3(Result,null,false);
         return Result;
     }
@@ -214,7 +198,7 @@ abstract class Class extends AbstractNode {
     abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
     abstract Object getRandomObject(Map<Class, List<Integer>> Objects,Random Randomizer,Integer Diap) throws SQLException;
 
-    ArrayList<NavigatorElement> relevantElements = new ArrayList();
+    ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
     void addRelevantElement(NavigatorElement relevantElement) {
         relevantElements.add(relevantElement);
     }
@@ -232,11 +216,11 @@ class BaseClass extends Class {
     }// получает рандомный объект
 
     Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 }
 
@@ -337,7 +321,7 @@ class ObjectClass extends Class {
     }
 
     void fillParents(Collection<ObjectClass> ParentSet) {
-        if (ParentSet.contains(ID))
+        if (ParentSet.contains(this))
             return;
 
         ParentSet.add(this);
@@ -359,7 +343,7 @@ abstract class Type<T> {
 
     static String NULL = "NULL";
 
-    static List<Type> Enum = new ArrayList();
+    static List<Type> Enum = new ArrayList<Type>();
 
     static {
         Object = Integer;
@@ -540,7 +524,7 @@ class BitType extends IntegralType<Boolean> {
         if(Value instanceof Double)
             return ((Double)Value).byteValue()!=0;
         if(Value instanceof Float)
-            return ((Double)Value).byteValue()!=0;
+            return ((Float)Value).byteValue()!=0;
         if(Value instanceof Long)
             return ((Long)Value).byteValue()!=0;
         if(Value instanceof Integer)

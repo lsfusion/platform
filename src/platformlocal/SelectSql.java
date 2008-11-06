@@ -300,9 +300,6 @@ class TypedObject {
     TypedObject(Object iValue, Type iType) {
         Value = iValue;
         Type = iType;
-
-        if(Type instanceof BitType && Value instanceof Integer)
-            Type = Type;
     }
 
     static String getString(Object Value, Type Type, SQLSyntax Syntax) {
@@ -400,9 +397,7 @@ class EmptySource<K,V> extends Source<K,V> {
     }
 
     public EmptySource(Collection<? extends K> iKeys,V Property,Type DBType) {
-        super(iKeys);
-        NullProps = new HashMap();
-        NullProps.put(Property,DBType);
+        this(iKeys,Collections.singletonMap(Property,DBType));
     }
 
     String getSource(SQLSyntax Syntax) {
@@ -1189,6 +1184,69 @@ class NullJoinSourceExpr extends SourceExpr {
     }
 }
 
+// по аналогии возвращает Null нужен чисто чтобы "протолкнуть" Map
+class NullMapSourceExpr<T> extends SourceExpr {
+
+    NullMapSourceExpr(Map<T,SourceExpr> iMapExprs,Type iDBType) {
+        MapExprs = iMapExprs;
+        DBType = iDBType;
+    }
+
+    Map<T,SourceExpr> MapExprs;
+    Type DBType;
+
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+        for(SourceExpr Expr : MapExprs.values())
+            Expr.fillJoins(Joins, Wheres);
+    }
+
+    void fillObjectExprs(Collection<ObjectExpr> Exprs) {
+        for(SourceExpr Expr : MapExprs.values())
+            Expr.fillObjectExprs(Exprs);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
+        return Type.NULL;
+    }
+
+    Type getType() {
+        return DBType;
+    }
+
+    public SourceExpr proceedTranslate(ExprTranslator Translated) {
+        boolean ChangedExprs = false;
+        Map<T,SourceExpr> TransMapExprs = new HashMap<T,SourceExpr>();
+        for(Map.Entry<T,SourceExpr> MapExpr : MapExprs.entrySet()) {
+            SourceExpr TransExpr = MapExpr.getValue().translate(Translated);
+            TransMapExprs.put(MapExpr.getKey(),TransExpr);
+            ChangedExprs = ChangedExprs || TransExpr!=MapExpr.getValue();
+        }
+        if(!ChangedExprs)
+            return this;
+        else
+            return new NullMapSourceExpr<T>(TransMapExprs,DBType);
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NullMapSourceExpr that = (NullMapSourceExpr) o;
+
+        if (!DBType.equals(that.DBType)) return false;
+        if (!MapExprs.equals(that.MapExprs)) return false;
+
+        return true;
+    }
+
+    public int hashCode() {
+        int result;
+        result = MapExprs.hashCode();
+        result = 31 * result + DBType.hashCode();
+        return result;
+    }
+}
+
 class CaseWhenSourceExpr extends SourceExpr {
 
     CaseWhenSourceExpr(Where iWhere,SourceExpr iTrueExpr,SourceExpr iFalseExpr) {
@@ -1326,17 +1384,18 @@ class IsNullSourceExpr extends SourceExpr {
 
 class FormulaSourceExpr extends SourceExpr {
 
-    FormulaSourceExpr(String iFormula) {
-        Formula = iFormula;
-        Params = new HashMap<String,SourceExpr>();
+    FormulaSourceExpr(String iFormula,Type iDBType) {
+        this(iFormula,new HashMap<String,SourceExpr>(),iDBType);
     }
 
-    FormulaSourceExpr(String iFormula,Map<String,SourceExpr> iParams) {
+    FormulaSourceExpr(String iFormula,Map<String,SourceExpr> iParams,Type iDBType) {
         Formula = iFormula;
         Params = iParams;
+        DBType = iDBType;
     }
     
     String Formula;
+    Type DBType;
 
     Map<String,SourceExpr> Params;
 
@@ -1363,17 +1422,8 @@ class FormulaSourceExpr extends SourceExpr {
          return SourceString;
      }
 
-    static Type getFormulaType(Collection<SourceExpr> Params) {
-        for(SourceExpr Prm : Params) {
-            Type PrmType = Prm.getType();
-            if(PrmType!=Type.Bit) return PrmType;
-        }
-
-        return Type.Bit;
-    }
-    
     Type getType() {
-        return getFormulaType(Params.values());
+        return DBType;
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -1388,7 +1438,7 @@ class FormulaSourceExpr extends SourceExpr {
         if(!ChangedParams)
             return this;
         else
-            return new FormulaSourceExpr(Formula,TransParams); 
+            return new FormulaSourceExpr(Formula,TransParams,DBType); 
     }
 
     public boolean equals(Object o) {
@@ -1415,13 +1465,15 @@ class FormulaSourceExpr extends SourceExpr {
 class MultiplySourceExpr extends SourceExpr {
 
     Collection<SourceExpr> Operands;
+    Type DBType;
 
-    MultiplySourceExpr() {
-        Operands = new ArrayList();
+    MultiplySourceExpr(Type iDBType) {
+        this(new ArrayList<SourceExpr>(),iDBType);
     }
 
-    MultiplySourceExpr(Collection<SourceExpr> iOperands) {
+    MultiplySourceExpr(Collection<SourceExpr> iOperands,Type iDBType) {
         Operands = iOperands;
+        DBType = iDBType;
     }
 
     public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
@@ -1450,7 +1502,7 @@ class MultiplySourceExpr extends SourceExpr {
     }
 
     Type getType() {
-        return FormulaSourceExpr.getFormulaType(Operands);
+        return DBType;
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -1465,7 +1517,7 @@ class MultiplySourceExpr extends SourceExpr {
         if(!ChangedOperands)
             return this;
         else
-            return new MultiplySourceExpr(TransOperands);
+            return new MultiplySourceExpr(TransOperands,DBType);
 
     }
 
@@ -1997,6 +2049,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     List<Join> Joins = new ArrayList();
 
     void add(V Property,SourceExpr Expr) {
+        if(Expr==null)
+            Expr = Expr;
         Expr.fillJoins(Joins,Wheres);
         Properties.put(Property,Expr);
     }
@@ -3111,7 +3165,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
 // с GroupQuery пока неясно
 class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
     Source<?,B> From; // вообще должен быть или K или V
-    Map<V,Integer> Properties = new HashMap();
+    Map<V,Integer> Properties;
 //    int Operator;
 
     String getSelect(List<K> KeyOrder, List<V> PropertyOrder, SQLSyntax Syntax) {
@@ -3179,9 +3233,7 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
     }
 
     GroupQuery(Collection<? extends K> iKeys,Source<?,B> iFrom,V Property,int iOperator) {
-        super(iKeys);
-        From = iFrom;
-        Properties.put(Property,iOperator);
+        this(iKeys,iFrom,Collections.singletonMap(Property,(Integer)iOperator));
     }
 
     GroupQuery(Collection<? extends K> iKeys,Source<?,B> iFrom,Map<V,Integer> iProperties) {

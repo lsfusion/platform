@@ -213,7 +213,7 @@ public class Main {
 
             BusinessLogics BL = new TmcBusinessLogics();
 
-            boolean recreateDB = false;
+            boolean recreateDB = true;
 
             if (recreateDB) {
 
@@ -460,24 +460,24 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         AbstractGroup groupArticleC = new AbstractGroup("Ценовые параметры");
         AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
-        Name = AddDProp("имя", Class.stringClass, objectClass);
+        Name = AddDProp("имя", Class.string, objectClass);
         groupArticleA.add(Name.Property);
 
         DocStore = AddDProp("склад", Store, Document);
 
-        PrihQuantity = AddDProp("кол-во прих.", Class.integerClass, PrihDocument, Article);
+        PrihQuantity = AddDProp("кол-во прих.", Class.integer, PrihDocument, Article);
         PrihQuantity.Property.caption = "кол-во прих.";
 
-        RashQuantity = AddDProp("кол-во расх.", Class.integerClass, RashDocument, Article);
+        RashQuantity = AddDProp("кол-во расх.", Class.integer, RashDocument, Article);
 
         ArtToGroup = AddDProp("гр. тов.", ArticleGroup, Article);
         groupArticleG.add(ArtToGroup.Property);
 
-        DocDate = AddDProp("дата док.", Class.dateClass, Document);
+        DocDate = AddDProp("дата док.", Class.date, Document);
 
-        GrAddV = AddDProp("нац. по гр.", Class.integerClass, ArticleGroup);
+        GrAddV = AddDProp("нац. по гр.", Class.integer, ArticleGroup);
 
-        ArtAddV = AddDProp("нац. перегр.", Class.integerClass, Article);
+        ArtAddV = AddDProp("нац. перегр.", Class.integer, Article);
         groupArticleC.add(ArtAddV.Property);
 
         BarCode = AddDProp("штрих-код", Class.doubleClass, Article);
@@ -486,15 +486,15 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Price = AddDProp("цена", Class.longClass, Article);
         groupArticleA.add(Price.Property);
 
-        ExpireDate = AddDProp("срок годн.", Class.dateClass, Article);
+        ExpireDate = AddDProp("срок годн.", Class.date, Article);
         groupArticleA.add(ExpireDate.Property);
 
-        Weight = AddDProp("вес.", Class.bitClass, Article);
+        Weight = AddDProp("вес.", Class.bit, Article);
         groupArticleA.add(Weight.Property);
 
-        LDP AbsQuantity = AddCProp("абст. кол-во",null,Class.integerClass,Document,Article);
+        LDP AbsQuantity = AddCProp("абст. кол-во",null,Class.integer,Document,Article);
 
-        LDP IsGrmat = AddCProp("признак товара",0,Class.integerClass,Article);
+        LDP IsGrmat = AddCProp("признак товара",0,Class.integer,Article);
         groupArticleA.add(IsGrmat.Property);
 
         FilledProperty = AddUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
@@ -502,9 +502,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         // сделаем Quantity перегрузкой
         Quantity = AddUProp("кол-во",2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LDP RashValue = AddCProp("призн. расхода",-1,Class.integerClass,RashDocument);
+        LDP RashValue = AddCProp("призн. расхода",-1,Class.integer,RashDocument);
 
-        LDP PrihValue = AddCProp("призн. прихода",1,Class.integerClass,PrihDocument);
+        LDP PrihValue = AddCProp("призн. прихода",1,Class.integer,PrihDocument);
 
         OpValue = AddUProp("общ. призн.", 2,1,1,RashValue,1,1,PrihValue,1);
 
@@ -517,16 +517,16 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP NotZero = AddWSFProp("prm1<>0",Class.integralClass);
-        LSFP Less = AddWSFProp("prm1<prm2",Class.integralClass,Class.integralClass);
-        LMFP Multiply = AddMFProp(Class.integerClass,Class.bitClass);
-        LMFP Multiply3 = AddMFProp(Class.bitClass,Class.integerClass,Class.bitClass);
+        LSFP NotZero = AddWSFProp("prm1<>0",1);
+        LSFP Less = AddWSFProp("prm1<prm2",2);
+        LMFP Multiply = AddMFProp(Class.integer,2);
+        LMFP Multiply3 = AddMFProp(Class.integer,3);
 
         LJP StoreName = AddJProp("имя склада", Name,1,DocStore,1);
 
         LJP ArtGroupName = AddJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
-        LDP ArtGName = AddDProp("при доб. гр. тов.", Class.stringClass, Article);
+        LDP ArtGName = AddDProp("при доб. гр. тов.", Class.string, Article);
         setDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = AddJProp("товар в док.", NotZero,2,Quantity,1,2);
@@ -557,7 +557,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LGP ArtMaxQty = AddGProp("макс. кол-во", Quantity,false,2);
 
-        LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",Class.dateClass,Class.dateClass,Class.dateClass);
+        LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",3);
         LJP DokBetweenDate = AddJProp("документ в интервале", BetweenDate,3,DocDate,1,2,3);
 
         LJP RashBetweenDate = AddJProp("расх. кол-во в интервале", Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
@@ -797,10 +797,10 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     IntegralNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1),Class.dateClass);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),Class.date);
         obj1.caption = "дата 1";
 
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.dateClass);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.date);
         obj2.caption = "дата 2";
 
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Article);
@@ -838,7 +838,7 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
         obj1.caption = "товар";
 
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.dateClass);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),Class.date);
         obj2.caption = "дата";
 
         GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));

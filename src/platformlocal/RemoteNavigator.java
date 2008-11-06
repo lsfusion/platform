@@ -72,7 +72,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         if (currentClass != null && currentClass.ID == classID) return false;
 
-        currentClass = BL.objectClass.FindClassID(classID);
+        currentClass = BL.objectClass.findClassID(classID);
         return true;
     }
 
@@ -195,12 +195,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             objectMapper = iobjectMapper;
         }
 
-        PropertyObjectImplement doMapping(PropertyObjectImplement propKey) {
+        PropertyObjectImplement doMapping(PropertyObjectImplement<?> propKey) {
 
             if (mapper.containsKey(propKey)) return mapper.get(propKey);
 
             PropertyObjectImplement propValue = new PropertyObjectImplement(propKey.Property);
-            for (Map.Entry<PropertyInterface, ObjectImplement> entry : propKey.Mapping.entrySet()) {
+            for (Map.Entry<? extends PropertyInterface,ObjectImplement> entry : propKey.Mapping.entrySet()) {
                 propValue.Mapping.put(entry.getKey(), objectMapper.doMapping(entry.getValue()));
             }
 
@@ -222,7 +222,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         Filter doMapping(Filter filterKey) {
 
             if (filterKey == null) return null;
-            
+
             ValueLink value = null;
 
             ValueLink navigatorValue = filterKey.Value;
@@ -246,7 +246,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     private ClassCache classCache;
 
     public void addCacheObject(int classID, int value) {
-        addCacheObject(BL.objectClass.FindClassID(classID), value);
+        addCacheObject(BL.objectClass.findClassID(classID), value);
     }
 
     public void addCacheObject(Class cls, Integer value) {
@@ -254,7 +254,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
     public int getCacheObject(int classID) {
-        return getCacheObject(BL.objectClass.FindClassID(classID));
+        return getCacheObject(BL.objectClass.findClassID(classID));
     }
 
     public int getCacheObject(Class cls) {
@@ -269,7 +269,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
     public int getDefaultForm(int classID) {
 
-        List<NavigatorElement> relevant = BL.objectClass.FindClassID(classID).relevantElements;
+        List<NavigatorElement> relevant = BL.objectClass.findClassID(classID).relevantElements;
 
         if (relevant == null) return -1;
 
@@ -373,9 +373,9 @@ class ClassCache extends LinkedHashMap<Class, Integer> {
         if (cls == null) {
             throw new RuntimeException("Unable to put null key to cache");
         }
-        
+
         if (containsKey(cls)) remove(cls);
-        
+
         if (value != null)
             return super.put(cls, value);
         else
@@ -386,7 +386,7 @@ class ClassCache extends LinkedHashMap<Class, Integer> {
 
         Integer objectID = -1;
         for (Map.Entry<Class, Integer> entry : entrySet()) {
-            if (entry.getKey().IsParent(cls)) objectID = entry.getValue();
+            if (entry.getKey().isParent(cls)) objectID = entry.getValue();
         }
 
         return objectID;

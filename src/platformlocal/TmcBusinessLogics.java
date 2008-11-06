@@ -185,7 +185,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // -------------------------- Data Properties ---------------------- //
 
-        name = AddDProp(baseGroup, "Имя", Class.stringClass, objectClass);
+        name = AddDProp(baseGroup, "Имя", Class.string, objectClass);
 
         artGroup = AddDProp(artgrGroup, "Гр. тов.", articleGroup, article);
 
@@ -243,7 +243,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         quantity = AddUProp(paramsGroup, "Кол-во", 2, 2, 1, docQuantity, 1, 2, 1, revalBalanceQuantity, 1, 2, 1, incQuantity, 1, 2, 1, outQuantity, 1, 2);
 
         LP incPrmsQuantity = AddUProp("Кол-во прих. (парам.)", 2, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2);
-        LSFP notZero = AddWSFProp("((prm1)<>0)",Class.integralClass);
+        LSFP notZero = AddWSFProp("((prm1)<>0)",1);
         notZeroIncPrmsQuantity = AddJProp("Есть в док.", notZero, 2, incPrmsQuantity, 1, 2);
 
         incStoreQuantity = AddGProp(quantGroup, "Прих. на скл.", incQuantity, true, incStore, 1, 2);
@@ -254,8 +254,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // -------------------------- Входные параметры ---------------------------- //
 
-        primDocDate = AddDProp(baseGroup, "Дата", Class.dateClass, primaryDocument);
-        secDocDate = AddDProp(baseGroup, "Дата", Class.dateClass, secondaryDocument);
+        primDocDate = AddDProp(baseGroup, "Дата", Class.date, primaryDocument);
+        secDocDate = AddDProp(baseGroup, "Дата", Class.date, secondaryDocument);
 
         docDate = AddUProp("Дата", 2, 1, 1, secDocDate, 1, 1, primDocDate, 1);
 
@@ -264,11 +264,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // -------------------------- Входные суммы ---------------------------- //
 
-        LMFP multiplyDoubleDouble = AddMFProp(Class.doubleClass, Class.doubleClass);
+        LMFP multiplyDoubleDouble = AddMFProp(Class.doubleClass,2);
         extIncDetailCalcSum = AddJProp(incSumsGroup, "Сумма пост.", multiplyDoubleDouble, 1, extIncDetailQuantity, 1, extIncDetailPriceIn, 1);
 
-        LSFP percent = AddSFProp("((prm1*prm2)/100)", Class.doubleClass, Class.doubleClass);
-        LSFP round = AddSFProp("round(prm1)", Class.doubleClass);
+        LSFP percent = AddSFProp("((prm1*prm2)/100)", Class.doubleClass, 2);
+        LSFP round = AddSFProp("round(prm1)", Class.doubleClass, 1);
 
         extIncDetailCalcSumVATIn = AddJProp("Сумма НДС (расч.)", round, 1,
                                    AddJProp("Сумма НДС (расч. - неокр.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVATIn, 1), 1);
@@ -291,7 +291,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         setDefProp(extIncDetailVATOut, extIncDetailVATIn, true);
         extIncDetailLocTax = AddDProp(outPrmsGroup, "Местн. нал.", Class.doubleClass, extIncomeDetail);
 
-        LSFP addPercent = AddSFProp("((prm1*(100+prm2))/100)", Class.doubleClass, Class.doubleClass);
+        LSFP addPercent = AddSFProp("((prm1*(100+prm2))/100)", Class.doubleClass, 2);
         extIncDetailCalcPriceOut = AddJProp("Цена розн. (расч.)", round, 1,
                                    AddJProp("Цена розн. (расч. - неокр.)", addPercent, 1,
                                    AddJProp("Цена с НДС", addPercent, 1,
@@ -315,7 +315,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // ------------------------------ Переоценка -------------------------------- //
 
-        isRevalued = AddDProp("Переоц.", Class.bitClass, revalDocument, article);
+        isRevalued = AddDProp("Переоц.", Class.bit, revalDocument, article);
 
         revalPriceIn = AddDProp("Цена пост.", Class.doubleClass, revalDocument, article);
         revalVATIn = AddDProp("НДС пост.", Class.doubleClass, revalDocument, article);
@@ -330,26 +330,26 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // -------------------------- Последний документ ---------------------------- //
 
-        LP primDocArtBitNull = AddCProp("абст. бит", null, Class.bitClass, primaryDocument, article);
+        LP primDocArtBitNull = AddCProp("абст. бит", null, Class.bit, primaryDocument, article);
         changesParams = AddUProp(paramsGroup, "Изм. парам.", 2, 2, 1, primDocArtBitNull, 1, 2, 1, isRevalued, 1, 2, 1, notZeroIncPrmsQuantity, 1, 2);
-        LMFP multiplyBitDate = AddMFProp(Class.bitClass, Class.dateClass);
+        LMFP multiplyBitDate = AddMFProp(Class.date,2);
         LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyBitDate, 2, changesParams, 1, 2, primDocDate, 1);
         maxChangesParamsDate = AddGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, primDocStore, 1, 2);
 
-        LSFP equalsDD = AddWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))", Class.dateClass, Class.dateClass, store, store);
+        LSFP equalsDD = AddWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))",4);
         LJP primDocIsCor = AddJProp("Док. макс.", equalsDD, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, primDocStore, 1, 2);
 
-        LMFP multiplyBitBit = AddMFProp(Class.bitClass, Class.bitClass);
+        LMFP multiplyBitBit = AddMFProp(Class.bit,2);
         LJP primDocIsLast = AddJProp("Посл.", multiplyBitBit, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);
 
-        LMFP multiplyBitPrimDoc = AddMFProp(Class.bitClass, primaryDocument);
-        LJP primDocSelfLast = AddJProp("Тов. док. максю", multiplyBitPrimDoc, 3, primDocIsLast, 1, 2, 3, 1);
+        LMFP multiplyBitPrimDoc = AddMFProp(primaryDocument,2);
+        LJP primDocSelfLast = AddJProp("Тов. док. макс.", multiplyBitPrimDoc, 3, primDocIsLast, 1, 2, 3, 1);
         maxChangesParamsDoc = AddGProp(baseGroup, "Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
 
         // ------------------------- Параметры по приходу --------------------------- //
 
-        LP bitExtInc = AddCProp("Бит", true, Class.bitClass, extIncomeDetail);
-        LMFP multiplyBitDetail = AddMFProp(Class.bitClass, extIncomeDetail);
+        LP bitExtInc = AddCProp("Бит", true, Class.bit, extIncomeDetail);
+        LMFP multiplyBitDetail = AddMFProp(extIncomeDetail,2);
         LJP propDetail = AddJProp("", multiplyBitDetail, 1, bitExtInc, 1, 1);
         extIncLastDetail = AddGProp("Посл. строка", propDetail, false, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
@@ -411,7 +411,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         revalOverLocTaxBefore = AddUProp(outPrmsGroupBefore, "Местн. нал. (до)", 2, 2, 1, revalCurLocTax, 1, 2, 1, revalLocTaxBefore, 1, 2);
         revalOverPriceOutBefore = AddUProp(outPrmsGroupBefore, "Цена розн. (до)", 2, 2, 1, revalCurPriceOut, 1, 2, 1, revalPriceOutBefore, 1, 2);
 
-        LMFP multiplyBitDouble = AddMFProp(Class.bitClass, Class.doubleClass);
+        LMFP multiplyBitDouble = AddMFProp(Class.doubleClass,2);
         LJP docCurQPriceIn = AddJProp("", multiplyBitDouble, 2, notZeroIncPrmsQuantity, 1, 2, docCurPriceIn, 1, 2);
         LJP docCurQVATIn = AddJProp("", multiplyBitDouble, 2, notZeroIncPrmsQuantity, 1, 2, docCurVATIn, 1, 2);
         LJP docCurQAdd = AddJProp("", multiplyBitDouble, 2, notZeroIncPrmsQuantity, 1, 2, docCurAdd, 1, 2);

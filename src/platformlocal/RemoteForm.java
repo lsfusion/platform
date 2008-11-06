@@ -189,10 +189,10 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     }
 }
 
-class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
+class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<ObjectImplement,P> {
 
-    PropertyObjectImplement(PropertyObjectImplement iProperty) { super(iProperty); }
-    PropertyObjectImplement(Property iProperty) {super(iProperty);}
+    PropertyObjectImplement(PropertyObjectImplement<P> iProperty) { super(iProperty); }
+    PropertyObjectImplement(Property<P> iProperty) {super(iProperty);}
 
     // получает Grid в котором рисоваться
     GroupObjectImplement GetApplyObject() {
@@ -204,21 +204,30 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
     }
 
     // получает класс значения
-    Class GetValueClass(GroupObjectImplement ClassGroup) {
-        ClassInterface ClassImplement = new ClassInterface();
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
+    ClassSet getValueClass(GroupObjectImplement ClassGroup) {
+        InterfaceClass<P> ClassImplement = new InterfaceClass<P>();
+        for(P Interface : Property.Interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
-            Class ImpClass = (IntObject.GroupTo==ClassGroup?IntObject.GridClass:IntObject.Class);
-            if(ImpClass==null) return null;
+            ClassSet ImpClass;
+            if(IntObject.GroupTo==ClassGroup)
+                if(IntObject.GridClass==null)
+                    throw new RuntimeException("надо еще думать");
+                else
+                    ImpClass = ClassSet.getUp(IntObject.GridClass);
+            else
+                if(IntObject.Class==null)
+                    return new ClassSet();
+                else
+                    ImpClass = new ClassSet(IntObject.Class);
             ClassImplement.put(Interface,ImpClass);
         }
 
-        return Property.GetValueClass(ClassImplement);
+        return Property.getValueClass(ClassImplement);
     }
 
     // в интерфейсе
-    boolean IsInInterface(GroupObjectImplement ClassGroup) {
-        return GetValueClass(ClassGroup)!=null;
+    boolean isInInterface(GroupObjectImplement ClassGroup) {
+        return !getValueClass(ClassGroup).isEmpty();
     }
 
     // проверяет на то что изменился верхний объект
@@ -239,9 +248,9 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, boolean NotNull) {
 
-        Map<PropertyInterface,SourceExpr> JoinImplement = new HashMap();
+        Map<P,SourceExpr> JoinImplement = new HashMap<P,SourceExpr>();
 
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
+        for(P Interface : Property.Interfaces)
             JoinImplement.put(Interface,Mapping.get(Interface).getSourceExpr(ClassGroup,ClassSource));
 
         // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
@@ -251,19 +260,19 @@ class PropertyObjectImplement extends PropertyImplement<ObjectImplement> {
 }
 
 // представление св-ва
-class PropertyView {
-    PropertyObjectImplement View;
+class PropertyView<P extends PropertyInterface> {
+    PropertyObjectImplement<P> View;
 
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     GroupObjectImplement ToDraw;
 
-    PropertyView(int iID,PropertyObjectImplement iView,GroupObjectImplement iToDraw) {
+    PropertyView(int iID,PropertyObjectImplement<P> iView,GroupObjectImplement iToDraw) {
         View = iView;
         ToDraw = iToDraw;
         ID = iID;
     }
 
-    public PropertyView(PropertyView navigatorProperty) {
+    public PropertyView(PropertyView<P> navigatorProperty) {
 
         ID = navigatorProperty.ID;
         View = navigatorProperty.View;
@@ -338,13 +347,13 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
 }
 
 
-class Filter {
+class Filter<P extends PropertyInterface> {
 
-    PropertyObjectImplement Property;
+    PropertyObjectImplement<P> Property;
     ValueLink Value;
     int Compare;
 
-    Filter(PropertyObjectImplement iProperty,int iCompare,ValueLink iValue) {
+    Filter(PropertyObjectImplement<P> iProperty,int iCompare,ValueLink iValue) {
         Property=iProperty;
         Compare = iCompare;
         Value = iValue;
@@ -360,23 +369,19 @@ class Filter {
     }
 
     boolean IsInInterface(GroupObjectImplement ClassGroup) {
-        Class ValueClass = Value.GetValueClass(ClassGroup);
+        ClassSet ValueClass = Value.getValueClass(ClassGroup);
         if(ValueClass==null)
-            return Property.IsInInterface(ClassGroup);
+            return Property.isInInterface(ClassGroup);
         else
-            return ValueClass.IsParent(Property.GetValueClass(ClassGroup));
+            return Property.getValueClass(ClassGroup).intersect(ValueClass);
     }
 
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
-        if(Property.ClassUpdated(ClassGroup)) return true;
-
-        return Value.ClassUpdated(ClassGroup);
+        return Property.ClassUpdated(ClassGroup) || Value.ClassUpdated(ClassGroup);
     }
 
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
-        if(Property.ObjectUpdated(ClassGroup)) return true;
-
-        return Value.ObjectUpdated(ClassGroup);
+        return Property.ObjectUpdated(ClassGroup) || Value.ObjectUpdated(ClassGroup);
     }
 
     void fillSelect(JoinQuery<ObjectImplement, ?> Query, Set<GroupObjectImplement> ClassGroup, DataSession Session) {
@@ -384,7 +389,7 @@ class Filter {
     }
 
     public Collection<? extends Property> getProperties() {
-        Collection<Property> Result = Collections.singletonList(Property.Property);        
+        Collection<Property<P>> Result = Collections.singletonList(Property.Property);
         if(Value instanceof PropertyValueLink)
             Result.add(((PropertyValueLink)Value).Property.Property);
         return Result;
@@ -393,7 +398,7 @@ class Filter {
 
 abstract class ValueLink {
 
-    Class GetValueClass(GroupObjectImplement ClassGroup) {return null;}
+    ClassSet getValueClass(GroupObjectImplement ClassGroup) {return null;}
 
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {return false;}
 
@@ -421,8 +426,8 @@ class ObjectValueLink extends ValueLink {
     ObjectImplement Object;
 
     @Override
-    Class GetValueClass(GroupObjectImplement ClassGroup) {
-        return Object.Class;
+    ClassSet getValueClass(GroupObjectImplement ClassGroup) {
+        return new ClassSet(Object.Class);
     }
 
     @Override
@@ -486,8 +491,8 @@ class PropertyValueLink extends ValueLink {
     PropertyObjectImplement Property;
 
     @Override
-    Class GetValueClass(GroupObjectImplement ClassGroup) {
-        return Property.GetValueClass(ClassGroup);
+    ClassSet getValueClass(GroupObjectImplement ClassGroup) {
+        return Property.getValueClass(ClassGroup);
     }
 
     @Override
@@ -512,7 +517,7 @@ class PropertyValueLink extends ValueLink {
 
 class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
-    public static int GID_SHIFT = 100;
+    public static int GID_SHIFT = 1000;
 
     // используется для записи в сессии изменений в базу - требуется глобально уникальный идентификатор
     private final int GID;
@@ -575,7 +580,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.FindClassID(classID).Childs);
+        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.findClassID(classID).Childs);
     }
 
     public int getPropertyClassID(int propertyID) {
@@ -623,13 +628,13 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     public void AddObject(int objectID, int classID) throws SQLException {
         ObjectImplement object = getObjectImplement(objectID);
-        AddObject(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
+        AddObject(object, (classID == -1) ? null : object.BaseClass.findClassID(classID));
     }
 
     public void ChangeClass(int objectID, int classID) throws SQLException {
 
         ObjectImplement object = getObjectImplement(objectID);
-        ChangeClass(object, (classID == -1) ? null : object.BaseClass.FindClassID(classID));
+        ChangeClass(object, (classID == -1) ? null : object.BaseClass.findClassID(classID));
     }
 
     public boolean allowChangeProperty(int propertyID) {
@@ -678,7 +683,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     Class getPropertyClass(PropertyView propertyView) {
-        return propertyView.View.GetValueClass(propertyView.ToDraw);
+        return propertyView.View.getValueClass(propertyView.ToDraw).getCommonClass();
     }
 
     RegularFilterGroup getRegularFilterGroup(int groupID) {
@@ -749,7 +754,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     private void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
 
-        Class GridClass = BL.objectClass.FindClassID(idClass);
+        Class GridClass = BL.objectClass.findClassID(idClass);
         if(Object.GridClass == GridClass) return;
 
         if(GridClass==null) throw new RuntimeException();
@@ -843,7 +848,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
-        for(Filter Filter : Object.GroupTo.Filters) {
+        for(Filter<?> Filter : Object.GroupTo.Filters) {
             if(Filter.Compare==0) {
                 JoinQuery<ObjectImplement,String> SubQuery = new JoinQuery<ObjectImplement,String>(Filter.Property.Mapping.values());
                 Map<ObjectImplement,Integer> FixedObjects = new HashMap();
@@ -873,7 +878,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
                         Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
-                    ChangeProperty.ChangeProperty(Keys,Row.getValue().get("newvalue"),Session);
+                    ChangeProperty.changeProperty(Keys,Row.getValue().get("newvalue"),Session);
                 }
             }
         }
@@ -908,7 +913,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     private void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
 
         // изменяем св-во
-        property.Property.ChangeProperty(fillPropertyInterface(property),value,Session);
+        property.Property.changeProperty(fillPropertyInterface(property),value,Session);
 
         DataChanged = true;
     }
@@ -953,7 +958,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
     // --------------------------------------------------------------------------------------- //
 
-    private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement property) {
+    private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement<?> property) {
 
         Property changeProperty = property.Property;
         Map<PropertyInterface,ObjectValue> keys = new HashMap();
@@ -1080,7 +1085,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             for(PropertyView Order : Group.MapOrders) {
                 // если изменилась структура или кто-то изменил класс, перепроверяем
                 if(StructUpdated || Order.View.ClassUpdated(Group))
-                    SetOrderChanged = (Order.View.IsInInterface(Group)?SetOrders.add(Order.View):Group.Orders.remove(Order));
+                    SetOrderChanged = (Order.View.isInInterface(Group)?SetOrders.add(Order.View):Group.Orders.remove(Order));
             }
             if(StructUpdated || SetOrderChanged) {
                 // переформирываваем порядок, если структура или принадлежность Order'у изменилась
@@ -1398,7 +1403,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
 //        PanelProps.
 
-        for(PropertyView DrawProp : Properties) {
+        for(PropertyView<?> DrawProp : Properties) {
 
             // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
             boolean Read = false;
@@ -1441,9 +1446,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             if(CheckClass || CheckObject) {
                 int NewInInterface=0;
                 if(CheckClass)
-                    NewInInterface = (DrawProp.View.IsInInterface(DrawProp.ToDraw)?2:0);
+                    NewInInterface = (DrawProp.View.isInInterface(DrawProp.ToDraw)?2:0);
                 if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 && InInterface==2))
-                    NewInInterface = (DrawProp.View.IsInInterface(null)?1:0);
+                    NewInInterface = (DrawProp.View.isInInterface(null)?1:0);
 
                 if(InInterface!=NewInInterface) {
                     InInterface = NewInInterface;
