@@ -1464,15 +1464,23 @@ public class ClientForm extends JPanel {
                 public void selectObject(ClientGroupObjectValue value) {
 
                     int oldindex = getSelectionModel().getLeadSelectionIndex();
-                    int newindex = gridRows.indexOf(value);
+                    final int newindex = gridRows.indexOf(value);
                     if (newindex != -1 && newindex != oldindex) {
                         //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
 
-                        if (getColumnModel().getSelectionModel().getLeadSelectionIndex() == -1)
+                        final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                        if (colSel == -1)
                             changeSelection(newindex, 0, false, false);
                         else
                             getSelectionModel().setLeadSelectionIndex(newindex);
+
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                scrollRectToVisible(getCellRect(newindex, (colSel == -1) ? 0 : colSel, true));
+                            }
+                        });
                     }
+
 
                 }
 
