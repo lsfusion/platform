@@ -1432,10 +1432,10 @@ public class ClientForm extends JPanel {
                     int oldindex = gridRows.indexOf(currentObject);
 
                     gridRows = igridObjects;
+
+                    // так делается, потому что почему-то сам JTable ну ни в какую не хочет изменять свою высоту (getHeight())
+                    // приходится это делать за него, а то JViewPort смотрит именно на getHeight()
                     table.setSize(table.getWidth(), table.getRowHeight() * table.getRowCount());
-//                    table.revalidate();
-//                    table.resizeAndRepaint();
-//                    table.validate();
 
                     final int newindex = gridRows.indexOf(currentObject);
 
@@ -1473,8 +1473,6 @@ public class ClientForm extends JPanel {
 
                         scrollRectToVisible(getCellRect(newindex, (colSel == -1) ? 0 : colSel, true));
                     }
-
-
                 }
 
                 public void setColumnValues(ClientCellView property, Map<ClientGroupObjectValue,Object> values) {

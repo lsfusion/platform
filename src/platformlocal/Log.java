@@ -67,7 +67,6 @@ public final class Log {
 
     private static class LogView extends JPanel {
 
-        private JScrollPane pane;
         private LogTextArea view;
         private JLabel info;
 
@@ -76,7 +75,7 @@ public final class Log {
             setLayout(new BorderLayout());
 
             view = new LogTextArea();
-            pane = new JScrollPane(view);
+            JScrollPane pane = new JScrollPane(view);
 
             add(pane, BorderLayout.CENTER);
 

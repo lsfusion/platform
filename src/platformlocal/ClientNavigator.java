@@ -56,7 +56,7 @@ abstract class AbstractNavigator extends JPanel {
                     addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
                 }
 
-                public void treeCollapsed(TreeExpansionEvent event) {};
+                public void treeCollapsed(TreeExpansionEvent event) {}
 
             });
 
@@ -252,7 +252,7 @@ class ClientNavigatorElement {
     String caption;
 
     boolean hasChilds = false;
-    boolean allowChildren() { return hasChilds; };
+    boolean allowChildren() { return hasChilds; }
 
     public boolean isPrintForm = false;
 
