@@ -789,7 +789,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(this, baseGroup, objStore);
             addPropertyView(this, baseGroup, objArt);
 //            addPropertyView(this, artgrGroup, objArt);
-            addPropertyView(this, objStore, objArt);
+            addPropertyView(this, baseGroup, objStore, objArt);
+            addPropertyView(this, balanceGroup, objStore, objArt);
+            addPropertyView(this, incPrmsGroup, objStore, objArt);
+            addPropertyView(this, outPrmsGroup, objStore, objArt);
         }
     }
 
