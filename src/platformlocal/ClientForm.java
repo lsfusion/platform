@@ -1373,7 +1373,11 @@ public class ClientForm extends JPanel {
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
-                            changeGroupObject(groupObject, model.getSelectedObject());
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    changeGroupObject(groupObject, model.getSelectedObject());
+                                }
+                            });
                         }
                     });
 
@@ -1428,16 +1432,17 @@ public class ClientForm extends JPanel {
                     int oldindex = gridRows.indexOf(currentObject);
 
                     gridRows = igridObjects;
+                    table.setSize(table.getWidth(), table.getRowHeight() * table.getRowCount());
+//                    table.revalidate();
+//                    table.resizeAndRepaint();
 //                    table.validate();
 
                     final int newindex = gridRows.indexOf(currentObject);
 
                     //надо сдвинуть ViewPort - иначе дергаться будет
 
-//                    System.out.println("setGridObjects" + oldindex + " - " + newindex);
                     if (newindex != -1) {
 
-//                        System.out.println("setgridobjects + leadselection");
                         getSelectionModel().setLeadSelectionIndex(newindex);
 
                         if (oldindex != -1 && newindex != oldindex) {
@@ -1446,17 +1451,9 @@ public class ClientForm extends JPanel {
                             final int dltpos = (newindex-oldindex) * getRowHeight();
                             ViewPos.y += dltpos;
                             if (ViewPos.y < 0) ViewPos.y = 0;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    pane.getViewport().setViewPosition(ViewPos);
-//                                        System.out.println("Viewpos : " + ViewPos);
-                                    scrollRectToVisible(getCellRect(newindex, 0, true));
-                                    pane.validate();
-                                }
-                            });
-                        } //else
-//                            getSelectionModel().clearSelection();
-
+                            pane.getViewport().setViewPosition(ViewPos);
+                            scrollRectToVisible(getCellRect(newindex, 0, true));
+                        }
                     }
 
                 }
@@ -1464,7 +1461,7 @@ public class ClientForm extends JPanel {
                 public void selectObject(ClientGroupObjectValue value) {
 
                     int oldindex = getSelectionModel().getLeadSelectionIndex();
-                    final int newindex = gridRows.indexOf(value);
+                    int newindex = gridRows.indexOf(value);
                     if (newindex != -1 && newindex != oldindex) {
                         //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
 
@@ -1474,11 +1471,7 @@ public class ClientForm extends JPanel {
                         else
                             getSelectionModel().setLeadSelectionIndex(newindex);
 
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                scrollRectToVisible(getCellRect(newindex, (colSel == -1) ? 0 : colSel, true));
-                            }
-                        });
+                        scrollRectToVisible(getCellRect(newindex, (colSel == -1) ? 0 : colSel, true));
                     }
 
 
