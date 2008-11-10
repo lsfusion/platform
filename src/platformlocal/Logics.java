@@ -851,10 +851,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Property.OnDefaultChange = OnChange;
     }
 
-    LDP AddCProp(String caption, Object Value, Class ValueClass, Class... Params) {
+    LCP AddCProp(String caption, Object Value, Class ValueClass, Class... Params) {
         ClassProperty Property = new ClassProperty(TableFactory,ValueClass,Value);
         Property.caption = caption;
-        LDP ListProperty = new LDP(Property);
+        LCP ListProperty = new LCP(Property);
         for(Class Int : Params) {
             ListProperty.AddInterface(Int);
         }
@@ -886,7 +886,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     
-    List<PropertyInterfaceImplement> ReadPropImpl(LP<?> MainProp,Object ...Params) {
+    <T extends PropertyInterface> List<PropertyInterfaceImplement> ReadPropImpl(LP<T,Property<T>> MainProp,Object ...Params) {
         List<PropertyInterfaceImplement> Result = new ArrayList<PropertyInterfaceImplement>();
         int WaitInterfaces = 0, MainInt = 0;
         PropertyMapImplement MapRead = null;
@@ -961,11 +961,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LJP AddUProp(String caption, int UnionType, int IntNum, Object... Params) {
+    LUP AddUProp(String caption, int UnionType, int IntNum, Object... Params) {
         return AddUProp(null, caption, UnionType, IntNum, Params);
     }
     
-    LJP AddUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
+    LUP AddUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -980,7 +980,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
         Property.caption = caption;
         
-        LJP ListProperty = new LJP(Property,IntNum);
+        LUP ListProperty = new LUP(Property,IntNum);
 
         for(int i=0;i<Params.length/(IntNum+2);i++) {
             Integer Offs = i*(IntNum+2);
@@ -1557,7 +1557,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             }
 
             if (!property.getValueClass(propertyInterface).isEmpty()) {
-                addPropertyView(form, new LP<P>(property, mapping), objects);
+                addPropertyView(form, new LP<P,Property<P>>(property, mapping), objects);
             }
         }
     }
@@ -1678,24 +1678,35 @@ class ClassNavigatorForm extends NavigatorForm {
     }
 }
 
-class LP<P extends PropertyInterface> {
+class LP<T extends PropertyInterface,P extends Property<T>> {
 
-    LP(Property<P> iProperty) {
-        this(iProperty, new ArrayList<P>());
+    LP(P iProperty) {
+        this(iProperty, new ArrayList<T>());
     }
 
-    LP(Property<P> iProperty, List<P> iListInterfaces) {
+    LP(P iProperty, List<T> iListInterfaces) {
         Property=iProperty;
         ListInterfaces = iListInterfaces;
     }
 
-    Property<P> Property;
-    List<P> ListInterfaces;
+    P Property;
+    List<T> ListInterfaces;
 }
 
-class LDP extends LP {
+class LCP extends LP<DataPropertyInterface,ClassProperty> {
 
-    LDP(Property iProperty) {super(iProperty);}
+    LCP(ClassProperty iProperty) {super(iProperty);}
+
+    void AddInterface(Class InClass) {
+        DataPropertyInterface Interface = new DataPropertyInterface(ListInterfaces.size(),InClass);
+        ListInterfaces.add(Interface);
+        Property.Interfaces.add(Interface);
+    }
+}
+
+class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface,DataProperty<D>> {
+
+    LDP(DataProperty<D> iProperty) {super(iProperty);}
 
     void AddInterface(Class InClass) {
         DataPropertyInterface Interface = new DataPropertyInterface(ListInterfaces.size(),InClass);
@@ -1704,29 +1715,29 @@ class LDP extends LP {
     }
 
     void ChangeProperty(DataSession Session, Object Value, Integer... iParams) throws SQLException {
-        Map<PropertyInterface,ObjectValue> Keys = new HashMap();
+        Map<DataPropertyInterface,ObjectValue> Keys = new HashMap<DataPropertyInterface,ObjectValue>();
         Integer IntNum = 0;
         for(int i : iParams) {
-            DataPropertyInterface Interface = (DataPropertyInterface)ListInterfaces.get(IntNum);
+            DataPropertyInterface Interface = ListInterfaces.get(IntNum);
             Keys.put(Interface,new ObjectValue(i,Interface.Class));
             IntNum++;
         }
 
-        ((DataProperty)Property).changeProperty(Keys, Value, Session);
+        Property.changeProperty(Keys, Value, Session);
     }
 
     void putNotNulls(Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls,Integer... iParams) {
-        Set<DataPropertyInterface> InterfaceNotNulls = new HashSet();
+        Set<DataPropertyInterface> InterfaceNotNulls = new HashSet<DataPropertyInterface>();
         for(Integer Interface : iParams)
-            InterfaceNotNulls.add((DataPropertyInterface)ListInterfaces.get(Interface));
+            InterfaceNotNulls.add(ListInterfaces.get(Interface));
 
-        PropNotNulls.put((DataProperty)Property,InterfaceNotNulls);
+        PropNotNulls.put(Property,InterfaceNotNulls);
     }
 }
 
-class LSFP extends LP {
+class LSFP extends LP<StringFormulaPropertyInterface,StringFormulaProperty> {
 
-    LSFP(Property iProperty,int ParamCount) {
+    LSFP(StringFormulaProperty iProperty,int ParamCount) {
         super(iProperty);
         for(int i=0;i<ParamCount;i++) {
             StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(ListInterfaces.size());
@@ -1736,9 +1747,9 @@ class LSFP extends LP {
     }
 }
 
-class LMFP extends LP {
+class LMFP extends LP<FormulaPropertyInterface,MultiplyFormulaProperty> {
 
-    LMFP(Property iProperty,int ParamCount) {
+    LMFP(MultiplyFormulaProperty iProperty,int ParamCount) {
         super(iProperty);
         for(int i=0;i<ParamCount;i++) {
             FormulaPropertyInterface Interface = new FormulaPropertyInterface(ListInterfaces.size());
@@ -1749,28 +1760,40 @@ class LMFP extends LP {
 }
 
 
-class LJP extends LP {
+class LJP<T extends PropertyInterface> extends LP<JoinPropertyInterface,JoinProperty<T>> {
 
-    LJP(Property iProperty,int Objects) {
+    LJP(JoinProperty<T> iProperty,int Objects) {
         super(iProperty);
         for(int i=0;i<Objects;i++) {
-            PropertyInterface Interface = new PropertyInterface(i);
+            JoinPropertyInterface Interface = new JoinPropertyInterface(i);
             ListInterfaces.add(Interface);
             Property.Interfaces.add(Interface);
         }
     }
 }
 
-class LGP extends LP {
+class LUP extends LP<PropertyInterface,UnionProperty> {
 
-    LP GroupProperty;
-    LGP(Property iProperty,LP iGroupProperty) {
+    LUP(UnionProperty iProperty,int Objects) {
+        super(iProperty);
+        for(int i=0;i<Objects;i++) {
+            JoinPropertyInterface Interface = new JoinPropertyInterface(i);
+            ListInterfaces.add(Interface);
+            Property.Interfaces.add(Interface);
+        }
+    }
+}
+
+class LGP<T extends PropertyInterface> extends LP<GroupPropertyInterface<T>,GroupProperty<T>> {
+
+    LP<T,?> GroupProperty;
+    LGP(GroupProperty<T> iProperty,LP<T,?> iGroupProperty) {
         super(iProperty);
         GroupProperty = iGroupProperty;
     }
 
-    void AddInterface(PropertyInterfaceImplement Implement) {
-        GroupPropertyInterface Interface = new GroupPropertyInterface(ListInterfaces.size(),Implement);
+    void AddInterface(PropertyInterfaceImplement<T> Implement) {
+        GroupPropertyInterface<T> Interface = new GroupPropertyInterface<T>(ListInterfaces.size(),Implement);
         ListInterfaces.add(Interface);
         Property.Interfaces.add(Interface);
     }

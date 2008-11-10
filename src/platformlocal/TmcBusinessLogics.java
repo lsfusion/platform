@@ -98,9 +98,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP exchStore;
     LDP revalStore;
 
-    LJP incStore, outStore;
-    LJP primDocStore, paramsStore;
-    LJP docStore;
+    LUP incStore;
+    LUP outStore;
+    LUP primDocStore;
+    LUP paramsStore;
+    LUP docStore;
 
     LJP artGroupName;
     LJP docStoreName;
@@ -115,16 +117,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP revalBalanceQuantity;
     LGP exchIncQuantity, exchOutQuantity;
 
-    LJP incQuantity, outQuantity;
-    LJP quantity, notZeroIncPrmsQuantity;
+    LUP incQuantity;
+    LUP outQuantity;
+    LUP quantity;
+    LJP notZeroIncPrmsQuantity;
     LGP incStoreQuantity, outStoreQuantity;
-    LJP balanceStoreQuantity;
+    LUP balanceStoreQuantity;
 
-    LJP docDate;
+    LUP docDate;
 
     LDP extIncDetailPriceIn, extIncDetailVATIn;
     LJP extIncDetailCalcSum;
-    LJP extIncDetailCalcSumVATIn, extIncDetailCalcSumPay;
+    LJP extIncDetailCalcSumVATIn;
+    LUP extIncDetailCalcSumPay;
     LDP extIncDetailSumVATIn, extIncDetailSumPay;
 
     LGP extIncDocumentSumVATIn, extIncDocumentSumPay;
@@ -140,7 +145,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP revalAddAfter, revalVATOutAfter, revalLocTaxAfter;
     LDP revalPriceOutAfter;
 
-    LJP changesParams;
+    LUP changesParams;
     LGP maxChangesParamsDate;
     LGP maxChangesParamsDoc;
 
@@ -154,9 +159,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP extIncAdd, extIncVATOut, extIncLocTax;
     LJP extIncPriceOut;
 
-    LJP primDocPriceIn, primDocVATIn;
-    LJP primDocAdd, primDocVATOut, primDocLocTax;
-    LJP primDocPriceOut;
+    LUP primDocPriceIn;
+    LUP primDocVATIn;
+    LUP primDocAdd;
+    LUP primDocVATOut;
+    LUP primDocLocTax;
+    LUP primDocPriceOut;
 
     LJP storePriceIn, storeVATIn;
     LJP storeAdd, storeVATOut, storeLocTax;
@@ -168,18 +176,24 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP docCurAdd, docCurVATOut, docCurLocTax;
     LJP docCurPriceOut;
 
-    LJP docOverPriceIn, docOverVATIn;
-    LJP docOverAdd, docOverVATOut, docOverLocTax;
-    LJP docOverPriceOut;
+    LUP docOverPriceIn;
+    LUP docOverVATIn;
+    LUP docOverAdd;
+    LUP docOverVATOut;
+    LUP docOverLocTax;
+    LUP docOverPriceOut;
 
     LJP revalCurPriceIn, revalCurVATIn;
     LJP revalCurAdd, revalCurVATOut, revalCurLocTax;
     LJP revalCurPriceOut;
 
-    LJP revalOverBalanceQuantity;
-    LJP revalOverPriceIn, revalOverVATIn;
-    LJP revalOverAddBefore, revalOverVATOutBefore, revalOverLocTaxBefore;
-    LJP revalOverPriceOutBefore;
+    LUP revalOverBalanceQuantity;
+    LUP revalOverPriceIn;
+    LUP revalOverVATIn;
+    LUP revalOverAddBefore;
+    LUP revalOverVATOutBefore;
+    LUP revalOverLocTaxBefore;
+    LUP revalOverPriceOutBefore;
 
     void InitProperties() {
 
