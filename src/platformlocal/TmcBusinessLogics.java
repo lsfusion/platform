@@ -235,9 +235,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         exchOutQuantity = AddGProp("Расх. перес.", exchangeQuantity, true, 1, 2);
 
         LP docIncQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, incomeDocument, article);
-        incQuantity = AddUProp("Кол-во прих.", 2, 2, 1, docIncQuantity, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchIncQuantity, 1, 2);
+        incQuantity = AddUProp("Кол-во прих.", 1, 2, 1, docIncQuantity, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchIncQuantity, 1, 2);
         LP docOutQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, outcomeDocument, article);
-        outQuantity = AddUProp("Кол-во расх.", 2, 2, 1, docOutQuantity, 1, 2, 1, extOutQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchOutQuantity, 1, 2);
+        outQuantity = AddUProp("Кол-во расх.", 1, 2, 1, docOutQuantity, 1, 2, 1, extOutQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchOutQuantity, 1, 2);
 
         LP docQuantity = AddCProp("абст. кол-во", null, Class.doubleClass, document, article);
         quantity = AddUProp(paramsGroup, "Кол-во", 2, 2, 1, docQuantity, 1, 2, 1, revalBalanceQuantity, 1, 2, 1, incQuantity, 1, 2, 1, outQuantity, 1, 2);
@@ -735,6 +735,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.GREATER, new UserValueLink(0)),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(this, docOverPriceOut.Property, gobjArtFrom).View, FieldExprCompareWhere.EQUALS, new PropertyValueLink(getPropertyView(this, docOverPriceOut.Property, gobjArtTo).View)),
+                                  "Одинаковая розн. цена",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
 
         }

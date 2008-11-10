@@ -347,16 +347,9 @@ public class ClientForm extends JPanel {
 
     void changeGroupObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
 
-//        long st = System.currentTimeMillis();
-
         ClientGroupObjectValue curObjectValue = models.get(groupObject).getCurrentObject();
 
         if (!objectValue.equals(curObjectValue)) {
-
-//            System.out.println("oldval : " + models.get(groupObject).getCurrentObject().toString());
-//            models.get(groupObject).setCurrentGroupObject(objectValue, true);
-//            System.out.println("Change Object - setCurrentGroupObject : " + (System.currentTimeMillis()-st));
-//            System.out.println("newval : " + objectValue.toString());
 
             try {
                 remoteForm.ChangeGroupObject(groupObject.ID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
@@ -370,8 +363,17 @@ public class ClientForm extends JPanel {
         }
 
         clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
-//        System.out.println("Whole Change Object : " + (System.currentTimeMillis()-st));
+    }
 
+    void changeGroupObject(ClientGroupObjectImplement groupObject, int changeType) {
+
+        try {
+            remoteForm.ChangeGroupObject(groupObject.ID, changeType);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        applyFormChanges();
     }
 
     void changeProperty(ClientCellView property, Object value) {
@@ -1358,6 +1360,17 @@ public class ClientForm extends JPanel {
                     super.doLayout();
                 }
 
+                protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+
+                    // Отдельно обработаем CTRL + HOME
+                    if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_DOWN_MASK))) {
+                        changeGroupObject(groupObject, RemoteForm.CHANGEGROUPOBJECT_FIRSTROW);
+                        return true;
+                    }
+
+                    return super.processKeyBinding(ks, e, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
+                }
+
                 public Table() {
 
                     ID = groupObject.ID;
@@ -1373,11 +1386,11 @@ public class ClientForm extends JPanel {
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
+                            SwingUtils.invokeLaterSingleAction("changeGroupObject", new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
                                     changeGroupObject(groupObject, model.getSelectedObject());
                                 }
-                            });
+                            }, 50, false);
                         }
                     });
 

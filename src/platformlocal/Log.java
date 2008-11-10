@@ -96,26 +96,18 @@ public final class Log {
 
         public void setTemporaryBackground(Color color) {
 
-            if (backgroundTimer != null) {
-                ActionListener[] actions = backgroundTimer.getActionListeners();
-                for (ActionListener action : actions)
-                    action.actionPerformed(null);
-                backgroundTimer.stop();
-                backgroundTimer = null;
-            }
+            SwingUtils.invokeLaterSingleAction("logSetOldBackground", null, 0, true);
 
             final Color oldBackground = view.getBackground();
             view.setBackground(color);
 
-            backgroundTimer = new Timer(10000, new ActionListener() {
+            SwingUtils.invokeLaterSingleAction("logSetOldBackground", new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
                     view.setBackground(oldBackground);
                 }
-            });
-            backgroundTimer.setRepeats(false);
+            }, 10000, false);
 
-            backgroundTimer.start();
         }
 
         public void provideErrorFeedback() {

@@ -8,12 +8,11 @@ package platformlocal;
 import com.toedter.calendar.JCalendar;
 
 import java.awt.*;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
+import java.awt.event.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.*;
@@ -47,6 +46,30 @@ public class SwingUtils {
         while (comp != null && !(comp instanceof Window) ) comp = comp.getParent();
 
         return (Window)comp;
+    }
+
+    public final static Map<String, Timer> timers = new HashMap();
+    public static void invokeLaterSingleAction(String actionID, ActionListener actionListener, int delay, boolean executePrevious) {
+
+        Timer timer = timers.get(actionID);
+        if (timer != null && timer.isRunning()) {
+            if (executePrevious && timer.isRunning()) {
+                ActionListener[] actions = timer.getActionListeners();
+                for (ActionListener action : actions)
+                    action.actionPerformed(null);
+            }
+            timer.stop();
+        }
+
+        if (actionListener != null) {
+
+            timer = new Timer(delay, actionListener);
+            timer.setRepeats(false);
+
+            timer.start();
+
+            timers.put(actionID, timer);
+        }
     }
 }
 

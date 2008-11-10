@@ -576,6 +576,10 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // ----------------------------------- Навигация ----------------------------------------- //
 
+    public void ChangeGroupObject(Integer groupID, int changeType) throws SQLException {
+        ChangeGroupObject(getGroupObjectImplement(groupID), changeType);
+    }
+
     public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
         GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
         ChangeGroupObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
@@ -699,6 +703,14 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     // поиски по свойствам\объектам
     public Map<PropertyObjectImplement,Object> UserPropertySeeks = new HashMap();
     public Map<ObjectImplement,Integer> UserObjectSeeks = new HashMap();
+
+    public static int CHANGEGROUPOBJECT_FIRSTROW = 0;
+
+    private Map<GroupObjectImplement, Integer> pendingGroupChanges = new HashMap();
+
+    public void ChangeGroupObject(GroupObjectImplement group, int changeType) throws SQLException {
+        pendingGroupChanges.put(group, changeType);
+    }
 
     private void ChangeGroupObject(GroupObjectImplement group,GroupObjectValue value) throws SQLException {
         // проставим все объектам метки изменений
@@ -1121,10 +1133,22 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             } else
                 Direction = DIRECTION_CENTER;
 
+            // Различные переходы - в самое начало или конец
+            Integer pendingChanges = pendingGroupChanges.get(Group);
+            if (pendingChanges == null) pendingChanges = -1;
+
+            if (pendingChanges == CHANGEGROUPOBJECT_FIRSTROW) {
+                ObjectSeeks = new GroupObjectValue();
+                currentObject = null;
+                UpdateKeys = true;
+                Direction = DIRECTION_DOWN;
+            }
+
             // один раз читаем не так часто делается, поэтому не будем как с фильтрами
             for(PropertyObjectImplement Property : UserPropertySeeks.keySet()) {
                 if(Property.GetApplyObject()==Group) {
                     PropertySeeks.put(Property,UserPropertySeeks.get(Property));
+                    currentObject = null;
                     UpdateKeys = true;
                     Direction = DIRECTION_CENTER;
                 }
@@ -1521,6 +1545,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         UserPropertySeeks.clear();
         UserObjectSeeks.clear();
+
+        pendingGroupChanges.clear();
 
         // сбрасываем все пометки
         StructUpdated = false;
