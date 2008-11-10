@@ -249,7 +249,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         incStoreQuantity = AddGProp(quantGroup, "Прих. на скл.", incQuantity, true, incStore, 1, 2);
         outStoreQuantity = AddGProp(quantGroup, "Расх. со скл.", outQuantity, true, outStore, 1, 2);
 
-        balanceStoreQuantity = AddUProp(quantGroup, "Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
+        balanceStoreQuantity = AddUProp(balanceGroup, "Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
 //        OstArtStore = AddUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
 
         // -------------------------- Входные параметры ---------------------------- //
@@ -350,7 +350,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         LP bitExtInc = AddCProp("Бит", true, Class.bit, extIncomeDetail);
         LMFP multiplyBitDetail = AddMFProp(extIncomeDetail,2);
-        LJP propDetail = AddJProp("", multiplyBitDetail, 1, bitExtInc, 1, 1);
+        LJP propDetail = AddJProp("Зн. строки", multiplyBitDetail, 1, bitExtInc, 1, 1);
         extIncLastDetail = AddGProp("Посл. строка", propDetail, false, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         extIncPriceIn = AddJProp(incPrmsGroup, "Цена пост. (прих.)", extIncDetailPriceIn, 2, extIncLastDetail, 1, 2);

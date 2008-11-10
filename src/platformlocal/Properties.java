@@ -44,6 +44,10 @@ class PropertyImplement<T,P extends PropertyInterface> {
 
     Property<P> Property;
     Map<P,T> Mapping;
+
+    public String toString() {
+        return Property.toString();
+    }
 }
 
 interface PropertyInterfaceImplement<P extends PropertyInterface> {
@@ -88,8 +92,7 @@ class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInter
 
     public InterfaceClassSet<P> mapGetClassSet(ClassSet ReqValue) {
         InterfaceClass<P> ResultClass = new InterfaceClass<P>();
-        if(!ReqValue.isEmpty()) ResultClass.put((P) this,ReqValue);
-
+        ResultClass.put((P) this,ReqValue);
         return new InterfaceClassSet<P>(ResultClass);
     }
 
@@ -362,7 +365,7 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
         // сохраняет в инкрементную таблицу
         void save(DataSession Session) throws SQLException {
 
-//            System.out.println(caption);
+//            System.out.println(caption+" "+Type);
 //            Source.outSelect(Session);
 //            System.out.println(Classes);
 
@@ -468,16 +471,13 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
     }
 
     public InterfaceClassSet<DataPropertyInterface> getClassSet(ClassSet ReqValue) {
-        InterfaceClassSet<DataPropertyInterface> Result = new InterfaceClassSet<DataPropertyInterface>();
-
         if(ReqValue.intersect(ClassSet.getUp(Value))) {
             InterfaceClass<DataPropertyInterface> ResultInterface = new InterfaceClass<DataPropertyInterface>();
             for(DataPropertyInterface Interface : Interfaces)
                 ResultInterface.put(Interface,ClassSet.getUp(Interface.Class));
-            Result.or(ResultInterface);
-        }
-
-        return Result;
+            return new InterfaceClassSet<DataPropertyInterface>(ResultInterface);
+        } else
+            return new InterfaceClassSet<DataPropertyInterface>();
     }
 
     public ChangeClassSet<DataPropertyInterface> getChangeClass() {
@@ -700,6 +700,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
         if(Value instanceof Integer && Value.equals(0)) return null;
         if(Value instanceof Long && ((Long)Value).intValue()==0) return null;
         if(Value instanceof Double && ((Double)Value).intValue()==0) return null;
+        if(Value instanceof Boolean && !((Boolean)Value)) return null;
         return Value;
     }
 
@@ -707,14 +708,14 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
     boolean CheckAggregation(DataSession Session,String Caption) throws SQLException {
         JoinQuery<T, String> AggrSelect;
         AggrSelect = getOutSelect("value");
-/*        if(caption.equals("остаток до операции") || caption.equals("OL 269")) {
+/*        if(caption.equals("Кол-во") || caption.equals("OL 269")) {
             System.out.println("AGGR - "+caption);
             AggrSelect.outSelect(Session);
         }*/
         LinkedHashMap<Map<T, Integer>, Map<String, Object>> AggrResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = true;
         AggrSelect = getOutSelect("value");
-/*        if(caption.equals("остаток до операции") || caption.equals("OL 269")) {
+/*        if(caption.equals("Кол-во") || caption.equals("OL 269")) {
             System.out.println("RECALCULATE - "+caption);
             AggrSelect.outSelect(Session);
         }*/
@@ -913,16 +914,13 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
 
     public InterfaceClassSet<DataPropertyInterface> getClassSet(ClassSet ReqValue) {
         // аналогично DataProperty\только без перегрузки классов
-        InterfaceClassSet<DataPropertyInterface> Result = new InterfaceClassSet<DataPropertyInterface>();
-
         if(ReqValue.contains(ValueClass)) {
             InterfaceClass<DataPropertyInterface> ResultInterface = new InterfaceClass<DataPropertyInterface>();
             for(DataPropertyInterface ValueInterface : Interfaces)
                 ResultInterface.put(ValueInterface,ClassSet.getUp(ValueInterface.Class));
-            Result.or(ResultInterface);
-        }
-
-        return Result;
+            return new InterfaceClassSet<DataPropertyInterface>(ResultInterface);
+        } else
+            return new InterfaceClassSet<DataPropertyInterface>();
     }
 
     public ChangeClassSet<DataPropertyInterface> getChangeClass() {
@@ -1004,20 +1002,20 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         Implements = new PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T>(iProperty);
     }
 
-    public ClassSet getValueClass(InterfaceClass<JoinPropertyInterface> ClassImplement) {
+/*    public ClassSet getValueClass(InterfaceClass<JoinPropertyInterface> ClassImplement) {
 
-//        if(1==1) return getChangeClass().getValueClass(ClassImplement);
         InterfaceClass<T> MapImplement = new InterfaceClass<T>();
         for(T ImplementInterface : Implements.Property.Interfaces) // если null то уже не подходит по интерфейсу
             MapImplement.put(ImplementInterface, Implements.Mapping.get(ImplementInterface).mapGetValueClass(ClassImplement));
 
         return Implements.Property.getValueClass(MapImplement);
-    }
+    } */
 
     InterfaceClassSet<JoinPropertyInterface> getMapClassSet(MapRead<JoinPropertyInterface> Read, InterfaceClass<T> InterfaceImplement) {
         InterfaceClassSet<JoinPropertyInterface> Result = getUniversalInterface();
         for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : Implements.Mapping.entrySet())
            Result = Result.and(Read.getImplementClassSet(MapInterface.getValue(),InterfaceImplement.get(MapInterface.getKey())));
+        if(Result.isEmpty()) return null;
         return Result;
     }
     
@@ -1140,6 +1138,7 @@ abstract class GroupProperty<T extends PropertyInterface> extends MapProperty<Gr
     // группировочное св-во собсно должно быть не формулой
     Property<T> GroupProperty;
 
+    @Override // так быстрее
     public ClassSet getValueClass(InterfaceClass<GroupPropertyInterface<T>> ClassImplement) {
 
         ClassSet Result = new ClassSet();
@@ -1158,6 +1157,7 @@ abstract class GroupProperty<T extends PropertyInterface> extends MapProperty<Gr
         InterfaceClassSet<T> GroupClassSet = new InterfaceClassSet<T>(InterfaceImplement);
         for(GroupPropertyInterface<T> Interface : Interfaces)
             GroupClassSet = GroupClassSet.and(Read.getImplementClassSet(Interface.Implement,ClassSet.universal));
+        if(GroupClassSet.isEmpty()) return null;
         for(InterfaceClass<T> GroupImplement : GroupClassSet) {
             InterfaceClass<GroupPropertyInterface<T>> ValueClass = new InterfaceClass<GroupPropertyInterface<T>>();
             for(GroupPropertyInterface<T> Interface : Interfaces)
@@ -1278,6 +1278,8 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         // делаем Full Join (на 3) :
         //      a) ушедшие (previmp и prevmap) = старые (sourceexpr) LJ (prev+change) (вообще и пришедшие <= старых)
         //      b) пришедшие (change) > старых (sourceexpr)
+        if(caption.equals("Посл. строка") && BusinessLogics.ChangeDBIteration==10)
+            caption = caption;
 
         ChangeClassSet<GroupPropertyInterface<T>> ResultClass = new ChangeClassSet<GroupPropertyInterface<T>>();
 
@@ -1568,10 +1570,21 @@ class OverrideUnionProperty extends UnionProperty {
     }
 
     Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
-        for(PropertyMapImplement Operand : Operands)
+/*        for(PropertyMapImplement Operand : Operands)
             if(ChangedProps.contains(Operand.Property))
                 ToWait.add(Operand.Property);
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  //To change body of implemented methods use File | Settings | File Templates.*/
+        return 0;
+    }
+
+    void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+        if(IncrementType.equals(1)) IncrementType = 2;
+        super.fillRequiredChanges(IncrementType, RequiredTypes);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    Change incrementChanges(DataSession Session, int ChangeType) {
+        if(ChangeType==1) ChangeType = 2;
+        return super.incrementChanges(Session, ChangeType);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }
 
@@ -1943,6 +1956,7 @@ class DataSession  {
             Property.Change Change = Property.incrementChanges(this,IncrementTypes.get(Property));
             // подгоняем тип
             Change.correct(RequiredTypes.get(Property));
+//            System.out.println("inctype"+Property.caption+" "+IncrementTypes.get(Property));
             Change.save(this);
 /*            System.out.println(Property.caption+" - CHANGES");
             Property.OutChangesTable(this);
@@ -2288,9 +2302,13 @@ class MapChangedRead<P extends PropertyInterface> extends MapRead<P> {
     }
 
     <M extends PropertyInterface> SourceExpr getMapExpr(Property<M> MapProperty, Map<M, SourceExpr> JoinImplement) {
-        if(MapChanged)
-            return Session.getChange(MapProperty).getExpr(JoinImplement,MapType);
-        else {
+        if(MapChanged) {
+            SourceExpr MapExpr = Session.getChange(MapProperty).getExpr(JoinImplement,MapType==3?0:MapType);
+            if(MapType==3)
+                return new NullJoinSourceExpr(MapExpr);
+            else
+                return MapExpr;    
+        } else {
             if(MapType==1)
                 return new NullMapSourceExpr<M>(JoinImplement,MapProperty.getType());
             else {
@@ -2320,7 +2338,7 @@ class MapChangedRead<P extends PropertyInterface> extends MapRead<P> {
     <M extends PropertyInterface> ChangeClassSet<M> getMapChangeClass(Property<M> MapProperty) {
         if(MapChanged) {
             ChangeClassSet<M> MapChange = Session.getChange(MapProperty).Classes;
-            if(MapType==2) // если старые затираем возвращаем ссылку на nullClass
+            if(MapType>=2) // если старые затираем возвращаем ссылку на nullClass
                 return ChangeClassSet.getNullClass(MapChange);
             else
                 return MapChange;
@@ -2367,8 +2385,23 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
     abstract InterfaceClassSet<T> getMapPropertyInterfaces(InterfaceClassSet<IN> InterfaceDumb, InterfaceClassSet<IM> ImplementDumb);
     abstract InterfaceClassSet<M> getMapPropertyImplements(InterfaceClassSet<IN> InterfaceDumb, InterfaceClassSet<IM> ImplementDumb);
 
-    // по кдассам функционал
+    // по кдассам функционал - могут возвращать null'ы
     abstract InterfaceClassSet<T> getMapClassSet(MapRead<IN> Read,InterfaceClass<M> InterfaceImplement);
+    ChangeClassSet<T> getMapChangeClass(MapRead<IN> Read) {
+        ChangeClassSet<T> Result = new ChangeClassSet<T>();
+        boolean Empty = true;
+        for(ChangeClass<M> Change : Read.getMapChangeClass(getMapProperty()))
+            for(InterfaceClass<M> InterfaceChange : Change.Interface) {
+                InterfaceClassSet<T> ResultInterface = getMapClassSet(Read, InterfaceChange);
+                if(ResultInterface!=null) {
+                    Empty = false;
+                    Result.or(new ChangeClass<T>(ResultInterface,Change.Value));
+                }
+            }
+        if(Empty) return null;
+        return Result;
+    }
+
     public InterfaceClassSet<T> getClassSet(ClassSet ReqValue) {
         MapRead<IN> Read = new MapRead<IN>();
         InterfaceClassSet<T> Result = new InterfaceClassSet<T>();
@@ -2376,16 +2409,13 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
             Result.or(getMapClassSet(Read,InterfaceImplement));
         return Result;
     }
-    ChangeClassSet<T> getMapChangeClass(MapRead<IN> Read) {
-        ChangeClassSet<T> Result = new ChangeClassSet<T>();
-        for(ChangeClass<M> Change : Read.getMapChangeClass(getMapProperty()))
-            for(InterfaceClass<M> InterfaceChange : Change.Interface)
-                Result.or(new ChangeClass<T>(getMapClassSet(Read,InterfaceChange),Change.Value));
-        return Result;
-    }
     public ChangeClassSet<T> getChangeClass() {
         return getMapChangeClass(new MapRead<IN>());
     }
+    public ClassSet getValueClass(InterfaceClass<T> ClassImplement) {
+        return getChangeClass().getValueClass(ClassImplement);
+    }
+
 
     // "сохраняет" имплементации в запрос
     // Join - закидываем в Value getExpr'ы (Changed,SourceExpr) map'a импллементаций
@@ -2420,7 +2450,7 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
         for(MapChangedRead<IN> Read : ReadList)
             if(Read.check(getMapProperty())) {
                 ChangeClassSet<T> ChangeClass = getMapChangeClass(Read);
-                if(!ChangeClass.isEmpty()) {
+                if(ChangeClass!=null) {
                     ReadClass.or(ChangeClass);
                     ListQuery.add(getMapQuery(Read,Value),1);
                 }
@@ -2437,11 +2467,13 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
         List<MapChangedRead<IN>> Result = new ArrayList<MapChangedRead<IN>>();
         if(ImplementType==2) // DEBUG
             throw new RuntimeException("по идее не должно быть");
-        if(!NotNull) { // сначала "зануляем" все
+        if(!(NotNull && SubSet.size()==1)) { // сначала "зануляем" ( пропускаем NotNull только одной размерности, теоретически можно доказать(
             if(implementAllInterfaces()) // просто без Join'a
                 Result.add(new MapChangedRead<IN>(Session, false, 1, ImplementType, SubSet));
-            else
+            else {
+                Result.add(new MapChangedRead<IN>(Session, true, 3, 2, SubSet));
                 Result.add(new MapChangedRead<IN>(Session, false, 2, 2, SubSet));
+            }
         }
         // затем Join'им
         Result.add(new MapChangedRead<IN>(Session, false, 0, ImplementType, SubSet));

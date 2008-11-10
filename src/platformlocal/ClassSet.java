@@ -19,7 +19,7 @@ abstract class SubNodeSet<T,S extends SubNodeSet<T,S>> extends HashSet<T> {
         for(T Node : Set)
             or(Node);
     }
-    abstract boolean or(T OrNode);
+    abstract void or(T OrNode);
 
     S and(S Set) {
         S AndSet = create(new HashSet<T>());
@@ -65,13 +65,12 @@ abstract class GraphNodeSet<T,S extends GraphNodeSet<T,S>> extends SubNodeSet<T,
     }
     abstract boolean has(T OrNode,T Node);
 
-    boolean or(T OrNode) {
+    void or(T OrNode) {
         for(T Node : this)
-            if(has(OrNode,Node)) return true;
+            if(has(OrNode,Node)) return;
         for(Iterator<T> i=iterator();i.hasNext();)
             if(has(i.next(),OrNode)) i.remove();
         add(OrNode);
-        return false;
     }
 
     void removeAll(GraphNodeSet<T,S> ToRemove) {
@@ -150,6 +149,8 @@ class ClassSet {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
         Up.or(Node.Up);
         Set.addAll(Node.Set);
+        for(Iterator<Class> i = Set.iterator();i.hasNext();)
+            if(Up.has(i.next())) i.remove();                
     }
 
     // входит ли в дерево элемент
@@ -198,8 +199,6 @@ class ClassSet {
             Class Second = i.next(); i.remove();
             CommonParents.addAll(First.commonParents(Second));
         }
-        if(CommonParents.iterator().next()==Class.base)
-            CommonParents = CommonParents; 
         return CommonParents.iterator().next();
     }
 
@@ -277,18 +276,16 @@ class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
 // точнее нужна такая структура при которой при одинаковых ClassSet она будет Or'ить InterfaceClassSet'ы - собсно и нужен на самом деле UniMap<InterfaceClassSet,ClassSet>
 
 interface PropertyClass<P extends PropertyInterface> {
-    // каких классов могут быть объекты при таких классах на входе
+    // каких классов могут быть объекты при таких классах на входе !!!! Можно дать больше но никак не меньше
     ClassSet getValueClass(InterfaceClass<P> InterfaceImplement);
-    // при каких классах мы можем получить такие классы (при других точно не можем)
+    // при каких классах мы можем получить хоть один такой класс (при других точно не можем) !!! опять таки лучше больше чем меньше
     InterfaceClassSet<P> getClassSet(ClassSet ReqValue);
 
     // на самом деле нам нужен iterator по <InterfaceClass,ClassSet>
-    // в JoinProperty - делает getChangeClass MapProperty, затем делает getClassSet(ReqValue), затем And'ит их после чего Or'ит пару <ClassSet,InterfaceClassSet> в общий результат
-    // в GroupProperty - делает getChangeClass GroupProperty, затем делает getValueClass(InterfaceClass'а) получаем InterfaceClass'ы затем их опять таки OR'им в общий результат
-    // в UnionProperty - делает getChangeClass каждого св-ва и Or'ит результаты то есть общие <InterfaceClassSet,ClassSet>
     ChangeClassSet<P> getChangeClass();
 }
 
+// по сути Entry для ChangeClassSet'а
 class ChangeClass<P extends PropertyInterface> {
 
     InterfaceClassSet<P> Interface;
@@ -353,7 +350,7 @@ class ChangeClass<P extends PropertyInterface> {
     }
 }
 
-// его не надо And'ить по этому отдельный интерфейс
+// по сути Map<InterfaceClass,ClassSet>, а точнее даже UniMap<InterfaceClass,ClassSet>
 class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<P>,ChangeClassSet<P>> implements PropertyClass<P> {
 
     ChangeClassSet() {
@@ -375,10 +372,11 @@ class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass
         return getNullValueClass(Property,ClassSet.universal);
     }
 
-    boolean or(ChangeClass<P> ToAdd) {
+    void or(ChangeClass<P> ToAdd) {
 
         for(Iterator<ChangeClass<P>> i = iterator();i.hasNext();) {
             ChangeClass<P> Class = i.next();
+            // также надо сделать что если совпадают классы то просто за or'ить
             // если мн-во классов включает другое мн-во, то уберем избыточные InterfaceClass
             if(Class.Value.containsAll(ToAdd.Value))
                 ToAdd.Interface.removeAll(Class.Interface);
@@ -391,22 +389,14 @@ class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass
             // уберем старый класс если надо
             if(Class.Interface.isEmpty()) i.remove();
         }
-        if(!ToAdd.Interface.isEmpty()) {
+        if(!ToAdd.Interface.isEmpty())
             add(ToAdd);
-            return true;
-        } else
-            return false;
     }
 
     Set<ChangeClass<P>> and(ChangeClass<P> AndNode, ChangeClass<P> Node) {
-        Set<ChangeClass<P>> Result = new HashSet<ChangeClass<P>>();
-        InterfaceClassSet<P> AndInterface = AndNode.Interface.and(Node.Interface);
-        if(!AndInterface.isEmpty()) {
-            ClassSet AndValue = AndNode.Value.copy();
-            AndValue.or(Node.Value);
-            Result.add(new ChangeClass<P>(AndInterface,AndValue));
-        }
-        return Result;
+        ClassSet AndValue = AndNode.Value.copy();
+        AndValue.or(Node.Value);
+        return Collections.singleton(new ChangeClass<P>(AndNode.Interface.and(Node.Interface),AndValue));
     }
 
     ChangeClassSet<P> create(Set<ChangeClass<P>> iNodes) {
@@ -415,17 +405,17 @@ class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass
 
     public ClassSet getValueClass(InterfaceClass<P> InterfaceImplement) {
         ClassSet Result = new ClassSet();
-        for(ChangeClass<P> Class : this)
-            if(Class.Interface.has(InterfaceImplement))
+        for(ChangeClass<P> Class : this) // если пересекается хоть с одним, то на выходе может иметь что угодно
+            if(!Class.Interface.and(InterfaceImplement).isEmpty())
                 Result.or(Class.Value);
         return Result;
     }
 
     public InterfaceClassSet<P> getClassSet(ClassSet ReqValue) {
         InterfaceClassSet<P> Result = new InterfaceClassSet<P>();
-        for(ChangeClass<P> Class : this) // по сути надо если пересекается ReqValue
-            if(Class.Value.intersect(ReqValue))
-                Result.or(Class.Interface);
+        for(ChangeClass<P> ChangeClass : this) // по сути надо если пересекается ReqValue
+            if(ReqValue==ClassSet.universal || ChangeClass.Value.intersect(ReqValue))
+                Result.or(ChangeClass.Interface);
         return Result;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -459,19 +449,19 @@ class InterfaceClassSet<P extends PropertyInterface> extends GraphNodeSet<Interf
     }
 
     public InterfaceClassSet(InterfaceClass<P> Node) {
-        super();
-        if(!Node.hasEmpty()) add(Node);
+        super(Collections.singleton(Node));
     }
 
     boolean has(InterfaceClass<P> OrNode, InterfaceClass<P> Node) {
-        return Node.isParent(OrNode);
+        return OrNode.hasEmpty() || Node.isParent(OrNode);
+    }
+
+    public boolean isEmpty() {
+        return super.isEmpty() || (size()==1 && iterator().next().hasEmpty());
     }
 
     Set<InterfaceClass<P>> and(InterfaceClass<P> AndNode, InterfaceClass<P> Node) {
-        Set<InterfaceClass<P>> Result = new HashSet<InterfaceClass<P>>();
-        InterfaceClass<P> AndInterface = AndNode.and(Node);
-        if(!AndInterface.hasEmpty()) Result.add(AndInterface);
-        return Result;
+        return Collections.singleton(AndNode.and(Node));
     }
 
     InterfaceClassSet<P> create(Set<InterfaceClass<P>> iNodes) {

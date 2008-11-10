@@ -61,6 +61,10 @@ class ObjectImplement {
 
     String caption = "";
 
+    public String toString() {
+        return caption;
+    }
+
     // идентификатор (в рамках формы)
     int ID = 0;
 
@@ -128,11 +132,6 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     int Updated = UPDATED_GRIDCLASS;
 
     int PageSize = 20;
-
-    void Out(GroupObjectValue Value) {
-        for(ObjectImplement Object : this)
-            System.out.print(" "+Object.caption +" = "+Value.get(Object));
-    }
 
     GroupObjectValue GetObjectValue() {
         GroupObjectValue Result = new GroupObjectValue();
@@ -279,8 +278,8 @@ class PropertyView<P extends PropertyInterface> {
         ToDraw = navigatorProperty.ToDraw;
     }
 
-    void Out() {
-        System.out.print(View.Property.caption);
+    public String toString() {
+        return View.toString();
     }
 
     // идентификатор (в рамках формы)
@@ -306,43 +305,31 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
             List<GroupObjectValue> GroupGridObjects = GridObjects.get(Group);
             if(GroupGridObjects!=null) {
                 System.out.println(Group.ID +" - Grid Changes");
-                for(GroupObjectValue Value : GroupGridObjects) {
-                    Group.Out(Value);
-                    System.out.println("");
-                }
+                for(GroupObjectValue Value : GroupGridObjects)
+                    System.out.println(Value);
             }
 
             GroupObjectValue Value = Objects.get(Group);
-            if(Value!=null) {
-                System.out.print(Group.ID +" - Object Changes ");
-                Group.Out(Value);
-                System.out.println("");
-            }
+            if(Value!=null)
+                System.out.println(Group.ID +" - Object Changes "+Value);
         }
 
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
         for(PropertyView Property : GridProperties.keySet()) {
             Map<GroupObjectValue,Object> PropertyValues = GridProperties.get(Property);
-            Property.Out();
-            System.out.println(" ---- property");
-            for(GroupObjectValue gov : PropertyValues.keySet()) {
-                Property.ToDraw.Out(gov);
-                System.out.println(" - "+PropertyValues.get(gov));
-            }
+            System.out.println(Property+" ---- property");
+            for(GroupObjectValue gov : PropertyValues.keySet())
+                System.out.println(gov+" - "+PropertyValues.get(gov));
         }
 
         System.out.println(" ------- Panel ---------------");
-        for(PropertyView Property : PanelProperties.keySet()) {
-            Property.Out();
-            System.out.println(" - "+PanelProperties.get(Property));
-        }
+        for(PropertyView Property : PanelProperties.keySet())
+            System.out.println(Property+" - "+PanelProperties.get(Property));
 
         System.out.println(" ------- Drop ---------------");
-        for(PropertyView Property : DropProperties) {
-            Property.Out();
-            System.out.println("");
-        }
+        for(PropertyView Property : DropProperties)
+            System.out.println(Property);
     }
 }
 
@@ -1519,7 +1506,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             for(PropertyView DrawProp : GroupList)
                 SelectProps.add(DrawProp,DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Session,false));
 
-//            System.out.println(Group.iterator().next().caption);
+//            System.out.println(Group);
 //            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 

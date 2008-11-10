@@ -573,7 +573,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         Integer Seed;
         List<Integer> ProceedSeeds = new ArrayList();
-        int[] Suspicious = {3949,387,7651,6445,1359,8760,9684,7559,7420,1965,4518};
+        int[] Suspicious = {888,1252,8773,9115,8700,9640,2940,4611,8038};
         if(TestType>=0 || WereSuspicious.size()>=Suspicious.length)
             Seed = (new Random()).nextInt(10000);
         else {
@@ -589,7 +589,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 //        Seed = 4518;
 //        Seed = 3936;
 //        Seed = 8907;
-//        Seed = 6749;
+//        Seed = 6646;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);
@@ -1319,7 +1319,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         while(Iterations<MaxIterations) {
 
             long CurrentTime = System.currentTimeMillis();
-            if(CurrentTime-PrevTime>=4000)
+            if(CurrentTime-PrevTime>=40000)
                 break;
 
             PrevTime = CurrentTime;

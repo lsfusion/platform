@@ -759,7 +759,7 @@ abstract class SourceJoin<TranslateType extends SourceJoin> extends TranslateExp
     abstract void fillObjectExprs(Collection<ObjectExpr> Exprs);
 
     public TranslateType translate(ExprTranslator Translated) {
-        TranslateType Translate = (TranslateType) Translated.get(this);
+        TranslateType Translate = (TranslateType) Translated.translate(this);
         if(Translate==null) {
             Translate = proceedTranslate(Translated);
             Translated.put(this,Translate);
@@ -1801,7 +1801,7 @@ class FieldOPWhere extends Where {
             if(Where instanceof FalseWhere) {
                 if(And) return Where;
             } else
-                AllWheres = (AllWheres==null?Where:new FieldOPWhere(Where, AllWheres, false));
+                AllWheres = (AllWheres==null?Where:new FieldOPWhere(Where, AllWheres, And));
         }
 
         return (AllWheres==null?(And?new FalseWhere():new TrueWhere()):AllWheres);
@@ -2036,6 +2036,10 @@ class ExprTranslator extends HashMap<SourceJoin,SourceJoin> {
             putAll(MergeTranslated);
         }
     }
+
+    public SourceJoin translate(SourceJoin ToTranslate) {
+        return get(ToTranslate);
+    }
 }
 
 // запрос Join
@@ -2049,8 +2053,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     List<Join> Joins = new ArrayList();
 
     void add(V Property,SourceExpr Expr) {
-        if(Expr==null)
-            Expr = Expr;
         Expr.fillJoins(Joins,Wheres);
         Properties.put(Property,Expr);
     }
