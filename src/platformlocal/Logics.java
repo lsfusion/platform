@@ -238,6 +238,8 @@ class IDTable extends Table {
     }
 
     Integer GenerateID(DataSession dataSession, int idType) throws SQLException {
+
+        if(BusinessLogics.AutoFillDB) return BusinessLogics.AutoIDCounter++;
         // читаем
         JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
@@ -249,12 +251,16 @@ class IDTable extends Table {
         Integer FreeID = (Integer)Query.executeSelect(dataSession).values().iterator().next().get(Value);
 
         // замещаем
+        reserveID(dataSession, idType, FreeID);
+        return FreeID+1;
+    }
+
+    void reserveID(DataSession Session, int idType, Integer ID) throws SQLException {
         Map<KeyField,Integer> KeyFields = new HashMap();
         KeyFields.put(Key,idType);
-        Map<PropertyField,TypedObject> PropFields = new HashMap();
-        PropFields.put(Value,new TypedObject(FreeID+1,Value.Type));
-        dataSession.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
-        return FreeID+1;
+        Map<PropertyField, TypedObject> PropFields = new HashMap();
+        PropFields.put(Value,new TypedObject(ID +1,Value.Type));
+        Session.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
     }
 }
 
@@ -361,9 +367,10 @@ class ChangeClassTable extends ChangeTable {
             Map<KeyField,Integer> ChangeKeys = new HashMap();
             ChangeKeys.put(Object,idObject);
             ChangeKeys.put(Class,Change.ID);
-            if(Drop)
-                ChangeSession.deleteKeyRecords(this,ChangeKeys);
-            else
+            if(Drop) {
+                if(!BusinessLogics.AutoFillDB)
+                    ChangeSession.deleteKeyRecords(this,ChangeKeys);
+            } else
                 ChangeSession.InsertRecord(this,ChangeKeys,new HashMap());
         }
     }
@@ -559,6 +566,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         InitNavigators();
     }
 
+    public boolean toSave(Property Property) {
+        return Persistents.contains(Property);
+    }
+
+    public Collection<Property> getNoUpdateProperties() {
+        return new ArrayList<Property>();
+    }
+
     static Set<Integer> WereSuspicious = new HashSet();
 
     // тестирующий конструктор
@@ -594,7 +609,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         Random Randomizer = new Random(Seed);
 
-        DataAdapter Adapter = DataAdapter.getDefault();
+        DataAdapter Adapter = Main.getDefault();
         Adapter.createDB();
 
         if(TestType<1) {
@@ -1378,19 +1393,26 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Session.close();
     }
 
-    static List<Property> getChangedList(Collection<? extends Property> UpdateProps,DataChanges Changes) {
+    static List<Property> getChangedList(Collection<? extends Property> UpdateProps,DataChanges Changes,Collection<Property> NoUpdateProps) {
         List<Property> ChangedList = new ArrayList();
         for(Property Property : UpdateProps)
-            if(Property instanceof DataProperty)
-                Property.fillChangedList(ChangedList,Changes,new HashSet());
-        for(Property Property : UpdateProps)
-            if(!(Property instanceof DataProperty))
-                Property.fillChangedList(ChangedList,Changes,new HashSet());
-        return ChangedList;        
+            Property.fillChangedList(ChangedList,Changes,NoUpdateProps);
+        return ChangedList;
     }
 
+    // флаг для оптимизации
+    Map<DataProperty,Integer> autoQuantity(Integer Quantity,LDP... Properties) {
+        Map<DataProperty,Integer> Result = new HashMap<DataProperty,Integer>();
+        for(LDP<?> Property : Properties)
+            Result.put(Property.Property,Quantity);
+        return Result;
+    }
+
+    static boolean AutoFillDB = false;
+    static int AutoIDCounter = 0;
     void autoFillDB(DataAdapter Adapter, Map<Class, Integer> ClassQuantity, Map<DataProperty, Integer> PropQuantity, Map<DataProperty, Set<DataPropertyInterface>> PropNotNull) throws SQLException {
 
+        AutoFillDB = true;
         DataSession Session = createSession(Adapter);
 
         // сначала вырубим все аггрегации в конце пересчитаем
@@ -1412,6 +1434,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         for(Class FillClass : Classes)
             if(FillClass.Childs.size()==0) {
+                System.out.println(FillClass.caption);
+
                 Integer Quantity = ClassQuantity.get(FillClass);
                 if(Quantity==null) Quantity = 1;
 
@@ -1494,7 +1518,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Session.startTransaction();
 
         // восстановим persistence, пересчитая их
-        for(Property DependProperty : getChangedList(SavePersistents.keySet(),null))
+        for(Property DependProperty : getChangedList(SavePersistents.keySet(),null,new HashSet<Property>()))
             if(DependProperty instanceof AggregateProperty && SavePersistents.containsKey(DependProperty)) {
                 AggregateProperty Property = (AggregateProperty)DependProperty;
 
@@ -1506,8 +1530,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             }
 
         Session.commitTransaction();
+
+        TableFactory.idTable.reserveID(Session,IDTable.OBJECT,AutoIDCounter);
         
         Session.close();
+
+        AutoFillDB = false;
     }
 
     public void createDefaultClassForms(Class cls, NavigatorElement parent) {

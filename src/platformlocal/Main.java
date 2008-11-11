@@ -23,6 +23,11 @@ public class Main {
 
     static DataAdapter Adapter;
 
+    static boolean recreateDB = true;
+    static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        return new PostgreDataAdapter("localhost");
+    }
+
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
 /*        DataAdapter Syntax = DataAdapter.getDefault();
@@ -147,7 +152,7 @@ public class Main {
 //                e.printStackTrace();
 //            }
 //            System.out.println("Suspicious");
-//            new TestBusinessLogics(-1);
+//            new TmcBusinessLogics(-1);
         }
   */
 /*        UnionQuery<KeyField,PropertyField> Union = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
@@ -209,11 +214,9 @@ public class Main {
 
         try {
 
-            Adapter = DataAdapter.getDefault();
+            Adapter = Main.getDefault();
 
             BusinessLogics BL = new TmcBusinessLogics();
-
-            boolean recreateDB = true;
 
             if (recreateDB) {
 
@@ -448,7 +451,11 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
             DocDate,GrAddV,ArtAddV,BarCode,Price,ExpireDate,Weight;
-    LJP FilledProperty,Quantity,OstArtStore,MaxOpStore,OpValue;
+    LUP FilledProperty;
+    LUP Quantity;
+    LUP OstArtStore;
+    LUP MaxOpStore;
+    LUP OpValue;
     LGP GP,GSum,GAP,G2P,OstArt,MaxPrih,SumMaxArt,PrihArtStore,RashArtStore,ArtDateRash;
 
     LGP RashArtInt;
@@ -492,9 +499,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Weight = AddDProp("вес.", Class.bit, Article);
         groupArticleA.add(Weight.Property);
 
-        LDP AbsQuantity = AddCProp("абст. кол-во",null,Class.integer,Document,Article);
+        LCP AbsQuantity = AddCProp("абст. кол-во",null,Class.integer,Document,Article);
 
-        LDP IsGrmat = AddCProp("признак товара",0,Class.integer,Article);
+        LCP IsGrmat = AddCProp("признак товара",0,Class.integer,Article);
         groupArticleA.add(IsGrmat.Property);
 
         FilledProperty = AddUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
@@ -502,9 +509,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         // сделаем Quantity перегрузкой
         Quantity = AddUProp("кол-во",2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LDP RashValue = AddCProp("призн. расхода",-1,Class.integer,RashDocument);
+        LCP RashValue = AddCProp("призн. расхода",-1,Class.integer,RashDocument);
 
-        LDP PrihValue = AddCProp("призн. прихода",1,Class.integer,PrihDocument);
+        LCP PrihValue = AddCProp("призн. прихода",1,Class.integer,PrihDocument);
 
         OpValue = AddUProp("общ. призн.", 2,1,1,RashValue,1,1,PrihValue,1);
 
@@ -512,7 +519,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LJP RGrAddV = AddJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
 
-        LJP ArtActAddV = AddUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
+        LUP ArtActAddV = AddUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
         groupArticleC.add(ArtActAddV.Property);
 
 //        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
@@ -861,7 +868,5 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 //        formView.get(gv).singleViewType = true;
 
         richDesign = formView;
-
     }
-
 }

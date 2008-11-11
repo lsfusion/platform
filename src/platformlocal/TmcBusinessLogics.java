@@ -446,6 +446,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void InitPersistents() {
 
+        Persistents.add((AggregateProperty)docStore.Property);
+
+        Persistents.add((AggregateProperty)extIncQuantity.Property);
+
         Persistents.add((AggregateProperty)incStoreQuantity.Property);
         Persistents.add((AggregateProperty)outStoreQuantity.Property);
         Persistents.add((AggregateProperty)maxChangesParamsDate.Property);
@@ -492,7 +496,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     void InitIndexes() {
         List<Property> index;
 
-/*        index = new ArrayList();
+        index = new ArrayList();
         index.add(primDocDate.Property);
         Indexes.add(index);
 
@@ -502,7 +506,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         index = new ArrayList();
         index.add(docStore.Property);
-        Indexes.add(index);*/
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(extOutQuantity.Property);
+        Indexes.add(index);
     }
 
     void InitNavigators() {
@@ -846,11 +854,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     void fillData(DataAdapter Adapter) throws SQLException {
 
         int Modifier = 10;
+        int PropModifier = 1; //60
 
         Map<Class,Integer> ClassQuantity = new HashMap();
         ClassQuantity.put(article,2*Modifier);
         ClassQuantity.put(articleGroup,((Double)(Modifier*0.3)).intValue());
-        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
+//        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
+        ClassQuantity.put(store,4);
         ClassQuantity.put(extIncomeDocument,Modifier*2);
         ClassQuantity.put(extIncomeDetail,Modifier*10);
         ClassQuantity.put(intraDocument,Modifier);
@@ -876,12 +886,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailPriceIn.putNotNulls(PropNotNulls,0);
         extIncDetailVATIn.putNotNulls(PropNotNulls,0);
 
+//        LDP extIncDetailSumVATIn, extIncDetailSumPay;
+//        LDP extIncDetailAdd, extIncDetailVATOut, extIncDetailLocTax;
+//        LDP extIncDetailPriceOut;
+
         Map<DataProperty,Integer> PropQuantity = new HashMap();
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
-        PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*2);
-        PropQuantity.put((DataProperty)extOutQuantity.Property,Modifier);
-        PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*2);
+        PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*PropModifier*2);
+        PropQuantity.put((DataProperty)extOutQuantity.Property,Modifier*PropModifier*4);
+        PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*PropModifier);
+        PropQuantity.put((DataProperty)isRevalued.Property,Modifier*PropModifier);
+
+        PropQuantity.putAll(autoQuantity(0,paramsPriceIn,paramsVATIn,paramsAdd,paramsVATOut,paramsLocTax,paramsPriceOut,
+            revalBalanceQuantity,revalPriceIn,revalVATIn,revalAddBefore,revalVATOutBefore,revalLocTaxBefore,revalPriceOutBefore,
+                revalAddAfter,revalVATOutAfter,revalLocTaxAfter,revalPriceOutAfter));
 
         autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
     }

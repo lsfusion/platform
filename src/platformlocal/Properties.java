@@ -57,7 +57,7 @@ interface PropertyInterfaceImplement<P extends PropertyInterface> {
     public InterfaceClassSet<P> mapGetClassSet(ClassSet ReqValue);
 
 
-    abstract boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks);
+    abstract boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate);
 
     // для increment'ного обновления
     public boolean mapHasChanges(DataSession Session);
@@ -101,7 +101,7 @@ class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInter
     }
 
     // заполняет список, возвращает есть ли изменения
-    public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
+    public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         return false;
     }
 
@@ -223,7 +223,7 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     }
 
     // заполняет список, возвращает есть ли изменения
-    abstract boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks);
+    abstract boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate);
 
     JoinQuery<T,String> getOutSelect(String Value) {
         JoinQuery<T,String> Query = new JoinQuery<T,String>(Interfaces);
@@ -305,7 +305,7 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     boolean XL = false;
 
     // получает запрос для инкрементных изменений
-    abstract Change incrementChanges(DataSession Session, int ChangeType);
+    abstract Change incrementChanges(DataSession Session, int ChangeType) throws SQLException;
 
     // присоединяют объекты
     void joinChangeClass(ChangeClassTable Table,JoinQuery<DataPropertyInterface,?> Query, DataSession Session,DataPropertyInterface Interface) {
@@ -345,7 +345,12 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
                 JoinQuery<T,PropertyField> NewQuery = new JoinQuery<T,PropertyField>(Interfaces);
                 SourceExpr NewExpr = (new UniJoin<T,PropertyField>(Source,NewQuery,true)).Exprs.get(ChangeTable.Value);
                 // нужно LEFT JOIN'ить старые
-                SourceExpr PrevExpr = getSourceExpr(NewQuery.MapKeys,false);
+                SourceExpr PrevExpr;
+                // если пересекаются изменения со старым
+                if(!getClassSet(ClassSet.universal).and(Classes.getClassSet(ClassSet.universal)).isEmpty())
+                    PrevExpr = getSourceExpr(NewQuery.MapKeys,false);
+                else
+                    PrevExpr = new ValueSourceExpr(null,getType());
                 // по любому 2 нету надо докинуть
                 NewQuery.add(ChangeTable.PrevValue,PrevExpr);
                 if(Type==1) {
@@ -518,8 +523,9 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
     boolean OnDefaultChange;
 
     // заполняет список, возвращает есть ли изменения, последний параметр для рекурсий
-    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
+    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         if(ChangedProperties.contains(this)) return true;
+        if(NoUpdate.contains(this)) return false;
         // если null то значит полный список запрашивают
         if(Changes==null) return true;
 
@@ -533,8 +539,7 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
             if(Changes.RemoveClasses.contains(Value)) Changed = true;
 
         if(DefaultProperty!=null) {
-            if(!DefaultLinks.add(this)) return Changed;
-            boolean DefaultChanged = DefaultProperty.fillChangedList(ChangedProperties, Changes, DefaultLinks);
+            boolean DefaultChanged = DefaultProperty.fillChangedList(ChangedProperties, Changes, NoUpdate);
             if(!Changed) {
                 if(OnDefaultChange)
                     Changed = DefaultChanged;
@@ -542,7 +547,6 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
                     for(DataPropertyInterface Interface : Interfaces)
                         if(Changes.AddClasses.contains(Interface.Class)) Changed = true;
             }
-            DefaultLinks.remove(this);
         }
 
         if(Changed) {
@@ -789,10 +793,11 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         // этому св-ву чужого не надо
     }
 
-    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
+    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         // если Value null то ничего не интересует
         if(Value==null) return false;
         if(ChangedProperties.contains(this)) return true;
+        if(NoUpdate.contains(this)) return false;
 
         for(DataPropertyInterface ValueInterface : Interfaces)
             if(Changes ==null || Changes.AddClasses.contains(ValueInterface.Class) || Changes.RemoveClasses.contains(ValueInterface.Class)) {
@@ -965,8 +970,8 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
     }
 
     // заполняет список, возвращает есть ли изменения
-    public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
-        return Property.fillChangedList(ChangedProperties, Changes, DefaultLinks);
+    public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
+        return Property.fillChangedList(ChangedProperties, Changes, NoUpdate);
     }
 
     // для OverrideList'а по сути
@@ -1273,13 +1278,11 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
                 ((PropertyMapImplement)Interface.Implement).Property.setChangeType(RequiredTypes,2);
     }
 
-    Change incrementChanges(DataSession Session, int ChangeType) {
+    Change incrementChanges(DataSession Session, int ChangeType) throws SQLException {
 
         // делаем Full Join (на 3) :
         //      a) ушедшие (previmp и prevmap) = старые (sourceexpr) LJ (prev+change) (вообще и пришедшие <= старых)
         //      b) пришедшие (change) > старых (sourceexpr)
-        if(caption.equals("Посл. строка") && BusinessLogics.ChangeDBIteration==10)
-            caption = caption;
 
         ChangeClassSet<GroupPropertyInterface<T>> ResultClass = new ChangeClassSet<GroupPropertyInterface<T>>();
 
@@ -1299,22 +1302,34 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         SourceExpr PrevValue = getSourceExpr(SuspiciousQuery.MapKeys,false);
 
         SuspiciousQuery.add(ChangeTable.Value,NewValue);
-        SuspiciousQuery.add(PrevMapValue,OldValue);
         SuspiciousQuery.add(ChangeTable.PrevValue,PrevValue);
 
         SuspiciousQuery.add(new FieldOPWhere(
                 new FieldExprCompareWhere(NewValue.getNullMinExpr(),PrevValue.getNullMinExpr(),FieldExprCompareWhere.GREATER),
                 new FieldExprCompareWhere(OldValue.getNullMinExpr(),PrevValue.getNullMinExpr(),FieldExprCompareWhere.EQUALS),false));
 
-        JoinQuery<GroupPropertyInterface<T>,PropertyField> UpdateQuery = new JoinQuery<GroupPropertyInterface<T>,PropertyField>(Interfaces);
-        UniJoin<GroupPropertyInterface<T>, PropertyField> ChangesJoin = new UniJoin<GroupPropertyInterface<T>,PropertyField>(SuspiciousQuery,UpdateQuery,true);
-        UpdateQuery.add(ChangeTable.PrevValue,ChangesJoin.Exprs.get(ChangeTable.PrevValue));
-        List<MapChangedRead<T>> NewRead = new ArrayList<MapChangedRead<T>>(); NewRead.add(getPrevious(Session)); NewRead.addAll(getChange(Session,0));
-        ChangeClassSet<GroupPropertyInterface<T>> NewClass = new ChangeClassSet<GroupPropertyInterface<T>>();
-        UpdateQuery.add(ChangeTable.Value,(new UniJoin<GroupPropertyInterface<T>,PropertyField>(getGroupQuery(NewRead,ChangeTable.Value,NewClass),UpdateQuery,false)).Exprs.get(ChangeTable.Value));
+        // сохраняем
+        Change IncrementChange = new Change(2,SuspiciousQuery,ResultClass);
+        IncrementChange.save(Session);
 
-        ResultClass.or(ResultClass.and(NewClass));
-        return new Change(2,UpdateQuery,ResultClass);
+        JoinQuery<GroupPropertyInterface<T>,PropertyField> ReReadQuery = new JoinQuery<GroupPropertyInterface<T>, PropertyField>(Interfaces);
+        Join<GroupPropertyInterface<T>,PropertyField> SourceJoin = new UniJoin<GroupPropertyInterface<T>,PropertyField>(IncrementChange.Source,ReReadQuery,true);
+        ReReadQuery.add(new FieldExprCompareWhere(SourceJoin.Exprs.get(ChangeTable.Value),SourceJoin.Exprs.get(ChangeTable.PrevValue),FieldExprCompareWhere.LESS));
+        if(!ReReadQuery.readEmpty(Session)) {
+            // если кол-во > 0 перечитываем, делаем LJ GQ с протолкнутым ReReadQuery
+            JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField,PropertyField>(ChangeTable.Keys);
+            UpdateQuery.putDumbJoin(Collections.singletonMap(ChangeTable.Property,ID));
+            // сначала на LJ чтобы заNULL'ить максимумы
+            UpdateQuery.add(new MapJoin<GroupPropertyInterface<T>,PropertyField,KeyField>(ReReadQuery,ChangeTableMap,UpdateQuery,true));
+            // затем новые значения
+            ChangeClassSet<GroupPropertyInterface<T>> NewClass = new ChangeClassSet<GroupPropertyInterface<T>>();
+            List<MapChangedRead<T>> NewRead = new ArrayList<MapChangedRead<T>>(); NewRead.add(getPrevious(Session)); NewRead.addAll(getChange(Session,0));
+            UpdateQuery.add(ChangeTable.Value,(new MapJoin<GroupPropertyInterface<T>,PropertyField,KeyField>(getGroupQuery(NewRead,ChangeTable.Value,NewClass),ChangeTableMap,UpdateQuery,false)).Exprs.get(ChangeTable.Value));
+
+            ResultClass.or(ResultClass.and(NewClass));
+            Session.UpdateRecords(new ModifyQuery(ChangeTable,UpdateQuery));
+        }
+        return IncrementChange;
     }
 
     Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
@@ -1375,13 +1390,14 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
         return Result;
     }
 
-    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
+    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         if(ChangedProperties.contains(this)) return true;
+        if(NoUpdate.contains(this)) return false;
 
         boolean Changed = false;
 
         for(PropertyMapImplement Operand : Operands)
-            Changed = Operand.mapFillChangedList(ChangedProperties, Changes, DefaultLinks) || Changed;
+            Changed = Operand.mapFillChangedList(ChangedProperties, Changes, NoUpdate) || Changed;
 
         if(Changed)
             ChangedProperties.add(this);
@@ -1666,7 +1682,7 @@ abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Aggre
     }
 
     // не может быть изменений в принципе
-    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
+    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         return false;
     }
 
@@ -1771,6 +1787,9 @@ class DataChanges {
 interface PropertyUpdateView {
 
     Collection<Property> getUpdateProperties();
+
+    Collection<Property> getNoUpdateProperties();
+    boolean toSave(Property Property);
 }
 
 class DataSession  {
@@ -1913,6 +1932,8 @@ class DataSession  {
     }
 
     Class readClass(Integer idObject) throws SQLException {
+        if(BusinessLogics.AutoFillDB) return null;
+
         return ObjectClass.findClassID(TableFactory.ObjectTable.GetClassID(this,idObject));
     }
 
@@ -1941,9 +1962,10 @@ class DataSession  {
         if(ToUpdateChanges==null) ToUpdateChanges = Changes;
 
         Collection<Property> ToUpdateProperties = ToUpdate.getUpdateProperties();
+        Collection<Property> NoUpdateProperties = ToUpdate.getNoUpdateProperties();
         // сначала читаем инкрементные св-ва которые изменились
-        List<Property> IncrementUpdateList = BusinessLogics.getChangedList(ToUpdateProperties,ToUpdateChanges);
-        List<Property> UpdateList = BusinessLogics.getChangedList(IncrementUpdateList,Changes);
+        List<Property> IncrementUpdateList = BusinessLogics.getChangedList(ToUpdateProperties,ToUpdateChanges,NoUpdateProperties);
+        List<Property> UpdateList = BusinessLogics.getChangedList(IncrementUpdateList,Changes,NoUpdateProperties);
 
         Map<Property,Integer> RequiredTypes = new HashMap<Property,Integer>();
         // пробежим вперед пометим свойства которые изменились, но неясно на что
@@ -1957,7 +1979,8 @@ class DataSession  {
             // подгоняем тип
             Change.correct(RequiredTypes.get(Property));
 //            System.out.println("inctype"+Property.caption+" "+IncrementTypes.get(Property));
-            Change.save(this);
+            if(!(Property instanceof MaxGroupProperty) && ToUpdate.toSave(Property))
+                Change.save(this);
 /*            System.out.println(Property.caption+" - CHANGES");
             Property.OutChangesTable(this);
             System.out.println(Property.caption+" - CURRENT");
@@ -2233,6 +2256,11 @@ class DataSession  {
 
     public boolean hasChanges() {
         return Changes.hasChanges();
+    }
+
+    int CursorCounter = 0;
+    public String getCursorName() {
+        return "cursor"+(CursorCounter++);
     }
 }
 
@@ -2544,13 +2572,14 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
     }
 
     // заполняет список, возвращает есть ли изменения
-    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Set<DataProperty> DefaultLinks) {
+    boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         if(ChangedProperties.contains(this)) return true;
+        if(NoUpdate.contains(this)) return false;
 
-        boolean Changed = getMapProperty().fillChangedList(ChangedProperties, Changes, DefaultLinks);
+        boolean Changed = getMapProperty().fillChangedList(ChangedProperties, Changes, NoUpdate);
 
         for(PropertyInterfaceImplement Implement : getMapImplements().values())
-            Changed = Implement.mapFillChangedList(ChangedProperties, Changes, DefaultLinks) || Changed;
+            Changed = Implement.mapFillChangedList(ChangedProperties, Changes, NoUpdate) || Changed;
 
         if(Changed)
             ChangedProperties.add(this);

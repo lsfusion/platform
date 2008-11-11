@@ -275,6 +275,13 @@ abstract class Source<K,V> {
         return Query;
     }
 
+    <T> JoinQuery<T,V> getMapQuery(Map<T,K> MapKeys) {
+        JoinQuery<T,V> Query = new JoinQuery<T,V>(MapKeys.keySet());
+        Join<K,V> SourceJoin = new MapJoin<K,V,T>(this,Query,MapKeys,true);
+        Query.addAll(SourceJoin.Exprs);
+        return Query;
+    }
+
     // оборачивает Source в JoinQuery 
     Source<K, V> getCompiledJoinQuery() {
         return getJoinQuery().compile();
@@ -292,6 +299,36 @@ abstract class Source<K,V> {
         return this;
     }
 }
+
+class SessionQuery<K,V> extends JoinQuery<K,V> {
+
+    SessionTable Cursor;
+    
+    SessionQuery(DataSession Session,Source<K,V> Source) throws SQLException {
+        super(Source.Keys);
+
+        // создаем SessionTable
+        Cursor = new SessionTable(Session.getCursorName());
+        Map<KeyField,SourceExpr> MapCursorKeys = new HashMap<KeyField,SourceExpr>();
+        for(K Key : Keys) {
+            KeyField CursorKey = new KeyField(Source.getKeyName(Key), Type.Object);
+            Cursor.Keys.add(CursorKey);
+            MapCursorKeys.put(CursorKey,MapKeys.get(Key));
+        }
+        Map<V,PropertyField> MapCursorProps = new HashMap<V,PropertyField>();
+        for(V Property : Source.getProperties()) {
+            PropertyField CursorProp = new PropertyField(Source.getPropertyName(Property), Source.getType(Property));
+            Cursor.Properties.add(CursorProp);
+            MapCursorProps.put(Property,CursorProp);
+        }
+        Session.CreateTemporaryTable(Cursor);
+        Join<KeyField,PropertyField> CursorJoin = new Join<KeyField,PropertyField>(Cursor,MapCursorKeys,true);
+        Joins.add(CursorJoin);
+        for(Map.Entry<V,PropertyField> MapProp : MapCursorProps.entrySet())
+            Properties.put(MapProp.getKey(),CursorJoin.Exprs.get(MapProp.getValue()));
+    }
+}
+
 
 class TypedObject {
     Object Value;
@@ -464,6 +501,10 @@ class Table extends Source<KeyField,PropertyField> {
     Table(String iName) {Name=iName;}
 
     String getSource(SQLSyntax Syntax) {
+        return Name;
+    }
+
+    public String toString() {
         return Name;
     }
 
@@ -2495,6 +2536,16 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         }
 
         return MergedSource.compile();
+    }
+
+    public boolean readEmpty(DataSession Session) throws SQLException {
+        OrderedJoinQuery<K,V> Cloned = new OrderedJoinQuery<K,V>(Keys);
+        Cloned.MapKeys = MapKeys;
+        Cloned.Wheres.addAll(Wheres);
+        Cloned.Properties.putAll(Properties);
+        Cloned.Joins.addAll(Joins);
+        Cloned.Top = 1;
+        return Cloned.executeSelect(Session).size()==0;
     }
 }
 

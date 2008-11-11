@@ -90,10 +90,6 @@ abstract class DataAdapter implements SQLSyntax {
         return false;
     }
 
-    static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new PostgreDataAdapter();
-    }
-
     public String getNullValue(Type DBType) {
         return "NULL";
     }
@@ -276,8 +272,15 @@ class MSSQLDataAdapter extends DataAdapter {
 
 class PostgreDataAdapter extends DataAdapter {
 
+    String ServerName = "localhost";
+
     PostgreDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super();
+    }
+
+    PostgreDataAdapter(String iServerName) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super();
+        ServerName = iServerName;
     }
 
     public String getLongType() {
@@ -298,7 +301,7 @@ class PostgreDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:postgresql://localhost/postgres?user=postgres&password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:postgresql://"+ServerName+"/postgres?user=postgres&password=11111");
         try {
             Connect.createStatement().execute("DROP DATABASE testplat");
         } catch (SQLException e) {
@@ -311,7 +314,7 @@ class PostgreDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://localhost/testplat?user=postgres&password=11111");
+        return DriverManager.getConnection("jdbc:postgresql://"+ServerName+"/testplat?user=postgres&password=11111");
     }
 
     public String getCommandEnd() {
