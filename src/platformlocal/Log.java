@@ -96,7 +96,7 @@ public final class Log {
 
         public void setTemporaryBackground(Color color) {
 
-            SwingUtils.invokeLaterSingleAction("logSetOldBackground", null, 0, true);
+            SwingUtils.stopSingleAction("logSetOldBackground", true);
 
             final Color oldBackground = view.getBackground();
             view.setBackground(color);
@@ -106,7 +106,7 @@ public final class Log {
                 public void actionPerformed(ActionEvent e) {
                     view.setBackground(oldBackground);
                 }
-            }, 10000, false);
+            }, 10000);
 
         }
 

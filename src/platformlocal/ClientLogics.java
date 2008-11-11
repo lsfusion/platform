@@ -17,8 +17,7 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
 
     Integer ID = 0;
 
-    boolean singleViewType = false;
-    boolean defaultViewType = true;
+    Boolean singleViewType = false;
 
     ClientGridView gridView = new ClientGridView();
     ClientFunctionView addView = new ClientFunctionView();
@@ -281,6 +280,7 @@ class DefaultClientFormView extends ClientFormView {
 
             ClientGroupObjectImplement clientGroup = new ClientGroupObjectImplement();
             clientGroup.ID = group.ID;
+            clientGroup.singleViewType = group.singleViewType;
 
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);

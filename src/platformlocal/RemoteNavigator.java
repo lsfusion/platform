@@ -177,6 +177,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID);
 
             groupValue.Order = groupKey.Order;
+            groupValue.gridClassView = groupKey.gridClassView;
+            groupValue.singleViewType = groupKey.singleViewType;
             for (ObjectImplement object : groupKey) {
                 groupValue.addObject(objectMapper.doMapping(object));
             }

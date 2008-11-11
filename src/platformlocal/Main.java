@@ -819,6 +819,7 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         gv.addObject(obj1);
         gv.addObject(obj2);
         addGroup(gv);
+        gv.gridClassView = false;
 
         gv2.addObject(obj3);
         addGroup(gv2);
@@ -828,7 +829,6 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         BL.addPropertyView(this,BL.RashArtInt,gv2,obj3,obj1,obj2);
 
         DefaultClientFormView formView = new DefaultClientFormView(this);
-        formView.get(gv).defaultViewType = false;
         formView.get(gv).singleViewType = true;
 
         richDesign = formView;

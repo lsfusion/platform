@@ -105,7 +105,8 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     Integer Order = 0;
 
     // классовый вид включен или нет
-    Boolean GridClassView = true;
+    Boolean gridClassView = true;
+    Boolean singleViewType = false;
 
     // закэшированные
 
@@ -129,7 +130,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     static int UPDATED_GRIDCLASS = (1 << 3);
     static int UPDATED_CLASSVIEW = (1 << 4);
 
-    int Updated = UPDATED_GRIDCLASS;
+    int Updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW;
 
     int PageSize = 20;
 
@@ -288,6 +289,7 @@ class PropertyView<P extends PropertyInterface> {
 
 class AbstractFormChanges<T,V,Z> {
 
+    Map<T,Boolean> ClassViews = new HashMap();
     Map<T,V> Objects = new HashMap();
     Map<T,List<V>> GridObjects = new HashMap();
     Map<Z,Map<V,Object>> GridProperties = new HashMap();
@@ -508,6 +510,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // используется для записи в сессии изменений в базу - требуется глобально уникальный идентификатор
     private final int GID;
+    public int getGID() { return GID; }
+
     private int getGroupObjectGID(GroupObjectImplement group) { return GID * GID_SHIFT + group.ID; }
 
     private final int ID;
@@ -591,6 +595,10 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     public void ChangeGridClass(int objectID,int idClass) throws SQLException {
         ChangeGridClass(getObjectImplement(objectID), idClass);
+    }
+
+    public void SwitchClassView(Integer groupID) throws SQLException {
+        SwitchClassView(getGroupObjectImplement(groupID));
     }
 
     public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
@@ -705,6 +713,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     public Map<ObjectImplement,Integer> UserObjectSeeks = new HashMap();
 
     public static int CHANGEGROUPOBJECT_FIRSTROW = 0;
+    public static int CHANGEGROUPOBJECT_LASTROW = 1;
 
     private Map<GroupObjectImplement, Integer> pendingGroupChanges = new HashMap();
 
@@ -765,10 +774,18 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     }
 
+    private void SwitchClassView(GroupObjectImplement Group) {
+
+        Group.gridClassView = !Group.gridClassView;
+
+        // расставляем пометки
+        Group.Updated = Group.Updated | GroupObjectImplement.UPDATED_CLASSVIEW;
+    }
+
     private void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
 
-        if(Group.GridClassView == Show) return;
-        Group.GridClassView = Show;
+        if(Group.gridClassView == Show) return;
+        Group.gridClassView = Show;
 
         // расставляем пометки
         Group.Updated = Group.Updated | GroupObjectImplement.UPDATED_CLASSVIEW;
@@ -1070,9 +1087,13 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         }
 
         for(GroupObjectImplement Group : Groups) {
+
+            if ((Group.Updated & GroupObjectImplement.UPDATED_CLASSVIEW) != 0) {
+                Result.ClassViews.put(Group, Group.gridClassView);
+            }
             // если изменились :
             // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3)
-            boolean UpdateKeys = ((Group.Updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0);
+            boolean UpdateKeys = (Group.Updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0;
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
             // фильтры
             // если изменилась структура или кто-то изменил класс, перепроверяем
@@ -1151,7 +1172,16 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 ObjectSeeks = new GroupObjectValue();
                 currentObject = null;
                 UpdateKeys = true;
+                hasMoreKeys = false;
                 Direction = DIRECTION_DOWN;
+            }
+
+            if (pendingChanges == CHANGEGROUPOBJECT_LASTROW) {
+                ObjectSeeks = new GroupObjectValue();
+                currentObject = null;
+                UpdateKeys = true;
+                hasMoreKeys = false;
+                Direction = DIRECTION_UP;
             }
 
             // один раз читаем не так часто делается, поэтому не будем как с фильтрами
@@ -1179,7 +1209,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 Direction = DIRECTION_CENTER;
             }
 
-            if(!UpdateKeys && Group.GridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
+            if(!UpdateKeys && Group.gridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
                 // листание - объекты стали близки к краю (idObject не далеко от края - надо хранить список не базу же дергать) - изменился объект
                 int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
                 // если меньше PageSize осталось и сверху есть ключи
@@ -1223,7 +1253,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                 // проверим на интегральные классы в Group'e
                 for(ObjectImplement Object : Group)
-                    if(ObjectSeeks.get(Object)==null && Object.BaseClass instanceof IntegralClass && !Group.GridClassView)
+                    if(ObjectSeeks.get(Object)==null && Object.BaseClass instanceof IntegralClass && !Group.gridClassView)
                         ObjectSeeks.put(Object,1);
 
                 // докидываем Join'ами (INNER) фильтры, порядки
@@ -1234,7 +1264,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 // выкидываем лишние PropertySeeks, дочитываем недостающие Orders в PropertySeeks
                 // также если панель то тупо прочитаем объект
                 boolean NotEnoughOrders = !(PropertySeeks.keySet().equals(Group.Orders.keySet()) || ((PropertySeeks.size()<Group.Orders.size() && (new HashSet((new ArrayList(Group.Orders.keySet())).subList(0,PropertySeeks.size()))).equals(PropertySeeks.keySet())) && ObjectSeeks.size()==0));
-                if((NotEnoughOrders && ObjectSeeks.size()<Group.size()) || !Group.GridClassView) {
+                boolean objectFound = true;
+                if((NotEnoughOrders && ObjectSeeks.size()<Group.size()) || !Group.gridClassView) {
                     // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
                     OrderedJoinQuery<ObjectImplement,Object> SelectKeys = new OrderedJoinQuery<ObjectImplement,Object>(Group);
                     SelectKeys.putDumbJoin(ObjectSeeks);
@@ -1248,12 +1279,28 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     if(ResultKeys.size()>0)
                         for(ObjectImplement ObjectKey : Group)
                             ObjectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
+                    else
+                        objectFound = false;
                 }
 
-                if(!Group.GridClassView) {
+                if(!Group.gridClassView) {
+
+                    // если не нашли объект, то придется искать
+                    if (!objectFound) {
+
+                        OrderedJoinQuery<ObjectImplement,Object> SelectKeys = new OrderedJoinQuery<ObjectImplement,Object>(Group);
+                        Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.TableFactory,Session);
+                        SelectKeys.Top = 1;
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Session);
+                        if(ResultKeys.size()>0)
+                            for(ObjectImplement ObjectKey : Group)
+                                ObjectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
+                    }
+                    
                     // если панель и ObjectSeeks "полный", то просто меняем объект и ничего не читаем
                     Result.Objects.put(Group,ObjectSeeks);
                     ChangeGroupObject(Group,ObjectSeeks);
+
                 } else {
                     // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
                     if(NotEnoughOrders && ObjectSeeks.size()==Group.size() && Group.Orders.size() > 0) {
@@ -1410,8 +1457,11 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                     if(ActiveRow>=0) {
                         // нашли ряд его выбираем
-                        Result.Objects.put(Group,Group.Keys.get(ActiveRow));
-                        ChangeGroupObject(Group,Group.Keys.get(ActiveRow));
+                        GroupObjectValue newValue = Group.Keys.get(ActiveRow);
+//                        if (!newValue.equals(Group.GetObjectValue())) {
+                            Result.Objects.put(Group,newValue);
+                            ChangeGroupObject(Group,newValue);
+//                        }
                     }
 //                    else
 //                        ChangeGroupObject(Group,new GroupObjectValue());
@@ -1497,7 +1547,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             }
 
             if(InInterface>0 && Read) {
-                if(InInterface==2 && DrawProp.ToDraw.GridClassView) {
+                if(InInterface==2 && DrawProp.ToDraw.gridClassView) {
                     Collection<PropertyView> PropList = GroupProps.get(DrawProp.ToDraw);
                     if(PropList==null) {
                         PropList = new ArrayList();
@@ -1577,7 +1627,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         Set<GroupObjectImplement> reportObjects = new HashSet();
         for (GroupObjectImplement group : Groups) {
-            if (group.GridClassView)
+            if (group.gridClassView)
                 reportObjects.add(group);
         }
 

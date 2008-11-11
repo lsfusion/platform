@@ -853,7 +853,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void fillData(DataAdapter Adapter) throws SQLException {
 
-        int Modifier = 10;
+        int Modifier = 50;
         int PropModifier = 1; //60
 
         Map<Class,Integer> ClassQuantity = new HashMap();

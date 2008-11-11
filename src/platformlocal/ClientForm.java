@@ -46,6 +46,8 @@ public class ClientForm extends JPanel {
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
+    private final int GID;
+    private int getGroupObjectGID(ClientGroupObjectImplement group) { return GID * RemoteForm.GID_SHIFT + group.ID; }
 
     public ClientForm(RemoteForm iremoteForm, ClientNavigator iclientNavigator) {
 //        super(app);
@@ -54,6 +56,7 @@ public class ClientForm extends JPanel {
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
+        GID = remoteForm.getGID();
 
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         clientNavigator = iclientNavigator;
@@ -107,7 +110,7 @@ public class ClientForm extends JPanel {
         dataChanged();
 
         // следим за тем, когда форма становится активной
-        final String FOCUS_OWNER_PROPERTY = "permanentFocusOwner";
+        final String FOCUS_OWNER_PROPERTY = "focusOwner";
 
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(FOCUS_OWNER_PROPERTY, new PropertyChangeListener() {
 
@@ -331,6 +334,10 @@ public class ClientForm extends JPanel {
             models.get(groupObject).setCurrentGroupObject(formChanges.Objects.get(groupObject),false);
         }
 
+        for (ClientGroupObjectImplement groupObject : formChanges.ClassViews.keySet()) {
+            models.get(groupObject).setClassView(formChanges.ClassViews.get(groupObject));
+        }
+
         // Затем их свойства
 
         for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
@@ -360,9 +367,10 @@ public class ClientForm extends JPanel {
             models.get(groupObject).setCurrentGroupObject(objectValue,true);
 
             applyFormChanges();
+
+            clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
         }
 
-        clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
     }
 
     void changeGroupObject(ClientGroupObjectImplement groupObject, int changeType) {
@@ -374,9 +382,14 @@ public class ClientForm extends JPanel {
         }
 
         applyFormChanges();
+
+        clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
     }
 
     void changeProperty(ClientCellView property, Object value) {
+
+        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(property.groupObject), true);
+
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
@@ -417,6 +430,9 @@ public class ClientForm extends JPanel {
     }
 
     void changeClass(ClientObjectImplement object, ClientClass cls) {
+
+        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(object.groupObject), true);
+
         try {
             remoteForm.ChangeClass(object.ID, (cls == null) ? -1 : cls.ID);
             dataChanged();
@@ -439,16 +455,13 @@ public class ClientForm extends JPanel {
 
     void switchClassView(ClientGroupObjectImplement groupObject) {
 
-        Boolean classView;
-        classView = !models.get(groupObject).classView;
+        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), true);
 
         try {
-            remoteForm.ChangeClassView(groupObject.ID, classView);
+            remoteForm.SwitchClassView(groupObject.ID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        models.get(groupObject).setClassView(classView, true);
 
         applyFormChanges();
     }
@@ -605,40 +618,29 @@ public class ClientForm extends JPanel {
                 objects.put(object, new ObjectModel(object));
             }
 
-            classView = !groupObject.defaultViewType;
-            setClassView(groupObject.defaultViewType, false);
-
-            try {
-                remoteForm.ChangeClassView(groupObject.ID, classView);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         
-        public void setClassView(Boolean iclassView, boolean userChange) {
+        public void setClassView(Boolean iclassView) {
             
-            if (classView != iclassView) {
+            if (classView == null || classView != iclassView) {
                 
                 classView = iclassView;
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
-                    if (userChange)
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                grid.table.requestFocusInWindow();
-                            }
-                        });
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            grid.table.requestFocusInWindow();
+                        }
+                    });
                 } else {
                     panel.addGroupObjectID();
                     grid.removeGroupObjectID();
-                    if (userChange) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                panel.getObjectIDView(0).requestFocusInWindow();
-                            }
-                        });
-                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            panel.getObjectIDView(0).requestFocusInWindow();
+                        }
+                    });
 //                    panel.requestFocusInWindow();
                 }
 
@@ -1362,9 +1364,14 @@ public class ClientForm extends JPanel {
 
                 protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 
-                    // Отдельно обработаем CTRL + HOME
+                    // Отдельно обработаем CTRL + HOME и CTRL + END
                     if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_DOWN_MASK))) {
                         changeGroupObject(groupObject, RemoteForm.CHANGEGROUPOBJECT_FIRSTROW);
+                        return true;
+                    }
+
+                    if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK))) {
+                        changeGroupObject(groupObject, RemoteForm.CHANGEGROUPOBJECT_LASTROW);
                         return true;
                     }
 
@@ -1386,11 +1393,11 @@ public class ClientForm extends JPanel {
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
-                            SwingUtils.invokeLaterSingleAction("changeGroupObject", new ActionListener() {
+                            SwingUtils.invokeLaterSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), new ActionListener() {
                                 public void actionPerformed(ActionEvent e) {
                                     changeGroupObject(groupObject, model.getSelectedObject());
                                 }
-                            }, 50, false);
+                            }, 50);
                         }
                     });
 
@@ -1456,8 +1463,6 @@ public class ClientForm extends JPanel {
 
                     if (newindex != -1) {
 
-                        getSelectionModel().setLeadSelectionIndex(newindex);
-
                         if (oldindex != -1 && newindex != oldindex) {
 
                             final Point ViewPos = pane.getViewport().getViewPosition();
@@ -1465,8 +1470,9 @@ public class ClientForm extends JPanel {
                             ViewPos.y += dltpos;
                             if (ViewPos.y < 0) ViewPos.y = 0;
                             pane.getViewport().setViewPosition(ViewPos);
-                            scrollRectToVisible(getCellRect(newindex, 0, true));
                         }
+
+                        selectRow(newindex);
                     }
 
                 }
@@ -1477,14 +1483,7 @@ public class ClientForm extends JPanel {
                     int newindex = gridRows.indexOf(value);
                     if (newindex != -1 && newindex != oldindex) {
                         //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
-
-                        final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-                        if (colSel == -1)
-                            changeSelection(newindex, 0, false, false);
-                        else
-                            getSelectionModel().setLeadSelectionIndex(newindex);
-
-                        scrollRectToVisible(getCellRect(newindex, (colSel == -1) ? 0 : colSel, true));
+                        selectRow(newindex);
                     }
                 }
 

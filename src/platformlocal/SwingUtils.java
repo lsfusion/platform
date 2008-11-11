@@ -49,21 +49,13 @@ public class SwingUtils {
     }
 
     public final static Map<String, Timer> timers = new HashMap();
-    public static void invokeLaterSingleAction(String actionID, ActionListener actionListener, int delay, boolean executePrevious) {
+    public static void invokeLaterSingleAction(String actionID, ActionListener actionListener, int delay) {
 
-        Timer timer = timers.get(actionID);
-        if (timer != null && timer.isRunning()) {
-            if (executePrevious && timer.isRunning()) {
-                ActionListener[] actions = timer.getActionListeners();
-                for (ActionListener action : actions)
-                    action.actionPerformed(null);
-            }
-            timer.stop();
-        }
+        stopSingleAction(actionID, false);
 
         if (actionListener != null) {
 
-            timer = new Timer(delay, actionListener);
+            Timer timer = new Timer(delay, actionListener);
             timer.setRepeats(false);
 
             timer.start();
@@ -71,6 +63,20 @@ public class SwingUtils {
             timers.put(actionID, timer);
         }
     }
+
+    public static void stopSingleAction(String actionID, boolean execute) {
+
+        Timer timer = timers.get(actionID);
+        if (timer != null && timer.isRunning()) {
+            if (execute) {
+                ActionListener[] actions = timer.getActionListeners();
+                for (ActionListener action : actions)
+                    action.actionPerformed(null);
+            }
+            timer.stop();
+        }
+    }
+
 }
 
 class ExpandingTreeNode extends DefaultMutableTreeNode {
@@ -127,6 +133,17 @@ class ClientFormTable extends JTable {
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0))) return false;
 
         return consumed;
+    }
+
+    protected void selectRow(int rowNumber) {
+        
+        final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+        if (colSel == -1)
+            changeSelection(rowNumber, 0, false, false);
+        else
+            getSelectionModel().setLeadSelectionIndex(rowNumber);
+
+        scrollRectToVisible(getCellRect(rowNumber, (colSel == -1) ? 0 : colSel, true));
     }
 }
 
