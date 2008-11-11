@@ -23,7 +23,7 @@ public class Main {
 
     static DataAdapter Adapter;
 
-    static boolean recreateDB = true;
+    static boolean recreateDB = false;
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter("localhost");
     }

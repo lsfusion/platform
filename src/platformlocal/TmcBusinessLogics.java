@@ -653,6 +653,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addArticleRegularFilterGroup(getPropertyView(this, intraQuantity.Property).View, 0, 
                                          getPropertyView(this, docOutBalanceQuantity.Property).View,
                                          getPropertyView(this, docIncBalanceQuantity.Property).View);
+
+            addHintsNoUpdate(this, balanceStoreQuantity.Property);
+            addHintsNoUpdate(this, storePriceIn.Property);
+            addHintsNoUpdate(this, storeVATIn.Property);
+            addHintsNoUpdate(this, storeAdd.Property);
+            addHintsNoUpdate(this, storeVATOut.Property);
+            addHintsNoUpdate(this, storeLocTax.Property);
+            addHintsNoUpdate(this, storePriceOut.Property);
         }
     }
 

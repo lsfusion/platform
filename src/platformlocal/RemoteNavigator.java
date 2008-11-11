@@ -131,6 +131,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             remoteForm.regularFilterGroups.add(group);
         }
 
+        remoteForm.hintsNoUpdate = navigatorForm.hintsNoUpdate;
+
         remoteForm.richDesign = navigatorForm.getRichDesign();
 
         remoteForm.reportDesign = navigatorForm.getReportDesign();
@@ -328,6 +330,8 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     List<RegularFilterGroup> regularFilterGroups = new ArrayList();
     public void addRegularFilterGroup(RegularFilterGroup group) { regularFilterGroups.add(group); }
 
+    Collection<Property> hintsNoUpdate = new HashSet();
+    
     // счетчик идентификаторов
     int IDCount = 0;
 

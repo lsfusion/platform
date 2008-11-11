@@ -1650,6 +1650,18 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return resultPropView;
     }
 
+    void addHintsNoUpdate(NavigatorForm form, AbstractGroup group) {
+
+        for (Property property : Properties) {
+            if (group != null && !group.hasChild(property)) continue;
+            addHintsNoUpdate(form, property);
+        }
+    }
+
+    void addHintsNoUpdate(NavigatorForm form, Property prop) {
+        form.hintsNoUpdate.add(prop);
+    }
+
     // -------------------------------------- Старые интерфейсы --------------------------------------------------- //
 
     Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {

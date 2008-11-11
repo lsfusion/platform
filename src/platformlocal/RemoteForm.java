@@ -1032,9 +1032,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return Result;
     }
 
-    Collection<Property> HintsNoUpdate = new HashSet<Property>(); 
+    Collection<Property> hintsNoUpdate = new HashSet<Property>();
     public Collection<Property> getNoUpdateProperties() {
-        return HintsNoUpdate;
+        return hintsNoUpdate;
     }
 
     Collection<Property> HintsSave = new HashSet<Property>();
