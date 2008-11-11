@@ -41,7 +41,7 @@ public class DefaultJasperDesign extends JasperDesign {
                 DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,Type.Object));
 
             // бежим по всем свойствам входящим в объектам
-            for(PropertyView Property : (List<PropertyView>)navigatorForm.Properties) {
+            for(PropertyView Property : (List<PropertyView>)navigatorForm.propertyViews) {
                 GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
                 if(DrawProp==Group)
                     DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getType()));

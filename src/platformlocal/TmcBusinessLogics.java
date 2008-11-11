@@ -197,7 +197,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void InitProperties() {
 
-        // -------------------------- Data Properties ---------------------- //
+        // -------------------------- Data propertyViews ---------------------- //
 
         name = AddDProp(baseGroup, "Имя", Class.string, objectClass);
 
@@ -222,7 +222,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailDocument = AddDProp(null, "Документ", extIncomeDocument, extIncomeDetail);
         extIncDetailArticle = AddDProp(artclGroup, "Товар", article, extIncomeDetail);
 
-        // -------------------------- Relation Properties ------------------ //
+        // -------------------------- Relation propertyViews ------------------ //
 
         artGroupName = AddJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
         docStoreName = AddJProp(storeGroup, "Имя склада", name, 1, docStore, 1);
@@ -586,14 +586,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjDetail);
 
-            addPropertyView(this, baseGroup, objDoc);
-            addPropertyView(this, storeGroup, objDoc);
-            addPropertyView(this, incSumsGroup, objDoc);
-            addPropertyView(this, artclGroup, objDetail);
-            addPropertyView(this, quantGroup, objDetail);
-            addPropertyView(this, incPrmsGroup, objDetail);
-            addPropertyView(this, incSumsGroup, objDetail);
-            addPropertyView(this, outPrmsGroup, objDetail);
+            addPropertyView(Properties, baseGroup, objDoc);
+            addPropertyView(Properties, storeGroup, objDoc);
+            addPropertyView(Properties, incSumsGroup, objDoc);
+            addPropertyView(Properties, artclGroup, objDetail);
+            addPropertyView(Properties, quantGroup, objDetail);
+            addPropertyView(Properties, incPrmsGroup, objDetail);
+            addPropertyView(Properties, incSumsGroup, objDetail);
+            addPropertyView(Properties, outPrmsGroup, objDetail);
 
             PropertyObjectImplement detDocument = addPropertyObjectImplement(extIncDetailDocument, objDetail);
             addFixedFilter(new Filter(detDocument, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objDoc)));
@@ -614,16 +614,16 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, baseGroup, objDoc);
-            addPropertyView(this, storeGroup, objDoc);
-            addPropertyView(this, baseGroup, objArt);
-//            addPropertyView(this, artgrGroup, objArt);
-            addPropertyView(this, balanceGroup, objDoc, objArt);
-            addPropertyView(this, extIncQuantity, objDoc, objArt);
-            addPropertyView(this, incPrmsGroup, objDoc, objArt);
-            addPropertyView(this, outPrmsGroup, objDoc, objArt);
+            addPropertyView(Properties, baseGroup, objDoc);
+            addPropertyView(Properties, storeGroup, objDoc);
+            addPropertyView(Properties, baseGroup, objArt);
+//            addPropertyView(Properties, artgrGroup, objArt);
+            addPropertyView(Properties, balanceGroup, objDoc, objArt);
+            addPropertyView(extIncQuantity, objDoc, objArt);
+            addPropertyView(Properties, incPrmsGroup, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroup, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, extIncQuantity.Property).View, 0);
+            addArticleRegularFilterGroup(getPropertyView(extIncQuantity.Property).View, 0);
         }
     }
 
@@ -641,26 +641,27 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, baseGroup, objDoc);
-            addPropertyView(this, storeGroup, objDoc);
-            addPropertyView(this, baseGroup, objArt);
-//            addPropertyView(this, artgrGroup, objArt);
-            addPropertyView(this, balanceGroup, objDoc, objArt);
-            addPropertyView(this, intraQuantity, objDoc, objArt);
-            addPropertyView(this, incPrmsGroup, objDoc, objArt);
-            addPropertyView(this, outPrmsGroup, objDoc, objArt);
+            addPropertyView(Properties, baseGroup, objDoc);
+            addPropertyView(Properties, storeGroup, objDoc);
+            addPropertyView(Properties, baseGroup, objArt);
+//            addPropertyView(Properties, artgrGroup, objArt);
+            addPropertyView(Properties, balanceGroup, objDoc, objArt);
+            addPropertyView(intraQuantity, objDoc, objArt);
+            addPropertyView(Properties, incPrmsGroup, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroup, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, intraQuantity.Property).View, 0, 
-                                         getPropertyView(this, docOutBalanceQuantity.Property).View,
-                                         getPropertyView(this, docIncBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(intraQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View,
+                                         getPropertyView(docIncBalanceQuantity.Property).View);
 
-            addHintsNoUpdate(this, balanceStoreQuantity.Property);
-            addHintsNoUpdate(this, storePriceIn.Property);
-            addHintsNoUpdate(this, storeVATIn.Property);
-            addHintsNoUpdate(this, storeAdd.Property);
-            addHintsNoUpdate(this, storeVATOut.Property);
-            addHintsNoUpdate(this, storeLocTax.Property);
-            addHintsNoUpdate(this, storePriceOut.Property);
+//            addHintsNoUpdate(balanceStoreQuantity.Property);
+            addHintsNoUpdate(maxChangesParamsDoc.Property);
+/*            addHintsNoUpdate(storePriceIn.Property);
+            addHintsNoUpdate(storeVATIn.Property);
+            addHintsNoUpdate(storeAdd.Property);
+            addHintsNoUpdate(storeVATOut.Property);
+            addHintsNoUpdate(storeLocTax.Property);
+            addHintsNoUpdate(storePriceOut.Property); */
         }
     }
 
@@ -678,17 +679,17 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, baseGroup, objDoc);
-            addPropertyView(this, storeGroup, objDoc);
-            addPropertyView(this, baseGroup, objArt);
-//            addPropertyView(this, artgrGroup, objArt);
-            addPropertyView(this, balanceGroup, objDoc, objArt);
-            addPropertyView(this, extOutQuantity, objDoc, objArt);
-            addPropertyView(this, incPrmsGroup, objDoc, objArt);
-            addPropertyView(this, outPrmsGroup, objDoc, objArt);
+            addPropertyView(Properties, baseGroup, objDoc);
+            addPropertyView(Properties, storeGroup, objDoc);
+            addPropertyView(Properties, baseGroup, objArt);
+//            addPropertyView(Properties, artgrGroup, objArt);
+            addPropertyView(Properties, balanceGroup, objDoc, objArt);
+            addPropertyView(extOutQuantity, objDoc, objArt);
+            addPropertyView(Properties, incPrmsGroup, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroup, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, extOutQuantity.Property).View, 0,
-                                         getPropertyView(this, docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(extOutQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View);
         }
     }
 
@@ -709,21 +710,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjArtTo);
             addGroup(gobjArtFrom);
 
-            addPropertyView(this, baseGroup, objDoc);
-            addPropertyView(this, storeGroup, objDoc);
-            addPropertyView(this, baseGroup, objArtFrom);
-//            addPropertyView(this, artgrGroup, objArtFrom);
-            addPropertyView(this, baseGroup, objArtTo);
-//            addPropertyView(this, artgrGroup, objArtTo);
-            addPropertyView(this, docOutBalanceQuantity, objDoc, objArtTo);
-            addPropertyView(this, exchIncQuantity, objDoc, objArtTo);
-            addPropertyView(this, exchOutQuantity, objDoc, objArtTo);
-            addPropertyView(this, incPrmsGroup, objDoc, objArtTo);
-            addPropertyView(this, outPrmsGroup, objDoc, objArtTo);
-            addPropertyView(this, docOutBalanceQuantity, objDoc, objArtFrom);
-            addPropertyView(this, exchangeQuantity, objDoc, objArtFrom, objArtTo);
-            addPropertyView(this, incPrmsGroup, objDoc, objArtFrom);
-            addPropertyView(this, outPrmsGroup, objDoc, objArtFrom);
+            addPropertyView(Properties, baseGroup, objDoc);
+            addPropertyView(Properties, storeGroup, objDoc);
+            addPropertyView(Properties, baseGroup, objArtFrom);
+//            addPropertyView(Properties, artgrGroup, objArtFrom);
+            addPropertyView(Properties, baseGroup, objArtTo);
+//            addPropertyView(Properties, artgrGroup, objArtTo);
+            addPropertyView(docOutBalanceQuantity, objDoc, objArtTo);
+            addPropertyView(exchIncQuantity, objDoc, objArtTo);
+            addPropertyView(exchOutQuantity, objDoc, objArtTo);
+            addPropertyView(Properties, incPrmsGroup, objDoc, objArtTo);
+            addPropertyView(Properties, outPrmsGroup, objDoc, objArtTo);
+            addPropertyView(docOutBalanceQuantity, objDoc, objArtFrom);
+            addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(Properties, incPrmsGroup, objDoc, objArtFrom);
+            addPropertyView(Properties, outPrmsGroup, objDoc, objArtFrom);
 
             RegularFilterGroup filterGroup = new RegularFilterGroup(IDShift(1));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
@@ -731,19 +732,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, exchIncQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchIncQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, exchOutQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchOutQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtTo).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, gobjArtTo).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtTo).View, FieldExprCompareWhere.LESS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, gobjArtTo).View, FieldExprCompareWhere.LESS, new UserValueLink(0)),
                                   "Отр. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             addRegularFilterGroup(filterGroup);
@@ -754,19 +755,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, exchangeQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchangeQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.GREATER, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, gobjArtFrom).View, FieldExprCompareWhere.GREATER, new UserValueLink(0)),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(this, docOverPriceOut.Property, gobjArtFrom).View, FieldExprCompareWhere.EQUALS, new PropertyValueLink(getPropertyView(this, docOverPriceOut.Property, gobjArtTo).View)),
+                                  new Filter(getPropertyView(docOverPriceOut.Property, gobjArtFrom).View, FieldExprCompareWhere.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.Property, gobjArtTo).View)),
                                   "Одинаковая розн. цена",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
@@ -788,18 +789,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(this, baseGroup, objDoc);
-            addPropertyView(this, storeGroup, objDoc);
-            addPropertyView(this, baseGroup, objArt);
-//            addPropertyView(this, artgrGroup, objArt);
-            addPropertyView(this, revalOverBalanceQuantity, objDoc, objArt);
-            addPropertyView(this, isRevalued, objDoc, objArt);
-            addPropertyView(this, incPrmsGroupBefore, objDoc, objArt);
-            addPropertyView(this, outPrmsGroupBefore, objDoc, objArt);
-            addPropertyView(this, outPrmsGroupAfter, objDoc, objArt);
+            addPropertyView(Properties, baseGroup, objDoc);
+            addPropertyView(Properties, storeGroup, objDoc);
+            addPropertyView(Properties, baseGroup, objArt);
+//            addPropertyView(Properties, artgrGroup, objArt);
+            addPropertyView(revalOverBalanceQuantity, objDoc, objArt);
+            addPropertyView(isRevalued, objDoc, objArt);
+            addPropertyView(Properties, incPrmsGroupBefore, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroupBefore, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroupAfter, objDoc, objArt);
 
-            addArticleRegularFilterGroup(getPropertyView(this, isRevalued.Property).View, false, 
-                                         getPropertyView(this, revalOverBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(isRevalued.Property).View, false,
+                                         getPropertyView(revalOverBalanceQuantity.Property).View);
         }
     }
 
@@ -820,13 +821,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjStore);
             addGroup(gobjArt);
 
-            addPropertyView(this, baseGroup, objStore);
-            addPropertyView(this, baseGroup, objArt);
-//            addPropertyView(this, artgrGroup, objArt);
-            addPropertyView(this, baseGroup, objStore, objArt);
-            addPropertyView(this, balanceGroup, objStore, objArt);
-            addPropertyView(this, incPrmsGroup, objStore, objArt);
-            addPropertyView(this, outPrmsGroup, objStore, objArt);
+            addPropertyView(Properties, baseGroup, objStore);
+            addPropertyView(Properties, baseGroup, objArt);
+//            addPropertyView(Properties, artgrGroup, objArt);
+            addPropertyView(Properties, baseGroup, objStore, objArt);
+            addPropertyView(Properties, balanceGroup, objStore, objArt);
+            addPropertyView(Properties, incPrmsGroup, objStore, objArt);
+            addPropertyView(Properties, outPrmsGroup, objStore, objArt);
         }
     }
 
@@ -841,18 +842,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addGroup(gobjPrimDoc);
 
-            addPropertyView(this, baseGroup, objPrimDoc);
-//            addPropertyView(this, primDocStore, objPrimDoc);
-//            addPropertyView(this, changesParams, objPrimDoc, objArt);
-//            addPropertyView(this, quantity, objPrimDoc, objArt);
-            addPropertyView(this, paramsGroup, objPrimDoc);
-            addPropertyView(this, paramsGroup, objPrimDoc, objArt);
+            addPropertyView(Properties, baseGroup, objPrimDoc);
+//            addPropertyView(Properties, primDocStore, objPrimDoc);
+//            addPropertyView(Properties, changesParams, objPrimDoc, objArt);
+//            addPropertyView(Properties, quantity, objPrimDoc, objArt);
+            addPropertyView(Properties, paramsGroup, objPrimDoc);
+            addPropertyView(Properties, paramsGroup, objPrimDoc, objArt);
 
-            addFixedFilter(new Filter(getPropertyView(this, changesParams.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(false)));
-            addFixedFilter(new Filter(getPropertyView(this, primDocStore.Property).View, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
+            addFixedFilter(new Filter(getPropertyView(changesParams.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(false)));
+            addFixedFilter(new Filter(getPropertyView(primDocStore.Property).View, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
-            formView.defaultOrders.put(formView.get(getPropertyView(this, primDocDate.Property)), false);
+            formView.defaultOrders.put(formView.get(getPropertyView(primDocDate.Property)), false);
             richDesign = formView;
         }
     }

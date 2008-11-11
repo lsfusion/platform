@@ -2187,7 +2187,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
     Source<K, V> proceedCompile() {
 
-        // из всех Properties,Wheres вытягивают Joins, InnerJoins, Where
+        // из всех propertyViews,Wheres вытягивают Joins, InnerJoins, Where
         ExprTranslator Translated = new ExprTranslator();
         List<Join> TranslatedJoins = new ArrayList();
         Set<Where> TranslatedWheres = new HashSet();
@@ -2444,7 +2444,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // ключи заполняем
         for(Map.Entry<K,SourceExpr> MapKey : MapKeys.entrySet())
             KeySelect.put(MapKey.getKey(),((KeyExpr<K>)MapKey.getValue()).Source);
-        // погнали Properties заполнять
+        // погнали propertyViews заполнять
         for(Map.Entry<V,SourceExpr> JoinProp : Properties.entrySet()) {
             String PropertyValue = JoinProp.getValue().getSource(JoinAlias, Syntax);
             if(PropertyValue.equals(Type.NULL))
@@ -2572,7 +2572,7 @@ class OrderedJoinQuery<K,V> extends JoinQuery<K,V> {
         Map<K,String> KeySelect = new HashMap();
         Map<Object,String> PropertySelect = new HashMap();
         Collection<String> WhereSelect = new ArrayList();
-        // закинем в Properties 
+        // закинем в propertyViews
         String From = Query.fillSelect(KeySelect,PropertySelect,WhereSelect,Syntax);
 
         String ExpressionString = "";

@@ -1382,7 +1382,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 }
             }
             
-/*            for(DataProperty Property : Session.Properties) {
+/*            for(DataProperty Property : Session.propertyViews) {
                 Property.OutChangesTable(Adapter, Session);
             }*/
                 
@@ -1555,113 +1555,6 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
     }
 
-    void addPropertyView(NavigatorForm form, ObjectImplement... objects) {
-        addPropertyView(form, (AbstractGroup)null, objects);
-    }
-
-    void addPropertyView(NavigatorForm form, AbstractGroup group, ObjectImplement... objects) {
-
-        for (Property property : Properties) {
-
-            if (group != null && !group.hasChild(property)) continue;
-
-            if (property.Interfaces.size() == objects.length) {
-
-                addPropertyView(form, property, objects);
-            }
-        }
-    }
-
-    <P extends PropertyInterface<P>> void addPropertyView(NavigatorForm form, Property<P> property, ObjectImplement... objects) {
-
-        Collection<List<P>> permutations = MapBuilder.buildPermutations(property.Interfaces);
-
-        for (List<P> mapping : permutations) {
-
-            InterfaceClass<P> propertyInterface = new InterfaceClass();
-            int interfaceCount = 0;
-            for (P iface : mapping) {
-                propertyInterface.put(iface, ClassSet.getUp(objects[interfaceCount++].BaseClass));
-            }
-
-            if (!property.getValueClass(propertyInterface).isEmpty()) {
-                addPropertyView(form, new LP<P,Property<P>>(property, mapping), objects);
-            }
-        }
-    }
-
-    PropertyView addPropertyView(NavigatorForm form, LP property, ObjectImplement... objects) {
-
-        PropertyObjectImplement propertyImplement = addPropertyObjectImplement(property, objects);
-        return addPropertyView(form, propertyImplement);
-    }
-
-    PropertyView addPropertyView(NavigatorForm form, PropertyObjectImplement propertyImplement) {
-
-        PropertyView propertyView = new PropertyView(form.IDShift(1),propertyImplement,propertyImplement.GetApplyObject());
-        form.Properties.add(propertyView);
-        return propertyView;
-    }
-
-    PropertyObjectImplement addPropertyObjectImplement(LP property, ObjectImplement... objects) {
-
-        PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.Property);
-
-        ListIterator<PropertyInterface> i = property.ListInterfaces.listIterator();
-        for(ObjectImplement object : objects) {
-            propertyImplement.Mapping.put(i.next(), object);
-        }
-
-        return propertyImplement;
-    }
-
-
-    PropertyView getPropertyView(NavigatorForm form, PropertyObjectImplement prop) {
-
-        PropertyView resultPropView = null;
-        for (PropertyView propView : (List<PropertyView>)form.Properties) {
-            if (propView.View == prop)
-                resultPropView = propView;
-        }
-
-        return resultPropView;
-    }
-
-
-    PropertyView getPropertyView(NavigatorForm form, Property prop) {
-
-        PropertyView resultPropView = null;
-        for (PropertyView propView : (List<PropertyView>)form.Properties) {
-            if (propView.View.Property == prop)
-                resultPropView = propView;
-        }
-
-        return resultPropView;
-    }
-
-    PropertyView getPropertyView(NavigatorForm form, Property prop, GroupObjectImplement groupObject) {
-
-        PropertyView resultPropView = null;
-        for (PropertyView propView : (List<PropertyView>)form.Properties) {
-            if (propView.View.Property == prop && propView.ToDraw == groupObject)
-                resultPropView = propView;
-        }
-
-        return resultPropView;
-    }
-
-    void addHintsNoUpdate(NavigatorForm form, AbstractGroup group) {
-
-        for (Property property : Properties) {
-            if (group != null && !group.hasChild(property)) continue;
-            addHintsNoUpdate(form, property);
-        }
-    }
-
-    void addHintsNoUpdate(NavigatorForm form, Property prop) {
-        form.hintsNoUpdate.add(prop);
-    }
-
     // -------------------------------------- Старые интерфейсы --------------------------------------------------- //
 
     Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {
@@ -1676,7 +1569,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 if(!DrawProp.getValueClass(InterfaceClass).isEmpty()) {
                     PropertyObjectImplement PropertyImplement = new PropertyObjectImplement(DrawProp);
                     PropertyImplement.Mapping.put((PropertyInterface)DrawProp.Interfaces.iterator().next(),Object);
-                    Form.Properties.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.GroupTo));
+                    Form.propertyViews.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.GroupTo));
 
                     if(Names!=null && Names.contains(DrawProp.caption))
                         Result.put(DrawProp.caption,PropertyImplement);
@@ -1694,7 +1587,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         for(ObjectImplement Object : Params) {
             PropImpl.Mapping.put(i.next(),Object);
         }
-        fbv.Properties.add(new PropertyView(fbv.IDShift(1),PropImpl,gv));
+        fbv.propertyViews.add(new PropertyView(fbv.IDShift(1),PropImpl,gv));
         return PropImpl;
     }
 
@@ -1844,7 +1737,7 @@ class LGP<T extends PropertyInterface> extends LP<GroupPropertyInterface<T>,Grou
 
         List<PropertyView> result = new ArrayList();
 
-        for (PropertyView propview : fbv.Properties)
+        for (PropertyView propview : fbv.propertyViews)
             if (propview.View.Property == prop) result.add(propview);
 
         return result;
@@ -1871,7 +1764,7 @@ class LGP<T extends PropertyInterface> extends LP<GroupPropertyInterface<T>,Grou
         JoinList Joins=new JoinList();
 
         Integer SelFields = 0;
-        Iterator<Property> i = Properties.iterator();
+        Iterator<Property> i = propertyViews.iterator();
         while(i.hasNext()) {
             Property Prop = i.next();
 

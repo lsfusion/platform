@@ -373,7 +373,7 @@ class DefaultClientFormView extends ClientFormView {
             }
         }
 
-        for (PropertyView property : (List<PropertyView>)navigatorForm.Properties) {
+        for (PropertyView property : (List<PropertyView>)navigatorForm.propertyViews) {
 
             ClientGroupObjectImplement groupObject = mgroupObjects.get(property.ToDraw);
 
@@ -381,7 +381,7 @@ class DefaultClientFormView extends ClientFormView {
             clientProperty.ID = property.ID;
 
             clientProperty.groupObject = groupObject;
-            clientProperty.constraints.order = navigatorForm.Properties.indexOf(property);
+            clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             //временно

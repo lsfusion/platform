@@ -111,7 +111,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         }
 
         remoteForm.Properties = new ArrayList();
-        for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.Properties) {
+        for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.propertyViews) {
             remoteForm.Properties.add(new PropertyView(navigatorProperty.ID, propertyMapper.doMapping(navigatorProperty.View), groupObjectMapper.doMapping(navigatorProperty.ToDraw)));
         }
 
@@ -322,7 +322,7 @@ class NavigatorElement<T extends BusinessLogics<T>> {
 abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
     List<GroupObjectImplement> Groups = new ArrayList();
-    List<PropertyView> Properties = new ArrayList();
+    List<PropertyView> propertyViews = new ArrayList();
 
     Set<Filter> fixedFilters = new HashSet();
     public void addFixedFilter(Filter filter) { fixedFilters.add(filter); }
@@ -343,6 +343,113 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     void addGroup(GroupObjectImplement Group) {
         Groups.add(Group);
         Group.Order = Groups.size();
+    }
+
+    void addPropertyView(List<Property> properties, ObjectImplement... objects) {
+        addPropertyView(properties, (AbstractGroup)null, objects);
+    }
+
+    void addPropertyView(List<Property> properties, AbstractGroup group, ObjectImplement... objects) {
+
+        for (Property property : properties) {
+
+            if (group != null && !group.hasChild(property)) continue;
+
+            if (property.Interfaces.size() == objects.length) {
+
+                addPropertyView(property, objects);
+            }
+        }
+    }
+
+    <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, ObjectImplement... objects) {
+
+        Collection<List<P>> permutations = MapBuilder.buildPermutations(property.Interfaces);
+
+        for (List<P> mapping : permutations) {
+
+            InterfaceClass<P> propertyInterface = new InterfaceClass();
+            int interfaceCount = 0;
+            for (P iface : mapping) {
+                propertyInterface.put(iface, ClassSet.getUp(objects[interfaceCount++].BaseClass));
+            }
+
+            if (!property.getValueClass(propertyInterface).isEmpty()) {
+                addPropertyView(new LP<P,Property<P>>(property, mapping), objects);
+            }
+        }
+    }
+
+    PropertyView addPropertyView(LP property, ObjectImplement... objects) {
+
+        PropertyObjectImplement propertyImplement = addPropertyObjectImplement(property, objects);
+        return addPropertyView(propertyImplement);
+    }
+
+    PropertyView addPropertyView(PropertyObjectImplement propertyImplement) {
+
+        PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,propertyImplement.GetApplyObject());
+        propertyViews.add(propertyView);
+        return propertyView;
+    }
+
+    PropertyObjectImplement addPropertyObjectImplement(LP property, ObjectImplement... objects) {
+
+        PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.Property);
+
+        ListIterator<PropertyInterface> i = property.ListInterfaces.listIterator();
+        for(ObjectImplement object : objects) {
+            propertyImplement.Mapping.put(i.next(), object);
+        }
+
+        return propertyImplement;
+    }
+
+
+    PropertyView getPropertyView(PropertyObjectImplement prop) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : propertyViews) {
+            if (propView.View == prop)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
+
+    PropertyView getPropertyView(Property prop) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : propertyViews) {
+            if (propView.View.Property == prop)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
+    PropertyView getPropertyView(Property prop, GroupObjectImplement groupObject) {
+
+        PropertyView resultPropView = null;
+        for (PropertyView propView : propertyViews) {
+            if (propView.View.Property == prop && propView.ToDraw == groupObject)
+                resultPropView = propView;
+        }
+
+        return resultPropView;
+    }
+
+    void addHintsNoUpdate(List<Property> properties, AbstractGroup group) {
+
+        for (Property property : properties) {
+            if (group != null && !group.hasChild(property)) continue;
+            addHintsNoUpdate(property);
+        }
+    }
+
+    void addHintsNoUpdate(Property prop) {
+        hintsNoUpdate.add(prop);
     }
 
     boolean isPrintForm;
