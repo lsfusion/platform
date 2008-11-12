@@ -213,7 +213,7 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
                 if(IntObject.GridClass==null)
                     throw new RuntimeException("надо еще думать");
                 else
-                    ImpClass = ClassSet.getUp(IntObject.GridClass);
+                    ImpClass = new ClassSet(IntObject.GridClass);//ClassSet.getUp(IntObject.GridClass);
             else
                 if(IntObject.Class==null)
                     return new ClassSet();
@@ -682,7 +682,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     Class getPropertyClass(PropertyView propertyView) {
-        return propertyView.View.getValueClass(propertyView.ToDraw).getCommonClass();
+        return propertyView.View.getValueClass(null).getCommonClass();
     }
 
     RegularFilterGroup getRegularFilterGroup(int groupID) {
@@ -1037,9 +1037,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return hintsNoUpdate;
     }
 
-    Collection<Property> HintsSave = new HashSet<Property>();
+    Collection<Property> hintsSave = new HashSet<Property>();
     public boolean toSave(Property Property) {
-        return HintsSave.contains(Property);
+        return hintsSave.contains(Property);
     }
 
     public boolean hasSessionChanges() {
@@ -1518,7 +1518,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 int NewInInterface=0;
                 if(CheckClass)
                     NewInInterface = (DrawProp.View.isInInterface(DrawProp.ToDraw)?2:0);
-                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 && InInterface==2))
+                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0)) //&& InInterface==2))
                     NewInInterface = (DrawProp.View.isInInterface(null)?1:0);
 
                 if(InInterface!=NewInInterface) {

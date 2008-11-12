@@ -132,6 +132,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         }
 
         remoteForm.hintsNoUpdate = navigatorForm.hintsNoUpdate;
+        remoteForm.hintsSave = navigatorForm.hintsSave;
 
         remoteForm.richDesign = navigatorForm.getRichDesign();
 
@@ -330,8 +331,6 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     List<RegularFilterGroup> regularFilterGroups = new ArrayList();
     public void addRegularFilterGroup(RegularFilterGroup group) { regularFilterGroups.add(group); }
 
-    Collection<Property> hintsNoUpdate = new HashSet();
-    
     // счетчик идентификаторов
     int IDCount = 0;
 
@@ -345,24 +344,25 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
         Group.Order = Groups.size();
     }
 
-    void addPropertyView(List<Property> properties, ObjectImplement... objects) {
-        addPropertyView(properties, (AbstractGroup)null, objects);
+    void addPropertyView(List<Property> properties, Boolean upClasses, ObjectImplement... objects) {
+        addPropertyView(properties, (AbstractGroup)null, upClasses, objects);
     }
 
-    void addPropertyView(List<Property> properties, AbstractGroup group, ObjectImplement... objects) {
+    void addPropertyView(List<Property> properties, AbstractGroup group, Boolean upClasses, ObjectImplement... objects) {
 
         for (Property property : properties) {
 
+            if (property.getParent() == null) continue;
             if (group != null && !group.hasChild(property)) continue;
 
             if (property.Interfaces.size() == objects.length) {
 
-                addPropertyView(property, objects);
+                addPropertyView(property, upClasses, objects);
             }
         }
     }
 
-    <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, ObjectImplement... objects) {
+    <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, Boolean upClasses, ObjectImplement... objects) {
 
         Collection<List<P>> permutations = MapBuilder.buildPermutations(property.Interfaces);
 
@@ -371,7 +371,9 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
             InterfaceClass<P> propertyInterface = new InterfaceClass();
             int interfaceCount = 0;
             for (P iface : mapping) {
-                propertyInterface.put(iface, ClassSet.getUp(objects[interfaceCount++].BaseClass));
+                Class baseClass = objects[interfaceCount++].BaseClass;
+                propertyInterface.put(iface, (upClasses) ? ClassSet.getUp(baseClass)
+                                                         : new ClassSet(baseClass));
             }
 
             if (!property.getValueClass(propertyInterface).isEmpty()) {
@@ -448,8 +450,15 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
         }
     }
 
+    Collection<Property> hintsNoUpdate = new HashSet();
+    Collection<Property> hintsSave = new HashSet();
+
     void addHintsNoUpdate(Property prop) {
         hintsNoUpdate.add(prop);
+    }
+
+    void addHintsSave(Property prop) {
+        hintsSave.add(prop);
     }
 
     boolean isPrintForm;

@@ -1606,8 +1606,7 @@ class ClassNavigatorForm extends NavigatorForm {
         groupObject.addObject(object);
         addGroup(groupObject);
 
-        BL.FillSingleViews(object,this,null);
-
+        addPropertyView(BL.Properties, true, object);
     }
 }
 
