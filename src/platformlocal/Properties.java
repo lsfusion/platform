@@ -367,12 +367,14 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
             }
         }
 
+        void out(DataSession Session) throws SQLException {
+            System.out.println(caption);
+            Source.outSelect(Session);
+            System.out.println(Classes);
+        }
+
         // сохраняет в инкрементную таблицу
         void save(DataSession Session) throws SQLException {
-
-//            System.out.println(caption+" "+Type);
-//            Source.outSelect(Session);
-//            System.out.println(Classes);
 
             Map<KeyField,Integer> ValueKeys = new HashMap<KeyField,Integer>();
             ValueKeys.put(ChangeTable.Property,ID);
@@ -1981,6 +1983,7 @@ class DataSession  {
 //            System.out.println("inctype"+Property.caption+" "+IncrementTypes.get(Property));
             if(!(Property instanceof MaxGroupProperty) && ToUpdate.toSave(Property))
                 Change.save(this);
+//            Change.out(this);
 /*            System.out.println(Property.caption+" - CHANGES");
             Property.OutChangesTable(this);
             System.out.println(Property.caption+" - CURRENT");
@@ -2357,9 +2360,12 @@ class MapChangedRead<P extends PropertyInterface> extends MapRead<P> {
     }
 
     InterfaceClassSet<P> getImplementClassSet(PropertyInterfaceImplement<P> Implement, ClassSet ReqValue) {
-        if(ImplementChanged.contains(Implement)) // если ImplementType=2 то плевать какой класс
-            return Implement.mapChangeClassSet(Session, ImplementType==2?ClassSet.universal:ReqValue);
-        else
+        if(ImplementChanged.contains(Implement)) {
+            if(ImplementType==2) // если ImplementType=2 то And'им базовый класс с новыми
+                return Implement.mapGetClassSet(ClassSet.universal).and(Implement.mapChangeClassSet(Session, ClassSet.universal));
+            else
+                return Implement.mapChangeClassSet(Session, ReqValue);
+        } else
             return super.getImplementClassSet(Implement, ReqValue);    //To change body of overridden methods use File | Settings | File Templates.
     }
 

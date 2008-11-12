@@ -214,7 +214,7 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://crush:1433;namedPipe=true;User=sa;Password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
         try {
         try {
             Connect.createStatement().execute("DROP DATABASE testplat");
@@ -228,7 +228,7 @@ class MSSQLDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://crush:1433;namedPipe=true;User=sa;Password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
         Connect.createStatement().execute("USE testplat");
 
         return Connect;
@@ -352,8 +352,8 @@ class PostgreDataAdapter extends DataAdapter {
     }
 
     public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
-        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
-//        return "COALESCE("+Expr1+","+Expr2+")";
+//        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
+        return "COALESCE("+Expr1+","+Expr2+")";
     }
 }
 

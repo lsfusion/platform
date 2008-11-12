@@ -567,7 +567,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     public boolean toSave(Property Property) {
-        return Persistents.contains(Property);
+        return Property.IsPersistent();
     }
 
     public Collection<Property> getNoUpdateProperties() {
@@ -605,6 +605,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 //        Seed = 3936;
 //        Seed = 8907;
 //        Seed = 6646;
+        if(Main.ForceSeed!=null) Seed = Main.ForceSeed;
         System.out.println("Random seed - "+Seed);
 
         Random Randomizer = new Random(Seed);

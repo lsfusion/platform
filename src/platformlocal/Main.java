@@ -23,9 +23,13 @@ public class Main {
 
     static DataAdapter Adapter;
 
-    static boolean recreateDB = false;
+    static boolean recreateDB = true;
+    public static Integer ForceSeed = -1;
+    public static boolean DebugFlag = false;
+
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter("localhost");
+//          return new MSSQLDataAdapter();
     }
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
@@ -141,10 +145,11 @@ public class Main {
 
 //        if(1==1) return;
 
-/*        int a=1;
-        while(a==1) {
-            System.out.println("Opened");
-            new TmcBusinessLogics(1);
+        if(ForceSeed==null || ForceSeed!=-1) {
+            int a=1;
+            while(a==1) {
+                System.out.println("Opened");
+                new TmcBusinessLogics(1);
 //            System.out.println("Closed");
 //            try {
 //                new TestBusinessLogics(0);
@@ -153,8 +158,8 @@ public class Main {
 //            }
 //            System.out.println("Suspicious");
 //            new TmcBusinessLogics(-1);
+            }
         }
-  */
 /*        UnionQuery<KeyField,PropertyField> Union = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
 
         JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);

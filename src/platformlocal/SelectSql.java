@@ -582,13 +582,7 @@ class Join<J,U> {
     Map<U,JoinExpr<J,U>> Exprs = new HashMap();
 
     Join(Source<J,U> iSource,boolean iInner) {
-        Source = iSource;
-        Inner = iInner;
-        InJoin = new JoinWhere(this);
-        for(U Property : Source.getProperties())
-            Exprs.put(Property,new JoinExpr<J,U>(this,Property));
-
-        Joins = new HashMap();
+        this(iSource,new HashMap(),iInner);
     }
 
     Join(Source<J,U> iSource,Map<J,SourceExpr> iJoins,boolean iInner) {
@@ -601,13 +595,23 @@ class Join<J,U> {
         Joins = iJoins;
     }
 
-    void fillJoins(List<Join> FillJoins, Set<Where> Wheres) {
-        if(!FillJoins.contains(this)) {
-            for(SourceExpr Join : Joins.values())
-                Join.fillJoins(FillJoins,Wheres);
+    void fillJoins(List<Join> FillJoins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Set<Join> InDepend = new HashSet<Join>();
+        for(SourceExpr Join : Joins.values())
+            Join.fillJoins(FillJoins,Wheres,InDepend);
+        DependJoins.addAll(InDepend);
 
-            FillJoins.add(this);
+        if(!FillJoins.contains(this)) {
+            if(Inner) { // вставляем сразу после первой зависимости
+                int InsertJoin = 0;
+                for(int i=0;i<FillJoins.size();i++)
+                    if(InDepend.contains(FillJoins.get(i)))
+                        InsertJoin = i+1;
+                FillJoins.add(InsertJoin,this);
+            } else // в конец
+                FillJoins.add(this);
         }
+        DependJoins.add(this);
     }
 
     String getFrom(Map<Join, String> JoinAlias, Collection<String> WhereSelect, SQLSyntax Syntax) {
@@ -633,6 +637,14 @@ class Join<J,U> {
         }
 
         return SourceString + (WhereSelect==null?" ON "+(JoinString.length()==0?StaticWhere.TRUE:JoinString):"");
+    }
+
+    Set<KeyExpr> getKeyJoins() {
+        Set<KeyExpr> Result = new HashSet<KeyExpr>();
+        for(SourceExpr JoinExpr : Joins.values())
+            if(JoinExpr instanceof KeyExpr)
+                Result.add((KeyExpr)JoinExpr);
+        return Result;
     }
 
     Join<J,U> translate(ExprTranslator Translated, ExprTranslator JoinTranslated,boolean ForceOuter) {
@@ -703,7 +715,7 @@ class Join<J,U> {
         return null;
     }
 
-    public String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<SourceExpr, String> KeyValues) {
+    public <K> String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<KeyExpr<K>, String> KeyValues) {
 
         Set<KeyExpr> JoinExprs = new HashSet(KeyValues.keySet());
         // проверим сначала что в Join'ах только не пересекающиеся keyExpr'ы
@@ -721,8 +733,8 @@ class Join<J,U> {
         for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
             ((KeyExpr)MapJoin.getValue()).Source = KeySelect.get(MapJoin.getKey());
         // закинем KeyValues
-        for(Map.Entry<SourceExpr,String> KeyValue : KeyValues.entrySet())
-            ((KeyExpr)KeyValue.getKey()).Source = KeyValue.getValue();
+        for(Map.Entry<KeyExpr<K>,String> KeyValue : KeyValues.entrySet())
+            KeyValue.getKey().Source = KeyValue.getValue();
         for(Map.Entry<U,JoinExpr<J,U>> MapExpr : Exprs.entrySet())
             MapExpr.getValue().StringSource = PropertySelect.get(MapExpr.getKey());
 
@@ -796,14 +808,15 @@ abstract class SourceJoin<TranslateType extends SourceJoin> extends TranslateExp
 
     abstract public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax);
     
-    abstract void fillJoins(List<Join> Joins, Set<Where> Wheres);
+    abstract void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins);
     abstract void fillObjectExprs(Collection<ObjectExpr> Exprs);
 
     public TranslateType translate(ExprTranslator Translated) {
         TranslateType Translate = (TranslateType) Translated.translate(this);
         if(Translate==null) {
             Translate = proceedTranslate(Translated);
-            Translated.put(this,Translate);
+            // нельзя, потому как например во внутреннем перемещении добавить, склады заполн. + кол-во в null
+//            Translated.put(this,Translate);
             return Translate;
         }
 
@@ -844,7 +857,7 @@ class KeyExpr<K> extends ObjectExpr {
         return Source;
     }
 
-    void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -873,15 +886,15 @@ class JoinExpr<J,U> extends ObjectExpr {
         Property = iProperty;
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        From.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        From.fillJoins(Joins,Wheres, DependJoins);
     }
 
     // для fillSingleSelect'а
     String StringSource = null;
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         if(StringSource!=null) return StringSource;
-        
+
         return From.Source.getPropertyString(Property,JoinAlias.get(From));
     }
 
@@ -909,7 +922,7 @@ class ValueSourceExpr extends SourceExpr {
         return Object.getString(Syntax);
     }
 
-    void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -1019,9 +1032,9 @@ class UnionSourceExpr extends SourceExpr {
     }
 
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         for(CoeffExpr<SourceExpr> Operand : Operands)
-            Operand.Expr.fillJoins(Joins,Wheres);
+            Operand.Expr.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1089,10 +1102,10 @@ class SelectWhereExpr extends SourceExpr {
         return Source;
     }
 
-    void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         for(CoeffExpr<SelectWhereOperand> Operand : Operands) {
-            Operand.Expr.Expr.fillJoins(Joins, Wheres);
-            Operand.Expr.Where.fillJoins(Joins, Wheres);
+            Operand.Expr.Expr.fillJoins(Joins, Wheres, DependJoins);
+            Operand.Expr.Where.fillJoins(Joins, Wheres, DependJoins);
         }
     }
 
@@ -1135,8 +1148,8 @@ class NullEmptySourceExpr extends SourceExpr {
 
     SourceExpr Expr;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Expr.fillJoins(Joins, Wheres);    //To change body of overridden methods use File | Settings | File Templates.
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Expr.fillJoins(Joins, Wheres, DependJoins);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1185,8 +1198,8 @@ class NullJoinSourceExpr extends SourceExpr {
 
     SourceExpr Expr;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Expr.fillJoins(Joins, Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Expr.fillJoins(Joins, Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1236,9 +1249,9 @@ class NullMapSourceExpr<T> extends SourceExpr {
     Map<T,SourceExpr> MapExprs;
     Type DBType;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         for(SourceExpr Expr : MapExprs.values())
-            Expr.fillJoins(Joins, Wheres);
+            Expr.fillJoins(Joins, Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1298,10 +1311,10 @@ class CaseWhenSourceExpr extends SourceExpr {
     SourceExpr TrueExpr;
     SourceExpr FalseExpr;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Where.fillJoins(Joins,Wheres);
-        TrueExpr.fillJoins(Joins,Wheres);
-        FalseExpr.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Where.fillJoins(Joins,Wheres, DependJoins);
+        TrueExpr.fillJoins(Joins,Wheres, DependJoins);
+        FalseExpr.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> FillExprs) {
@@ -1371,9 +1384,9 @@ class IsNullSourceExpr extends SourceExpr {
     SourceExpr PrimaryExpr;
     SourceExpr SecondaryExpr;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        PrimaryExpr.fillJoins(Joins,Wheres);
-        SecondaryExpr.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        PrimaryExpr.fillJoins(Joins,Wheres, DependJoins);
+        SecondaryExpr.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1440,9 +1453,9 @@ class FormulaSourceExpr extends SourceExpr {
 
     Map<String,SourceExpr> Params;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         for(SourceExpr Param : Params.values())
-            Param.fillJoins(Joins,Wheres);
+            Param.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1517,9 +1530,9 @@ class MultiplySourceExpr extends SourceExpr {
         DBType = iDBType;
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         for(SourceExpr Operand : Operands)
-            Operand.fillJoins(Joins,Wheres);
+            Operand.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1589,8 +1602,8 @@ class FormulaWhereSourceExpr extends SourceExpr {
         NotNull = iNotNull;
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        FormulaWhere.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        FormulaWhere.fillJoins(Joins,Wheres, DependJoins);
         if(NotNull)
             Wheres.add(FormulaWhere);
     }
@@ -1650,8 +1663,8 @@ class JoinWhere extends Where {
         From=iFrom;
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        From.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        From.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1679,7 +1692,7 @@ abstract class StaticWhere extends Where {
         return this;
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1747,10 +1760,10 @@ class FieldExprCompareWhere extends Where {
             ((SourceExpr)Value).fillObjectExprs(Exprs);
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Source.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Source.fillJoins(Joins,Wheres, DependJoins);
         if(Value instanceof SourceExpr)
-            ((SourceExpr)Value).fillJoins(Joins,Wheres);
+            ((SourceExpr)Value).fillJoins(Joins,Wheres, DependJoins);
     }
 
     public boolean equals(Object o) {
@@ -1802,8 +1815,8 @@ class SourceIsNullWhere extends Where {
             return new SourceIsNullWhere(TransSource,Not);
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Source.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Source.fillJoins(Joins,Wheres, DependJoins);
     }
 
     public boolean equals(Object o) {
@@ -1860,9 +1873,9 @@ class FieldOPWhere extends Where {
         Op2.fillObjectExprs(Exprs);
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Op1.fillJoins(Joins,Wheres);
-        Op2.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Op1.fillJoins(Joins,Wheres, DependJoins);
+        Op2.fillJoins(Joins,Wheres, DependJoins);
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
@@ -1927,8 +1940,8 @@ class NotWhere extends Where {
             return new NotWhere(TranslatedWhere);
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Where.fillJoins(Joins, Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Where.fillJoins(Joins, Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -1966,8 +1979,8 @@ class FieldSetValueWhere extends Where {
             return new FieldSetValueWhere(TransExpr,SetValues);
     }
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
-        Expr.fillJoins(Joins,Wheres);
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
+        Expr.fillJoins(Joins,Wheres, DependJoins);
     }
 
     public boolean equals(Object o) {
@@ -2006,9 +2019,9 @@ class FormulaSourceWhere extends Where {
 
     Map<String,SourceExpr> Params;
 
-    public void fillJoins(List<Join> Joins, Set<Where> Wheres) {
+    public void fillJoins(List<Join> Joins, Set<Where> Wheres, Set<Join> DependJoins) {
         for(SourceExpr Param : Params.values())
-            Param.fillJoins(Joins,Wheres);
+            Param.fillJoins(Joins,Wheres, DependJoins);
     }
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
@@ -2094,7 +2107,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     List<Join> Joins = new ArrayList();
 
     void add(V Property,SourceExpr Expr) {
-        Expr.fillJoins(Joins,Wheres);
+        Expr.fillJoins(Joins,Wheres,new HashSet<Join>());
         Properties.put(Property,Expr);
     }
 
@@ -2104,15 +2117,15 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
     }
 
     void add(Where Where) {
-        Where.fillJoins(Joins,Wheres);
+        Where.fillJoins(Joins,Wheres,new HashSet<Join>());
         Wheres.add(Where);
     }
 
     void add(Join Join) {
-        Join.fillJoins(Joins,Wheres);
+        Join.fillJoins(Joins,Wheres,new HashSet<Join>());
     }
 
-    Map<SourceExpr,String> KeyValues = new HashMap();
+    Map<KeyExpr<K>,String> KeyValues = new HashMap();
 
     JoinQuery() {super();}
     JoinQuery(Collection<? extends K> iKeys) {
@@ -2162,13 +2175,21 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
     }
     // для тестирования проверяет что все транлировалось нормально
-    void checkTranslate(ExprTranslator Translated,List<Join> TranslatedJoins) {
+    void checkTranslate(ExprTranslator Translated,List<Join> TranslatedJoins,Set<Where> TranslatedWheres) {
         // проверяем SourceWheres
         Set<ObjectExpr> NewExprs;
         for(Join TransJoin : TranslatedJoins) {
             NewExprs = new HashSet();
             TransJoin.fillObjectExprs(NewExprs);
             checkExprs(NewExprs,TranslatedJoins);
+/*
+            if(TransJoin.Inner) {
+                List<Join> CheckLeft = new ArrayList();
+                TransJoin.fillJoins(CheckLeft,new HashSet());
+                for(Join LeftJoin : CheckLeft)
+                    if(!LeftJoin.Inner)
+                        throw new RuntimeException("Inner To Left");
+            }*/
         }
 
         for(SourceExpr PropertyValue : Properties.values()) {
@@ -2177,7 +2198,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             checkExprs(NewExprs,TranslatedJoins);
         }
 
-        for(Where Where : Wheres) {
+        for(Where Where : TranslatedWheres) {
             NewExprs = new HashSet();
             Where.translate(Translated).fillObjectExprs(NewExprs);
             checkExprs(NewExprs,TranslatedJoins);
@@ -2200,9 +2221,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
                 Join.Source.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, false);
         }
 
-//        checkTranslate(Translated,TranslatedJoins);
-
-        // перетранслируем св-ва в основном чтобы не пошли транслироваться (что надо при Merge) в DumbSource'ах константы - убивая тем самым Where 
+        // перетранслируем св-ва в основном чтобы не пошли транслироваться (что надо при Merge) в DumbSource'ах константы - убивая тем самым Where
         for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
             MapProperty.setValue(MapProperty.getValue().translate(Translated));
         for(Where Where : Wheres)
@@ -2211,9 +2230,11 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(SourceExpr Key : MapKeys.values()) {
             SourceExpr ValueKey = Key.translate(Translated);
             if(Key!=ValueKey)
-                KeyValues.put(Key,((ValueSourceExpr)ValueKey).Object.getString(null));
+                KeyValues.put((KeyExpr<K>) Key,((ValueSourceExpr)ValueKey).Object.getString(null));
         }
 
+//        checkTranslate(Translated,TranslatedJoins,TranslatedWheres);
+        
         Translated = new ExprTranslator();
 
         // слитые операнды
@@ -2253,7 +2274,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             MergedJoins.add(ToMerge);
         }
 
-//        checkTranslate(Translated,MergedJoins);
+//        checkTranslate(Translated,MergedJoins,TranslatedWheres);
 
         // перетранслируем все
         Joins = MergedJoins;
@@ -2475,12 +2496,12 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         }
 
         // закинем KeyValues
-        for(Map.Entry<SourceExpr,String> KeyValue : KeyValues.entrySet())
-            ((KeyExpr<K>)KeyValue.getKey()).Source = KeyValue.getValue();
+        for(Map.Entry<KeyExpr<K>,String> KeyValue : KeyValues.entrySet())
+            KeyValue.getKey().Source = KeyValue.getValue();
 
         Map<Join,String> JoinAlias = new HashMap();
         String From = "";
-        // теперь определим KeyExpr'ы заодно строя Join'ы
+/*        // теперь определим KeyExpr'ы заодно строя Join'ы
         for(Join Join : Joins)
             if(Join.Inner)
                 From = (From.length()==0?"":From + " JOIN ") + Join.getFrom(JoinAlias,(From.length()==0?WhereSelect:null), Syntax);
@@ -2496,6 +2517,35 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(Join Join : Joins)
             if(!Join.Inner)
                 From = From + " LEFT JOIN " + Join.getFrom(JoinAlias,null, Syntax);
+
+/*        List<Join> ArrangedJoins = new ArrayList<Join>();
+        Set<KeyExpr> FilledKeys = new HashSet<KeyExpr>(KeyValues.keySet());
+        LinkedHashMap<Join,Set<KeyExpr>> LeftWait = new LinkedHashMap<Join, Set<KeyExpr>>();
+        for(Join<?,?> Join : Joins) {
+            // находим все ключи
+            Set<KeyExpr> KeyJoins = Join.getKeyJoins();
+            if(Join.Inner) {
+                ArrangedJoins.add(Join);
+                FilledKeys.addAll(KeyJoins);
+            } else
+                LeftWait.put(Join,KeyJoins);
+
+            for(Iterator<Map.Entry<Join,Set<KeyExpr>>> i = LeftWait.entrySet().iterator();i.hasNext();) {
+                Map.Entry<Join,Set<KeyExpr>> Left = i.next();
+                if(FilledKeys.containsAll(Left.getValue())) { // дождались
+                    ArrangedJoins.add(Left.getKey());
+                    i.remove();
+                }
+            }
+        }
+        if(FilledKeys.size()!=MapKeys.size())
+            throw new RuntimeException("Not Enough Inner Keys");
+        Joins = ArrangedJoins;
+  */
+        if(Joins.isEmpty() || !Joins.get(0).Inner)
+            From = "dumb";
+        for(Join Join : Joins)
+           From = (From.length()==0?"":From + (Join.Inner?"":" LEFT")+" JOIN ") + Join.getFrom(JoinAlias,(From.length()==0?WhereSelect:null), Syntax);
 
         fillSources(JoinAlias, KeySelect, PropertySelect, WhereSelect, Syntax);
 
@@ -3131,10 +3181,8 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         // по всем операндам (SelectQuery) компилируем их
         // если есть UnionQuery то доливаем все операнды туда где был старый Source
         Map<PropertyUnion, ExprUnion> ToTranslate = new HashMap();
-        for(Union<K, Object> Operand : Operands) {
-            Operand.Source = Operand.Source.compile();
+        for(Union<K, Object> Operand : Operands)
             Operand.Source.compileUnions(Operand, ToTranslate, TranslatedOperands);
-        }
 
         if(TranslatedOperands.size()==0)
             return getEmptySource();
