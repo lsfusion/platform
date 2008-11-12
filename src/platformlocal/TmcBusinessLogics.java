@@ -478,7 +478,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         setDefProp(paramsLocTax, docCurQLocTax, true);
         setDefProp(paramsPriceOut, docCurQPriceOut, true); */
 
-//        initCustomLogics();
+        initCustomLogics();
     }
 
     void initCustomLogics() {
@@ -515,7 +515,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         AddDProp(artclGroup, "Вес", Class.integer, articleBreadGroup);
 
         Class articleBread = new ObjectClass(131, "Хлеб", articleBreadGroup);
-        AddDProp(artclGroup, "Вес", Class.integer, articleCheese);
+        AddDProp(artclGroup, "Вес", Class.integer, articleBread);
+
         Class articleCookies = new ObjectClass(132, "Печенье", articleBreadGroup);
 
         Class articleJuice = new ObjectClass(140, "Соки", articleFood);
@@ -978,7 +979,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         int PropModifier = 1; //60
 
         Map<Class,Integer> ClassQuantity = new HashMap();
-        ClassQuantity.put(article,2*Modifier);
+        List<Class> articleChilds = new ArrayList();
+        article.fillChilds(articleChilds);
+        for (Class articleClass : articleChilds)
+            ClassQuantity.put(articleClass,Modifier*2/articleChilds.size());
+
         ClassQuantity.put(articleGroup,((Double)(Modifier*0.3)).intValue());
 //        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
         ClassQuantity.put(store,4);
