@@ -1503,13 +1503,14 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     }
                 } else {
                     // изменился объект и св-во не было классовым
-                    if((Object.Updated & ObjectImplement.UPDATED_OBJECT)!=0 && InInterface!=2) {
+                    if((Object.Updated & ObjectImplement.UPDATED_OBJECT)!=0 && (InInterface!=2 || !DrawProp.ToDraw.gridClassView)) {
                         Read = true;
                         // изменися класс объекта
                         if((Object.Updated & ObjectImplement.UPDATED_CLASS)!=0) CheckObject = true;
                     }
                     // изменение общего класса
                     if((Object.Updated & ObjectImplement.UPDATED_GRIDCLASS)!=0) CheckClass = true;
+
                 }
             }
 
@@ -1518,7 +1519,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 int NewInInterface=0;
                 if(CheckClass)
                     NewInInterface = (DrawProp.View.isInInterface(DrawProp.ToDraw)?2:0);
-                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0)) //&& InInterface==2))
+                if((CheckObject && !(CheckClass && NewInInterface==2)) || (CheckClass && NewInInterface==0 )) // && InInterface==2))
                     NewInInterface = (DrawProp.View.isInInterface(null)?1:0);
 
                 if(InInterface!=NewInInterface) {

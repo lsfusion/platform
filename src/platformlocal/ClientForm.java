@@ -2184,7 +2184,7 @@ public class ClientForm extends JPanel {
                     
                     public ClientGroupObjectValue getSelectedObject() {
                         int rowModel = convertRowIndexToModel(getSelectedRow());
-                        if (rowModel < 0)
+                        if (rowModel < 0 || rowModel >= getRowCount())
                             return null;
 
                         return gridRows.get(rowModel);
