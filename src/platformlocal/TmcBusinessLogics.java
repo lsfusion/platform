@@ -520,10 +520,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Class articleCookies = new ObjectClass(132, "Печенье", articleBreadGroup);
 
         Class articleJuice = new ObjectClass(140, "Соки", articleFood);
+        AddDProp(artclGroup, "Вкус", Class.string, articleJuice);
+        AddDProp(artclGroup, "Литраж", Class.integer, articleJuice);
+
         Class articleClothes = new ObjectClass(200, "Одежда", article);
+        AddDProp(artclGroup, "Модель", Class.string, articleClothes);
+
         Class articleTShirt = new ObjectClass(210, "Майки", articleClothes);
+        AddDProp(artclGroup, "Размер", Class.string, articleTShirt);
+
         Class articleJeans = new ObjectClass(220, "Джинсы", articleClothes);
+        AddDProp(artclGroup, "Ширина", Class.integer, articleJeans);
+        AddDProp(artclGroup, "Длина", Class.integer, articleJeans);
+
         Class articleShooes = new ObjectClass(300, "Обувь", article);
+        AddDProp(artclGroup, "Цвет", Class.string, articleShooes);
 
     }
 
@@ -763,7 +774,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(Properties, baseGroup, false, objDoc);
             addPropertyView(Properties, storeGroup, false, objDoc);
-            addPropertyView(Properties, baseGroup, false, objArt);
+            addPropertyView(Properties, baseGroup, true, objArt);
+            addPropertyView(Properties, artclGroup, true, objArt);
 //            addPropertyView(Properties, artgrGroup, objArt);
             addPropertyView(Properties, balanceGroup, false, objDoc, objArt);
             addPropertyView(extOutQuantity, objDoc, objArt);

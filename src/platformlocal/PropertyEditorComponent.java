@@ -307,9 +307,9 @@ class ObjectPropertyEditor implements PropertyEditorComponent {
 
     private Object oldValue;
 
-    ObjectPropertyEditor(ClientForm clientForm) {
+    ObjectPropertyEditor(ClientForm clientForm, ClientClass cls) {
 
-        clientDialog = new ClientDialog(clientForm);
+        clientDialog = new ClientDialog(clientForm, cls);
     }
 
     public Component getComponent() {

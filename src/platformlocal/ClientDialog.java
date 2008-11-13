@@ -11,19 +11,16 @@ public class ClientDialog extends JDialog {
     ClientNavigator navigator;
     ClientForm currentForm;
 
-    int classID;
+    ClientClass cls;
 
-    ClientDialog(ClientForm owner) {
+    ClientDialog(ClientForm owner, ClientClass icls) {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
         setLayout(new BorderLayout());
 
         setBounds(owner.getBounds());
 
-        if (owner.editingCell instanceof ClientPropertyView)
-            classID = owner.remoteForm.getPropertyClassID(((ClientPropertyView)owner.editingCell).ID);
-        else
-            classID = owner.editingCell.baseClass.ID;
+        cls = icls;
 //        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).ID);
         navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
 
@@ -61,14 +58,14 @@ public class ClientDialog extends JDialog {
     public void createDefaultForm(Integer value) {
 
         if (value != null)
-            navigator.remoteNavigator.addCacheObject(classID, value);
+            navigator.remoteNavigator.addCacheObject(cls.ID, value);
         
-        setCurrentForm(navigator.remoteNavigator.getDefaultForm(classID));
+        setCurrentForm(navigator.remoteNavigator.getDefaultForm(cls.ID));
     }
 
     public Object objectChosen() {
 
-        int objectID = navigator.remoteNavigator.getCacheObject(classID); //navigator.remoteNavigator.getLeadObject();
+        int objectID = navigator.remoteNavigator.getCacheObject(cls.ID); //navigator.remoteNavigator.getLeadObject();
         if (objectID == -1) return null;
 
         return objectID;

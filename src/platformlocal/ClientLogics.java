@@ -178,7 +178,11 @@ abstract class ClientCellView extends ClientComponentView {
     }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form) {
-        return baseClass.getEditorComponent(form, getFormat());
+        return getEditorClass(form).getEditorComponent(form, getFormat());
+    }
+
+    protected ClientClass getEditorClass(ClientForm form) {
+        return baseClass;
     }
 
     Format format;
@@ -190,6 +194,9 @@ abstract class ClientCellView extends ClientComponentView {
 
 class ClientPropertyView extends ClientCellView {
 
+    protected ClientClass getEditorClass(ClientForm form) {
+        return ByteArraySerializer.deserializeClientClass(form.remoteForm.getPropertyEditorClassByteArray(this.ID));
+    }
 }
 
 class ClientObjectView extends ClientCellView {
@@ -525,7 +532,7 @@ class ClientObjectClass extends ClientClass {
     public int getMaximumWidth() { return getPreferredWidth(); }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new ObjectPropertyEditor(form); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new ObjectPropertyEditor(form, this); }
 }
 
 class ClientStringClass extends ClientClass {
