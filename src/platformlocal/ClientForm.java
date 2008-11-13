@@ -1264,9 +1264,9 @@ public class ClientForm extends JPanel {
 
             void changeGridOrder(ClientPropertyView property, int modiType) {
 
-                if (modiType == RemoteForm.ORDER_REPLACE) {
+                changeOrder(property, modiType);
 
-                    changeOrder(property, RemoteForm.ORDER_REPLACE);
+                if (modiType == RemoteForm.ORDER_REPLACE) {
 
                     orders.clear();
                     orderDirections.clear();
@@ -1277,23 +1277,17 @@ public class ClientForm extends JPanel {
 
                 if (modiType == RemoteForm.ORDER_ADD) {
 
-                    changeOrder(property, RemoteForm.ORDER_REPLACE);
-
                     orders.add(property);
                     orderDirections.add(true);
                 }
 
                 if (modiType == RemoteForm.ORDER_DIR) {
 
-                    changeOrder(property, RemoteForm.ORDER_DIR);
-
                     int ordNum = orders.indexOf(property);
                     orderDirections.set(ordNum, !orderDirections.get(ordNum));
                 }
 
                 if (modiType == RemoteForm.ORDER_REMOVE) {
-
-                    changeOrder(property, RemoteForm.ORDER_REMOVE);
 
                     int ordNum = orders.indexOf(property);
                     orders.remove(ordNum);

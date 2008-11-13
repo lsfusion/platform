@@ -598,11 +598,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     public void SwitchClassView(Integer groupID) throws SQLException {
-        SwitchClassView(getGroupObjectImplement(groupID));
-    }
-
-    public void ChangeClassView(Integer groupID, Boolean show) throws SQLException {
-        ChangeClassView(getGroupObjectImplement(groupID), show);
+        switchClassView(getGroupObjectImplement(groupID));
     }
 
     // Фильтры
@@ -770,15 +766,11 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     }
 
-    private void SwitchClassView(GroupObjectImplement Group) {
-
-        Group.gridClassView = !Group.gridClassView;
-
-        // расставляем пометки
-        Group.Updated = Group.Updated | GroupObjectImplement.UPDATED_CLASSVIEW;
+    private void switchClassView(GroupObjectImplement Group) {
+        changeClassView(Group, !Group.gridClassView);
     }
 
-    private void ChangeClassView(GroupObjectImplement Group,Boolean Show) {
+    private void changeClassView(GroupObjectImplement Group,Boolean Show) {
 
         if(Group.gridClassView == Show) return;
         Group.gridClassView = Show;
@@ -786,6 +778,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         // расставляем пометки
         Group.Updated = Group.Updated | GroupObjectImplement.UPDATED_CLASSVIEW;
 
+        // на данный момент ClassView влияет на фильтры
+        StructUpdated = true;
     }
 
     // Фильтры
@@ -858,6 +852,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         // пока тупо в базу
         Integer AddID = BL.AddObject(Session, cls);
 
+        boolean foundConflict = false;
+
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter<?> Filter : Object.GroupTo.Filters) {
@@ -892,10 +888,21 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     }
                     ChangeProperty.changeProperty(Keys,Row.getValue().get("newvalue"),Session);
                 }
+            } else {
+                if (Object.GroupTo.equals(Filter.GetApplyObject())) foundConflict = true;
             }
         }
 
+        for (PropertyView prop : Orders.keySet()) {
+            if (Object.GroupTo.equals(prop.ToDraw)) foundConflict = true;
+        }
+
         ChangeObject(Object, AddID);
+
+        // меняем вид, если при добавлении может получиться, что фильтр не выполнится
+        if (foundConflict) {
+            changeClassView(Object.GroupTo, false);
+        }
 
         DataChanged = true;
     }
@@ -1072,7 +1079,11 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             Set<Filter> filters = new HashSet();
             filters.addAll(fixedFilters);
             for (RegularFilter regFilter : regularFilterValues.values()) filters.add(regFilter.filter);
-            filters.addAll(userFilters);
+            for (Filter filter : userFilters) {
+                // если вид панельный, то фильтры не нужны
+                if (!filter.Property.GetApplyObject().gridClassView) continue;
+                filters.add(filter);
+            }
 
             for(Filter Filt : filters)
                 Filt.GetApplyObject().MapFilters.add(Filt);
