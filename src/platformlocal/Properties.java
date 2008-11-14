@@ -318,15 +318,7 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     }
 
     // базовые методы - ничего не делать, его перегружают только Override и Data
-    InterfaceClass<T> getKeyToClasses(Map<T, ObjectValue> keys) {
-        InterfaceClass<T> InterfaceClasses = new InterfaceClass<T>();
-        for(Map.Entry<T,ObjectValue> Key : keys.entrySet())
-            InterfaceClasses.put(Key.getKey(),new ClassSet(Key.getValue().Class));
-        return InterfaceClasses;
-    }
-
-    boolean allowChangeProperty(Map<T, ObjectValue> Keys) { return getChangePropertyClass(getKeyToClasses(Keys))!=null; }
-    Class getChangePropertyClass(InterfaceClass<T> InterfaceClasses) { return null; }
+    ObjectValue getChangeProperty(DataSession Session,Map<T, ObjectValue> Keys, Object PrevValue) { return null;}
     void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {}
 
     // заполняет требования к изменениям
@@ -539,10 +531,17 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
         DataTable.outSelect(Session);
     }
 
-    Class getChangePropertyClass(InterfaceClass<DataPropertyInterface> InterfaceClasses) {
-        if(!getValueClass(InterfaceClasses).isEmpty())
-            return Value;
-        else
+    ObjectValue getChangeProperty(DataSession Session,Map<DataPropertyInterface, ObjectValue> Keys, Object PrevValue) {
+
+        if(!getValueClass(new InterfaceClass<DataPropertyInterface>(Keys)).isEmpty()) {
+            if(PrevValue==null && Session!=null)
+                try {
+                    PrevValue = Session.readProperty(this,Keys);
+                } catch (SQLException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            return new ObjectValue(PrevValue,Value);
+        } else
             return null;
     }
 
@@ -818,26 +817,26 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
         Field = WriteField;
     }
 
-    List<PropertyMapImplement<PropertyInterface, T>> getImplements(InterfaceClass<T> InterfaceClasses) {
+    List<PropertyMapImplement<PropertyInterface, T>> getImplements(Map<T, ObjectValue> Keys) {
         return new ArrayList<PropertyMapImplement<PropertyInterface, T>>();
     }
 
-    PropertyMapImplement<?,T> getChangeImplement(InterfaceClass<T> InterfaceClasses) {
-        List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(InterfaceClasses);
+    PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys) {
+        List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys);
         for(int i=Implements.size()-1;i>=0;i--)
-            if(Implements.get(i).mapChangePropertyClass(InterfaceClasses)!=null)
+            if(Implements.get(i).mapChangeProperty(null, Keys)!=null)
                 return Implements.get(i);
         return null;
     }
 
-    Class getChangePropertyClass(InterfaceClass<T> InterfaceClasses) {
-        PropertyMapImplement<?,T> Implement = getChangeImplement(InterfaceClasses);
+    ObjectValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, Object PrevValue) {
+        PropertyMapImplement<?,T> Implement = getChangeImplement(Keys);
         if(Implement==null) return null;
-        return Implement.mapChangePropertyClass(InterfaceClasses);
+        return Implement.mapChangeProperty(Session,Keys);
     }
 
     void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
-        PropertyMapImplement<?,T> operand = getChangeImplement(getKeyToClasses(Keys));
+        PropertyMapImplement<?,T> operand = getChangeImplement(Keys);
         if (operand != null)
             operand.mapChangeProperty(Keys,NewValue,Session);
     }
@@ -1035,10 +1034,6 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
         return Property.getValueClassSet().map(Mapping);
     }
 
-    Class mapChangePropertyClass(InterfaceClass<P> ClassImplement) {
-        return Property.getChangePropertyClass(ClassImplement.mapBack(Mapping));
-    }
-
     public boolean mapHasChanges(DataSession Session) {
         return Session.getChange(Property)!=null;
     }
@@ -1046,6 +1041,10 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
     // заполняет список, возвращает есть ли изменения
     public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
         return Property.fillChangedList(ChangedProperties, Changes, NoUpdate);
+    }
+
+    ObjectValue mapChangeProperty(DataSession Session, Map<P, ObjectValue> Keys) {
+        return Property.getChangeProperty(Session,getMapImplement(Keys),null);
     }
 
     // для OverrideList'а по сути
@@ -1235,7 +1234,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         return ChangeTable.Value;
     }
 
-    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(InterfaceClass<JoinPropertyInterface> InterfaceClasses) {
+    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> Keys) {
         List<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>> Result = new ArrayList<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>>();
         List<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>> BitProps = new ArrayList<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>>();
         for(PropertyInterfaceImplement<JoinPropertyInterface> Implement : Implements.Mapping.values())
@@ -1244,11 +1243,13 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
                 // все Data вперед, биты назад, остальные попорядку
                 if(PropertyImplement.Property instanceof DataProperty)
                     Result.add(PropertyImplement);
-                else
-                if(PropertyImplement.mapChangePropertyClass(InterfaceClasses) instanceof BitClass)
-                    BitProps.add(PropertyImplement);
-                else // в начало
-                    Result.add(0,PropertyImplement);
+                else {
+                    ObjectValue ChangeValue = PropertyImplement.mapChangeProperty(null, Keys);
+                    if(ChangeValue!=null && ChangeValue.Class instanceof BitClass)
+                        BitProps.add(PropertyImplement);
+                    else // в начало
+                        Result.add(0,PropertyImplement);
+                }
             }
         Result.addAll(0,BitProps);
         return Result;
@@ -1700,7 +1701,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
             Operand.Property.setChangeType(RequiredTypes,IncrementType);
     }
 
-    List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(InterfaceClass<PropertyInterface> InterfaceClasses) {
+    List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> Keys) {
         return Operands;
     }
 }
@@ -2016,6 +2017,19 @@ class DataSession  {
             ViewChanges.AddClasses.addAll(AddClasses);
             ViewChanges.RemoveClasses.addAll(RemoveClasses);
         }
+    }
+
+    <T extends PropertyInterface> Object readProperty(Property<T> Property,Map<T,ObjectValue> Keys) throws SQLException {
+        String ReadValue = "readvalue";
+        JoinQuery<T,Object> ReadQuery = new JoinQuery<T, Object>(Property.Interfaces);
+
+        Map<T,Integer> KeyValues = new HashMap<T,Integer>();
+        for(Map.Entry<T,ObjectValue> MapKey : Keys.entrySet())
+            KeyValues.put(MapKey.getKey(), (Integer) MapKey.getValue().Object);
+        ReadQuery.putDumbJoin(KeyValues);
+
+        ReadQuery.add(ReadValue,getSourceExpr(Property,ReadQuery.MapKeys,new InterfaceClassSet<T>(new InterfaceClass<T>(Keys)),false));
+        return ReadQuery.executeSelect(this).values().iterator().next().get(ReadValue);
     }
 
     void changeProperty(DataProperty Property, Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue) throws SQLException {

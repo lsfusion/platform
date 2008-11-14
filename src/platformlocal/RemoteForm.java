@@ -245,11 +245,11 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
         return false;
     }
 
-    Class getChangePropertyClass() {
-        InterfaceClass<P> Interface = new InterfaceClass<P>();
+    ObjectValue getChangeProperty(DataSession Session,Object PrevValue) {
+        Map<P,ObjectValue> Interface = new HashMap<P,ObjectValue>();
         for(Entry<P, ObjectImplement> Implement : Mapping.entrySet())
-            Interface.put(Implement.getKey(),new ClassSet(Implement.getValue().Class));
-        return Property.getChangePropertyClass(Interface);
+            Interface.put(Implement.getKey(),new ObjectValue(Implement.getValue().idObject,Implement.getValue().Class));
+        return Property.getChangeProperty(Session,Interface,PrevValue);
     }
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, boolean NotNull) {
@@ -661,10 +661,6 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         ChangeClass(object, (classID == -1) ? null : object.BaseClass.findClassID(classID));
     }
 
-    public boolean allowChangeProperty(int propertyID) {
-        return allowChangeProperty(getPropertyView(propertyID).View);
-    }
-
     public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
         ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObject(object));
     }
@@ -703,8 +699,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     private ObjectValue getPropertyEditorObjectValue(PropertyView propertyView) {
-        return new ObjectValue(null, null);
-//        return propertyView.View.getChangePropertyClass();
+        return propertyView.View.getChangeProperty(Session, null);
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {
@@ -949,10 +944,6 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         Object.Updated = Object.Updated | ObjectImplement.UPDATED_CLASS;
 
         DataChanged = true;
-    }
-
-    private boolean allowChangeProperty(PropertyObjectImplement property) {
-        return property.Property.allowChangeProperty(fillPropertyInterface(property));
     }
 
     private void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {

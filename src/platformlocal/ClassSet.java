@@ -233,6 +233,11 @@ class ClassSet {
 
 class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
 
+    InterfaceClass(Map<P, ObjectValue> Keys) {
+        for(Map.Entry<P,ObjectValue> Key : Keys.entrySet())
+            put(Key.getKey(),new ClassSet(Key.getValue().Class));
+    }
+
     InterfaceClass() {
     }
 
