@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.Map.Entry;
 import java.util.*;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
 
@@ -603,9 +604,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.findClassID(classID).Childs);
     }
 
-    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, byte[] value) {
-        return ByteArraySerializer.serializeObjectValue(getPropertyEditorObjectValue(getPropertyView(propertyID),
-                                                        ByteArraySerializer.deserializeObject(value)));
+    public byte[] getPropertyEditorObjectValueByteArray(int propertyID) {
+        return ByteArraySerializer.serializeChangeValue(getPropertyEditorObjectValue(getPropertyView(propertyID)));
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -1239,7 +1239,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             }
 
             if(!UpdateKeys && Group.gridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
-                // листание - объекты стали близки к краю (idObject не далеко от края - надо хранить список не базу же дергать) - изменился объект
+                // листание - объекты стали близки к краю (object не далеко от края - надо хранить список не базу же дергать) - изменился объект
                 int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
                 // если меньше PageSize осталось и сверху есть ключи
                 if(KeyNum<Group.PageSize && Group.UpKeys) {
@@ -1786,6 +1786,10 @@ class ReportData implements JRDataSource, Serializable {
 
             try {
                 return BaseUtils.getDefaultValue(java.lang.Class.forName(jrField.getValueClassName()));
+            } catch (InvocationTargetException e) {
+            } catch (NoSuchMethodException e) {
+            } catch (InstantiationException e) {
+            } catch (IllegalAccessException e) {
             } catch (ClassNotFoundException e) {
             }
         }

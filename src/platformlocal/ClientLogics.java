@@ -199,8 +199,8 @@ abstract class ClientCellView extends ClientComponentView {
 class ClientPropertyView extends ClientCellView {
 
     protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
-        return ByteArraySerializer.deserializeClientObjectValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID,
-                                                                ByteArraySerializer.serializeObject(value)));
+
+        return ByteArraySerializer.deserializeClientChangeValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID)).getObjectValue(value);
     }
 }
 
@@ -592,16 +592,61 @@ class ClientLongClass extends ClientClass {
 class ClientObjectValue {
 
     ClientClass cls;
-    Object idObject;
+    Object object;
 
     public ClientObjectValue() {
     }
 
-    public ClientObjectValue(ClientClass icls, Object iidObject) {
+    public ClientObjectValue(ClientClass icls, Object iobject) {
         cls = icls;
-        idObject = iidObject;
+        object = iobject;
     }
 }
+
+abstract class ClientChangeValue {
+    ClientClass cls;
+
+    ClientChangeValue(ClientClass icls) {
+        cls = icls;
+    }
+
+    abstract public ClientObjectValue getObjectValue(Object value);
+}
+
+class ClientChangeObjectValue extends ClientChangeValue {
+    Object value;
+
+    ClientChangeObjectValue(ClientClass icls, Object ivalue) {
+        super(icls);
+        value = ivalue;
+    }
+
+    public ClientObjectValue getObjectValue(Object value) {
+        return new ClientObjectValue(cls, value);
+    }
+}
+
+class ClientChangeCoeffValue extends ClientChangeValue {
+    Integer coeff;
+
+    ClientChangeCoeffValue(ClientClass icls, Integer icoeff) {
+        super(icls);
+        coeff = icoeff;
+    }
+
+    public ClientObjectValue getObjectValue(Object value) {
+
+        Object newValue = value;
+
+        if (coeff.equals(1))
+            newValue = value;
+        else
+            newValue = BaseUtils.multiply(value, coeff);
+
+        return new ClientObjectValue(cls, newValue);
+    }
+}
+
 
 // -------------------------------------- Фильтры ------------------------------ //
 

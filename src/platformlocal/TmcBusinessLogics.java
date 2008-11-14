@@ -65,28 +65,29 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void InitClasses() {
 
-        article = new ObjectClass(baseGroup, 4, "Товар", objectClass);
-        articleGroup = new ObjectClass(baseGroup, 5, "Группа товаров", objectClass);
+        article = new ObjectClass(baseGroup, IDGet(1), "Товар", objectClass);
+        articleGroup = new ObjectClass(baseGroup, IDGet(2), "Группа товаров", objectClass);
 
-        store = new ObjectClass(baseGroup, 6, "Склад", objectClass);
+        store = new ObjectClass(baseGroup, IDGet(3), "Склад", objectClass);
 
-        document = new ObjectClass(baseGroup, 7, "Документ", objectClass);
-        primaryDocument = new ObjectClass(baseGroup, 8, "Первичный документ", document);
-        secondaryDocument = new ObjectClass(baseGroup, 9, "Непервичный документ", document);
-        quantityDocument = new ObjectClass(baseGroup, 10, "Товарный документ", document);
-        incomeDocument = new ObjectClass(baseGroup, 11, "Приходный документ", quantityDocument);
-        outcomeDocument = new ObjectClass(baseGroup, 12, "Расходный документ", quantityDocument);
-        paramsDocument = new ObjectClass(baseGroup, 13, "Порожденный документ", document);
+        document = new ObjectClass(baseGroup, IDGet(4), "Документ", objectClass);
+        primaryDocument = new ObjectClass(baseGroup, IDGet(5), "Первичный документ", document);
+        secondaryDocument = new ObjectClass(baseGroup, IDGet(6), "Непервичный документ", document);
+        quantityDocument = new ObjectClass(baseGroup, IDGet(7), "Товарный документ", document);
+        incomeDocument = new ObjectClass(baseGroup, IDGet(8), "Приходный документ", quantityDocument);
+        outcomeDocument = new ObjectClass(baseGroup, IDGet(9), "Расходный документ", quantityDocument);
+        paramsDocument = new ObjectClass(baseGroup, IDGet(10), "Порожденный документ", document);
 
-        extIncomeDocument = new ObjectClass(baseGroup, 14, "Внешний приход", incomeDocument, primaryDocument);
-        extIncomeDetail = new ObjectClass(baseGroup, 15, "Внешний приход (строки)", objectClass);
+        extIncomeDocument = new ObjectClass(baseGroup, IDGet(11), "Внешний приход", incomeDocument, primaryDocument);
+        extIncomeDetail = new ObjectClass(baseGroup, IDGet(12), "Внешний приход (строки)", objectClass);
 
-        intraDocument = new ObjectClass(baseGroup, 16, "Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument, paramsDocument);
-        extOutcomeDocument = new ObjectClass(baseGroup, 17, "Внешний расход", outcomeDocument, secondaryDocument, paramsDocument);
-        exchangeDocument = new ObjectClass(baseGroup, 18, "Пересорт", incomeDocument, outcomeDocument, secondaryDocument, paramsDocument);
+        intraDocument = new ObjectClass(baseGroup, IDGet(13), "Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument, paramsDocument);
+        extOutcomeDocument = new ObjectClass(baseGroup, IDGet(14), "Внешний расход", outcomeDocument, secondaryDocument, paramsDocument);
+        exchangeDocument = new ObjectClass(baseGroup, IDGet(15), "Пересорт", incomeDocument, outcomeDocument, secondaryDocument, paramsDocument);
 
-        revalDocument = new ObjectClass(19, "Переоценка", primaryDocument);
+        revalDocument = new ObjectClass(IDGet(16), "Переоценка", primaryDocument);
 
+        IDShift(100);
     }
 
     LDP name;
@@ -497,8 +498,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         AddDProp(artclGroup, "Тип", Class.string, articleBeer);
         AddDProp(artclGroup, "Упак.", Class.string, articleBeer);
 
+        Class wineTaste = new ObjectClass(1000, "Вкус вина", objectClass);
         Class articleWine = new ObjectClass(113, "Вино", articleAlcohol);
-        AddDProp(artclGroup, "Сух.", Class.bit, articleWine);
+        AddJProp(artclGroup, "Вкус", name, 1, AddDProp("Код вкуса", wineTaste, articleWine), 1);
 
         Class articleMilkGroup = new ObjectClass(120, "Молочные продукты", articleFood);
         AddDProp(artclGroup, "Жирн.", Class.doubleClass, articleMilkGroup);

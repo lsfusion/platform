@@ -541,10 +541,21 @@ class TableFactory extends TableImplement{
 abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // счетчик идентификаторов
+    int IDCount = 0;
+
+    int IDGet(int offs) {
+        return IDCount + offs;
+    }
+
+    int IDShift(int offs) {
+        IDCount += offs;
+        return IDCount;
+    }
+
     void initBase() {
         TableFactory = new TableFactory();
 
-        objectClass = new ObjectClass(0, "Объект");
+        objectClass = new ObjectClass(IDShift(1), "Объект");
         objectClass.addParent(Class.base);
 
         for(int i=0;i<TableFactory.MaxInterface;i++) {

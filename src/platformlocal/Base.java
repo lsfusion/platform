@@ -5,8 +5,14 @@
 
 package platformlocal;
 
+import sun.reflect.ReflectionFactory;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.*;
+import java.lang.*;
+import java.lang.Class;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *
@@ -221,24 +227,21 @@ class BaseUtils {
             return obj1.equals(obj2);
     }
 
-    public static Object getDefaultValue(java.lang.Class cls) {
+    private static ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
 
-        if (cls.equals(java.lang.Integer.class)) {
-            return 0;
-        }
-        if (cls.equals(java.lang.Long.class)) {
-            return ((Integer)0).longValue();
-        }
-        if (cls.equals(java.lang.Double.class)) {
-            return 0.0;
-        }
-        if (cls.equals(java.lang.Boolean.class)) {
-            return false;
-        }
-        if (cls.equals(java.lang.String.class)) {
-            return "";
-        }
+    public static Object getDefaultValue(java.lang.Class cls) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
 
-        return null;
+        Constructor javaLangObjectConstructor = Object.class.getDeclaredConstructor(new Class[0]);
+        Constructor customConstructor = reflectionFactory.newConstructorForSerialization(cls, javaLangObjectConstructor);
+        return customConstructor.newInstance(new Object[0]);
+    }
+
+    public static Object multiply(Object obj, Integer coeff) {
+
+        if (obj instanceof Integer) return ((Integer)obj) * coeff;
+        if (obj instanceof Long) return ((Long)obj) * coeff;
+        if (obj instanceof Double) return ((Double)obj) * coeff;
+
+        return obj;
     }
 }

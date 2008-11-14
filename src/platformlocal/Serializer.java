@@ -374,8 +374,42 @@ class Serializer {
 
         ClientObjectValue objectValue = new ClientObjectValue();
         objectValue.cls = deserializeClientClass(inStream);
-        objectValue.idObject = deserializeObject(inStream);
+        objectValue.object = deserializeObject(inStream);
         return objectValue;
+    }
+
+
+    public static void serializeChangeValue(DataOutputStream outStream, ChangeValue objectValue) throws IOException {
+
+        serializeClass(outStream, objectValue.Class);
+
+        if (objectValue instanceof ChangeObjectValue) {
+            outStream.writeByte(0);
+            serializeObject(outStream, ((ChangeObjectValue)objectValue).Value);
+        }
+
+        if (objectValue instanceof ChangeCoeffValue) {
+            outStream.writeByte(1);
+            outStream.writeInt(((ChangeCoeffValue)objectValue).Coeff);
+        }
+
+    }
+
+    public static ClientChangeValue deserializeClientChangeValue(DataInputStream inStream) throws IOException {
+
+        ClientClass cls = deserializeClientClass(inStream);
+
+        int changeType = inStream.readByte();
+
+        if (changeType == 0) {
+            return new ClientChangeObjectValue(cls, deserializeObject(inStream));
+        }
+
+        if (changeType == 1) {
+            return new ClientChangeCoeffValue(cls, inStream.readInt());
+        }
+
+        throw new IOException();
     }
 
     // -------------------------------------- Сериализация фильтров -------------------------------------------- //
@@ -757,6 +791,36 @@ class ByteArraySerializer extends Serializer {
 
         try {
             return deserializeClientObjectValue(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public static byte[] serializeChangeValue(ChangeValue changeValue) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeChangeValue(dataStream, changeValue);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static ClientChangeValue deserializeClientChangeValue(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeClientChangeValue(dataStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
