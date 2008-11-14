@@ -249,13 +249,33 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, boolean NotNull) {
 
         Map<P,SourceExpr> JoinImplement = new HashMap<P,SourceExpr>();
-
         for(P Interface : Property.Interfaces)
             JoinImplement.put(Interface,Mapping.get(Interface).getSourceExpr(ClassGroup,ClassSource));
 
+        InterfaceClass<P> JoinClasses = new InterfaceClass<P>();
+        for(Entry<P, ObjectImplement> Implement : Mapping.entrySet()) {
+            ClassSet Classes;
+            if(ClassGroup!=null && ClassGroup.contains(Implement.getValue().GroupTo)) {
+                Class ImplementClass = Implement.getValue().GridClass;
+                Classes = ClassSet.getUp(ImplementClass);
+                ClassSet AddClasses = Session.AddChanges.get(ImplementClass);
+                if(AddClasses!=null)
+                    Classes.or(AddClasses);
+            } else {
+                Class ImplementClass = Session.BaseClasses.get(Implement.getValue().idObject);
+                if(ImplementClass==null) ImplementClass = Implement.getValue().Class;
+                // чего не должно быть
+                if(ImplementClass==null)
+                    Classes = new ClassSet();
+                else
+                    Classes = new ClassSet(ImplementClass);
+            }
+            JoinClasses.put(Implement.getKey(),Classes);
+        }
+
         // если есть не все интерфейсы и есть изменения надо с Full Join'ить старое с новым
         // иначе как и было
-        return Session.getSourceExpr(Property,JoinImplement,NotNull);
+        return Session.getSourceExpr(Property,JoinImplement,new InterfaceClassSet<P>(JoinClasses),NotNull);
     }
 }
 
@@ -416,7 +436,10 @@ class ObjectValueLink extends ValueLink {
 
     @Override
     ClassSet getValueClass(GroupObjectImplement ClassGroup) {
-        return new ClassSet(Object.Class);
+        if(Object.Class==null)
+            return new ClassSet();
+        else
+            return new ClassSet(Object.Class);
     }
 
     @Override

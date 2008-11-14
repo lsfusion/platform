@@ -26,6 +26,7 @@ public class Main {
     static boolean recreateDB = false;
     public static Integer ForceSeed = -1;
     public static boolean DebugFlag = false;
+    static boolean ActivateCaches = true;
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter("localhost");

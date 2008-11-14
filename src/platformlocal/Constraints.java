@@ -85,7 +85,7 @@ class UniqueConstraint extends Constraint {
         }
 
         SourceExpr ChangedExpr = Session.PropertyChanges.get(Property).getExpr(MapChange,0);
-        SourceExpr PrevExpr = Session.getSourceExpr(Property,MapPrev,true);
+        SourceExpr PrevExpr = Session.getSourceExpr(Property,MapPrev,Property.getUniversalInterface(),true);
 
         // равны значения
         Changed.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,FieldExprCompareWhere.EQUALS));

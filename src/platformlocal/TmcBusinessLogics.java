@@ -539,6 +539,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     }
 
     void InitConstraints() {
+
+//        Constraints.put(balanceStoreQuantity.Property,new PositiveConstraint());
     }
 
     void InitPersistents() {

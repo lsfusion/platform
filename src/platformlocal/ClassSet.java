@@ -77,6 +77,14 @@ abstract class GraphNodeSet<T,S extends GraphNodeSet<T,S>> extends SubNodeSet<T,
         for(Iterator<T> i = iterator();i.hasNext();)
             if(ToRemove.has(i.next())) i.remove();
     }
+
+    S excludeAll(GraphNodeSet<T,S> ToRemove) {
+        S Result = create(new HashSet<T>());
+        for(T Node : this)
+            if(!ToRemove.has(Node)) Result.add(Node);
+        return Result;
+    }
+
 }
 
 // выше вершин
@@ -224,9 +232,15 @@ class ClassSet {
 //>;
 
 class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
-    public ClassSet put(P key, ClassSet value) {
-        return super.put(key, value);    //To change body of overridden methods use File | Settings | File Templates.
-    }// когда каждый ClassSet включает в себя все подмн-ва
+
+    InterfaceClass() {
+    }
+
+    InterfaceClass(P Interface, ClassSet InterfaceValue) {
+        put(Interface,InterfaceValue);
+    }
+
+    // когда каждый ClassSet включает в себя все подмн-ва
     public boolean isParent(InterfaceClass<P> Node) {
         // здесь строго говоря доджен keySet'ы должны совпадать
         // DEBUG проверка
@@ -282,10 +296,10 @@ interface PropertyClass<P extends PropertyInterface> {
     InterfaceClassSet<P> getClassSet(ClassSet ReqValue);
 
     // на самом деле нам нужен iterator по <InterfaceClass,ClassSet>
-    ChangeClassSet<P> getChangeClass();
+    ValueClassSet<P> getValueClassSet();
 }
 
-// по сути Entry для ChangeClassSet'а
+// по сути Entry для ValueClassSet'а
 class ChangeClass<P extends PropertyInterface> {
 
     InterfaceClassSet<P> Interface;
@@ -307,9 +321,7 @@ class ChangeClass<P extends PropertyInterface> {
     }
 
     public ChangeClass(P iInterface, ClassSet iInterfaceValue) {
-        InterfaceClass<P> iClass = new InterfaceClass<P>();
-        iClass.put(iInterface,iInterfaceValue);
-        Interface = new InterfaceClassSet<P>(iClass);
+        Interface = new InterfaceClassSet<P>(new InterfaceClass<P>(iInterface,iInterfaceValue));
         Value = new ClassSet();
     }
 
@@ -351,25 +363,17 @@ class ChangeClass<P extends PropertyInterface> {
 }
 
 // по сути Map<InterfaceClass,ClassSet>, а точнее даже UniMap<InterfaceClass,ClassSet>
-class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<P>,ChangeClassSet<P>> implements PropertyClass<P> {
+class ValueClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<P>, ValueClassSet<P>> implements PropertyClass<P> {
 
-    ChangeClassSet() {
+    ValueClassSet() {
     }
 
-    ChangeClassSet(Set<ChangeClass<P>> iNodes) {
+    ValueClassSet(Set<ChangeClass<P>> iNodes) {
         super(iNodes);
     }
 
-    public ChangeClassSet(ClassSet Value, InterfaceClassSet<P> Interface) {
+    public ValueClassSet(ClassSet Value, InterfaceClassSet<P> Interface) {
         super(new ChangeClass<P>(Interface,Value));
-    }
-
-    static <P extends PropertyInterface> ChangeClassSet<P> getNullValueClass(PropertyClass<P> Property,ClassSet Value) {
-        return new ChangeClassSet<P>(new ClassSet(),Property.getClassSet(Value));
-    }
-
-    static <P extends PropertyInterface> ChangeClassSet<P> getNullClass(PropertyClass<P> Property) {
-        return getNullValueClass(Property,ClassSet.universal);
     }
 
     void or(ChangeClass<P> ToAdd) {
@@ -379,7 +383,7 @@ class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass
             // также надо сделать что если совпадают классы то просто за or'ить
             // если мн-во классов включает другое мн-во, то уберем избыточные InterfaceClass
             if(Class.Value.containsAll(ToAdd.Value))
-                ToAdd.Interface.removeAll(Class.Interface);
+                ToAdd = new ChangeClass<P>(ToAdd.Interface.excludeAll(Class.Interface),ToAdd.Value);
             else
             if(ToAdd.Value.containsAll(Class.Value))
                 Class.Interface.removeAll(ToAdd.Interface);
@@ -399,39 +403,51 @@ class ChangeClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass
         return Collections.singleton(new ChangeClass<P>(AndNode.Interface.and(Node.Interface),AndValue));
     }
 
-    ChangeClassSet<P> create(Set<ChangeClass<P>> iNodes) {
-        return new ChangeClassSet<P>(iNodes);
+    ValueClassSet<P> create(Set<ChangeClass<P>> iNodes) {
+        return new ValueClassSet<P>(iNodes);
     }
 
+    Map<InterfaceClass<P>,ClassSet> CacheValueClass = new HashMap<InterfaceClass<P>, ClassSet>();
     public ClassSet getValueClass(InterfaceClass<P> InterfaceImplement) {
-        ClassSet Result = new ClassSet();
-        for(ChangeClass<P> Class : this) // если пересекается хоть с одним, то на выходе может иметь что угодно
-            if(!Class.Interface.and(InterfaceImplement).isEmpty())
-                Result.or(Class.Value);
+        ClassSet Result = null;
+        if(Main.ActivateCaches) Result = CacheValueClass.get(InterfaceImplement);
+        if(Result==null) {
+            Result = new ClassSet();
+            for(ChangeClass<P> Class : this) // если пересекается хоть с одним, то на выходе может иметь что угодно
+                if(!Class.Interface.and(InterfaceImplement).isEmpty())
+                    Result.or(Class.Value);
+            if(Main.ActivateCaches) CacheValueClass.put(InterfaceImplement,Result);
+        }
         return Result;
     }
 
+    Map<ClassSet,InterfaceClassSet<P>> CacheClassSet = new HashMap<ClassSet,InterfaceClassSet<P>>();
     public InterfaceClassSet<P> getClassSet(ClassSet ReqValue) {
-        InterfaceClassSet<P> Result = new InterfaceClassSet<P>();
-        for(ChangeClass<P> ChangeClass : this) // по сути надо если пересекается ReqValue
-            if(ReqValue==ClassSet.universal || ChangeClass.Value.intersect(ReqValue))
-                Result.or(ChangeClass.Interface);
-        return Result;  //To change body of implemented methods use File | Settings | File Templates.
+        InterfaceClassSet<P> Result = null;
+        if(Main.ActivateCaches) Result = CacheClassSet.get(ReqValue);
+        if(Result==null) {
+            Result = new InterfaceClassSet<P>();
+            for(ChangeClass<P> ChangeClass : this) // по сути надо если пересекается ReqValue
+                if(ReqValue==ClassSet.universal || ChangeClass.Value.intersect(ReqValue))
+                    Result.or(ChangeClass.Interface);
+            if(Main.ActivateCaches) CacheClassSet.put(ReqValue,Result);
+        }
+        return Result;
     }
 
-    public ChangeClassSet<P> getChangeClass() {
+    public ValueClassSet<P> getValueClassSet() {
         return this;
     }
 
-    <V extends PropertyInterface> ChangeClassSet<V> map(Map<P,V> MapInterfaces) {
-        ChangeClassSet<V> Result = new ChangeClassSet<V>();
+    <V extends PropertyInterface> ValueClassSet<V> map(Map<P,V> MapInterfaces) {
+        ValueClassSet<V> Result = new ValueClassSet<V>();
         for(ChangeClass<P> Change : this)
             Result.add(Change.map(MapInterfaces));
         return Result;
     }
 
-    <V extends PropertyInterface> ChangeClassSet<V> mapBack(Map<V,P> MapInterfaces) {
-        ChangeClassSet<V> Result = new ChangeClassSet<V>();
+    <V extends PropertyInterface> ValueClassSet<V> mapBack(Map<V,P> MapInterfaces) {
+        ValueClassSet<V> Result = new ValueClassSet<V>();
         for(ChangeClass<P> Change : this)
             Result.add(Change.mapBack(MapInterfaces));
         return Result;

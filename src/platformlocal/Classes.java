@@ -134,14 +134,15 @@ abstract class Class extends AbstractNode {
 
     // получает классы у которого есть оба интерфейса
     Set<Class> commonChilds(Class ToCommon) {
-        Set<Class> Result = CacheChilds.get(ToCommon);
+        Set<Class> Result = null;
+        if(Main.ActivateCaches) CacheChilds.get(ToCommon);
         if(Result!=null) return Result;
         Result = new HashSet<Class>();
         CommonClassSet1(false);
         ToCommon.CommonClassSet2(false,null,false);
 
         CommonClassSet3(Result,null,false);
-        CacheChilds.put(ToCommon,Result);
+        if(Main.ActivateCaches) CacheChilds.put(ToCommon,Result);
         return Result;
     }
 
