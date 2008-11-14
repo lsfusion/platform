@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.util.*;
 
 class ObjectValue {
-    Integer idObject;
+    Object Object;
     Class Class;
 
     public boolean equals(Object o) {
@@ -20,14 +20,15 @@ class ObjectValue {
 
         ObjectValue that = (ObjectValue) o;
 
-        return idObject.equals(that.idObject);
+        return Object.equals(that.Object);
     }
 
     public int hashCode() {
-        return idObject.hashCode();
+        return Object.hashCode();
     }
 
-    ObjectValue(Integer iObject,Class iClass) {idObject=iObject;Class=iClass;}
+    ObjectValue(Object iObject,Class iClass) {
+        Object=iObject;Class=iClass;}
 }
 
 class PropertyImplement<T,P extends PropertyInterface> {
@@ -2024,7 +2025,7 @@ class DataSession  {
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
         InterfaceClass<DataPropertyInterface> InterfaceClass = new InterfaceClass<DataPropertyInterface>();
         for(Map.Entry<KeyField,DataPropertyInterface> Field : (Set<Map.Entry<KeyField,DataPropertyInterface>>)Property.DataTableMap.entrySet()) {
-            Integer idObject = Keys.get(Field.getValue()).idObject;
+            Integer idObject = (Integer) Keys.get(Field.getValue()).Object;
             InsertKeys.put(Field.getKey(), idObject);
             InterfaceClass.put(Field.getValue(),getBaseClassSet(idObject));
         }
