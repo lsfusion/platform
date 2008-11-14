@@ -394,7 +394,7 @@ public class ClientForm extends JPanel {
 
             // типа только если меняется свойство
             try {
-                remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObjectValue(value));
+                remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObject(value));
                 dataChanged();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -588,8 +588,6 @@ public class ClientForm extends JPanel {
         }
 
     }
-
-    ClientCellView editingCell;
 
     class GroupObjectModel {
 
@@ -791,12 +789,9 @@ public class ClientForm extends JPanel {
                                  implements TableCellEditor {
 
             PropertyEditorComponent currentComp;
-            Object value;
-            
+
             public Object getCellEditorValue() {
-                
                 return currentComp.getCellEditorValue();
-                
             }
 
             public boolean isCellEditable(EventObject e) {
@@ -832,35 +827,19 @@ public class ClientForm extends JPanel {
                                                          int row, 
                                                          int column) {
                 
-                value = ivalue;
-
                 ClientCellViewTable cellTable = (ClientCellViewTable)table;
 
                 ClientCellView property = cellTable.getCellView(row, column);
 
-                if (cellTable.isDataChanging() && property instanceof ClientPropertyView && !remoteForm.allowChangeProperty(property.ID)) {
-                    this.stopCellEditing();
-                    return null;
-                }
+                currentComp = property.getEditorComponent(ClientForm.this, ivalue);
 
-                editingCell = property;
+                Component comp = null;
+                if (currentComp != null)
+                    comp = currentComp.getComponent();
 
-                currentComp = property.getEditorComponent(ClientForm.this);
-                
-                if (currentComp != null) {
-
-                    currentComp.setCellEditorValue(value);
-
-                    Component comp = currentComp.getComponent();
-                    if (comp == null) {
-                        Object newValue = getCellEditorValue();
-                        if (!BaseUtils.compareObjects(value, newValue))
-                            table.setValueAt(newValue, row, column);
-                    }
+                if (comp != null) {
                     return comp;
-
                 } else {
-
                     this.stopCellEditing();
                     return null;
                 }

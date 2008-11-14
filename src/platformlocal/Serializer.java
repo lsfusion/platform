@@ -52,7 +52,7 @@ class Serializer {
             outStream.writeInt(gridProperties.size());
             for (GroupObjectValue groupObjectValue : gridProperties.keySet()) {
                 serializeGroupObjectValue(outStream, propertyView.ToDraw, groupObjectValue);
-                serializeObjectValue(outStream, gridProperties.get(groupObjectValue));
+                serializeObject(outStream, gridProperties.get(groupObjectValue));
             }
         }
 //        System.out.println("GridProperties : " + outStream.size());
@@ -62,7 +62,7 @@ class Serializer {
         for (PropertyView propertyView : formChanges.PanelProperties.keySet()) {
 
             serializePropertyView(outStream, propertyView);
-            serializeObjectValue(outStream, formChanges.PanelProperties.get(propertyView));
+            serializeObject(outStream, formChanges.PanelProperties.get(propertyView));
         }
 //        System.out.println("PanelProperties : " + outStream.size());
 
@@ -142,7 +142,7 @@ class Serializer {
             int mapCount = inStream.readInt();
             for (int j = 0; j < mapCount; j++) {
                 gridProperties.put(deserializeClientGroupObjectValue(inStream, clientGroupObject),
-                                   deserializeObjectValue(inStream));
+                                   deserializeObject(inStream));
             }
 
             clientFormChanges.GridProperties.put(clientPropertyView, gridProperties);
@@ -157,7 +157,7 @@ class Serializer {
 
             ClientPropertyView clientPropertyView = deserializeClientPropertyView(inStream, clientFormView);
             clientFormChanges.PanelProperties.put(clientPropertyView,
-                                                  deserializeObjectValue(inStream));
+                                                  deserializeObject(inStream));
         }
 //        System.out.println("PanelProperties read : " + (all-inStream.available()));
 
@@ -229,7 +229,7 @@ class Serializer {
         return clientFormView.getPropertyView(inStream.readInt());
     }
 
-    public static void serializeObjectValue(DataOutputStream outStream, Object object) throws IOException {
+    public static void serializeObject(DataOutputStream outStream, Object object) throws IOException {
 
         if (object == null) {
             outStream.writeByte(0);
@@ -269,7 +269,7 @@ class Serializer {
         throw new IOException();
     }
 
-    public static Object deserializeObjectValue(DataInputStream inStream) throws IOException {
+    public static Object deserializeObject(DataInputStream inStream) throws IOException {
 
         int objectType = inStream.readByte();
 
@@ -325,6 +325,8 @@ class Serializer {
 
     public static void serializeClass(DataOutputStream outStream, Class cls) throws IOException {
 
+        if (cls == null) { outStream.writeByte(127); return; }
+
         if (cls instanceof ObjectClass) outStream.writeByte(0);
         if (cls instanceof StringClass) outStream.writeByte(1);
         if (cls instanceof IntegerClass) outStream.writeByte(2);
@@ -345,6 +347,7 @@ class Serializer {
         int clsType = inStream.readByte();
 
         switch (clsType) {
+            case 127 : return null;
             case 0 : cls = new ClientObjectClass(); break;
             case 1 : cls = new ClientStringClass(); break;
             case 2 : cls = new ClientIntegerClass(); break;
@@ -362,6 +365,19 @@ class Serializer {
         return cls;
     }
 
+    public static void serializeObjectValue(DataOutputStream outStream, ObjectValue objectValue) throws IOException {
+        serializeClass(outStream, objectValue.Class);
+        serializeObject(outStream, objectValue.Object);
+    }
+
+    public static ClientObjectValue deserializeClientObjectValue(DataInputStream inStream) throws IOException {
+
+        ClientObjectValue objectValue = new ClientObjectValue();
+        objectValue.cls = deserializeClientClass(inStream);
+        objectValue.idObject = deserializeObject(inStream);
+        return objectValue;
+    }
+
     // -------------------------------------- Сериализация фильтров -------------------------------------------- //
     public static void serializeClientFilter(DataOutputStream outStream, ClientFilter filter) throws IOException {
 
@@ -372,7 +388,7 @@ class Serializer {
         if (filter.value instanceof ClientUserValueLink) {
 
             outStream.writeByte(0);
-            serializeObjectValue(outStream, ((ClientUserValueLink)filter.value).value);
+            serializeObject(outStream, ((ClientUserValueLink)filter.value).value);
         }
 
         if (filter.value instanceof ClientObjectValueLink) {
@@ -400,7 +416,7 @@ class Serializer {
         ValueLink valueLink = null;
 
         if (classValueLink == 0) {
-            valueLink = new UserValueLink(deserializeObjectValue(inStream));
+            valueLink = new UserValueLink(deserializeObject(inStream));
         }
 
         if (classValueLink == 1) {
@@ -628,13 +644,13 @@ class ByteArraySerializer extends Serializer {
 
     }
 
-    public static byte[] serializeObjectValue(Object value) {
+    public static byte[] serializeObject(Object value) {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
 
         try {
-            serializeObjectValue(dataStream, value);
+            serializeObject(dataStream, value);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -643,13 +659,13 @@ class ByteArraySerializer extends Serializer {
 
     }
 
-    public static Object deserializeObjectValue(byte[] state) {
+    public static Object deserializeObject(byte[] state) {
 
         ByteArrayInputStream inStream = new ByteArrayInputStream(state);
         DataInputStream dataStream = new DataInputStream(inStream);
 
         try {
-            return deserializeObjectValue(dataStream);
+            return deserializeObject(dataStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -711,6 +727,36 @@ class ByteArraySerializer extends Serializer {
 
         try {
             return deserializeClientClass(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public static byte[] serializeObjectValue(ObjectValue objectValue) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeObjectValue(dataStream, objectValue);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
+    }
+
+    public static ClientObjectValue deserializeClientObjectValue(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeClientObjectValue(dataStream);
         } catch (IOException e) {
             e.printStackTrace();
         }

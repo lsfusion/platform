@@ -13,7 +13,7 @@ public class ClientDialog extends JDialog {
 
     ClientClass cls;
 
-    ClientDialog(ClientForm owner, ClientClass icls) {
+    ClientDialog(ClientForm owner, ClientClass icls, Object value) {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
         setLayout(new BorderLayout());
@@ -28,6 +28,9 @@ public class ClientDialog extends JDialog {
                 setCurrentForm(element.ID);
             }
         };
+
+        if (value instanceof Integer)
+            navigator.remoteNavigator.addCacheObject(cls.ID, (Integer)value);
 
         JPanel navigatorPanel = new JPanel();
         navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
@@ -45,6 +48,8 @@ public class ClientDialog extends JDialog {
             }
 
         });
+
+        setCurrentForm(navigator.remoteNavigator.getDefaultForm(cls.ID));
     }
 
     private boolean objectChosen = false;
@@ -53,14 +58,6 @@ public class ClientDialog extends JDialog {
 
         setVisible(true);
         return objectChosen;
-    }
-
-    public void createDefaultForm(Integer value) {
-
-        if (value != null)
-            navigator.remoteNavigator.addCacheObject(cls.ID, value);
-        
-        setCurrentForm(navigator.remoteNavigator.getDefaultForm(cls.ID));
     }
 
     public Object objectChosen() {

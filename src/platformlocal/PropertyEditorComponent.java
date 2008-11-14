@@ -23,7 +23,6 @@ public interface PropertyEditorComponent {
 
     Component getComponent();
 
-    void setCellEditorValue(Object value);
     Object getCellEditorValue();
 
 }
@@ -50,7 +49,7 @@ class TextFieldPropertyEditor extends JFormattedTextField {
 class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor(NumberFormat iformat, java.lang.Class<?> valueClass) {
+    public IntegerPropertyEditor(Object value, NumberFormat iformat, java.lang.Class<?> valueClass) {
 
         NumberFormat format = iformat;
         if (format == null)
@@ -79,16 +78,14 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
 
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 
+        if (value != null)
+            setValue(value);
+        selectAll();
+
     }
 
     public Component getComponent() {
         return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setValue(value);
-        selectAll();
     }
 
     public Object getCellEditorValue() {
@@ -116,18 +113,16 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
 class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
 
-    public StringPropertyEditor() {
+    public StringPropertyEditor(Object value) {
         super();
+
+        if (value != null)
+            setText(value.toString());
+        selectAll();
     }
 
     public Component getComponent() {
         return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setText(value.toString());
-        selectAll();
     }
 
     public Object getCellEditorValue() {
@@ -140,9 +135,12 @@ class StringPropertyEditor extends TextFieldPropertyEditor
 class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
 
-    public DatePropertyEditor() {
+    public DatePropertyEditor(Object value) {
         super(null, null, "dd.MM.yy", new DatePropertyEditorComponent("dd.MM.yy","##.##.##",' '));
 
+        if (value != null)
+            setDate(DateConverter.intToDate((Integer)value));
+        ((JFormattedTextField)dateEditor).selectAll();
     }
 
     @Override
@@ -204,12 +202,6 @@ class DatePropertyEditor extends JDateChooser
         return this;
     }
 
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setDate(DateConverter.intToDate((Integer)value));
-        ((JFormattedTextField)dateEditor).selectAll();
-    }
-
     public Object getCellEditorValue() {
 
         return DateConverter.dateToInt(getDate());
@@ -254,7 +246,7 @@ class BitPropertyEditor extends JCheckBox
 
     boolean isNull = false;
 
-    public BitPropertyEditor() {
+    public BitPropertyEditor(Object value) {
 
         setHorizontalAlignment(JCheckBox.CENTER);
 //        setVerticalAlignment(JCheckBox.CENTER);
@@ -281,15 +273,13 @@ class BitPropertyEditor extends JCheckBox
                 setBackground(Color.white);
             }
         });
+
+        if (value != null)
+            setSelected((Boolean)value);
     }
 
     public Component getComponent() {
         return this;
-    }
-
-    public void setCellEditorValue(Object value) {
-        if (value != null)
-            setSelected((Boolean)value);
     }
 
     public Object getCellEditorValue() {
@@ -301,33 +291,28 @@ class BitPropertyEditor extends JCheckBox
 
 class ObjectPropertyEditor implements PropertyEditorComponent {
 
+    ClientForm clientForm;
+    ClientCellView property;
+
     ClientDialog clientDialog;
 
-    private boolean objectChosen;
+    ObjectPropertyEditor(ClientForm iclientForm, ClientCellView iproperty, ClientClass cls, Object value) {
 
-    private Object oldValue;
+        clientForm = iclientForm;
+        property = iproperty;
 
-    ObjectPropertyEditor(ClientForm clientForm, ClientClass cls) {
-
-        clientDialog = new ClientDialog(clientForm, cls);
+        clientDialog = new ClientDialog(clientForm, cls, value);
     }
 
     public Component getComponent() {
 
-        objectChosen = clientDialog.showObjectDialog();
+        if (clientDialog.showObjectDialog()) {
+            clientForm.changeProperty(property, clientDialog.objectChosen());
+        }
         return null;
     }
 
-    public void setCellEditorValue(Object value) {
-
-        oldValue = value;
-        clientDialog.createDefaultForm((Integer)value);
-    }
-
     public Object getCellEditorValue() {
-        if (objectChosen)
-            return clientDialog.objectChosen();
-        else
-            return oldValue;
+        return null;
     }
 }

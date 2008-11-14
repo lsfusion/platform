@@ -12,7 +12,6 @@ import java.io.Serializable;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
 
-import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
@@ -604,8 +603,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.findClassID(classID).Childs);
     }
 
-    public byte[] getPropertyEditorClassByteArray(int propertyID) {
-        return ByteArraySerializer.serializeClass(getPropertyEditorClass(getPropertyView(propertyID)));
+    public byte[] getPropertyEditorObjectValueByteArray(int propertyID) {
+        return ByteArraySerializer.serializeObjectValue(getPropertyEditorObjectValue(getPropertyView(propertyID)));
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -667,7 +666,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
-        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObjectValue(object));
+        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObject(object));
     }
 
     // ----------------------- Применение изменений ------------------------------- //
@@ -703,8 +702,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return null;
     }
 
-    private Class getPropertyEditorClass(PropertyView propertyView) {
-        return propertyView.View.getValueClass(null).getCommonClass(); 
+    private ObjectValue getPropertyEditorObjectValue(PropertyView propertyView) {
+        return new ObjectValue(null, null);
+//        return propertyView.View.getChangePropertyClass();
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {

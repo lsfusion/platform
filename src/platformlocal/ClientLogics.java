@@ -177,12 +177,16 @@ abstract class ClientCellView extends ClientComponentView {
         return renderer;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form) {
-        return getEditorClass(form).getEditorComponent(form, getFormat());
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) {
+
+        ClientObjectValue objectValue = getEditorObjectValue(form, value);
+        if (objectValue.cls == null) return null;
+
+        return objectValue.cls.getEditorComponent(form, this, value, getFormat());
     }
 
-    protected ClientClass getEditorClass(ClientForm form) {
-        return baseClass;
+    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
+        return new ClientObjectValue(baseClass, value);
     }
 
     Format format;
@@ -194,8 +198,8 @@ abstract class ClientCellView extends ClientComponentView {
 
 class ClientPropertyView extends ClientCellView {
 
-    protected ClientClass getEditorClass(ClientForm form) {
-        return ByteArraySerializer.deserializeClientClass(form.remoteForm.getPropertyEditorClassByteArray(this.ID));
+    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
+        return ByteArraySerializer.deserializeClientObjectValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID));
     }
 }
 
@@ -207,13 +211,13 @@ class ClientObjectView extends ClientCellView {
         return getPreferredWidth();
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form) {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) {
 
         if (!groupObject.singleViewType) {
             form.switchClassView(groupObject);
             return null;
         } else
-            return super.getEditorComponent(form);
+            return super.getEditorComponent(form, value);
     }
 
 }
@@ -523,7 +527,7 @@ abstract class ClientClass implements Serializable {
     }
 
     abstract public PropertyRendererComponent getRendererComponent(Format format);
-    abstract public PropertyEditorComponent getEditorComponent(ClientForm form, Format format);
+    abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format);
 }
 
 class ClientObjectClass extends ClientClass {
@@ -532,7 +536,7 @@ class ClientObjectClass extends ClientClass {
     public int getMaximumWidth() { return getPreferredWidth(); }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new ObjectPropertyEditor(form, this); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new ObjectPropertyEditor(form, property, this, value); }
 }
 
 class ClientStringClass extends ClientClass {
@@ -541,7 +545,7 @@ class ClientStringClass extends ClientClass {
     public int getPreferredWidth() { return 250; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new StringPropertyEditor(); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new StringPropertyEditor(value); }
 }
 
 class ClientIntegerClass extends ClientClass {
@@ -549,7 +553,7 @@ class ClientIntegerClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format, Integer.class); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Integer.class); }
 }
 
 class ClientDateClass extends ClientClass {
@@ -557,7 +561,7 @@ class ClientDateClass extends ClientClass {
     public int getPreferredWidth() { return 70; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new DatePropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new DatePropertyEditor(); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new DatePropertyEditor(value); }
 }
 
 class ClientBitClass extends ClientClass {
@@ -565,7 +569,7 @@ class ClientBitClass extends ClientClass {
     public int getPreferredWidth() { return 35; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new BitPropertyEditor(); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new BitPropertyEditor(value); }
 }
 
 class ClientDoubleClass extends ClientClass {
@@ -573,7 +577,7 @@ class ClientDoubleClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format, Double.class); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Double.class); }
 }
 
 class ClientLongClass extends ClientClass {
@@ -581,7 +585,21 @@ class ClientLongClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Format format) { return new IntegerPropertyEditor((NumberFormat)format, Long.class); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Long.class); }
+}
+
+class ClientObjectValue {
+
+    ClientClass cls;
+    Object idObject;
+
+    public ClientObjectValue() {
+    }
+
+    public ClientObjectValue(ClientClass icls, Object iidObject) {
+        cls = icls;
+        idObject = iidObject;
+    }
 }
 
 // -------------------------------------- Фильтры ------------------------------ //
