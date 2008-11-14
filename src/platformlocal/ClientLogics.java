@@ -180,9 +180,9 @@ abstract class ClientCellView extends ClientComponentView {
     public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) {
 
         ClientObjectValue objectValue = getEditorObjectValue(form, value);
-        if (objectValue.cls == null) return null;
+        if (objectValue == null) return null;
 
-        return objectValue.cls.getEditorComponent(form, this, value, getFormat());
+        return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
     }
 
     protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
@@ -200,7 +200,10 @@ class ClientPropertyView extends ClientCellView {
 
     protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
 
-        return ByteArraySerializer.deserializeClientChangeValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID)).getObjectValue(value);
+        ClientChangeValue changeValue = ByteArraySerializer.deserializeClientChangeValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID));
+        if (changeValue == null) return null;
+        
+        return changeValue.getObjectValue(value);
     }
 }
 
@@ -621,7 +624,7 @@ class ClientChangeObjectValue extends ClientChangeValue {
         value = ivalue;
     }
 
-    public ClientObjectValue getObjectValue(Object value) {
+    public ClientObjectValue getObjectValue(Object ivalue) {
         return new ClientObjectValue(cls, value);
     }
 }

@@ -381,7 +381,7 @@ class Serializer {
 
     public static void serializeChangeValue(DataOutputStream outStream, ChangeValue objectValue) throws IOException {
 
-        serializeClass(outStream, objectValue.Class);
+        serializeClass(outStream, (objectValue == null)? null : objectValue.Class);
 
         if (objectValue instanceof ChangeObjectValue) {
             outStream.writeByte(0);
@@ -397,7 +397,10 @@ class Serializer {
 
     public static ClientChangeValue deserializeClientChangeValue(DataInputStream inStream) throws IOException {
 
+
         ClientClass cls = deserializeClientClass(inStream);
+
+        if (cls == null) return null;
 
         int changeType = inStream.readByte();
 

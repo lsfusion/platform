@@ -485,59 +485,60 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     void initCustomLogics() {
 
         // конкретные классы
-        Class articleFood = new ObjectClass(100, "Продтовары", article);
+        Class articleFood = new ObjectClass(IDGet(1), "Продтовары", article);
         AddDProp(artclGroup, "Срок годности", Class.string, articleFood);
 
-        Class articleAlcohol = new ObjectClass(110, "Алкоголь", articleFood);
+        Class articleAlcohol = new ObjectClass(IDGet(2), "Алкоголь", articleFood);
         AddDProp(artclGroup, "Крепость", Class.integer, articleAlcohol);
 
-        Class articleVodka = new ObjectClass(111, "Водка", articleAlcohol);
+        Class articleVodka = new ObjectClass(IDGet(3), "Водка", articleAlcohol);
         AddDProp(artclGroup, "Прейск.", Class.bit, articleVodka);
 
-        Class articleBeer = new ObjectClass(112, "Пиво", articleAlcohol);
+        Class articleBeer = new ObjectClass(IDGet(4), "Пиво", articleAlcohol);
         AddDProp(artclGroup, "Тип", Class.string, articleBeer);
         AddDProp(artclGroup, "Упак.", Class.string, articleBeer);
 
-        Class wineTaste = new ObjectClass(1000, "Вкус вина", objectClass);
-        Class articleWine = new ObjectClass(113, "Вино", articleAlcohol);
+        Class wineTaste = new ObjectClass(IDGet(5), "Вкус вина", objectClass);
+        Class articleWine = new ObjectClass(IDGet(6), "Вино", articleAlcohol);
         AddJProp(artclGroup, "Вкус", name, 1, AddDProp("Код вкуса", wineTaste, articleWine), 1);
 
-        Class articleMilkGroup = new ObjectClass(120, "Молочные продукты", articleFood);
+        Class articleMilkGroup = new ObjectClass(IDGet(7), "Молочные продукты", articleFood);
         AddDProp(artclGroup, "Жирн.", Class.doubleClass, articleMilkGroup);
 
-        Class articleMilk = new ObjectClass(121, "Молоко", articleMilkGroup);
+        Class articleMilk = new ObjectClass(IDGet(8), "Молоко", articleMilkGroup);
         AddDProp(artclGroup, "Упак.", Class.string,  articleMilk);
 
-        Class articleCheese = new ObjectClass(122, "Сыр", articleMilkGroup);
+        Class articleCheese = new ObjectClass(IDGet(9), "Сыр", articleMilkGroup);
         AddDProp(artclGroup, "Вес.", Class.bit, articleCheese);
 
-        Class articleCurd = new ObjectClass(123, "Творог", articleMilkGroup);
+        Class articleCurd = new ObjectClass(IDGet(10), "Творог", articleMilkGroup);
 
-        Class articleBreadGroup = new ObjectClass(130, "Хлебобулочные изделия", articleFood);
+        Class articleBreadGroup = new ObjectClass(IDGet(11), "Хлебобулочные изделия", articleFood);
         AddDProp(artclGroup, "Вес", Class.integer, articleBreadGroup);
 
-        Class articleBread = new ObjectClass(131, "Хлеб", articleBreadGroup);
+        Class articleBread = new ObjectClass(IDGet(12), "Хлеб", articleBreadGroup);
         AddDProp(artclGroup, "Вес", Class.integer, articleBread);
 
-        Class articleCookies = new ObjectClass(132, "Печенье", articleBreadGroup);
+        Class articleCookies = new ObjectClass(IDGet(13), "Печенье", articleBreadGroup);
 
-        Class articleJuice = new ObjectClass(140, "Соки", articleFood);
+        Class articleJuice = new ObjectClass(IDGet(14), "Соки", articleFood);
         AddDProp(artclGroup, "Вкус", Class.string, articleJuice);
         AddDProp(artclGroup, "Литраж", Class.integer, articleJuice);
 
-        Class articleClothes = new ObjectClass(200, "Одежда", article);
+        Class articleClothes = new ObjectClass(IDGet(15), "Одежда", article);
         AddDProp(artclGroup, "Модель", Class.string, articleClothes);
 
-        Class articleTShirt = new ObjectClass(210, "Майки", articleClothes);
+        Class articleTShirt = new ObjectClass(IDGet(16), "Майки", articleClothes);
         AddDProp(artclGroup, "Размер", Class.string, articleTShirt);
 
-        Class articleJeans = new ObjectClass(220, "Джинсы", articleClothes);
+        Class articleJeans = new ObjectClass(IDGet(17), "Джинсы", articleClothes);
         AddDProp(artclGroup, "Ширина", Class.integer, articleJeans);
         AddDProp(artclGroup, "Длина", Class.integer, articleJeans);
 
-        Class articleShooes = new ObjectClass(300, "Обувь", article);
+        Class articleShooes = new ObjectClass(IDGet(18), "Обувь", article);
         AddDProp(artclGroup, "Цвет", Class.string, articleShooes);
 
+        IDShift(1000);
     }
 
     void InitConstraints() {
