@@ -246,6 +246,13 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
         return false;
     }
 
+    Class getChangePropertyClass() {
+        InterfaceClass<P> Interface = new InterfaceClass<P>();
+        for(Entry<P, ObjectImplement> Implement : Mapping.entrySet())
+            Interface.put(Implement.getKey(),new ClassSet(Implement.getValue().Class));
+        return Property.getChangePropertyClass(Interface);
+    }
+
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, boolean NotNull) {
 
         Map<P,SourceExpr> JoinImplement = new HashMap<P,SourceExpr>();
