@@ -199,7 +199,8 @@ abstract class ClientCellView extends ClientComponentView {
 class ClientPropertyView extends ClientCellView {
 
     protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
-        return ByteArraySerializer.deserializeClientObjectValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID));
+        return ByteArraySerializer.deserializeClientObjectValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID,
+                                                                ByteArraySerializer.serializeObject(value)));
     }
 }
 

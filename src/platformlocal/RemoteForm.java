@@ -603,8 +603,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.findClassID(classID).Childs);
     }
 
-    public byte[] getPropertyEditorObjectValueByteArray(int propertyID) {
-        return ByteArraySerializer.serializeObjectValue(getPropertyEditorObjectValue(getPropertyView(propertyID)));
+    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, byte[] value) {
+        return ByteArraySerializer.serializeObjectValue(getPropertyEditorObjectValue(getPropertyView(propertyID),
+                                                        ByteArraySerializer.deserializeObject(value)));
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -698,8 +699,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return null;
     }
 
-    private ObjectValue getPropertyEditorObjectValue(PropertyView propertyView) {
-        return propertyView.View.getChangeProperty(Session, null);
+    private ObjectValue getPropertyEditorObjectValue(PropertyView propertyView, Object value) {
+        return propertyView.View.getChangeProperty(Session, value);
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {
