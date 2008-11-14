@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.util.*;
 
 class ObjectValue {
-    Object Object;
+    Integer Object;
     Class Class;
 
     public boolean equals(Object o) {
@@ -27,7 +27,7 @@ class ObjectValue {
         return Object.hashCode();
     }
 
-    ObjectValue(Object iObject,Class iClass) {
+    ObjectValue(Integer iObject,Class iClass) {
         Object=iObject;Class=iClass;}
 }
 
@@ -146,6 +146,32 @@ class AbstractGroup extends AbstractNode {
         return false;
     }
 
+}
+
+class ChangeValue {
+    Class Class;
+
+    ChangeValue(Class iClass) {
+        Class = iClass;
+    }
+}
+
+class ChangeObjectValue extends ChangeValue {
+    Object Value;
+
+    ChangeObjectValue(Class iClass, Object iValue) {
+        super(iClass);
+        Value = iValue;
+    }
+}
+
+class ChangeCoeffValue extends ChangeValue {
+    Integer Coeff;
+
+    ChangeCoeffValue(Class iClass, Integer iCoeff) {
+        super(iClass);
+        Coeff = iCoeff;
+    }
 }
 
 abstract class Property<T extends PropertyInterface> extends AbstractNode implements PropertyClass<T> {
@@ -318,7 +344,7 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     }
 
     // базовые методы - ничего не делать, его перегружают только Override и Data
-    ObjectValue getChangeProperty(DataSession Session,Map<T, ObjectValue> Keys, Object PrevValue) { return null;}
+    ChangeValue getChangeProperty(DataSession Session,Map<T, ObjectValue> Keys, int Coeff) { return null;}
     void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {}
 
     // заполняет требования к изменениям
@@ -531,16 +557,19 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
         DataTable.outSelect(Session);
     }
 
-    ObjectValue getChangeProperty(DataSession Session,Map<DataPropertyInterface, ObjectValue> Keys, Object PrevValue) {
+    ChangeValue getChangeProperty(DataSession Session,Map<DataPropertyInterface, ObjectValue> Keys, int Coeff) {
 
         if(!getValueClass(new InterfaceClass<DataPropertyInterface>(Keys)).isEmpty()) {
-            if(PrevValue==null && Session!=null)
+            if(Coeff==0 && Session!=null) {
+                Object ReadValue = null;
                 try {
-                    PrevValue = Session.readProperty(this,Keys);
+                    ReadValue = Session.readProperty(this,Keys);
                 } catch (SQLException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    e.printStackTrace();
                 }
-            return new ObjectValue(PrevValue,Value);
+                return new ChangeObjectValue(Value,ReadValue);
+            } else
+                return new ChangeCoeffValue(Value,Coeff);
         } else
             return null;
     }
@@ -821,18 +850,20 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
         return new ArrayList<PropertyMapImplement<PropertyInterface, T>>();
     }
 
+    int getCoeff(PropertyMapImplement<?, T> Implement) { return 0; }
+
     PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys) {
         List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys);
         for(int i=Implements.size()-1;i>=0;i--)
-            if(Implements.get(i).mapChangeProperty(null, Keys)!=null)
+            if(Implements.get(i).mapGetChangeProperty(null, Keys, null)!=null)
                 return Implements.get(i);
         return null;
     }
 
-    ObjectValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, Object PrevValue) {
+    ChangeValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, int Coeff) {
         PropertyMapImplement<?,T> Implement = getChangeImplement(Keys);
         if(Implement==null) return null;
-        return Implement.mapChangeProperty(Session,Keys);
+        return Implement.mapGetChangeProperty(Session,Keys,getCoeff(Implement)*Coeff);
     }
 
     void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
@@ -1043,8 +1074,8 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
         return Property.fillChangedList(ChangedProperties, Changes, NoUpdate);
     }
 
-    ObjectValue mapChangeProperty(DataSession Session, Map<P, ObjectValue> Keys) {
-        return Property.getChangeProperty(Session,getMapImplement(Keys),null);
+    ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, Integer Coeff) {
+        return Property.getChangeProperty(Session,getMapImplement(Keys), Coeff);
     }
 
     // для OverrideList'а по сути
@@ -1244,7 +1275,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
                 if(PropertyImplement.Property instanceof DataProperty)
                     Result.add(PropertyImplement);
                 else {
-                    ObjectValue ChangeValue = PropertyImplement.mapChangeProperty(null, Keys);
+                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, null);
                     if(ChangeValue!=null && ChangeValue.Class instanceof BitClass)
                         BitProps.add(PropertyImplement);
                     else // в начало
@@ -1703,6 +1734,10 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
 
     List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> Keys) {
         return Operands;
+    }
+
+    int getCoeff(PropertyMapImplement<?, PropertyInterface> Implement) {
+        return Coeffs.get(Implement);
     }
 }
 

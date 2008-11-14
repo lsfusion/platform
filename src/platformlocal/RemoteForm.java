@@ -245,11 +245,11 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
         return false;
     }
 
-    ObjectValue getChangeProperty(DataSession Session,Object PrevValue) {
+    ChangeValue getChangeProperty(DataSession Session) {
         Map<P,ObjectValue> Interface = new HashMap<P,ObjectValue>();
         for(Entry<P, ObjectImplement> Implement : Mapping.entrySet())
             Interface.put(Implement.getKey(),new ObjectValue(Implement.getValue().idObject,Implement.getValue().Class));
-        return Property.getChangeProperty(Session,Interface,PrevValue);
+        return Property.getChangeProperty(Session,Interface,1);
     }
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, boolean NotNull) {
@@ -699,8 +699,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return null;
     }
 
-    private ObjectValue getPropertyEditorObjectValue(PropertyView propertyView, Object value) {
-        return propertyView.View.getChangeProperty(Session, value);
+    private ChangeValue getPropertyEditorObjectValue(PropertyView propertyView) {
+        return propertyView.View.getChangeProperty(Session);
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {
