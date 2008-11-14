@@ -616,32 +616,51 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         createDefaultClassForms(objectClass, baseElement);
 
-        NavigatorForm extIncDetailForm = new ExtIncDetailNavigatorForm(10, "Внешний приход");
-        baseElement.addChild(extIncDetailForm);
+        NavigatorElement primaryData = new NavigatorElement(100, "Первичные данные");
+        baseElement.addChild(primaryData);
 
-        NavigatorForm extIncForm = new ExtIncNavigatorForm(15, "Внешний приход по товарам");
+        NavigatorForm extIncDetailForm = new ExtIncDetailNavigatorForm(110, "Внешний приход");
+        primaryData.addChild(extIncDetailForm);
+
+        NavigatorForm extIncForm = new ExtIncNavigatorForm(115, "Внешний приход по товарам");
         extIncDetailForm.addChild(extIncForm);
 
-        NavigatorForm intraForm = new IntraNavigatorForm(20, "Внутреннее перемещение");
-        baseElement.addChild(intraForm);
+        NavigatorForm intraForm = new IntraNavigatorForm(120, "Внутреннее перемещение");
+        primaryData.addChild(intraForm);
 
-        NavigatorForm extOutForm = new ExtOutNavigatorForm(30, "Внешний расход");
-        baseElement.addChild(extOutForm);
+        NavigatorForm extOutForm = new ExtOutNavigatorForm(130, "Внешний расход");
+        primaryData.addChild(extOutForm);
 
-        NavigatorForm exchangeForm = new ExchangeNavigatorForm(40, "Пересорт");
-        baseElement.addChild(exchangeForm);
+        NavigatorForm exchangeForm = new ExchangeNavigatorForm(140, "Пересорт");
+        primaryData.addChild(exchangeForm);
 
-        NavigatorForm revalueForm = new RevalueNavigatorForm(45, "Переоценка");
-        baseElement.addChild(revalueForm);
+        NavigatorForm revalueForm = new RevalueNavigatorForm(150, "Переоценка");
+        primaryData.addChild(revalueForm);
 
-        NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(50, "Товары по складам");
-        baseElement.addChild(storeArticleForm);
+        NavigatorElement aggregateData = new NavigatorElement(200, "Сводная информация");
+        baseElement.addChild(aggregateData);
 
-        NavigatorForm storeArticlePrimDocForm = new StoreArticlePrimDocNavigatorForm(55, "Товары по складам (изм. цен)");
+        NavigatorElement aggrStoreData = new NavigatorElement(210, "Склады");
+        aggregateData.addChild(aggrStoreData);
+
+        NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(211, "Товары по складам");
+        aggrStoreData.addChild(storeArticleForm);
+
+        NavigatorForm storeArticlePrimDocForm = new StoreArticlePrimDocNavigatorForm(2111, "Товары по складам (изм. цен)");
         storeArticleForm.addChild(storeArticlePrimDocForm);
 
-        NavigatorForm storeArticleDocForm = new StoreArticleDocNavigatorForm(60, "Товары по складам (док.)");
+        NavigatorForm storeArticleDocForm = new StoreArticleDocNavigatorForm(2112, "Товары по складам (док.)");
         storeArticleForm.addChild(storeArticleDocForm);
+
+        NavigatorElement aggrArticleData = new NavigatorElement(220, "Товары");
+        aggregateData.addChild(aggrArticleData);
+
+        NavigatorForm articleStoreForm = new ArticleStoreNavigatorForm(221, "Склады по товарам");
+        aggrArticleData.addChild(articleStoreForm);
+
+        NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(222, "Товары*Склады");
+        aggrArticleData.addChild(articleMStoreForm);
+
     }
 
     private class TmcNavigatorForm extends NavigatorForm {
@@ -984,6 +1003,67 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             richDesign = formView;
         }
     }
+
+    private class ArticleStoreNavigatorForm extends TmcNavigatorForm {
+
+        GroupObjectImplement gobjStore, gobjArt;
+        ObjectImplement objStore, objArt;
+
+        public ArticleStoreNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            gobjArt = new GroupObjectImplement(IDShift(1));
+            gobjStore = new GroupObjectImplement(IDShift(1));
+
+            objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArt);
+            objStore = new ObjectImplement(IDShift(1), store, "Склад", gobjStore);
+
+            addGroup(gobjArt);
+            addGroup(gobjStore);
+
+            addPropertyView(Properties, baseGroup, false, objArt);
+            addPropertyView(Properties, baseGroup, false, objStore);
+
+            addPropertyView(Properties, baseGroup, false, objStore, objArt);
+            addPropertyView(Properties, balanceGroup, false, objStore, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, objStore, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, objStore, objArt);
+
+            addPropertyView(Properties, baseGroup, false, gobjArt, objStore, objArt);
+            addPropertyView(Properties, balanceGroup, false, gobjArt, objStore, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, gobjArt, objStore, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, gobjArt, objStore, objArt);
+
+        }
+
+    }
+
+    private class ArticleMStoreNavigatorForm extends TmcNavigatorForm {
+
+        GroupObjectImplement gobjArtStore;
+        ObjectImplement objStore, objArt;
+
+        public ArticleMStoreNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            gobjArtStore = new GroupObjectImplement(IDShift(1));
+
+            objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArtStore);
+            objStore = new ObjectImplement(IDShift(1), store, "Склад", gobjArtStore);
+
+            addGroup(gobjArtStore);
+
+            addPropertyView(Properties, baseGroup, false, objArt);
+            addPropertyView(Properties, baseGroup, false, objStore);
+
+            addPropertyView(Properties, baseGroup, false, objStore, objArt);
+            addPropertyView(Properties, balanceGroup, false, objStore, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, objStore, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, objStore, objArt);
+        }
+
+    }
+
 
     // ------------------------------------- Временные методы --------------------------- //
 

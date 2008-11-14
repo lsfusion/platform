@@ -1086,7 +1086,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
            Result = Result.and(Read.getImplementClassSet(MapInterface.getValue(),InterfaceImplement.get(MapInterface.getKey())));
         return Result;
     }
-    
+
     void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
 
         // если только основное - Property ->I - как было (если изменилось только 2 то его и вкинем), возвр. I
@@ -1168,7 +1168,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
                 }
             }
         if(Result.isEmpty()) return;
-        
+
         JoinQuery<JoinPropertyInterface,PropertyField> Query = new JoinQuery<JoinPropertyInterface,PropertyField>(Interfaces);
 
         // далее создается для getMapImplements - map <ImplementClass,SourceExpr> имплементаций - по getExpr'ы (Changed,SourceExpr) с переданным map интерфейсов
@@ -1374,7 +1374,7 @@ abstract class GroupProperty<T extends PropertyInterface> extends MapProperty<Gr
         InterfaceClassSet<T> ImplementClasses = new InterfaceClassSet<T>();
         for(InterfaceClass<GroupPropertyInterface<T>> JoinClass : JoinClasses)
             ImplementClasses.or(getImplementSet(JoinClass));
-        
+
         JoinQuery<T,Object> Query = new JoinQuery<T,Object>(GroupProperty.Interfaces);
         for(GroupPropertyInterface<T> Interface : Interfaces)
             Query.add(Interface,Interface.Implement.mapSourceExpr(Query.MapKeys,ImplementClasses,true));
@@ -1594,7 +1594,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
 
 
     Change incrementChanges(DataSession Session, int ChangeType) {
-        
+
         if(getUnionType()==0 && ChangeType==1) ChangeType = 2;
 
         //      	0                   1                           2
@@ -1693,7 +1693,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
     }
 
     void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
-        if(getUnionType()==0 && IncrementType.equals(1)) IncrementType = 2; 
+        if(getUnionType()==0 && IncrementType.equals(1)) IncrementType = 2;
 
         for(PropertyMapImplement Operand : Operands)
             Operand.Property.setChangeType(RequiredTypes,IncrementType);
@@ -1717,7 +1717,7 @@ class SumUnionProperty extends UnionProperty {
 class MaxUnionProperty extends UnionProperty {
 
     MaxUnionProperty(TableFactory iTableFactory) {super(iTableFactory,0);}
-    
+
 }
 
 class OverrideUnionProperty extends UnionProperty {
@@ -1764,7 +1764,7 @@ abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Aggre
         return new ValueClassSet<T>(ClassSet.getUp(Value),getUniversalInterface());
     }
 
-    /*    public ClassSet getValueClass(InterfaceClass<T> ClassImplement) {
+    /*    public ClassSet getJavaClass(InterfaceClass<T> ClassImplement) {
 
         ClassSet Result = new ClassSet();
         for(T Interface : Interfaces) {
@@ -1787,7 +1787,7 @@ abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Aggre
     public InterfaceClassSet<T> getClassSet(ClassSet ReqValue) {
 
         InterfaceClass<T> ResultSet = getInterfaceSet();
-        if(getValueClass(ResultSet).intersect(ReqValue))
+        if(getJavaClass(ResultSet).intersect(ReqValue))
             return new InterfaceClassSet<T>(ResultSet);
         else
             return new InterfaceClassSet<T>();
@@ -1849,7 +1849,7 @@ class WhereStringFormulaProperty extends StringFormulaProperty {
         super(iTableFactory, Class.bit, iFormula);
     }
 
-/*    public ClassSet getValueClass(InterfaceClass<StringFormulaPropertyInterface> ValueClass) {
+/*    public ClassSet getJavaClass(InterfaceClass<StringFormulaPropertyInterface> ValueClass) {
 
         for(StringFormulaPropertyInterface Interface : Interfaces)
             if(!ValueClass.get(Interface).intersect(ClassSet.getUp(Interface.Class))) return new ClassSet();
@@ -2474,7 +2474,7 @@ class MapChangedRead<P extends PropertyInterface> extends MapRead<P> {
             if(MapType==3)
                 return new NullJoinSourceExpr(MapExpr);
             else
-                return MapExpr;    
+                return MapExpr;
         } else {
             if(MapType==1)
                 return new NullMapSourceExpr<M>(JoinImplement,MapProperty.getType());
@@ -2551,7 +2551,7 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
     abstract Collection<IN> getMapInterfaces();
 
     abstract void fillChangedRead(UnionQuery<IN, OM> ListQuery, OM Value, MapChangedRead<IN> Read, ValueClassSet<T> ReadClasses);
-    
+
     // получает св-ва для запроса
     abstract Map<OM, Type> getMapNullProps(OM Value);
 

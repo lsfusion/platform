@@ -40,7 +40,7 @@ class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
     }
 }
 
-class ClientGroupObjectMap<T> extends HashMap<ClientObjectImplement,T>
+class ClientGroupObjectMap<T> extends LinkedHashMap<ClientObjectImplement,T>
                               implements Serializable {
 
    
@@ -190,7 +190,7 @@ abstract class ClientCellView extends ClientComponentView {
 
     public String toString() { return caption; }
 
-}
+}              
 
 class ClientPropertyView extends ClientCellView {
 

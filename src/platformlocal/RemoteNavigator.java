@@ -180,6 +180,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID);
 
             groupValue.Order = groupKey.Order;
+            groupValue.PageSize = groupKey.PageSize;
             groupValue.gridClassView = groupKey.gridClassView;
             groupValue.singleViewType = groupKey.singleViewType;
             for (ObjectImplement object : groupKey) {
@@ -349,6 +350,10 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     }
 
     void addPropertyView(List<Property> properties, AbstractGroup group, Boolean upClasses, ObjectImplement... objects) {
+        addPropertyView(properties, group, upClasses, null, objects);
+    }
+
+    void addPropertyView(List<Property> properties, AbstractGroup group, Boolean upClasses, GroupObjectImplement groupObject, ObjectImplement... objects) {
 
         for (Property property : properties) {
 
@@ -357,12 +362,12 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
             if (property.Interfaces.size() == objects.length) {
 
-                addPropertyView(property, upClasses, objects);
+                addPropertyView(property, upClasses, groupObject, objects);
             }
         }
     }
 
-    <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, Boolean upClasses, ObjectImplement... objects) {
+    <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, Boolean upClasses, GroupObjectImplement groupObject, ObjectImplement... objects) {
 
         Collection<List<P>> permutations = MapBuilder.buildPermutations(property.Interfaces);
 
@@ -377,20 +382,24 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
             }
 
             if (!property.getValueClass(propertyInterface).isEmpty()) {
-                addPropertyView(new LP<P,Property<P>>(property, mapping), objects);
+                addPropertyView(new LP<P,Property<P>>(property, mapping), groupObject, objects);
             }
         }
     }
 
     PropertyView addPropertyView(LP property, ObjectImplement... objects) {
-
-        PropertyObjectImplement propertyImplement = addPropertyObjectImplement(property, objects);
-        return addPropertyView(propertyImplement);
+        return addPropertyView(property, null, objects);
     }
 
-    PropertyView addPropertyView(PropertyObjectImplement propertyImplement) {
+    PropertyView addPropertyView(LP property, GroupObjectImplement groupObject, ObjectImplement... objects) {
 
-        PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,propertyImplement.GetApplyObject());
+        PropertyObjectImplement propertyImplement = addPropertyObjectImplement(property, objects);
+        return addPropertyView(groupObject, propertyImplement);
+    }
+
+    PropertyView addPropertyView(GroupObjectImplement groupObject, PropertyObjectImplement propertyImplement) {
+
+        PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,(groupObject == null) ? propertyImplement.GetApplyObject() : groupObject);
         propertyViews.add(propertyView);
         return propertyView;
     }

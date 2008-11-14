@@ -220,4 +220,25 @@ class BaseUtils {
         else
             return obj1.equals(obj2);
     }
+
+    public static Object getDefaultValue(java.lang.Class cls) {
+
+        if (cls.equals(java.lang.Integer.class)) {
+            return 0;
+        }
+        if (cls.equals(java.lang.Long.class)) {
+            return ((Integer)0).longValue();
+        }
+        if (cls.equals(java.lang.Double.class)) {
+            return 0.0;
+        }
+        if (cls.equals(java.lang.Boolean.class)) {
+            return false;
+        }
+        if (cls.equals(java.lang.String.class)) {
+            return "";
+        }
+
+        return null;
+    }
 }

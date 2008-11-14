@@ -132,7 +132,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
     int Updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW;
 
-    int PageSize = 20;
+    int PageSize = 33;
 
     GroupObjectValue GetObjectValue() {
         GroupObjectValue Result = new GroupObjectValue();
@@ -1458,8 +1458,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                         Map<KeyField,Integer> ViewKeyInsert = new HashMap();
                         ViewKeyInsert.put(InsertTable.View,groupGID);
                         ListIterator<KeyField> ivk = InsertTable.Objects.listIterator();
-                        // !!!! важно в Keys сохранить порядок ObjectSeeks
-                        for(ObjectImplement ObjectKey : ObjectSeeks.keySet()) {
+
+                        // важен правильный порядок в KeyRow
+                        for(ObjectImplement ObjectKey : Group) {
                             Integer KeyValue = ResultRow.getKey().get(ObjectKey);
                             KeyRow.put(ObjectKey,KeyValue);
                             ViewKeyInsert.put(ivk.next(), KeyValue);
@@ -1734,15 +1735,7 @@ class ReportDrawField {
     ReportDrawField(String iID,String iCaption,Type DBType) {
         ID = iID;
         Caption = iCaption;
-        if(DBType instanceof IntegerType) {
-            ValueClass = java.lang.Integer.class;
-            Width = 7;
-            Alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
-        } else {
-            ValueClass = java.lang.String.class;
-            Width = 40;
-            Alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
-        }
+        DBType.fillReportDrawField(this);
     }
 
     int GetCaptionWidth() {
@@ -1782,7 +1775,7 @@ class ReportData implements JRDataSource, Serializable {
         
         String FieldName = jrField.getName();
         Object Value = null;
-        if(FieldName.startsWith("obj")) 
+        if(FieldName.startsWith("obj"))
             Value = ReadOrder.get(CurrentRow).get(Integer.parseInt(FieldName.substring(3)));
         else
             Value = Properties.get(Integer.parseInt(FieldName.substring(4))).get(ReadOrder.get(CurrentRow));
@@ -1791,10 +1784,11 @@ class ReportData implements JRDataSource, Serializable {
             Value = ((String)Value).trim();
         
         if(Value==null) {
-             if(jrField.getValueClassName().equals(Integer.class.getName()))
-                 return 0;
-             else 
-                 return "";
+
+            try {
+                return BaseUtils.getDefaultValue(java.lang.Class.forName(jrField.getValueClassName()));
+            } catch (ClassNotFoundException e) {
+            }
         }
         
         return Value;
