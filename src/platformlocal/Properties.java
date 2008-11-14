@@ -148,7 +148,7 @@ class AbstractGroup extends AbstractNode {
 
 }
 
-class ChangeValue {
+abstract class ChangeValue {
     Class Class;
 
     ChangeValue(Class iClass) {
@@ -855,7 +855,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
     PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys) {
         List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys);
         for(int i=Implements.size()-1;i>=0;i--)
-            if(Implements.get(i).mapGetChangeProperty(null, Keys, null)!=null)
+            if(Implements.get(i).mapGetChangeProperty(null, Keys, 0)!=null)
                 return Implements.get(i);
         return null;
     }
@@ -1074,7 +1074,7 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
         return Property.fillChangedList(ChangedProperties, Changes, NoUpdate);
     }
 
-    ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, Integer Coeff) {
+    ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, int Coeff) {
         return Property.getChangeProperty(Session,getMapImplement(Keys), Coeff);
     }
 
@@ -1275,7 +1275,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
                 if(PropertyImplement.Property instanceof DataProperty)
                     Result.add(PropertyImplement);
                 else {
-                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, null);
+                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, 0);
                     if(ChangeValue!=null && ChangeValue.Class instanceof BitClass)
                         BitProps.add(PropertyImplement);
                     else // в начало
