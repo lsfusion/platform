@@ -1682,10 +1682,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
                 else { // AND'им как если Join результат
                     ValueClassSet<PropertyInterface> LeftClass = ChangeClass.and(Operand.mapValueClassSet());
                     if(!LeftClass.isEmpty()) {
-                        SourceExpr OperandExpr = Operand.mapSourceExpr(Query.MapKeys, LeftClass.getClassSet(ClassSet.universal), false);
-                        if(Operator==2 && MapType==1) // если Override и 1 то нам нужно не само значение, а если не null то 0, иначе null (то есть не брать значение) {
-                            OperandExpr = new CaseWhenSourceExpr(new SourceIsNullWhere(OperandExpr,false),new ValueSourceExpr(null,OperandExpr.getType()),new ValueSourceExpr(OperandExpr.getType().getEmptyValue(),OperandExpr.getType()));
-                        ResultExpr.Operands.put(OperandExpr,Coeffs.get(Operand));
+                        ResultExpr.Operands.put(Operand.mapSourceExpr(Query.MapKeys, LeftClass.getClassSet(ClassSet.universal), false),Coeffs.get(Operand));
                         // значит может изменится Value на другое значение
                         ChangeClass.or(LeftClass);
                     }

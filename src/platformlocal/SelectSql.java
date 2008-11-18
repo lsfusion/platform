@@ -173,29 +173,71 @@ abstract class Source<K,V> {
         return View;
     }
 
-    Source<K, Object> merge(Source<?, ?> Merge, Map<K, ?> MergeKeys, Map<Object, Object> MergeProps) {
-
+    <MK,MV> Source<K, Object> merge(Source<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps,MergeType Type) {
         if(this==Merge) {
-            for(Map.Entry<K,?> MapKey : MergeKeys.entrySet())
+            for(Map.Entry<K,MK> MapKey : MergeKeys.entrySet())
                 if(!MapKey.getKey().equals(MapKey.getValue()))
                     return null;
 
-            for(V Field : getProperties())
+            for(MV Field : Merge.getProperties())
                 MergeProps.put(Field,Field);
 
             return (Source<K, Object>)((Source<K,?>)this);
         } else {
             if(Keys.size()!=Merge.Keys.size()) return null;
 
-            if(Merge instanceof JoinQuery && !(this instanceof JoinQuery))
-                // нужно перевернуть MapKeys вызвать proceedMerge у JoinQuery, а затем перевернуть
-                return ((JoinQuery) Merge).reverseMerge(this, MergeKeys, MergeProps);
-
-            return proceedMerge(Merge, MergeKeys, MergeProps);
+            // сначала пробуем прямой Merge, затем обратный
+            Source<K,Object> Result = correctMerge(Merge, MergeKeys, MergeProps, Type, true);
+            if(Result!=null) return Result;
+            return Merge.reverseMerge(this, MergeKeys, MergeProps, Type);
         }
     }
 
-    Source<K, Object> proceedMerge(Source<?, ?> Merge, Map<K, ?> MergeKeys, Map<Object, Object> MergeProps) {
+    public <MK,MV> Source<K,Object> correctMerge(Source<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps, MergeType Type, boolean MergeEqual) {
+
+        if(!(this instanceof JoinQuery) && Merge instanceof JoinQuery)
+            return getCompiledJoinQuery().proceedMerge(Merge, MergeKeys, MergeProps, Type, MergeEqual);
+
+        if(!(this instanceof UnionQuery) && Merge instanceof UnionQuery)
+            return getUnionQuery(2).proceedMerge(Merge, MergeKeys, MergeProps, Type, MergeEqual);
+
+        return proceedMerge(Merge, MergeKeys, MergeProps, Type, MergeEqual);
+    }
+
+    public <MK,MV> Source<MK,Object> reverseMerge(Source<MK,MV> Merge, Map<MK,K> MergeKeys, Map<V, Object> MergeProps, MergeType Type) {
+
+        Map<K, MK> ReverseKeys = CollectionExtend.reverse(MergeKeys);
+        Map<MV,Object> ReverseProps = new HashMap<MV, Object>();
+        Source<K, Object> ReverseSource = correctMerge(Merge, ReverseKeys, ReverseProps, reverseType(Type), false);
+        if(ReverseSource==null) return null;
+
+        // создадим JoinQuery для перекодирования ключей
+        JoinQuery<MK,Object> MergedSource = new JoinQuery<MK,Object>(Merge.Keys);
+        Join<K,Object> ReverseJoin = new Join<K,Object>(ReverseSource,true);
+        for(Map.Entry<K,MK> MapKey : ReverseKeys.entrySet())
+            ReverseJoin.Joins.put(MapKey.getKey(),MergedSource.MapKeys.get(MapKey.getValue()));
+
+        // закидываем св-ва параметра Merge
+        Map<Object,MV> ProceedProps = new HashMap<Object, MV>();
+        for(Map.Entry<MV,Object> MapProperty : ReverseProps.entrySet()) {
+            MergedSource.add(MapProperty.getKey(),ReverseJoin.Exprs.get(MapProperty.getValue()));
+            ProceedProps.put(MapProperty.getValue(),MapProperty.getKey());
+        }
+
+        // закидываем свои св-ва
+        for(V Property : getProperties()) {
+            Object ReverseProp = ProceedProps.get(Property);
+            if(ReverseProp==null) {
+                ReverseProp = new Object();
+                MergedSource.add(ReverseProp,ReverseJoin.Exprs.get(Property));
+            }
+            MergeProps.put(Property,ReverseProp);
+        }
+
+        return MergedSource.compile();
+    }
+
+    <MK,MV> Source<K,Object> proceedMerge(Source<MK, MV> Merge, Map<K, MK> MergeKeys, Map<MV, Object> MergeProps, MergeType Type, boolean MergeEqual) {
         // по умолчанию не merge'ся
         return null;
     }
@@ -287,6 +329,12 @@ abstract class Source<K,V> {
         return getJoinQuery().compile();
     }
 
+    Source<K,V> getUnionQuery(int DefaultOperator) {
+        UnionQuery<K,V> Query = new UnionQuery<K,V>(Keys, DefaultOperator);
+        Query.add(this,1);
+        return Query.compile();
+    }
+
     Source<K,V> getEmptySource() {
 
         Map<V,Type> NullProps = new HashMap();
@@ -297,6 +345,26 @@ abstract class Source<K,V> {
 
     Source<K, V> compile() {
         return this;
+    }
+
+    public enum MergeType {
+        EQUAL, INNER, LEFT, RIGHT, FULL
+    }
+
+    public static MergeType EQUAL = MergeType.EQUAL;
+    public static MergeType FULL = MergeType.FULL;
+
+    static MergeType getJoinType(boolean LeftInner, boolean RightInner) {
+        if(LeftInner)
+            return (RightInner?MergeType.INNER :MergeType.LEFT);
+        else
+            return (RightInner?MergeType.RIGHT :MergeType.FULL);
+    }
+
+    static MergeType reverseType(MergeType Type) {
+        if(Type==MergeType.LEFT) return MergeType.RIGHT;
+        if(Type==MergeType.RIGHT) return MergeType.LEFT;
+        return Type;
     }
 }
 
@@ -461,7 +529,7 @@ class EmptySource<K,V> extends Source<K,V> {
 
         for(SourceExpr JoinExpr : Join.Exprs.values())
             Translated.put(JoinExpr,new ValueSourceExpr(null,JoinExpr.getType()));
-        Translated.put(Join.InJoin,new FalseWhere());
+        Translated.put(Join.InJoin,StaticWhere.False);
     }
 
     void compileUnions(Union<K, V> Union, Map<PropertyUnion, ExprUnion> ToTranslate, Collection<Union<K, Object>> TranslatedUnions) {
@@ -648,7 +716,7 @@ class Join<J,U> {
     }
 
     Join<J,U> translate(ExprTranslator Translated, ExprTranslator JoinTranslated,boolean ForceOuter) {
-        boolean ChangedJoins = false;
+        boolean ChangedJoins = (ForceOuter && Inner);
         Map<J,SourceExpr> TransMap = new HashMap();
         for(Map.Entry<J,SourceExpr> Join : Joins.entrySet()) {
             SourceExpr TransJoin = Join.getValue().translate(Translated);
@@ -667,7 +735,7 @@ class Join<J,U> {
     }
 
     // заполняет перетрансляцию к новому Join'у
-    void fillJoinTranslate(Join<?,?> TranslatedJoin,Map<Object,Object> MergeProps, ExprTranslator JoinTranslated) {
+    <MJ,MU> void fillJoinTranslate(Join<MJ,MU> TranslatedJoin,Map<U,Object> MergeProps, ExprTranslator JoinTranslated) {
 
         for(Map.Entry<U,JoinExpr<J,U>> MapJoin : Exprs.entrySet())
             JoinTranslated.put(MapJoin.getValue(),TranslatedJoin.Exprs.get(MergeProps==null?MapJoin.getKey():MergeProps.get(MapJoin.getKey())));
@@ -679,15 +747,15 @@ class Join<J,U> {
             JoinValue.fillObjectExprs(Exprs);
     }
 
-    Join<J, Object> merge(Join<?, ?> Merge, ExprTranslator Translated, ExprTranslator MergeTranslated, ExprTranslator JoinTranslated, ExprTranslator JoinMergeTranslated) {
-        // нужно построить карту между Joins'ами (с учетом Translate'ов) (точнее и записать в новый Join Translate'утые выражения
+    <MJ,MU> Join<J, Object> merge(Join<MJ,MU> Merge, ExprTranslator Translated, ExprTranslator MergeTranslated, ExprTranslator JoinTranslated, ExprTranslator JoinMergeTranslated,Source.MergeType Type) {
+       // нужно построить карту между Joins'ами (с учетом Translate'ов) (точнее и записать в новый Join Translate'утые выражения
 
         // проверить что кол-во Keys в Source совпадает
 
-        Collection<Map<J, Object>> MapSet = MapBuilder.buildPairs(Source.Keys, Merge.Source.Keys);
+        Collection<Map<J, MJ>> MapSet = MapBuilder.buildPairs(Source.Keys, Merge.Source.Keys);
         if(MapSet==null) return null;
 
-        for(Map<J,?> MapKeys : MapSet) {
+        for(Map<J,MJ> MapKeys : MapSet) {
             Map<J,SourceExpr> MergeExprs = new HashMap();
             for(J Key : Source.Keys) {
                 SourceExpr MergeExpr = Joins.get(Key).translate(Translated);
@@ -701,8 +769,8 @@ class Join<J,U> {
                 continue;
 
             // есть уже карта попробуем merge'уть
-            Map<Object, Object> MergeProps = new HashMap();
-            Source<J, Object> MergeSource = Source.merge(Merge.Source, MapKeys, MergeProps);
+            Map<MU, Object> MergeProps = new HashMap();
+            Source<J, Object> MergeSource = Source.merge(Merge.Source, MapKeys, MergeProps, Type==null?Source.getJoinType(Inner,Merge.Inner):Type);
             if(MergeSource!=null) {
                 // нужно перетранслировать JoinExpr'ы
                 Join<J, Object> MergedJoin = new Join<J, Object>(MergeSource, MergeExprs, Inner || Merge.Inner);
@@ -715,7 +783,7 @@ class Join<J,U> {
         return null;
     }
 
-    public <K> String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<KeyExpr<K>, String> KeyValues) {
+    public <K> String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<KeyExpr<K>, TypedObject> KeyValues) {
 
         Set<KeyExpr> JoinExprs = new HashSet(KeyValues.keySet());
         // проверим сначала что в Join'ах только не пересекающиеся keyExpr'ы
@@ -733,22 +801,30 @@ class Join<J,U> {
         for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
             ((KeyExpr)MapJoin.getValue()).Source = KeySelect.get(MapJoin.getKey());
         // закинем KeyValues
-        for(Map.Entry<KeyExpr<K>,String> KeyValue : KeyValues.entrySet())
-            KeyValue.getKey().Source = KeyValue.getValue();
+        for(Map.Entry<KeyExpr<K>,TypedObject> KeyValue : KeyValues.entrySet())
+            KeyValue.getKey().Source = KeyValue.getValue().getString(Syntax);
         for(Map.Entry<U,JoinExpr<J,U>> MapExpr : Exprs.entrySet())
             MapExpr.getValue().StringSource = PropertySelect.get(MapExpr.getKey());
 
         return From;
     }
 
-    void pushJoinValues() {
+    <K> void pushJoinValues(Map<KeyExpr<K>, TypedObject> KeyValues) {
 
         if(Source instanceof Query) {
             // заполняем статичные значения
             Map<J,Integer> MergeKeys = new HashMap();
-            for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
+            for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet()) {
+                Integer JoinValue = null;
                 if(MapJoin.getValue() instanceof ValueSourceExpr)
-                    MergeKeys.put(MapJoin.getKey(), (Integer) ((ValueSourceExpr)MapJoin.getValue()).Object.Value);
+                    JoinValue = (Integer) ((ValueSourceExpr)MapJoin.getValue()).Object.Value;
+                else {
+                    TypedObject KeyValue = KeyValues.get(MapJoin.getValue());
+                    if(KeyValue!=null) JoinValue = (Integer) KeyValue.Value;
+                }
+                if(JoinValue!=null)
+                    MergeKeys.put(MapJoin.getKey(),JoinValue);
+            }
 
             if(MergeKeys.size() > 0) {
                 CollectionExtend.removeAll(Joins,MergeKeys.keySet());
@@ -1340,6 +1416,11 @@ class CaseWhenSourceExpr extends SourceExpr {
         return "(CASE WHEN " + WhereSource + " THEN " + TrueSource + " ELSE " + FalseSource + " END)";
     }
 
+    static SourceExpr getExpr(Where Where,SourceExpr Expr) {
+        if(Where==StaticWhere.True) return Expr;
+        return new CaseWhenSourceExpr(Where,Expr,new ValueSourceExpr(null,Expr.getType()));
+    }
+
     Type getType() {
         return TrueExpr.getType();
     }
@@ -1697,6 +1778,9 @@ abstract class StaticWhere extends Where {
 
     void fillObjectExprs(Collection<ObjectExpr> Exprs) {
     }
+
+    static TrueWhere True = new TrueWhere();
+    static FalseWhere False = new FalseWhere();
 }
 
 class TrueWhere extends StaticWhere {
@@ -1849,16 +1933,23 @@ class FieldOPWhere extends Where {
         // делаем OR на InJoin'ы этих Source'ов
         Where AllWheres = null;
         for(Where Where : Wheres) {
-            if(Where instanceof TrueWhere) {
+            if(Where==StaticWhere.True) {
                 if(!And) return Where;
             } else
-            if(Where instanceof FalseWhere) {
+            if(Where==StaticWhere.False) {
                 if(And) return Where;
             } else
                 AllWheres = (AllWheres==null?Where:new FieldOPWhere(Where, AllWheres, And));
         }
 
-        return (AllWheres==null?(And?new FalseWhere():new TrueWhere()):AllWheres);
+        return (AllWheres==null?(And?StaticWhere.False:StaticWhere.True):AllWheres);
+    }
+
+    static Where getWhere(Where Where1, Where Where2, boolean And) {
+        Collection<Where> Wheres = new ArrayList<Where>();
+        Wheres.add(Where1);
+        Wheres.add(Where2);
+        return getWhere(Wheres,And);
     }
 
     static String getExpr(String Op1Source,String Op2Source, boolean And) {
@@ -2125,7 +2216,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Join.fillJoins(Joins,Wheres,new HashSet<Join>());
     }
 
-    Map<KeyExpr<K>,String> KeyValues = new HashMap();
+    Map<KeyExpr<K>,TypedObject> KeyValues = new HashMap();
 
     JoinQuery() {super();}
     JoinQuery(Collection<? extends K> iKeys) {
@@ -2230,12 +2321,15 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(SourceExpr Key : MapKeys.values()) {
             SourceExpr ValueKey = Key.translate(Translated);
             if(Key!=ValueKey)
-                KeyValues.put((KeyExpr<K>) Key,((ValueSourceExpr)ValueKey).Object.getString(null));
+                KeyValues.put((KeyExpr<K>) Key,((ValueSourceExpr)ValueKey).Object);
         }
 
 //        checkTranslate(Translated,TranslatedJoins,TranslatedWheres);
         
         Translated = new ExprTranslator();
+
+        // флаг что было A J (A FJ B) -> A LJ B и теперь B тоже по хорошему надо слить
+        boolean UnionToJoin = false;
 
         // слитые операнды
         List<Join> MergedJoins = new ArrayList();
@@ -2251,7 +2345,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             while(itOperand.hasNext()) {
                 ExprTranslator JoinTranslated = new ExprTranslator();
                 Join Check = itOperand.next();
-                Join MergedSource = ToMerge.merge(Check, Translated, Translated, JoinTranslated, JoinTranslated);
+                Join MergedSource = ToMerge.merge(Check, Translated, Translated, JoinTranslated, JoinTranslated, null);
 
                 if(MergedSource!=null) {
                     // надо merge'нуть потому как Joins'ы могут быть транслированы                    
@@ -2259,6 +2353,9 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
                     ToMergeTranslated = true;
                     itOperand.remove();
+
+                    if(MergedSource.Source instanceof JoinQuery && MergedSource.Inner)
+                        UnionToJoin = true;
 
                     ToMerge = MergedSource;
                 }
@@ -2284,42 +2381,43 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(Where Where : TranslatedWheres)
             Wheres.add(Where.translate(Translated));
 
+        // еще раз "закомпайлим"
+        if(UnionToJoin)
+            return proceedCompile();
+        
         // протолкнем внутрь значения
-        for(Join Join : Joins)
-            Join.pushJoinValues();
+        for(Join<?,?> Join : Joins)
+            Join.pushJoinValues(KeyValues);
 
         return this;
     }
 
-    private boolean recMerge(ListIterator<Join> RecJoin, Collection<Join> ToMergeJoins, ExprTranslator Translated, ExprTranslator MergeTranslated, Set<Join> ProceededJoins, Set<Join> MergedJoins, List<Join> TranslatedJoins) {
+    // MergedInnerJoins - Join'ы которые были Inner'ами в Merge и замапились на Left'ы
+    private boolean recMerge(ListIterator<Join> RecJoin, Collection<Join> ToMergeJoins, ExprTranslator Translated, ExprTranslator MergeTranslated, Set<Join> ProceededJoins, Set<Join> MergedJoins, Set<Join> MergedInnerJoins, List<Join> TranslatedJoins, MergeType Type) {
         if(!RecJoin.hasNext())
             return true;
 
         Join<?,?> CurrentJoin = RecJoin.next();
 
         for(Join<?,?> ToMergeJoin : ToMergeJoins)
-            if(!MergedJoins.contains(ToMergeJoin) && CurrentJoin.Inner==ToMergeJoin.Inner) {
+            if(!MergedJoins.contains(ToMergeJoin) && !(CurrentJoin.Inner && !ToMergeJoin.Inner)) { // Inner'ы только на Inner'ы
                 // надо бы проверить что Join уже не merge'ут
                 ExprTranslator JoinTranslated = new ExprTranslator();
                 ExprTranslator JoinMergeTranslated = new ExprTranslator();
-                Join<?,?> MergedJoin = CurrentJoin.merge(ToMergeJoin, Translated, MergeTranslated, JoinTranslated, JoinMergeTranslated);
+                Join<?,?> MergedJoin = CurrentJoin.merge(ToMergeJoin, Translated, MergeTranslated, JoinTranslated, JoinMergeTranslated, Type);
                 if(MergedJoin!=null) {
-                    ProceededJoins.add(CurrentJoin);
-                    MergedJoins.add(ToMergeJoin);
-                    TranslatedJoins.add(MergedJoin);
-                    Translated.putAll(JoinTranslated);
-                    MergeTranslated.putAll(JoinMergeTranslated);
-                    if(recMerge(RecJoin, ToMergeJoins, Translated, MergeTranslated, ProceededJoins, MergedJoins, TranslatedJoins))
+                    if(ToMergeJoin.Inner && !CurrentJoin.Inner) MergedInnerJoins.add(MergedJoin);
+                    ProceededJoins.add(CurrentJoin); MergedJoins.add(ToMergeJoin); TranslatedJoins.add(MergedJoin);
+                    Translated.putAll(JoinTranslated); MergeTranslated.putAll(JoinMergeTranslated);
+                    if(recMerge(RecJoin, ToMergeJoins, Translated, MergeTranslated, ProceededJoins, MergedJoins, MergedInnerJoins, TranslatedJoins, Type))
                         return true;
-                    ProceededJoins.remove(CurrentJoin);
-                    MergedJoins.remove(ToMergeJoin);
-                    TranslatedJoins.remove(MergedJoin);
-                    CollectionExtend.removeAll(Translated,JoinTranslated.keySet());
-                    CollectionExtend.removeAll(MergeTranslated,JoinMergeTranslated.keySet());
+                    if(ToMergeJoin.Inner && !CurrentJoin.Inner) MergedInnerJoins.remove(MergedJoin);
+                    ProceededJoins.remove(CurrentJoin); MergedJoins.remove(ToMergeJoin); TranslatedJoins.remove(MergedJoin);
+                    CollectionExtend.removeAll(Translated,JoinTranslated.keySet()); CollectionExtend.removeAll(MergeTranslated,JoinMergeTranslated.keySet());
                 }
             }
 
-        if(!CurrentJoin.Inner && recMerge(RecJoin, ToMergeJoins, Translated, MergeTranslated, ProceededJoins, MergedJoins, TranslatedJoins))
+        if(!CurrentJoin.Inner && recMerge(RecJoin, ToMergeJoins, Translated, MergeTranslated, ProceededJoins, MergedJoins, MergedInnerJoins, TranslatedJoins, Type))
             return true;
 
         RecJoin.previous();
@@ -2327,38 +2425,43 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         return false;
     }
 
-    Source<K, Object> proceedMerge(Source<?, ?> Merge, Map<K, ?> MergeKeys, Map<Object, Object> MergeProps) {
+    <MK,MV> Source<K, Object> proceedMerge(Source<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps, MergeType Type, boolean MergeEqual) {
         // Set<Join> merge'им с Set<Join> если совпадают, докидываем Left Joins (пытаясь попарно слить), проверяем на совпадение SourceWheres
         // для сравнения Join'ов (как и Where) нужны сразу же "перекодированные" выражения									так как сами бежим по Map'ам то перекодируем
         // накапливаем карты слияний , по умолчанию в этот Map закидываем KeyExpr'ы, затем они накапливаются
         // также надо затем слить Property причем сравнив чтобы не дать одинаковые
 
+        if(!(Type==MergeType.EQUAL || Type==MergeType.LEFT || Type==MergeType.FULL))
+            throw new RuntimeException("Вообще не должно быть");
+
         int InnerCount = 0;
         for(Join Join : Joins)
             if(Join.Inner) InnerCount++;
 
-        // если один иннер оператор и нету Source'ов
-        if(!(Merge instanceof SelectQuery) && InnerCount==1 && Wheres.size()==0)
-            return proceedMerge(Merge.getCompiledJoinQuery(),MergeKeys,MergeProps);
+        // если не JoinQuery преобразуем и пробуем слить с JoinQuery
+        if(!(Merge instanceof JoinQuery))
+            return proceedMerge(Merge.getCompiledJoinQuery(),MergeKeys,MergeProps,Type,MergeEqual);
 
-        if(!(Merge instanceof JoinQuery)) return null;
-
-        JoinQuery<?,?> MergeJoin = (JoinQuery<?,?>) Merge;
+        JoinQuery<MK,MV> MergeJoin = (JoinQuery<MK,MV>) Merge;
 
         // также надо бы проверить на кол-во Inner Join'ов, а также SourceWherers совпадает
-        if(Wheres.size()!=MergeJoin.Wheres.size()) return null;
+        if(Wheres.size()>MergeJoin.Wheres.size() || (!MergeEqual && Wheres.size()==MergeJoin.Wheres.size())) return null;
 
         int InnerMergeCount = 0;
         for(Join Join : MergeJoin.Joins)
             if(Join.Inner) InnerMergeCount++;
-        if(InnerCount!=InnerMergeCount) return null;
+
+        if(InnerCount>InnerMergeCount || (!MergeEqual && InnerCount==InnerMergeCount)) return null;
+
+        if(Type==MergeType.EQUAL && !(InnerCount==InnerMergeCount && Wheres.size()==MergeJoin.Wheres.size())) return null;
 
         JoinQuery<K,Object> Result = new JoinQuery<K,Object>(Keys);
         Result.Compiled = Result;
 
         // попытаемся все ключи помапить друг на друга
-        Set<Join> ProceededJoins = new HashSet();
-        Set<Join> MergedJoins = new HashSet();
+        Set<Join> ProceededJoins = new HashSet<Join>();
+        Set<Join> MergedJoins = new HashSet<Join>();
+        Set<Join> MergedInnerJoins = new HashSet<Join>();
         // замапим ключи
         ExprTranslator Translated = new ExprTranslator();
         ExprTranslator MergeTranslated = new ExprTranslator();
@@ -2366,22 +2469,46 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             Translated.put(MapKeys.get(MapKey.getKey()),MapKey.getValue());
             MergeTranslated.put(MergeJoin.MapKeys.get(MergeKeys.get(MapKey.getKey())),MapKey.getValue());
         }
-        if(recMerge(Joins.listIterator(), MergeJoin.Joins, Translated, MergeTranslated, ProceededJoins, MergedJoins, Result.Joins)) {
+
+        // сначала если повезет попробуем слить на EQUAL (тогда не надо может будет сложная ветка с LEFT JOIN'ом)
+        if(recMerge(Joins.listIterator(), MergeJoin.Joins, Translated, MergeTranslated, ProceededJoins, MergedJoins, MergedInnerJoins, Result.Joins, MergeType.EQUAL)) {
+            // если нужны ключи на LEFT или FULL, переделаем Join'ы в Outer'ы
+            if(Type==MergeType.LEFT || Type==MergeType.FULL)
+                for(Join Join : MergedInnerJoins)
+                    Join.Inner = false;
+
             // пробежимся по всем необработанным Join'ам и Translate'им их
             for(Join Join : Joins)
                 if(!ProceededJoins.contains(Join))
                     Result.Joins.add(Join.translate(Translated,Translated,false));
             for(Join Join : MergeJoin.Joins)
-                if(!MergedJoins.contains(Join))
-                    Result.Joins.add(Join.translate(MergeTranslated,MergeTranslated,false));
+                if(!MergedJoins.contains(Join)) {
+                    Join TranslatedJoin = Join.translate(MergeTranslated, MergeTranslated, true);
+                    if(Join.Inner) MergedInnerJoins.add(TranslatedJoin);
+                    Result.Joins.add(TranslatedJoin);
+                }
 
-            // проверим что SourceWheres совпадают (потом может закинем в recMerge)
-            for(Where Where : Wheres)
-                Result.Wheres.add(Where.translate(Translated));
-
+            Collection<Where> MergedWheres = new HashSet<Where>();
             for(Where Where : MergeJoin.Wheres)
-                if(!Result.Wheres.contains(Where.translate(MergeTranslated)))
-                    return null;
+                MergedWheres.add(Where.translate(MergeTranslated));
+            // проверим что SourceWheres совпадают (потом может закинем в recMerge)
+            for(Where Where : Wheres) {
+                Where TranslatedWhere = Where.translate(Translated);
+                if(!MergedWheres.remove(TranslatedWhere)) return null;
+                Result.Wheres.add(TranslatedWhere);
+            }
+
+            // условие куда будет складываться
+            Where MergedExprWhere = StaticWhere.True;
+            if(Type==MergeType.LEFT || Type==MergeType.FULL) {
+                // закинем в MergedWheres Inner Join
+                for(Join Join : MergedInnerJoins)
+                    MergedWheres.add(Join.InJoin);
+                if(!MergedWheres.isEmpty())
+                    MergedExprWhere = FieldOPWhere.getWhere(MergedWheres, true);
+            } else {
+                Result.Wheres.addAll(MergedWheres);
+            }
 
             // сделаем Map в обратную сторону, чтобы не кидать
             Map<SourceExpr,Object> BackProperties = new HashMap();
@@ -2391,8 +2518,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
                 Result.Properties.put(MapProp.getKey(),TransExpr);
                 BackProperties.put(TransExpr,MapProp.getKey());
             }
-            for(Map.Entry<?,SourceExpr> MapProp : MergeJoin.Properties.entrySet()) {
-                SourceExpr TransExpr = MapProp.getValue().translate(MergeTranslated);
+            for(Map.Entry<MV,SourceExpr> MapProp : MergeJoin.Properties.entrySet()) {
+                SourceExpr TransExpr = CaseWhenSourceExpr.getExpr(MergedExprWhere,MapProp.getValue().translate(MergeTranslated));
 
                 Object PropertyObject = BackProperties.get(TransExpr);
                 if(PropertyObject==null) {
@@ -2405,6 +2532,23 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             return Result;
         }
 
+        // теперь гоним на LEFT, если проходит делаем LJ
+        if(Type!=MergeType.EQUAL && recMerge(Joins.listIterator(), MergeJoin.Joins, Translated, MergeTranslated, ProceededJoins, MergedJoins, MergedInnerJoins, Result.Joins, MergeType.LEFT)) {
+            // делаем LEFT JOIN
+            JoinQuery<K,Object> MergedResult = new JoinQuery<K,Object>(Keys);
+            MergedResult.addAll((new UniJoin<K, V>(this, MergedResult, true)).Exprs);
+            Join<MK,MV> MergedLeftJoin = new MapJoin<MK, MV, K>(MergeJoin, MergedResult, MergeKeys, false);
+            for(MV Property : MergeJoin.getProperties()) {
+                // нужно пересоздавать Object а то пересекутся
+                Object MergeProperty = new Object();
+                MergeProps.put(Property,MergeProperty);
+                MergedResult.add(MergeProperty,MergedLeftJoin.Exprs.get(Property));
+            }
+
+            return MergedResult.compile();
+        }
+  
+
         return null;
     }
 
@@ -2413,7 +2557,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
         // если есть JoinQuery (пока если Left без Wheres) то доливаем все Join'ы с сооты. Map'ами, JoinExpr заменяем на SourceExpr'ы с перебитыми KeyExpr'ами и соотв. JoinRxpr'ами
         Outer = Outer || !Join.Inner;
-        if((!Outer || Wheres.size()==0)) {
+//        if((!Outer || Wheres.size()==0)) {
             // закинем перекодирование ключей
             for(Map.Entry<K,SourceExpr> MapKey : MapKeys.entrySet())
                 Translated.put(MapKey.getValue(),Join.Joins.get(MapKey.getKey()).translate(Translated));
@@ -2422,20 +2566,30 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
             for(Join CompileJoin : Joins)
                 CompileJoin.Source.compileJoins(CompileJoin, Translated, TranslatedWheres, TranslatedJoins, Outer);
 
+            Collection<Where> JoinWheres = new ArrayList<Where>();
+            for(Where Where : Wheres)
+                JoinWheres.add(Where.translate(Translated));
+        
+            Where PropertyWhere = StaticWhere.True;
+            if(Outer) {
+                if(!JoinWheres.isEmpty())
+                    PropertyWhere = FieldOPWhere.getWhere(JoinWheres,true);
+            } else
+                // закинем в общие Where
+                TranslatedWheres.addAll(JoinWheres);
+
+            for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
+                Translated.put(Join.Exprs.get(MapProperty.getKey()), CaseWhenSourceExpr.getExpr(PropertyWhere,MapProperty.getValue().translate(Translated)));
+
             // InJoin'ы заменим на AND Inner InJoin'ов
             List<Where> CompileInJoin = new ArrayList();
             for(Join CompileJoin : Joins)
                 if(CompileJoin.Inner)
                     CompileInJoin.add(CompileJoin.InJoin);
-            Translated.put(Join.InJoin,FieldOPWhere.getWhere(CompileInJoin,true).translate(Translated));
-            // хакинем перекодирование значение
-            for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
-                Translated.put(Join.Exprs.get(MapProperty.getKey()),MapProperty.getValue().translate(Translated));
+            Translated.put(Join.InJoin,FieldOPWhere.getWhere(PropertyWhere,FieldOPWhere.getWhere(CompileInJoin,true).translate(Translated),true));
 
-            for(Where Where : Wheres)
-                TranslatedWheres.add(Where.translate(Translated));
-        } else
-            super.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, Outer);
+  //      } else
+  //          super.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, Outer);
     }
 
     // заполняет Select для одного Join'а
@@ -2496,8 +2650,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         }
 
         // закинем KeyValues
-        for(Map.Entry<KeyExpr<K>,String> KeyValue : KeyValues.entrySet())
-            KeyValue.getKey().Source = KeyValue.getValue();
+        for(Map.Entry<KeyExpr<K>,TypedObject> KeyValue : KeyValues.entrySet())
+            KeyValue.getKey().Source = KeyValue.getValue().getString(Syntax);
 
         Map<Join,String> JoinAlias = new HashMap();
         String From = "";
@@ -2550,42 +2704,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         fillSources(JoinAlias, KeySelect, PropertySelect, WhereSelect, Syntax);
 
         return From;
-    }
-
-    public Source<?,Object> reverseMerge(Source<?,?> Merge, Map<?,K> MergeKeys, Map<Object, Object> MergeProps) {
-
-        Map<K,Object> ReverseKeys = new HashMap();
-        for(Map.Entry<?,K> MapKey : MergeKeys.entrySet())
-            ReverseKeys.put(MapKey.getValue(),MapKey.getKey());
-
-        Map<Object,Object> ReverseProps = new HashMap();
-        Source<K, Object> ReverseSource = proceedMerge(Merge, ReverseKeys, ReverseProps);
-        if(ReverseSource==null) return null;
-
-        // создадим JoinQuery для перекодирования ключей
-        JoinQuery<?,Object> MergedSource = new JoinQuery<Object,Object>(Merge.Keys);
-        Join<K,Object> ReverseJoin = new Join<K,Object>(ReverseSource,true);
-        for(Map.Entry<K,Object> MapKey : ReverseKeys.entrySet())
-            ReverseJoin.Joins.put(MapKey.getKey(),MergedSource.MapKeys.get(MapKey.getValue()));
-
-        // закидываем св-ва параметра Merge
-        Map<Object,Object> ProceedProps = new HashMap();
-        for(Map.Entry<Object,Object> MapProperty : ReverseProps.entrySet()) {
-            MergedSource.add(MapProperty.getKey(),ReverseJoin.Exprs.get(MapProperty.getValue()));
-            ProceedProps.put(MapProperty.getValue(),MapProperty.getKey());
-        }
-
-        // закидываем свои св-ва
-        for(V Property : Properties.keySet()) {
-            Object ReverseProp = ProceedProps.get(Property);
-            if(ReverseProp==null) {
-                ReverseProp = new Object();
-                MergedSource.add(ReverseProp,ReverseJoin.Exprs.get(Property));
-            }
-            MergeProps.put(Property,ReverseProp);
-        }
-
-        return MergedSource.compile();
     }
 
     public boolean readEmpty(DataSession Session) throws SQLException {
@@ -2684,6 +2802,11 @@ abstract class ExprUnion<K> {
     abstract void fillUnions(Collection<Union> Unions);
 
     abstract public Type getType();
+
+    // есть 3-ка оператор 
+    boolean containsInUnion() {
+        return false;
+    }
 }
 
 class EmptyUnion<K> extends ExprUnion<K> {
@@ -2849,6 +2972,15 @@ class OperationUnion<K> extends ExprUnion<K> {
         result = 31 * result + Operator;
         return result;
     }
+
+    boolean containsInUnion() {
+        if(Operator==3) return true;
+
+        for(CoeffExpr<ExprUnion<K>> Operand : Operands)
+            if(Operand.Expr.containsInUnion()) return true;
+
+        return false;
+    }
 }
 
 class Union<K,V> {
@@ -2865,14 +2997,14 @@ class Union<K,V> {
     Map<V,PropertyUnion<K,V>> Exprs;
 
     // заполняет перетрансляцию к новому Join'у
-    void fillUnionTranslate(Union<?,?> TranslatedUnion,Map<Object,Object> MergeProps, Map<PropertyUnion,ExprUnion> UnionTranslated) {
+    <MK,MV> void fillUnionTranslate(Union<MK,MV> TranslatedUnion,Map<V,Object> MergeProps, Map<PropertyUnion,ExprUnion> UnionTranslated) {
         for(Map.Entry<V,PropertyUnion<K,V>> MapUnion : Exprs.entrySet())
             UnionTranslated.put(MapUnion.getValue(),TranslatedUnion.Exprs.get(MergeProps==null?MapUnion.getKey():MergeProps.get(MapUnion.getKey())));
     }
 
-    Union<K, Object> merge(Union Merge, Map<K, ?> MergeKeys, Map<PropertyUnion, ExprUnion> UnionTranslate, Map<PropertyUnion, ExprUnion> UnionMergeTranslate) {
-        Map<Object, Object> MergeProps = new HashMap();
-        Source<K, Object> MergeSource = Source.merge(Merge.Source, MergeKeys, MergeProps);
+    <MK,MV> Union<K, Object> merge(Union<MK,MV> Merge, Map<K,MK> MergeKeys, Map<PropertyUnion, ExprUnion> UnionTranslate, Map<PropertyUnion, ExprUnion> UnionMergeTranslate,boolean ContainsInUnion) {
+        Map<MV, Object> MergeProps = new HashMap<MV, Object>();
+        Source<K, Object> MergeSource = Source.merge(Merge.Source, MergeKeys, MergeProps, ContainsInUnion?Source.EQUAL:Source.FULL);
         if(MergeSource!=null) {
             // нужно перетранслировать JoinExpr'ы
             Union<K, Object> MergedUnion = new Union<K, Object>(MergeSource);
@@ -3091,89 +3223,124 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
             ToTranslate.put(MapProperty.getValue(),Operations.get(MapProperty.getKey()));
     }
 
-    private boolean recMerge(ListIterator<Union<K, Object>> RecUnion, Collection<Union> ToMergeUnions, Map<K, ?> MergeKeys, Map<PropertyUnion,ExprUnion> ToTranslate, Map<PropertyUnion,ExprUnion> ToMergeTranslate, Set<Union> MergedUnions, Collection<Union<K,Object>> TranslatedUnions) {
+    private <MK> boolean recMerge(ListIterator<Union<MK, Object>> RecUnion, Collection<Union<K,Object>> ToMergeUnions, Map<K,MK> MergeKeys, Map<PropertyUnion,ExprUnion> ToTranslate, Map<PropertyUnion,ExprUnion> ToMergeTranslate, Set<Union<K,Object>> MergedUnions, Collection<Union<K,Object>> TranslatedUnions, boolean ContainsInUnion) {
 
         if(!RecUnion.hasNext())
             return true;
 
-        Union<K, Object> CurrentUnion = RecUnion.next();
+        Union<MK, Object> CurrentUnion = RecUnion.next();
 
-        for(Union ToMergeUnion : ToMergeUnions) {
+        for(Union<K, Object> ToMergeUnion : ToMergeUnions)
             if(!MergedUnions.contains(ToMergeUnion)) {
                 // надо бы проверить что Join уже не merge'ут
-                Map<PropertyUnion,ExprUnion> UnionToTranslate = new HashMap();
-                Map<PropertyUnion,ExprUnion> UnionToMergeTranslate = new HashMap();
-                Union<K, Object> MergedUnion = CurrentUnion.merge(ToMergeUnion, MergeKeys, UnionToTranslate, UnionToMergeTranslate);
+                Map<PropertyUnion,ExprUnion> UnionToTranslate = new HashMap<PropertyUnion, ExprUnion>();
+                Map<PropertyUnion,ExprUnion> UnionToMergeTranslate = new HashMap<PropertyUnion, ExprUnion>();
+                Union<K, Object> MergedUnion = ToMergeUnion.merge(CurrentUnion, MergeKeys, UnionToTranslate, UnionToMergeTranslate, ContainsInUnion);
                 if(MergedUnion!=null) {
-                    MergedUnions.add(ToMergeUnion);
-                    TranslatedUnions.add(MergedUnion);
-                    ToTranslate.putAll(UnionToTranslate);
-                    ToMergeTranslate.putAll(UnionToMergeTranslate);
-                    if(recMerge(RecUnion, ToMergeUnions, MergeKeys, ToTranslate, ToMergeTranslate, MergedUnions, TranslatedUnions))
+                    MergedUnions.add(ToMergeUnion); TranslatedUnions.add(MergedUnion);
+                    ToTranslate.putAll(UnionToTranslate); ToMergeTranslate.putAll(UnionToMergeTranslate);
+                    if(recMerge(RecUnion, ToMergeUnions, MergeKeys, ToTranslate, ToMergeTranslate, MergedUnions, TranslatedUnions, ContainsInUnion))
                         return true;
-                    MergedUnions.remove(ToMergeUnion);
-                    TranslatedUnions.remove(MergedUnion);
-                    CollectionExtend.removeAll(ToTranslate,UnionToTranslate.keySet());
-                    CollectionExtend.removeAll(ToMergeTranslate,UnionToMergeTranslate.keySet());
+                    MergedUnions.remove(ToMergeUnion); TranslatedUnions.remove(MergedUnion);
+                    CollectionExtend.removeAll(ToTranslate,UnionToTranslate.keySet()); CollectionExtend.removeAll(ToMergeTranslate,UnionToMergeTranslate.keySet());
                 }
             }
-        }
 
         RecUnion.previous();
 
         return false;
     }
 
-    Source<K, Object> proceedMerge(Source<?, ?> Merge, Map<K, ?> MergeKeys, Map<Object, Object> MergeProps) {
+    <MK,MV> Source<K, Object> proceedMerge(Source<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps, MergeType Type, boolean MergeEqual) {
 
-        if(!(Merge instanceof UnionQuery)) return null;
+        // если не JoinQuery преобразуем и пробуем слить с JoinQuery
+        if(!(Merge instanceof UnionQuery))
+            return proceedMerge(Merge.getUnionQuery(2),MergeKeys,MergeProps,Type,MergeEqual);
 
-        UnionQuery MergeUnion = (UnionQuery)Merge;
-        if(Operands.size()!=MergeUnion.Operands.size()) return null;
+        UnionQuery<MK,MV> MergeUnion = (UnionQuery<MK,MV>)Merge;
+
+        if(Operands.size()<MergeUnion.Operands.size() || (!MergeEqual && Operands.size()==MergeUnion.Operands.size())) return null;
+
+        // для equal'ов должны совпадать операнды
+        if(Type==Source.MergeType.EQUAL && !(Operands.size()==MergeUnion.Operands.size())) return null;
 
         UnionQuery<K,Object> Result = new UnionQuery<K,Object>(Keys,0);
         Result.Compiled = Result;
 
         // сливаем все Source
-        Map<PropertyUnion,ExprUnion> ToTranslate = new HashMap();
-        Map<PropertyUnion,ExprUnion> ToMergeTranslate = new HashMap();
-        Set<Union> MergedUnions = new HashSet(); 
-        if(recMerge((new ArrayList<Union<K,Object>>(Operands)).listIterator(),MergeUnion.Operands,MergeKeys, ToTranslate, ToMergeTranslate, MergedUnions, Result.Operands)) {
-            // сделаем Map в обратную сторону
-            Map<ExprUnion,Object> BackOperations = new HashMap();
-            // транслируем старые PropertyUnion на новые
-            Map<ExprUnion, ExprUnion> Translated = new HashMap();
-            for(Map.Entry<V, ExprUnion<K>> MapProp : Operations.entrySet()) {
-                ExprUnion TransOperation = MapProp.getValue().translate(ToTranslate,Translated);
+        Map<PropertyUnion,ExprUnion> ToTranslate = new HashMap<PropertyUnion,ExprUnion>();
+        Map<PropertyUnion,ExprUnion> ToMergeTranslate = new HashMap<PropertyUnion,ExprUnion>();
+        Set<Union<K,Object>> MergedUnions = new HashSet<Union<K, Object>>();
+        if(recMerge((new ArrayList<Union<MK,Object>>(MergeUnion.Operands)).listIterator(),Operands,MergeKeys, ToTranslate, ToMergeTranslate, MergedUnions, Result.Operands, containsInUnion() || MergeUnion.containsInUnion())) {
+            // оставшиеся Union'ы транслируем
+            if(Type==MergeType.LEFT || Type==MergeType.FULL || Type==MergeType.EQUAL) {
+                for(Union<K,Object> Union : Operands)
+                    if(!MergedUnions.contains(Union))
+                        Result.Operands.add(Union);
 
-                Result.Operations.put(MapProp.getKey(),TransOperation);
-                BackOperations.put(TransOperation,MapProp.getKey());
-            }
+                // сделаем Map в обратную сторону
+                Map<ExprUnion,Object> BackOperations = new HashMap<ExprUnion, Object>();
+                // транслируем старые PropertyUnion на новые
+                Map<ExprUnion, ExprUnion> Translated = new HashMap<ExprUnion, ExprUnion>();
+                for(Map.Entry<V, ExprUnion<K>> MapProp : Operations.entrySet()) {
+                    ExprUnion TransOperation = MapProp.getValue().translate(ToTranslate,Translated);
 
-            Translated = new HashMap();
-            for(Map.Entry<Object, ExprUnion<Object>> MapProp : ((UnionQuery<Object,Object>)MergeUnion).Operations.entrySet()) {
-                ExprUnion TransOperation = MapProp.getValue().translate(ToMergeTranslate,Translated);
-
-                Object PropertyObject = BackOperations.get(TransOperation);
-                if(PropertyObject==null) {
-                    PropertyObject = new Object();
-                    Result.Operations.put(PropertyObject,TransOperation);
+                    Result.Operations.put(MapProp.getKey(),TransOperation);
+                    BackOperations.put(TransOperation,MapProp.getKey());
                 }
-                MergeProps.put(MapProp.getKey(),PropertyObject);
+
+                Translated = new HashMap<ExprUnion, ExprUnion>();
+                for(Map.Entry<MV,ExprUnion<MK>> MapProp : MergeUnion.Operations.entrySet()) {
+                    ExprUnion TransOperation = MapProp.getValue().translate(ToMergeTranslate,Translated);
+
+                    Object PropertyObject = BackOperations.get(TransOperation);
+                    if(PropertyObject==null) {
+                        PropertyObject = new Object();
+                        Result.Operations.put(PropertyObject,TransOperation);
+                    }
+                    MergeProps.put(MapProp.getKey(),PropertyObject);
+                }
+
+//              Result.checkTranslate(new HashMap(),Result.Operands);
+
+                return Result;
+            } else { // RIGHT или INNER
+                // делаем LEFT JOIN
+                JoinQuery<K,Object> MergedResult = new JoinQuery<K,Object>(Keys);
+
+                Join<MK,MV> MergeInnerJoin = new MapJoin<MK,MV,K>(MergeUnion,MergedResult, MergeKeys,true);
+                for(MV Property : MergeUnion.getProperties()) {
+                    // нужно пересоздавать Object а то пересекутся
+                    Object MergeProperty = new Object();
+                    MergeProps.put(Property,MergeProperty);
+                    MergedResult.add(MergeProperty,MergeInnerJoin.Exprs.get(Property));
+                }
+
+                Join<K,V> Join = new UniJoin<K,V>(this,MergedResult,false);
+                MergedResult.addAll(Join.Exprs);
+
+                return MergedResult.compile();
             }
-
-//            Result.checkTranslate(new HashMap(),Result.Operands);
-
-            return Result;
         }
 
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    boolean containsInUnion() {
+        for(ExprUnion<K> Operation : Operations.values())
+            if(Operation.containsInUnion()) return true;
+        return false;
+    }
+
     Source<K, V> proceedCompile() {
+
+        boolean ContainsInUnion = containsInUnion();
+
         // компилируем все операнды
-        for(Union<K, Object> Operand : Operands)
+        for(Union<K, Object> Operand : Operands) {
             Operand.Source = Operand.Source.compile();
+            ContainsInUnion = ContainsInUnion || (Operand.Source instanceof UnionQuery && ((UnionQuery)Operand.Source).containsInUnion());
+        }
 
 //        if(1==1) return;
 
@@ -3207,7 +3374,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
         
             while(itOperand.hasNext()) {
                 Union<K, Object> Check = itOperand.next();
-                Union<K, Object> MergedSource = ToMerge.merge(Check, MapKeys, ToTranslate, ToTranslate);
+                Union<K, Object> MergedSource = ToMerge.merge(Check, MapKeys, ToTranslate, ToTranslate, ContainsInUnion);
                 if(MergedSource!=null) {
                     itOperand.remove();
                     ToMerge = MergedSource;
@@ -3294,13 +3461,16 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
         return getSelectString(FromSelect,KeySelect,PropertySelect,WhereSelect,KeyOrder,PropertyOrder) + (GroupBy.length()==0?"":" GROUP BY "+GroupBy);
     }
 
-    Source<K, Object> proceedMerge(Source<?, ?> Merge, Map<K, ?> MergeKeys, Map<Object, Object> MergeProps) {
+    <MK,MV> Source<K, Object> proceedMerge(Source<MK, MV> Merge, Map<K, MK> MergeKeys, Map<MV, Object> MergeProps, MergeType Type, boolean MergeEqual) {
         // если Merge'ся From'ы
         if(!(Merge instanceof GroupQuery)) return null;
 
-//        if(1==1) return null;
+        return proceedGroupMerge((GroupQuery)Merge,MergeKeys,MergeProps,Type);
+    }
 
-        GroupQuery<?,?,?> MergeGroup = (GroupQuery<?,?,?>)Merge;
+    <MB,MK extends MB,MV extends MB> Source<K, Object> proceedGroupMerge(GroupQuery<MB,MK,MV> MergeGroup, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps, MergeType Type) {
+            // если Merge'ся From'ы
+
         if(Keys.size()!=MergeGroup.Keys.size()) return null;
 
         // попробуем смерджить со всеми мапами пока не получим нужный набор ключей
@@ -3308,8 +3478,8 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
         if(MapSet==null) return null;
 
         for(Map<Object,Object> MapKeys : MapSet) {
-            Map<Object,Object> FromMergeProps = new HashMap();
-            Source<Object, Object> MergedFrom = ((Source<Object, Object>) From).merge(MergeGroup.From, MapKeys, FromMergeProps);
+            Map<Object,Object> FromMergeProps = new HashMap<Object, Object>();
+            Source<Object, Object> MergedFrom = ((Source<Object, Object>) From).merge((Source<Object,Object>) MergeGroup.From, MapKeys, FromMergeProps, Source.FULL);
             if(MergedFrom!=null) {
                 // проверим что ключи совпали
                 boolean KeyMatch = true;
@@ -3317,8 +3487,8 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
                     KeyMatch = KeyMatch && Key.equals(FromMergeProps.get(MergeKeys.get(Key)));
 
                 if(KeyMatch) {
-                    Map<Object,Integer> MergedProperties = new HashMap(Properties);
-                    for(Map.Entry<?,Integer> MergeProp : MergeGroup.Properties.entrySet()) {
+                    Map<Object,Integer> MergedProperties = new HashMap<Object, Integer>(Properties);
+                    for(Map.Entry<MV,Integer> MergeProp : MergeGroup.Properties.entrySet()) {
                         Object MapProp = FromMergeProps.get(MergeProp.getKey());
                         MergedProperties.put(MapProp,MergeProp.getValue());
                         MergeProps.put(MergeProp.getKey(),MapProp);

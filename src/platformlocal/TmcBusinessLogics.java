@@ -333,7 +333,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         quantity = AddUProp("Кол-во", 2, 2, 1, doubleDocArticle, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2,
                                                                                1, extOutQuantity, 1, 2, 1, exchDltQuantity, 1, 2 );
 
-        paramsQuantity = AddUProp(paramsGroup, "Кол-во", 2, 2, 1, quantity, 1, 2, 1, revalBalanceQuantity, 1, 2);
+        paramsQuantity = AddUProp(paramsGroup, "Кол-во пар.", 2, 2, 1, quantity, 1, 2, 1, revalBalanceQuantity, 1, 2);
 
         dltStoreQuantity = AddJProp("Кол-во (+-)", multiplyDouble2, 3, dltDocStore, 1, 2, quantity, 1, 3);
 
@@ -517,7 +517,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         balanceStoreSumAccount = AddGProp("Сумма на скл. (по ост.)", balanceStoreArticleSumAccount, true, 1);
         dltStoreSumAccount = AddGProp(accountGroup, "Отклонение суммы на скл.", dltStoreArticleSumAccount, true, 1);
 
-        balanceStoreDateOSumAccount = AddUProp("Сумма учетн. на начало", 1, 2, 1, balanceDocStoreSumAccount, 1, -1, dltStoreGroeqDateSumAccount, 1, 2);
+//        balanceStoreDateOSumAccount = AddUProp("Сумма учетн. на начало", 1, 2, 1, balanceDocStoreSumAccount, 1, -1, dltStoreGroeqDateSumAccount, 1, 2);
 
         // ------------------------- Перегруженные параметры ------------------------ //
 
@@ -1244,8 +1244,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void fillData(DataAdapter Adapter) throws SQLException {
 
-        int Modifier = 100;
-        int PropModifier = 1; //60
+        int Modifier = 10;
+        int PropModifier = 1;
 
         Map<Class,Integer> ClassQuantity = new HashMap();
         List<Class> articleChilds = new ArrayList();
@@ -1257,7 +1257,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 //        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
         ClassQuantity.put(store,4);
         ClassQuantity.put(extIncomeDocument,Modifier*2);
-        ClassQuantity.put(extIncomeDetail,Modifier*10);
+        ClassQuantity.put(extIncomeDetail,Modifier*PropModifier);
         ClassQuantity.put(intraDocument,Modifier);
         ClassQuantity.put(extOutcomeDocument,Modifier*5);
         ClassQuantity.put(exchangeDocument,Modifier);
@@ -1289,7 +1289,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
         PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*PropModifier*2);
-        PropQuantity.put((DataProperty)extOutQuantity.Property,Modifier*PropModifier*4);
+        PropQuantity.put((DataProperty)extOutQuantity.Property,Modifier*PropModifier*8);
         PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*PropModifier);
         PropQuantity.put((DataProperty)isRevalued.Property,Modifier*PropModifier);
 

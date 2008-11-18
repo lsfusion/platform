@@ -58,6 +58,15 @@ interface SQLSyntax {
 
 abstract class DataAdapter implements SQLSyntax {
 
+    String Server;
+    String DataBase;
+
+    protected DataAdapter(String iDataBase,String iServer) throws ClassNotFoundException {
+        java.lang.Class.forName(getClassName());
+        DataBase = iDataBase;
+        Server = iServer; 
+    }
+
     public String getStringType() {
         return "char(50)";
     }
@@ -98,13 +107,6 @@ abstract class DataAdapter implements SQLSyntax {
         return (Top==0?"":"TOP "+Top+" ") + SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
 
-   DataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-
-       java.lang.Class.forName(getClassName());
-//       createDB();
-    }
-
-
     void Disconnect() throws SQLException {
     }
 
@@ -137,8 +139,8 @@ abstract class DataAdapter implements SQLSyntax {
 
 class MySQLDataAdapter extends DataAdapter {
 
-    MySQLDataAdapter()  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super();
+    MySQLDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+        super(iDataBase, iServer);
     }
 
     public boolean allowViews() {
@@ -155,15 +157,15 @@ class MySQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/TestPlat");
-        Connect.createStatement().execute("DROP DATABASE testplat");
-        Connect.createStatement().execute("CREATE DATABASE testplat");
+        Connection Connect = DriverManager.getConnection("jdbc:mysql://"+Server+":3306/"+DataBase);
+        Connect.createStatement().execute("DROP DATABASE "+DataBase);
+        Connect.createStatement().execute("CREATE DATABASE "+DataBase);
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/TestPlat");
-        Connect.createStatement().execute("USE testplat");
+        Connection Connect = DriverManager.getConnection("jdbc:mysql://"+Server+":3306/"+DataBase);
+        Connect.createStatement().execute("USE "+DataBase);
 
         return Connect;
     }
@@ -187,8 +189,8 @@ class MySQLDataAdapter extends DataAdapter {
 
 class MSSQLDataAdapter extends DataAdapter {
 
-    MSSQLDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super();
+    MSSQLDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+        super(iDataBase, iServer);
     }
 
     @Override
@@ -214,22 +216,22 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=");
         try {
         try {
-            Connect.createStatement().execute("DROP DATABASE testplat");
+            Connect.createStatement().execute("DROP DATABASE "+DataBase);
         } catch (Exception e) {
 
         }
         } catch(Exception e) {
         }
-        Connect.createStatement().execute("CREATE DATABASE testplat");
+        Connect.createStatement().execute("CREATE DATABASE "+DataBase);
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://mycomp:1433;namedPipe=true;User=sa;Password=");
-        Connect.createStatement().execute("USE testplat");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=");
+        Connect.createStatement().execute("USE "+DataBase);
 
         return Connect;
     }
@@ -272,15 +274,8 @@ class MSSQLDataAdapter extends DataAdapter {
 
 class PostgreDataAdapter extends DataAdapter {
 
-    String ServerName = "localhost";
-
-    PostgreDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super();
-    }
-
-    PostgreDataAdapter(String iServerName) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super();
-        ServerName = iServerName;
+    PostgreDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+        super(iDataBase, iServer);
     }
 
     public String getLongType() {
@@ -301,20 +296,20 @@ class PostgreDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:postgresql://"+ServerName+"/postgres?user=postgres&password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:postgresql://"+Server+"/postgres?user=postgres&password=11111");
         try {
-            Connect.createStatement().execute("DROP DATABASE testplat");
+            Connect.createStatement().execute("DROP DATABASE "+DataBase);
         } catch (SQLException e) {
         }
         try {
-            Connect.createStatement().execute("CREATE DATABASE testplat");
+            Connect.createStatement().execute("CREATE DATABASE "+DataBase);
         } catch (SQLException e) {
         }
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://"+ServerName+"/testplat?user=postgres&password=11111");
+        return DriverManager.getConnection("jdbc:postgresql://"+Server+"/"+DataBase+"?user=postgres&password=11111");
     }
 
     public String getCommandEnd() {
@@ -372,8 +367,8 @@ class OracleDataAdapter extends DataAdapter {
         return true;
     }
 
-    OracleDataAdapter() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super();
+    OracleDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+        super(iDataBase, iServer);
     }
 
     public boolean allowViews() {
@@ -395,7 +390,7 @@ class OracleDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@server:1521:orcl");
+        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+DataBase+":1521:orcl");
 //        try {
 //        Connect.createStatement().execute("ALTER DATABASE CLOSE");
 //        Connect.createStatement().execute("DROP DATABASE");
@@ -410,7 +405,7 @@ class OracleDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@server:1521:orcl");
+        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+DataBase+":1521:orcl");
 //        Connect.createStatement().execute("USE testplat");
 
         return Connect;

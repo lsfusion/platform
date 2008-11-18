@@ -29,43 +29,75 @@ public class Main {
     static boolean ActivateCaches = true;
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        return new PostgreDataAdapter("localhost");
+        return new PostgreDataAdapter("testplat","localhost");
 //          return new MSSQLDataAdapter();
     }
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-/*        DataAdapter Syntax = DataAdapter.getDefault();
+/*        DataAdapter Syntax = getDefault();
 
         Table Table1 = new Table("table1");
-        KeyField Table1Key1 = new KeyField("key1","integer");
+        KeyField Table1Key1 = new KeyField("key1",Type.Integer);
         Table1.Keys.add(Table1Key1);
-        KeyField Table1Key2 = new KeyField("key2","integer");
+        KeyField Table1Key2 = new KeyField("key2",Type.Integer);
         Table1.Keys.add(Table1Key2);
-        PropertyField Table1Prop1 = new PropertyField("prop1","integer");
+        PropertyField Table1Prop1 = new PropertyField("prop1",Type.Integer);
         Table1.Properties.add(Table1Prop1);
-        PropertyField Table1Prop2 = new PropertyField("prop2","integer");
+        PropertyField Table1Prop2 = new PropertyField("prop2",Type.Integer);
         Table1.Properties.add(Table1Prop2);
-        PropertyField Table1Prop3 = new PropertyField("prop3","integer");
+        PropertyField Table1Prop3 = new PropertyField("prop3",Type.Integer);
         Table1.Properties.add(Table1Prop3);
-        PropertyField Table1Prop4 = new PropertyField("prop4","integer");
+        PropertyField Table1Prop4 = new PropertyField("prop4",Type.Integer);
         Table1.Properties.add(Table1Prop4);
 
         Table Table2 = new Table("table2");
-        KeyField Table2Key1 = new KeyField("key1","integer");
+        KeyField Table2Key1 = new KeyField("key1",Type.Integer);
         Table2.Keys.add(Table2Key1);
-        PropertyField Table2Prop1 = new PropertyField("prop1","integer");
+        PropertyField Table2Prop1 = new PropertyField("prop1",Type.Integer);
         Table2.Properties.add(Table2Prop1);
-        PropertyField Table2Prop2 = new PropertyField("prop2","integer");
+        PropertyField Table2Prop2 = new PropertyField("prop2",Type.Integer);
         Table2.Properties.add(Table2Prop2);
 
-        List<KeyField> UnionKeys = new ArrayList();
-        UnionKeys.add(Table1Key1);
-        UnionQuery<KeyField,PropertyField> UnionQ = new UnionQuery<KeyField,PropertyField>(UnionKeys,1);
+        Table Table3 = new Table("table3");
+        KeyField Table3Key1 = new KeyField("key1",Type.Integer);
+        Table3.Keys.add(Table3Key1);
+        KeyField Table3Key2 = new KeyField("key2",Type.Integer);
+        Table3.Keys.add(Table3Key2);
+        PropertyField Table3Prop1 = new PropertyField("prop1",Type.Integer);
+        Table3.Properties.add(Table3Prop1);
+
+        Map<KeyField,KeyField> Map3To1 = new HashMap<KeyField, KeyField>();
+        Map3To1.put(Table3Key1,Table1Key1);
+        Map3To1.put(Table3Key2,Table1Key2);
+        
+        UnionQuery<KeyField,PropertyField> UnionQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
 
         // 1-й запрос
+        JoinQuery<KeyField,PropertyField> JoinQuery = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table2,true);
+        TableJoin.Joins.put(Table2Key1,JoinQuery.MapKeys.get(Table1Key1));
+        Map<KeyField, Integer> DumbMap = Collections.singletonMap(Table1Key2,5);
+        JoinQuery.putDumbJoin(DumbMap);
+        JoinQuery.add(Table2Prop1,TableJoin.Exprs.get(Table2Prop1));
+        JoinQuery.add(new FieldExprCompareWhere(TableJoin.Exprs.get(Table2Prop2),1,FieldExprCompareWhere.EQUALS));
+        UnionQ.add(JoinQuery,1);
 
-        JoinQuery<KeyField,Object> JoinGroupQuery = new JoinQuery<KeyField,Object>(Table1.Keys);
+        UnionQ.add(Table1,1);
+
+        JoinQuery<KeyField,PropertyField> Join1Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join1Q.addAll((new UniJoin<KeyField,PropertyField>(UnionQ,Join1Q,true)).Exprs);
+        Join1Q.addAll((new MapJoin<KeyField,PropertyField,KeyField>(Table3,Map3To1,Join1Q,true)).Exprs);
+
+        JoinQuery<KeyField,PropertyField> Join2Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join2Q.addAll((new UniJoin<KeyField,PropertyField>(Table1,Join2Q,true)).Exprs);
+        Join2Q.addAll((new MapJoin<KeyField,PropertyField,KeyField>(Table3,Map3To1,Join2Q,true)).Exprs);
+
+        UnionQuery<KeyField,PropertyField> ResultQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
+        ResultQ.add(Join1Q,1);
+        ResultQ.add(Join2Q,1);
+  */
+/*        JoinQuery<KeyField,Object> JoinGroupQuery = new JoinQuery<KeyField,Object>(Table1.Keys);
         Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery,true);
         JoinGroupQuery.add(Table1Prop1,TableJoin.Exprs.get(Table1Prop1));
         JoinGroupQuery.add(Table1Key1,JoinGroupQuery.MapKeys.get(Table1Key1));
@@ -91,8 +123,7 @@ public class Main {
         Table2Join.Joins.put(Table2Key1,JoinUnion.MapKeys.get(Table1Key1));
         JoinUnion.add(Table2Prop2,Table2Join.Exprs.get(Table2Prop2));
 
-        UnionQ.add(JoinUnion,-5);
-  */
+        UnionQ.add(JoinUnion,-5);*/
 /*
 //        Join<KeyField,PropertyField> Table2Join = new UniJoin<KeyField,PropertyField>(Table1,Query,true);
 //        Query.Properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
@@ -141,7 +172,7 @@ public class Main {
         SubJoin.Joins.put("zkey2",Query.MapKeys.get(Table1Key2));
         Query.Properties.put(Table1Prop4,SubJoin.Wheres.get("zprop2"));*/
 
-//        System.out.println((new ModifyQuery(Table1,UnionQ)).getInsertSelect(Syntax));
+//        System.out.println((new ModifyQuery(Table1,ResultQ)).getInsertSelect(Syntax));
 //        System.out.println(Query.getSelect(new ArrayList(),new ArrayList(),Adapter));
 
 //        if(1==1) return;

@@ -1494,18 +1494,15 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
                 // сначала для всех PropNotNull генерируем все возможные Map<ы>
                 for(Map<DataPropertyInterface,Integer> NotNulls : MapBuilder.buildCombination(MapInterfaces)) {
-                    Set<Map<DataPropertyInterface,Integer>> RandomInterfaces = new HashSet();
-                    while(RandomInterfaces.size()<Quantity) {
+                    int RandomInterfaces = 0;
+                    while(RandomInterfaces<Quantity) {
                         Map<DataPropertyInterface,Integer> RandomIteration = new HashMap();
                         for(DataPropertyInterface Interface : Property.Interfaces)
                             if(!NotNulls.containsKey(Interface)) {
                                 List<Integer> ListObjects = Objects.get(Interface.Class);
                                 RandomIteration.put(Interface,ListObjects.get(Randomizer.nextInt(ListObjects.size())));
                             }
-                        RandomInterfaces.add(RandomIteration);
-                    }
 
-                    for(Map<DataPropertyInterface,Integer> RandomIteration : RandomInterfaces) {
                         Map<DataPropertyInterface,ObjectValue> Keys = new HashMap();
                         RandomIteration.putAll(NotNulls);
                         for(Map.Entry<DataPropertyInterface,Integer> InterfaceValue : RandomIteration.entrySet())
@@ -1520,6 +1517,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                         } else
                             ValueObject = Property.Value.getRandomObject(Objects,Randomizer,20);
                         Property.changeProperty(Keys,ValueObject,Session);
+                        RandomInterfaces++;
                     }
                 }
             }

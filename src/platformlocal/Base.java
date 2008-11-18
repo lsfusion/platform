@@ -178,6 +178,13 @@ class CollectionExtend {
             if(Op2.contains(Element)) Result.add(Element);
         return Result;
     }
+
+    static <K,MK> Map<K,MK> reverse(Map<MK,K> Map) {
+        Map<K,MK> ReverseKeys = new HashMap<K,MK>();
+        for(Map.Entry<MK,K> MapKey : Map.entrySet())
+            ReverseKeys.put(MapKey.getValue(),MapKey.getKey());
+        return ReverseKeys;
+    }
 }
 
 class Pair<Class1, Class2> {
