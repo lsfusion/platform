@@ -220,10 +220,6 @@ class ClientObjectView extends ClientCellView {
         return getPreferredWidth();
     }
 
-    public int getPreferredWidth() {
-        return 45;
-    }
-
     public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging) {
 
         if (!groupObject.singleViewType) {

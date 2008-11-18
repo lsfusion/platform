@@ -800,7 +800,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     private void changeClassView(GroupObjectImplement Group,Boolean Show) {
 
-        if(Group.gridClassView == Show) return;
+        if(Group.gridClassView == Show || Group.singleViewType) return;
         Group.gridClassView = Show;
 
         // расставляем пометки
