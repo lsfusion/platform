@@ -757,10 +757,12 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         // запишем класс объекта
         Class objectClass = null;
-        if(object.BaseClass instanceof ObjectClass)
-            objectClass = Session.getObjectClass(value);
-        else
-            objectClass = object.BaseClass;
+        if (value != null) {
+            if(object.BaseClass instanceof ObjectClass)
+                objectClass = Session.getObjectClass(value);
+            else
+                objectClass = object.BaseClass;
+        }
 
         if(object.Class != objectClass) {
 
@@ -1248,11 +1250,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                     int lowestInd = Group.PageSize*2-1;
                     if (lowestInd >= Group.Keys.size()) {
-                        lowestInd = Group.Keys.size()-1;
+                        ObjectSeeks = new GroupObjectValue();
                         hasMoreKeys = false;
-                    }
-
-                    if(lowestInd < Group.Keys.size()) {
+                    } else {
                         ObjectSeeks = Group.Keys.get(lowestInd);
                         PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                     }
@@ -1265,11 +1265,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                         int highestInd = Group.Keys.size()-Group.PageSize*2;
                         if (highestInd < 0) {
-                            highestInd = 0;
+                            ObjectSeeks = new GroupObjectValue();
                             hasMoreKeys = false;
-                        }
-
-                        if (highestInd < Group.Keys.size()) {
+                        } else {
                             ObjectSeeks = Group.Keys.get(highestInd);
                             PropertySeeks = Group.KeyOrders.get(ObjectSeeks);
                         }
@@ -1361,6 +1359,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                             OrderSources.add(OrderExpr);
                             OrderWheres.add(PropertySeeks.get(ToOrder.getKey()));
                             OrderDirs.add(ToOrder.getValue());
+                        } else {
+                            //здесь надо что-то волшебное написать, чтобы null не было
+                            SelectKeys.add(new SourceIsNullWhere(OrderExpr, true));
                         }
                         // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
                         SelectKeys.add(ToOrder.getKey(),OrderExpr);
@@ -1485,16 +1486,15 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     if (Group.Keys.contains(currentObject))
                         ActiveRow = Group.Keys.indexOf(currentObject);
 
-                    if(ActiveRow>=0) {
+                    if(ActiveRow>=0 && ActiveRow < Group.Keys.size()) {
                         // нашли ряд его выбираем
                         GroupObjectValue newValue = Group.Keys.get(ActiveRow);
 //                        if (!newValue.equals(Group.GetObjectValue())) {
                             Result.Objects.put(Group,newValue);
                             ChangeGroupObject(Group,newValue);
 //                        }
-                    }
-//                    else
-//                        ChangeGroupObject(Group,new GroupObjectValue());
+                    } else
+                        ChangeGroupObject(Group,new GroupObjectValue());
                 }
             }
         }

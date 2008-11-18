@@ -24,6 +24,7 @@ public interface PropertyEditorComponent {
     Component getComponent();
 
     Object getCellEditorValue();
+    boolean valueChanged();
 
 }
 
@@ -108,6 +109,10 @@ class IntegerPropertyEditor extends TextFieldPropertyEditor
         return null; */
     }
 
+    public boolean valueChanged() {
+        return true;
+    }
+
 }
 
 class StringPropertyEditor extends TextFieldPropertyEditor
@@ -128,6 +133,10 @@ class StringPropertyEditor extends TextFieldPropertyEditor
     public Object getCellEditorValue() {
         if (getText().isEmpty()) return null;
         return getText();
+    }
+
+    public boolean valueChanged() {
+        return true;
     }
 
 }
@@ -205,6 +214,10 @@ class DatePropertyEditor extends JDateChooser
     public Object getCellEditorValue() {
 
         return DateConverter.dateToInt(getDate());
+    }
+
+    public boolean valueChanged() {
+        return true;
     }
 
 }
@@ -287,6 +300,10 @@ class BitPropertyEditor extends JCheckBox
         if (isNull) return null;
         return isSelected();
     }
+
+    public boolean valueChanged() {
+        return true;
+    }
 }
 
 class ObjectPropertyEditor implements PropertyEditorComponent {
@@ -304,15 +321,19 @@ class ObjectPropertyEditor implements PropertyEditorComponent {
         clientDialog = new ClientDialog(clientForm, cls, value);
     }
 
+    private boolean objectChosen;
     public Component getComponent() {
 
-        if (clientDialog.showObjectDialog()) {
-            clientForm.changeProperty(property, clientDialog.objectChosen());
-        }
+        objectChosen = clientDialog.showObjectDialog();
+
         return null;
     }
 
     public Object getCellEditorValue() {
-        return null;
+        return clientDialog.objectChosen();
+    }
+
+    public boolean valueChanged() {
+        return objectChosen;
     }
 }

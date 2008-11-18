@@ -39,7 +39,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     AbstractGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, balanceGroup;
     AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
-    AbstractGroup paramsGroup;
+    AbstractGroup paramsGroup, accountGroup;
     
     void InitGroups() {
 
@@ -61,6 +61,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         outPrmsGroupAfter = new AbstractGroup("После");
         outPrmsGroup.add(outPrmsGroupAfter);
         paramsGroup = new AbstractGroup("Измененные параметры");
+        accountGroup = new AbstractGroup("Бухг. параметры");
     }
 
     void InitClasses() {
@@ -100,8 +101,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP exchStore;
     LDP revalStore;
 
-    LUP incStore;
-    LUP outStore;
+    LUP incQStore;
+    LUP incSStore;
+    LUP outQStore;
+    LUP outSStore;
     LUP primDocStore;
     LUP paramsStore;
     LUP docStore;
@@ -151,6 +154,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP extIncDetailPriceOut;
 
     LDP isRevalued;
+    LJP revaluedBalanceQuantity;
     LDP revalPriceIn, revalVATIn;
     LDP revalAddBefore, revalVATOutBefore, revalLocTaxBefore;
     LDP revalPriceOutBefore;
@@ -183,6 +187,24 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP storePriceOut;
 
     LJP docOutBalanceQuantity, docIncBalanceQuantity, docRevBalanceQuantity;
+
+    LJP extIncDetailSumPriceOut, intraSumPriceOut, extOutSumPriceOut;
+    LJP exchIncSumPriceOut, exchOutSumPriceOut;
+    LJP revalSumPriceOutBefore, revalSumPriceOutAfter;
+    LUP revalSumPriceOut;
+
+    LJP extIncDetailSumAccount, intraSumAccount, extOutSumAccount;
+    LGP extIncSumAccount;
+    LJP exchIncSumAccount, exchOutSumAccount;
+    LUP revalSumAccount;
+
+    LUP incSumAccount, outSumAccount;
+
+    LGP incStoreSumAccount, outStoreSumAccount;
+    LUP balanceDocStoreArticleSumAccount;
+    LJP balanceStoreArticleSumAccount;
+    LUP dltStoreArticleSumAccount;
+    LGP balanceDocStoreSumAccount, balanceStoreSumAccount, dltStoreSumAccount;
 
     LJP docCurPriceIn, docCurVATIn;
     LJP docCurAdd, docCurVATOut, docCurLocTax;
@@ -225,19 +247,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         name = AddDProp(baseGroup, "Имя", Class.string, objectClass);
 
-        artGroup = AddDProp(artgrGroup, "Гр. тов.", articleGroup, article);
+        artGroup = AddDProp("Гр. тов.", articleGroup, article);
 
         // -------------------------- Склады ---------------------- //
 
-        extIncStore = AddDProp(storeGroup, "Склад", store, extIncomeDocument);
-        intraOutStore = AddDProp(storeGroup, "Склад отпр.", store, intraDocument);
-        intraIncStore = AddDProp(storeGroup, "Склад назн.", store, intraDocument);
-        extOutStore = AddDProp(storeGroup, "Склад", store, extOutcomeDocument);
-        exchStore = AddDProp(storeGroup, "Склад", store, exchangeDocument);
-        revalStore = AddDProp(storeGroup, "Склад", store, revalDocument);
+        extIncStore = AddDProp("Склад", store, extIncomeDocument);
+        intraOutStore = AddDProp("Склад отпр.", store, intraDocument);
+        intraIncStore = AddDProp("Склад назн.", store, intraDocument);
+        extOutStore = AddDProp("Склад", store, extOutcomeDocument);
+        exchStore = AddDProp("Склад", store, exchangeDocument);
+        revalStore = AddDProp("Склад", store, revalDocument);
 
-        incStore = AddUProp("Склад прих.", 2, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
-        outStore = AddUProp("Склад расх.", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
+        incQStore = AddUProp("Склад прих.", 2, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
+        outQStore = AddUProp("Склад расх.", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
+        incSStore = AddUProp("Склад прих. (сум)", 2, 1, 1, incQStore, 1, 1, revalStore, 1);
+        outSStore = outQStore;
         LP primDocStoreNull = AddCProp("абст. склад", null, store, primaryDocument);
         primDocStore = AddUProp(paramsGroup, "Склад (изм.)", 2, 1, 1, primDocStoreNull, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, revalStore, 1);
         paramsStore = AddUProp("Склад (парам.)", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
@@ -246,15 +270,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         LP docStoreBit = AddCProp("абст. бит", null, Class.bit, document, store);
 
         // здесь свойства по складам/документам
-        isDocIncStore = AddJProp("Склад=прих.", equals2, 2, incStore, 1, 2);
-        isDocOutStore = AddJProp("Склад=расх.", equals2, 2, outStore, 1, 2);
+        isDocIncStore = AddJProp("Склад=прих.", equals2, 2, incQStore, 1, 2);
+        isDocOutStore = AddJProp("Склад=расх.", equals2, 2, outQStore, 1, 2);
         isDocRevalStore = AddJProp("Склад=переоц.", equals2, 2, revalStore, 1, 2);
         isDocStore = AddUProp("Склад=док.", 2, 2, 1, docStoreBit, 1, 2, 1, isDocIncStore, 1, 2, 1, isDocOutStore, 1, 2, 1, isDocRevalStore, 1, 2);
 
         dltDocStore = AddUProp("Склад=док.", 2, 2, 1, docStoreBit, 1, 2, -1, isDocOutStore, 1, 2, 1, isDocIncStore, 1, 2, 1, isDocRevalStore, 1, 2);
 
-        extIncDetailDocument = AddDProp(null, "Документ", extIncomeDocument, extIncomeDetail);
-        extIncDetailArticle = AddDProp(artclGroup, "Товар", article, extIncomeDetail);
+        extIncDetailDocument = AddDProp("Документ", extIncomeDocument, extIncomeDetail);
+        extIncDetailArticle = AddDProp("Товар", article, extIncomeDetail);
 
         // -------------------------- Relation propertyViews ------------------ //
 
@@ -296,13 +320,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         dltStoreQuantity = AddJProp("Кол-во (+-)", multiplyDouble2, 3, dltDocStore, 1, 2, quantity, 1, 3);
 
-        notZeroQuantity = AddJProp("Есть в док.", notZero, 2, paramsQuantity, 1, 2);
+        notZeroQuantity = AddJProp("Есть в док.", notZero, 2, quantity, 1, 2);
 
         LP incPrmsQuantity = AddUProp("Кол-во прих. (парам.)", 2, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2);
         notZeroIncPrmsQuantity = AddJProp("Есть в перв. док.", notZero, 2, incPrmsQuantity, 1, 2);
 
-        incStoreQuantity = AddGProp(quantGroup, "Прих. на скл.", incQuantity, true, incStore, 1, 2);
-        outStoreQuantity = AddGProp(quantGroup, "Расх. со скл.", outQuantity, true, outStore, 1, 2);
+        incStoreQuantity = AddGProp("Прих. на скл.", incQuantity, true, incQStore, 1, 2);
+        outStoreQuantity = AddGProp("Расх. со скл.", outQuantity, true, outQStore, 1, 2);
 
         balanceStoreQuantity = AddUProp(balanceGroup, "Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
 //        OstArtStore = AddUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
@@ -367,6 +391,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         // ------------------------------ Переоценка -------------------------------- //
 
         isRevalued = AddDProp("Переоц.", Class.bit, revalDocument, article);
+        revaluedBalanceQuantity = AddJProp("Остаток (переоц.)", multiplyDouble2, 2, revalBalanceQuantity, 1, 2, isRevalued, 1, 2);
 
         revalPriceIn = AddDProp("Цена пост.", Class.doubleClass, revalDocument, article);
         revalVATIn = AddDProp("НДС пост.", Class.doubleClass, revalDocument, article);
@@ -409,7 +434,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncLocTax = AddJProp(outPrmsGroup, "Местн. нал. (прих.)", extIncDetailLocTax, 2, extIncLastDetail, 1, 2);
         extIncPriceOut = AddJProp(outPrmsGroup, "Цена розн. (прих.)", extIncDetailPriceOut, 2, extIncLastDetail, 1, 2);
 
-        // ------------------------- Перегруженные параметры ------------------------ //
+        // ------------------------- Текущие параметры ------------------------ //
 
         LP nullPrimDocArt = AddCProp("null", null, Class.doubleClass, primaryDocument, article);
 
@@ -427,8 +452,48 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         storeLocTax = AddJProp(outPrmsGroup, "Местн. нал. (тек.)", primDocLocTax, 2, maxChangesParamsDoc, 1, 2, 2);
         storePriceOut = AddJProp(outPrmsGroup, "Цена розн. (тек.)", primDocPriceOut, 2, maxChangesParamsDoc, 1, 2, 2);
 
-        docOutBalanceQuantity = AddJProp(balanceGroup, "Остаток (расх.)", balanceStoreQuantity, 2, outStore, 1, 2);
-        docIncBalanceQuantity = AddJProp(balanceGroup, "Остаток (прих.)", balanceStoreQuantity, 2, incStore, 1, 2);
+        // ------------------------- Суммы выходные ----------------------------------------- //
+
+        extIncDetailSumPriceOut = AddJProp("Сумма розн. (вх.)", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceOut, 1);
+        intraSumPriceOut = AddJProp("Сумма розн. (вн.)", multiplyDouble2, 2, intraQuantity, 1, 2, paramsPriceOut, 1, 2);
+        extOutSumPriceOut = AddJProp("Сумма розн. (расх.)", multiplyDouble2, 2, extOutQuantity, 1, 2, paramsPriceOut, 1, 2);
+
+        exchIncSumPriceOut = AddJProp("Сумма розн. (перес. +)", multiplyDouble2, 2, exchIncQuantity, 1, 2, paramsPriceOut, 1, 2);
+        exchOutSumPriceOut = AddJProp("Сумма розн. (перес. -)", multiplyDouble2, 2, exchOutQuantity, 1, 2, paramsPriceOut, 1, 2);
+
+        revalSumPriceOutBefore = AddJProp("Сумма розн. (переоц. до)", multiplyDouble2, 2, revaluedBalanceQuantity, 1, 2, revalPriceOutBefore, 1, 2);
+        revalSumPriceOutAfter = AddJProp("Сумма розн. (переоц. после)", multiplyDouble2, 2, revaluedBalanceQuantity, 1, 2, revalPriceOutAfter, 1, 2);
+        revalSumPriceOut = AddUProp("Сумма розн. (переоц.)", 1, 2, 1, revalSumPriceOutAfter, 1, 2, -1, revalSumPriceOutBefore, 1, 2);
+
+        // ------------------------- Суммы учетные по док. ----------------------------------------- //
+
+        extIncDetailSumAccount = extIncDetailSumPriceOut;
+        extIncSumAccount = AddGProp("Сумма учетн. (вх.)", extIncDetailSumAccount, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
+
+        intraSumAccount = intraSumPriceOut;
+        extOutSumAccount = extOutSumPriceOut;
+        exchIncSumAccount = exchIncSumPriceOut;
+        exchOutSumAccount = exchOutSumPriceOut;
+        revalSumAccount = revalSumPriceOut;
+
+        incSumAccount = AddUProp("Сумма учетн. прих.", 1, 2, 1, extIncSumAccount, 1, 2, 1, intraSumAccount, 1, 2, 1, exchIncSumAccount, 1, 2, 1, revalSumAccount, 1, 2);
+        outSumAccount = AddUProp("Сумма учетн. расх.", 1, 2, 1, extOutSumAccount, 1, 2, 1, intraSumAccount, 1, 2, 1, exchOutSumAccount, 1, 2);
+
+        incStoreSumAccount = AddGProp("Сумма учетн. прих. на скл.", incSumAccount, true, incSStore, 1, 2);
+        outStoreSumAccount = AddGProp("Сумма учетн. расх. со скл.", outSumAccount, true, outSStore, 1, 2);
+
+        balanceDocStoreArticleSumAccount = AddUProp("Сумма товара на скл. (по док.)", 1, 2, 1, incStoreSumAccount, 1, 2, -1, outStoreSumAccount, 1, 2);
+        balanceStoreArticleSumAccount = AddJProp("Сумма товара на скл. (по ост.)", multiplyDouble2, 2, balanceStoreQuantity, 1, 2, storePriceOut, 1, 2);
+        dltStoreArticleSumAccount = AddUProp(accountGroup, "Отклонение суммы товара на скл.", 1, 2, 1, balanceDocStoreArticleSumAccount, 1, 2, -1, balanceStoreArticleSumAccount, 1, 2);
+
+        balanceDocStoreSumAccount = AddGProp("Сумма на скл. (по док.)", balanceDocStoreArticleSumAccount, true, 1);
+        balanceStoreSumAccount = AddGProp("Сумма на скл. (по ост.)", balanceStoreArticleSumAccount, true, 1);
+        dltStoreSumAccount = AddGProp(accountGroup, "Отклонение суммы на скл.", dltStoreArticleSumAccount, true, 1);
+
+        // ------------------------- Перегруженные параметры ------------------------ //
+
+        docOutBalanceQuantity = AddJProp(balanceGroup, "Остаток (расх.)", balanceStoreQuantity, 2, outQStore, 1, 2);
+        docIncBalanceQuantity = AddJProp(balanceGroup, "Остаток (прих.)", balanceStoreQuantity, 2, incQStore, 1, 2);
         docRevBalanceQuantity = AddJProp(balanceGroup, "Остаток (переоц.)", balanceStoreQuantity, 2, revalStore, 1, 2);
 
         docCurPriceIn = AddJProp("Цена пост. (тек.)", storePriceIn, 2, paramsStore, 1, 2);
@@ -469,8 +534,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // ------------------------- Вхождение в документ ------------------------ //
 
-//        isDocArtInclude = AddUProp("В док.", 2, 2, 1, notZeroQuantity, 1, 2, 1, isRevalued, 1, 2);
-        isDocStoreArtInclude = AddJProp("В док. и скл.", multiplyBit2, 3, isDocStore, 1, 2, notZeroQuantity, 1, 3);
+        isDocArtInclude = AddUProp("Есть в док.", 2, 2, 1, notZeroQuantity, 1, 2, 1, isRevalued, 1, 2);
+        isDocStoreArtInclude = AddJProp("В док. и скл.", multiplyBit2, 3, isDocStore, 1, 2, isDocArtInclude, 1, 3);
 
 /*        setDefProp(paramsPriceIn, docCurQPriceIn, true);
         setDefProp(paramsVATIn, docCurQVATIn, true);
@@ -637,8 +702,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         NavigatorForm exchangeForm = new ExchangeNavigatorForm(140, "Пересорт");
         primaryData.addChild(exchangeForm);
 
-        NavigatorForm revalueForm = new RevalueNavigatorForm(150, "Переоценка");
+        NavigatorForm revalueForm = new RevalueNavigatorForm(150, "Переоценка", false);
         primaryData.addChild(revalueForm);
+
+        NavigatorForm revalueStoreForm = new RevalueNavigatorForm(155, "Переоценка по складам", true);
+        revalueForm.addChild(revalueStoreForm);
 
         NavigatorElement aggregateData = new NavigatorElement(200, "Сводная информация");
         baseElement.addChild(aggregateData);
@@ -895,8 +963,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private class RevalueNavigatorForm extends TmcNavigatorForm {
 
-        public RevalueNavigatorForm(int ID, String caption) {
+        public RevalueNavigatorForm(int ID, String caption, boolean groupStore) {
             super(ID, caption);
+
+            GroupObjectImplement gobjStore = null;
+            ObjectImplement objStore = null;
+            if (groupStore) {
+
+                gobjStore = new GroupObjectImplement(IDShift(1));
+                gobjStore.gridClassView = false;
+                gobjStore.singleViewType = true;
+
+                objStore = new ObjectImplement(IDShift(1), store, "Склад", gobjStore);
+
+                addGroup(gobjStore);
+            }
 
             GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
             GroupObjectImplement gobjArt = new GroupObjectImplement(IDShift(1));
@@ -908,7 +989,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjArt);
 
             addPropertyView(Properties, baseGroup, false, objDoc);
-            addPropertyView(Properties, storeGroup, false, objDoc);
             addPropertyView(Properties, baseGroup, false, objArt);
 //            addPropertyView(Properties, artgrGroup, objArt);
             addPropertyView(revalOverBalanceQuantity, objDoc, objArt);
@@ -919,6 +999,17 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addArticleRegularFilterGroup(getPropertyView(isRevalued.Property).View, false,
                                          getPropertyView(revalOverBalanceQuantity.Property).View);
+
+            if (groupStore) {
+
+                addPropertyView(Properties, baseGroup, false, objStore);
+                addPropertyView(Properties, accountGroup, false, objStore);
+                addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
+            } else {
+                addPropertyView(Properties, storeGroup, false, objDoc);
+            }
+
+
         }
     }
 
@@ -943,8 +1034,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjArt);
 
             addPropertyView(Properties, baseGroup, false, objStore);
+            addPropertyView(Properties, accountGroup, false, objStore);
             addPropertyView(Properties, baseGroup, false, objArt);
-//            addPropertyView(Properties, artgrGroup, objArt);
             addPropertyView(Properties, baseGroup, false, objStore, objArt);
             addPropertyView(Properties, balanceGroup, false, objStore, objArt);
             addPropertyView(Properties, incPrmsGroup, false, objStore, objArt);

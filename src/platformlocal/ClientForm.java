@@ -13,6 +13,7 @@ import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.*;
+import javax.swing.plaf.TreeUI;
 import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
@@ -831,11 +832,19 @@ public class ClientForm extends JPanel {
 
                 ClientCellView property = cellTable.getCellView(row, column);
 
-                currentComp = property.getEditorComponent(ClientForm.this, ivalue);
+                currentComp = property.getEditorComponent(ClientForm.this, ivalue, cellTable.isDataChanging());
 
                 Component comp = null;
-                if (currentComp != null)
+                if (currentComp != null) {
                     comp = currentComp.getComponent();
+
+                    if (comp == null && currentComp.valueChanged()) {
+
+                        Object newValue = getCellEditorValue();
+                        if (!BaseUtils.compareObjects(ivalue, newValue))
+                            table.setValueAt(newValue, row, column);
+                    }
+                }
 
                 if (comp != null) {
                     return comp;
@@ -2342,7 +2351,10 @@ public class ClientForm extends JPanel {
                     changeGridClass(object, cls);
                     currentClass = cls;
                     currentNode = clsNode;
-                    view.updateUI();
+
+                    //запускаем событие изменение фонта, чтобы сбросить кэш в дереве, который расчитывает ширину поля
+                    //собственно оно само вызывает перерисовку
+                    view.firePropertyChange("font", false, true);
 
                 }
 
@@ -2432,10 +2444,9 @@ public class ClientForm extends JPanel {
                                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                                 if (node != null) {
 
-//                                    Object nodeObject = node.getUserObject();
-//                                    if (nodeObject != null && nodeObject instanceof ClientClass && ((ClientClass)nodeObject == currentClass))
                                     if (node == currentNode)
                                         setFont(getFont().deriveFont(Font.BOLD));
+
                                 }
 
                                 return super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);

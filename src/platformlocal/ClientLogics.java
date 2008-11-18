@@ -177,9 +177,14 @@ abstract class ClientCellView extends ClientComponentView {
         return renderer;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging) {
 
-        ClientObjectValue objectValue = getEditorObjectValue(form, value);
+        ClientObjectValue objectValue;
+        if (isDataChanging)
+            objectValue = getEditorObjectValue(form, value);
+        else
+            objectValue = new ClientObjectValue(baseClass, value);
+
         if (objectValue == null) return null;
 
         return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
@@ -215,13 +220,17 @@ class ClientObjectView extends ClientCellView {
         return getPreferredWidth();
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) {
+    public int getPreferredWidth() {
+        return 45;
+    }
+
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging) {
 
         if (!groupObject.singleViewType) {
             form.switchClassView(groupObject);
             return null;
         } else
-            return super.getEditorComponent(form, value);
+            return super.getEditorComponent(form, value, isDataChanging);
     }
 
 }
@@ -578,7 +587,8 @@ class ClientBitClass extends ClientClass {
 
 class ClientDoubleClass extends ClientClass {
 
-    public int getPreferredWidth() { return 45; }
+    public int getMinimumWidth() { return 45; }
+    public int getPreferredWidth() { return 80; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Double.class); }
@@ -586,7 +596,8 @@ class ClientDoubleClass extends ClientClass {
 
 class ClientLongClass extends ClientClass {
 
-    public int getPreferredWidth() { return 45; }
+    public int getMinimumWidth() { return 45; }
+    public int getPreferredWidth() { return 80; }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Long.class); }
