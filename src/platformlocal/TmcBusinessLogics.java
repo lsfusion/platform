@@ -1234,9 +1234,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(Properties, baseGroup, false, objStore);
             addPropertyView(Properties, baseGroup, false, objDoc);
-            addPropertyView(balanceStoreDateOSumAccount, objStore, objDateFrom);
+//            addPropertyView(balanceStoreDateOSumAccount, objStore, objDateFrom);
 //            addPropertyView(dltStoreGroeqDateSumAccount, objStore, objDateFrom);
-//            addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
+            addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
         }
     }
 
