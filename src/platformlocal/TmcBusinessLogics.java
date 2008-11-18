@@ -204,7 +204,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP incSumAccount, outSumAccount, docArticleSumAccount;
     LJP dltDocStoreArticleSumAccount;
 
-    LGP dltDocStoreSumAccount;
+    LGP dltDocStoreSumAccount
+            ;
+    LUP dltClassDocStoreSumAccount;
 
     LJP dltDocStoreGroeqDateSumAccount;
     LGP dltStoreGroeqDateSumAccount;
@@ -215,7 +217,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP dltStoreArticleSumAccount;
     LGP balanceDocStoreSumAccount, balanceStoreSumAccount, dltStoreSumAccount;
 
-    LUP balanceStoreDateOSumAccount;
+    LUP balanceDocStoreDateOSumAccount;
 
     LJP docCurPriceIn, docCurVATIn;
     LJP docCurAdd, docCurVATOut, docCurLocTax;
@@ -500,9 +502,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         dltDocStoreArticleSumAccount = AddJProp("Сумма учетн. товара (+-)", multiplyDouble2, 3, dltDocStore, 1, 2, docArticleSumAccount, 1, 3);
 
         dltDocStoreSumAccount = AddGProp("Сумма учетн. груп. (+-)", dltDocStoreArticleSumAccount, true, 1, 2);
+        dltClassDocStoreSumAccount = AddUProp("Сумма учетн. (+-)", 2, 2, 1, doubleDocStore, 1, 2, 1, dltDocStoreSumAccount, 1, 2);
 
         dltDocStoreGroeqDateSumAccount = AddJProp("Сумма учетн. с даты (+-)", multiplyDouble2, 3, groeqDocDate, 1, 3, dltDocStoreSumAccount, 1, 2);
         dltStoreGroeqDateSumAccount = AddGProp("Сумма учетн. с даты по складу", dltDocStoreGroeqDateSumAccount, true, 2, 3);
+
 
 //        dltDocStoreSumAccount = AddUProp("Сумма учетн. (+-)", 2, 2, 1, doubleDocStore, 1, 2, 1, AddGProp("Сумма учетн. груп. (+-)", dltDocStoreArticleSumAccount, true, 1, 2), 1, 2);
 
@@ -517,7 +521,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         balanceStoreSumAccount = AddGProp("Сумма на скл. (по ост.)", balanceStoreArticleSumAccount, true, 1);
         dltStoreSumAccount = AddGProp(accountGroup, "Отклонение суммы на скл.", dltStoreArticleSumAccount, true, 1);
 
-//        balanceStoreDateOSumAccount = AddUProp("Сумма учетн. на начало", 1, 2, 1, balanceDocStoreSumAccount, 1, -1, dltStoreGroeqDateSumAccount, 1, 2);
+        balanceDocStoreDateOSumAccount = AddUProp("Сумма учетн. на начало", 1, 2, 1, AddJProp("", balanceDocStoreSumAccount, 2, 1), 1, 2, -1, dltStoreGroeqDateSumAccount, 1, 2);
 
         // ------------------------- Перегруженные параметры ------------------------ //
 
@@ -1232,11 +1236,21 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addGroup(gobjStore);
             addGroup(gobjDoc);
 
-            addPropertyView(Properties, baseGroup, false, objStore);
+            addPropertyView(balanceDocStoreDateOSumAccount, objStore, objDateFrom);
+
+/*            addPropertyView(Properties, baseGroup, false, objStore);
             addPropertyView(Properties, baseGroup, false, objDoc);
-//            addPropertyView(balanceStoreDateOSumAccount, objStore, objDateFrom);
-//            addPropertyView(dltStoreGroeqDateSumAccount, objStore, objDateFrom);
-            addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
+            addPropertyView(docDate, objDoc);
+            addPropertyView(dltClassDocStoreSumAccount, objDoc, objStore);
+
+            addFixedFilter(new Filter(getPropertyView(dltClassDocStoreSumAccount.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)));
+            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, FieldExprCompareWhere.GREATER_EQUALS, new ObjectValueLink(objDateFrom)));
+            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, FieldExprCompareWhere.LESS_EQUALS, new ObjectValueLink(objDateTo)));
+
+            DefaultClientFormView formView = new DefaultClientFormView(this);
+            formView.defaultOrders.put(formView.get(getPropertyView(docDate.Property)), true);
+            richDesign = formView; */
+            
         }
     }
 
