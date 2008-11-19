@@ -133,6 +133,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP extIncDetailDocument, extIncDetailArticle, extIncDetailQuantity;
 
     LGP extIncQuantity;
+    LJP notZeroExtIncQuantity;
     LDP intraQuantity;
     LDP extOutQuantity;
     LDP exchangeQuantity;
@@ -174,6 +175,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP revalAddAfter, revalVATOutAfter, revalLocTaxAfter;
     LDP revalPriceOutAfter;
 
+    LGP maxStoreExtIncDate;
+    LGP maxStoreExtIncDoc;
+
     LUP changesParams;
     LGP maxChangesParamsDate;
     LGP maxChangesParamsDoc;
@@ -194,6 +198,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP primDocVATOut;
     LUP primDocLocTax;
     LUP primDocPriceOut;
+
+    LJP storeSupplier;
 
     LJP storePriceIn, storeVATIn;
     LJP storeAdd, storeVATOut, storeLocTax;
@@ -344,6 +350,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
 //        extIncQuantity = AddDProp(quantGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
         extIncQuantity = AddGProp(quantGroup, "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
+        notZeroExtIncQuantity = AddJProp("Есть в перв. док.", notZero, 2, extIncQuantity, 1, 2);
 
         intraQuantity = AddDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
 
@@ -457,7 +464,20 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         revalLocTaxAfter = AddDProp(outPrmsGroupAfter, "Местн. нал. (после)", Class.doubleClass, revalDocument, article);
         revalPriceOutAfter = AddDProp(outPrmsGroupAfter, "Цена розн. (после)", Class.doubleClass, revalDocument, article);
 
-        // -------------------------- Последний документ ---------------------------- //
+        // -------------------------- Последний приходный документ по товару ---------------------------- //
+
+        LJP notZeroExtIncDate = AddJProp("Дата посл. прих.", multiplyDate2, 2, notZeroExtIncQuantity, 1, 2, extIncDate, 1);
+
+        maxStoreExtIncDate = AddGProp(baseGroup, "Дата посл. прих.", notZeroExtIncDate, false, extIncStore, 1, 2);
+
+        LJP extIncDocIsCor = AddJProp("Прих. док. макс.", equals22, 3, extIncDate, 1, maxStoreExtIncDate, 2, 3, extIncStore, 1, 2);
+
+        LJP extIncDocIsLast = AddJProp("Посл.", multiplyBit2, 3, extIncDocIsCor, 1, 2, 3, notZeroExtIncQuantity, 1, 3);
+
+        LJP extIncDocSelfLast = AddJProp("Тов. док. макс.", object1, 3, 1, extIncDocIsLast, 1, 2, 3);
+        maxStoreExtIncDoc = AddGProp("Посл. док. прих.", extIncDocSelfLast, false, 2, 3);
+
+        // -------------------------- Последний документ изм. цену ---------------------------- //
 
         changesParams = AddUProp(paramsGroup, "Изм. парам.", 2, 2, 1, bitPrimDocArticle, 1, 2, 1, isRevalued, 1, 2, 1, notZeroIncPrmsQuantity, 1, 2);
         LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyDate2, 2, changesParams, 1, 2, primDocDate, 1);
@@ -468,7 +488,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         LJP primDocIsLast = AddJProp("Посл.", multiplyBit2, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);
 
         LJP primDocSelfLast = AddJProp("Тов. док. макс.", object1, 3, 1, primDocIsLast, 1, 2, 3);
-        maxChangesParamsDoc = AddGProp(baseGroup, "Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
+        maxChangesParamsDoc = AddGProp("Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
 
         // ------------------------- Параметры по приходу --------------------------- //
 
@@ -490,6 +510,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         primDocVATOut = AddUProp(paramsGroup, "НДС прод. (изм.)", 2, 2, 1, doublePrimDocArticle, 1, 2, 1, paramsVATOut, 1, 2, 1, extIncVATOut, 1, 2, 1, revalVATOutAfter, 1, 2);
         primDocLocTax = AddUProp(paramsGroup, "Местн. нал. (изм.)", 2, 2, 1, doublePrimDocArticle, 1, 2, 1, paramsLocTax, 1, 2, 1, extIncLocTax, 1, 2, 1, revalLocTaxAfter, 1, 2);
         primDocPriceOut = AddUProp(paramsGroup, "Цена розн. (изм.)", 2, 2, 1, doublePrimDocArticle, 1, 2, 1, paramsPriceOut, 1, 2, 1, extIncPriceOut, 1, 2, 1, revalPriceOutAfter, 1, 2);
+
+        storeSupplier = AddJProp(supplierGroup, "Посл. пост.", extIncSupplier, 2, maxStoreExtIncDoc, 1, 2);
 
         storePriceIn = AddJProp(incPrmsGroup, "Цена пост. (тек.)", primDocPriceIn, 2, maxChangesParamsDoc, 1, 2, 2);
         storeVATIn = AddJProp(incPrmsGroup, "НДС пост. (тек.)", primDocVATIn, 2, maxChangesParamsDoc, 1, 2, 2);
@@ -821,6 +843,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(222, "Товары*Склады");
         aggrArticleData.addChild(articleMStoreForm);
+
+        NavigatorElement aggrSupplierData = new NavigatorElement(230, "Поставщики");
+        aggregateData.addChild(aggrSupplierData);
+
+        NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(231, "Остатки по складам");
+        aggrSupplierData.addChild(supplierStoreArticleForm);
 
         NavigatorElement analyticsData = new NavigatorElement(300, "Аналитические данные");
         baseElement.addChild(analyticsData);
@@ -1267,6 +1295,43 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     }
 
+    private class SupplierStoreArticleNavigatorForm extends TmcNavigatorForm {
+
+        SupplierStoreArticleNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            GroupObjectImplement gobjSupplier = new GroupObjectImplement(IDShift(1));
+            gobjSupplier.gridClassView = false;
+            gobjSupplier.singleViewType = true;
+
+            GroupObjectImplement gobjStore = new GroupObjectImplement(IDShift(1));
+            gobjStore.gridClassView = false;
+            
+            GroupObjectImplement gobjArt = new GroupObjectImplement(IDShift(1));
+
+            ObjectImplement objSupplier = new ObjectImplement(IDShift(1), supplier, "Поставщик", gobjSupplier);
+            ObjectImplement objStore = new ObjectImplement(IDShift(1), store, "Склад", gobjStore);
+            ObjectImplement objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArt);
+
+            addGroup(gobjSupplier);
+            addGroup(gobjStore);
+            addGroup(gobjArt);
+
+            addPropertyView(Properties, baseGroup, false, objSupplier);
+            addPropertyView(Properties, baseGroup, false, objStore);
+            
+            addPropertyView(Properties, baseGroup, false, objArt);
+            addPropertyView(Properties, baseGroup, false, objStore, objArt);
+            addPropertyView(Properties, balanceGroup, false, objStore, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, objStore, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, objStore, objArt);
+
+            addFixedFilter(new Filter(addPropertyObjectImplement(storeSupplier, objStore, objArt), FieldExprCompareWhere.EQUALS, new ObjectValueLink(objSupplier)));
+
+        }
+    }
+
+
 
     private class DateIntervalNavigatorForm extends TmcNavigatorForm {
 
@@ -1331,12 +1396,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         List<Class> articleChilds = new ArrayList();
         article.fillChilds(articleChilds);
         for (Class articleClass : articleChilds)
-            ClassQuantity.put(articleClass,Modifier*2/articleChilds.size());
+            ClassQuantity.put(articleClass,Modifier*5/articleChilds.size());
 
         ClassQuantity.put(articleGroup,((Double)(Modifier*0.3)).intValue());
 //        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
-        ClassQuantity.put(store,4);
-        ClassQuantity.put(supplier,10);
+        ClassQuantity.put(store,3);
+        ClassQuantity.put(supplier,5);
         ClassQuantity.put(extIncomeDocument,Modifier*2);
         ClassQuantity.put(extIncomeDetail,Modifier*10*PropModifier);
         ClassQuantity.put(intraDocument,Modifier);

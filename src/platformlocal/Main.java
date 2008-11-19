@@ -23,7 +23,7 @@ public class Main {
 
     static DataAdapter Adapter;
 
-    static boolean recreateDB = true;
+    static boolean recreateDB = false;
     public static Integer ForceSeed = -1;
     public static boolean DebugFlag = false;
     static boolean ActivateCaches = true;
