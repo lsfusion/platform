@@ -1186,18 +1186,41 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         return Interfaces;
     }
 
-    void fillChangedRead(UnionQuery<JoinPropertyInterface, PropertyField> ListQuery, PropertyField Value, MapChangedRead<JoinPropertyInterface> Read, ValueClassSet<JoinPropertyInterface> ReadClasses) {
-        // создается JoinQuery - на вход getMapInterfaces, Query.MapKeys - map интерфейсов
+    // по сути для формулы выделяем
+    ValueClassSet<JoinPropertyInterface> getReadValueClassSet(MapRead<JoinPropertyInterface> Read,InterfaceClassSet<T> MapClasses) {
         ValueClassSet<JoinPropertyInterface> Result = new ValueClassSet<JoinPropertyInterface>();
-        InterfaceClassSet<T> MapClasses = new InterfaceClassSet<T>();
-        for(ChangeClass<T> Change : Read.getMapChangeClass(Implements.Property))
-            for(InterfaceClass<T> InterfaceChange : Change.Interface) {
-                InterfaceClassSet<JoinPropertyInterface> ResultInterface = getMapClassSet(Read, InterfaceChange);
-                if(!ResultInterface.isEmpty()) {
-                    Result.or(new ChangeClass<JoinPropertyInterface>(ResultInterface,Change.Value));
-                    MapClasses.or(InterfaceChange);
+        
+        if(Implements.Property instanceof ObjectFormulaProperty) {
+            ObjectFormulaProperty ObjectProperty = (ObjectFormulaProperty) Implements.Property;
+            // сначала кидаем на baseClass, bit'ы
+            for(InterfaceClass<JoinPropertyInterface> ValueInterface : getMapClassSet(Read, (InterfaceClass<T>) ObjectProperty.getInterfaceClass(ClassSet.getUp(Class.base)))) {
+                InterfaceClass<T> ImplementInterface = new InterfaceClass<T>();
+                for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : Implements.Mapping.entrySet()) // если null то уже не подходит по интерфейсу
+                    ImplementInterface.put(MapInterface.getKey(), MapInterface.getValue().mapValueClass(ValueInterface));
+
+                if(!ImplementInterface.isEmpty()) {
+                    Result.or(new ChangeClass<JoinPropertyInterface>(ValueInterface, Implements.Property.getValueClass(ImplementInterface)));
+                    MapClasses.or(ImplementInterface);
                 }
             }
+        } else {
+            for(ChangeClass<T> ImplementChange : Read.getMapChangeClass(Implements.Property))
+                for(InterfaceClass<T> ImplementInterface : ImplementChange.Interface) {
+                    InterfaceClassSet<JoinPropertyInterface> ResultInterface = getMapClassSet(Read, ImplementInterface);
+                    if(!ResultInterface.isEmpty()) {
+                        Result.or(new ChangeClass<JoinPropertyInterface>(ResultInterface,ImplementChange.Value));
+                        MapClasses.or(ImplementInterface);
+                    }
+                }
+        }
+
+        return Result;
+    }
+
+    void fillChangedRead(UnionQuery<JoinPropertyInterface, PropertyField> ListQuery, PropertyField Value, MapChangedRead<JoinPropertyInterface> Read, ValueClassSet<JoinPropertyInterface> ReadClasses) {
+        // создается JoinQuery - на вход getMapInterfaces, Query.MapKeys - map интерфейсов
+        InterfaceClassSet<T> MapClasses = new InterfaceClassSet<T>();
+        ValueClassSet<JoinPropertyInterface> Result = getReadValueClassSet(Read, MapClasses);
         if(Result.isEmpty()) return;
 
         JoinQuery<JoinPropertyInterface,PropertyField> Query = new JoinQuery<JoinPropertyInterface,PropertyField>(Interfaces);
@@ -1225,11 +1248,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
     }
 
     public ValueClassSet<JoinPropertyInterface> calculateValueClassSet() {
-        ValueClassSet<JoinPropertyInterface> Result = new ValueClassSet<JoinPropertyInterface>();
-        for(ChangeClass<T> ImplementChange : Implements.Property.getValueClassSet())
-            for(InterfaceClass<T> ImplementInterface : ImplementChange.Interface)
-                Result.or(new ChangeClass<JoinPropertyInterface>(getMapClassSet(DBRead,ImplementInterface),ImplementChange.Value));
-        return Result;
+        return getReadValueClassSet(DBRead,new InterfaceClassSet<T>());
     }
 
     Object JoinValue = "jvalue";
@@ -1771,68 +1790,12 @@ class FormulaPropertyInterface<P extends FormulaPropertyInterface<P>> extends Pr
     }
 }
 
-// вообще Collection
 abstract class FormulaProperty<T extends FormulaPropertyInterface> extends AggregateProperty<T> {
 
-    Class Value;
-
-    FormulaProperty(TableFactory iTableFactory,Class iValue) {
+    protected FormulaProperty(TableFactory iTableFactory) {
         super(iTableFactory);
-        Value = iValue;
     }
 
-    public ClassSet calculateValueClass(InterfaceClass<T> ClassImplement) {
-        if(ClassImplement.hasEmpty()) return new ClassSet();
-        return ClassSet.getUp(Value);
-    }
-
-    public InterfaceClassSet<T> calculateClassSet(ClassSet ReqValue) {
-
-        if(ReqValue.intersect(ClassSet.getUp(Value)))
-            return getUniversalInterface();
-        else
-            return new InterfaceClassSet<T>();
-    }
-
-    public ValueClassSet<T> calculateValueClassSet() {
-        return new ValueClassSet<T>(ClassSet.getUp(Value),getUniversalInterface());
-    }
-
-    /*    public ClassSet getJavaClass(InterfaceClass<T> ClassImplement) {
-
-        ClassSet Result = new ClassSet();
-        for(T Interface : Interfaces) {
-            if(!ClassImplement.get(Interface).intersect(ClassSet.getUp(Interface.Class))) return new ClassSet();
-            if(!(Interface.Class instanceof BitClass))
-                Result.or(ClassSet.getUp(Interface.Class));
-        }
-        if(Result.isEmpty()) Result.or(new ClassSet(Class.bit));
-
-        return Result;
-    }
-
-    InterfaceClass<T> getInterfaceSet() {
-        InterfaceClass<T> ResultSet = new InterfaceClass<T>();
-        for(T Interface : Interfaces)
-            ResultSet.put(Interface,ClassSet.getUp(Interface.Class));
-        return ResultSet;
-    }
-
-    public InterfaceClassSet<T> getClassSet(ClassSet ReqValue) {
-
-        InterfaceClass<T> ResultSet = getInterfaceSet();
-        if(getJavaClass(ResultSet).intersect(ReqValue))
-            return new InterfaceClassSet<T>(ResultSet);
-        else
-            return new InterfaceClassSet<T>();
-    }
-
-    public ValueClassSet<T> getValueClassSet() {
-
-        InterfaceClass<T> ResultSet = getInterfaceSet();
-        return new ValueClassSet<T>(getValueClass(ResultSet),new InterfaceClassSet<T>(ResultSet));
-    }
-  */
     void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
     }
 
@@ -1848,6 +1811,45 @@ abstract class FormulaProperty<T extends FormulaPropertyInterface> extends Aggre
     Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
         return null;
     }
+
+}
+
+// вообще Collection
+abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends FormulaProperty<T> {
+
+    Class Value;
+
+    ValueFormulaProperty(TableFactory iTableFactory,Class iValue) {
+        super(iTableFactory);
+        Value = iValue;
+    }
+
+    public ClassSet calculateValueClass(InterfaceClass<T> ClassImplement) {
+        if(ClassImplement.hasEmpty()) return new ClassSet();
+        return ClassSet.getUp(Value);
+    }
+
+    public InterfaceClassSet<T> calculateClassSet(ClassSet ReqValue) {
+
+        if(ReqValue.intersect(ClassSet.getUp(Value)))
+            return getOperandInterface();
+        else
+            return new InterfaceClassSet<T>();
+    }
+
+    public ValueClassSet<T> calculateValueClassSet() {
+        return new ValueClassSet<T>(ClassSet.getUp(Value),getOperandInterface());
+    }
+
+    abstract Class getOperandClass();
+
+    InterfaceClassSet<T> getOperandInterface() {
+        InterfaceClass<T> Result = new InterfaceClass<T>();
+        for(T Interface : Interfaces)
+            Result.put(Interface,ClassSet.getUp(getOperandClass()));
+        return new InterfaceClassSet<T>(Result);
+    }
+
 }
 
 class StringFormulaPropertyInterface extends FormulaPropertyInterface<StringFormulaPropertyInterface> {
@@ -1857,7 +1859,7 @@ class StringFormulaPropertyInterface extends FormulaPropertyInterface<StringForm
     }
 }
 
-class StringFormulaProperty extends FormulaProperty<StringFormulaPropertyInterface> {
+class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPropertyInterface> {
 
     String Formula;
 
@@ -1875,6 +1877,10 @@ class StringFormulaProperty extends FormulaProperty<StringFormulaPropertyInterfa
 
         return Source;
     }
+
+    Class getOperandClass() {
+        return Class.data;
+    }
 }
 
 class WhereStringFormulaProperty extends StringFormulaProperty {
@@ -1882,14 +1888,6 @@ class WhereStringFormulaProperty extends StringFormulaProperty {
     WhereStringFormulaProperty(TableFactory iTableFactory, String iFormula) {
         super(iTableFactory, Class.bit, iFormula);
     }
-
-/*    public ClassSet getJavaClass(InterfaceClass<StringFormulaPropertyInterface> ValueClass) {
-
-        for(StringFormulaPropertyInterface Interface : Interfaces)
-            if(!ValueClass.get(Interface).intersect(ClassSet.getUp(Interface.Class))) return new ClassSet();
-
-        return new ClassSet(Class.bit);
-    }*/
 
     SourceExpr calculateSourceExpr(Map<StringFormulaPropertyInterface, SourceExpr> JoinImplement, InterfaceClassSet<StringFormulaPropertyInterface> JoinClasses, boolean NotNull) {
 
@@ -1900,13 +1898,21 @@ class WhereStringFormulaProperty extends StringFormulaProperty {
 
         return new FormulaWhereSourceExpr(Source,NotNull);
     }
+
+    Class getOperandClass() {
+        return Class.base;
+    }
 }
 
 
-class MultiplyFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
+class MultiplyFormulaProperty extends ValueFormulaProperty<FormulaPropertyInterface> {
 
     MultiplyFormulaProperty(TableFactory iTableFactory,Class iValue) {
         super(iTableFactory,iValue);
+    }
+
+    Class getOperandClass() {
+        return Class.integral;
     }
 
     SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, SourceExpr> JoinImplement, InterfaceClassSet<FormulaPropertyInterface> JoinClasses, boolean NotNull) {
@@ -1917,6 +1923,52 @@ class MultiplyFormulaProperty extends FormulaProperty<FormulaPropertyInterface> 
 
         return Source;
     }
+}
+
+// выбирает объект по битам
+class ObjectFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
+
+    FormulaPropertyInterface ObjectInterface;
+    ClassSet ObjectClass;
+
+    ObjectFormulaProperty(TableFactory iTableFactory, ObjectClass iObjectClass) {
+        super(iTableFactory);
+        ObjectClass = ClassSet.getUp(iObjectClass);
+        ObjectInterface = new FormulaPropertyInterface(0);
+        Interfaces.add(ObjectInterface);
+    }
+
+    SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, SourceExpr> JoinImplement, InterfaceClassSet<FormulaPropertyInterface> JoinClasses, boolean NotNull) {
+        
+        MultiplySourceExpr Source = new MultiplySourceExpr(Type.Object);
+        for(FormulaPropertyInterface Interface : Interfaces)
+            Source.Operands.add(JoinImplement.get(Interface));
+
+        return Source;
+    }
+
+    ClassSet calculateValueClass(InterfaceClass<FormulaPropertyInterface> InterfaceImplement) {
+        return InterfaceImplement.get(ObjectInterface);
+    }
+
+    InterfaceClassSet<FormulaPropertyInterface> calculateClassSet(ClassSet ReqValue) {
+        if(!ReqValue.isEmpty())
+            return new InterfaceClassSet<FormulaPropertyInterface>(getInterfaceClass(ReqValue));
+        else
+            return  new InterfaceClassSet<FormulaPropertyInterface>();
+    }
+
+    InterfaceClass<FormulaPropertyInterface> getInterfaceClass(ClassSet ReqValue) {
+        InterfaceClass<FormulaPropertyInterface> Result = new InterfaceClass<FormulaPropertyInterface>();
+        for(FormulaPropertyInterface Interface : Interfaces)
+            Result.put(Interface,Interface==ObjectInterface?ReqValue:new ClassSet(Class.bit));
+        return Result;
+    }
+
+    ValueClassSet<FormulaPropertyInterface> calculateValueClassSet() {
+        throw new RuntimeException("у этого св-ва этот метод слишком сложный, поэтому надо решать верхними частными случаям");
+    }
+
 }
 
 // изменения данных

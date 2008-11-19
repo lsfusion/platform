@@ -912,7 +912,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    
+    LOFP AddOFProp(int BitCount) {
+        ObjectFormulaProperty Property = new ObjectFormulaProperty(TableFactory,objectClass);
+        LOFP ListProperty = new LOFP(Property,BitCount);
+        Properties.add(Property);
+        return ListProperty;
+    }
+
     <T extends PropertyInterface> List<PropertyInterfaceImplement> ReadPropImpl(LP<T,Property<T>> MainProp,Object ...Params) {
         List<PropertyInterfaceImplement> Result = new ArrayList<PropertyInterfaceImplement>();
         int WaitInterfaces = 0, MainInt = 0;
@@ -1701,6 +1707,18 @@ class LMFP extends LP<FormulaPropertyInterface,MultiplyFormulaProperty> {
     }
 }
 
+class LOFP extends LP<FormulaPropertyInterface,ObjectFormulaProperty> {
+
+    LOFP(ObjectFormulaProperty iProperty,int BitCount) {
+        super(iProperty);
+        ListInterfaces.add(Property.ObjectInterface);
+        for(int i=0;i<BitCount;i++) {
+            FormulaPropertyInterface Interface = new FormulaPropertyInterface(ListInterfaces.size());
+            ListInterfaces.add(Interface);
+            Property.Interfaces.add(Interface);
+        }
+    }
+}
 
 class LJP<T extends PropertyInterface> extends LP<JoinPropertyInterface,JoinProperty<T>> {
 

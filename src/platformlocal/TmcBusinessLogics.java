@@ -254,6 +254,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     void InitProperties() {
 
         LSFP equals2 = AddWSFProp("((prm1)=(prm2))",2);
+        LOFP object1 = AddOFProp(1);
         LSFP equals22 = AddWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))",4);
         LSFP groeq2 = AddWSFProp("((prm1)>=(prm2))",2);
         LSFP greater2 = AddWSFProp("((prm1)>(prm2))",2);
@@ -444,14 +445,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         LJP primDocIsLast = AddJProp("Посл.", multiplyBit2, 3, primDocIsCor, 1, 2, 3, changesParams, 1, 3);
 
-        LMFP multiplyBitPrimDoc = AddMFProp(primaryDocument,2);
-        LJP primDocSelfLast = AddJProp("Тов. док. макс.", multiplyBitPrimDoc, 3, primDocIsLast, 1, 2, 3, 1);
+        LJP primDocSelfLast = AddJProp("Тов. док. макс.", object1, 3, 1, primDocIsLast, 1, 2, 3);
         maxChangesParamsDoc = AddGProp(baseGroup, "Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
 
         // ------------------------- Параметры по приходу --------------------------- //
 
-        LMFP multiplyBitDetail = AddMFProp(extIncomeDetail,2);
-        LJP propDetail = AddJProp("Зн. строки", multiplyBitDetail, 1, bitExtInc, 1, 1);
+        LJP propDetail = AddJProp("Зн. строки", object1, 1, 1, bitExtInc, 1);
         extIncLastDetail = AddGProp("Посл. строка", propDetail, false, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         extIncPriceIn = AddJProp(incPrmsGroup, "Цена пост. (прих.)", extIncDetailPriceIn, 2, extIncLastDetail, 1, 2);
