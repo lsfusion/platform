@@ -2431,9 +2431,6 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         // накапливаем карты слияний , по умолчанию в этот Map закидываем KeyExpr'ы, затем они накапливаются
         // также надо затем слить Property причем сравнив чтобы не дать одинаковые
 
-        if(!(Type==MergeType.EQUAL || Type==MergeType.LEFT || Type==MergeType.FULL))
-            throw new RuntimeException("Вообще не должно быть");
-
         int InnerCount = 0;
         for(Join Join : Joins)
             if(Join.Inner) InnerCount++;
@@ -2442,6 +2439,9 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         if(!(Merge instanceof JoinQuery))
             return proceedMerge(Merge.getCompiledJoinQuery(),MergeKeys,MergeProps,Type,MergeEqual);
 
+        if(!(Type==MergeType.EQUAL || Type==MergeType.LEFT || Type==MergeType.FULL))
+            throw new RuntimeException("Вообще не должно быть");
+        
         JoinQuery<MK,MV> MergeJoin = (JoinQuery<MK,MV>) Merge;
 
         // также надо бы проверить на кол-во Inner Join'ов, а также SourceWherers совпадает

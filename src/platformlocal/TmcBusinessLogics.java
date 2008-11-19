@@ -1309,7 +1309,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(docDate, objDoc);
             addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
 
-//            addFixedFilter(new Filter(getPropertyView(dltDocStoreSumAccount.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)));
+            addFixedFilter(new Filter(getPropertyView(dltDocStoreSumAccount.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)));
             addFixedFilter(new Filter(getPropertyView(docDate.Property).View, FieldExprCompareWhere.GREATER_EQUALS, new ObjectValueLink(objDateFrom)));
             addFixedFilter(new Filter(getPropertyView(docDate.Property).View, FieldExprCompareWhere.LESS_EQUALS, new ObjectValueLink(objDateTo)));
 
