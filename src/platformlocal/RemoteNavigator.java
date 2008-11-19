@@ -358,6 +358,9 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
         for (Property property : properties) {
 
             if (property.getParent() == null) continue;
+
+            if (group == null && !(property instanceof DataProperty)) continue;
+
             if (group != null && !group.hasChild(property)) continue;
 
             if (property.Interfaces.size() == objects.length) {

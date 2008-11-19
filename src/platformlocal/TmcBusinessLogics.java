@@ -20,6 +20,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     Class articleGroup;
 
     Class store;
+    Class supplier;
 
     Class document;
     Class primaryDocument, secondaryDocument;
@@ -37,7 +38,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     Class revalDocument;
 
-    AbstractGroup baseGroup, artclGroup, artgrGroup, storeGroup, quantGroup, balanceGroup;
+    AbstractGroup baseGroup, artclGroup, artgrGroup, storeGroup, supplierGroup, quantGroup, balanceGroup;
     AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
     AbstractGroup paramsGroup, accountGroup;
     
@@ -47,6 +48,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         artclGroup = new AbstractGroup("Товар");
         artgrGroup = new AbstractGroup("Группа товаров");
         storeGroup = new AbstractGroup("Склад");
+        supplierGroup = new AbstractGroup("Поставщик");
         quantGroup = new AbstractGroup("Количество");
         balanceGroup = new AbstractGroup("Остаток");
         incPrmsGroup = new AbstractGroup("Входные параметры");
@@ -71,6 +73,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         store = new ObjectClass(baseGroup, IDGet(3), "Склад", objectClass);
 
+        supplier = new ObjectClass(baseGroup, IDGet(17), "Поставщик", objectClass);
+
         document = new ObjectClass(baseGroup, IDGet(4), "Документ", objectClass);
         primaryDocument = new ObjectClass(baseGroup, IDGet(5), "Первичный документ", document);
         secondaryDocument = new ObjectClass(baseGroup, IDGet(6), "Непервичный документ", document);
@@ -93,7 +97,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LDP name;
     LDP artGroup;
-    LDP primDocDate, secDocDate;
+
+    LDP extIncDate, intraDate, extOutDate, exchDate, revalDate;
+    LUP primDocDate, secDocDate;
 
     LDP extIncStore;
     LDP intraOutStore, intraIncStore;
@@ -119,9 +125,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP artGroupName;
     LJP docStoreName;
     LJP intraStoreName;
+
+    LJP extIncSupplierName;
     LJP extIncDetailArticleName;
 
+    LDP extIncSupplier;
     LDP extIncDetailDocument, extIncDetailArticle, extIncDetailQuantity;
+
     LGP extIncQuantity;
     LDP intraQuantity;
     LDP extOutQuantity;
@@ -264,8 +274,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         LSFP round = AddSFProp("round(prm1)", Class.doubleClass, 1);
         LMFP multiplyBit2 = AddMFProp(Class.bit,2);
         LMFP multiplyDouble2 = AddMFProp(Class.doubleClass,2);
+        LMFP multiplyDate2 = AddMFProp(Class.date,2);
 
         LP dateDocument = AddCProp("абст. дата", null, Class.date, document);
+        LP datePrimDocument = AddCProp("абст. дата", null, Class.date, primaryDocument);
         LP storePrimDoc = AddCProp("абст. склад", null, store, primaryDocument);
         LP bitExtInc = AddCProp("абст. бит", true, Class.bit, extIncomeDetail);
         LP bitDocStore = AddCProp("абст. бит", null, Class.bit, document, store);
@@ -310,6 +322,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         isDocStore = AddUProp("Склад=док.", 2, 2, 1, bitDocStore, 1, 2, 1, isDocIncQStore, 1, 2, 1, isDocOutQStore, 1, 2, 1, isDocRevalStore, 1, 2);
 
+        // -------------------------- Внешние приходы ------------------------- //
+
+        extIncSupplier = AddDProp("Поставщик", supplier, extIncomeDocument);
+
         extIncDetailDocument = AddDProp("Документ", extIncomeDocument, extIncomeDetail);
         extIncDetailArticle = AddDProp("Товар", article, extIncomeDetail);
 
@@ -319,6 +335,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         docStoreName = AddJProp(storeGroup, "Имя склада", name, 1, docStore, 1);
         intraStoreName = AddJProp(storeGroup, "Имя склада (назн.)", name, 1, intraIncStore, 1);
 
+        extIncSupplierName = AddJProp(supplierGroup, "Имя поставщика", name, 1, extIncSupplier, 1);
         extIncDetailArticleName = AddJProp(artclGroup, "Имя товара", name, 1, extIncDetailArticle, 1);
 
         // -------------------------- Движение товара по количествам ---------------------- //
@@ -362,8 +379,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // -------------------------- Входные параметры ---------------------------- //
 
-        primDocDate = AddDProp(baseGroup, "Дата", Class.date, primaryDocument);
-        secDocDate = AddDProp(baseGroup, "Дата", Class.date, secondaryDocument);
+        extIncDate = AddDProp(baseGroup, "Дата", Class.date, extIncomeDocument);
+        intraDate = AddDProp(baseGroup, "Дата", Class.date, intraDocument);
+        extOutDate = AddDProp(baseGroup, "Дата", Class.date, extOutcomeDocument);
+        exchDate = AddDProp(baseGroup, "Дата", Class.date, exchangeDocument);
+        revalDate = AddDProp(baseGroup, "Дата", Class.date, revalDocument);
+
+        primDocDate = AddUProp(paramsGroup, "Дата", 2, 1, 1, datePrimDocument, 1, 1, extIncDate, 1, 1, intraDate, 1, 1, revalDate, 1);
+        secDocDate = AddUProp("Дата", 2, 1, 1, extOutDate, 1, 1, exchDate, 1);
 
         docDate = AddUProp("Дата", 2, 1, 1, dateDocument, 1, 1, secDocDate, 1, 1, primDocDate, 1);
         groeqDocDate = AddJProp("Дата>=док.", groeq2, 2, docDate, 1, 2);
@@ -437,8 +460,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         // -------------------------- Последний документ ---------------------------- //
 
         changesParams = AddUProp(paramsGroup, "Изм. парам.", 2, 2, 1, bitPrimDocArticle, 1, 2, 1, isRevalued, 1, 2, 1, notZeroIncPrmsQuantity, 1, 2);
-        LMFP multiplyBitDate = AddMFProp(Class.date,2);
-        LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyBitDate, 2, changesParams, 1, 2, primDocDate, 1);
+        LJP changesParamsDate = AddJProp("Дата изм. пар.", multiplyDate2, 2, changesParams, 1, 2, primDocDate, 1);
         maxChangesParamsDate = AddGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, primDocStore, 1, 2);
 
         LJP primDocIsCor = AddJProp("Док. макс.", equals22, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, primDocStore, 1, 2);
@@ -716,7 +738,23 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         List<Property> index;
 
         index = new ArrayList();
-        index.add(primDocDate.Property);
+        index.add(extIncDate.Property);
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(intraDate.Property);
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(extOutDate.Property);
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(exchDate.Property);
+        Indexes.add(index);
+
+        index = new ArrayList();
+        index.add(revalDate.Property);
         Indexes.add(index);
 
         index = new ArrayList();
@@ -825,23 +863,37 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         }
     }
 
-    private class ExtIncDetailNavigatorForm extends TmcNavigatorForm {
+    private class ExtIncDocumentNavigatorForm extends TmcNavigatorForm {
+
+        protected GroupObjectImplement gobjDoc;
+        protected ObjectImplement objDoc;
+
+        ExtIncDocumentNavigatorForm(int iID, String caption) {
+            super(iID, caption);
+
+            gobjDoc = new GroupObjectImplement(IDShift(1));
+            objDoc = new ObjectImplement(IDShift(1), extIncomeDocument, "Документ", gobjDoc);
+
+            addGroup(gobjDoc);
+
+            addPropertyView(Properties, baseGroup, false, objDoc);
+            addPropertyView(Properties, storeGroup, false, objDoc);
+            addPropertyView(Properties, supplierGroup, false, objDoc);
+            addPropertyView(Properties, incSumsGroup, false, objDoc);
+        }
+    }
+
+    private class ExtIncDetailNavigatorForm extends ExtIncDocumentNavigatorForm {
 
         public ExtIncDetailNavigatorForm(int ID, String caption) {
             super(ID, caption);
 
-            GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
             GroupObjectImplement gobjDetail = new GroupObjectImplement(IDShift(1));
 
-            ObjectImplement objDoc = new ObjectImplement(IDShift(1), extIncomeDocument, "Документ", gobjDoc);
             ObjectImplement objDetail = new ObjectImplement(IDShift(1), extIncomeDetail, "Строка", gobjDetail);
 
-            addGroup(gobjDoc);
             addGroup(gobjDetail);
 
-            addPropertyView(Properties, baseGroup, false, objDoc);
-            addPropertyView(Properties, storeGroup, false, objDoc);
-            addPropertyView(Properties, incSumsGroup, false, objDoc);
             addPropertyView(Properties, artclGroup, false, objDetail);
             addPropertyView(Properties, quantGroup, false, objDetail);
             addPropertyView(Properties, incPrmsGroup, false, objDetail);
@@ -853,24 +905,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         }
     }
 
-    private class ExtIncNavigatorForm extends TmcNavigatorForm {
+    private class ExtIncNavigatorForm extends ExtIncDocumentNavigatorForm {
 
         public ExtIncNavigatorForm(int ID, String caption) {
             super(ID, caption);
 
-            GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
             GroupObjectImplement gobjArt = new GroupObjectImplement(IDShift(1));
 
-            ObjectImplement objDoc = new ObjectImplement(IDShift(1), extIncomeDocument, "Документ", gobjDoc);
             ObjectImplement objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArt);
 
-            addGroup(gobjDoc);
             addGroup(gobjArt);
 
-            addPropertyView(Properties, baseGroup, false, objDoc);
-            addPropertyView(Properties, storeGroup, false, objDoc);
             addPropertyView(Properties, baseGroup, false, objArt);
-//            addPropertyView(Properties, artgrGroup, objArt);
             addPropertyView(Properties, balanceGroup, false, objDoc, objArt);
             addPropertyView(extIncQuantity, objDoc, objArt);
             addPropertyView(Properties, incPrmsGroup, false, objDoc, objArt);
@@ -1290,8 +1336,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         ClassQuantity.put(articleGroup,((Double)(Modifier*0.3)).intValue());
 //        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
         ClassQuantity.put(store,4);
+        ClassQuantity.put(supplier,10);
         ClassQuantity.put(extIncomeDocument,Modifier*2);
-        ClassQuantity.put(extIncomeDetail,Modifier*PropModifier);
+        ClassQuantity.put(extIncomeDetail,Modifier*10*PropModifier);
         ClassQuantity.put(intraDocument,Modifier);
         ClassQuantity.put(extOutcomeDocument,Modifier*5);
         ClassQuantity.put(exchangeDocument,Modifier);
@@ -1300,8 +1347,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Map<DataProperty, Set<DataPropertyInterface>> PropNotNulls = new HashMap();
         name.putNotNulls(PropNotNulls,0);
         artGroup.putNotNulls(PropNotNulls,0);
-        primDocDate.putNotNulls(PropNotNulls,0);
-        secDocDate.putNotNulls(PropNotNulls,0);
+        extIncDate.putNotNulls(PropNotNulls,0);
+        intraDate.putNotNulls(PropNotNulls,0);
+        extOutDate.putNotNulls(PropNotNulls,0);
+        exchDate.putNotNulls(PropNotNulls,0);
+        revalDate.putNotNulls(PropNotNulls,0);
         extIncStore.putNotNulls(PropNotNulls,0);
         intraIncStore.putNotNulls(PropNotNulls,0);
         intraOutStore.putNotNulls(PropNotNulls,0);
@@ -1309,6 +1359,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         exchStore.putNotNulls(PropNotNulls,0);
         revalStore.putNotNulls(PropNotNulls,0);
         intraIncStore.putNotNulls(PropNotNulls,0);
+        extIncSupplier.putNotNulls(PropNotNulls,0);
         extIncDetailDocument.putNotNulls(PropNotNulls,0);
         extIncDetailArticle.putNotNulls(PropNotNulls,0);
         extIncDetailQuantity.putNotNulls(PropNotNulls,0);
