@@ -21,6 +21,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     Class store;
     Class supplier;
+    Class customer;
 
     Class document;
     Class primaryDocument, secondaryDocument;
@@ -43,8 +44,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     Class invDocument;
 
 
-    AbstractGroup baseGroup, artclGroup, artgrGroup, storeGroup, supplierGroup, quantGroup, balanceGroup;
-    AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
+    AbstractGroup baseGroup, artclGroup, artgrGroup, storeGroup, supplierGroup, customerGroup, quantGroup, balanceGroup;
+    AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
     AbstractGroup paramsGroup, accountGroup;
     
     void InitGroups() {
@@ -54,6 +55,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         artgrGroup = new AbstractGroup("Группа товаров");
         storeGroup = new AbstractGroup("Склад");
         supplierGroup = new AbstractGroup("Поставщик");
+        customerGroup = new AbstractGroup("Поставщик");
         quantGroup = new AbstractGroup("Количество");
         balanceGroup = new AbstractGroup("Остаток");
         incPrmsGroup = new AbstractGroup("Входные параметры");
@@ -62,6 +64,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         incPrmsGroupAfter = new AbstractGroup("После");
         incPrmsGroup.add(incPrmsGroupAfter);
         incSumsGroup = new AbstractGroup("Входные суммы");
+        outSumsGroup = new AbstractGroup("Выходные суммы");
         outPrmsGroup = new AbstractGroup("Выходные параметры");
         outPrmsGroupBefore = new AbstractGroup("До");
         outPrmsGroup.add(outPrmsGroupBefore);
@@ -79,6 +82,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         store = new ObjectClass(baseGroup, IDGet(3), "Склад", objectClass);
 
         supplier = new ObjectClass(baseGroup, IDGet(17), "Поставщик", objectClass);
+        customer = new ObjectClass(baseGroup, IDGet(22), "Покупатель", objectClass);
 
         document = new ObjectClass(baseGroup, IDGet(4), "Документ", objectClass);
         primaryDocument = new ObjectClass(baseGroup, IDGet(5), "Первичный документ", document);
@@ -140,8 +144,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP extIncSupplierName;
     LJP extIncDetailArticleName;
 
+    LJP clearingSaleCustomerName;
+
     LDP extIncSupplier;
     LDP extIncDetailDocument, extIncDetailArticle, extIncDetailQuantity;
+
+    LDP clearingSaleCustomer;
 
     LGP extIncQuantity;
     LJP notZeroExtIncQuantity;
@@ -219,7 +227,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LJP docOutBalanceQuantity, docIncBalanceQuantity, docRevBalanceQuantity;
 
-    LJP extIncDetailSumPriceOut, intraSumPriceOut, extOutSumPriceOut;
+    LJP extIncDetailSumPriceOut, intraSumPriceOut;
+    LJP extOutSumPriceOut;
+    LGP extOutDocumentSumPriceOut;
     LJP exchIncSumPriceOut, exchOutSumPriceOut;
     LUP exchDltSumPriceOut;
     LJP revalSumPriceOutBefore, revalSumPriceOutAfter;
@@ -347,6 +357,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailDocument = AddDProp("Документ", extIncomeDocument, extIncomeDetail);
         extIncDetailArticle = AddDProp("Товар", article, extIncomeDetail);
 
+        // -------------------------- Безналичный расчет ------------------------- //
+
+        clearingSaleCustomer = AddDProp("Покупатель", customer, clearingSaleDocument);
+
         // -------------------------- Relation propertyViews ------------------ //
 
         artGroupName = AddJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
@@ -355,6 +369,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncSupplierName = AddJProp(supplierGroup, "Имя поставщика", name, 1, extIncSupplier, 1);
         extIncDetailArticleName = AddJProp(artclGroup, "Имя товара", name, 1, extIncDetailArticle, 1);
+
+        clearingSaleCustomerName = AddJProp(customerGroup, "Имя покупатель", name, 1, clearingSaleCustomer, 1);
 
         // -------------------------- Движение товара по количествам ---------------------- //
 
@@ -539,7 +555,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncDetailSumPriceOut = AddJProp("Сумма розн. (вх.)", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceOut, 1);
         intraSumPriceOut = AddJProp("Сумма розн. (вн.)", multiplyDouble2, 2, intraQuantity, 1, 2, paramsPriceOut, 1, 2);
+
         extOutSumPriceOut = AddJProp("Сумма розн. (расх.)", multiplyDouble2, 2, extOutQuantity, 1, 2, paramsPriceOut, 1, 2);
+        extOutDocumentSumPriceOut = AddGProp("Сумма розн. (всего)", extOutSumPriceOut, true, 1);
 
         exchIncSumPriceOut = AddJProp("Сумма розн. (перес. +)", multiplyDouble2, 2, exchIncQuantity, 1, 2, paramsPriceOut, 1, 2);
         exchOutSumPriceOut = AddJProp("Сумма розн. (перес. -)", multiplyDouble2, 2, exchOutQuantity, 1, 2, paramsPriceOut, 1, 2);
@@ -1043,6 +1061,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(Properties, baseGroup, false, objDoc);
             addPropertyView(Properties, storeGroup, false, objDoc);
+            addPropertyView(Properties, customerGroup, false, objDoc);
+            addPropertyView(extOutDocumentSumPriceOut, objDoc);
 
             addPropertyView(Properties, baseGroup, true, objArt);
             addPropertyView(Properties, artclGroup, true, objArt);
@@ -1444,6 +1464,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 //        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
         ClassQuantity.put(store,3);
         ClassQuantity.put(supplier,5);
+        ClassQuantity.put(customer,5);
         ClassQuantity.put(extIncomeDocument,Modifier*2);
         ClassQuantity.put(extIncomeDetail,Modifier*10*PropModifier);
         ClassQuantity.put(intraDocument,Modifier);
@@ -1473,6 +1494,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailQuantity.putNotNulls(PropNotNulls,0);
         extIncDetailPriceIn.putNotNulls(PropNotNulls,0);
         extIncDetailVATIn.putNotNulls(PropNotNulls,0);
+        clearingSaleCustomer.putNotNulls(PropNotNulls,0);
 
 //        LDP extIncDetailSumVATIn, extIncDetailSumPay;
 //        LDP extIncDetailAdd, extIncDetailVATOut, extIncDetailLocTax;
