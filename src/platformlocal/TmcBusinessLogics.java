@@ -154,7 +154,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP extIncQuantity;
     LJP notZeroExtIncQuantity;
     LDP intraQuantity;
-    LDP clearingSaleQuantity, invQuantity;
+    LDP clearingSaleQuantity;
+    LDP invQuantity;
     LUP extOutQuantity;
     LDP exchangeQuantity;
     LDP revalBalanceQuantity;
@@ -289,6 +290,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP isDocArtInclude;
     LJP isDocStoreArtInclude;
 
+    LDP invBalance;
+
     void InitProperties() {
 
         LSFP equals2 = AddWSFProp("((prm1)=(prm2))",2);
@@ -383,6 +386,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         intraQuantity = AddDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
 
         clearingSaleQuantity = AddDProp(quantGroup, "Кол-во расх.", Class.doubleClass, clearingSaleDocument, article);
+
         invQuantity = AddDProp(quantGroup, "Кол-во инв.", Class.doubleClass, invDocument, article);
 
         extOutQuantity = AddUProp("Кол-во расх.", 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2);
@@ -673,6 +677,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         setDefProp(paramsLocTax, docCurQLocTax, true);
         setDefProp(paramsPriceOut, docCurQPriceOut, true); */
 
+        invBalance = AddDProp(quantGroup, "Остаток инв.", Class.doubleClass, invDocument, article);
+        LP defInvQuantity = AddUProp("Кол-во инв. (по умолч.)", 1, 2, 1, docOutBalanceQuantity, 1, 2, -1, invBalance, 1, 2);
+        setDefProp(invQuantity, defInvQuantity, false);
+
         initCustomLogics();
     }
 
@@ -842,6 +850,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         NavigatorForm clearingSaleForm = new ClearingSaleNavigatorForm(132, "Реализация по б/н расчету");
         extOutForm.addChild(clearingSaleForm);
+
+        NavigatorForm invForm = new InvNavigatorForm(134, "Инвентаризация");
+        extOutForm.addChild(invForm);
 
         NavigatorForm exchangeForm = new ExchangeNavigatorForm(140, "Пересорт");
         primaryData.addChild(exchangeForm);
@@ -1073,6 +1084,38 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addArticleRegularFilterGroup(getPropertyView(clearingSaleQuantity.Property).View, 0,
                                          getPropertyView(docOutBalanceQuantity.Property).View);
+        }
+    }
+
+    private class InvNavigatorForm extends TmcNavigatorForm {
+
+        public InvNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjArt = new GroupObjectImplement(IDShift(1));
+
+            ObjectImplement objDoc = new ObjectImplement(IDShift(1), invDocument, "Документ", gobjDoc);
+            ObjectImplement objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArt);
+
+            addGroup(gobjDoc);
+            addGroup(gobjArt);
+
+            addPropertyView(Properties, baseGroup, false, objDoc);
+            addPropertyView(Properties, storeGroup, false, objDoc);
+
+            addPropertyView(Properties, baseGroup, true, objArt);
+            addPropertyView(Properties, balanceGroup, false, objDoc, objArt);
+            addPropertyView(invBalance, objDoc, objArt);
+            addPropertyView(invQuantity, objDoc, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, objDoc, objArt);
+
+            addArticleRegularFilterGroup(getPropertyView(invQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View);
+
+            addHintsNoUpdate(docOutBalanceQuantity.Property);
+            addHintsNoUpdate(balanceStoreQuantity.Property);
         }
     }
 
