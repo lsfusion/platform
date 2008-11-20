@@ -637,7 +637,7 @@ abstract class Query<K,V> extends Source<K,V> {
 }
 
 class Join<J,U> {
-    Source<J,U> Source;
+    Source<J,U> source;
     Map<J,SourceExpr> Joins;
 
     boolean Inner;
@@ -654,10 +654,10 @@ class Join<J,U> {
     }
 
     Join(Source<J,U> iSource,Map<J,SourceExpr> iJoins,boolean iInner) {
-        Source = iSource;
+        source = iSource;
         Inner = iInner;
         InJoin = new JoinWhere(this);
-        for(U Property : Source.getProperties())
+        for(U Property : source.getProperties())
             Exprs.put(Property,new JoinExpr<J,U>(this,Property));
 
         Joins = iJoins;
@@ -684,7 +684,7 @@ class Join<J,U> {
 
     String getFrom(Map<Join, String> JoinAlias, Collection<String> WhereSelect, SQLSyntax Syntax) {
         String JoinString = "";
-        String SourceString = Source.getSource(Syntax);
+        String SourceString = source.getSource(Syntax);
         String Alias = null;
         if(NoAlias)
             Alias = SourceString;
@@ -695,7 +695,7 @@ class Join<J,U> {
         JoinAlias.put(this,Alias);
 
         for(Map.Entry<J,SourceExpr> KeyJoin : Joins.entrySet()) {
-            String KeyJoinString = KeyJoin.getValue().getJoin(Source.getKeyString(KeyJoin.getKey(),Alias),JoinAlias, Syntax);
+            String KeyJoinString = KeyJoin.getValue().getJoin(source.getKeyString(KeyJoin.getKey(),Alias),JoinAlias, Syntax);
             if(KeyJoinString!=null) {
                 if(WhereSelect==null)
                     JoinString = (JoinString.length()==0?"":JoinString+" AND ") + KeyJoinString;
@@ -727,7 +727,7 @@ class Join<J,U> {
         if(!ChangedJoins)
             return this;
         else {
-            Join<J,U> TranslatedJoin = new Join<J,U>(Source,TransMap,Inner && !ForceOuter);
+            Join<J,U> TranslatedJoin = new Join<J,U>(source,TransMap,Inner && !ForceOuter);
             TranslatedJoin.NoAlias = NoAlias;
             fillJoinTranslate(TranslatedJoin, null, JoinTranslated);
             return TranslatedJoin;
@@ -752,12 +752,12 @@ class Join<J,U> {
 
         // проверить что кол-во Keys в Source совпадает
 
-        Collection<Map<J, MJ>> MapSet = MapBuilder.buildPairs(Source.Keys, Merge.Source.Keys);
+        Collection<Map<J, MJ>> MapSet = MapBuilder.buildPairs(source.Keys, Merge.source.Keys);
         if(MapSet==null) return null;
 
         for(Map<J,MJ> MapKeys : MapSet) {
             Map<J,SourceExpr> MergeExprs = new HashMap();
-            for(J Key : Source.Keys) {
+            for(J Key : source.Keys) {
                 SourceExpr MergeExpr = Joins.get(Key).translate(Translated);
                 if(!Merge.Joins.get(MapKeys.get(Key)).translate(MergeTranslated).equals(MergeExpr))
                     break;
@@ -765,12 +765,12 @@ class Join<J,U> {
                     MergeExprs.put(Key,MergeExpr);
             }
 
-            if(MergeExprs.size()!=Source.Keys.size())
+            if(MergeExprs.size()!= source.Keys.size())
                 continue;
 
             // есть уже карта попробуем merge'уть
             Map<MU, Object> MergeProps = new HashMap();
-            Source<J, Object> MergeSource = Source.merge(Merge.Source, MapKeys, MergeProps, Type==null?Source.getJoinType(Inner,Merge.Inner):Type);
+            Source<J, Object> MergeSource = source.merge(Merge.source, MapKeys, MergeProps, Type==null? Source.getJoinType(Inner,Merge.Inner):Type);
             if(MergeSource!=null) {
                 // нужно перетранслировать JoinExpr'ы
                 Join<J, Object> MergedJoin = new Join<J, Object>(MergeSource, MergeExprs, Inner || Merge.Inner);
@@ -796,7 +796,7 @@ class Join<J,U> {
         // в KeyExpr'ах на KeySelect
         Map<J,String> KeySelect = new HashMap();
         Map<U,String> PropertySelect = new HashMap();
-        String From = Source.fillSelect(KeySelect,PropertySelect,WhereSelect,Syntax);
+        String From = source.fillSelect(KeySelect,PropertySelect,WhereSelect,Syntax);
         // если там не KeyExpr, то уже глюк
         for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
             ((KeyExpr)MapJoin.getValue()).Source = KeySelect.get(MapJoin.getKey());
@@ -811,7 +811,7 @@ class Join<J,U> {
 
     <K> void pushJoinValues(Map<KeyExpr<K>, TypedObject> KeyValues) {
 
-        if(Source instanceof Query) {
+        if(source instanceof Query) {
             // заполняем статичные значения
             Map<J,Integer> MergeKeys = new HashMap();
             for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet()) {
@@ -828,13 +828,13 @@ class Join<J,U> {
 
             if(MergeKeys.size() > 0) {
                 CollectionExtend.removeAll(Joins,MergeKeys.keySet());
-                Source = Source.mergeKeyValue(MergeKeys,Joins.keySet());
+                source = source.mergeKeyValue(MergeKeys,Joins.keySet());
             }
         }
     }
 
     boolean isEmpty(ExprTranslator Translated) {
-        if(Source instanceof EmptySource) return true;
+        if(source instanceof EmptySource) return true;
 
         for(SourceExpr Join : Joins.values()) {
             SourceExpr JoinExpr = Join.translate(Translated);
@@ -852,7 +852,7 @@ class MapJoin<J,U,K> extends Join<J,U> {
     MapJoin(Source<J,U> iSource,Map<J,K> iJoins,JoinQuery<K,?> MapSource,boolean iInner) {
         super(iSource,iInner);
 
-        for(J Implement : Source.Keys)
+        for(J Implement : source.Keys)
             Joins.put(Implement,MapSource.MapKeys.get(iJoins.get(Implement)));
     }
 
@@ -869,7 +869,7 @@ class UniJoin<K,U> extends Join<K,U> {
     UniJoin(Source<K,U> iSource,JoinQuery<K,?> MapSource,boolean iInner) {
         super(iSource,iInner);
 
-        for(K Key : Source.Keys)
+        for(K Key : source.Keys)
             Joins.put(Key,MapSource.MapKeys.get(Key));
     }
 }
@@ -971,11 +971,11 @@ class JoinExpr<J,U> extends ObjectExpr {
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         if(StringSource!=null) return StringSource;
 
-        return From.Source.getPropertyString(Property,JoinAlias.get(From));
+        return From.source.getPropertyString(Property,JoinAlias.get(From));
     }
 
     Type getType() {
-        return From.Source.getType(Property);
+        return From.source.getType(Property);
     }
 
     public SourceExpr proceedTranslate(ExprTranslator Translated) {
@@ -1756,7 +1756,7 @@ class JoinWhere extends Where {
         if(From.Inner)
             return StaticWhere.TRUE;
         else
-            return SourceIsNullWhere.getExpr(From.Source.getInSelectString(JoinAlias.get(From)),Syntax,true);
+            return SourceIsNullWhere.getExpr(From.source.getInSelectString(JoinAlias.get(From)),Syntax,true);
     }
 
     Where proceedTranslate(ExprTranslator Translated) {
@@ -2305,11 +2305,11 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Set<Where> TranslatedWheres = new HashSet();
 
         for(Join Join : Joins) {
-            Join.Source = Join.Source.compile();
+            Join.source = Join.source.compile();
             if(Join.isEmpty(Translated) && Join.Inner)
                 return getEmptySource();
             else
-                Join.Source.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, false);
+                Join.source.compileJoins(Join, Translated, TranslatedWheres, TranslatedJoins, false);
         }
 
         // перетранслируем св-ва в основном чтобы не пошли транслироваться (что надо при Merge) в DumbSource'ах константы - убивая тем самым Where
@@ -2354,7 +2354,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
                     ToMergeTranslated = true;
                     itOperand.remove();
 
-                    if(MergedSource.Source instanceof JoinQuery && MergedSource.Inner)
+                    if(MergedSource.source instanceof JoinQuery && MergedSource.Inner)
                         UnionToJoin = true;
 
                     ToMerge = MergedSource;
@@ -2564,7 +2564,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
             // нужно также рекурсию гнать на случай LJ (A J (B FJ C))
             for(Join CompileJoin : Joins)
-                CompileJoin.Source.compileJoins(CompileJoin, Translated, TranslatedWheres, TranslatedJoins, Outer);
+                CompileJoin.source.compileJoins(CompileJoin, Translated, TranslatedWheres, TranslatedJoins, Outer);
 
             Collection<Where> JoinWheres = new ArrayList<Where>();
             for(Where Where : Wheres)
