@@ -256,10 +256,10 @@ class IDTable extends Table {
     }
 
     void reserveID(DataSession Session, int idType, Integer ID) throws SQLException {
-        Map<KeyField,Integer> KeyFields = new HashMap();
-        KeyFields.put(Key,idType);
-        Map<PropertyField, TypedObject> PropFields = new HashMap();
-        PropFields.put(Value,new TypedObject(ID +1,Value.Type));
+        Map<KeyField,ValueSourceExpr> KeyFields = new HashMap();
+        KeyFields.put(Key,new ValueSourceExpr(idType,Type.Object));
+        Map<PropertyField,ValueSourceExpr> PropFields = new HashMap();
+        PropFields.put(Value,new ValueSourceExpr(ID+1,Value.Type));
         Session.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
     }
 }

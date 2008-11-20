@@ -2444,18 +2444,19 @@ class DataSession  {
         // по сути пустое кол-во ключей
         JoinQuery<Object,String> IsRecQuery = new JoinQuery<Object,String>();
 
-        Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table,true);
-        // сначала закинем KeyField'ы и прогоним Select
+        Map<KeyField,ValueSourceExpr> KeyExprs = new HashMap<KeyField,ValueSourceExpr>();
         for(KeyField Key : Table.Keys)
-            TableJoin.Joins.put(Key,new ValueSourceExpr(KeyFields.get(Key),Key.Type));
-        IsRecQuery.add(TableJoin);
+            KeyExprs.put(Key,new ValueSourceExpr(KeyFields.get(Key),Key.Type));
+
+        // сначала закинем KeyField'ы и прогоним Select
+        IsRecQuery.add(new Join<KeyField,PropertyField>(Table,KeyExprs,true));
 
         if(IsRecQuery.executeSelect(this).size()>0) {
-            Map<PropertyField,TypedObject> TypedPropFields = new HashMap<PropertyField,TypedObject>();
+            Map<PropertyField,ValueSourceExpr> PropExprs = new HashMap<PropertyField,ValueSourceExpr>();
             for(Map.Entry<PropertyField,Object> MapProp : PropFields.entrySet())
-                TypedPropFields.put(MapProp.getKey(),new TypedObject(MapProp.getValue(),MapProp.getKey().Type));
+                PropExprs.put(MapProp.getKey(),new ValueSourceExpr(MapProp.getValue(),MapProp.getKey().Type));
             // есть запись нужно Update лупить
-            UpdateRecords(new ModifyQuery(Table,new DumbSource<KeyField,PropertyField>(KeyFields,TypedPropFields)));
+            UpdateRecords(new ModifyQuery(Table,new DumbSource<KeyField,PropertyField>(KeyExprs,PropExprs)));
         } else
             // делаем Insert
             InsertRecord(Table,KeyFields,PropFields);
@@ -2784,5 +2785,4 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
 
         return ImplementInterfaces.size()==getMapInterfaces().size();
     }
-
 }

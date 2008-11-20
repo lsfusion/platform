@@ -31,7 +31,7 @@ abstract class Source<K,V> {
         return false;
     }
 
-    String getPropertyString(V Value, String Alias) {
+    String getPropertyString(V Value, String Alias, SQLSyntax Syntax) {
         return Alias + "." + getPropertyName(Value);
     }
 
@@ -41,17 +41,17 @@ abstract class Source<K,V> {
 
     // по умолчанию fillSelectString вызывает
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
-        return fillSelectString(getSource(Syntax),KeySelect,PropertySelect,WhereSelect);
+        return fillSelectString(getSource(Syntax),KeySelect,PropertySelect,WhereSelect,Syntax);
     }
 
     // заполняет структуру Select'а из строки Source
-    String fillSelectString(String Source,Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect) {
+    String fillSelectString(String Source,Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
 
         String Alias = "G";
         for(K Key : Keys)
             KeySelect.put(Key,getKeyString(Key,Alias));
         for(V Property : getProperties())
-            PropertySelect.put(Property,getPropertyString(Property,Alias));
+            PropertySelect.put(Property,getPropertyString(Property,Alias,Syntax));
 
         return Source+" "+Alias;
     }
@@ -281,7 +281,7 @@ abstract class Source<K,V> {
     }
 
     // возвращает источник без заданных выражений, но только с объектами им равными (короче устанавливает фильтр)
-    Source<K,V> mergePropertyValue(Map<? extends V, Integer> MergeValues) {
+    Source<K,V> mergePropertyValue(Map<? extends V, ValueSourceExpr> MergeValues) {
         
         JoinQuery<K,V> Query = new JoinQuery<K,V>(Keys);
         Join<K,V> SourceJoin = new UniJoin<K,V>(this,Query,true);
@@ -293,19 +293,19 @@ abstract class Source<K,V> {
             else
                 Query.add(Property.getKey(),Property.getValue());
         }
-        Query.add(new Join<V,Object>(new DumbSource<V,Object>((Map<V,Integer>) MergeValues, new HashMap()),DumbMap, true));
+        Query.add(new Join<V,Object>(new DumbSource<V,Object>((Map<V,ValueSourceExpr>) MergeValues, new HashMap()),DumbMap, true));
         return Query.compile();
     }
 
     // возвращает источник с "проставленными" ключами со значениями 
-    Source<K, V> mergeKeyValue(Map<K, Integer> MergeKeys,Collection<K> CompileKeys) {
+    Source<K, V> mergeKeyValue(Map<K, ValueSourceExpr> MergeKeys,Collection<K> CompileKeys) {
 
         JoinQuery<K,V> Query = new JoinQuery<K,V>(CompileKeys);
         Join<K,V> SourceJoin = new Join<K,V>(this,true);
         for(Map.Entry<K,SourceExpr> MapKey : Query.MapKeys.entrySet())
             SourceJoin.Joins.put(MapKey.getKey(),MapKey.getValue());
-        for(Map.Entry<K,Integer> MapKey : MergeKeys.entrySet())
-            SourceJoin.Joins.put(MapKey.getKey(),new ValueSourceExpr(MapKey.getValue(),Type.Object));
+        for(Map.Entry<K,ValueSourceExpr> MapKey : MergeKeys.entrySet())
+            SourceJoin.Joins.put(MapKey.getKey(),MapKey.getValue());
         Query.addAll(SourceJoin.Exprs);
         return Query.compile();
     }
@@ -422,10 +422,10 @@ class TypedObject {
 // постоянный источник из одной записи
 class DumbSource<K,V> extends Source<K,V> {
 
-    Map<K,Integer> ValueKeys;
-    Map<V,TypedObject> Values;
+    Map<K,ValueSourceExpr> ValueKeys;
+    Map<V,ValueSourceExpr> Values;
 
-    DumbSource(Map<K,Integer> iValueKeys,Map<V,TypedObject> iValues) {
+    DumbSource(Map<K,ValueSourceExpr> iValueKeys,Map<V,ValueSourceExpr> iValues) {
         super(iValueKeys.keySet());
         ValueKeys = iValueKeys;
         Values = iValues;
@@ -436,16 +436,11 @@ class DumbSource<K,V> extends Source<K,V> {
     }
 
     String getKeyString(K Key,String Alias) {
-        return ValueKeys.get(Key).toString();
+        return ValueKeys.get(Key).getString(null);
     }
 
-    String getPropertyString(V Property,String Alias) {
-        Object Value = Values.get(Property);
-        if(Value instanceof String)
-            return "'" + Value + "'";
-        else
-            return Value.toString();
-
+    String getPropertyString(V Property, String Alias, SQLSyntax Syntax) {
+        return Values.get(Property).getString(Syntax);
     }
 
     Collection<V> getProperties() {
@@ -453,13 +448,13 @@ class DumbSource<K,V> extends Source<K,V> {
     }
 
     Type getType(V Property) {
-        return Values.get(Property).Type;
+        return Values.get(Property).getType();
     }
 
     String fillSelect(Map<K, String> KeySelect, Map<V, String> PropertySelect, Collection<String> WhereSelect, SQLSyntax Syntax) {
-        for(Map.Entry<K,Integer> ValueKey : ValueKeys.entrySet())
-            KeySelect.put(ValueKey.getKey(),ValueKey.getValue().toString());
-        for(Map.Entry<V,TypedObject> Value : Values.entrySet())
+        for(Map.Entry<K,ValueSourceExpr> ValueKey : ValueKeys.entrySet())
+            KeySelect.put(ValueKey.getKey(),ValueKey.getValue().getString(Syntax));
+        for(Map.Entry<V,ValueSourceExpr> Value : Values.entrySet())
             PropertySelect.put(Value.getKey(),Value.getValue().getString(Syntax));
 
         return "dumb";
@@ -473,9 +468,9 @@ class DumbSource<K,V> extends Source<K,V> {
 
         if(Join.Inner) {
             ExprTranslator JoinTranslated = new ExprTranslator();
-            for(Map.Entry<K,Integer> ValueKey : ValueKeys.entrySet()) {
+            for(Map.Entry<K,ValueSourceExpr> ValueKey : ValueKeys.entrySet()) {
                 SourceExpr JoinExpr = Join.Joins.get(ValueKey.getKey()).translate(Translated);
-                JoinTranslated.put(JoinExpr,new ValueSourceExpr(ValueKey.getValue(),Type.Object));
+                JoinTranslated.put(JoinExpr,ValueKey.getValue());
                 // если св-во также докидываем в фильтр
                 if(!(JoinExpr instanceof KeyExpr))
                     TranslatedWheres.add(new FieldExprCompareWhere(JoinExpr,ValueKey.getValue(),FieldExprCompareWhere.EQUALS));
@@ -483,8 +478,8 @@ class DumbSource<K,V> extends Source<K,V> {
             Translated.merge(JoinTranslated);
 
             // все свои значения также затранслируем
-            for(Map.Entry<V,TypedObject> MapValue : Values.entrySet())
-                Translated.put(Join.Exprs.get(MapValue.getKey()),new ValueSourceExpr(MapValue.getValue()));
+            for(Map.Entry<V,ValueSourceExpr> MapValue : Values.entrySet())
+                Translated.put(Join.Exprs.get(MapValue.getKey()),MapValue.getValue());
 
             // после чего дальше даже не компилируемся - proceedCompile словит транслированные ключи
         } else
@@ -521,7 +516,7 @@ class EmptySource<K,V> extends Source<K,V> {
         return Type.NULL;
     }
 
-    String getPropertyString(V Value, String Alias) {
+    String getPropertyString(V Value, String Alias, SQLSyntax Syntax) {
         return Type.NULL;
     }
 
@@ -653,14 +648,14 @@ class Join<J,U> {
         this(iSource,new HashMap(),iInner);
     }
 
-    Join(Source<J,U> iSource,Map<J,SourceExpr> iJoins,boolean iInner) {
+    Join(Source<J,U> iSource,Map<J,? extends SourceExpr> iJoins,boolean iInner) {
         source = iSource;
         Inner = iInner;
         InJoin = new JoinWhere(this);
         for(U Property : source.getProperties())
             Exprs.put(Property,new JoinExpr<J,U>(this,Property));
 
-        Joins = iJoins;
+        Joins = (Map<J,SourceExpr>) iJoins;
     }
 
     void fillJoins(List<Join> FillJoins, Set<Where> Wheres, Set<Join> DependJoins) {
@@ -784,7 +779,7 @@ class Join<J,U> {
         return null;
     }
 
-    public <K> String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<KeyExpr<K>, TypedObject> KeyValues) {
+    public <K> String fillSingleSelect(Collection<String> WhereSelect, SQLSyntax Syntax, Map<KeyExpr<K>, ValueSourceExpr> KeyValues) {
 
         Set<KeyExpr> JoinExprs = new HashSet(KeyValues.keySet());
         // проверим сначала что в Join'ах только не пересекающиеся keyExpr'ы
@@ -802,7 +797,7 @@ class Join<J,U> {
         for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
             ((KeyExpr)MapJoin.getValue()).Source = KeySelect.get(MapJoin.getKey());
         // закинем KeyValues
-        for(Map.Entry<KeyExpr<K>,TypedObject> KeyValue : KeyValues.entrySet())
+        for(Map.Entry<KeyExpr<K>,ValueSourceExpr> KeyValue : KeyValues.entrySet())
             KeyValue.getKey().Source = KeyValue.getValue().getString(Syntax);
         for(Map.Entry<U,JoinExpr<J,U>> MapExpr : Exprs.entrySet())
             MapExpr.getValue().StringSource = PropertySelect.get(MapExpr.getKey());
@@ -810,18 +805,18 @@ class Join<J,U> {
         return From;
     }
 
-    <K> void pushJoinValues(Map<KeyExpr<K>, TypedObject> KeyValues) {
+    <K> void pushJoinValues(Map<KeyExpr<K>, ValueSourceExpr> KeyValues) {
 
         if(source instanceof Query) {
             // заполняем статичные значения
-            Map<J,Integer> MergeKeys = new HashMap();
+            Map<J,ValueSourceExpr> MergeKeys = new HashMap();
             for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet()) {
-                Integer JoinValue = null;
+                ValueSourceExpr JoinValue = null;
                 if(MapJoin.getValue() instanceof ValueSourceExpr)
-                    JoinValue = (Integer) ((ValueSourceExpr)MapJoin.getValue()).Object.Value;
+                    JoinValue = (ValueSourceExpr) MapJoin.getValue();
                 else {
-                    TypedObject KeyValue = KeyValues.get(MapJoin.getValue());
-                    if(KeyValue!=null) JoinValue = (Integer) KeyValue.Value;
+                    ValueSourceExpr KeyValue = KeyValues.get(MapJoin.getValue());
+                    if(KeyValue!=null) JoinValue = KeyValue;
                 }
                 if(JoinValue!=null)
                     MergeKeys.put(MapJoin.getKey(),JoinValue);
@@ -972,7 +967,7 @@ class JoinExpr<J,U> extends ObjectExpr {
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
         if(StringSource!=null) return StringSource;
 
-        return From.source.getPropertyString(Property,JoinAlias.get(From));
+        return From.source.getPropertyString(Property,JoinAlias.get(From),Syntax);
     }
 
     Type getType() {
@@ -988,14 +983,16 @@ class JoinExpr<J,U> extends ObjectExpr {
 class ValueSourceExpr extends SourceExpr {
 
     TypedObject Object;
-    ValueSourceExpr(TypedObject iObject) {
-        Object = iObject;
-    }
+
     ValueSourceExpr(Object Value,Type Type) {
         Object = new TypedObject(Value,Type);
     }
 
     public String getSource(Map<Join, String> JoinAlias, SQLSyntax Syntax) {
+        return getString(Syntax);
+    }
+
+    public String getString(SQLSyntax Syntax) {
         return Object.getString(Syntax);
     }
 
@@ -2217,7 +2214,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         Join.fillJoins(Joins,Wheres,new HashSet<Join>());
     }
 
-    Map<KeyExpr<K>,TypedObject> KeyValues = new HashMap();
+    Map<KeyExpr<K>,ValueSourceExpr> KeyValues = new HashMap();
 
     JoinQuery() {super();}
     JoinQuery(Collection<? extends K> iKeys) {
@@ -2248,7 +2245,11 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
 
     void putDumbJoin(Map<K,Integer> KeyValues) {
 
-        Join<K,Object> DumbJoin = new Join<K,Object>(new DumbSource<K,Object>(KeyValues,new HashMap()),true);
+        Map<K,ValueSourceExpr> KeyExprs = new HashMap<K,ValueSourceExpr>();
+        for(Map.Entry<K,Integer> MapKey : KeyValues.entrySet())
+            KeyExprs.put(MapKey.getKey(),new ValueSourceExpr(MapKey.getValue(),Type.Object));
+
+        Join<K,Object> DumbJoin = new Join<K,Object>(new DumbSource<K,Object>(KeyExprs,new HashMap()),true);
         for(K Object : KeyValues.keySet())
             DumbJoin.Joins.put(Object,MapKeys.get(Object));
         add(DumbJoin);
@@ -2322,7 +2323,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         for(SourceExpr Key : MapKeys.values()) {
             SourceExpr ValueKey = Key.translate(Translated);
             if(Key!=ValueKey)
-                KeyValues.put((KeyExpr<K>) Key,((ValueSourceExpr)ValueKey).Object);
+                KeyValues.put((KeyExpr<K>) Key,(ValueSourceExpr)ValueKey);
         }
 
 //        checkTranslate(Translated,TranslatedJoins,TranslatedWheres);
@@ -2650,7 +2651,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         }
 
         // закинем KeyValues
-        for(Map.Entry<KeyExpr<K>,TypedObject> KeyValue : KeyValues.entrySet())
+        for(Map.Entry<KeyExpr<K>,ValueSourceExpr> KeyValue : KeyValues.entrySet())
             KeyValue.getKey().Source = KeyValue.getValue().getString(Syntax);
 
         Map<Join,String> JoinAlias = new HashMap();
@@ -3409,7 +3410,7 @@ class UnionQuery<K,V> extends SelectQuery<K,V> {
     }
 
 
-    Source<K, V> mergeKeyValue(Map<K, Integer> MergeKeys, Collection<K> CompileKeys) {
+    Source<K, V> mergeKeyValue(Map<K, ValueSourceExpr> MergeKeys, Collection<K> CompileKeys) {
         // бежим по всем операндам, делаем mergeKeyValue, подготавливаем транслятор
         Collection<Union<K,Object>> MergedOperands = new ArrayList();
         Map<PropertyUnion, ExprUnion> ToTranslate = new HashMap();
@@ -3521,7 +3522,7 @@ class GroupQuery<B,K extends B,V extends B> extends Query<K,V> {
         return From.getType(Property);
     }
 
-    Source<K, V> mergeKeyValue(Map<K, Integer> MergeKeys, Collection<K> CompileKeys) {
+    Source<K, V> mergeKeyValue(Map<K, ValueSourceExpr> MergeKeys, Collection<K> CompileKeys) {
         GroupQuery<B, K, V> Result = new GroupQuery<B, K, V>(CompileKeys, From.mergePropertyValue(MergeKeys), Properties);
         return Result.compile();
     }
