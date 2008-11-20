@@ -35,8 +35,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     Class intraDocument;
     Class extOutcomeDocument;
     Class exchangeDocument;
-
     Class revalDocument;
+
+    Class saleDocument;
+    Class cashSaleDocument;
+    Class clearingSaleDocument;
+    Class invDocument;
+
 
     AbstractGroup baseGroup, artclGroup, artgrGroup, storeGroup, supplierGroup, quantGroup, balanceGroup;
     AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
@@ -87,10 +92,16 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncomeDetail = new ObjectClass(baseGroup, IDGet(12), "Внешний приход (строки)", objectClass);
 
         intraDocument = new ObjectClass(baseGroup, IDGet(13), "Внутреннее перемещение", incomeDocument, outcomeDocument, primaryDocument, paramsDocument);
-        extOutcomeDocument = new ObjectClass(baseGroup, IDGet(14), "Внешний расход", outcomeDocument, secondaryDocument, paramsDocument);
+        extOutcomeDocument = new ObjectClass(baseGroup, IDGet(14), "Внешний расход", outcomeDocument, secondaryDocument);
         exchangeDocument = new ObjectClass(baseGroup, IDGet(15), "Пересорт", incomeDocument, outcomeDocument, secondaryDocument, paramsDocument);
 
         revalDocument = new ObjectClass(IDGet(16), "Переоценка", primaryDocument);
+
+        saleDocument = new ObjectClass(IDGet(18), "Реализация", extOutcomeDocument);
+        cashSaleDocument = new ObjectClass(IDGet(19), "Реализация по кассе", saleDocument);
+        clearingSaleDocument = new ObjectClass(IDGet(20), "Реализация по б/н расчету", saleDocument, paramsDocument);
+
+        invDocument = new ObjectClass(IDGet(21), "Инвентаризация", extOutcomeDocument, paramsDocument);
 
         IDShift(100);
     }
@@ -135,7 +146,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP extIncQuantity;
     LJP notZeroExtIncQuantity;
     LDP intraQuantity;
-    LDP extOutQuantity;
+    LDP clearingSaleQuantity, invQuantity;
+    LUP extOutQuantity;
     LDP exchangeQuantity;
     LDP revalBalanceQuantity;
     LGP exchIncQuantity, exchOutQuantity;
@@ -354,7 +366,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         intraQuantity = AddDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
 
-        extOutQuantity = AddDProp(quantGroup, "Кол-во расх.", Class.doubleClass, extOutcomeDocument, article);
+        clearingSaleQuantity = AddDProp(quantGroup, "Кол-во расх.", Class.doubleClass, clearingSaleDocument, article);
+        invQuantity = AddDProp(quantGroup, "Кол-во инв.", Class.doubleClass, invDocument, article);
+
+        extOutQuantity = AddUProp("Кол-во расх.", 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2);
 
         exchangeQuantity = AddDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
@@ -786,10 +801,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         index = new ArrayList();
         index.add(docStore.Property);
         Indexes.add(index);
-
-        index = new ArrayList();
-        index.add(extOutQuantity.Property);
-        Indexes.add(index);
     }
 
     void InitNavigators() {
@@ -810,6 +821,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         NavigatorForm extOutForm = new ExtOutNavigatorForm(130, "Внешний расход");
         primaryData.addChild(extOutForm);
+
+        NavigatorForm clearingSaleForm = new ClearingSaleNavigatorForm(132, "Реализация по б/н расчету");
+        extOutForm.addChild(clearingSaleForm);
 
         NavigatorForm exchangeForm = new ExchangeNavigatorForm(140, "Пересорт");
         primaryData.addChild(exchangeForm);
@@ -1003,13 +1017,41 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(Properties, storeGroup, false, objDoc);
             addPropertyView(Properties, baseGroup, true, objArt);
             addPropertyView(Properties, artclGroup, true, objArt);
-//            addPropertyView(Properties, artgrGroup, objArt);
             addPropertyView(Properties, balanceGroup, false, objDoc, objArt);
             addPropertyView(extOutQuantity, objDoc, objArt);
             addPropertyView(Properties, incPrmsGroup, false, objDoc, objArt);
             addPropertyView(Properties, outPrmsGroup, false, objDoc, objArt);
 
             addArticleRegularFilterGroup(getPropertyView(extOutQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View);
+        }
+    }
+
+    private class ClearingSaleNavigatorForm extends TmcNavigatorForm {
+
+        public ClearingSaleNavigatorForm(int ID, String caption) {
+            super(ID, caption);
+
+            GroupObjectImplement gobjDoc = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjArt = new GroupObjectImplement(IDShift(1));
+
+            ObjectImplement objDoc = new ObjectImplement(IDShift(1), clearingSaleDocument, "Документ", gobjDoc);
+            ObjectImplement objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArt);
+
+            addGroup(gobjDoc);
+            addGroup(gobjArt);
+
+            addPropertyView(Properties, baseGroup, false, objDoc);
+            addPropertyView(Properties, storeGroup, false, objDoc);
+
+            addPropertyView(Properties, baseGroup, true, objArt);
+            addPropertyView(Properties, artclGroup, true, objArt);
+            addPropertyView(Properties, balanceGroup, false, objDoc, objArt);
+            addPropertyView(clearingSaleQuantity, objDoc, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, objDoc, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, objDoc, objArt);
+
+            addArticleRegularFilterGroup(getPropertyView(clearingSaleQuantity.Property).View, 0,
                                          getPropertyView(docOutBalanceQuantity.Property).View);
         }
     }
@@ -1405,7 +1447,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         ClassQuantity.put(extIncomeDocument,Modifier*2);
         ClassQuantity.put(extIncomeDetail,Modifier*10*PropModifier);
         ClassQuantity.put(intraDocument,Modifier);
-        ClassQuantity.put(extOutcomeDocument,Modifier*5);
+        ClassQuantity.put(clearingSaleDocument,((Double)(Modifier*0.5)).intValue());
+        ClassQuantity.put(invDocument,((Double)(Modifier*0.2)).intValue());
         ClassQuantity.put(exchangeDocument,Modifier);
         ClassQuantity.put(revalDocument,((Double)(Modifier*0.5)).intValue());
 
@@ -1439,7 +1482,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
         PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*PropModifier*2);
-        PropQuantity.put((DataProperty)extOutQuantity.Property,Modifier*PropModifier*8);
+        PropQuantity.put((DataProperty)clearingSaleQuantity.Property,Modifier*PropModifier*8);
+        PropQuantity.put((DataProperty)invQuantity.Property,Modifier*PropModifier);
         PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*PropModifier);
         PropQuantity.put((DataProperty)isRevalued.Property,Modifier*PropModifier);
 
