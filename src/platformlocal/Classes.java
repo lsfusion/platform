@@ -311,9 +311,8 @@ class StringClass extends Class {
 
 class ObjectClass extends Class {
 
-    ObjectClass(AbstractGroup groupAbstract, Integer iID, String caption, Class... parents) {this(iID, caption, parents); groupAbstract.add(this); }
     ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
-    
+
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
         return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);

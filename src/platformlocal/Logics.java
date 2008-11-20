@@ -646,6 +646,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
     }
 
+    AbstractGroup baseGroup = new AbstractGroup("Атрибуты");
     abstract void InitGroups();
     abstract void InitClasses();
     abstract void InitProperties();
@@ -850,11 +851,25 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
     // функционал по заполнению св-в по номерам, нужен для BL
 
-    LDP AddDProp(String caption, Class Value, Class... Params) {
-        return AddDProp(null, caption, Value, Params);
+    ObjectClass addObjectClass(String caption, Class... parents) {
+        return addObjectClass(baseGroup, IDShift(1), caption, parents);
     }
 
-    LDP AddDProp(AbstractGroup group, String caption, Class Value, Class... Params) {
+    ObjectClass addObjectClass(Integer iID, String caption, Class... parents) {
+        return addObjectClass(baseGroup, iID, caption, parents);
+    }
+
+    ObjectClass addObjectClass(AbstractGroup group, Integer iID, String caption, Class... parents) {
+        ObjectClass objectClass = new ObjectClass(iID, caption, parents);
+        group.add(objectClass);
+        return objectClass;
+    }
+
+    LDP addDProp(String caption, Class Value, Class... Params) {
+        return addDProp(null, caption, Value, Params);
+    }
+
+    LDP addDProp(AbstractGroup group, String caption, Class Value, Class... Params) {
         DataProperty Property = new DataProperty(TableFactory,Value);
         Property.caption = caption;
         LDP ListProperty = new LDP(Property);
@@ -878,7 +893,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Property.OnDefaultChange = OnChange;
     }
 
-    LCP AddCProp(String caption, Object Value, Class ValueClass, Class... Params) {
+    LCP addCProp(String caption, Object Value, Class ValueClass, Class... Params) {
         ClassProperty Property = new ClassProperty(TableFactory,ValueClass,Value);
         Property.caption = caption;
         LCP ListProperty = new LCP(Property);
@@ -889,7 +904,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LSFP AddSFProp(String Formula,Class Value,int ParamCount) {
+    LSFP addSFProp(String Formula,Class Value,int ParamCount) {
 
         StringFormulaProperty Property = new StringFormulaProperty(TableFactory,Value,Formula);
         LSFP ListProperty = new LSFP(Property,ParamCount);
@@ -897,7 +912,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LSFP AddWSFProp(String Formula,int ParamCount) {
+    LSFP addWSFProp(String Formula,int ParamCount) {
 
         WhereStringFormulaProperty Property = new WhereStringFormulaProperty(TableFactory,Formula);
         LSFP ListProperty = new LSFP(Property,ParamCount);
@@ -905,14 +920,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LMFP AddMFProp(Class Value,int ParamCount) {
+    LMFP addMFProp(Class Value,int ParamCount) {
         MultiplyFormulaProperty Property = new MultiplyFormulaProperty(TableFactory,Value);
         LMFP ListProperty = new LMFP(Property,ParamCount);
         Properties.add(Property);
         return ListProperty;
     }
 
-    LOFP AddOFProp(int BitCount) {
+    LOFP addOFProp(int BitCount) {
         ObjectFormulaProperty Property = new ObjectFormulaProperty(TableFactory,objectClass);
         LOFP ListProperty = new LOFP(Property,BitCount);
         Properties.add(Property);
@@ -948,11 +963,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return Result;
     }
 
-    LJP AddJProp(String caption, LP MainProp, int IntNum, Object... Params) {
-        return AddJProp(null, caption, MainProp, IntNum, Params);
+    LJP addJProp(String caption, LP MainProp, int IntNum, Object... Params) {
+        return addJProp(null, caption, MainProp, IntNum, Params);
     }
 
-    LJP AddJProp(AbstractGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
+    LJP addJProp(AbstractGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
         JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
         Property.caption = caption;
         LJP ListProperty = new LJP(Property,IntNum);
@@ -970,10 +985,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
     
-    LGP AddGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
-        return AddGProp(null, caption, GroupProp, Sum, Params);
+    LGP addGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
+        return addGProp(null, caption, GroupProp, Sum, Params);
     }
-    LGP AddGProp(AbstractGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
+    LGP addGProp(AbstractGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
 
         GroupProperty Property;
         if(Sum)
@@ -994,11 +1009,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return ListProperty;
     }
 
-    LUP AddUProp(String caption, int UnionType, int IntNum, Object... Params) {
-        return AddUProp(null, caption, UnionType, IntNum, Params);
+    LUP addUProp(String caption, int UnionType, int IntNum, Object... Params) {
+        return addUProp(null, caption, UnionType, IntNum, Params);
     }
     
-    LUP AddUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
+    LUP addUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -1622,7 +1637,7 @@ class ClassNavigatorForm extends NavigatorForm {
         groupObject.addObject(object);
         addGroup(groupObject);
 
-        addPropertyView(BL.Properties, true, object);
+        addPropertyView(BL.Properties, BL.baseGroup, true, object);
     }
 }
 

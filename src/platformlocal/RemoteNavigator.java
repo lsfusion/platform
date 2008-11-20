@@ -296,7 +296,14 @@ class NavigatorElement<T extends BusinessLogics<T>> {
     int ID;
     String caption = "";
 
-    public NavigatorElement(int iID, String icaption) { ID = iID; caption = icaption; }
+    public NavigatorElement(int iID, String icaption) { this(null, iID, icaption); }
+    public NavigatorElement(NavigatorElement<T> parent, int iID, String icaption) {
+        ID = iID;
+        caption = icaption;
+
+        if (parent != null)
+            parent.addChild(this); 
+    }
 
 
     List<NavigatorElement<T>> childs = new ArrayList();
@@ -340,9 +347,45 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
         return IDCount;
     }
 
+    ObjectImplement addSingleGroupObjectImplement(Class baseClass, String caption, List<Property> properties, Object... groups) {
+
+        GroupObjectImplement groupObject = new GroupObjectImplement(IDShift(1));
+        ObjectImplement object = new ObjectImplement(IDShift(1), baseClass, caption, groupObject);
+        addGroup(groupObject);
+
+        addPropertyView(properties, groups, object);
+
+        return object;
+    }
+
     void addGroup(GroupObjectImplement Group) {
         Groups.add(Group);
         Group.Order = Groups.size();
+    }
+
+    void addPropertyView(ObjectImplement object, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object);
+    }
+
+    void addPropertyView(ObjectImplement object1, ObjectImplement object2, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object1, object2);
+    }
+
+    private void addPropertyView(List<Property> properties, Object[] groups, ObjectImplement... objects) {
+
+        for (int i = 0; i < groups.length; i++) {
+
+            Object group = groups[i];
+            if (group instanceof Boolean) continue;
+
+            if (group instanceof AbstractGroup) {
+                boolean upClasses = false;
+                if ((i+1)<groups.length && groups[i+1] instanceof Boolean) upClasses = (Boolean)groups[i+1];
+                addPropertyView(properties, (AbstractGroup)group, upClasses, objects);
+            }
+            else if (group instanceof LP)
+                addPropertyView((LP)group, objects);
+        }
     }
 
     void addPropertyView(List<Property> properties, Boolean upClasses, ObjectImplement... objects) {
@@ -476,7 +519,9 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     boolean isPrintForm;
 
     NavigatorForm(int iID, String caption) { this(iID, caption, false); }
-    NavigatorForm(int iID, String caption, boolean iisPrintForm) { super(iID, caption); isPrintForm = iisPrintForm; }
+    NavigatorForm(int iID, String caption, boolean iisPrintForm) { this(null, iID, caption, iisPrintForm); }
+    NavigatorForm(NavigatorElement parent, int iID, String caption) { this(parent, iID, caption, false); }
+    NavigatorForm(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) { super(parent, iID, caption); isPrintForm = iisPrintForm; }
 
     ClientFormView richDesign;
     ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; }

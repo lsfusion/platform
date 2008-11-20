@@ -23,7 +23,7 @@ public class Main {
 
     static DataAdapter Adapter;
 
-    static boolean recreateDB = true;
+    static boolean recreateDB = false;
     public static Integer ForceSeed = -1;
     public static boolean DebugFlag = false;
     static boolean ActivateCaches = true;
@@ -504,111 +504,111 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         AbstractGroup groupArticleC = new AbstractGroup("Ценовые параметры");
         AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
-        Name = AddDProp("имя", Class.string, objectClass);
+        Name = addDProp("имя", Class.string, objectClass);
         groupArticleA.add(Name.Property);
 
-        DocStore = AddDProp("склад", Store, Document);
+        DocStore = addDProp("склад", Store, Document);
 
-        PrihQuantity = AddDProp("кол-во прих.", Class.integer, PrihDocument, Article);
+        PrihQuantity = addDProp("кол-во прих.", Class.integer, PrihDocument, Article);
         PrihQuantity.Property.caption = "кол-во прих.";
 
-        RashQuantity = AddDProp("кол-во расх.", Class.integer, RashDocument, Article);
+        RashQuantity = addDProp("кол-во расх.", Class.integer, RashDocument, Article);
 
-        ArtToGroup = AddDProp("гр. тов.", ArticleGroup, Article);
+        ArtToGroup = addDProp("гр. тов.", ArticleGroup, Article);
         groupArticleG.add(ArtToGroup.Property);
 
-        DocDate = AddDProp("дата док.", Class.date, Document);
+        DocDate = addDProp("дата док.", Class.date, Document);
 
-        GrAddV = AddDProp("нац. по гр.", Class.integer, ArticleGroup);
+        GrAddV = addDProp("нац. по гр.", Class.integer, ArticleGroup);
 
-        ArtAddV = AddDProp("нац. перегр.", Class.integer, Article);
+        ArtAddV = addDProp("нац. перегр.", Class.integer, Article);
         groupArticleC.add(ArtAddV.Property);
 
-        BarCode = AddDProp("штрих-код", Class.doubleClass, Article);
+        BarCode = addDProp("штрих-код", Class.doubleClass, Article);
         groupArticleA.add(BarCode.Property);
 
-        Price = AddDProp("цена", Class.longClass, Article);
+        Price = addDProp("цена", Class.longClass, Article);
         groupArticleA.add(Price.Property);
 
-        ExpireDate = AddDProp("срок годн.", Class.date, Article);
+        ExpireDate = addDProp("срок годн.", Class.date, Article);
         groupArticleA.add(ExpireDate.Property);
 
-        Weight = AddDProp("вес.", Class.bit, Article);
+        Weight = addDProp("вес.", Class.bit, Article);
         groupArticleA.add(Weight.Property);
 
-        LCP AbsQuantity = AddCProp("абст. кол-во",null,Class.integer,Document,Article);
+        LCP AbsQuantity = addCProp("абст. кол-во",null,Class.integer,Document,Article);
 
-        LCP IsGrmat = AddCProp("признак товара",0,Class.integer,Article);
+        LCP IsGrmat = addCProp("признак товара",0,Class.integer,Article);
         groupArticleA.add(IsGrmat.Property);
 
-        FilledProperty = AddUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
+        FilledProperty = addUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
 
         // сделаем Quantity перегрузкой
-        Quantity = AddUProp("кол-во",2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+        Quantity = addUProp("кол-во",2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LCP RashValue = AddCProp("призн. расхода",-1,Class.integer,RashDocument);
+        LCP RashValue = addCProp("призн. расхода",-1,Class.integer,RashDocument);
 
-        LCP PrihValue = AddCProp("призн. прихода",1,Class.integer,PrihDocument);
+        LCP PrihValue = addCProp("призн. прихода",1,Class.integer,PrihDocument);
 
-        OpValue = AddUProp("общ. призн.", 2,1,1,RashValue,1,1,PrihValue,1);
+        OpValue = addUProp("общ. призн.", 2,1,1,RashValue,1,1,PrihValue,1);
 
-        LGP RaznSValue = AddGProp("разн. пр-рас.", OpValue,true,DocStore,1);
+        LGP RaznSValue = addGProp("разн. пр-рас.", OpValue,true,DocStore,1);
 
-        LJP RGrAddV = AddJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
+        LJP RGrAddV = addJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
 
-        LUP ArtActAddV = AddUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
+        LUP ArtActAddV = addUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
         groupArticleC.add(ArtActAddV.Property);
 
-//        LJP Quantity = AddUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+//        LJP Quantity = addUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP NotZero = AddWSFProp("prm1<>0",1);
-        LSFP Less = AddWSFProp("prm1<prm2",2);
-        LMFP Multiply = AddMFProp(Class.integer,2);
-        LMFP Multiply3 = AddMFProp(Class.integer,3);
+        LSFP NotZero = addWSFProp("prm1<>0",1);
+        LSFP Less = addWSFProp("prm1<prm2",2);
+        LMFP Multiply = addMFProp(Class.integer,2);
+        LMFP Multiply3 = addMFProp(Class.integer,3);
 
-        LJP StoreName = AddJProp("имя склада", Name,1,DocStore,1);
+        LJP StoreName = addJProp("имя склада", Name,1,DocStore,1);
 
-        LJP ArtGroupName = AddJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
+        LJP ArtGroupName = addJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
-        LDP ArtGName = AddDProp("при доб. гр. тов.", Class.string, Article);
+        LDP ArtGName = addDProp("при доб. гр. тов.", Class.string, Article);
         setDefProp(ArtGName,ArtGroupName,true);
 
-        LJP InDoc = AddJProp("товар в док.", NotZero,2,Quantity,1,2);
+        LJP InDoc = addJProp("товар в док.", NotZero,2,Quantity,1,2);
 
-        LJP DDep = AddJProp("предш. док.", Less,2,DocDate,1,DocDate,2);
+        LJP DDep = addJProp("предш. док.", Less,2,DocDate,1,DocDate,2);
         DDep.Property.XL = true;
 
-        LJP QDep = AddJProp("изм. баланса", Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
+        LJP QDep = addJProp("изм. баланса", Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
         QDep.Property.XL = true;
 
-        GSum = AddGProp("остаток до операции", QDep,true,2,3);
+        GSum = addGProp("остаток до операции", QDep,true,2,3);
 
-        GP = AddGProp("сумм кол-во док. тов.", Quantity,true,DocStore,1,2);
-        GAP = AddGProp("сумм кол-во тов.", GP,true,2);
-        G2P = AddGProp("скл-гр. тов", Quantity,true,DocStore,1,ArtToGroup,2);
+        GP = addGProp("сумм кол-во док. тов.", Quantity,true,DocStore,1,2);
+        GAP = addGProp("сумм кол-во тов.", GP,true,2);
+        G2P = addGProp("скл-гр. тов", Quantity,true,DocStore,1,ArtToGroup,2);
 
-        PrihArtStore = AddGProp("приход по складу", PrihQuantity,true,DocStore,1,2);
-        RashArtStore = AddGProp("расход по складу", RashQuantity,true,DocStore,1,2);
-        OstArtStore = AddUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+        PrihArtStore = addGProp("приход по складу", PrihQuantity,true,DocStore,1,2);
+        RashArtStore = addGProp("расход по складу", RashQuantity,true,DocStore,1,2);
+        OstArtStore = addUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
 
-        OstArt = AddGProp("остаток по товару", OstArtStore,true,2);
+        OstArt = addGProp("остаток по товару", OstArtStore,true,2);
 
-        MaxPrih = AddGProp("макс. приход по гр. тов.", PrihQuantity,false,DocStore,1,ArtToGroup,2);
+        MaxPrih = addGProp("макс. приход по гр. тов.", PrihQuantity,false,DocStore,1,ArtToGroup,2);
 
-        MaxOpStore = AddUProp("макс. операция", 0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+        MaxOpStore = addUProp("макс. операция", 0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
 
-        SumMaxArt = AddGProp("макс. операция (сумма)", MaxOpStore,true,2);
+        SumMaxArt = addGProp("макс. операция (сумма)", MaxOpStore,true,2);
 
-        LGP ArtMaxQty = AddGProp("макс. кол-во", Quantity,false,2);
+        LGP ArtMaxQty = addGProp("макс. кол-во", Quantity,false,2);
 
-        LSFP BetweenDate = AddWSFProp("prm1>=prm2 AND prm1<=prm3",3);
-        LJP DokBetweenDate = AddJProp("документ в интервале", BetweenDate,3,DocDate,1,2,3);
+        LSFP BetweenDate = addWSFProp("prm1>=prm2 AND prm1<=prm3",3);
+        LJP DokBetweenDate = addJProp("документ в интервале", BetweenDate,3,DocDate,1,2,3);
 
-        LJP RashBetweenDate = AddJProp("расх. кол-во в интервале", Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
+        LJP RashBetweenDate = addJProp("расх. кол-во в интервале", Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
 
-        RashArtInt = AddGProp("расход по товару", RashBetweenDate,true,1,3,4);
+        RashArtInt = addGProp("расход по товару", RashBetweenDate,true,1,3,4);
 
-        ArtDateRash = AddGProp("реал. за день", RashQuantity, true, DocDate, 1, 2);
+        ArtDateRash = addGProp("реал. за день", RashQuantity, true, DocDate, 1, 2);
 
     }
 
