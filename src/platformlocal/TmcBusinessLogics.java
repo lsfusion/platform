@@ -845,6 +845,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                 NavigatorForm invForm = new InvNavigatorForm(extOutForm, 134, "Инвентаризация", false);
                     NavigatorForm invStoreForm = new InvNavigatorForm(invForm, 1341, "Инвентаризация по складам", true);
             NavigatorForm exchangeForm = new ExchangeNavigatorForm(primaryData, 140, "Пересорт");
+                NavigatorForm exchangeMForm = new ExchangeMNavigatorForm(exchangeForm, 142, "Сводный пересорт");
             NavigatorForm revalueForm = new RevalueNavigatorForm(primaryData, 150, "Переоценка", false);
                 NavigatorForm revalueStoreForm = new RevalueNavigatorForm(revalueForm, 155, "Переоценка по складам", true);
 
@@ -863,6 +864,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             NavigatorElement dateIntervalForms = new NavigatorElement(analyticsData, 310, "За интервал дат");
                 NavigatorForm mainAccountForm = new MainAccountNavigatorForm(dateIntervalForms, 311, "Товарный отчет");
 
+        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
+        intraDocument.relevantElements.set(0, intraForm);
+        extOutcomeDocument.relevantElements.set(0, extOutForm);
+        clearingSaleDocument.relevantElements.set(0, clearingSaleForm);
+        invDocument.relevantElements.set(0, invForm);
+        exchangeDocument.relevantElements.set(0, exchangeForm);
+        revalDocument.relevantElements.set(0, revalueForm);
     }
 
     private class TmcNavigatorForm extends NavigatorForm {
@@ -1090,6 +1098,29 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         }
     }
 
+    private class ExchangeMNavigatorForm extends TmcNavigatorForm {
+
+        public ExchangeMNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectImplement objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", Properties,
+                                                                        baseGroup, storeGroup);
+
+            GroupObjectImplement gobjArts = new GroupObjectImplement(IDShift(1));
+
+            ObjectImplement objArtTo = new ObjectImplement(IDShift(1), article, "Товар (на)", gobjArts);
+            ObjectImplement objArtFrom = new ObjectImplement(IDShift(1), article, "Товар (с)", gobjArts);
+
+            addGroup(gobjArts);
+
+            addPropertyView(Properties, baseGroup, false, objArtTo);
+            addPropertyView(Properties, baseGroup, false, objArtFrom);
+            addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
+
+            addFixedFilter(new Filter(getPropertyView(exchangeQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)));
+        }
+    }
+
     private class RevalueNavigatorForm extends TmcNavigatorForm {
 
         public RevalueNavigatorForm(NavigatorElement parent, int ID, String caption, boolean groupStore) {
@@ -1118,8 +1149,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                 addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
             else
                 addPropertyView(Properties, storeGroup, false, objDoc);
-
-
         }
     }
 
