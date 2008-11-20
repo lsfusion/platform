@@ -347,7 +347,7 @@ abstract class Source<K,V> {
         return this;
     }
 
-    public enum MergeType {
+    static public enum MergeType {
         EQUAL, INNER, LEFT, RIGHT, FULL
     }
 
@@ -770,7 +770,8 @@ class Join<J,U> {
 
             // есть уже карта попробуем merge'уть
             Map<MU, Object> MergeProps = new HashMap();
-            Source<J, Object> MergeSource = source.merge(Merge.source, MapKeys, MergeProps, Type==null? Source.getJoinType(Inner,Merge.Inner):Type);
+            if(Type==null) Type = Source.getJoinType(Inner, Merge.Inner);
+            Source<J, Object> MergeSource = source.merge(Merge.source, MapKeys, MergeProps, Type);
             if(MergeSource!=null) {
                 // нужно перетранслировать JoinExpr'ы
                 Join<J, Object> MergedJoin = new Join<J, Object>(MergeSource, MergeExprs, Inner || Merge.Inner);
@@ -2439,7 +2440,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         if(!(Merge instanceof JoinQuery))
             return proceedMerge(Merge.getCompiledJoinQuery(),MergeKeys,MergeProps,Type,MergeEqual);
 
-        if(!(Type==MergeType.EQUAL || Type==MergeType.LEFT || Type==MergeType.FULL))
+        if(Type==MergeType.RIGHT)
             throw new RuntimeException("Вообще не должно быть");
         
         JoinQuery<MK,MV> MergeJoin = (JoinQuery<MK,MV>) Merge;
@@ -2506,9 +2507,8 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
                     MergedWheres.add(Join.InJoin);
                 if(!MergedWheres.isEmpty())
                     MergedExprWhere = FieldOPWhere.getWhere(MergedWheres, true);
-            } else {
+            } else // Inner может появиться после
                 Result.Wheres.addAll(MergedWheres);
-            }
 
             // сделаем Map в обратную сторону, чтобы не кидать
             Map<SourceExpr,Object> BackProperties = new HashMap();
@@ -2533,7 +2533,7 @@ class JoinQuery<K,V> extends SelectQuery<K,V> {
         }
 
         // теперь гоним на LEFT, если проходит делаем LJ
-        if(Type!=MergeType.EQUAL && recMerge(Joins.listIterator(), MergeJoin.Joins, Translated, MergeTranslated, ProceededJoins, MergedJoins, MergedInnerJoins, Result.Joins, MergeType.LEFT)) {
+        if((Type==MergeType.LEFT || Type==MergeType.FULL) && recMerge(Joins.listIterator(), MergeJoin.Joins, Translated, MergeTranslated, ProceededJoins, MergedJoins, MergedInnerJoins, Result.Joins, MergeType.LEFT)) {
             // делаем LEFT JOIN
             JoinQuery<K,Object> MergedResult = new JoinQuery<K,Object>(Keys);
             MergedResult.addAll((new UniJoin<K, V>(this, MergedResult, true)).Exprs);
