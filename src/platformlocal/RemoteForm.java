@@ -365,6 +365,13 @@ class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectVa
 
 class Filter<P extends PropertyInterface> {
 
+    static int EQUALS = FieldExprCompareWhere.EQUALS;
+    static int GREATER = FieldExprCompareWhere.GREATER;
+    static int LESS = FieldExprCompareWhere.LESS;
+    static int GREATER_EQUALS = FieldExprCompareWhere.GREATER_EQUALS;
+    static int LESS_EQUALS = FieldExprCompareWhere.LESS_EQUALS;
+    static int NOT_EQUALS = FieldExprCompareWhere.NOT_EQUALS;
+
     PropertyObjectImplement<P> Property;
     ValueLink Value;
     int Compare;

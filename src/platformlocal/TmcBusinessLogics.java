@@ -764,12 +764,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         Persistents.add((AggregateProperty)extIncLastDetail.Property);
 
-/*        Persistents.add((AggregateProperty)storePriceIn.Property);
-        Persistents.add((AggregateProperty)storeVATIn.Property);
-        Persistents.add((AggregateProperty)storeAdd.Property);
-        Persistents.add((AggregateProperty)storeVATOut.Property);
-        Persistents.add((AggregateProperty)storeLocTax.Property);
-        Persistents.add((AggregateProperty)storePriceOut.Property); */
     }
 
     void InitTables() {
@@ -887,7 +881,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(documentProp, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(documentValue)),
+                                  new Filter(documentProp, Filter.NOT_EQUALS, new UserValueLink(documentValue)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
 
@@ -895,7 +889,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             for (PropertyObjectImplement extraProp : extraProps) {
                 filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                      new Filter(extraProp, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                      new Filter(extraProp, Filter.NOT_EQUALS, new UserValueLink(0)),
                                       extraProp.Property.caption,
                                       KeyStroke.getKeyStroke(functionKey--, 0)));
             }
@@ -924,7 +918,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                                                       artclGroup, quantGroup, incPrmsGroup, incSumsGroup, outPrmsGroup);
 
             PropertyObjectImplement detDocument = addPropertyObjectImplement(extIncDetailDocument, objDetail);
-            addFixedFilter(new Filter(detDocument, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objDoc)));
+            addFixedFilter(new Filter(detDocument, Filter.EQUALS, new ObjectValueLink(objDoc)));
         }
     }
 
@@ -1025,7 +1019,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                          getPropertyView(docOutBalanceQuantity.Property).View);
 
             if (groupStore)
-                addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
+                addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), Filter.EQUALS, new ObjectValueLink(objStore)));
             else
                 addPropertyView(Properties, storeGroup, false, objDoc);
         }
@@ -1055,19 +1049,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(exchIncQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchIncQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(exchOutQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchOutQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtTo.GroupTo).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtTo.GroupTo).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtTo.GroupTo).View, FieldExprCompareWhere.LESS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtTo.GroupTo).View, Filter.LESS, new UserValueLink(0)),
                                   "Отр. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             addRegularFilterGroup(filterGroup);
@@ -1078,19 +1072,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(exchangeQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchangeQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtFrom.GroupTo).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtFrom.GroupTo).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtFrom.GroupTo).View, FieldExprCompareWhere.GREATER, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtFrom.GroupTo).View, Filter.GREATER, new UserValueLink(0)),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOverPriceOut.Property, objArtFrom.GroupTo).View, FieldExprCompareWhere.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.Property, objArtTo.GroupTo).View)),
+                                  new Filter(getPropertyView(docOverPriceOut.Property, objArtFrom.GroupTo).View, Filter.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.Property, objArtTo.GroupTo).View)),
                                   "Одинаковая розн. цена",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
@@ -1117,7 +1111,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(Properties, baseGroup, false, objArtFrom);
             addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
 
-            addFixedFilter(new Filter(getPropertyView(exchangeQuantity.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)));
+            addFixedFilter(new Filter(getPropertyView(exchangeQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)));
         }
     }
 
@@ -1146,7 +1140,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                          getPropertyView(revalOverBalanceQuantity.Property).View);
 
             if (groupStore)
-                addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
+                addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), Filter.EQUALS, new ObjectValueLink(objStore)));
             else
                 addPropertyView(Properties, storeGroup, false, objDoc);
         }
@@ -1183,8 +1177,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objPrimDoc, objArt, Properties,
                     paramsGroup);
 
-            addFixedFilter(new Filter(getPropertyView(changesParams.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(false)));
-            addFixedFilter(new Filter(getPropertyView(primDocStore.Property).View, FieldExprCompareWhere.EQUALS, new ObjectValueLink(objStore)));
+            addFixedFilter(new Filter(getPropertyView(changesParams.Property).View, Filter.NOT_EQUALS, new UserValueLink(false)));
+            addFixedFilter(new Filter(getPropertyView(primDocStore.Property).View, Filter.EQUALS, new ObjectValueLink(objStore)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyView(primDocDate.Property)), false);
@@ -1202,7 +1196,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(dltDocStoreQuantity, objDoc, objStore, objArt);
 
-            addFixedFilter(new Filter(addPropertyObjectImplement(isDocStoreArtInclude, objDoc, objStore, objArt), FieldExprCompareWhere.EQUALS, new UserValueLink(true)));
+            addFixedFilter(new Filter(addPropertyObjectImplement(isDocStoreArtInclude, objDoc, objStore, objArt), Filter.EQUALS, new UserValueLink(true)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyView(docDate.Property)), false);
@@ -1278,7 +1272,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objStore, objArt, Properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
-            addFixedFilter(new Filter(addPropertyObjectImplement(storeSupplier, objStore, objArt), FieldExprCompareWhere.EQUALS, new ObjectValueLink(objSupplier)));
+            addFixedFilter(new Filter(addPropertyObjectImplement(storeSupplier, objStore, objArt), Filter.EQUALS, new ObjectValueLink(objSupplier)));
         }
     }
 
@@ -1318,9 +1312,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
 
-            addFixedFilter(new Filter(getPropertyView(dltDocStoreSumAccount.Property).View, FieldExprCompareWhere.NOT_EQUALS, new UserValueLink(0)));
-            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, FieldExprCompareWhere.GREATER_EQUALS, new ObjectValueLink(objDateFrom)));
-            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, FieldExprCompareWhere.LESS_EQUALS, new ObjectValueLink(objDateTo)));
+            addFixedFilter(new Filter(getPropertyView(dltDocStoreSumAccount.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)));
+            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, Filter.GREATER_EQUALS, new ObjectValueLink(objDateFrom)));
+            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, Filter.LESS_EQUALS, new ObjectValueLink(objDateTo)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
             formView.defaultOrders.put(formView.get(getPropertyView(docDate.Property)), true);

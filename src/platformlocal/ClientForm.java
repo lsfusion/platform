@@ -2409,6 +2409,7 @@ public class ClientForm extends JPanel {
                             public void keyPressed(KeyEvent e) {
                                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                                     changeCurrentClass(getSelectedClass(), getSelectedNode());
+                                    grid.table.requestFocusInWindow();
                                 }
                             }
                         });
