@@ -42,7 +42,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     Class cashSaleDocument;
     Class clearingSaleDocument;
     Class invDocument;
+    Class returnDocument;
 
+    Class receipt;
 
     AbstractGroup artclGroup, artgrGroup, storeGroup, supplierGroup, customerGroup, quantGroup, balanceGroup;
     AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
@@ -106,6 +108,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         clearingSaleDocument = addObjectClass("Реализация по б/н расчету", saleDocument, paramsDocument);
 
         invDocument = addObjectClass("Инвентаризация", extOutcomeDocument, paramsDocument);
+
+        returnDocument = addObjectClass("Возврат поставщику", extOutcomeDocument, paramsDocument);
+
+        receipt = addObjectClass("Чек", paramsDocument);
     }
 
     LDP name;
@@ -119,6 +125,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP extOutStore;
     LDP exchStore;
     LDP revalStore;
+
+    LJP receiptStore;
 
     LUP incQStore;
     LUP incSStore;
@@ -144,16 +152,25 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LJP clearingSaleCustomerName;
 
+    LJP returnSupplierName;
+
     LDP extIncSupplier;
     LDP extIncDetailDocument, extIncDetailArticle, extIncDetailQuantity;
 
     LDP clearingSaleCustomer;
+
+    LDP receiptSaleDocument;
+
+    LDP returnSupplier;
 
     LGP extIncQuantity;
     LJP notZeroExtIncQuantity;
     LDP intraQuantity;
     LDP clearingSaleQuantity;
     LDP invQuantity;
+    LDP returnQuantity;
+    LDP receiptQuantity;
+    LGP cashSaleQuantity;
     LUP extOutQuantity;
     LDP exchangeQuantity;
     LDP revalBalanceQuantity;
@@ -227,7 +244,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP docOutBalanceQuantity, docIncBalanceQuantity, docRevBalanceQuantity;
 
     LJP extIncDetailSumPriceOut, intraSumPriceOut;
-    LJP extOutSumPriceOut;
+
+    LDP receiptSumPriceOut;
+    LGP receiptDocumentSumPriceOut;
+    LGP cashSaleSumPriceOut;
+
+    LUP extOutSumPriceOut;
     LGP extOutDocumentSumPriceOut;
     LJP exchIncSumPriceOut, exchOutSumPriceOut;
     LUP exchDltSumPriceOut;
@@ -328,6 +350,25 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         artGroup = addDProp("Гр. тов.", articleGroup, article);
 
+        // -------------------------- Внешние приходы ------------------------- //
+
+        extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument);
+
+        extIncDetailDocument = addDProp("Документ", extIncomeDocument, extIncomeDetail);
+        extIncDetailArticle = addDProp("Товар", article, extIncomeDetail);
+
+        // -------------------------- Безналичный расчет ------------------------- //
+
+        clearingSaleCustomer = addDProp("Покупатель", customer, clearingSaleDocument);
+
+        // -------------------------- Реализация по кассе ------------------------- //
+
+        receiptSaleDocument = addDProp("Документ продажи", cashSaleDocument, receipt);
+
+        // -------------------------- Возврат поставщику ------------------------- //
+
+        returnSupplier = addDProp("Поставщик", supplier, returnDocument);
+
         // -------------------------- Склады ---------------------- //
 
         extIncStore = addDProp("Склад", store, extIncomeDocument);
@@ -337,12 +378,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         exchStore = addDProp("Склад", store, exchangeDocument);
         revalStore = addDProp("Склад", store, revalDocument);
 
+        receiptStore = addJProp(storeGroup, "Склад чека", extOutStore, 1, receiptSaleDocument, 1);
+
         incQStore = addUProp("Склад прих.", 2, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
         outQStore = addUProp("Склад расх.", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
         incSStore = addUProp("Склад прих. (сум)", 2, 1, 1, incQStore, 1, 1, revalStore, 1);
         outSStore = outQStore;
         primDocStore = addUProp(paramsGroup, "Склад (изм.)", 2, 1, 1, storePrimDoc, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, revalStore, 1);
-        paramsStore = addUProp("Склад (парам.)", 2, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
+        paramsStore = addUProp("Склад (парам.)", 2, 1, 1, receiptStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
         docStore = addUProp("Склад", 2, 1, 1, extIncStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1, 1, revalStore, 1);
 
         // здесь свойства по складам/документам
@@ -355,17 +398,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         isDocStore = addUProp("Склад=док.", 2, 2, 1, bitDocStore, 1, 2, 1, isDocIncQStore, 1, 2, 1, isDocOutQStore, 1, 2, 1, isDocRevalStore, 1, 2);
 
-        // -------------------------- Внешние приходы ------------------------- //
-
-        extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument);
-
-        extIncDetailDocument = addDProp("Документ", extIncomeDocument, extIncomeDetail);
-        extIncDetailArticle = addDProp("Товар", article, extIncomeDetail);
-
-        // -------------------------- Безналичный расчет ------------------------- //
-
-        clearingSaleCustomer = addDProp("Покупатель", customer, clearingSaleDocument);
-
         // -------------------------- Relation propertyViews ------------------ //
 
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
@@ -377,12 +409,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         clearingSaleCustomerName = addJProp(customerGroup, "Имя покупателя", name, 1, clearingSaleCustomer, 1);
 
+        returnSupplierName = addJProp(supplierGroup, "Имя поставщика", name, 1, returnSupplier, 1);
+        
         // -------------------------- Движение товара по количествам ---------------------- //
 
         extIncDetailQuantity = addDProp(quantGroup, "Кол-во", Class.doubleClass, extIncomeDetail);
+        extIncQuantity = addGProp(quantGroup, "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
 //        extIncQuantity = addDProp(quantGroup, "Кол-во прих.", Class.doubleClass, extIncomeDocument, article);
-        extIncQuantity = addGProp(quantGroup, "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
         notZeroExtIncQuantity = addJProp("Есть в перв. док.", notZero, 2, extIncQuantity, 1, 2);
 
         intraQuantity = addDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
@@ -391,7 +425,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         invQuantity = addDProp(quantGroup, "Кол-во инв.", Class.doubleClass, invDocument, article);
 
-        extOutQuantity = addUProp("Кол-во расх.", 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2);
+        returnQuantity = addDProp(quantGroup, "Кол-во возвр.", Class.doubleClass, returnDocument, article);
+
+        receiptQuantity = addDProp(quantGroup, "Кол-во в чеке", Class.doubleClass, receipt, article);
+        cashSaleQuantity = addGProp(quantGroup, "Кол-во прод.", receiptQuantity, true, receiptSaleDocument, 1, 2);
+
+        extOutQuantity = addUProp("Кол-во расх.", 1, 2, 1, returnQuantity, 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2, 1, cashSaleQuantity, 1, 2);
 
         exchangeQuantity = addDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
@@ -421,7 +460,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         balanceStoreQuantity = addUProp(balanceGroup, "Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
 //        OstArtStore = addUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
 
-        // -------------------------- Входные параметры ---------------------------- //
+        // -------------------------- Даты ---------------------------- //
 
         extIncDate = addDProp(baseGroup, "Дата", Class.date, extIncomeDocument);
         intraDate = addDProp(baseGroup, "Дата", Class.date, intraDocument);
@@ -435,6 +474,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         docDate = addUProp("Дата", 2, 1, 1, dateDocument, 1, 1, secDocDate, 1, 1, primDocDate, 1);
         groeqDocDate = addJProp("Дата>=док.", groeq2, 2, docDate, 1, 2);
         greaterDocDate = addJProp("Дата>док.", greater2, 2, docDate, 1, 2);
+
+        // -------------------------- Внешний приход ---------------------------- //
 
         extIncDetailPriceIn = addDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, extIncomeDetail);
         extIncDetailVATIn = addDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, extIncomeDetail);
@@ -562,8 +603,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailSumPriceOut = addJProp("Сумма розн. (вх.)", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceOut, 1);
         intraSumPriceOut = addJProp("Сумма розн. (вн.)", multiplyDouble2, 2, intraQuantity, 1, 2, paramsPriceOut, 1, 2);
 
-        extOutSumPriceOut = addJProp("Сумма розн. (расх.)", multiplyDouble2, 2, extOutQuantity, 1, 2, paramsPriceOut, 1, 2);
-        extOutDocumentSumPriceOut = addGProp("Сумма розн. (всего)", extOutSumPriceOut, true, 1);
+        receiptSumPriceOut = addDProp(outSumsGroup, "Сумма по чеку", Class.doubleClass, receipt, article);
+        receiptDocumentSumPriceOut = addGProp(outSumsGroup, "Сумма чека", receiptSumPriceOut, true, 1);
+        cashSaleSumPriceOut = addGProp(outSumsGroup, "Сумма прод.", receiptSumPriceOut, true, receiptSaleDocument, 1, 2);
+
+        LP extOutParamsSumPriceOut = addJProp("Сумма розн. (расх. расч.)", multiplyDouble2, 2, extOutQuantity, 1, 2, paramsPriceOut, 1, 2);
+        extOutSumPriceOut = addUProp("Сумма розн. (расх. расч.)", 1, 2, 1, extOutParamsSumPriceOut, 1, 2, 1, cashSaleSumPriceOut, 1, 2);
+        extOutDocumentSumPriceOut = addGProp(outSumsGroup, "Сумма розн. (всего)", extOutSumPriceOut, true, 1);
 
         exchIncSumPriceOut = addJProp("Сумма розн. (перес. +)", multiplyDouble2, 2, exchIncQuantity, 1, 2, paramsPriceOut, 1, 2);
         exchOutSumPriceOut = addJProp("Сумма розн. (перес. -)", multiplyDouble2, 2, exchOutQuantity, 1, 2, paramsPriceOut, 1, 2);
@@ -592,8 +638,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         outSumAccount = addUProp("Сумма учетн. расх.", 1, 2, 1, extOutSumAccount, 1, 2, 1, intraSumAccount, 1, 2, 1, exchOutSumAccount, 1, 2);
 
 
-        incDocSumAccount = addGProp("Сумма учетн. прих. на скл.", incSumAccount, true, 1);
-        outDocSumAccount = addGProp("Сумма учетн. расх. со скл.", outSumAccount, true, 1);
+        incDocSumAccount = addGProp(accountGroup, "Сумма учетн. прих. на скл.", incSumAccount, true, 1);
+        outDocSumAccount = addGProp(accountGroup, "Сумма учетн. расх. со скл.", outSumAccount, true, 1);
 
         incDocStoreSumAccount = addJProp("Сумма учетн. прих. по скл.", multiplyDouble2, 2, isDocIncSStore, 1, 2, incDocSumAccount, 1);
         outDocStoreSumAccount = addJProp("Сумма учетн. расх. по скл.", multiplyDouble2, 2, isDocOutSStore, 1, 2, outDocSumAccount, 1);
@@ -735,8 +781,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Class articleClothes = addObjectClass("Одежда", article);
         addDProp(baseGroup, "Модель", Class.string, articleClothes);
 
+        Class shirtSize = addObjectClass("Размер майки", objectClass);
         Class articleTShirt = addObjectClass("Майки", articleClothes);
-        addDProp(baseGroup, "Размер", Class.string, articleTShirt);
+        addJProp(baseGroup, "Размер", name, 1, addDProp("Код размера", shirtSize, articleTShirt), 1);
 
         Class articleJeans = addObjectClass("Джинсы", articleClothes);
         addDProp(baseGroup, "Ширина", Class.integer, articleJeans);
@@ -835,9 +882,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                 NavigatorForm extIncForm = new ExtIncNavigatorForm(extIncDetailForm, 115, "Внешний приход по товарам");
             NavigatorForm intraForm = new IntraNavigatorForm(primaryData, 120, "Внутреннее перемещение");
             NavigatorForm extOutForm = new ExtOutNavigatorForm(primaryData, 130, "Внешний расход");
+                NavigatorForm cashSaleForm = new CashSaleNavigatorForm(extOutForm, 131, "Реализация по кассе");
+                    NavigatorForm receiptForm = new ReceiptNavigatorForm(cashSaleForm, 1310, "Реализация по кассе (чеки)");
                 NavigatorForm clearingSaleForm = new ClearingSaleNavigatorForm(extOutForm, 132, "Реализация по б/н расчету");
                 NavigatorForm invForm = new InvNavigatorForm(extOutForm, 134, "Инвентаризация", false);
                     NavigatorForm invStoreForm = new InvNavigatorForm(invForm, 1341, "Инвентаризация по складам", true);
+                NavigatorForm returnForm = new ReturnNavigatorForm(extOutForm, 136, "Возврат поставщику");
             NavigatorForm exchangeForm = new ExchangeNavigatorForm(primaryData, 140, "Пересорт");
                 NavigatorForm exchangeMForm = new ExchangeMNavigatorForm(exchangeForm, 142, "Сводный пересорт");
             NavigatorForm revalueForm = new RevalueNavigatorForm(primaryData, 150, "Переоценка", false);
@@ -976,6 +1026,55 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         }
     }
 
+    private class CashSaleNavigatorForm extends TmcNavigatorForm {
+
+        public CashSaleNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectImplement objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", Properties,
+                                                                        baseGroup, storeGroup, outSumsGroup, accountGroup);
+            ObjectImplement objArt = addSingleGroupObjectImplement(article, "Товар", Properties,
+                                                                        baseGroup, true);
+
+            addPropertyView(objDoc, objArt, Properties,
+                        balanceGroup, cashSaleQuantity, outSumsGroup, accountGroup);
+
+            addArticleRegularFilterGroup(getPropertyView(cashSaleQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View);
+        }
+    }
+
+    private class ReceiptNavigatorForm extends TmcNavigatorForm {
+
+        public ReceiptNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectImplement objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", Properties,
+                                                                        baseGroup, storeGroup, outSumsGroup, accountGroup);
+            objDoc.GroupTo.gridClassView = false;
+            objDoc.GroupTo.singleViewType = true;
+
+            ObjectImplement objReceipt = addSingleGroupObjectImplement(receipt, "Чек", Properties,
+                                                                        baseGroup, outSumsGroup);
+            ObjectImplement objArt = addSingleGroupObjectImplement(article, "Товар", Properties,
+                                                                        baseGroup, true);
+
+            addPropertyView(objDoc, objArt, Properties,
+                        balanceGroup);
+
+            addPropertyView(objReceipt, objArt, Properties,
+                        receiptQuantity, incPrmsGroup, outPrmsGroup, outSumsGroup);
+
+            addPropertyView(objDoc, objArt, Properties,
+                        accountGroup);
+
+            addFixedFilter(new Filter(addPropertyObjectImplement(receiptSaleDocument, objReceipt), Filter.EQUALS, new ObjectValueLink(objDoc)));
+
+            addArticleRegularFilterGroup(getPropertyView(receiptQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View);
+        }
+    }
+
     private class ClearingSaleNavigatorForm extends TmcNavigatorForm {
 
         public ClearingSaleNavigatorForm(NavigatorElement parent, int ID, String caption) {
@@ -1022,6 +1121,24 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                 addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), Filter.EQUALS, new ObjectValueLink(objStore)));
             else
                 addPropertyView(Properties, storeGroup, false, objDoc);
+        }
+    }
+
+    private class ReturnNavigatorForm extends TmcNavigatorForm {
+
+        public ReturnNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectImplement objDoc = addSingleGroupObjectImplement(returnDocument, "Документ", Properties,
+                                                                        baseGroup, storeGroup, supplierGroup);
+            ObjectImplement objArt = addSingleGroupObjectImplement(article, "Товар", Properties,
+                                                                        baseGroup, true);
+
+            addPropertyView(objDoc, objArt, Properties,
+                    balanceGroup, returnQuantity, incPrmsGroup, outPrmsGroup);
+
+            addArticleRegularFilterGroup(getPropertyView(returnQuantity.Property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.Property).View);
         }
     }
 
@@ -1342,10 +1459,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         ClassQuantity.put(supplier,5);
         ClassQuantity.put(customer,5);
         ClassQuantity.put(extIncomeDocument,Modifier*2);
-        ClassQuantity.put(extIncomeDetail,Modifier*10*PropModifier);
+        ClassQuantity.put(extIncomeDetail,Modifier*100*PropModifier);
         ClassQuantity.put(intraDocument,Modifier);
+        ClassQuantity.put(cashSaleDocument,Modifier);
+        ClassQuantity.put(receipt,Modifier*8);
         ClassQuantity.put(clearingSaleDocument,((Double)(Modifier*0.5)).intValue());
         ClassQuantity.put(invDocument,((Double)(Modifier*0.2)).intValue());
+        ClassQuantity.put(returnDocument,((Double)(Modifier*0.3)).intValue());
         ClassQuantity.put(exchangeDocument,Modifier);
         ClassQuantity.put(revalDocument,((Double)(Modifier*0.5)).intValue());
 
@@ -1370,7 +1490,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncDetailQuantity.putNotNulls(PropNotNulls,0);
         extIncDetailPriceIn.putNotNulls(PropNotNulls,0);
         extIncDetailVATIn.putNotNulls(PropNotNulls,0);
+        receiptSaleDocument.putNotNulls(PropNotNulls,0);
         clearingSaleCustomer.putNotNulls(PropNotNulls,0);
+        returnSupplier.putNotNulls(PropNotNulls,0);
 
 //        LDP extIncDetailSumVATIn, extIncDetailSumPay;
 //        LDP extIncDetailAdd, extIncDetailVATOut, extIncDetailLocTax;
@@ -1380,9 +1502,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
         PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*PropModifier*2);
+        PropQuantity.put((DataProperty)receiptQuantity.Property,Modifier*PropModifier*30);
+        PropQuantity.put((DataProperty)receiptSumPriceOut.Property,Modifier*PropModifier*30);
         PropQuantity.put((DataProperty)clearingSaleQuantity.Property,Modifier*PropModifier*8);
         PropQuantity.put((DataProperty)invQuantity.Property,Modifier*PropModifier);
         PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*PropModifier);
+        PropQuantity.put((DataProperty)returnQuantity.Property,Modifier*PropModifier);
         PropQuantity.put((DataProperty)isRevalued.Property,Modifier*PropModifier);
 
         PropQuantity.putAll(autoQuantity(0,paramsPriceIn,paramsVATIn,paramsAdd,paramsVATOut,paramsLocTax,
