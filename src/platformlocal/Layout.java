@@ -594,6 +594,10 @@ class ReportDockable extends FormDockable {
         try {
 
             JasperReport report = JasperCompileManager.compileReport(design);
+
+            // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
+            remoteForm.runEndApply();
+            
             JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),ByteArraySerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
             return new JRViewer(print);
 

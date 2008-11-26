@@ -674,8 +674,22 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     
     abstract void InitNavigators();
     
-    void AddDataProperty(DataProperty Property) {
+    void addDataProperty(DataProperty Property) {
         Properties.add(Property);
+    }
+
+    void setPropOrder(Property prop, Property propRel, boolean before) {
+
+        int indProp = Properties.indexOf(prop);
+        int indPropRel = Properties.indexOf(propRel);
+
+        if (before) {
+            if (indPropRel < indProp) {
+                for (int i = indProp; i >= indPropRel + 1; i--)
+                    Properties.set(i, Properties.get(i-1));
+                Properties.set(indPropRel, prop);
+            }
+        }
     }
 
     Integer AddObject(DataSession Session, Class Class) throws SQLException {
@@ -876,7 +890,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         for(Class Int : Params) {
             ListProperty.AddInterface(Int);
         }
-        AddDataProperty(Property);
+        addDataProperty(Property);
 
         if (group != null)
             group.add(Property);

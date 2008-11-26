@@ -30,7 +30,7 @@ public class Main {
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter("testplat","localhost");
-//          return new MSSQLDataAdapter();
+//        return new MSSQLDataAdapter("testplat", "crush");
     }
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {

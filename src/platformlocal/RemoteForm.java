@@ -674,8 +674,12 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     // ----------------------- Применение изменений ------------------------------- //
+    public void runEndApply() throws SQLException {
+        endApply();
+    }
+
     public byte[] getFormChangesByteArray() throws SQLException {
-        return ByteArraySerializer.serializeFormChanges(EndApply());
+        return ByteArraySerializer.serializeFormChanges(endApply());
     }
       
     // --------------------------------------------------------------------------------------- //
@@ -756,7 +760,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         }
     }
 
-    private void ChangeObject(ObjectImplement object, Integer value) throws SQLException {
+    void ChangeObject(ObjectImplement object, Integer value) throws SQLException {
 
         if (object.idObject == value) return;
 
@@ -1084,7 +1088,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     private static int DIRECTION_UP = 1;
     private static int DIRECTION_CENTER = 2;
 
-    private FormChanges EndApply() throws SQLException {
+    private FormChanges endApply() throws SQLException {
 
         FormChanges Result = new FormChanges();
 
@@ -1122,6 +1126,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             // порядки
             for(PropertyView Order : Orders.keySet())
                 Order.View.GetApplyObject().MapOrders.add(Order);
+
         }
 
         for(GroupObjectImplement Group : Groups) {
@@ -1131,7 +1136,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             }
             // если изменились :
             // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3)
-            boolean UpdateKeys = (Group.Updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0;
+            boolean updateKeys = (Group.Updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0;
+
             // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
             // фильтры
             // если изменилась структура или кто-то изменил класс, перепроверяем
@@ -1140,12 +1146,12 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 for(Filter Filt : Group.MapFilters)
                     if(Filt.IsInInterface(Group)) NewFilter.add(Filt);
 
-                UpdateKeys = UpdateKeys || !NewFilter.equals(Group.Filters);
+                updateKeys |= !NewFilter.equals(Group.Filters);
                 Group.Filters = NewFilter;
             } else
                 for(Filter Filt : Group.MapFilters)
                     if(Filt.ClassUpdated(Group))
-                        UpdateKeys = (Filt.IsInInterface(Group)?Group.Filters.add(Filt):Group.Filters.remove(Filt)) || UpdateKeys;
+                        updateKeys |= (Filt.IsInInterface(Group)?Group.Filters.add(Filt):Group.Filters.remove(Filt));
 
             // порядки
             boolean SetOrderChanged = false;
@@ -1161,28 +1167,28 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 for(PropertyView Order : Group.MapOrders)
                     if(SetOrders.contains(Order.View)) NewOrder.put(Order.View,Orders.get(Order));
 
-                UpdateKeys = UpdateKeys || SetOrderChanged || !(new ArrayList(Group.Orders.entrySet())).equals(new ArrayList(NewOrder.entrySet())); //Group.Orders.equals(NewOrder)
+                updateKeys |= SetOrderChanged || !(new ArrayList(Group.Orders.entrySet())).equals(new ArrayList(NewOrder.entrySet())); //Group.Orders.equals(NewOrder)
                 Group.Orders = NewOrder;
             }
 
             // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
-            if(!UpdateKeys)
+            if(!updateKeys)
                 for(Filter Filt : Group.Filters)
-                    if(Filt.ObjectUpdated(Group)) {UpdateKeys = true; break;}
-            if(!UpdateKeys)
+                    if(Filt.ObjectUpdated(Group)) {updateKeys = true; break;}
+            if(!updateKeys)
                 for(PropertyObjectImplement Order : Group.Orders.keySet())
-                    if(Order.ObjectUpdated(Group)) {UpdateKeys = true; break;}
+                    if(Order.ObjectUpdated(Group)) {updateKeys = true; break;}
             // проверим на изменение данных
-            if(!UpdateKeys)
+            if(!updateKeys)
                 for(Filter Filt : Group.Filters)
-                    if(DataChanged && Filt.DataUpdated(ChangedProps)) {UpdateKeys = true; break;}
-            if(!UpdateKeys)
+                    if(DataChanged && Filt.DataUpdated(ChangedProps)) {updateKeys = true; break;}
+            if(!updateKeys)
                 for(PropertyObjectImplement Order : Group.Orders.keySet())
-                    if(DataChanged && ChangedProps.contains(Order.Property)) {UpdateKeys = true; break;}
+                    if(DataChanged && ChangedProps.contains(Order.Property)) {updateKeys = true; break;}
             // классы удалились\добавились
-            if(!UpdateKeys && DataChanged) {
+            if(!updateKeys && DataChanged) {
                 for(ObjectImplement Object : Group)
-                    if(ChangedClasses.contains(Object.GridClass)) {UpdateKeys = true; break;}
+                    if(ChangedClasses.contains(Object.GridClass)) {updateKeys = true; break;}
             }
 
             // по возврастанию (0), убыванию (1), центру (2) и откуда начинать
@@ -1209,7 +1215,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             if (pendingChanges == CHANGEGROUPOBJECT_FIRSTROW) {
                 ObjectSeeks = new GroupObjectValue();
                 currentObject = null;
-                UpdateKeys = true;
+                updateKeys = true;
                 hasMoreKeys = false;
                 Direction = DIRECTION_DOWN;
             }
@@ -1217,7 +1223,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             if (pendingChanges == CHANGEGROUPOBJECT_LASTROW) {
                 ObjectSeeks = new GroupObjectValue();
                 currentObject = null;
-                UpdateKeys = true;
+                updateKeys = true;
                 hasMoreKeys = false;
                 Direction = DIRECTION_UP;
             }
@@ -1227,7 +1233,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 if(Property.GetApplyObject()==Group) {
                     PropertySeeks.put(Property,UserPropertySeeks.get(Property));
                     currentObject = null;
-                    UpdateKeys = true;
+                    updateKeys = true;
                     Direction = DIRECTION_CENTER;
                 }
             }
@@ -1235,25 +1241,25 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 if(Object.GroupTo==Group) {
                     ObjectSeeks.put(Object,UserObjectSeeks.get(Object));
                     currentObject.put(Object,UserObjectSeeks.get(Object));
-                    UpdateKeys = true;
+                    updateKeys = true;
                     Direction = DIRECTION_CENTER;
                 }
             }
 
-            if(!UpdateKeys && (Group.Updated & GroupObjectImplement.UPDATED_CLASSVIEW) !=0) {
+            if(!updateKeys && (Group.Updated & GroupObjectImplement.UPDATED_CLASSVIEW) !=0) {
                // изменился "классовый" вид перечитываем св-ва
                 ObjectSeeks = Group.GetObjectValue();
-                UpdateKeys = true;
+                updateKeys = true;
                 Direction = DIRECTION_CENTER;
             }
 
-            if(!UpdateKeys && Group.gridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
+            if(!updateKeys && Group.gridClassView && (Group.Updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
                 // листание - объекты стали близки к краю (object не далеко от края - надо хранить список не базу же дергать) - изменился объект
                 int KeyNum = Group.Keys.indexOf(Group.GetObjectValue());
                 // если меньше PageSize осталось и сверху есть ключи
                 if(KeyNum<Group.PageSize && Group.UpKeys) {
                     Direction = DIRECTION_UP;
-                    UpdateKeys = true;
+                    updateKeys = true;
 
                     int lowestInd = Group.PageSize*2-1;
                     if (lowestInd >= Group.Keys.size()) {
@@ -1268,7 +1274,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     // наоборот вниз
                     if(KeyNum>=Group.Keys.size()-Group.PageSize && Group.DownKeys) {
                         Direction = DIRECTION_DOWN;
-                        UpdateKeys = true;
+                        updateKeys = true;
 
                         int highestInd = Group.Keys.size()-Group.PageSize*2;
                         if (highestInd < 0) {
@@ -1282,7 +1288,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 }
             }
 
-            if(UpdateKeys) {
+            if(updateKeys) {
                 // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
 
                 // проверим на интегральные классы в Group'e

@@ -216,7 +216,7 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=11111");
         try {
         try {
             Connect.createStatement().execute("DROP DATABASE "+DataBase);
@@ -230,7 +230,7 @@ class MSSQLDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=11111");
         Connect.createStatement().execute("USE "+DataBase);
 
         return Connect;
