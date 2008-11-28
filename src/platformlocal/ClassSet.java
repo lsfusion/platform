@@ -349,8 +349,8 @@ class ChangeClass<P extends PropertyInterface> {
           Value = new OrClassSet();
       }
 
-      public ChangeClass(Class ValueClass) {
-          Value = new OrClassSet(ValueClass);
+      public ChangeClass(Class valueClass) {
+          Value = new OrClassSet(valueClass);
           Interface = new InterfaceClassSet<P>();
       }
     */
@@ -528,7 +528,7 @@ class InterfaceClassSet<P extends PropertyInterface> extends GraphNodeSet<Interf
     void Out(Collection<PropertyInterface> ToDraw) {
         for(ClassInterface InClass : this) {
             for(PropertyInterface Key : ToDraw)
-                System.out.print(InClass.get(Key).ID.toString()+" ");
+                System.out.print(InClass.get(Key).sID.toString()+" ");
             System.out.println();
        }
    }

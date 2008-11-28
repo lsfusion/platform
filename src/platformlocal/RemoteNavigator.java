@@ -103,6 +103,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         ObjectImplementMapper objectMapper = new ObjectImplementMapper();
         GroupObjectImplementMapper groupObjectMapper = new GroupObjectImplementMapper(objectMapper);
         PropertyObjectImplementMapper propertyMapper = new PropertyObjectImplementMapper(objectMapper);
+        PropertyViewMapper propertyViewMapper = new PropertyViewMapper(propertyMapper, groupObjectMapper);
         FilterMapper filterMapper = new FilterMapper(objectMapper, propertyMapper);
 
         remoteForm.Groups = new ArrayList();
@@ -112,7 +113,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.Properties = new ArrayList();
         for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.propertyViews) {
-            remoteForm.Properties.add(new PropertyView(navigatorProperty.ID, propertyMapper.doMapping(navigatorProperty.View), groupObjectMapper.doMapping(navigatorProperty.ToDraw)));
+            remoteForm.Properties.add(propertyViewMapper.doMapping(navigatorProperty));
         }
 
         remoteForm.fixedFilters = new HashSet();
@@ -157,6 +158,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             if (mapper.containsKey(objKey)) return mapper.get(objKey);
 
             ObjectImplement objValue = new ObjectImplement(objKey.ID, objKey.BaseClass);
+            objValue.sID = objKey.sID;
             objValue.caption = objKey.caption;
 
             mapper.put(objKey, objValue);
@@ -209,6 +211,29 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             for (Map.Entry<? extends PropertyInterface,ObjectImplement> entry : propKey.Mapping.entrySet()) {
                 propValue.Mapping.put(entry.getKey(), objectMapper.doMapping(entry.getValue()));
             }
+
+            mapper.put(propKey, propValue);
+            return propValue;
+        }
+    }
+
+    private class PropertyViewMapper {
+
+        private Map<PropertyView, PropertyView> mapper = new HashMap();
+        PropertyObjectImplementMapper propertyMapper;
+        GroupObjectImplementMapper groupMapper;
+
+        PropertyViewMapper(PropertyObjectImplementMapper ipropertyMapper, GroupObjectImplementMapper igroupMapper) {
+            propertyMapper = ipropertyMapper;
+            groupMapper = igroupMapper;
+        }
+
+        PropertyView doMapping(PropertyView<?> propKey) {
+
+            if (mapper.containsKey(propKey)) return mapper.get(propKey);
+
+            PropertyView propValue = new PropertyView(propKey.ID, propertyMapper.doMapping(propKey.View), groupMapper.doMapping(propKey.ToDraw));
+            propValue.sID = propKey.sID;
 
             mapper.put(propKey, propValue);
             return propValue;
@@ -446,6 +471,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     PropertyView addPropertyView(GroupObjectImplement groupObject, PropertyObjectImplement propertyImplement) {
 
         PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,(groupObject == null) ? propertyImplement.GetApplyObject() : groupObject);
+        propertyView.sID = propertyImplement.Property.sID; 
         propertyViews.add(propertyView);
         return propertyView;
     }

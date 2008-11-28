@@ -68,6 +68,12 @@ class ObjectImplement {
     // идентификатор (в рамках формы)
     int ID = 0;
 
+    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
+    String sID;
+    public String getSID() {
+        if (sID != null) return sID; else return "obj" + ID;
+    }
+
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup,Map<ObjectImplement,SourceExpr> ClassSource) {
         return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):new ValueSourceExpr(idObject,Type.Object));
     }
@@ -92,7 +98,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
     GroupObjectImplement(int iID) {
 
         if (iID >= RemoteForm.GID_SHIFT)
-            throw new RuntimeException("ID must be less than " + RemoteForm.GID_SHIFT);
+            throw new RuntimeException("sID must be less than " + RemoteForm.GID_SHIFT);
 
         ID = iID;
     }
@@ -312,6 +318,12 @@ class PropertyView<P extends PropertyInterface> {
 
     // идентификатор (в рамках формы)
     int ID = 0;
+
+    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
+    String sID;
+    public String getSID() {
+        if (sID != null) return sID; else return "prop" + ID;
+    }
 }
 
 class AbstractFormChanges<T,V,Z> {
@@ -686,7 +698,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     // ----------------------------------- Управляющий интерфейс ----------------------------- //
     // --------------------------------------------------------------------------------------- //
 
-    // ----------------------------------- Поиск объектов по ID ------------------------------ //
+    // ----------------------------------- Поиск объектов по sID ------------------------------ //
 
     GroupObjectImplement getGroupObjectImplement(int groupID) {
         for (GroupObjectImplement groupObject : Groups)
@@ -1691,28 +1703,33 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         OrderedJoinQuery<ObjectImplement,PropertyView> Query = new OrderedJoinQuery<ObjectImplement,PropertyView>(ReadObjects);
 
-        for(GroupObjectImplement Group : Groups) {
+        for (GroupObjectImplement group : Groups) {
 
-            if (ReportObjects.contains(Group)) {
+            if (ReportObjects.contains(group)) {
 
                 // не фиксированные ключи
-                Group.fillSourceSelect(Query,ReportObjects,BL.TableFactory,Session);
+                group.fillSourceSelect(Query,ReportObjects,BL.TableFactory,Session);
 
                 // закинем Order'ы
-                for(Map.Entry<PropertyObjectImplement,Boolean> Order : Group.Orders.entrySet())
+                for(Map.Entry<PropertyObjectImplement,Boolean> Order : group.Orders.entrySet())
                     Query.Orders.put(Order.getKey().getSourceExpr(ReportObjects,Query.MapKeys,Session,false),Order.getValue());
 
-                for(ObjectImplement Object : Group)
+                for(ObjectImplement Object : group)
                     Query.Orders.put(Object.getSourceExpr(ReportObjects,Query.MapKeys),false);
             }
         }
 
         ReportData Result = new ReportData();
 
+        for (GroupObjectImplement group : Groups)
+            for (ObjectImplement object : group)
+                Result.objectsID.put(object.getSID(), object.ID);
+
         for(PropertyView Property : Properties) {
             Query.add(Property,Property.View.getSourceExpr(ReportObjects,Query.MapKeys,Session, false));
 
-            Result.Properties.put(Property.ID,new HashMap());
+            Result.propertiesID.put(Property.getSID(), Property.ID);
+            Result.properties.put(Property.ID,new HashMap());
         }
 
         LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Session);
@@ -1720,13 +1737,17 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> Row : ResultSelect.entrySet()) {
             Map<Integer,Integer> GroupValue = new HashMap();
             for(GroupObjectImplement Group : Groups)
-                for(ObjectImplement Object : Group)
-                    GroupValue.put(Object.ID,Row.getKey().get(Object));
+                for(ObjectImplement Object : Group) {
+                    if (ReadObjects.contains(Object))
+                        GroupValue.put(Object.ID,Row.getKey().get(Object));
+                    else
+                        GroupValue.put(Object.ID,Object.idObject);
+                }
 
-            Result.ReadOrder.add(GroupValue);
+            Result.readOrder.add(GroupValue);
 
             for(PropertyView Property : Properties)
-                Result.Properties.get(Property.ID).put(GroupValue,Row.getValue().get(Property));
+                Result.properties.get(Property.ID).put(GroupValue,Row.getValue().get(Property));
         }
 
 //        Result.Out();
@@ -1738,41 +1759,45 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
 // поле для отрисовки отчета
 class ReportDrawField {
-    String ID;
-    String Caption;
-    java.lang.Class ValueClass;
-    int Width;
-    byte Alignment;
 
-    ReportDrawField(String iID,String iCaption,Type DBType) {
-        ID = iID;
-        Caption = iCaption;
-        DBType.fillReportDrawField(this);
+    String sID;
+    String caption;
+    java.lang.Class valueClass;
+    int width;
+    byte alignment;
+
+    ReportDrawField(String isID,String iCaption,Type dbType) {
+
+        sID = isID;
+        caption = iCaption;
+        dbType.fillReportDrawField(this);
     }
 
-    int GetCaptionWidth() {
-        return Caption.length()+3;
+    int getCaptionWidth() {
+        return caption.length()+3;
     }
 }
 
 // считанные данные (должен быть интерфейс Serialize)
 class ReportData implements JRDataSource, Serializable {
     
-    List<Map<Integer,Integer>> ReadOrder = new ArrayList();
-    Map<Integer,Map<Map<Integer,Integer>,Object>> Properties = new HashMap();
+    List<Map<Integer,Integer>> readOrder = new ArrayList();
+    Map<String,Integer> objectsID = new HashMap();
+    Map<String,Integer> propertiesID = new HashMap();
+    Map<Integer,Map<Map<Integer,Integer>,Object>> properties = new HashMap();
     
     void Out() {
-        for(Integer Object : ReadOrder.get(0).keySet())
+        for(Integer Object : readOrder.get(0).keySet())
             System.out.print("obj"+Object+" ");
-        for(Integer Property : Properties.keySet())
+        for(Integer Property : properties.keySet())
             System.out.print("prop"+Property+" ");
         System.out.println();
 
-        for(Map<Integer,Integer> Row : ReadOrder) {
-            for(Integer Object : ReadOrder.get(0).keySet())
+        for(Map<Integer,Integer> Row : readOrder) {
+            for(Integer Object : readOrder.get(0).keySet())
                 System.out.print(Row.get(Object)+" ");
-            for(Integer Property : Properties.keySet())
-                System.out.print(Properties.get(Property).get(Row)+" ");
+            for(Integer Property : properties.keySet())
+                System.out.print(properties.get(Property).get(Row)+" ");
             System.out.println();
         }
     }
@@ -1780,17 +1805,25 @@ class ReportData implements JRDataSource, Serializable {
     int CurrentRow = -1;
     public boolean next() throws JRException {
         CurrentRow++;
-        return CurrentRow<ReadOrder.size();
+        return CurrentRow< readOrder.size();
     }
 
     public Object getFieldValue(JRField jrField) throws JRException {
         
-        String FieldName = jrField.getName();
+        String fieldName = jrField.getName();
         Object Value = null;
-        if(FieldName.startsWith("obj"))
-            Value = ReadOrder.get(CurrentRow).get(Integer.parseInt(FieldName.substring(3)));
-        else
-            Value = Properties.get(Integer.parseInt(FieldName.substring(4))).get(ReadOrder.get(CurrentRow));
+        if(objectsID.containsKey(fieldName))
+            Value = readOrder.get(CurrentRow).get(objectsID.get(fieldName));
+        else {
+            Integer propertyID = propertiesID.get(fieldName);
+            if (propertyID == null) throw new RuntimeException("Поле " + fieldName + " отсутствует в переданных данных");
+            Value = properties.get(propertiesID.get(fieldName)).get(readOrder.get(CurrentRow));
+        }
+
+
+        if (Date.class.getName().equals(jrField.getValueClassName())) {
+            Value = DateConverter.intToDate((Integer)Value);
+        }
 
         if(Value instanceof String)
             Value = ((String)Value).trim();

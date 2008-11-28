@@ -214,7 +214,7 @@ class ObjectTable extends Table {
     }
 }
 
-// таблица счетчика ID
+// таблица счетчика sID
 class IDTable extends Table {
     KeyField Key;
     PropertyField Value;
@@ -778,7 +778,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         // инициализируем таблицы
         TableFactory.FillDB(Session, createTable);
 
-        // запишем ID'ки
+        // запишем sID'ки
         int IDPropNum = 0;
         for(Property Property : Properties)
             Property.ID = IDPropNum++;
@@ -808,7 +808,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 PropNum = PropNum + 1;
                 Tables.put(Table, PropNum);
 
-                PropertyField PropField = new PropertyField("prop"+PropNum.toString(),Property.getType());
+                PropertyField PropField = new PropertyField(Property.getSID(),Property.getType());
                 Table.Properties.add(PropField);
                 Property.Field = PropField;
             }
@@ -884,7 +884,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     LDP addDProp(AbstractGroup group, String caption, Class Value, Class... Params) {
+        return addDProp(group, null, caption, Value, Params);
+    }
+    LDP addDProp(AbstractGroup group, String sID, String caption, Class Value, Class... Params) {
         DataProperty Property = new DataProperty(TableFactory,Value);
+        Property.sID = sID;
         Property.caption = caption;
         LDP ListProperty = new LDP(Property);
         for(Class Int : Params) {
@@ -982,7 +986,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     LJP addJProp(AbstractGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
+        return addJProp(group, null, caption, MainProp, IntNum, Params);
+    }
+
+    LJP addJProp(AbstractGroup group, String sID, String caption, LP MainProp, int IntNum, Object... Params) {
         JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
+        Property.sID = sID;
         Property.caption = caption;
         LJP ListProperty = new LJP(Property,IntNum);
         int MainInt = 0;
@@ -1002,13 +1011,20 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     LGP addGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
         return addGProp(null, caption, GroupProp, Sum, Params);
     }
+
     LGP addGProp(AbstractGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
+        return addGProp(group, null, caption, GroupProp, Sum, Params);
+    }
+
+    LGP addGProp(AbstractGroup group, String sID, String caption, LP GroupProp, boolean Sum, Object... Params) {
 
         GroupProperty Property;
         if(Sum)
             Property = new SumGroupProperty(TableFactory,GroupProp.Property);
         else
             Property = new MaxGroupProperty(TableFactory,GroupProp.Property);
+        
+        Property.sID = sID;
         Property.caption = caption;
 
         LGP ListProperty = new LGP(Property,GroupProp);
@@ -1028,6 +1044,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
     
     LUP addUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
+        return addUProp(group, null, caption, UnionType, IntNum, Params);
+    }
+
+    LUP addUProp(AbstractGroup group, String sID, String caption, int UnionType, int IntNum, Object... Params) {
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
@@ -1040,6 +1060,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 Property = new OverrideUnionProperty(TableFactory);
                 break;
         }
+        Property.sID = sID;
         Property.caption = caption;
         
         LUP ListProperty = new LUP(Property,IntNum);
@@ -1406,11 +1427,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 int NumChanges = Randomizer.nextInt(3)+1;
                 for(int in=0;in<NumChanges;in++) {                    
 /*                    // теперь определяем класс найденного объекта
-                    Class ValueClass = null;
+                    Class valueClass = null;
                     if(ChangeProp.Value instanceof ObjectClass)
-                        ValueClass = objectClass.FindClassID(ValueObject);
+                        valueClass = objectClass.FindClassID(ValueObject);
                     else
-                        ValueClass = ChangeProp.Value;*/
+                        valueClass = ChangeProp.Value;*/
 
                     // определяем входные классы
                     InterfaceClass<DataPropertyInterface> InterfaceClasses = CollectionExtend.getRandom(ChangeProp.getClassSet(ClassSet.universal),Randomizer);

@@ -43,21 +43,21 @@ public class Main {
         KeyField Table1Key2 = new KeyField("key2",Type.Integer);
         Table1.Keys.add(Table1Key2);
         PropertyField Table1Prop1 = new PropertyField("prop1",Type.Integer);
-        Table1.Properties.add(Table1Prop1);
+        Table1.properties.add(Table1Prop1);
         PropertyField Table1Prop2 = new PropertyField("prop2",Type.Integer);
-        Table1.Properties.add(Table1Prop2);
+        Table1.properties.add(Table1Prop2);
         PropertyField Table1Prop3 = new PropertyField("prop3",Type.Integer);
-        Table1.Properties.add(Table1Prop3);
+        Table1.properties.add(Table1Prop3);
         PropertyField Table1Prop4 = new PropertyField("prop4",Type.Integer);
-        Table1.Properties.add(Table1Prop4);
+        Table1.properties.add(Table1Prop4);
 
         Table Table2 = new Table("table2");
         KeyField Table2Key1 = new KeyField("key1",Type.Integer);
         Table2.Keys.add(Table2Key1);
         PropertyField Table2Prop1 = new PropertyField("prop1",Type.Integer);
-        Table2.Properties.add(Table2Prop1);
+        Table2.properties.add(Table2Prop1);
         PropertyField Table2Prop2 = new PropertyField("prop2",Type.Integer);
-        Table2.Properties.add(Table2Prop2);
+        Table2.properties.add(Table2Prop2);
 
         Table Table3 = new Table("table3");
         KeyField Table3Key1 = new KeyField("key1",Type.Integer);
@@ -65,7 +65,7 @@ public class Main {
         KeyField Table3Key2 = new KeyField("key2",Type.Integer);
         Table3.Keys.add(Table3Key2);
         PropertyField Table3Prop1 = new PropertyField("prop1",Type.Integer);
-        Table3.Properties.add(Table3Prop1);
+        Table3.properties.add(Table3Prop1);
 
         Map<KeyField,KeyField> Map3To1 = new HashMap<KeyField, KeyField>();
         Map3To1.put(Table3Key1,Table1Key1);
@@ -126,16 +126,16 @@ public class Main {
         UnionQ.add(JoinUnion,-5);*/
 /*
 //        Join<KeyField,PropertyField> Table2Join = new UniJoin<KeyField,PropertyField>(Table1,Query,true);
-//        Query.Properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
+//        Query.properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table1,false);
         Table2Join.Joins.put(Table1Key1,Query.MapKeys.get(Table1Key2));
         Table2Join.Joins.put(Table1Key2,Query.MapKeys.get(Table1Key1));
-        Query.Properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
+        Query.properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
 
 //        Join<KeyField,PropertyField> Table3Join = new Join<KeyField,PropertyField>(Table1,true);
 //        Table3Join.Joins.put(Table1Key1,Query.MapKeys.get(Table1Key2));
 //        Table3Join.Joins.put(Table1Key2,Query.MapKeys.get(Table1Key1));
-//        Query.Properties.put(Table1Prop3,Table3Join.Wheres.get(Table1Prop3));
+//        Query.properties.put(Table1Prop3,Table3Join.Wheres.get(Table1Prop3));
 
         Collection<String> SubKeys = new ArrayList();
         SubKeys.add("zkey1");
@@ -145,24 +145,24 @@ public class Main {
         JoinQuery<String,String> SubQuery = SubUnion.newJoinQuery(1);
         Join<KeyField,PropertyField> Table2Join1 = new Join<KeyField,PropertyField>(Table2,true);
         Table2Join1.Joins.put(Table2Key1,SubQuery.MapKeys.get("zkey1"));
-        SubQuery.Properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
+        SubQuery.properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
 
         Join<KeyField,PropertyField> Table2Join2 = new Join<KeyField,PropertyField>(Table1,true);
         Table2Join2.Joins.put(Table1Key1,SubQuery.MapKeys.get("zkey1"));
         Table2Join2.Joins.put(Table1Key2,SubQuery.MapKeys.get("zkey2"));
-        SubQuery.Properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop3));
+        SubQuery.properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop3));
 //        SubQuery.Wheres.add(new FieldExprCompareWhere(Table2Join1.Wheres.get(Table2Prop1),11,0));
 //        SubQuery.Wheres.add(new FieldExprCompareWhere(SubQuery.MapKeys.get("zkey1"),11,0));
 
         SubQuery = SubUnion.newJoinQuery(1);
         Table2Join1 = new Join<KeyField,PropertyField>(Table2,true);
         Table2Join1.Joins.put(Table2Key1,SubQuery.MapKeys.get("zkey1"));
-        SubQuery.Properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
+        SubQuery.properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
 
         Table2Join2 = new Join<KeyField,PropertyField>(Table1,true);
         Table2Join2.Joins.put(Table1Key1,SubQuery.MapKeys.get("zkey1"));
         Table2Join2.Joins.put(Table1Key2,SubQuery.MapKeys.get("zkey2"));
-        SubQuery.Properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop2));
+        SubQuery.properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop2));
 //        SubQuery.Wheres.add(new FieldExprCompareWhere(SubQuery.MapKeys.get("zkey1"),11,0));
 
         Join<String,String> SubJoin = new Join<String, String>(SubUnion,false);
@@ -170,7 +170,7 @@ public class Main {
 //        SubJoin.Joins.put("zkey2",TableJoin.Wheres.get(Table1Prop3));
         SubJoin.Joins.put("zkey1",Query.MapKeys.get(Table1Key1));
         SubJoin.Joins.put("zkey2",Query.MapKeys.get(Table1Key2));
-        Query.Properties.put(Table1Prop4,SubJoin.Wheres.get("zprop2"));*/
+        Query.properties.put(Table1Prop4,SubJoin.Wheres.get("zprop2"));*/
 
 //        System.out.println((new ModifyQuery(Table1,ResultQ)).getInsertSelect(Syntax));
 //        System.out.println(Query.getSelect(new ArrayList(),new ArrayList(),Adapter));
@@ -202,21 +202,21 @@ public class Main {
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2);
         Table2Join.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
 //        Table2Join.Joins.put(Table2Key1,Query.MapKeys.get(Table1Key1));
-        Query.Properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Table2Join,Table2Prop1,true));
+        Query.properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Table2Join,Table2Prop1,true));
 
         Join<KeyField,PropertyField> Table2Join2 = new Join<KeyField,PropertyField>(Table2);
         Table2Join2.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
-        Query.Properties.put(Table1Prop2,new JoinExpr<KeyField,PropertyField>(Table2Join2,Table2Prop2,true));
+        Query.properties.put(Table1Prop2,new JoinExpr<KeyField,PropertyField>(Table2Join2,Table2Prop2,true));
 
         FormulaSourceExpr Formula = new FormulaSourceExpr("prm1=3");
         Formula.Params.put("prm1",new JoinExpr<KeyField,PropertyField>(Table2Join2,Table2Prop2,true));
-        Query.Properties.put(Table1Prop3,new FormulaWhereSourceExpr(Formula,true));
+        Query.properties.put(Table1Prop3,new FormulaWhereSourceExpr(Formula,true));
 
         JoinQuery<KeyField,PropertyField> Query2 = Union.newJoinQuery(1);
         Join<KeyField,PropertyField> Q2TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query2);
         Query2.Wheres.add(new JoinWhere(Q2TableJoin));
 
-        Query2.Properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Q2TableJoin,Table1Prop1,false));
+        Query2.properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Q2TableJoin,Table1Prop1,false));
   */
  //       List<String> GroupKeys = new ArrayList();
 //        GroupKeys.add("value");
@@ -276,8 +276,8 @@ public class Main {
             Layout = new Layout(Navigator);
 
 /*            if(!Layout.Loaded) {
-                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(0)).ID,Navigator));
-                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(1)).ID,Navigator));
+                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(0)).sID,Navigator));
+                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(1)).sID,Navigator));
             }*/
 //            Frontend.add(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),"Forn 2");
 //            Rectangle Bounds = new Rectangle(300,400);

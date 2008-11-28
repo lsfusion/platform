@@ -562,8 +562,8 @@ abstract class FormDockable extends DefaultDockable {
 
     Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) { return null; }
 
-//    FormDockable(String Caption) {super(Caption);}
-//    FormDockable(Component Component,String Caption) {super(Component,Caption);}
+//    FormDockable(String caption) {super(caption);}
+//    FormDockable(Component Component,String caption) {super(Component,caption);}
 
     // закрываются пользователем
     abstract void closed();

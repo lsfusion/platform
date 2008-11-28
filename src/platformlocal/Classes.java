@@ -387,8 +387,8 @@ abstract class Type<T> {
     abstract public java.lang.Class getJavaClass() ;
 
     public void fillReportDrawField(ReportDrawField reportField) {
-        reportField.ValueClass = getJavaClass();
-        reportField.Alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
+        reportField.valueClass = getJavaClass();
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
     };
 
     abstract T read(Object Value);
@@ -423,7 +423,7 @@ class StringType extends Type<String> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.Width = 40;
+        reportField.width = 40;
     }
 
     String read(Object Value) {
@@ -448,7 +448,7 @@ abstract class IntegralType<T> extends Type<T> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.Alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
     }
 }
 
@@ -469,7 +469,7 @@ class IntegerType extends IntegralType<Integer> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.Width = 7;
+        reportField.width = 7;
    }
 
     Integer read(Object Value) {
@@ -506,7 +506,7 @@ class LongType extends IntegralType<Long> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.Width = 13;
+        reportField.width = 13;
     }
 
     Long read(Object Value) {
@@ -543,7 +543,7 @@ class DoubleType extends IntegralType<Double> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.Width = 13;
+        reportField.width = 13;
     }
 
     Double read(Object Value) {
@@ -603,7 +603,7 @@ class BitType extends IntegralType<Boolean> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);    //To change body of overridden methods use File | Settings | File Templates.
 
-        reportField.Width = 3;
+        reportField.width = 3;
     }
 }
 

@@ -177,6 +177,11 @@ class ChangeCoeffValue extends ChangeValue {
 abstract class Property<T extends PropertyInterface> extends AbstractNode implements PropertyClass<T> {
 
     int ID=0;
+    // символьный идентификатор, с таким именем создаются поля в базе и передаются в PropertyView
+    String sID;
+    public String getSID() {
+        if (sID != null) return sID; else return "prop" + ID;
+    }
 
     TableFactory TableFactory;
 
@@ -921,7 +926,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
             if(Session.Changes.RemoveClasses.contains(ValueInterface.Class))
                 RemoveInterfaces.add(ValueInterface);
 
-        // для RemoveClass без SS все за Join'им (ValueClass пока трогать не будем (так как у значения пока не закладываем механизм изменений))
+        // для RemoveClass без SS все за Join'им (valueClass пока трогать не будем (так как у значения пока не закладываем механизм изменений))
         for(DataPropertyInterface ChangedInterface : RemoveInterfaces) {
             JoinQuery<DataPropertyInterface,PropertyField> Query = new JoinQuery<DataPropertyInterface, PropertyField>(Interfaces);
             InterfaceClass<DataPropertyInterface> RemoveClass = new InterfaceClass<DataPropertyInterface>();

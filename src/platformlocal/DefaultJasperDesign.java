@@ -3,77 +3,117 @@ package platformlocal;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRAlignment;
+import net.sf.jasperreports.engine.JRPen;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.List;
+import java.awt.*;
 
 public class DefaultJasperDesign extends JasperDesign {
 
-    DefaultJasperDesign(NavigatorForm navigatorForm) {
+    private JRDesignStyle defaultStyle;
 
-        int PageWidth = 595-40;
-//        Design.setPageWidth(PageWidth);
-        setName("Report");
+    private void addDefaultStyle() {
 
-        JRDesignStyle Style = new JRDesignStyle();
-        Style.setName("Arial_Normal");
-        Style.setDefault(true);
-        Style.setFontName("Arial");
-        Style.setFontSize(8);
-        Style.setPdfFontName("c:\\windows\\fonts\\tahoma.ttf");
-        Style.setPdfEncoding("Cp1251");
-        Style.setPdfEmbedded(false);
+        defaultStyle = new JRDesignStyle();
+        defaultStyle.setName("DefaultStyle");
+        defaultStyle.setDefault(true);
+
+        defaultStyle.setFontName("Tahoma");
+        defaultStyle.setFontSize(10);
+
+        defaultStyle.setVerticalAlignment(JRAlignment.VERTICAL_ALIGN_MIDDLE);
+
+        defaultStyle.setPdfFontName("c:/windows/fonts/tahoma.ttf");
+        defaultStyle.setPdfEncoding("Cp1251");
+        defaultStyle.setPdfEmbedded(false);
+
         try {
-            addStyle(Style);
+            addStyle(defaultStyle);
         } catch(JRException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
+    private JRDesignStyle cellStyle;
+    private void addCellStyle() {
 
-        for(GroupObjectImplement Group : (List<GroupObjectImplement>)navigatorForm.Groups) {
-            Collection<ReportDrawField> DrawFields = new ArrayList();
+        cellStyle = new JRDesignStyle();
+        cellStyle.setParentStyle(defaultStyle);
+
+        cellStyle.getLineBox().setLeftPadding(2);
+        cellStyle.getLineBox().setRightPadding(2);
+
+        cellStyle.getLineBox().getPen().setLineColor(Color.black);
+        cellStyle.getLineBox().getPen().setLineStyle(JRPen.LINE_STYLE_SOLID);
+        cellStyle.getLineBox().getPen().setLineWidth((float) 0.5);
+
+        try {
+            addStyle(cellStyle);
+        } catch(JRException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    DefaultJasperDesign(NavigatorForm navigatorForm) {
+
+        int pageWidth = 595-40;
+
+        setName(navigatorForm.caption);
+        setOrientation(JasperDesign.ORIENTATION_LANDSCAPE);
+
+        addDefaultStyle();
+        addCellStyle();
+
+        for(GroupObjectImplement group : (List<GroupObjectImplement>)navigatorForm.Groups) {
+
+            Collection<ReportDrawField> drawFields = new ArrayList();
 
             // сначала все коды
-            for(ObjectImplement Object : Group)
-                DrawFields.add(new ReportDrawField("obj"+Object.ID,Object.caption,Type.Object));
+            for(ObjectImplement object : group)
+                drawFields.add(new ReportDrawField(object.getSID(), object.caption, Type.Object));
 
             // бежим по всем свойствам входящим в объектам
-            for(PropertyView Property : (List<PropertyView>)navigatorForm.propertyViews) {
-                GroupObjectImplement DrawProp = (Property.ToDraw==null?Property.View.GetApplyObject():Property.ToDraw);
-                if(DrawProp==Group)
-                    DrawFields.add(new ReportDrawField("prop"+Property.ID,Property.View.Property.caption,Property.View.Property.getType()));
+            for(PropertyView property : (List<PropertyView>)navigatorForm.propertyViews) {
+
+                GroupObjectImplement drawProp = (property.ToDraw == null ? property.View.GetApplyObject() : property.ToDraw);
+                if (drawProp == group)
+                    drawFields.add(new ReportDrawField(property.getSID(), property.View.Property.caption, property.View.Property.getType()));
             }
 
-            JRDesignBand Band = new JRDesignBand();
-            int BandHeight = 20;
-            Band.setHeight(BandHeight);
+            JRDesignBand band = new JRDesignBand();
+            int bandHeight = 18;
+            band.setHeight(bandHeight);
 
-            boolean Detail = (Group==navigatorForm.Groups.get(navigatorForm.Groups.size()-1));
-            JRDesignBand PageHeadBand = null;
+            boolean detail = (group == navigatorForm.Groups.get(navigatorForm.Groups.size()-1));
+
+            JRDesignBand pageHeadBand = null;
             int PageHeadHeight = 20;
-            if(Detail) {
+            if(detail) {
                 // создадим PageHead
-                PageHeadBand = new JRDesignBand();
-                PageHeadBand.setHeight(PageHeadHeight);
-                setPageHeader(PageHeadBand);
+                pageHeadBand = new JRDesignBand();
+                pageHeadBand.setHeight(PageHeadHeight);
+                setPageHeader(pageHeadBand);
 
-                setDetail(Band);
+                setDetail(band);
             } else {
+                
                 // создадим группу
                 JRDesignGroup DesignGroup = new JRDesignGroup();
-                DesignGroup.setName("Group"+Group.ID);
+                DesignGroup.setName("group"+ group.ID);
+
                 JRDesignExpression GroupExpr = new JRDesignExpression();
                 GroupExpr.setValueClass(java.lang.String.class);
                 String GroupString = "";
-                for(ObjectImplement Object : Group)
-                    GroupString = (GroupString.length()==0?"":GroupString+"+\" \"+")+"String.valueOf($F{obj"+Object.ID+"})";
+                for(ObjectImplement Object : group)
+                    GroupString = (GroupString.length()==0?"":GroupString+"+\" \"+")+"String.valueOf($F{"+Object.getSID()+"})";
                 GroupExpr.setText(GroupString);
 
                 DesignGroup.setExpression(GroupExpr);
-                DesignGroup.setGroupHeader(Band);
+                DesignGroup.setGroupHeader(band);
 
                 try {
                     addGroup(DesignGroup);
@@ -84,43 +124,43 @@ public class DefaultJasperDesign extends JasperDesign {
 
             // узнаем общую ширину чтобы пропорционально считать ()
             int TotalWidth = 0;
-            for(ReportDrawField Draw : DrawFields) {
-                if(!Detail) TotalWidth += Draw.GetCaptionWidth();
-                TotalWidth += Draw.Width;
+            for(ReportDrawField Draw : drawFields) {
+                if(!detail) TotalWidth += Draw.getCaptionWidth();
+                TotalWidth += Draw.width;
             }
 
 
             int Left = 0;
-            for(ReportDrawField Draw : DrawFields) {
+            for(ReportDrawField Draw : drawFields) {
                 // закидываем сначала Field
                 JRDesignField JRField = new JRDesignField();
-                JRField.setName(Draw.ID);
-                JRField.setValueClassName(Draw.ValueClass.getName());
+                JRField.setName(Draw.sID);
+                JRField.setValueClassName(Draw.valueClass.getName());
                 try {
                     addField(JRField);
                 } catch(JRException ex) {
                     Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                int DrawWidth = PageWidth*Draw.Width/TotalWidth;
+                int DrawWidth = pageWidth*Draw.width /TotalWidth;
 
                 JRDesignStaticText DrawCaption = new JRDesignStaticText();
-                DrawCaption.setText(Draw.Caption);
+                DrawCaption.setText(Draw.caption);
                 DrawCaption.setX(Left);
                 DrawCaption.setY(0);
 
-                if(Detail) {
+                if(detail) {
                     DrawCaption.setWidth(DrawWidth);
                     DrawCaption.setHeight(PageHeadHeight);
                     DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
-                    PageHeadBand.addElement(DrawCaption);
+                    pageHeadBand.addElement(DrawCaption);
                 } else {
-                    int CaptWidth = PageWidth*Draw.GetCaptionWidth()/TotalWidth;
+                    int CaptWidth = pageWidth*Draw.getCaptionWidth()/TotalWidth;
                     DrawCaption.setWidth(CaptWidth);
-                    DrawCaption.setHeight(BandHeight);
+                    DrawCaption.setHeight(bandHeight);
                     DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_LEFT);
                     Left += CaptWidth;
-                    Band.addElement(DrawCaption);
+                    band.addElement(DrawCaption);
                 }
                 DrawCaption.setStretchType(JRDesignStaticText.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
 
@@ -128,21 +168,20 @@ public class DefaultJasperDesign extends JasperDesign {
                 DrawText.setX(Left);
                 DrawText.setY(0);
                 DrawText.setWidth(DrawWidth);
-                DrawText.setHeight(BandHeight);
-                DrawText.setHorizontalAlignment(Draw.Alignment);
+                DrawText.setHeight(bandHeight);
+                DrawText.setHorizontalAlignment(Draw.alignment);
                 Left += DrawWidth;
 
                 JRDesignExpression DrawExpr = new JRDesignExpression();
-                DrawExpr.setValueClass(Draw.ValueClass);
-                DrawExpr.setText("$F{"+Draw.ID+"}");
+                DrawExpr.setValueClass(Draw.valueClass);
+                DrawExpr.setText("$F{"+Draw.sID +"}");
                 DrawText.setExpression(DrawExpr);
-                Band.addElement(DrawText);
+                band.addElement(DrawText);
 
                 DrawText.setStretchWithOverflow(true);
             }
         }
 
-        setOrientation(JasperDesign.ORIENTATION_LANDSCAPE);
     }
 
 }

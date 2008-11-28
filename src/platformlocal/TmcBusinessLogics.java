@@ -1,10 +1,17 @@
 package platformlocal;
 
+import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import net.sf.jasperreports.engine.JRException;
+
 import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
@@ -238,12 +245,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     private void InitExtIncProperties() {
 
         extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument);
-        extIncSupplierName = addJProp(supplierGroup, "Имя поставщика", name, 1, extIncSupplier, 1);
+        extIncSupplierName = addJProp(supplierGroup, "extIncSupplierName", "Имя поставщика", name, 1, extIncSupplier, 1);
 
         extIncDetailDocument = addDProp("Документ", extIncomeDocument, extIncomeDetail);
 
         extIncDetailArticle = addDProp("Товар", article, extIncomeDetail);
-        extIncDetailArticleName = addJProp(artclGroup, "Имя товара", name, 1, extIncDetailArticle, 1);
+        extIncDetailArticleName = addJProp(artclGroup, "extIncDetailArticleName", "Имя товара", name, 1, extIncDetailArticle, 1);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -327,7 +334,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitDatePrimaryProperties() {
 
-        extIncDate = addDProp(baseGroup, "Дата", Class.date, extIncomeDocument);
+        extIncDate = addDProp(baseGroup, "extIncDate", "Дата", Class.date, extIncomeDocument);
         intraDate = addDProp(baseGroup, "Дата", Class.date, intraDocument);
         extOutDate = addDProp(baseGroup, "Дата", Class.date, extOutcomeDocument);
         exchDate = addDProp(baseGroup, "Дата", Class.date, exchangeDocument);
@@ -418,7 +425,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         fixedStore = addUProp("Склад (парам.)", 2, 1, 1, receiptStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
 
         docStore = addUProp("Склад", 2, 1, 1, extIncStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1, 1, revalStore, 1);
-        docStoreName = addJProp(storeGroup, "Имя склада", name, 1, docStore, 1);
+
+        docStoreName = addJProp(storeGroup, "docStoreName", "Имя склада", name, 1, docStore, 1);
     }
 
     // ------------------------------------ Свойства по документам ------------------------------------------- //
@@ -457,6 +465,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ---------------------------------------- Первичные свойства ------------------------------------------- //
 
     LDP extIncDetailQuantity;
+    LGP extIncDocumentQuantity;
     LGP extIncQuantity;
 
     LDP intraQuantity;
@@ -477,7 +486,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitQuantityPrimaryProperties() {
 
-        extIncDetailQuantity = addDProp(quantGroup, "Кол-во", Class.doubleClass, extIncomeDetail);
+        extIncDetailQuantity = addDProp(quantGroup, "extIncDetailQuantity", "Кол-во", Class.doubleClass, extIncomeDetail);
+        extIncDocumentQuantity = addGProp(quantGroup, "extIncDocumentQuantity", "Кол-во (всего)", extIncDetailQuantity, true, extIncDetailDocument, 1);
+
         extIncQuantity = addGProp(quantGroup, "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         intraQuantity = addDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
@@ -651,15 +662,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitParamsPrimaryExtIncProperties() {
 
-        extIncDetailPriceIn = addDProp(incPrmsGroup, "Цена пост.", Class.doubleClass, extIncomeDetail);
-        extIncDetailVATIn = addDProp(incPrmsGroup, "НДС пост.", Class.doubleClass, extIncomeDetail);
+        extIncDetailPriceIn = addDProp(incPrmsGroup, "extIncDetailPriceIn", "Цена пост.", Class.doubleClass, extIncomeDetail);
+        extIncDetailVATIn = addDProp(incPrmsGroup, "extIncDetailVATIn", "НДС пост.", Class.doubleClass, extIncomeDetail);
 
         // -------------------------- Выходные параметры ---------------------------- //
 
-        extIncDetailAdd = addDProp(outPrmsGroup, "Надбавка", Class.doubleClass, extIncomeDetail);
-        extIncDetailVATOut = addDProp(outPrmsGroup, "НДС прод.", Class.doubleClass, extIncomeDetail);
+        extIncDetailAdd = addDProp(outPrmsGroup, "extIncDetailAdd", "Надбавка", Class.doubleClass, extIncomeDetail);
+        extIncDetailVATOut = addDProp(outPrmsGroup, "extIncDetailVATOut", "НДС прод.", Class.doubleClass, extIncomeDetail);
         setDefProp(extIncDetailVATOut, extIncDetailVATIn, true);
-        extIncDetailLocTax = addDProp(outPrmsGroup, "Местн. нал.", Class.doubleClass, extIncomeDetail);
+        extIncDetailLocTax = addDProp(outPrmsGroup, "extIncDetailLocTax", "Местн. нал.", Class.doubleClass, extIncomeDetail);
 
         extIncDetailCalcPriceOut = addJProp("Цена розн. (расч.)", roundm1, 1,
                                    addJProp("Цена розн. (расч. - неокр.)", addPercent, 1,
@@ -670,7 +681,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                            extIncDetailVATOut, 1), 1,
                                            extIncDetailLocTax, 1), 1);
 
-        extIncDetailPriceOut = addDProp(outPrmsGroup, "Цена розн.", Class.doubleClass, extIncomeDetail);
+        extIncDetailPriceOut = addDProp(outPrmsGroup, "extIncDetailPriceOut", "Цена розн.", Class.doubleClass, extIncomeDetail);
         setDefProp(extIncDetailPriceOut, extIncDetailCalcPriceOut, true);
 
         // ------------------------- Последняя строка ------------------------------ //
@@ -784,30 +795,32 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP extIncDetailCalcSumPay;
     LDP extIncDetailSumVATIn, extIncDetailSumPay;
     LUP extIncDetailSumInc;
-    LGP extIncDocumentSumVATIn, extIncDocumentSumPay;
+    LGP extIncDocumentSumInc, extIncDocumentSumVATIn, extIncDocumentSumPay;
 
     private void InitSumInProperties() {
 
         // -------------------------- Входные суммы ---------------------------- //
 
-        extIncDetailCalcSum = addJProp("Сумма пост.", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceIn, 1);
+        extIncDetailCalcSum = addJProp("Сумма НДС (расч.)", round, 1,
+                              addJProp("Сумма пост.", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceIn, 1), 1);
 
         extIncDetailCalcSumVATIn = addJProp("Сумма НДС (расч.)", round, 1,
                                    addJProp("Сумма НДС (расч. - неокр.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVATIn, 1), 1);
 
-        extIncDetailSumVATIn = addDProp(incSumsGroup, "Сумма НДС", Class.doubleClass, extIncomeDetail);
+        extIncDetailSumVATIn = addDProp(incSumsGroup, "extIncDetailSumVATIn", "Сумма НДС", Class.doubleClass, extIncomeDetail);
         setDefProp(extIncDetailSumVATIn, extIncDetailCalcSumVATIn, true);
 
         extIncDetailCalcSumPay = addUProp("Всего с НДС (расч.)", 1, 1, 1, extIncDetailCalcSum, 1, 1, extIncDetailSumVATIn, 1);
 
-        extIncDetailSumPay = addDProp(incSumsGroup, "Всего с НДС", Class.doubleClass, extIncomeDetail);
+        extIncDetailSumPay = addDProp(incSumsGroup, "extIncDetailSumPay", "Всего с НДС", Class.doubleClass, extIncomeDetail);
         setDefProp(extIncDetailSumPay, extIncDetailCalcSumPay, true);
 
-        extIncDetailSumInc = addUProp(incSumsGroup, "Сумма пост.", 1, 1, 1, extIncDetailSumPay, 1, -1, extIncDetailSumVATIn, 1);
+        extIncDetailSumInc = addUProp(incSumsGroup, "extIncDetailSumInc", "Сумма пост.", 1, 1, 1, extIncDetailSumPay, 1, -1, extIncDetailSumVATIn, 1);
         setPropOrder(extIncDetailSumInc.Property, extIncDetailSumVATIn.Property, true);
 
-        extIncDocumentSumVATIn = addGProp(incSumsGroup, "Сумма НДС", extIncDetailSumVATIn, true, extIncDetailDocument, 1);
-        extIncDocumentSumPay = addGProp(incSumsGroup, "Всего с НДС", extIncDetailSumPay, true, extIncDetailDocument, 1);
+        extIncDocumentSumInc = addGProp(incSumsGroup, "extIncDocumentSumInc", "Сумма пост.", extIncDetailSumInc, true, extIncDetailDocument, 1);
+        extIncDocumentSumVATIn = addGProp(incSumsGroup, "extIncDocumentSumVATIn", "Сумма НДС", extIncDetailSumVATIn, true, extIncDetailDocument, 1);
+        extIncDocumentSumPay = addGProp(incSumsGroup, "extIncDocumentSumPay", "Всего с НДС", extIncDetailSumPay, true, extIncDetailDocument, 1);
 
     }
 
@@ -821,44 +834,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         InitSumAddProperties();
     }
 
-    // Налог с продаж
-    LJP extIncDetailSumLocTax;
-    LUP extIncDetailSumWVAT;
-
-    private void InitSumLocTaxProperties() {
-
-        extIncDetailSumLocTax = addJProp(outSumsGroup, "Сумма местн. нал.", round, 1,
-                                addJProp("Сумма местн. нал. (неокр.)", revPercent, 1, extIncDetailSumPriceOut, 1, extIncDetailLocTax, 1), 1);
-        setPropOrder(extIncDetailSumLocTax.Property, extIncDetailSumPriceOut.Property, true);
-
-        extIncDetailSumWVAT = addUProp("Сумма с НДС (розн.)", 1, 1, 1, extIncDetailSumPriceOut, 1, -1, extIncDetailSumLocTax, 1);
-    }
-
-    // НДС розничный
-    LJP extIncDetailSumVATOut;
-    LUP extIncDetailSumWAdd;
-
-    private void InitSumVATOutProperties() {
-
-        extIncDetailSumVATOut = addJProp(outSumsGroup, "Сумма НДС (розн.)", round, 1,
-                                addJProp("Сумма НДС (розн. неокр.)", revPercent, 1, extIncDetailSumWVAT, 1, extIncDetailVATOut, 1), 1);
-        setPropOrder(extIncDetailSumVATOut.Property, extIncDetailSumLocTax.Property, true);
-
-        extIncDetailSumWAdd = addUProp("Сумма с торг. надб.", 1, 1, 1, extIncDetailSumWVAT, 1, -1, extIncDetailSumVATOut, 1);
-    }
-
-    // Торговая надбавка
-    LUP extIncDetailSumAdd;
-
-    private void InitSumAddProperties() {
-
-        extIncDetailSumAdd = addUProp(outSumsGroup, "Сумма торг. надб.", 1, 1, 1, extIncDetailSumWAdd, 1, -1, extIncDetailSumVATOut, 1);
-        setPropOrder(extIncDetailSumAdd.Property, extIncDetailSumVATOut.Property, true);
-    }
-
     // Розничные суммы
 
-    LJP extIncDetailSumPriceOut, intraSumPriceOut;
+    LJP extIncDetailSumPriceOut;
+    LGP extIncDocumentSumPriceOut;
+
+    LJP intraSumPriceOut;
+
 
     LDP receiptSumPriceOut;
     LGP receiptDocumentSumPriceOut;
@@ -873,7 +855,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitSumPriceOutProperties() {
 
-        extIncDetailSumPriceOut = addJProp(outSumsGroup, "Сумма розн.", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceOut, 1);
+        extIncDetailSumPriceOut = addJProp(outSumsGroup, "extIncDetailSumPriceOut", "Сумма розн.", round, 1,
+                                  addJProp("Сумма розн. (неокр.)", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceOut, 1), 1);
+        extIncDocumentSumPriceOut = addGProp(outSumsGroup, "extIncDocumentSumPriceOut", "Сумма розн. (всего)", extIncDetailSumPriceOut, true, extIncDetailDocument, 1);
+
         intraSumPriceOut = addJProp("Сумма розн. (вн.)", multiplyDouble2, 2, intraQuantity, 1, 2, fixedPriceOut, 1, 2);
 
         receiptSumPriceOut = addDProp(outSumsGroup, "Сумма по чеку", Class.doubleClass, receipt, article);
@@ -891,6 +876,47 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         revalSumPriceOutBefore = addJProp("Сумма розн. (переоц. до)", multiplyDouble2, 2, revaluedBalanceQuantity, 1, 2, revalPriceOutBefore, 1, 2);
         revalSumPriceOutAfter = addJProp("Сумма розн. (переоц. после)", multiplyDouble2, 2, revaluedBalanceQuantity, 1, 2, revalPriceOutAfter, 1, 2);
         revalSumPriceOut = addUProp("Сумма розн. (переоц.)", 1, 2, 1, revalSumPriceOutAfter, 1, 2, -1, revalSumPriceOutBefore, 1, 2);
+    }
+
+    // Налог с продаж
+    LJP extIncDetailSumLocTax;
+    LGP extIncDocumentSumLocTax;
+    LUP extIncDetailSumWVAT;
+
+    private void InitSumLocTaxProperties() {
+
+        extIncDetailSumLocTax = addJProp(outSumsGroup, "extIncDetailSumLocTax", "Сумма местн. нал.", round, 1,
+                                addJProp("Сумма местн. нал. (неокр.)", revPercent, 1, extIncDetailSumPriceOut, 1, extIncDetailLocTax, 1), 1);
+        setPropOrder(extIncDetailSumLocTax.Property, extIncDetailSumPriceOut.Property, true);
+        extIncDocumentSumLocTax = addGProp(outSumsGroup, "extIncDocumentSumLocTax", "Сумма местн. нал. (всего)", extIncDetailSumLocTax, true, extIncDetailDocument, 1);
+
+        extIncDetailSumWVAT = addUProp("Сумма с НДС (розн.)", 1, 1, 1, extIncDetailSumPriceOut, 1, -1, extIncDetailSumLocTax, 1);
+    }
+
+    // НДС розничный
+    LJP extIncDetailSumVATOut;
+    LGP extIncDocumentSumVATOut;
+    LUP extIncDetailSumWAdd;
+
+    private void InitSumVATOutProperties() {
+
+        extIncDetailSumVATOut = addJProp(outSumsGroup, "extIncDetailSumVATOut", "Сумма НДС розн.", round, 1,
+                                addJProp("Сумма НДС (розн. неокр.)", revPercent, 1, extIncDetailSumWVAT, 1, extIncDetailVATOut, 1), 1);
+        setPropOrder(extIncDetailSumVATOut.Property, extIncDetailSumLocTax.Property, true);
+        extIncDocumentSumVATOut = addGProp(outSumsGroup, "extIncDocumentSumVATOut", "Сумма НДС розн. (всего)", extIncDetailSumVATOut, true, extIncDetailDocument, 1);
+
+        extIncDetailSumWAdd = addUProp("Сумма с торг. надб.", 1, 1, 1, extIncDetailSumWVAT, 1, -1, extIncDetailSumVATOut, 1);
+    }
+
+    // Торговая надбавка
+    LUP extIncDetailSumAdd;
+    LGP extIncDocumentSumAdd;
+
+    private void InitSumAddProperties() {
+
+        extIncDetailSumAdd = addUProp(outSumsGroup, "extIncDetailSumAdd", "Сумма торг. надб.", 1, 1, 1, extIncDetailSumWAdd, 1, -1, extIncDetailSumInc, 1);
+        setPropOrder(extIncDetailSumAdd.Property, extIncDetailSumVATOut.Property, true);
+        extIncDocumentSumAdd = addGProp(outSumsGroup, "extIncDocumentSumAdd", "Сумма торг. надб. (всего)", extIncDetailSumAdd, true, extIncDetailDocument, 1);
     }
 
     // ---------------------------------------- Учетные суммы ------------------------------------------------ //
@@ -1297,7 +1323,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             super(parent, iID, caption, isPrintForm);
 
             objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", Properties,
-                                                   baseGroup, storeGroup, supplierGroup, incSumsGroup);
+                                                   baseGroup, storeGroup, supplierGroup, quantGroup, incSumsGroup);
         }
     }
 
@@ -1342,7 +1368,20 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             objDoc.GroupTo.gridClassView = false;
             objDoc.GroupTo.singleViewType = true;
 
+            addPropertyView(objDoc, Properties, outSumsGroup);
             addPropertyView(objDetail, Properties, outSumsGroup);
+
+            objDoc.sID = "objDoc";
+            getPropertyView(name.Property, objDoc.GroupTo).sID = "docName";
+
+            try {
+                reportDesign = JRXmlLoader.load(new FileInputStream(new File("d:/java/application/platform/src/platformlocal/reports/extIncLog.jrxml")));
+            } catch (JRException e) {
+                reportDesign = new DefaultJasperDesign(this);
+            } catch (FileNotFoundException e) {
+                reportDesign = new DefaultJasperDesign(this);
+            }
+
         }
     }
 
