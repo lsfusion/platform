@@ -44,8 +44,8 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 class IntegerPropertyRenderer extends LabelPropertyRenderer
                               implements PropertyRendererComponent{
 
-    public IntegerPropertyRenderer(Format iformat) {
-        super((iformat == null) ? NumberFormat.getInstance() : iformat);
+    public IntegerPropertyRenderer(Format format) {
+        super(format);
 
         setHorizontalAlignment(JLabel.RIGHT);
 
@@ -92,8 +92,8 @@ class StringPropertyRenderer extends LabelPropertyRenderer
 class DatePropertyRenderer extends LabelPropertyRenderer
                            implements PropertyRendererComponent {
 
-    public DatePropertyRenderer(Format iformat) {
-        super((iformat == null) ? DateFormat.getDateInstance() : iformat);
+    public DatePropertyRenderer(Format format) {
+        super(format);
 
         setHorizontalAlignment(JLabel.RIGHT);
 

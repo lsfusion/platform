@@ -584,7 +584,7 @@ class ReportDockable extends FormDockable {
     ReportDockable(String FileName,String Directory) throws JRException {
         super(0);
 
-        setActiveComponent(new JRViewer((JasperPrint)JRLoader.loadObject(Directory+FileName)),FileName);
+        setActiveComponent(prepareViewer(new JRViewer((JasperPrint)JRLoader.loadObject(Directory+FileName))),FileName);
     }
 
     @Override
@@ -599,7 +599,7 @@ class ReportDockable extends FormDockable {
             remoteForm.runEndApply();
             
             JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),ByteArraySerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
-            return new JRViewer(print);
+            return prepareViewer(new JRViewer(print));
 
         } catch (JRException e) {
             e.printStackTrace();
@@ -608,6 +608,15 @@ class ReportDockable extends FormDockable {
         }
 
         return null;
+    }
+
+    private JRViewer prepareViewer(final JRViewer viewer) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                viewer.setFitPageZoomRatio();
+            }
+        });
+        return viewer;
     }
 
     // закрываются пользователем

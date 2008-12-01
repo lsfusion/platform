@@ -215,7 +215,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitObjectProperties() {
 
-        name = addDProp(baseGroup, "Имя", Class.string, objectClass);
+        name = addDProp(baseGroup, "name", "Имя", Class.string, objectClass);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -1377,9 +1377,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             try {
                 reportDesign = JRXmlLoader.load(new FileInputStream(new File("d:/java/application/platform/src/platformlocal/reports/extIncLog.jrxml")));
             } catch (JRException e) {
-                reportDesign = new DefaultJasperDesign(this);
+//                reportDesign = new DefaultJasperDesign(getRichDesign());
             } catch (FileNotFoundException e) {
-                reportDesign = new DefaultJasperDesign(this);
+//                reportDesign = new DefaultJasperDesign(getRichDesign());
             }
 
         }

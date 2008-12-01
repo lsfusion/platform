@@ -4,11 +4,11 @@ import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRPen;
+import net.sf.jasperreports.engine.JRElement;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.Collection;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.awt.*;
 
@@ -42,6 +42,7 @@ public class DefaultJasperDesign extends JasperDesign {
     private void addCellStyle() {
 
         cellStyle = new JRDesignStyle();
+        cellStyle.setName("CellStyle");
         cellStyle.setParentStyle(defaultStyle);
 
         cellStyle.getLineBox().setLeftPadding(2);
@@ -58,128 +59,253 @@ public class DefaultJasperDesign extends JasperDesign {
         }
     }
 
-    DefaultJasperDesign(NavigatorForm navigatorForm) {
+    private JRDesignStyle addGroupCellStyle(int groupIndex, int groupCount) {
 
-        int pageWidth = 595-40;
+        JRDesignStyle groupCellStyle = new JRDesignStyle();
+        groupCellStyle.setName("GroupCellStyle" + groupIndex);
+        groupCellStyle.setParentStyle(cellStyle);
 
-        setName(navigatorForm.caption);
+        int color = 255 - 64 * (groupCount - groupIndex - 1) / groupCount;
+        groupCellStyle.setMode(JRElement.MODE_OPAQUE);
+        groupCellStyle.setBackcolor(new Color(color, color, color));
+
+        try {
+            addStyle(groupCellStyle);
+        } catch(JRException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return groupCellStyle;
+    }
+
+    private JRDesignGroup addDesignGroup(ClientGroupObjectImplement group, String groupName) {
+
+        JRDesignGroup designGroup = new JRDesignGroup();
+        designGroup.setName(groupName);
+
+        JRDesignExpression groupExpr = new JRDesignExpression();
+        groupExpr.setValueClass(java.lang.String.class);
+        String groupString = "";
+        for(ClientObjectImplement object : group)
+            groupString = (groupString.length()==0?"":groupString+"+\" \"+")+"String.valueOf($F{"+object.objectIDView.sID+"})";
+        groupExpr.setText(groupString);
+
+        designGroup.setExpression(groupExpr);
+
+        try {
+            addGroup(designGroup);
+        } catch(JRException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return designGroup;
+    }
+
+    private JRDesignField addDesignField(ReportDrawField reportField) {
+
+        JRDesignField designField = new JRDesignField();
+
+        designField.setName(reportField.sID);
+        designField.setValueClassName(reportField.valueClass.getName());
+
+        try {
+            addField(designField);
+        } catch(JRException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return designField;
+    }
+
+    private static int ROW_HEIGHT = 18;
+
+    private abstract class ReportLayout {
+
+        List<ReportDrawField> reportFields = new ArrayList();
+        Map<ReportDrawField, JRDesignTextField> captions = new HashMap();
+        Map<ReportDrawField, JRDesignTextField> textFields = new HashMap();
+
+        void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+            reportFields.add(reportField);
+            captions.put(reportField, caption);
+            textFields.put(reportField, text);
+        }
+
+        void doLayout(int pageWidth) {
+
+            AbstractRowLayout.doLayout(reportFields, pageWidth, true);
+
+            for (ReportDrawField reportField : reportFields) {
+
+                captions.get(reportField).setX(reportField.left);
+                captions.get(reportField).setY(reportField.row * ROW_HEIGHT);
+                captions.get(reportField).setWidth(reportField.width);
+                captions.get(reportField).setHeight(ROW_HEIGHT);
+
+                textFields.get(reportField).setX(reportField.left);
+                textFields.get(reportField).setY(reportField.row * ROW_HEIGHT);
+                textFields.get(reportField).setWidth(reportField.width);
+                textFields.get(reportField).setHeight(ROW_HEIGHT);
+            }
+
+        }
+
+    }
+
+    private class ReportDetailLayout extends ReportLayout {
+
+        private JRDesignBand pageHeadBand;
+        private JRDesignBand detailBand;
+
+        ReportDetailLayout() {
+
+            pageHeadBand = new JRDesignBand();
+            pageHeadBand.setHeight(ROW_HEIGHT);
+            setPageHeader(pageHeadBand);
+
+            detailBand = new JRDesignBand();
+            detailBand.setHeight(ROW_HEIGHT);
+            setDetail(detailBand);
+        }
+
+        void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+            super.add(reportField, caption, text);
+
+            pageHeadBand.addElement(caption);
+            detailBand.addElement(text);
+        }
+    }
+
+    private abstract class ReportGroupLayout extends ReportLayout {
+
+    }
+
+    private class ReportGroupRowLayout extends ReportGroupLayout {
+
+        ReportGroupRowLayout(JRDesignGroup designGroup) {
+        }
+
+    }
+
+    private class ReportGroupColumnLayout extends ReportGroupLayout {
+
+        protected JRDesignBand captionGroupBand;
+        protected JRDesignBand textGroupBand;
+
+        ReportGroupColumnLayout(JRDesignGroup captionGroup, JRDesignGroup textGroup) {
+
+            captionGroupBand = new JRDesignBand();
+            captionGroupBand.setHeight(ROW_HEIGHT);
+            captionGroup.setGroupHeader(captionGroupBand);
+
+            textGroupBand = new JRDesignBand();
+            textGroupBand.setHeight(ROW_HEIGHT);
+            textGroup.setGroupHeader(textGroupBand);
+        }
+
+        void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
+            super.add(reportField, caption, text);
+
+            captionGroupBand.addElement(caption);
+            textGroupBand.addElement(text);
+        }
+
+    }
+
+    DefaultJasperDesign(ClientFormView formView) {
+
+        int pageWidth = 842 - 40;
+        int pageHeight = 595;
+
+        setName("Report");
+        setPageWidth(pageWidth + 40);
+        
+        setPageHeight(pageHeight);
         setOrientation(JasperDesign.ORIENTATION_LANDSCAPE);
 
         addDefaultStyle();
         addCellStyle();
 
-        for(GroupObjectImplement group : (List<GroupObjectImplement>)navigatorForm.Groups) {
+        for(ClientGroupObjectImplement group : (List<ClientGroupObjectImplement>)formView.groupObjects) {
 
             Collection<ReportDrawField> drawFields = new ArrayList();
 
             // сначала все коды
-            for(ObjectImplement object : group)
-                drawFields.add(new ReportDrawField(object.getSID(), object.caption, Type.Object));
+            for(ClientObjectImplement object : group)
+                drawFields.add(new ReportDrawField(object.objectIDView));
 
             // бежим по всем свойствам входящим в объектам
-            for(PropertyView property : (List<PropertyView>)navigatorForm.propertyViews) {
+            for(ClientPropertyView property : (List<ClientPropertyView>)formView.properties) {
 
-                GroupObjectImplement drawProp = (property.ToDraw == null ? property.View.GetApplyObject() : property.ToDraw);
-                if (drawProp == group)
-                    drawFields.add(new ReportDrawField(property.getSID(), property.View.Property.caption, property.View.Property.getType()));
+                if (group == property.groupObject)
+                    drawFields.add(new ReportDrawField(property));
             }
 
-            JRDesignBand band = new JRDesignBand();
-            int bandHeight = 18;
-            band.setHeight(bandHeight);
+            boolean detail = (group == formView.groupObjects.get(formView.groupObjects.size()-1));
 
-            boolean detail = (group == navigatorForm.Groups.get(navigatorForm.Groups.size()-1));
+            int captionWidth = 0, minimumWidth = 0, preferredWidth = 0;
+            for (ReportDrawField reportField : drawFields) {
+                captionWidth += reportField.getCaptionWidth();
+                minimumWidth += reportField.getMinimumWidth();
+                preferredWidth += reportField.getPreferredWidth();
+            }
 
-            JRDesignBand pageHeadBand = null;
-            int PageHeadHeight = 20;
-            if(detail) {
-                // создадим PageHead
-                pageHeadBand = new JRDesignBand();
-                pageHeadBand.setHeight(PageHeadHeight);
-                setPageHeader(pageHeadBand);
+            ReportLayout reportLayout;
 
-                setDetail(band);
+            if (detail) {
+                reportLayout = new ReportDetailLayout();
             } else {
-                
-                // создадим группу
-                JRDesignGroup DesignGroup = new JRDesignGroup();
-                DesignGroup.setName("group"+ group.ID);
 
-                JRDesignExpression GroupExpr = new JRDesignExpression();
-                GroupExpr.setValueClass(java.lang.String.class);
-                String GroupString = "";
-                for(ObjectImplement Object : group)
-                    GroupString = (GroupString.length()==0?"":GroupString+"+\" \"+")+"String.valueOf($F{"+Object.getSID()+"})";
-                GroupExpr.setText(GroupString);
-
-                DesignGroup.setExpression(GroupExpr);
-                DesignGroup.setGroupHeader(band);
-
-                try {
-                    addGroup(DesignGroup);
-                } catch(JRException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                JRDesignGroup captionGroup = addDesignGroup(group, "captionGroup" + group.ID);
+                JRDesignGroup textGroup = addDesignGroup(group, "textGroup" + group.ID);
+//                if (captionWidth + preferredWidth <= pageWidth)
+//                    reportLayout = new ReportGroupRowLayout(designGroup);
+//                else
+                    reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup);
             }
 
-            // узнаем общую ширину чтобы пропорционально считать ()
-            int TotalWidth = 0;
-            for(ReportDrawField Draw : drawFields) {
-                if(!detail) TotalWidth += Draw.getCaptionWidth();
-                TotalWidth += Draw.width;
-            }
+            JRDesignStyle groupCellStyle = addGroupCellStyle(formView.groupObjects.indexOf(group), formView.groupObjects.size());
 
+            for(ReportDrawField reportField : drawFields) {
 
-            int Left = 0;
-            for(ReportDrawField Draw : drawFields) {
                 // закидываем сначала Field
-                JRDesignField JRField = new JRDesignField();
-                JRField.setName(Draw.sID);
-                JRField.setValueClassName(Draw.valueClass.getName());
-                try {
-                    addField(JRField);
-                } catch(JRException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                addDesignField(reportField);
 
-                int DrawWidth = pageWidth*Draw.width /TotalWidth;
+                JRDesignExpression captionExpr = new JRDesignExpression();
+                captionExpr.setValueClass(java.lang.String.class);
+                captionExpr.setText('"' + reportField.caption + '"');
 
-                JRDesignStaticText DrawCaption = new JRDesignStaticText();
-                DrawCaption.setText(Draw.caption);
-                DrawCaption.setX(Left);
-                DrawCaption.setY(0);
+                JRDesignTextField drawCaption = new JRDesignTextField();
+                drawCaption.setStyle(groupCellStyle);
+                drawCaption.setExpression(captionExpr);
+                drawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
+                drawCaption.setStretchWithOverflow(true);
+                drawCaption.setStretchType(JRDesignStaticText.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
 
-                if(detail) {
-                    DrawCaption.setWidth(DrawWidth);
-                    DrawCaption.setHeight(PageHeadHeight);
-                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_CENTER);
-                    pageHeadBand.addElement(DrawCaption);
-                } else {
-                    int CaptWidth = pageWidth*Draw.getCaptionWidth()/TotalWidth;
-                    DrawCaption.setWidth(CaptWidth);
-                    DrawCaption.setHeight(bandHeight);
-                    DrawCaption.setHorizontalAlignment(JRAlignment.HORIZONTAL_ALIGN_LEFT);
-                    Left += CaptWidth;
-                    band.addElement(DrawCaption);
-                }
-                DrawCaption.setStretchType(JRDesignStaticText.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
+                JRDesignExpression textExpr = new JRDesignExpression();
+                textExpr.setValueClass(reportField.valueClass);
+                textExpr.setText("$F{"+reportField.sID +"}");
 
-                JRDesignTextField DrawText = new JRDesignTextField();
-                DrawText.setX(Left);
-                DrawText.setY(0);
-                DrawText.setWidth(DrawWidth);
-                DrawText.setHeight(bandHeight);
-                DrawText.setHorizontalAlignment(Draw.alignment);
-                Left += DrawWidth;
+                JRDesignTextField drawText = new JRDesignTextField();
+                drawText.setStyle(groupCellStyle);
+                drawText.setHorizontalAlignment(reportField.alignment);
+                drawText.setExpression(textExpr);
+                drawText.setPositionType(JRDesignTextField.POSITION_TYPE_FLOAT);
+                drawText.setStretchWithOverflow(true);
+                drawText.setStretchType(JRDesignTextField.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
+                drawText.setBlankWhenNull(true);
 
-                JRDesignExpression DrawExpr = new JRDesignExpression();
-                DrawExpr.setValueClass(Draw.valueClass);
-                DrawExpr.setText("$F{"+Draw.sID +"}");
-                DrawText.setExpression(DrawExpr);
-                band.addElement(DrawText);
+//                drawText.setMode(JRElement.MODE_OPAQUE);
+//                int color = 255 - 128 * (groupCount - groupIndex - 1) / groupCount;
+//                drawText.setBackcolor(new Color(color, color, color));
 
-                DrawText.setStretchWithOverflow(true);
+                drawText.setPattern(reportField.pattern);
+//                drawText.setPattern
+
+                reportLayout.add(reportField, drawCaption, drawText);
             }
+
+            reportLayout.doLayout(pageWidth);
         }
 
     }

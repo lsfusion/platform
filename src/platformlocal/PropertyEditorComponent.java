@@ -18,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 
 public interface PropertyEditorComponent {
 
@@ -50,11 +51,11 @@ class TextFieldPropertyEditor extends JFormattedTextField {
 class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor(Object value, NumberFormat iformat, java.lang.Class<?> valueClass) {
+    public IntegerPropertyEditor(Object value, NumberFormat format, java.lang.Class<?> valueClass) {
 
-        NumberFormat format = iformat;
-        if (format == null)
-            format = NumberFormat.getInstance();
+//        NumberFormat format = iformat;
+//        if (format == null)
+//            format = NumberFormat.getInstance();
 
         if (Double.class.equals(valueClass) && format instanceof DecimalFormat) {
             ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
@@ -144,8 +145,8 @@ class StringPropertyEditor extends TextFieldPropertyEditor
 class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
 
-    public DatePropertyEditor(Object value) {
-        super(null, null, "dd.MM.yy", new DatePropertyEditorComponent("dd.MM.yy","##.##.##",' '));
+    public DatePropertyEditor(Object value, SimpleDateFormat format) {
+        super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
         if (value != null)
             setDate(DateConverter.intToDate((Integer)value));

@@ -384,12 +384,6 @@ abstract class Type<T> {
     }
 
     abstract public String getString(Object Value, SQLSyntax Syntax);
-    abstract public java.lang.Class getJavaClass() ;
-
-    public void fillReportDrawField(ReportDrawField reportField) {
-        reportField.valueClass = getJavaClass();
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
-    };
 
     abstract T read(Object Value);
 }
@@ -416,16 +410,6 @@ class StringType extends Type<String> {
         return "'" + Value + "'";
     }
 
-    public java.lang.Class getJavaClass() {
-        return java.lang.String.class;
-    }
-
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
-
-        reportField.width = 40;
-    }
-
     String read(Object Value) {
         return (String)Value;
     }
@@ -445,11 +429,6 @@ abstract class IntegralType<T> extends Type<T> {
         return Value.toString();
     }
 
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
-
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
-    }
 }
 
 class IntegerType extends IntegralType<Integer> {
@@ -461,16 +440,6 @@ class IntegerType extends IntegralType<Integer> {
     Object getMinValue() {
         return java.lang.Integer.MIN_VALUE;
     }
-
-    public java.lang.Class getJavaClass() {
-        return java.lang.Integer.class;
-    }
-
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
-
-        reportField.width = 7;
-   }
 
     Integer read(Object Value) {
         if(Value instanceof BigDecimal)
@@ -499,16 +468,6 @@ class LongType extends IntegralType<Long> {
         return java.lang.Long.MIN_VALUE;
     }
 
-    public java.lang.Class getJavaClass() {
-        return java.lang.Long.class;
-    }
-
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
-
-        reportField.width = 13;
-    }
-
     Long read(Object Value) {
         if(Value instanceof BigDecimal)
             return ((BigDecimal)Value).longValue();
@@ -534,16 +493,6 @@ class DoubleType extends IntegralType<Double> {
 
     Object getMinValue() {
         return java.lang.Double.MIN_VALUE;
-    }
-
-    public java.lang.Class getJavaClass() {
-        return java.lang.Double.class;
-    }
-
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);
-
-        reportField.width = 13;
     }
 
     Double read(Object Value) {
@@ -594,16 +543,6 @@ class BitType extends IntegralType<Boolean> {
 
     public String getString(Object Value, SQLSyntax Syntax) {
         return Syntax.getBitString((Boolean)Value);
-    }
-
-    public java.lang.Class getJavaClass() {
-        return java.lang.Boolean.class;
-    }
-
-    public void fillReportDrawField(ReportDrawField reportField) {
-        super.fillReportDrawField(reportField);    //To change body of overridden methods use File | Settings | File Templates.
-
-        reportField.width = 3;
     }
 }
 

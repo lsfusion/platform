@@ -46,6 +46,28 @@ class SetBuilder<T> {
         RecFillSubSetList(BuildList,0,Result,new ArrayList());
         return Result;
     }
+
+    public static <T> void recBuildSetCombinations(int count, List<T> listElements, int current, ArrayList<T> currentList, Collection<List<T>> result) {
+
+        if (currentList.size() == count) {
+            result.add((List<T>)currentList.clone());
+            return;
+        }
+
+        if (current >= listElements.size()) return;
+
+        recBuildSetCombinations(count, listElements, current+1, currentList, result);
+        currentList.add(listElements.get(current));
+        recBuildSetCombinations(count, listElements, current+1, currentList, result);
+        currentList.remove(listElements.get(current));
+    }
+
+    public static <T> Collection<List<T>> buildSetCombinations(int count, List<T> listElements) {
+
+        Collection<List<T>> result = new ArrayList();
+        recBuildSetCombinations(count, listElements, 0, new ArrayList(), result);
+        return result;
+    }
 }
 
 class MapBuilder {

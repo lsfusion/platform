@@ -1758,23 +1758,47 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 }
 
 // поле для отрисовки отчета
-class ReportDrawField {
+class ReportDrawField implements AbstractRowLayoutElement{
 
     String sID;
     String caption;
     java.lang.Class valueClass;
-    int width;
+
+    int minimumWidth;
+    int preferredWidth;
     byte alignment;
 
-    ReportDrawField(String isID,String iCaption,Type dbType) {
+    String pattern;
 
-        sID = isID;
-        caption = iCaption;
-        dbType.fillReportDrawField(this);
+    ReportDrawField(ClientCellView cellView) {
+        cellView.fillReportDrawField(this);
     }
 
     int getCaptionWidth() {
         return caption.length()+3;
+    }
+
+    public int getMinimumWidth() {
+        return minimumWidth;
+    }
+
+    public int getPreferredWidth() {
+        return preferredWidth;
+    }
+
+    int left;
+    public void setLeft(int ileft) {
+        left = ileft;
+    }
+
+    int width;
+    public void setWidth(int iwidth) {
+        width = iwidth;
+    }
+
+    int row;
+    public void setRow(int irow) {
+        row = irow;
     }
 }
 
@@ -1820,15 +1844,14 @@ class ReportData implements JRDataSource, Serializable {
             Value = properties.get(propertiesID.get(fieldName)).get(readOrder.get(CurrentRow));
         }
 
-
-        if (Date.class.getName().equals(jrField.getValueClassName())) {
+        if (Date.class.getName().equals(jrField.getValueClassName()) && Value != null) {
             Value = DateConverter.intToDate((Integer)Value);
         }
 
         if(Value instanceof String)
             Value = ((String)Value).trim();
         
-        if(Value==null) {
+/*        if(Value==null) {
 
             try {
                 return BaseUtils.getDefaultValue(java.lang.Class.forName(jrField.getValueClassName()));
@@ -1838,7 +1861,7 @@ class ReportData implements JRDataSource, Serializable {
             } catch (IllegalAccessException e) {
             } catch (ClassNotFoundException e) {
             }
-        }
+        } */
         
         return Value;
     }

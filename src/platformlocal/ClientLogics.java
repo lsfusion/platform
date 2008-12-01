@@ -5,12 +5,14 @@
 
 package platformlocal;
 
+import net.sf.jasperreports.engine.JRAlignment;
+
 import java.util.*;
 import java.util.List;
 import java.awt.*;
-import java.text.Format;
-import java.text.NumberFormat;
+import java.text.*;
 import java.io.Serializable;
+import java.lang.*;
 
 class ClientGroupObjectImplement extends ArrayList<ClientObjectImplement>
                                  implements Serializable {
@@ -67,7 +69,7 @@ class ClientGroupObjectValue extends ClientGroupObjectMap<Integer>
 class ClientObjectImplement implements Serializable {
     
     Integer ID = 0;
-    
+
     ClientGroupObjectImplement groupObject;
  
     String caption = "";
@@ -116,6 +118,8 @@ class ClientRegularFilterGroupView extends ClientFunctionView {
 abstract class ClientCellView extends ClientComponentView {
     
     Integer ID = 0;
+    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
+    String sID;
 
     public ClientClass baseClass;
 
@@ -195,11 +199,32 @@ abstract class ClientCellView extends ClientComponentView {
     }
 
     Format format;
-    public Format getFormat() { return format; }
+    public Format getFormat() {
+        if (format == null) return baseClass.getDefaultFormat();
+        return format;
+    }
 
     public String toString() { return caption; }
 
-}              
+    public void fillReportDrawField(ReportDrawField reportField) {
+
+        reportField.sID = sID;
+        reportField.caption = caption;
+
+        reportField.minimumWidth = getMinimumWidth();
+        reportField.preferredWidth = getPreferredWidth();
+
+        Format format = getFormat();
+        if (format instanceof DecimalFormat) {
+            reportField.pattern = ((DecimalFormat)format).toPattern();
+        }
+        if (format instanceof SimpleDateFormat) {
+            reportField.pattern = ((SimpleDateFormat)format).toPattern();
+        }
+
+        baseClass.fillReportDrawField(reportField);
+    }
+}
 
 class ClientPropertyView extends ClientCellView {
 
@@ -364,6 +389,7 @@ class DefaultClientFormView extends ClientFormView {
                 clientObject.groupObject = clientGroup;
 
                 clientObject.objectIDView.ID = object.ID;
+                clientObject.objectIDView.sID = object.getSID();
                 clientObject.objectIDView.groupObject = clientGroup;
                 clientObject.objectIDView.object = clientObject;
 
@@ -399,6 +425,7 @@ class DefaultClientFormView extends ClientFormView {
 
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.ID = property.ID;
+            clientProperty.sID = property.getSID();
 
             clientProperty.groupObject = groupObject;
             clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
@@ -535,8 +562,18 @@ abstract class ClientClass implements Serializable {
         return Integer.MAX_VALUE;
     }
 
+    abstract Format getDefaultFormat();
+
     abstract public PropertyRendererComponent getRendererComponent(Format format);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format);
+
+    abstract public java.lang.Class getJavaClass() ;
+
+    public void fillReportDrawField(ReportDrawField reportField) {
+        reportField.valueClass = getJavaClass();
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
+    };
+
 }
 
 class ClientObjectClass extends ClientClass {
@@ -544,8 +581,63 @@ class ClientObjectClass extends ClientClass {
     public int getPreferredWidth() { return 45; }
     public int getMaximumWidth() { return getPreferredWidth(); }
 
+    Format getDefaultFormat() {
+        return NumberFormat.getInstance();
+    }
+
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new ObjectPropertyEditor(form, property, this, value); }
+
+    public java.lang.Class getJavaClass() {
+        return java.lang.Integer.class;
+    }
+
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
+
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+    }
+}
+
+abstract class ClientIntegralClass extends ClientClass {
+
+    public int getMinimumWidth() { return 45; }
+    public int getPreferredWidth() { return 80; }
+
+    Format getDefaultFormat() {
+        return NumberFormat.getInstance();
+    }
+
+    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, getJavaClass()); }
+
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
+
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+    }
+
+}
+
+class ClientIntegerClass extends ClientIntegralClass {
+
+    public java.lang.Class getJavaClass() {
+        return java.lang.Integer.class;
+    }
+}
+
+class ClientLongClass extends ClientIntegralClass {
+
+    public java.lang.Class getJavaClass() {
+        return java.lang.Long.class;
+    }
+}
+
+class ClientDoubleClass extends ClientIntegralClass {
+
+    public java.lang.Class getJavaClass() {
+        return java.lang.Double.class;
+    }
 }
 
 class ClientStringClass extends ClientClass {
@@ -553,50 +645,60 @@ class ClientStringClass extends ClientClass {
     public int getMinimumWidth() { return 30; }
     public int getPreferredWidth() { return 250; }
 
+    Format getDefaultFormat() {
+        return null;
+    }
+
     public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new StringPropertyEditor(value); }
-}
 
-class ClientIntegerClass extends ClientClass {
-
-    public int getPreferredWidth() { return 45; }
-
-    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Integer.class); }
+    public java.lang.Class getJavaClass() {
+        return java.lang.String.class;
+    }
 }
 
 class ClientDateClass extends ClientClass {
 
     public int getPreferredWidth() { return 70; }
 
+    Format getDefaultFormat() {
+        return DateFormat.getDateInstance(DateFormat.SHORT);
+    }
+
     public PropertyRendererComponent getRendererComponent(Format format) { return new DatePropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new DatePropertyEditor(value); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new DatePropertyEditor(value, (SimpleDateFormat) format); }
+
+    public java.lang.Class getJavaClass() {
+        return java.util.Date.class;
+    }
+
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
+
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+    }
 }
 
 class ClientBitClass extends ClientClass {
 
     public int getPreferredWidth() { return 35; }
 
+    Format getDefaultFormat() {
+        return null;
+    }
+
     public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new BitPropertyEditor(value); }
-}
 
-class ClientDoubleClass extends ClientClass {
+    public java.lang.Class getJavaClass() {
+        return java.lang.Boolean.class;
+    }
 
-    public int getMinimumWidth() { return 45; }
-    public int getPreferredWidth() { return 80; }
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Double.class); }
-}
-
-class ClientLongClass extends ClientClass {
-
-    public int getMinimumWidth() { return 45; }
-    public int getPreferredWidth() { return 80; }
-
-    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, Long.class); }
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_CENTER;
+    }
 }
 
 class ClientObjectValue {

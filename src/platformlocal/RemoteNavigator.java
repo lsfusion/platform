@@ -471,8 +471,21 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     PropertyView addPropertyView(GroupObjectImplement groupObject, PropertyObjectImplement propertyImplement) {
 
         PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,(groupObject == null) ? propertyImplement.GetApplyObject() : groupObject);
-        propertyView.sID = propertyImplement.Property.sID; 
+
+        if (propertyImplement.Property.sID != null) {
+
+            // придется поискать есть ли еще такие sID, чтобы добиться уникальности sID
+            boolean foundSID = false;
+            for (PropertyView property : propertyViews)
+                if (BaseUtils.compareObjects(property.sID, propertyImplement.Property.sID)) {
+                    foundSID = true;
+                    break;
+                }
+            propertyView.sID = propertyImplement.Property.sID + ((foundSID) ? propertyView.ID : "");
+        }
+        
         propertyViews.add(propertyView);
+
         return propertyView;
     }
 
@@ -553,7 +566,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; }
 
     JasperDesign reportDesign;
-    JasperDesign getReportDesign() { if (reportDesign == null) return new DefaultJasperDesign(this); else return reportDesign; }
+    JasperDesign getReportDesign() { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()); else return reportDesign; }
 
     ArrayList<NavigatorElement> relevantElements = new ArrayList();
     void addRelevantElement(NavigatorElement relevantElement) {
