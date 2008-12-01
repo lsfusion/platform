@@ -1775,7 +1775,7 @@ class ReportDrawField implements AbstractRowLayoutElement{
     }
 
     int getCaptionWidth() {
-        return caption.length()+3;
+        return caption.length() * 10;
     }
 
     public int getMinimumWidth() {
