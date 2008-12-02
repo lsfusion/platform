@@ -337,12 +337,7 @@ public class DefaultJasperDesign extends JasperDesign {
                 drawText.setStretchType(JRDesignTextField.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
                 drawText.setBlankWhenNull(true);
 
-//                drawText.setMode(JRElement.MODE_OPAQUE);
-//                int color = 255 - 128 * (groupCount - groupIndex - 1) / groupCount;
-//                drawText.setBackcolor(new Color(color, color, color));
-
                 drawText.setPattern(reportField.pattern);
-//                drawText.setPattern
 
                 reportLayout.add(reportField, drawCaption, drawText);
             }

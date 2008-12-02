@@ -1,6 +1,5 @@
 package platformlocal;
 
-import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.JRException;
 
@@ -136,6 +135,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LOFP object1;
     LSFP equals2, equals22;
     LSFP groeq2, greater2;
+    LSFP between;
     LSFP notZero;
     LSFP percent, revPercent, addPercent;
     LSFP round, roundm1;
@@ -148,6 +148,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         equals22 = addWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))",4);
         groeq2 = addWSFProp("((prm1)>=(prm2))",2);
         greater2 = addWSFProp("((prm1)>(prm2))",2);
+        between = addWSFProp("((prm2)<=(prm1)) AND ((prm1)<=(prm3))",3);
         notZero = addWSFProp("((prm1)<>0)",1);
         percent = addSFProp("((prm1*prm2)/100)", Class.doubleClass, 2);
         revPercent = addSFProp("((prm1*prm2)/(100+prm2))", Class.doubleClass, 2);
@@ -173,6 +174,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LP doubleIncDocArticle;
     LP doubleOutDocArticle;
     LP bitPrimDocArticle, doublePrimDocArticle;
+    LP doubleExtOutDocArticle;
 
     private void InitClassProperties() {
 
@@ -188,6 +190,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         doubleOutDocArticle = addCProp("пустое кол-во", null, Class.doubleClass, outcomeDocument, article);
         bitPrimDocArticle = addCProp("пустой бит", null, Class.bit, primaryDocument, article);
         doublePrimDocArticle = addCProp("пустое число", null, Class.doubleClass, primaryDocument, article);
+        doubleExtOutDocArticle = addCProp("пустое число", null, Class.doubleClass, extOutcomeDocument, article);
 
     }
 
@@ -356,12 +359,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     // ------------------------------------ Свойства по документам ------------------------------------------- //
 
-    LJP groeqDocDate, greaterDocDate;
+    LJP groeqDocDate, greaterDocDate, betweenDocDate;
 
     private void InitDateDocProperties() {
 
         groeqDocDate = addJProp("Дата док.>=Дата", groeq2, 2, docDate, 1, 2);
         greaterDocDate = addJProp("Дата док.>Дата", greater2, 2, docDate, 1, 2);
+        betweenDocDate = addJProp("Дата док. между Дата", between, 3, docDate, 1, 2, 3);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -460,6 +464,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         InitQuantityOverrideProperties();
         InitQuantityDocStoreProperties();
         InitQuantityStoreProperties();
+        InitQuantityDateProperties();
+        InitQuantitySaleProperties();
     }
 
     // ---------------------------------------- Первичные свойства ------------------------------------------- //
@@ -473,6 +479,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP receiptQuantity;
     LGP cashSaleQuantity;
     LDP clearingSaleQuantity;
+    LUP saleQuantity;
     LDP invQuantity;
     LDP invBalance;
     LDP returnQuantity;
@@ -498,6 +505,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         clearingSaleQuantity = addDProp(quantGroup, "Кол-во расх.", Class.doubleClass, clearingSaleDocument, article);
 
+        saleQuantity = addUProp("Кол-во реал.", 1, 2, 1, clearingSaleQuantity, 1, 2, 1, cashSaleQuantity, 1, 2);
+
         invQuantity = addDProp(quantGroup, "Кол-во инв.", Class.doubleClass, invDocument, article);
         invBalance = addDProp(quantGroup, "Остаток инв.", Class.doubleClass, invDocument, article);
 //        LP defInvQuantity = addUProp("Кол-во инв. (по умолч.)", 1, 2, 1, docOutBalanceQuantity, 1, 2, -1, invBalance, 1, 2);
@@ -505,7 +514,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         returnQuantity = addDProp(quantGroup, "Кол-во возвр.", Class.doubleClass, returnDocument, article);
 
-        extOutQuantity = addUProp("Кол-во расх.", 1, 2, 1, returnQuantity, 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2, 1, cashSaleQuantity, 1, 2);
+        extOutQuantity = addUProp("Кол-во расх.", 1, 2, 1, doubleExtOutDocArticle, 1, 2, 1, returnQuantity, 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2, 1, cashSaleQuantity, 1, 2);
 
         exchangeQuantity = addDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
@@ -554,6 +563,63 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         outStoreQuantity = addGProp("Расх. со скл.", outQuantity, true, outQStore, 1, 2);
 
         balanceStoreQuantity = addUProp(balanceGroup, "Ост. на скл.", 1, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
+    }
+
+    // ----------------------------------------- Свойства по датам ------------------------------------------------ //
+
+
+    LJP incGroeqDateQuantity, outGroeqDateQuantity;
+    LGP incStoreArticleGroeqDateQuantity, outStoreArticleGroeqDateQuantity;
+    LUP dltStoreArticleGroeqDateQuantity;
+
+    LJP incGreaterDateQuantity, outGreaterDateQuantity;
+    LGP incStoreArticleGreaterDateQuantity, outStoreArticleGreaterDateQuantity;
+    LUP dltStoreArticleGreaterDateQuantity;
+
+    LUP balanceStoreDateMQuantity;
+    LUP balanceStoreDateEQuantity;
+
+    LJP incBetweenDateQuantity, outBetweenDateQuantity;
+    LGP incStoreArticleBetweenDateQuantity, outStoreArticleBetweenDateQuantity;
+
+    private void InitQuantityDateProperties() {
+
+        incGroeqDateQuantity = addJProp("Кол-во прих. с даты", multiplyDouble2, 3, groeqDocDate, 1, 3, incQuantity, 1, 2);
+        outGroeqDateQuantity = addJProp("Кол-во расх. с даты", multiplyDouble2, 3, groeqDocDate, 1, 3, outQuantity, 1, 2);
+
+        incStoreArticleGroeqDateQuantity = addGProp("Кол-во прих. на скл. с даты", incGroeqDateQuantity, true, incQStore, 1, 2, 3);
+        outStoreArticleGroeqDateQuantity = addGProp("Кол-во расх. со скл. с даты", outGroeqDateQuantity, true, outQStore, 1, 2, 3);
+        dltStoreArticleGroeqDateQuantity = addUProp("Кол-во на скл. с даты", 1, 3, 1, incStoreArticleGroeqDateQuantity, 1, 2, 3, -1, outStoreArticleGroeqDateQuantity, 1, 2, 3);
+
+        incGreaterDateQuantity = addJProp("Кол-во прих. после даты", multiplyDouble2, 3, greaterDocDate, 1, 3, incQuantity, 1, 2);
+        outGreaterDateQuantity = addJProp("Кол-во расх. после даты", multiplyDouble2, 3, greaterDocDate, 1, 3, outQuantity, 1, 2);
+
+        incStoreArticleGreaterDateQuantity = addGProp("Кол-во прих. на скл. после даты", incGreaterDateQuantity, true, incQStore, 1, 2, 3);
+        outStoreArticleGreaterDateQuantity = addGProp("Кол-во расх. со скл. после даты", outGreaterDateQuantity, true, outQStore, 1, 2, 3);
+        dltStoreArticleGreaterDateQuantity = addUProp("Кол-во на скл. после даты", 1, 3, 1, incStoreArticleGreaterDateQuantity, 1, 2, 3, -1, outStoreArticleGreaterDateQuantity, 1, 2, 3);
+
+        balanceStoreDateMQuantity = addUProp(quantGroup, "Кол-во на начало", 1, 3, 1, addJProp("", balanceStoreQuantity, 3, 1, 2), 1, 2, 3, -1, dltStoreArticleGroeqDateQuantity, 1, 2, 3);
+        balanceStoreDateEQuantity = addUProp(quantGroup, "Кол-во на конец", 1, 3, 1, addJProp("", balanceStoreQuantity, 3, 1, 2), 1, 2, 3, -1, dltStoreArticleGreaterDateQuantity, 1, 2, 3);
+
+        incBetweenDateQuantity = addJProp("Кол-во прих. за интервал", multiplyDouble2, 4, betweenDocDate, 1, 3, 4, incQuantity, 1, 2);
+        outBetweenDateQuantity = addJProp("Кол-во расх. за интервал", multiplyDouble2, 4, betweenDocDate, 1, 3, 4, outQuantity, 1, 2);
+
+        incStoreArticleBetweenDateQuantity = addGProp(quantGroup, "Кол-во прих. на скл. за интервал", incBetweenDateQuantity, true, incQStore, 1, 2, 3, 4);
+        outStoreArticleBetweenDateQuantity = addGProp(quantGroup, "Кол-во расх. со скл. за интервал", outBetweenDateQuantity, true, outQStore, 1, 2, 3, 4);
+    }
+
+    // ----------------------------------------- Свойства по реализации ------------------------------------------- //
+
+    LJP saleBetweenDateQuantity;
+    LGP saleStoreArticleBetweenDateQuantity;
+    LGP saleArticleBetweenDateQuantity;
+
+    private void InitQuantitySaleProperties() {
+
+        saleBetweenDateQuantity = addJProp("Кол-во реал. за интервал", multiplyDouble2, 4, betweenDocDate, 1, 3, 4, saleQuantity, 1, 2);
+        saleStoreArticleBetweenDateQuantity = addGProp(quantGroup, "Кол-во реал. на скл. за интервал", saleBetweenDateQuantity, true, extOutStore, 1, 2, 3, 4);
+
+        saleArticleBetweenDateQuantity = addGProp(quantGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, true, 2, 3, 4);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -1269,6 +1335,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         NavigatorElement analyticsData = new NavigatorElement(baseElement, 300, "Аналитические данные");
             NavigatorElement dateIntervalForms = new NavigatorElement(analyticsData, 310, "За интервал дат");
                 NavigatorForm mainAccountForm = new MainAccountNavigatorForm(dateIntervalForms, 311, "Товарный отчет");
+                NavigatorForm salesArticleStoreForm = new SalesArticleStoreNavigatorForm(dateIntervalForms, 313, "Реализация товара по складам");
 
         extIncomeDocument.relevantElements.set(0, extIncDetailForm);
         intraDocument.relevantElements.set(0, intraForm);
@@ -1411,7 +1478,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         public ExtOutNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectImplement objDoc = addSingleGroupObjectImplement(intraDocument, "Документ", Properties,
+            ObjectImplement objDoc = addSingleGroupObjectImplement(extOutcomeDocument, "Документ", Properties,
                                                                         baseGroup, storeGroup);
             ObjectImplement objArt = addSingleGroupObjectImplement(article, "Товар", Properties,
                                                                         baseGroup, true);
@@ -1439,6 +1506,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addArticleRegularFilterGroup(getPropertyView(cashSaleQuantity.Property).View, 0,
                                          getPropertyView(docOutBalanceQuantity.Property).View);
+
+//            addPropertyView(objDoc, objArt, Properties, quantity, notZeroQuantity);
         }
     }
 
@@ -1835,6 +1904,27 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             formView.defaultOrders.put(formView.get(getPropertyView(docDate.Property)), true);
             richDesign = formView;
 
+        }
+    }
+
+
+    private class SalesArticleStoreNavigatorForm extends DateIntervalNavigatorForm {
+
+        public SalesArticleStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectImplement objArticle = addSingleGroupObjectImplement(article, "Товар", Properties,
+                                                                        baseGroup);
+            ObjectImplement objStore = addSingleGroupObjectImplement(store, "Склад", Properties,
+                                                                        baseGroup);
+
+            addPropertyView(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
+
+            addPropertyView(balanceStoreDateMQuantity, objStore, objArticle, objDateFrom);
+            addPropertyView(incStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(outStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(balanceStoreDateEQuantity, objStore, objArticle, objDateTo);
+            addPropertyView(saleStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
         }
     }
 

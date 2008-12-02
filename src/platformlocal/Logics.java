@@ -441,7 +441,7 @@ class TableFactory extends TableImplement{
     }
 
     int MaxBeanObjects = 3;
-    int MaxInterface = 4;
+    int MaxInterface = 5;
     
     TableFactory() {
         ObjectTable = new ObjectTable();
