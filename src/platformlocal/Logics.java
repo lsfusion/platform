@@ -575,6 +575,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         InitLogics();
         InitImplements();
         InitNavigators();
+
+        InitAuthentication();
     }
 
     public boolean toSave(Property Property) {
@@ -671,9 +673,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     NavigatorElement<T> baseElement;
-    
     abstract void InitNavigators();
-    
+
+    AuthPolicy authPolicy = new AuthPolicy();
+    abstract void InitAuthentication();
+
     void addDataProperty(DataProperty Property) {
         Properties.add(Property);
     }

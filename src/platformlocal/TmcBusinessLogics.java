@@ -1814,26 +1814,28 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private class ArticleMStoreNavigatorForm extends TmcNavigatorForm {
 
-        GroupObjectImplement gobjArtStore;
-        ObjectImplement objStore, objArt;
-
         public ArticleMStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            gobjArtStore = new GroupObjectImplement(IDShift(1));
+            GroupObjectImplement gobjArtStore = new GroupObjectImplement(IDShift(1));
 
-            objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArtStore);
-            objStore = new ObjectImplement(IDShift(1), store, "Склад", gobjArtStore);
+            // добавить объект "Товар"
+            ObjectImplement objArt = new ObjectImplement(IDShift(1), article, "Товар", gobjArtStore);
+            // добавить объект "Склад"
+            ObjectImplement objStore = new ObjectImplement(IDShift(1), store, "Склад", gobjArtStore);
 
+            // добавить блок Товар*Склад
             addGroup(gobjArtStore);
 
+            // добавить свойства по товару
             addPropertyView(Properties, baseGroup, false, objArt);
+            // добавить свойства по складу
             addPropertyView(Properties, baseGroup, false, objStore);
 
+            // добавить множественные свойства по товару и складу
             addPropertyView(objStore, objArt, Properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
         }
-
     }
 
     private class SupplierStoreArticleNavigatorForm extends TmcNavigatorForm {
@@ -1841,22 +1843,43 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         SupplierStoreArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
+            // создать блок "Поставщик"
             ObjectImplement objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", Properties,
                                                                                     baseGroup);
             objSupplier.GroupTo.gridClassView = false;
             objSupplier.GroupTo.singleViewType = true;
 
+            // создать блок "Склад"
             ObjectImplement objStore = addSingleGroupObjectImplement(store, "Склад", Properties,
                                                                         baseGroup);
             objStore.GroupTo.gridClassView = false;
 
+            // создать блок "Товар"
             ObjectImplement objArt = addSingleGroupObjectImplement(article, "Товар", Properties,
-                                                                        baseGroup);
+                                                                        baseGroup, true);
 
+            // добавить множественные свойства
             addPropertyView(objStore, objArt, Properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
+            // установить фильтр по умолчанию на поставщик товара = поставщик
             addFixedFilter(new Filter(addPropertyObjectImplement(storeSupplier, objStore, objArt), Filter.EQUALS, new ObjectValueLink(objSupplier)));
+
+            // добавить стандартные фильтры
+            RegularFilterGroup filterGroup = new RegularFilterGroup(IDShift(1));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  null,
+                                  "Все",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(balanceStoreQuantity.Property).View, Filter.GREATER, new UserValueLink(0)),
+                                  "Есть на складе",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilter(IDShift(1),
+                                  new Filter(getPropertyView(balanceStoreQuantity.Property).View, Filter.LESS_EQUALS, new UserValueLink(0)),
+                                  "Нет на складе",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroup);
         }
     }
 
@@ -1926,6 +1949,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(balanceStoreDateEQuantity, objStore, objArticle, objDateTo);
             addPropertyView(saleStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
         }
+    }
+
+    void InitAuthentication() {
+
+        User user1 = authPolicy.addUser("user1", "user1", new UserInfo("Петр", "Петров"));
+        User user2 = authPolicy.addUser("user2", "user2", new UserInfo("Иван", "Иванов"));        
     }
 
     // ------------------------------------- Временные методы --------------------------- //
@@ -2006,5 +2035,3 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     }
 
 }
-
-

@@ -31,6 +31,28 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         classCache = iclassCache;
     }
 
+    User currentUser;
+    // просто закэшируем, чтобы быстрее было
+    SecurityPolicy securityPolicy;
+
+    public boolean changeCurrentUser(String login, String password) {
+
+        User user = BL.authPolicy.getUser(login, password);
+        if (user == null) return false;
+
+        currentUser = user;
+        securityPolicy = BL.authPolicy.getSecurityPolicy(currentUser);
+
+        return true;
+    }
+
+    public byte[] getCurrentUserInfoByteArray() {
+
+        if (currentUser == null) return new byte[] {};
+
+        return ByteArraySerializer.serializeUserInfo(currentUser.userInfo);
+    }
+
     public final static int NAVIGATORGROUP_RELEVANTFORM = -2;
     public final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
 

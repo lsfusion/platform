@@ -268,22 +268,13 @@ public class Main {
                 BL.FillDB(null, false);
 
             // базовый навигатор
-            RemoteNavigator<TestBusinessLogics> Navigator =  new RemoteNavigator(Adapter,BL);
+            RemoteNavigator<TestBusinessLogics> remoteNavigator =  new RemoteNavigator(Adapter,BL);
 
-/*            JFrame frame = new JFrame("Hello");
-            frame.add(new ClientForm(Navigator.CreateForm(1)));
-            frame.setVisible(true);*/
-            Layout = new Layout(Navigator);
-
-/*            if(!Layout.Loaded) {
-                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(0)).sID,Navigator));
-                Layout.DefaultStation.drop(new ClientFormDockable(((NavigatorForm)Navigator.GetElements(null).get(1)).sID,Navigator));
-            }*/
-//            Frontend.add(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),"Forn 2");
-//            Rectangle Bounds = new Rectangle(300,400);
-//            ScreenStation.addDockable(new DefaultDockable((new ClientForm(Form)).getContentPane(),"Form 2"),Bounds);
-
-            Layout.setVisible(true);
+            LoginDialog loginDialog = new LoginDialog(remoteNavigator);
+            if (loginDialog.login()) {
+                Layout = new Layout(remoteNavigator);
+                Layout.setVisible(true);
+            }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -706,6 +697,9 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Article.addRelevantElement(test2Form);
         ArticleGroup.addRelevantElement(testForm);
 
+    }
+
+    void InitAuthentication() {
     }
 }
 

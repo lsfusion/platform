@@ -45,7 +45,11 @@ class Layout extends JFrame implements ComponentCollector {
     LookAndFeelList LookAndFeels;
     ThemeMenu Themes;
 
-    Layout(RemoteNavigator Navigator) {
+    Layout(RemoteNavigator remoteNavigator) {
+
+        UserInfo userInfo = ByteArraySerializer.deserializeUserInfo(remoteNavigator.getCurrentUserInfoByteArray());
+        setTitle(userInfo.firstName + " " + userInfo.lastName);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
 
@@ -98,7 +102,7 @@ class Layout extends JFrame implements ComponentCollector {
 
         DefaultStation = StackStation;
 
-        ClientNavigator mainNavigator = new ClientNavigator(Navigator) {
+        ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
 
             public void openForm(ClientNavigatorForm element) {
                 try {
@@ -122,7 +126,7 @@ class Layout extends JFrame implements ComponentCollector {
 
         NavigatorDockable mainNavigatorForm = new NavigatorDockable(mainNavigator, "Навигатор");
         // нужно обязательно до Drop чтобы появились крестики
-        Frontend.add(mainNavigatorForm,"Navigator");
+        Frontend.add(mainNavigatorForm,"remoteNavigator");
 
         NavigatorDockable relevantFormNavigatorForm = new NavigatorDockable(mainNavigator.relevantFormNavigator, "Связанные формы");
         Frontend.add(relevantFormNavigatorForm,"relevantFormNavigator");

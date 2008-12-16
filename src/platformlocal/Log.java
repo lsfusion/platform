@@ -89,7 +89,7 @@ public final class Log {
 
             view.setText(text);
 
-            info.setText("Bytes received : " + bytesReceived);
+//            info.setText("Bytes received : " + bytesReceived);
         }
 
         Timer backgroundTimer;
