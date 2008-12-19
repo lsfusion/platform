@@ -121,7 +121,6 @@ class AbstractNode {
 
     AbstractGroup parent;
     AbstractGroup getParent() { return parent; }
-
 }
 
 class AbstractGroup extends AbstractNode {
@@ -144,6 +143,21 @@ class AbstractGroup extends AbstractNode {
             if (child instanceof AbstractGroup && ((AbstractGroup)child).hasChild(prop)) return true;
         }
         return false;
+    }
+
+    List<Property> getProperties() {
+        List<Property> result = new ArrayList();
+        fillProperties(result);
+        return result;
+    }
+
+    private void fillProperties(List<Property> properties) {
+        for (AbstractNode child : children) {
+            if (child instanceof AbstractGroup)
+                ((AbstractGroup)child).fillProperties(properties);
+            if (child instanceof Property)
+                properties.add((Property)child);
+        }
     }
 
 }
@@ -349,8 +363,8 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     }
 
     // базовые методы - ничего не делать, его перегружают только Override и Data
-    ChangeValue getChangeProperty(DataSession Session,Map<T, ObjectValue> Keys, int Coeff) { return null;}
-    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {}
+    ChangeValue getChangeProperty(DataSession Session,Map<T, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) { return null;}
+    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {}
 
     // заполняет требования к изменениям
     abstract void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes);
@@ -562,9 +576,9 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
         DataTable.outSelect(Session);
     }
 
-    ChangeValue getChangeProperty(DataSession Session,Map<DataPropertyInterface, ObjectValue> Keys, int Coeff) {
+    ChangeValue getChangeProperty(DataSession Session,Map<DataPropertyInterface, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) {
 
-        if(!getValueClass(new InterfaceClass<DataPropertyInterface>(Keys)).isEmpty()) {
+        if(!getValueClass(new InterfaceClass<DataPropertyInterface>(Keys)).isEmpty() && (securityPolicy == null || securityPolicy.checkPermission(this))) {
             if(Coeff==0 && Session!=null) {
                 Object ReadValue = null;
                 try {
@@ -579,9 +593,10 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
             return null;
     }
 
-    void changeProperty(Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
+    void changeProperty(Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
         // записываем в таблицу изменений
-        Session.changeProperty(this,Keys,NewValue);
+        if (securityPolicy == null || securityPolicy.checkPermission(this))
+            Session.changeProperty(this,Keys,NewValue);
     }
 
     // св-во по умолчанию (при ClassSet подставляется)
@@ -851,30 +866,30 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
         Field = WriteField;
     }
 
-    List<PropertyMapImplement<PropertyInterface, T>> getImplements(Map<T, ObjectValue> Keys) {
+    List<PropertyMapImplement<PropertyInterface, T>> getImplements(Map<T, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
         return new ArrayList<PropertyMapImplement<PropertyInterface, T>>();
     }
 
     int getCoeff(PropertyMapImplement<?, T> Implement) { return 0; }
 
-    PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys) {
-        List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys);
+    PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
+        List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys, securityPolicy);
         for(int i=Implements.size()-1;i>=0;i--)
-            if(Implements.get(i).mapGetChangeProperty(null, Keys, 0)!=null)
+            if(Implements.get(i).mapGetChangeProperty(null, Keys, 0, securityPolicy)!=null && (securityPolicy == null || securityPolicy.checkPermission(Implements.get(i).Property)))
                 return Implements.get(i);
         return null;
     }
 
-    ChangeValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, int Coeff) {
-        PropertyMapImplement<?,T> Implement = getChangeImplement(Keys);
+    ChangeValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) {
+        PropertyMapImplement<?,T> Implement = getChangeImplement(Keys, securityPolicy);
         if(Implement==null) return null;
-        return Implement.mapGetChangeProperty(Session,Keys,getCoeff(Implement)*Coeff);
+        return Implement.mapGetChangeProperty(Session,Keys,getCoeff(Implement)*Coeff, securityPolicy);
     }
 
-    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
-        PropertyMapImplement<?,T> operand = getChangeImplement(Keys);
+    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+        PropertyMapImplement<?,T> operand = getChangeImplement(Keys, securityPolicy);
         if (operand != null)
-            operand.mapChangeProperty(Keys,NewValue,Session);
+            operand.mapChangeProperty(Keys, NewValue, Session, securityPolicy);
     }
 
 }
@@ -1079,13 +1094,13 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
         return Property.fillChangedList(ChangedProperties, Changes, NoUpdate);
     }
 
-    ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, int Coeff) {
-        return Property.getChangeProperty(Session,getMapImplement(Keys), Coeff);
+    ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) {
+        return Property.getChangeProperty(Session,getMapImplement(Keys), Coeff, securityPolicy);
     }
 
     // для OverrideList'а по сути
-    void mapChangeProperty(Map<P, ObjectValue> Keys, Object NewValue, DataSession Session) throws SQLException {
-        Property.changeProperty(getMapImplement(Keys),NewValue,Session);
+    void mapChangeProperty(Map<P, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+        Property.changeProperty(getMapImplement(Keys), NewValue, Session, securityPolicy);
     }
 
     public ClassSet mapChangeValueClass(DataSession Session, InterfaceClass<P> ClassImplement) {
@@ -1289,7 +1304,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         return ChangeTable.Value;
     }
 
-    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> Keys) {
+    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
         List<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>> Result = new ArrayList<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>>();
         List<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>> BitProps = new ArrayList<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>>();
         for(PropertyInterfaceImplement<JoinPropertyInterface> Implement : Implements.Mapping.values())
@@ -1299,7 +1314,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
                 if(PropertyImplement.Property instanceof DataProperty)
                     Result.add(PropertyImplement);
                 else {
-                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, 0);
+                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, 0, securityPolicy);
                     if(ChangeValue!=null && ChangeValue.Class instanceof BitClass)
                         BitProps.add(PropertyImplement);
                     else // в начало
@@ -1753,7 +1768,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
             Operand.Property.setChangeType(RequiredTypes,IncrementType);
     }
 
-    List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> Keys) {
+    List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
         return Operands;
     }
 

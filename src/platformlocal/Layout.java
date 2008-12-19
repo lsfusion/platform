@@ -551,7 +551,7 @@ abstract class FormDockable extends DefaultDockable {
     }
 
     void createActiveComponent(ClientNavigator navigator, boolean currentSession) throws SQLException {
-        createActiveComponent(navigator, navigator.remoteNavigator.CreateForm(formID, currentSession));
+        createActiveComponent(navigator, navigator.remoteNavigator.createForm(formID, currentSession));
     }
 
     void createActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {

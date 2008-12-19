@@ -270,6 +270,8 @@ public class Main {
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> remoteNavigator =  new RemoteNavigator(Adapter,BL);
 
+//            remoteNavigator.changeCurrentUser("user1", "user1");
+
             LoginDialog loginDialog = new LoginDialog(remoteNavigator);
             if (loginDialog.login()) {
                 Layout = new Layout(remoteNavigator);
@@ -667,24 +669,24 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         NavigatorElement group1 = new NavigatorElement<TestBusinessLogics>(1,"Group 1");
         NavigatorElement group2 = new NavigatorElement<TestBusinessLogics>(2,"Group 2");
 
-        baseElement.addChild(group1);
-        baseElement.addChild(group2);
+        baseElement.add(group1);
+        baseElement.add(group2);
 
         NavigatorForm testForm = new TestNavigatorForm(3,"Test Form 1", this);
-        group1.addChild(testForm);
+        group1.add(testForm);
 
         NavigatorForm simpleForm = new SimpleNavigatorForm(4,"Test Form 2", this);
-        testForm.addChild(simpleForm);
+        testForm.add(simpleForm);
         simpleForm.isPrintForm = true;
 
         NavigatorForm test2Form = new Test2NavigatorForm(5,"Test Form 3", this);
-        group2.addChild(test2Form);
+        group2.add(test2Form);
 
         NavigatorForm integralForm = new IntegralNavigatorForm(6, "Integral Form", this);
-        group2.addChild(integralForm);
+        group2.add(integralForm);
 
         NavigatorForm articleDateForm = new ArticleDateNavigatorForm(7, "Article/Date", this);
-        group2.addChild(articleDateForm);
+        group2.add(articleDateForm);
 
         testForm.addRelevantElement(simpleForm);
         testForm.addRelevantElement(test2Form);

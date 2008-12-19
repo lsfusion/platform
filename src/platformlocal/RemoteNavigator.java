@@ -56,33 +56,43 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     public final static int NAVIGATORGROUP_RELEVANTFORM = -2;
     public final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
 
-    List<NavigatorElement> GetElements(int elementID) {
+    List<NavigatorElement> getElements(int elementID) {
 
+        List<NavigatorElement> navigatorElements;
         switch (elementID) {
             case (NAVIGATORGROUP_RELEVANTFORM) :
                 if (currentForm == null)
-                    return new ArrayList();
+                    navigatorElements = new ArrayList();
                 else
-                    return new ArrayList(((NavigatorForm)BL.baseElement.getNavigatorElement(currentForm.getID())).relevantElements);
+                    navigatorElements = new ArrayList(((NavigatorForm)BL.baseElement.getNavigatorElement(currentForm.getID())).relevantElements);
+                break;
             case (NAVIGATORGROUP_RELEVANTCLASS) :
                 if (currentClass == null)
-                    return new ArrayList();
+                    navigatorElements = new ArrayList();
                 else
-                    return new ArrayList(currentClass.relevantElements);
+                    navigatorElements = new ArrayList(currentClass.relevantElements);
+                break;
             default :
-                return GetElements(BL.baseElement.getNavigatorElement(elementID));
+                navigatorElements = getElements(BL.baseElement.getNavigatorElement(elementID));
         }
+
+        List<NavigatorElement> resultElements = new ArrayList();
+
+        for (NavigatorElement element : navigatorElements)
+            if (securityPolicy.navigator.checkPermission(element))
+                resultElements.add(element);
+
+        return resultElements;
     }
 
-    List<NavigatorElement> GetElements(NavigatorElement element) {
+    List<NavigatorElement> getElements(NavigatorElement element) {
 
         if (element == null) element = BL.baseElement;
-
-        return new ArrayList(element.childs);
+        return new ArrayList(element.getChildren());
     }
 
-    public byte[] GetElementsByteArray(int groupID) {
-        return ByteArraySerializer.serializeListNavigatorElement(GetElements(groupID));
+    public byte[] getElementsByteArray(int groupID) {
+        return ByteArraySerializer.serializeListNavigatorElement(getElements(groupID));
     }
 
     //используется для RelevantFormNavigator
@@ -99,9 +109,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
 //    RemoteForm<T> lastOpenedForm;
-    RemoteForm<T> CreateForm(int formID, boolean currentSession) throws SQLException {
+    RemoteForm<T> createForm(int formID, boolean currentSession) throws SQLException {
 
         NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
+
+        if (!securityPolicy.navigator.checkPermission(navigatorForm)) return null;
 
         DataSession session;
         if (currentSession && currentForm != null)
@@ -109,7 +121,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         else
             session = BL.createSession(Adapter);
 
-        RemoteForm remoteForm = new RemoteForm(formID, BL, session) {
+        RemoteForm remoteForm = new RemoteForm(formID, BL, session, securityPolicy) {
 
             protected void objectChanged(Class cls, Integer objectID) {
                 super.objectChanged(cls, objectID);
@@ -135,7 +147,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.Properties = new ArrayList();
         for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.propertyViews) {
-            remoteForm.Properties.add(propertyViewMapper.doMapping(navigatorProperty));
+            if (securityPolicy.property.view.checkPermission(navigatorProperty.View.Property))
+                remoteForm.Properties.add(propertyViewMapper.doMapping(navigatorProperty));
         }
 
         remoteForm.fixedFilters = new HashSet();
@@ -327,7 +340,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         if (relevant == null) return -1;
 
         for (NavigatorElement element : relevant) {
-            if (element instanceof NavigatorForm)
+            if (element instanceof NavigatorForm && securityPolicy.navigator.checkPermission(element))
                 return element.ID;
         }
 
@@ -349,30 +362,55 @@ class NavigatorElement<T extends BusinessLogics<T>> {
         caption = icaption;
 
         if (parent != null)
-            parent.addChild(this); 
+            parent.add(this);
     }
 
+    private NavigatorElement parent;
+    NavigatorElement getParent() { return parent; }
 
-    List<NavigatorElement<T>> childs = new ArrayList();
-    void addChild(NavigatorElement<T> child) {
-        childs.add(child);
+    private List<NavigatorElement<T>> children = new ArrayList();
+    Collection<NavigatorElement<T>> getChildren() { return children; }
+
+    Collection<NavigatorElement<T>> getChildren(boolean recursive) {
+
+        if (!recursive) return new ArrayList(children);
+
+        Collection<NavigatorElement<T>> result = new ArrayList();
+        fillChildren(result);
+        return result;
     }
-    public boolean allowChildren() {
-        return !childs.isEmpty();
+
+    private void fillChildren(Collection<NavigatorElement<T>> result) {
+
+        if (result.contains(this))
+            return;
+
+        result.add(this);
+
+        for (NavigatorElement child : children)
+            child.fillChildren(result);
+    } 
+
+    void add(NavigatorElement<T> child) {
+        children.add(child);
+        child.parent = this;
+    }
+
+    boolean hasChildren() {
+        return !children.isEmpty();
     }
 
     NavigatorElement<T> getNavigatorElement(int elementID) {
 
         if (ID == elementID) return this;
 
-        for(NavigatorElement<T> child : childs) {
+        for(NavigatorElement<T> child : children) {
             NavigatorElement<T> element = child.getNavigatorElement(elementID);
             if (element != null) return element;
         }
 
         return null;
     }
-
 }
 
 abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
@@ -444,6 +482,8 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
     }
 
     void addPropertyView(List<Property> properties, AbstractGroup group, Boolean upClasses, GroupObjectImplement groupObject, ObjectImplement... objects) {
+
+        // приходится делать именно так, так как важен порядок следования свойств
 
         for (Property property : properties) {
 

@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.Map.Entry;
 import java.util.*;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 
 // здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
 
@@ -252,11 +251,11 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
         return false;
     }
 
-    ChangeValue getChangeProperty(DataSession Session) {
+    ChangeValue getChangeProperty(DataSession Session, ChangePropertySecurityPolicy securityPolicy) {
         Map<P,ObjectValue> Interface = new HashMap<P,ObjectValue>();
         for(Entry<P, ObjectImplement> Implement : Mapping.entrySet())
             Interface.put(Implement.getKey(),new ObjectValue(Implement.getValue().idObject,Implement.getValue().Class));
-        return Property.getChangeProperty(Session,Interface,1);
+        return Property.getChangeProperty(Session,Interface,1,securityPolicy);
     }
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, SourceExpr> ClassSource, DataSession Session, boolean NotNull) {
@@ -570,13 +569,14 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     DataSession Session;
 
-    RemoteForm(int iID, T iBL, DataSession iSession) throws SQLException {
+    SecurityPolicy securityPolicy;
+
+    RemoteForm(int iID, T iBL, DataSession iSession, SecurityPolicy isecurityPolicy) throws SQLException {
 
         ID = iID;
-
         BL = iBL;
-
         Session = iSession;
+        securityPolicy = isecurityPolicy;
 
         StructUpdated = true;
 
@@ -723,7 +723,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     private ChangeValue getPropertyEditorObjectValue(PropertyView propertyView) {
-        return propertyView.View.getChangeProperty(Session);
+        return propertyView.View.getChangeProperty(Session, securityPolicy.property.change);
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {
@@ -937,7 +937,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
                         Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
-                    ChangeProperty.changeProperty(Keys,Row.getValue().get("newvalue"),Session);
+                    ChangeProperty.changeProperty(Keys,Row.getValue().get("newvalue"),Session, null);
                 }
             } else {
                 if (Object.GroupTo.equals(Filter.GetApplyObject())) foundConflict = true;
@@ -979,7 +979,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     private void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
 
         // изменяем св-во
-        property.Property.changeProperty(fillPropertyInterface(property),value,Session);
+        property.Property.changeProperty(fillPropertyInterface(property), value, Session, securityPolicy.property.change);
 
         DataChanged = true;
     }

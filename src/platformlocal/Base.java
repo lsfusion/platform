@@ -259,6 +259,12 @@ class BaseUtils {
             return obj1.equals(obj2);
     }
 
+    public static <T> boolean findByReference(Collection<T> col, Object obj) {
+        for (T objCol : col)
+            if (objCol == obj) return true;
+        return false;
+    }
+
     private static ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
 
     public static Object getDefaultValue(java.lang.Class cls) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {

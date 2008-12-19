@@ -1450,7 +1450,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     if(Randomizer.nextInt(10)<8)
                         ValueObject = ChangeProp.Value.GetRandomObject(Session,TableFactory,Randomizer,Iterations);
                     
-                    ChangeProp.changeProperty(Keys,ValueObject,Session);
+                    ChangeProp.changeProperty(Keys,ValueObject,Session, null);
                 }
             }
             
@@ -1576,7 +1576,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                             ValueObject = ObjectName;
                         } else
                             ValueObject = Property.Value.getRandomObject(Objects,Randomizer,20);
-                        Property.changeProperty(Keys,ValueObject,Session);
+                        Property.changeProperty(Keys,ValueObject,Session, null);
                         RandomInterfaces++;
                     }
                 }
@@ -1611,7 +1611,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     public void createDefaultClassForms(Class cls, NavigatorElement parent) {
 
         NavigatorElement node = new ClassNavigatorForm(this, cls);
-        parent.addChild(node);
+        parent.add(node);
 
         // Проверим, что такой формы еще не было
         boolean found = false;
@@ -1725,7 +1725,7 @@ class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface,DataProp
             IntNum++;
         }
 
-        Property.changeProperty(Keys, Value, Session);
+        Property.changeProperty(Keys, Value, Session, null);
     }
 
     void putNotNulls(Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls,Integer... iParams) {

@@ -1,9 +1,6 @@
 package platformlocal;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 import java.io.Serializable;
 
 public class AuthPolicy {
@@ -113,7 +110,69 @@ class UserGroup extends UserPolicy {
 
 class SecurityPolicy {
 
-    public void override(SecurityPolicy policy) {
+    PropertySecurityPolicy property = new PropertySecurityPolicy();
+    NavigatorSecurityPolicy navigator = new NavigatorSecurityPolicy();
 
+    public void override(SecurityPolicy policy) {
+        property.override(policy.property);
+        navigator.override(policy.navigator);
     }
 }
+
+class PropertySecurityPolicy {
+
+    ViewPropertySecurityPolicy view = new ViewPropertySecurityPolicy();
+    ChangePropertySecurityPolicy change = new ChangePropertySecurityPolicy();
+
+    public void override(PropertySecurityPolicy policy) {
+        view.override(policy.view);
+        change.override(policy.change);
+    }
+}
+
+class ViewPropertySecurityPolicy extends AbstractSecurityPolicy<Property> {
+
+}
+
+class ChangePropertySecurityPolicy extends AbstractSecurityPolicy<Property> {
+
+}
+
+class NavigatorSecurityPolicy extends AbstractSecurityPolicy<NavigatorElement> {
+    
+}
+
+class AbstractSecurityPolicy<T> {
+
+    private Set<T> permitted = new HashSet();
+    private Set<T> denied = new HashSet();
+
+    boolean defaultPermission = true;
+
+    public void permit(T obj) { permitted.add(obj); }
+    public void deny(T obj) { denied.add(obj); }
+
+    public void permit(Collection<? extends T> colObj) { permitted.addAll(colObj); }
+    public void deny(Collection<? extends T> colObj) { denied.addAll(colObj); }
+
+    protected void override(AbstractSecurityPolicy<T> policy) {
+
+        for (T obj : policy.denied) {
+            permitted.remove(obj);
+            denied.add(obj);
+        }
+
+        for (T obj : policy.permitted) {
+            denied.remove(obj);
+            permitted.add(obj);
+        }
+    }
+
+    public boolean checkPermission(T obj) {
+
+        if (permitted.contains(obj)) return true;
+        if (denied.contains(obj)) return false;
+        return defaultPermission;
+    }
+}
+

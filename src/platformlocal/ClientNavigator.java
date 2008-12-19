@@ -189,7 +189,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
     protected List<ClientNavigatorElement> getNodeElements(int elementID) {
         return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray(elementID));
+                                                remoteNavigator.getElementsByteArray(elementID));
     }
 
     public void currentFormChanged() {
@@ -222,7 +222,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
             return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : elementID));
+                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : elementID));
         }
 
     }
@@ -239,7 +239,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
             return ByteArraySerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.GetElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : elementID));
+                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : elementID));
         }
 
     }
@@ -251,8 +251,8 @@ class ClientNavigatorElement {
     int ID;
     String caption;
 
-    boolean hasChilds = false;
-    boolean allowChildren() { return hasChilds; }
+    boolean hasChildren = false;
+    boolean allowChildren() { return hasChildren; }
 
     public boolean isPrintForm = false;
 

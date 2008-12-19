@@ -483,7 +483,7 @@ class Serializer {
                 outStream.writeByte(1);
             outStream.writeInt(element.ID);
             outStream.writeUTF(element.caption);
-            outStream.writeBoolean(element.allowChildren());
+            outStream.writeBoolean(element.hasChildren());
         }
 
     }
@@ -508,7 +508,7 @@ class Serializer {
 
             element.ID = inStream.readInt();
             element.caption = inStream.readUTF();
-            element.hasChilds = inStream.readBoolean();
+            element.hasChildren = inStream.readBoolean();
 
             listElements.add(element);
         }

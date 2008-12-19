@@ -1300,42 +1300,59 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Indexes.add(index);
     }
 
+    NavigatorElement primaryData;
+    NavigatorForm extIncDetailForm, extIncForm, extIncPrintForm;
+    NavigatorForm intraForm;
+    NavigatorForm extOutForm, cashSaleForm, receiptForm, clearingSaleForm, invForm, invStoreForm, returnForm;
+    NavigatorForm exchangeForm, exchangeMForm;
+    NavigatorForm revalueForm, revalueStoreForm;
+    NavigatorElement aggregateData;
+    NavigatorElement aggrStoreData;
+    NavigatorForm storeArticleForm, storeArticlePrimDocForm, storeArticleDocForm;
+    NavigatorElement aggrArticleData;
+    NavigatorForm articleStoreForm, articleMStoreForm;
+    NavigatorElement aggrSupplierData;
+    NavigatorForm supplierStoreArticleForm;
+    NavigatorElement analyticsData;
+    NavigatorElement dateIntervalForms;
+    NavigatorForm mainAccountForm, salesArticleStoreForm;
+
     void InitNavigators() {
 
         createDefaultClassForms(objectClass, baseElement);
 
-        NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
-            NavigatorForm extIncDetailForm = new ExtIncDetailNavigatorForm(primaryData, 110, "Внешний приход");
-                NavigatorForm extIncForm = new ExtIncNavigatorForm(extIncDetailForm, 115, "Внешний приход по товарам");
-                NavigatorForm extIncPrintForm = new ExtIncPrintNavigatorForm(extIncDetailForm, 117, "Реестр цен");
-            NavigatorForm intraForm = new IntraNavigatorForm(primaryData, 120, "Внутреннее перемещение");
-            NavigatorForm extOutForm = new ExtOutNavigatorForm(primaryData, 130, "Внешний расход");
-                NavigatorForm cashSaleForm = new CashSaleNavigatorForm(extOutForm, 131, "Реализация по кассе");
-                    NavigatorForm receiptForm = new ReceiptNavigatorForm(cashSaleForm, 1310, "Реализация по кассе (чеки)");
-                NavigatorForm clearingSaleForm = new ClearingSaleNavigatorForm(extOutForm, 132, "Реализация по б/н расчету");
-                NavigatorForm invForm = new InvNavigatorForm(extOutForm, 134, "Инвентаризация", false);
-                    NavigatorForm invStoreForm = new InvNavigatorForm(invForm, 1341, "Инвентаризация по складам", true);
-                NavigatorForm returnForm = new ReturnNavigatorForm(extOutForm, 136, "Возврат поставщику");
-            NavigatorForm exchangeForm = new ExchangeNavigatorForm(primaryData, 140, "Пересорт");
-                NavigatorForm exchangeMForm = new ExchangeMNavigatorForm(exchangeForm, 142, "Сводный пересорт");
-            NavigatorForm revalueForm = new RevalueNavigatorForm(primaryData, 150, "Переоценка", false);
-                NavigatorForm revalueStoreForm = new RevalueNavigatorForm(revalueForm, 155, "Переоценка по складам", true);
+        primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
+            extIncDetailForm = new ExtIncDetailNavigatorForm(primaryData, 110, "Внешний приход");
+                extIncForm = new ExtIncNavigatorForm(extIncDetailForm, 115, "Внешний приход по товарам");
+                extIncPrintForm = new ExtIncPrintNavigatorForm(extIncDetailForm, 117, "Реестр цен");
+            intraForm = new IntraNavigatorForm(primaryData, 120, "Внутреннее перемещение");
+            extOutForm = new ExtOutNavigatorForm(primaryData, 130, "Внешний расход");
+                cashSaleForm = new CashSaleNavigatorForm(extOutForm, 131, "Реализация по кассе");
+                    receiptForm = new ReceiptNavigatorForm(cashSaleForm, 1310, "Реализация по кассе (чеки)");
+                clearingSaleForm = new ClearingSaleNavigatorForm(extOutForm, 132, "Реализация по б/н расчету");
+                invForm = new InvNavigatorForm(extOutForm, 134, "Инвентаризация", false);
+                    invStoreForm = new InvNavigatorForm(invForm, 1341, "Инвентаризация по складам", true);
+                returnForm = new ReturnNavigatorForm(extOutForm, 136, "Возврат поставщику");
+            exchangeForm = new ExchangeNavigatorForm(primaryData, 140, "Пересорт");
+                exchangeMForm = new ExchangeMNavigatorForm(exchangeForm, 142, "Сводный пересорт");
+            revalueForm = new RevalueNavigatorForm(primaryData, 150, "Переоценка", false);
+                revalueStoreForm = new RevalueNavigatorForm(revalueForm, 155, "Переоценка по складам", true);
 
-        NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
-            NavigatorElement aggrStoreData = new NavigatorElement(aggregateData, 210, "Склады");
-                NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(aggrStoreData, 211, "Товары по складам");
-                    NavigatorForm storeArticlePrimDocForm = new StoreArticlePrimDocNavigatorForm(storeArticleForm, 2111, "Товары по складам (изм. цен)");
-                    NavigatorForm storeArticleDocForm = new StoreArticleDocNavigatorForm(storeArticleForm, 2112, "Товары по складам (док.)");
-            NavigatorElement aggrArticleData = new NavigatorElement(aggregateData, 220, "Товары");
-                NavigatorForm articleStoreForm = new ArticleStoreNavigatorForm(aggrArticleData, 221, "Склады по товарам");
-                NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(aggrArticleData, 222, "Товары*Склады");
-            NavigatorElement aggrSupplierData = new NavigatorElement(aggregateData, 230, "Поставщики");
-                NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(aggrSupplierData, 231, "Остатки по складам");
+        aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
+            aggrStoreData = new NavigatorElement(aggregateData, 210, "Склады");
+                storeArticleForm = new StoreArticleNavigatorForm(aggrStoreData, 211, "Товары по складам");
+                    storeArticlePrimDocForm = new StoreArticlePrimDocNavigatorForm(storeArticleForm, 2111, "Товары по складам (изм. цен)");
+                    storeArticleDocForm = new StoreArticleDocNavigatorForm(storeArticleForm, 2112, "Товары по складам (док.)");
+            aggrArticleData = new NavigatorElement(aggregateData, 220, "Товары");
+                articleStoreForm = new ArticleStoreNavigatorForm(aggrArticleData, 221, "Склады по товарам");
+                articleMStoreForm = new ArticleMStoreNavigatorForm(aggrArticleData, 222, "Товары*Склады");
+            aggrSupplierData = new NavigatorElement(aggregateData, 230, "Поставщики");
+                supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(aggrSupplierData, 231, "Остатки по складам");
 
-        NavigatorElement analyticsData = new NavigatorElement(baseElement, 300, "Аналитические данные");
-            NavigatorElement dateIntervalForms = new NavigatorElement(analyticsData, 310, "За интервал дат");
-                NavigatorForm mainAccountForm = new MainAccountNavigatorForm(dateIntervalForms, 311, "Товарный отчет");
-                NavigatorForm salesArticleStoreForm = new SalesArticleStoreNavigatorForm(dateIntervalForms, 313, "Реализация товара по складам");
+        analyticsData = new NavigatorElement(baseElement, 300, "Аналитические данные");
+            dateIntervalForms = new NavigatorElement(analyticsData, 310, "За интервал дат");
+                mainAccountForm = new MainAccountNavigatorForm(dateIntervalForms, 311, "Товарный отчет");
+                salesArticleStoreForm = new SalesArticleStoreNavigatorForm(dateIntervalForms, 313, "Реализация товара по складам");
 
         extIncomeDocument.relevantElements.set(0, extIncDetailForm);
         intraDocument.relevantElements.set(0, intraForm);
@@ -1953,8 +1970,24 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void InitAuthentication() {
 
+        SecurityPolicy securityPolicy;
+
         User user1 = authPolicy.addUser("user1", "user1", new UserInfo("Петр", "Петров"));
-        User user2 = authPolicy.addUser("user2", "user2", new UserInfo("Иван", "Иванов"));        
+
+        User user2 = authPolicy.addUser("user2", "user2", new UserInfo("Иван", "Иванов"));
+
+        securityPolicy = new SecurityPolicy();
+
+        securityPolicy.property.view.deny(extIncDocumentSumPay.Property);
+        securityPolicy.property.view.deny(incSumsGroup.getProperties());
+        securityPolicy.property.change.deny(extIncDetailArticle.Property);
+        securityPolicy.property.change.deny(extIncDetailQuantity.Property);
+
+        securityPolicy.navigator.deny(analyticsData.getChildren(true));
+        securityPolicy.navigator.deny(extIncPrintForm);
+
+        user2.addSecurityPolicy(securityPolicy);
+
     }
 
     // ------------------------------------- Временные методы --------------------------- //
