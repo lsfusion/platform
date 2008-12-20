@@ -145,6 +145,21 @@ class AbstractGroup extends AbstractNode {
         return false;
     }
 
+    List<Class> getClasses() {
+        List<Class> result = new ArrayList();
+        fillClasses(result);
+        return result;
+    }
+
+    private void fillClasses(List<Class> classes) {
+        for (AbstractNode child : children) {
+            if (child instanceof AbstractGroup)
+                ((AbstractGroup)child).fillClasses(classes);
+            if (child instanceof Class)
+                classes.add((Class)child);
+        }
+    }
+
     List<Property> getProperties() {
         List<Property> result = new ArrayList();
         fillProperties(result);

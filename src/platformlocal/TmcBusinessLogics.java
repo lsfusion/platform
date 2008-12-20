@@ -1986,6 +1986,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         securityPolicy.navigator.deny(analyticsData.getChildren(true));
         securityPolicy.navigator.deny(extIncPrintForm);
 
+        securityPolicy.cls.edit.add.deny(document.getChildren(true));
+        securityPolicy.cls.edit.remove.deny(baseGroup.getClasses());
+
         user2.addSecurityPolicy(securityPolicy);
 
     }

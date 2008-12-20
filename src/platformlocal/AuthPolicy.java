@@ -110,13 +110,57 @@ class UserGroup extends UserPolicy {
 
 class SecurityPolicy {
 
+    ClassSecurityPolicy cls = new ClassSecurityPolicy();
     PropertySecurityPolicy property = new PropertySecurityPolicy();
     NavigatorSecurityPolicy navigator = new NavigatorSecurityPolicy();
 
     public void override(SecurityPolicy policy) {
+        cls.override(policy.cls);
         property.override(policy.property);
         navigator.override(policy.navigator);
     }
+}
+
+class ClassSecurityPolicy {
+
+    ViewClassSecurityPolicy view = new ViewClassSecurityPolicy();
+    EditClassSecurityPolicy edit = new EditClassSecurityPolicy();
+
+    public void override(ClassSecurityPolicy cls) {
+        view.override(cls.view);
+        edit.override(cls.edit);
+    }
+}
+
+class ViewClassSecurityPolicy {
+
+    public void override(ViewClassSecurityPolicy view) {
+    }
+}
+
+class EditClassSecurityPolicy {
+
+    AddClassSecurityPolicy add = new AddClassSecurityPolicy();
+    RemoveClassSecurityPolicy remove = new RemoveClassSecurityPolicy();
+    ChangeClassSecurityPolicy change = new ChangeClassSecurityPolicy();
+
+    public void override(EditClassSecurityPolicy edit) {
+        add.override(edit.add);
+        remove.override(edit.remove);
+        change.override(edit.change);
+    }
+}
+
+class AddClassSecurityPolicy extends AbstractSecurityPolicy<Class> {
+
+}
+
+class RemoveClassSecurityPolicy extends AbstractSecurityPolicy<Class> {
+
+}
+
+class ChangeClassSecurityPolicy extends AbstractSecurityPolicy<Class> {
+
 }
 
 class PropertySecurityPolicy {

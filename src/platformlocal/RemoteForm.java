@@ -678,7 +678,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     public void ChangeClass(int objectID, int classID) throws SQLException {
 
         ObjectImplement object = getObjectImplement(objectID);
-        ChangeClass(object, (classID == -1) ? null : object.BaseClass.findClassID(classID));
+        changeClass(object, (classID == -1) ? null : object.BaseClass.findClassID(classID));
     }
 
     public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
@@ -901,6 +901,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     private void AddObject(ObjectImplement Object, Class cls) throws SQLException {
         // пока тупо в базу
+
+        if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
+
         Integer AddID = BL.AddObject(Session, cls);
 
         boolean foundConflict = false;
@@ -958,16 +961,24 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         DataChanged = true;
     }
 
-    public void ChangeClass(ObjectImplement Object,Class Class) throws SQLException {
+    public void changeClass(ObjectImplement object,Class cls) throws SQLException {
 
-        BL.ChangeClass(Session, Object.idObject,Class);
-
-        // Если объект удалили, то сбрасываем текущий объект в null
-        if (Class == null) {
-            ChangeObject(Object, null);
+        // проверка, что разрешено удалять объекты
+        if (cls == null) {
+            if (!securityPolicy.cls.edit.remove.checkPermission(object.Class)) return;
+        } else {
+            if (!(securityPolicy.cls.edit.remove.checkPermission(object.Class) || securityPolicy.cls.edit.change.checkPermission(object.Class))) return;
+            if (!(securityPolicy.cls.edit.add.checkPermission(cls) || securityPolicy.cls.edit.change.checkPermission(cls))) return;
         }
 
-        Object.Updated = Object.Updated | ObjectImplement.UPDATED_CLASS;
+        BL.ChangeClass(Session, object.idObject,cls);
+
+        // Если объект удалили, то сбрасываем текущий объект в null
+        if (cls == null) {
+            ChangeObject(object, null);
+        }
+
+        object.Updated = object.Updated | ObjectImplement.UPDATED_CLASS;
 
         DataChanged = true;
     }

@@ -117,6 +117,15 @@ abstract class Class extends AbstractNode {
             Child.FillSetID(SetID);
     }
 
+    Collection<Class> getChildren(boolean recursive) {
+
+        if (!recursive) return new ArrayList(Childs);
+
+        Collection<Class> result = new ArrayList();
+        fillChilds(result);
+        return result;
+    }
+
     // заполняет список классов
     void fillChilds(Collection<Class> ClassSet) {
         if (ClassSet.contains(this))

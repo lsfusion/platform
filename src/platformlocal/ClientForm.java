@@ -2159,8 +2159,10 @@ public class ClientForm extends JPanel {
                     }
                     
                     public void setValueAt(Object value, int row, int col) {
-                        
+
+                        // частный случай - не работает если меняется не само это свойство, а какое-то связанное
                         if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
+
                         changeProperty(gridColumns.get(col),value);
                     }
                     
