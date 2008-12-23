@@ -16,13 +16,13 @@ public class LoginDialog extends JDialog {
 
     public LoginDialog(RemoteNavigator iremoteNavigator) {
 
-        setIconImage(new ImageIcon(getClass().getResource("images/lsfusion.jpg")).getImage());
-        
         remoteNavigator = iremoteNavigator;
 
         setContentPane(contentPane);
         setAlwaysOnTop(true);
+        setUndecorated(true);
         setModal(true);
+        getRootPane().setWindowDecorationStyle(JRootPane.PLAIN_DIALOG);
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addActionListener(new ActionListener() {
