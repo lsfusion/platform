@@ -181,11 +181,11 @@ abstract class ClientCellView extends ClientComponentView {
         return renderer;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging) {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) {
 
         ClientObjectValue objectValue;
         if (isDataChanging)
-            objectValue = getEditorObjectValue(form, value);
+            objectValue = getEditorObjectValue(form, value, externalID);
         else
             objectValue = new ClientObjectValue(baseClass, value);
 
@@ -194,7 +194,8 @@ abstract class ClientCellView extends ClientComponentView {
         return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
     }
 
-    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
+    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value, boolean externalID) {
+        if (externalID) return null;
         return new ClientObjectValue(baseClass, value);
     }
 
@@ -228,9 +229,9 @@ abstract class ClientCellView extends ClientComponentView {
 
 class ClientPropertyView extends ClientCellView {
 
-    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value) {
+    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value, boolean externalID) {
 
-        ClientChangeValue changeValue = ByteArraySerializer.deserializeClientChangeValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID));
+        ClientChangeValue changeValue = ByteArraySerializer.deserializeClientChangeValue(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID, externalID));
         if (changeValue == null) return null;
         
         return changeValue.getObjectValue(value);
@@ -245,13 +246,15 @@ class ClientObjectView extends ClientCellView {
         return getPreferredWidth();
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging) {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) {
+
+        if (externalID) return null;
 
         if (!groupObject.singleViewType) {
             form.switchClassView(groupObject);
             return null;
         } else
-            return super.getEditorComponent(form, value, isDataChanging);
+            return super.getEditorComponent(form, value, isDataChanging, externalID);
     }
 
 }

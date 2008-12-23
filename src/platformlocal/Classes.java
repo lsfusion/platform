@@ -215,6 +215,18 @@ abstract class Class extends AbstractNode {
     abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
     abstract Object getRandomObject(Map<Class, List<Integer>> Objects,Random Randomizer,Integer Diap) throws SQLException;
 
+    DataProperty externalID;
+    DataProperty getExternalID() {
+
+        if (externalID != null) return externalID;
+        for (Class parent : Parents) {
+            DataProperty parentID = parent.getExternalID();
+            if (parentID != null) return parentID;
+        }
+
+        return null;
+    }
+
     ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
     void addRelevantElement(NavigatorElement relevantElement) {
         relevantElements.add(relevantElement);

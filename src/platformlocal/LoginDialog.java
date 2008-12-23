@@ -2,6 +2,7 @@ package platformlocal;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.awt.*;
 
 public class LoginDialog extends JDialog {
 
@@ -15,6 +16,8 @@ public class LoginDialog extends JDialog {
 
     public LoginDialog(RemoteNavigator iremoteNavigator) {
 
+        setIconImage(new ImageIcon(getClass().getResource("images/lsfusion.jpg")).getImage());
+        
         remoteNavigator = iremoteNavigator;
 
         setContentPane(contentPane);

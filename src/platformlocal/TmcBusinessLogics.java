@@ -228,10 +228,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP artGroup;
     LJP artGroupName;
 
+    LDP artBarCode;
+
     private void InitArticleProperties() {
 
         artGroup = addDProp("Гр. тов.", articleGroup, article);
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
+
+        artBarCode = addDProp(baseGroup, "Штрих-код", Class.longClass,  article);
+        article.externalID = (DataProperty)artBarCode.Property;
     }
 
     // ------------------------------------------------------------------------------------------------------- //

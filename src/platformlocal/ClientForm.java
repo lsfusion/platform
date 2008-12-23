@@ -387,7 +387,7 @@ public class ClientForm extends JPanel {
         clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
     }
 
-    void changeProperty(ClientCellView property, Object value) {
+    void changeProperty(ClientCellView property, Object value, boolean externalID) {
 
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(property.groupObject), true);
 
@@ -395,7 +395,7 @@ public class ClientForm extends JPanel {
 
             // типа только если меняется свойство
             try {
-                remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObject(value));
+                remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObject(value), externalID);
                 dataChanged();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -791,6 +791,8 @@ public class ClientForm extends JPanel {
 
             PropertyEditorComponent currentComp;
 
+            boolean externalID;
+
             public Object getCellEditorValue() {
                 return currentComp.getCellEditorValue();
             }
@@ -800,6 +802,9 @@ public class ClientForm extends JPanel {
                 if (e instanceof KeyEvent) {
 
                     KeyEvent event = (KeyEvent) e;
+
+                    externalID = (event.getKeyCode() == KeyEvent.VK_F12 && event.getModifiersEx() == KeyEvent.SHIFT_DOWN_MASK);
+                    if (externalID) return true;
 
                     if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
 
@@ -832,7 +837,7 @@ public class ClientForm extends JPanel {
 
                 ClientCellView property = cellTable.getCellView(row, column);
 
-                currentComp = property.getEditorComponent(ClientForm.this, ivalue, cellTable.isDataChanging());
+                currentComp = property.getEditorComponent(ClientForm.this, ivalue, cellTable.isDataChanging(), externalID);
 
                 Component comp = null;
                 if (currentComp != null) {
@@ -1097,7 +1102,13 @@ public class ClientForm extends JPanel {
                 }
 
                 protected void cellValueChanged(Object ivalue) {
-                    changeProperty(key,ivalue);
+
+                    boolean externalID = false;
+                    TableCellEditor cellEditor = view.table.getCellEditor();
+                    if (cellEditor instanceof ClientAbstractCellEditor && ((ClientAbstractCellEditor)cellEditor).externalID)
+                        externalID = true;
+
+                    changeProperty(key, ivalue, externalID);
                 }
 
             }
@@ -2163,7 +2174,11 @@ public class ClientForm extends JPanel {
                         // частный случай - не работает если меняется не само это свойство, а какое-то связанное
                         if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
 
-                        changeProperty(gridColumns.get(col),value);
+                        boolean externalID = false;
+                        TableCellEditor cellEditor = getCellEditor();
+                        if (cellEditor instanceof ClientAbstractCellEditor && ((ClientAbstractCellEditor)cellEditor).externalID)
+                            externalID = true;
+                        changeProperty(gridColumns.get(col), value, externalID);
                     }
                     
                     public ClientGroupObjectValue getSelectedObject() {

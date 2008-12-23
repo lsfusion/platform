@@ -378,8 +378,8 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     }
 
     // базовые методы - ничего не делать, его перегружают только Override и Data
-    ChangeValue getChangeProperty(DataSession Session,Map<T, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) { return null;}
-    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {}
+    ChangeValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) { return null;}
+    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {}
 
     // заполняет требования к изменениям
     abstract void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes);
@@ -591,7 +591,7 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
         DataTable.outSelect(Session);
     }
 
-    ChangeValue getChangeProperty(DataSession Session,Map<DataPropertyInterface, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) {
+    ChangeValue getChangeProperty(DataSession Session, Map<DataPropertyInterface, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) {
 
         if(!getValueClass(new InterfaceClass<DataPropertyInterface>(Keys)).isEmpty() && (securityPolicy == null || securityPolicy.checkPermission(this))) {
             if(Coeff==0 && Session!=null) {
@@ -608,10 +608,10 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
             return null;
     }
 
-    void changeProperty(Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+    void changeProperty(Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
         // записываем в таблицу изменений
         if (securityPolicy == null || securityPolicy.checkPermission(this))
-            Session.changeProperty(this,Keys,NewValue);
+            Session.changeProperty(this, Keys, NewValue, externalID);
     }
 
     // св-во по умолчанию (при ClassSet подставляется)
@@ -901,10 +901,10 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
         return Implement.mapGetChangeProperty(Session,Keys,getCoeff(Implement)*Coeff, securityPolicy);
     }
 
-    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+    void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
         PropertyMapImplement<?,T> operand = getChangeImplement(Keys, securityPolicy);
         if (operand != null)
-            operand.mapChangeProperty(Keys, NewValue, Session, securityPolicy);
+            operand.mapChangeProperty(Keys, NewValue, externalID, Session, securityPolicy);
     }
 
 }
@@ -1114,8 +1114,8 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
     }
 
     // для OverrideList'а по сути
-    void mapChangeProperty(Map<P, ObjectValue> Keys, Object NewValue, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        Property.changeProperty(getMapImplement(Keys), NewValue, Session, securityPolicy);
+    void mapChangeProperty(Map<P, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+        Property.changeProperty(getMapImplement(Keys), NewValue, externalID, Session, securityPolicy);
     }
 
     public ClassSet mapChangeValueClass(DataSession Session, InterfaceClass<P> ClassImplement) {
@@ -2151,7 +2151,22 @@ class DataSession  {
         return ReadQuery.executeSelect(this).values().iterator().next().get(ReadValue);
     }
 
-    void changeProperty(DataProperty Property, Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue) throws SQLException {
+    void changeProperty(DataProperty Property, Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, boolean externalID) throws SQLException {
+
+        // если изменяем по внешнему коду, но сначала надо найти внутренний код, а затем менять
+        if (externalID) {
+
+            DataProperty extPropID = Property.Value.getExternalID();
+
+            JoinQuery<DataPropertyInterface,String> query = new JoinQuery(extPropID.Interfaces);
+            query.add(new FieldExprCompareWhere(extPropID.getSourceExpr(query.MapKeys, extPropID.getClassSet(ClassSet.universal), true), NewValue, FieldExprCompareWhere.EQUALS));
+
+            LinkedHashMap<Map<DataPropertyInterface,Integer>,Map<String,Object>> result = query.executeSelect(this);
+
+            if (result.size() == 0) return;
+
+            NewValue = result.keySet().iterator().next().values().iterator().next();
+        }
 
         // запишем в таблицу
         // также заодно новые классы считаем

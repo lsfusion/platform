@@ -255,6 +255,7 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
         Map<P,ObjectValue> Interface = new HashMap<P,ObjectValue>();
         for(Entry<P, ObjectImplement> Implement : Mapping.entrySet())
             Interface.put(Implement.getKey(),new ObjectValue(Implement.getValue().idObject,Implement.getValue().Class));
+        
         return Property.getChangeProperty(Session,Interface,1,securityPolicy);
     }
 
@@ -623,8 +624,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).BaseClass.findClassID(classID).Childs);
     }
 
-    public byte[] getPropertyEditorObjectValueByteArray(int propertyID) {
-        return ByteArraySerializer.serializeChangeValue(getPropertyEditorObjectValue(getPropertyView(propertyID)));
+    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) {
+        return ByteArraySerializer.serializeChangeValue(getPropertyEditorObjectValue(getPropertyView(propertyID), externalID));
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -681,8 +682,8 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         changeClass(object, (classID == -1) ? null : object.BaseClass.findClassID(classID));
     }
 
-    public void ChangePropertyView(Integer propertyID, byte[] object) throws SQLException {
-        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObject(object));
+    public void ChangePropertyView(Integer propertyID, byte[] object, boolean externalID) throws SQLException {
+        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObject(object), externalID);
     }
 
     // ----------------------- Применение изменений ------------------------------- //
@@ -722,8 +723,16 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         return null;
     }
 
-    private ChangeValue getPropertyEditorObjectValue(PropertyView propertyView) {
-        return propertyView.View.getChangeProperty(Session, securityPolicy.property.change);
+    private ChangeValue getPropertyEditorObjectValue(PropertyView propertyView, boolean externalID) {
+
+        ChangeValue changeValue = propertyView.View.getChangeProperty(Session, securityPolicy.property.change);
+        if (!externalID) return changeValue;
+
+        if (changeValue == null) return null;
+        DataProperty propertyID = changeValue.Class.getExternalID();
+        if (propertyID == null) return null;
+
+        return new ChangeObjectValue(propertyID.Value, null);
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {
@@ -940,7 +949,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
                         Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
-                    ChangeProperty.changeProperty(Keys,Row.getValue().get("newvalue"),Session, null);
+                    ChangeProperty.changeProperty(Keys,Row.getValue().get("newvalue"), false, Session, null);
                 }
             } else {
                 if (Object.GroupTo.equals(Filter.GetApplyObject())) foundConflict = true;
@@ -983,14 +992,14 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         DataChanged = true;
     }
 
-    private void ChangePropertyView(PropertyView Property,Object Value) throws SQLException {
-        ChangeProperty(Property.View,Value);
+    private void ChangePropertyView(PropertyView property, Object value, boolean externalID) throws SQLException {
+        ChangeProperty(property.View, value, externalID);
     }
 
-    private void ChangeProperty(PropertyObjectImplement property,Object value) throws SQLException {
+    private void ChangeProperty(PropertyObjectImplement property, Object value, boolean externalID) throws SQLException {
 
         // изменяем св-во
-        property.Property.changeProperty(fillPropertyInterface(property), value, Session, securityPolicy.property.change);
+        property.Property.changeProperty(fillPropertyInterface(property), value, externalID, Session, securityPolicy.property.change);
 
         DataChanged = true;
     }
