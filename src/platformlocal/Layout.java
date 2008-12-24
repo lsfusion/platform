@@ -47,8 +47,10 @@ class Layout extends JFrame implements ComponentCollector {
 
     Layout(RemoteNavigator remoteNavigator) {
 
+        setIconImage(new ImageIcon(getClass().getResource("images/lsfusion.gif")).getImage());
+        
         UserInfo userInfo = ByteArraySerializer.deserializeUserInfo(remoteNavigator.getCurrentUserInfoByteArray());
-        setTitle(userInfo.firstName + " " + userInfo.lastName);
+        setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);

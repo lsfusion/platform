@@ -821,7 +821,12 @@ public class ClientForm extends JPanel {
 
                     MouseEvent event = (MouseEvent) e;
 
-                    return event.getClickCount() >= 2;
+                    if (event.getClickCount() < 2) return false;
+
+                    externalID = (event.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK + MouseEvent.SHIFT_DOWN_MASK);
+                    if (externalID) return true;
+
+                    return true;
                 }
 
                 return false;
