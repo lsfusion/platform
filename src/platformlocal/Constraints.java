@@ -32,10 +32,10 @@ abstract class ValueConstraint extends Constraint {
 
         SourceExpr ValueExpr = Session.PropertyChanges.get(Property).getExpr(Changed.MapKeys,0);
         // закинем условие на то что мы ищем
-        Changed.add(new FieldExprCompareWhere(ValueExpr,Property.ChangeTable.Value.Type.getEmptyValue(),Invalid));
-        Changed.add("value",ValueExpr);
+        Changed.and(new CompareWhere(ValueExpr,Property.ChangeTable.Value.Type.getEmptyValueExpr(),Invalid));
+        Changed.Properties.put("value", ValueExpr);
 
-        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
+        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.compile().executeSelect(Session, false);
         if(Result.size()>0) {
             String ResultString = "Ограничение на св-во "+Property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : Result.entrySet()) {
@@ -53,17 +53,17 @@ abstract class ValueConstraint extends Constraint {
 
 // != 0 или !="      "
 class EmptyConstraint extends ValueConstraint {
-    EmptyConstraint() {super(FieldExprCompareWhere.NOT_EQUALS);}
+    EmptyConstraint() {super(CompareWhere.NOT_EQUALS);}
 }
 
 // <= 0 или <= ''
 class NotEmptyConstraint extends ValueConstraint {
-    NotEmptyConstraint() {super(FieldExprCompareWhere.LESS_EQUALS);}
+    NotEmptyConstraint() {super(CompareWhere.LESS_EQUALS);}
 }
 
 // < 0
 class PositiveConstraint extends ValueConstraint {
-    PositiveConstraint() {super(FieldExprCompareWhere.LESS);}
+    PositiveConstraint() {super(CompareWhere.LESS);}
 }
 
 // >= 0
@@ -76,39 +76,39 @@ class UniqueConstraint extends Constraint {
 
         // ключи на самом деле состоят из 2-х частей - первые измененные (Property), 2-е - старые (из UpdateUnionQuery)
         // соответственно надо создать объекты
-        JoinQuery<Object,String> Changed = new JoinQuery<Object,String>();
-        Map<PropertyInterface,SourceExpr> MapChange = new HashMap();
-        Map<PropertyInterface,SourceExpr> MapPrev = new HashMap();
+        Map<PropertyInterface,Object> MapPrevKeys = new HashMap<PropertyInterface, Object>();
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
+            MapPrevKeys.put(Interface,new Object());
+
+        List<Object> ChangePrevKeys = new ArrayList<Object>(Property.Interfaces);
+        ChangePrevKeys.addAll(MapPrevKeys.values());
+        JoinQuery<Object,String> Changed = new JoinQuery<Object,String>(ChangePrevKeys);
+        Map<PropertyInterface,KeyExpr> MapChange = new HashMap<PropertyInterface, KeyExpr>();
+        Map<PropertyInterface,KeyExpr> MapPrev = new HashMap<PropertyInterface, KeyExpr>();
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-            MapChange.put(Interface,Changed.addKey(new Object()));
-            MapPrev.put(Interface,Changed.addKey(new Object()));
+            MapChange.put(Interface,Changed.MapKeys.get(Interface));
+            MapPrev.put(Interface,Changed.MapKeys.get(MapPrevKeys.get(Interface)));
         }
 
-        SourceExpr ChangedExpr = Session.PropertyChanges.get(Property).getExpr(MapChange,0);
-        SourceExpr PrevExpr = Session.getSourceExpr(Property,MapPrev,Property.getUniversalInterface(),true);
+        JoinExpr ChangedExpr = Session.PropertyChanges.get(Property).getExpr(MapChange,0);
+        SourceExpr PrevExpr = Session.getSourceExpr(Property,MapPrev,Property.getUniversalInterface());
 
         // равны значения
-        Changed.add(new FieldExprCompareWhere(ChangedExpr,PrevExpr,FieldExprCompareWhere.EQUALS));
+        Changed.and(new CompareWhere(PrevExpr,ChangedExpr,CompareWhere.EQUALS));
         // значения не NULL
-        Changed.add(new SourceIsNullWhere(ChangedExpr,true));
+        Changed.and(ChangedExpr.getWhere());
 
         // не равны ключи
-        Where OrDiffKeys = null;
+        OrWhere OrDiffKeys = new OrWhere();
         
         Map<PropertyInterface,String> KeyFields = new HashMap();
         Integer KeyNum = 0;
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-            // не равны ключи
-            Where KeyDiff = new FieldExprCompareWhere(MapChange.get(Interface),MapPrev.get(Interface),FieldExprCompareWhere.NOT_EQUALS);
-            if(OrDiffKeys==null)
-                OrDiffKeys = KeyDiff;
-            else
-                OrDiffKeys = new FieldOPWhere(KeyDiff,OrDiffKeys,false);
-        }
-        Changed.add(OrDiffKeys);
-        Changed.add("value",ChangedExpr);
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
+            OrDiffKeys.or(new CompareWhere(MapChange.get(Interface),MapPrev.get(Interface),CompareWhere.NOT_EQUALS));
+        Changed.and(OrDiffKeys);
+        Changed.Properties.put("value", ChangedExpr);
 
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.compile().executeSelect(Session, false);
         if(Result.size()>0) {
             String ResultString = "Уникальное ограничение на св-во "+Property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<Object,Integer>,Map<String,Object>> Row : Result.entrySet()) {

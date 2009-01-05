@@ -553,7 +553,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     PropertyObjectImplement addPropertyObjectImplement(LP property, ObjectImplement... objects) {
 
-        PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.Property);
+        PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.property);
 
         ListIterator<PropertyInterface> i = property.ListInterfaces.listIterator();
         for(ObjectImplement object : objects) {

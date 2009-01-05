@@ -28,8 +28,6 @@ interface SQLSyntax {
     String getClustered();
     String getCommandEnd();
 
-    String getTop(int Top, String SelectString, String OrderString, String WhereString);
-
     String getNullValue(Type DBType);
 
     String getSessionTableName(String TableName);
@@ -38,6 +36,8 @@ interface SQLSyntax {
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     boolean isNullSafe();
     boolean isGreatest();
+
+    boolean useFJ();
 
     int UpdateModel();
 
@@ -54,6 +54,10 @@ interface SQLSyntax {
     String getBitType();
 
     String getBitString(Boolean Value);
+
+    String getSelect(String From,String Exprs,String Where,String OrderBy,String GroupBy,int Top);
+
+    String getUnionOrder(String Union,String OrderBy,int Top);
 }
 
 abstract class DataAdapter implements SQLSyntax {
@@ -103,10 +107,6 @@ abstract class DataAdapter implements SQLSyntax {
         return "NULL";
     }
 
-    public String getTop(int Top, String SelectString, String OrderString, String WhereString) {
-        return (Top==0?"":"TOP "+Top+" ") + SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
-    }
-
     void Disconnect() throws SQLException {
     }
 
@@ -134,6 +134,17 @@ abstract class DataAdapter implements SQLSyntax {
 
     public boolean isGreatest() {
         return true;
+    }
+
+    public boolean useFJ() {
+        return true;
+    }
+
+    static String clause(String Clause,String Data) {
+        return (Data.length()==0?"":" "+Clause+" "+Data);
+    }
+    static String clause(String Clause,int Data) {
+        return (Data==0?"":" "+Clause+" "+Data);
     }
 }
 
@@ -184,6 +195,14 @@ class MySQLDataAdapter extends DataAdapter {
 
     public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
         return "IFNULL(" + Expr1 + "," + "Expr2" + ")";
+    }
+
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+        return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
+    }
+
+    public String getUnionOrder(String Union, String OrderBy, int Top) {
+        return Union + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
     }
 }
 
@@ -270,6 +289,16 @@ class MSSQLDataAdapter extends DataAdapter {
     public boolean isGreatest() {
         return false;
     }
+
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+        return "SELECT " + clause("TOP",Top) + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy);
+    }
+
+    public String getUnionOrder(String Union, String OrderBy, int Top) {
+        if(Top==0)
+            return Union + clause("ORDER BY",OrderBy);
+        return "SELECT" + clause("TOP",Top) + " * FROM (" + Union + ")" + clause("ORDER BY",OrderBy);
+    }
 }
 
 class PostgreDataAdapter extends DataAdapter {
@@ -337,10 +366,6 @@ class PostgreDataAdapter extends DataAdapter {
         return "ROLLBACK";
     }
 
-    public String getTop(int Top, String SelectString, String OrderString, String WhereString) {
-        return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString + (Top==0?"":" LIMIT "+Top);
-    }
-
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     public boolean isNullSafe() {
         return false;
@@ -349,6 +374,14 @@ class PostgreDataAdapter extends DataAdapter {
     public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
 //        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
         return "COALESCE("+Expr1+","+Expr2+")";
+    }
+
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+        return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
+    }
+
+    public String getUnionOrder(String Union, String OrderBy, int Top) {
+        return Union + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
     }
 }
 
@@ -441,8 +474,20 @@ class OracleDataAdapter extends DataAdapter {
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
 
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+        if(Top!=0)
+            Where = (Where.length()==0?"":Where+" AND ") + "rownum<=" + Top;
+        return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy);
+    }
+
     public String getNullValue(Type DBType) {
         String EmptyValue = DBType.getEmptyString();
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
+    }
+
+    public String getUnionOrder(String Union, String OrderBy, int Top) {
+        if(Top==0)
+            return Union + clause("ORDER BY",OrderBy);
+        return "SELECT * FROM (" + Union + ") WHERE rownum<=" + Top + clause("ORDER BY",OrderBy);
     }
 }

@@ -56,7 +56,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     AbstractGroup incPrmsGroup, incPrmsGroupBefore, incPrmsGroupAfter, incSumsGroup, outSumsGroup, outPrmsGroup, outPrmsGroupBefore, outPrmsGroupAfter;
     AbstractGroup paramsGroup, accountGroup;
 
-    void InitGroups() {
+    void initGroups() {
 
         artclGroup = new AbstractGroup("Товар");
         artgrGroup = new AbstractGroup("Группа товаров");
@@ -81,7 +81,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         accountGroup = new AbstractGroup("Бухг. параметры");
     }
 
-    void InitClasses() {
+    void initClasses() {
 
         article = addObjectClass("Товар", objectClass);
         articleGroup = addObjectClass("Группа товаров", objectClass);
@@ -120,7 +120,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         receipt = addObjectClass("Чек", fixedDocument);
     }
 
-    void InitProperties() {
+    void initProperties() {
 
         InitAbstractProperties();
         InitClassProperties();
@@ -133,29 +133,31 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ======================================================================================================= //
 
     LOFP object1;
-    LSFP equals2, equals22;
-    LSFP groeq2, greater2;
-    LSFP between;
-    LSFP notZero;
+    LCFP equals2;
+    LJP equals22;
+    LCFP groeq2;
+    LCFP greater2;
+    LJP between;
+    LNFP notZero;
     LSFP percent, revPercent, addPercent;
     LSFP round, roundm1;
     LMFP multiplyBit2, multiplyDouble2, multiplyDate2;
 
     private void InitAbstractProperties() {
 
-        equals2 = addWSFProp("((prm1)=(prm2))",2);
+        equals2 = addCFProp(CompareWhere.EQUALS);
         object1 = addOFProp(1);
-        equals22 = addWSFProp("((prm1)=(prm2)) AND ((prm3)=(prm4))",4);
-        groeq2 = addWSFProp("((prm1)>=(prm2))",2);
-        greater2 = addWSFProp("((prm1)>(prm2))",2);
-        between = addWSFProp("((prm2)<=(prm1)) AND ((prm1)<=(prm3))",3);
-        notZero = addWSFProp("((prm1)<>0)",1);
+        multiplyBit2 = addMFProp(Class.bit,2);
+        equals22 = addJProp("И",multiplyBit2,4,equals2,1,2,equals2,3,4);
+        groeq2 = addCFProp(CompareWhere.GREATER_EQUALS);
+        greater2 = addCFProp(CompareWhere.GREATER);
+        between = addJProp("Между",multiplyBit2,3,groeq2,1,2,groeq2,3,1);
+        notZero = addNFProp();
         percent = addSFProp("((prm1*prm2)/100)", Class.doubleClass, 2);
         revPercent = addSFProp("((prm1*prm2)/(100+prm2))", Class.doubleClass, 2);
         addPercent = addSFProp("((prm1*(100+prm2))/100)", Class.doubleClass, 2);
         round = addSFProp("round(CAST(prm1 as numeric),0)", Class.doubleClass, 1);
         roundm1 = addSFProp("round(CAST(prm1 as numeric),-1)", Class.doubleClass, 1);
-        multiplyBit2 = addMFProp(Class.bit,2);
         multiplyDouble2 = addMFProp(Class.doubleClass,2);
         multiplyDate2 = addMFProp(Class.date,2);
    }
@@ -236,7 +238,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
 
         artBarCode = addDProp(baseGroup, "Штрих-код", Class.longClass,  article);
-        article.externalID = (DataProperty)artBarCode.Property;
+        article.externalID = (DataProperty)artBarCode.property;
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -887,7 +889,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         setDefProp(extIncDetailSumPay, extIncDetailCalcSumPay, true);
 
         extIncDetailSumInc = addUProp(incSumsGroup, "extIncDetailSumInc", "Сумма пост.", 1, 1, 1, extIncDetailSumPay, 1, -1, extIncDetailSumVATIn, 1);
-        setPropOrder(extIncDetailSumInc.Property, extIncDetailSumVATIn.Property, true);
+        setPropOrder(extIncDetailSumInc.property, extIncDetailSumVATIn.property, true);
 
         extIncDocumentSumInc = addGProp(incSumsGroup, "extIncDocumentSumInc", "Сумма пост.", extIncDetailSumInc, true, extIncDetailDocument, 1);
         extIncDocumentSumVATIn = addGProp(incSumsGroup, "extIncDocumentSumVATIn", "Сумма НДС", extIncDetailSumVATIn, true, extIncDetailDocument, 1);
@@ -958,7 +960,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncDetailSumLocTax = addJProp(outSumsGroup, "extIncDetailSumLocTax", "Сумма местн. нал.", round, 1,
                                 addJProp("Сумма местн. нал. (неокр.)", revPercent, 1, extIncDetailSumPriceOut, 1, extIncDetailLocTax, 1), 1);
-        setPropOrder(extIncDetailSumLocTax.Property, extIncDetailSumPriceOut.Property, true);
+        setPropOrder(extIncDetailSumLocTax.property, extIncDetailSumPriceOut.property, true);
         extIncDocumentSumLocTax = addGProp(outSumsGroup, "extIncDocumentSumLocTax", "Сумма местн. нал. (всего)", extIncDetailSumLocTax, true, extIncDetailDocument, 1);
 
         extIncDetailSumWVAT = addUProp("Сумма с НДС (розн.)", 1, 1, 1, extIncDetailSumPriceOut, 1, -1, extIncDetailSumLocTax, 1);
@@ -973,7 +975,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncDetailSumVATOut = addJProp(outSumsGroup, "extIncDetailSumVATOut", "Сумма НДС розн.", round, 1,
                                 addJProp("Сумма НДС (розн. неокр.)", revPercent, 1, extIncDetailSumWVAT, 1, extIncDetailVATOut, 1), 1);
-        setPropOrder(extIncDetailSumVATOut.Property, extIncDetailSumLocTax.Property, true);
+        setPropOrder(extIncDetailSumVATOut.property, extIncDetailSumLocTax.property, true);
         extIncDocumentSumVATOut = addGProp(outSumsGroup, "extIncDocumentSumVATOut", "Сумма НДС розн. (всего)", extIncDetailSumVATOut, true, extIncDetailDocument, 1);
 
         extIncDetailSumWAdd = addUProp("Сумма с торг. надб.", 1, 1, 1, extIncDetailSumWVAT, 1, -1, extIncDetailSumVATOut, 1);
@@ -986,7 +988,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     private void InitSumAddProperties() {
 
         extIncDetailSumAdd = addUProp(outSumsGroup, "extIncDetailSumAdd", "Сумма торг. надб.", 1, 1, 1, extIncDetailSumWAdd, 1, -1, extIncDetailSumInc, 1);
-        setPropOrder(extIncDetailSumAdd.Property, extIncDetailSumVATOut.Property, true);
+        setPropOrder(extIncDetailSumAdd.property, extIncDetailSumVATOut.property, true);
         extIncDocumentSumAdd = addGProp(outSumsGroup, "extIncDocumentSumAdd", "Сумма торг. надб. (всего)", extIncDetailSumAdd, true, extIncDetailDocument, 1);
     }
 
@@ -1225,84 +1227,84 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         addDProp(baseGroup, "Цвет", Class.string, articleShooes);
     }
 
-    void InitConstraints() {
+    void initConstraints() {
 
 //        Constraints.put(balanceStoreQuantity.Property,new PositiveConstraint());
     }
 
-    void InitPersistents() {
+    void initPersistents() {
 
-        Persistents.add((AggregateProperty)docStore.Property);
+        persistents.add((AggregateProperty)docStore.property);
 
-        Persistents.add((AggregateProperty)extIncQuantity.Property);
+        persistents.add((AggregateProperty)extIncQuantity.property);
 
-        Persistents.add((AggregateProperty)incStoreQuantity.Property);
-        Persistents.add((AggregateProperty)outStoreQuantity.Property);
-        Persistents.add((AggregateProperty)maxChangesParamsDate.Property);
-        Persistents.add((AggregateProperty)maxChangesParamsDoc.Property);
+        persistents.add((AggregateProperty)incStoreQuantity.property);
+        persistents.add((AggregateProperty)outStoreQuantity.property);
+        persistents.add((AggregateProperty)maxChangesParamsDate.property);
+        persistents.add((AggregateProperty)maxChangesParamsDoc.property);
 
-        Persistents.add((AggregateProperty)extIncLastDetail.Property);
+        persistents.add((AggregateProperty)extIncLastDetail.property);
 
     }
 
-    void InitTables() {
+    void initTables() {
 
         TableImplement Include;
 
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,article));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
 
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,store));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
 
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,articleGroup));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
 
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,article));
         Include.add(new DataPropertyInterface(0,document));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
 
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,article));
         Include.add(new DataPropertyInterface(0,store));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
 
     }
 
-    void InitIndexes() {
+    void initIndexes() {
         List<Property> index;
 
         index = new ArrayList();
-        index.add(extIncDate.Property);
-        Indexes.add(index);
+        index.add(extIncDate.property);
+        indexes.add(index);
 
         index = new ArrayList();
-        index.add(intraDate.Property);
-        Indexes.add(index);
+        index.add(intraDate.property);
+        indexes.add(index);
 
         index = new ArrayList();
-        index.add(extOutDate.Property);
-        Indexes.add(index);
+        index.add(extOutDate.property);
+        indexes.add(index);
 
         index = new ArrayList();
-        index.add(exchDate.Property);
-        Indexes.add(index);
+        index.add(exchDate.property);
+        indexes.add(index);
 
         index = new ArrayList();
-        index.add(revalDate.Property);
-        Indexes.add(index);
+        index.add(revalDate.property);
+        indexes.add(index);
 
         index = new ArrayList();
-        index.add(maxChangesParamsDate.Property);
-        Indexes.add(index);
+        index.add(maxChangesParamsDate.property);
+        indexes.add(index);
 
         index = new ArrayList();
-        index.add(docStore.Property);
-        Indexes.add(index);
+        index.add(docStore.property);
+        indexes.add(index);
     }
 
     NavigatorElement primaryData;
@@ -1445,7 +1447,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                     balanceGroup, extIncQuantity, incPrmsGroup, outPrmsGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(extIncQuantity.Property).View, 0);
+            addArticleRegularFilterGroup(getPropertyView(extIncQuantity.property).View, 0);
         }
     }
 
@@ -1461,7 +1463,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDetail, Properties, outSumsGroup);
 
             objDoc.sID = "objDoc";
-            getPropertyView(name.Property, objDoc.GroupTo).sID = "docName";
+            getPropertyView(name.property, objDoc.GroupTo).sID = "docName";
 
             try {
                 reportDesign = JRXmlLoader.load(new FileInputStream(new File("d:/java/application/platform/src/platformlocal/reports/extIncLog.jrxml")));
@@ -1487,11 +1489,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                     balanceGroup, intraQuantity, incPrmsGroup, outPrmsGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(intraQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View,
-                                         getPropertyView(docIncBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(intraQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View,
+                                         getPropertyView(docIncBalanceQuantity.property).View);
 
-            addHintsNoUpdate(maxChangesParamsDoc.Property);
+            addHintsNoUpdate(maxChangesParamsDoc.property);
         }
     }
 
@@ -1508,8 +1510,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                     balanceGroup, extOutQuantity, incPrmsGroup, outPrmsGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(extOutQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(extOutQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View);
         }
     }
 
@@ -1526,8 +1528,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                         balanceGroup, cashSaleQuantity, outSumsGroup, accountGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(cashSaleQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(cashSaleQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View);
 
 //            addPropertyView(objDoc, objArt, Properties, quantity, notZeroQuantity);
         }
@@ -1559,8 +1561,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addFixedFilter(new Filter(addPropertyObjectImplement(receiptSaleDocument, objReceipt), Filter.EQUALS, new ObjectValueLink(objDoc)));
 
-            addArticleRegularFilterGroup(getPropertyView(receiptQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(receiptQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View);
         }
     }
 
@@ -1577,8 +1579,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                         balanceGroup, clearingSaleQuantity, incPrmsGroup, outPrmsGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(clearingSaleQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(clearingSaleQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View);
         }
     }
 
@@ -1603,8 +1605,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                     balanceGroup, invBalance, invQuantity, incPrmsGroup, outPrmsGroup, accountGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(invQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(invQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View);
 
             if (groupStore)
                 addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), Filter.EQUALS, new ObjectValueLink(objStore)));
@@ -1626,8 +1628,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                     balanceGroup, returnQuantity, incPrmsGroup, outPrmsGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(returnQuantity.Property).View, 0,
-                                         getPropertyView(docOutBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(returnQuantity.property).View, 0,
+                                         getPropertyView(docOutBalanceQuantity.property).View);
         }
     }
 
@@ -1655,19 +1657,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(exchIncQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchIncQuantity.property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(exchOutQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchOutQuantity.property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtTo.GroupTo).View, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtTo.GroupTo).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtTo.GroupTo).View, Filter.LESS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtTo.GroupTo).View, Filter.LESS, new UserValueLink(0)),
                                   "Отр. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             addRegularFilterGroup(filterGroup);
@@ -1678,19 +1680,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(exchangeQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(exchangeQuantity.property).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtFrom.GroupTo).View, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtFrom.GroupTo).View, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.Property, objArtFrom.GroupTo).View, Filter.GREATER, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtFrom.GroupTo).View, Filter.GREATER, new UserValueLink(0)),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOverPriceOut.Property, objArtFrom.GroupTo).View, Filter.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.Property, objArtTo.GroupTo).View)),
+                                  new Filter(getPropertyView(docOverPriceOut.property, objArtFrom.GroupTo).View, Filter.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.property, objArtTo.GroupTo).View)),
                                   "Одинаковая розн. цена",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
@@ -1717,7 +1719,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(Properties, baseGroup, false, objArtFrom);
             addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
 
-            addFixedFilter(new Filter(getPropertyView(exchangeQuantity.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)));
+            addFixedFilter(new Filter(getPropertyView(exchangeQuantity.property).View, Filter.NOT_EQUALS, new UserValueLink(0)));
         }
     }
 
@@ -1742,8 +1744,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objDoc, objArt, Properties,
                     revalOverBalanceQuantity, isRevalued, incPrmsGroupBefore, outPrmsGroupBefore, outPrmsGroupAfter);
 
-            addArticleRegularFilterGroup(getPropertyView(isRevalued.Property).View, false,
-                                         getPropertyView(revalOverBalanceQuantity.Property).View);
+            addArticleRegularFilterGroup(getPropertyView(isRevalued.property).View, false,
+                                         getPropertyView(revalOverBalanceQuantity.property).View);
 
             if (groupStore)
                 addFixedFilter(new Filter(addPropertyObjectImplement(revalStore, objDoc), Filter.EQUALS, new ObjectValueLink(objStore)));
@@ -1783,11 +1785,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objPrimDoc, objArt, Properties,
                     paramsGroup);
 
-            addFixedFilter(new Filter(getPropertyView(isDocArtChangesParams.Property).View, Filter.NOT_EQUALS, new UserValueLink(false)));
-            addFixedFilter(new Filter(getPropertyView(primDocStore.Property).View, Filter.EQUALS, new ObjectValueLink(objStore)));
+            addFixedFilter(new Filter(getPropertyView(isDocArtChangesParams.property).View, Filter.NOT_EQUALS, new UserValueLink(false)));
+            addFixedFilter(new Filter(getPropertyView(primDocStore.property).View, Filter.EQUALS, new ObjectValueLink(objStore)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
-            formView.defaultOrders.put(formView.get(getPropertyView(primDocDate.Property)), false);
+            formView.defaultOrders.put(formView.get(getPropertyView(primDocDate.property)), false);
             richDesign = formView;
         }
     }
@@ -1805,7 +1807,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addFixedFilter(new Filter(addPropertyObjectImplement(isDocStoreArtInclude, objDoc, objStore, objArt), Filter.EQUALS, new UserValueLink(true)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
-            formView.defaultOrders.put(formView.get(getPropertyView(docDate.Property)), false);
+            formView.defaultOrders.put(formView.get(getPropertyView(docDate.property)), false);
             richDesign = formView;
         }
     }
@@ -1894,11 +1896,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(balanceStoreQuantity.Property).View, Filter.GREATER, new UserValueLink(0)),
+                                  new Filter(getPropertyView(balanceStoreQuantity.property).View, Filter.GREATER, new UserValueLink(0)),
                                   "Есть на складе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(balanceStoreQuantity.Property).View, Filter.LESS_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(balanceStoreQuantity.property).View, Filter.LESS_EQUALS, new UserValueLink(0)),
                                   "Нет на складе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             addRegularFilterGroup(filterGroup);
@@ -1941,12 +1943,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
 
-            addFixedFilter(new Filter(getPropertyView(dltDocStoreSumAccount.Property).View, Filter.NOT_EQUALS, new UserValueLink(0)));
-            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, Filter.GREATER_EQUALS, new ObjectValueLink(objDateFrom)));
-            addFixedFilter(new Filter(getPropertyView(docDate.Property).View, Filter.LESS_EQUALS, new ObjectValueLink(objDateTo)));
+            addFixedFilter(new Filter(getPropertyView(dltDocStoreSumAccount.property).View, Filter.NOT_EQUALS, new UserValueLink(0)));
+            addFixedFilter(new Filter(getPropertyView(docDate.property).View, Filter.GREATER_EQUALS, new ObjectValueLink(objDateFrom)));
+            addFixedFilter(new Filter(getPropertyView(docDate.property).View, Filter.LESS_EQUALS, new ObjectValueLink(objDateTo)));
 
             DefaultClientFormView formView = new DefaultClientFormView(this);
-            formView.defaultOrders.put(formView.get(getPropertyView(docDate.Property)), true);
+            formView.defaultOrders.put(formView.get(getPropertyView(docDate.property)), true);
             richDesign = formView;
 
         }
@@ -1983,10 +1985,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         securityPolicy = new SecurityPolicy();
 
-        securityPolicy.property.view.deny(extIncDocumentSumPay.Property);
+        securityPolicy.property.view.deny(extIncDocumentSumPay.property);
         securityPolicy.property.view.deny(incSumsGroup.getProperties());
-        securityPolicy.property.change.deny(extIncDetailArticle.Property);
-        securityPolicy.property.change.deny(extIncDetailQuantity.Property);
+        securityPolicy.property.change.deny(extIncDetailArticle.property);
+        securityPolicy.property.change.deny(extIncDetailQuantity.property);
 
         securityPolicy.navigator.deny(analyticsData.getChildren(true));
         securityPolicy.navigator.deny(extIncPrintForm);
@@ -2059,14 +2061,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Map<DataProperty,Integer> PropQuantity = new HashMap();
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
-        PropQuantity.put((DataProperty)intraQuantity.Property,Modifier*PropModifier*2);
-        PropQuantity.put((DataProperty)receiptQuantity.Property,Modifier*PropModifier*30);
-        PropQuantity.put((DataProperty)receiptSumPriceOut.Property,Modifier*PropModifier*30);
-        PropQuantity.put((DataProperty)clearingSaleQuantity.Property,Modifier*PropModifier*8);
-        PropQuantity.put((DataProperty)invQuantity.Property,Modifier*PropModifier);
-        PropQuantity.put((DataProperty)exchangeQuantity.Property,Modifier*PropModifier);
-        PropQuantity.put((DataProperty)returnQuantity.Property,Modifier*PropModifier);
-        PropQuantity.put((DataProperty)isRevalued.Property,Modifier*PropModifier);
+        PropQuantity.put((DataProperty)intraQuantity.property,Modifier*PropModifier*2);
+        PropQuantity.put((DataProperty)receiptQuantity.property,Modifier*PropModifier*30);
+        PropQuantity.put((DataProperty)receiptSumPriceOut.property,Modifier*PropModifier*30);
+        PropQuantity.put((DataProperty)clearingSaleQuantity.property,Modifier*PropModifier*8);
+        PropQuantity.put((DataProperty)invQuantity.property,Modifier*PropModifier);
+        PropQuantity.put((DataProperty)exchangeQuantity.property,Modifier*PropModifier);
+        PropQuantity.put((DataProperty)returnQuantity.property,Modifier*PropModifier);
+        PropQuantity.put((DataProperty)isRevalued.property,Modifier*PropModifier);
 
         PropQuantity.putAll(autoQuantity(0, fixedPriceIn, fixedVATIn, fixedAdd, fixedVATOut, fixedLocTax,
             revalBalanceQuantity,revalPriceIn,revalVATIn,revalAddBefore,revalVATOutBefore,revalLocTaxBefore,

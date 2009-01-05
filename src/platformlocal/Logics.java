@@ -188,15 +188,16 @@ class ObjectTable extends Table {
     Integer GetClassID(DataSession Session,Integer idObject) throws SQLException {
         if(idObject==null) return null;
 
-        JoinQuery<Object,String> Query = new JoinQuery<Object,String>();
-        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
-        JoinTable.Joins.put(Key,new ValueSourceExpr(idObject,Key.Type));
-        Query.add("classid",JoinTable.Exprs.get(Class));
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
+        JoinQuery<Object,String> Query = new JoinQuery<Object,String>(new ArrayList<Object>());
+        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
+        JoinTable.Joins.put(Key,new ValueExpr(idObject,Key.Type));
+        Query.and(JoinTable.InJoin);
+        Query.Properties.put("classid", JoinTable.Exprs.get(Class));
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.compile().executeSelect(Session, false);
         if(Result.size()>0)
             return (Integer)Result.values().iterator().next().get("classid");
         else
-            return null;        
+            return null;
     }
 
     JoinQuery<KeyField,PropertyField> getClassJoin(Class ChangeClass) {
@@ -208,7 +209,7 @@ class ObjectTable extends Table {
             IDSet.add(ChildClass.ID);
 
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(Keys);
-        ClassQuery.add(new FieldSetValueWhere((new UniJoin<KeyField,PropertyField>(this,ClassQuery,true)).Exprs.get(Class), IDSet));
+        ClassQuery.and(new InListWhere((new Join<KeyField,PropertyField>(this,ClassQuery)).Exprs.get(Class), IDSet));
 
         return ClassQuery;
     }
@@ -218,12 +219,12 @@ class ObjectTable extends Table {
 class IDTable extends Table {
     KeyField Key;
     PropertyField Value;
-    
+
     IDTable() {
         super("idtable");
         Key = new KeyField("id",Type.System);
         Keys.add(Key);
-        
+
         Value = new PropertyField("value",Type.System);
         Properties.add(Value);
     }
@@ -242,13 +243,14 @@ class IDTable extends Table {
         if(BusinessLogics.AutoFillDB) return BusinessLogics.AutoIDCounter++;
         // читаем
         JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
-        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this,true);
+        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
         JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
-        Query.add(Value,JoinTable.Exprs.get(Value));
+        Query.and(JoinTable.InJoin);
+        Query.Properties.put(Value, JoinTable.Exprs.get(Value));
 
-        Query.add(new FieldExprCompareWhere(Query.MapKeys.get(Key),idType,FieldExprCompareWhere.EQUALS));
+        Query.and(new CompareWhere(Query.MapKeys.get(Key),new ValueExpr(idType,Type.Object),CompareWhere.EQUALS));
 
-        Integer FreeID = (Integer)Query.executeSelect(dataSession).values().iterator().next().get(Value);
+        Integer FreeID = (Integer) Query.compile().executeSelect(dataSession, false).values().iterator().next().get(Value);
 
         // замещаем
         reserveID(dataSession, idType, FreeID);
@@ -256,11 +258,10 @@ class IDTable extends Table {
     }
 
     void reserveID(DataSession Session, int idType, Integer ID) throws SQLException {
-        Map<KeyField,ValueSourceExpr> KeyFields = new HashMap();
-        KeyFields.put(Key,new ValueSourceExpr(idType,Type.Object));
-        Map<PropertyField,ValueSourceExpr> PropFields = new HashMap();
-        PropFields.put(Value,new ValueSourceExpr(ID+1,Value.Type));
-        Session.UpdateRecords(new ModifyQuery(this,new DumbSource<KeyField,PropertyField>(KeyFields,PropFields)));
+        JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField,PropertyField>(Keys);
+        UpdateQuery.putKeyWhere(Collections.singletonMap(Key,idType));
+        UpdateQuery.Properties.put(Value, new ValueExpr(ID+1,Value.Type));
+        Session.UpdateRecords(new ModifyQuery(this,UpdateQuery));
     }
 }
 
@@ -274,14 +275,14 @@ class ViewTable extends SessionTable {
             Objects.add(ObjKeyField);
             Keys.add(ObjKeyField);
         }
-        
+
         View = new KeyField("viewid",Type.System);
         Keys.add(View);
     }
-            
+
     List<KeyField> Objects;
     KeyField View;
-    
+
     void DropViewID(DataSession Session,Integer ViewID) throws SQLException {
         Map<KeyField,Integer> ValueKeys = new HashMap();
         ValueKeys.put(View,ViewID);
@@ -292,7 +293,7 @@ class ViewTable extends SessionTable {
 abstract class ChangeTable extends SessionTable {
 
 //    KeyField Session;
-    
+
     ChangeTable(String iName) {
         super(iName);
 
@@ -306,7 +307,7 @@ class ChangeObjectTable extends ChangeTable {
     Collection<KeyField> Objects;
     KeyField Property;
     PropertyField Value;
-    
+
     ChangeObjectTable(String TablePrefix,Integer iObjects,Integer iDBType) {
         super(TablePrefix+"changetable"+iObjects+"t"+iDBType);
 
@@ -316,10 +317,10 @@ class ChangeObjectTable extends ChangeTable {
             Objects.add(ObjKeyField);
             Keys.add(ObjKeyField);
         }
-        
+
         Property = new KeyField("property",Type.System);
         Keys.add(Property);
-        
+
         Value = new PropertyField("value",Type.Enum.get(iDBType));
         Properties.add(Value);
     }
@@ -360,7 +361,7 @@ class ChangeClassTable extends ChangeTable {
         Class = new KeyField("class",Type.System);
         Keys.add(Class);
     }
-    
+
     void changeClass(DataSession ChangeSession, Integer idObject, Collection<Class> Classes,boolean Drop) throws SQLException {
 
         for(Class Change : Classes) {
@@ -379,17 +380,17 @@ class ChangeClassTable extends ChangeTable {
         Map<KeyField,Integer> ValueKeys = new HashMap();
         ChangeSession.deleteKeyRecords(this,ValueKeys);
     }
-    
+
     JoinQuery<KeyField,PropertyField> getClassJoin(DataSession ChangeSession,Class ChangeClass) {
 
         Collection<KeyField> ObjectKeys = new ArrayList();
         ObjectKeys.add(Object);
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(ObjectKeys);
 
-        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this,true);
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this);
         ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
-        ClassJoin.Joins.put(Class,new ValueSourceExpr(ChangeClass.ID,Class.Type));
-        ClassQuery.add(ClassJoin);
+        ClassJoin.Joins.put(Class,new ValueExpr(ChangeClass.ID,Class.Type));
+        ClassQuery.and(ClassJoin.InJoin);
 
         return ClassQuery;
     }
@@ -410,49 +411,49 @@ class RemoveClassTable extends ChangeClassTable {
     }
 
     void excludeJoin(JoinQuery<?,?> Query, DataSession Session,Class ChangeClass,SourceExpr Join) {
-        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass),false);
+        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass));
         ClassJoin.Joins.put(Object,Join);
-        Query.add(new NotWhere(ClassJoin.InJoin));
+        Query.and(ClassJoin.InJoin.not());
     }
 
 }
 
 class TableFactory extends TableImplement{
-    
+
     ObjectTable ObjectTable;
     IDTable idTable;
     List<ViewTable> ViewTables;
     List<List<DataChangeTable>> DataChangeTables;
     List<List<IncrementChangeTable>> ChangeTables;
-    
+
     AddClassTable AddClassTable;
     RemoveClassTable RemoveClassTable;
-    
+
     // для отладки
     boolean ReCalculateAggr = false;
     boolean Crash = false;
-    
+
     IncrementChangeTable GetChangeTable(Integer Objects, Type DBType) {
         return ChangeTables.get(Objects-1).get(Type.Enum.indexOf(DBType));
     }
-    
+
     DataChangeTable GetDataChangeTable(Integer Objects, Type DBType) {
         return DataChangeTables.get(Objects-1).get(Type.Enum.indexOf(DBType));
     }
 
     int MaxBeanObjects = 3;
     int MaxInterface = 5;
-    
+
     TableFactory() {
         ObjectTable = new ObjectTable();
         idTable = new IDTable();
         ViewTables = new ArrayList();
         ChangeTables = new ArrayList();
         DataChangeTables = new ArrayList();
-        
+
         AddClassTable = new AddClassTable();
         RemoveClassTable = new RemoveClassTable();
-        
+
         for(int i=1;i<=MaxBeanObjects;i++)
             ViewTables.add(new ViewTable(i));
 
@@ -471,15 +472,15 @@ class TableFactory extends TableImplement{
         }
     }
 
-    void IncludeIntoGraph(TableImplement IncludeItem) {
+    void includeIntoGraph(TableImplement IncludeItem) {
         Set<TableImplement> Checks = new HashSet<TableImplement>();
         RecIncludeIntoGraph(IncludeItem,true,Checks);
     }
-    
+
     void FillDB(DataSession Session, boolean createTable) throws SQLException {
         Set<TableImplement> TableImplements = new HashSet<TableImplement>();
         FillSet(TableImplements);
-        
+
         for(TableImplement Node : TableImplements) {
             Node.Table = new Table("table"+Node.getID());
             Node.MapFields = new HashMap<DataPropertyInterface,KeyField>();
@@ -511,7 +512,7 @@ class TableFactory extends TableImplement{
 
     // заполняет временные таблицы
     void fillSession(DataSession Session) throws SQLException {
-        
+
         Session.CreateTemporaryTable(AddClassTable);
         Session.CreateTemporaryTable(RemoveClassTable);
 
@@ -553,18 +554,18 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     void initBase() {
-        TableFactory = new TableFactory();
+        tableFactory = new TableFactory();
 
         objectClass = new ObjectClass(IDShift(1), "Объект");
         objectClass.addParent(Class.base);
 
-        for(int i=0;i<TableFactory.MaxInterface;i++) {
+        for(int i=0;i< tableFactory.MaxInterface;i++) {
             TableImplement Include = new TableImplement();
             for(int j=0;j<=i;j++)
                 Include.add(new DataPropertyInterface(j,Class.base));
-            TableFactory.IncludeIntoGraph(Include);
-        }         
-        
+            tableFactory.includeIntoGraph(Include);
+        }
+
         baseElement = new NavigatorElement<T>(0, "Base Group");
     }
 
@@ -572,7 +573,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     BusinessLogics() {
         initBase();
 
-        InitLogics();
+        initLogics();
         InitImplements();
         InitNavigators();
 
@@ -580,7 +581,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     public boolean toSave(Property Property) {
-        return Property.IsPersistent();
+        return true;//Property.IsPersistent();
     }
 
     public Collection<Property> getNoUpdateProperties() {
@@ -594,7 +595,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         initBase();
 
         if(TestType>=1) {
-            InitLogics();
+            initLogics();
             if(TestType>=2)
                 InitImplements();
         }
@@ -649,27 +650,27 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     AbstractGroup baseGroup = new AbstractGroup("Атрибуты");
-    abstract void InitGroups();
-    abstract void InitClasses();
-    abstract void InitProperties();
-    abstract void InitConstraints();
-    
+    abstract void initGroups();
+    abstract void initClasses();
+    abstract void initProperties();
+    abstract void initConstraints();
+
     // инициализируется логика
-    void InitLogics() {
-        InitGroups();
-        InitClasses();
-        InitProperties();
-        InitConstraints();
+    void initLogics() {
+        initGroups();
+        initClasses();
+        initProperties();
+        initConstraints();
     }
-    
-    abstract void InitPersistents();
-    abstract void InitTables();
-    abstract void InitIndexes();
-    
+
+    abstract void initPersistents();
+    abstract void initTables();
+    abstract void initIndexes();
+
     void InitImplements() {
-        InitPersistents();
-        InitTables();
-        InitIndexes();
+        initPersistents();
+        initTables();
+        initIndexes();
     }
 
     NavigatorElement<T> baseElement;
@@ -698,39 +699,39 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
     Integer AddObject(DataSession Session, Class Class) throws SQLException {
 
-        Integer FreeID = TableFactory.idTable.GenerateID(Session, IDTable.OBJECT);
+        Integer FreeID = tableFactory.idTable.GenerateID(Session, IDTable.OBJECT);
 
         ChangeClass(Session,FreeID,Class);
-        
+
         return FreeID;
     }
-    
+
     void ChangeClass(DataSession Session, Integer idObject, Class Class) throws SQLException {
-        
+
         // запишем объекты, которые надо будет сохранять
         Session.changeClass(idObject,Class);
     }
-    
+
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
     int SessionCounter = 0;
     DataSession createSession(DataAdapter Adapter) throws SQLException {
-        return new DataSession(Adapter,SessionCounter++,TableFactory,objectClass);
+        return new DataSession(Adapter,SessionCounter++, tableFactory,objectClass);
     }
 
     ObjectClass objectClass;
 
-    TableFactory TableFactory;
+    TableFactory tableFactory;
     List<Property> Properties = new ArrayList();
-    Set<AggregateProperty> Persistents = new HashSet();
-    Map<Property,Constraint> Constraints = new HashMap();
-    Set<List<Property>> Indexes = new HashSet();
+    Set<AggregateProperty> persistents = new HashSet();
+    Map<Property,Constraint> constraints = new HashMap();
+    Set<List<Property>> indexes = new HashSet();
 
     // проверяет Constraints
     String CheckConstraints(DataSession Session) throws SQLException {
 
-        for(Property Property : Constraints.keySet())
+        for(Property Property : constraints.keySet())
             if(Session.PropertyChanges.containsKey(Property)) {
-                String ConstraintResult = Constraints.get(Property).Check(Session,Property);
+                String ConstraintResult = constraints.get(Property).Check(Session,Property);
                 if(ConstraintResult!=null) return ConstraintResult;
             }
 
@@ -738,8 +739,8 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     public Collection<Property> getUpdateProperties() {
-        Collection<Property> UpdateList = new HashSet(Persistents);
-        UpdateList.addAll(Constraints.keySet());
+        Collection<Property> UpdateList = new HashSet(persistents);
+        UpdateList.addAll(constraints.keySet());
         for(Property Property : Properties)
             if(Property instanceof DataProperty) UpdateList.add(Property);
         return UpdateList;
@@ -758,39 +759,39 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             // откатим транзакцию
             Session.rollbackTransaction();
             return Constraints;
-        }            
+        }
 
         Session.saveClassChanges();
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property Property : ChangedList)
-            if(Property instanceof DataProperty || Persistents.contains(Property))
+            if(Property instanceof DataProperty || persistents.contains(Property))
                 Session.PropertyChanges.get(Property).apply(Session);
 /*
         System.out.println("All Changes");
         for(List<IncrementChangeTable> ListTables : TableFactory.ChangeTables)
            for(ChangeObjectTable ChangeTable : ListTables) ChangeTable.outSelect(Session);
-  */      
+  */
         Session.commitTransaction();
         Session.restart(false);
-        
-        return null;        
+
+        return null;
     }
 
     void FillDB(DataSession Session, boolean createTable) throws SQLException {
 
         // инициализируем таблицы
-        TableFactory.FillDB(Session, createTable);
+        tableFactory.FillDB(Session, createTable);
 
         // запишем sID'ки
         int IDPropNum = 0;
         for(Property Property : Properties)
             Property.ID = IDPropNum++;
-        
+
         Set<DataProperty> DataProperties = new HashSet();
         Collection<AggregateProperty> AggrProperties = new ArrayList();
         Map<Table,Integer> Tables = new HashMap<Table,Integer>();
-        
+
         // закинем в таблицы(создав там все что надо) св-ва
         for(Property Property : Properties) {
             // ChangeTable'ы заполним
@@ -800,11 +801,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 DataProperties.add((DataProperty)Property);
                 ((DataProperty)Property).FillDataTable();
             }
-            
+
             if(Property instanceof AggregateProperty)
                 AggrProperties.add((AggregateProperty)Property);
 
-            if(Property instanceof DataProperty || (Property instanceof AggregateProperty && Persistents.contains(Property))) {
+            if(Property instanceof DataProperty || (Property instanceof AggregateProperty && persistents.contains(Property))) {
                 Table Table = Property.GetTable(null);
 
                 Integer PropNum = Tables.get(Table);
@@ -819,7 +820,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
 
         //закинем индексы
-        for (List<Property> index : Indexes) {
+        for (List<Property> index : indexes) {
 
             Table table = index.get(0).GetTable(null);
 
@@ -855,14 +856,16 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             Session.CreateTable(EmptyTable);
         }
     }
-    
+
     boolean CheckPersistent(DataSession Session) throws SQLException {
-        for(AggregateProperty Property : Persistents) {
-            if(!Property.CheckAggregation(Session,Property.caption))
+//        System.out.println("checking persistent...");
+        for(AggregateProperty Property : persistents) {
+//            System.out.println(Property.caption);
+            if(!Property.CheckAggregation(Session,Property.caption)) // Property.caption.equals("Расх. со скл.")
                 return false;
 //            Property.Out(Adapter);
         }
-        
+
         return true;
     }
 
@@ -891,7 +894,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return addDProp(group, null, caption, Value, Params);
     }
     LDP addDProp(AbstractGroup group, String sID, String caption, Class Value, Class... Params) {
-        DataProperty Property = new DataProperty(TableFactory,Value);
+        DataProperty Property = new DataProperty(tableFactory,Value);
         Property.sID = sID;
         Property.caption = caption;
         LDP ListProperty = new LDP(Property);
@@ -905,18 +908,18 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         return ListProperty;
     }
-    
+
     void setDefProp(LDP Data,LP Default,boolean OnChange) {
-        DataProperty Property = ((DataProperty)Data.Property);
-        Property.DefaultProperty = Default.Property;
+        DataProperty Property = ((DataProperty)Data.property);
+        Property.DefaultProperty = Default.property;
         for(int i=0;i<Data.ListInterfaces.size();i++)
             Property.DefaultMap.put((DataPropertyInterface)Data.ListInterfaces.get(i),Default.ListInterfaces.get(i));
-        
+
         Property.OnDefaultChange = OnChange;
     }
 
     LCP addCProp(String caption, Object Value, Class ValueClass, Class... Params) {
-        ClassProperty Property = new ClassProperty(TableFactory,ValueClass,Value);
+        ClassProperty Property = new ClassProperty(tableFactory,ValueClass,Value);
         Property.caption = caption;
         LCP ListProperty = new LCP(Property);
         for(Class Int : Params) {
@@ -928,29 +931,36 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
     LSFP addSFProp(String Formula,Class Value,int ParamCount) {
 
-        StringFormulaProperty Property = new StringFormulaProperty(TableFactory,Value,Formula);
+        StringFormulaProperty Property = new StringFormulaProperty(tableFactory,Value,Formula);
         LSFP ListProperty = new LSFP(Property,ParamCount);
         Properties.add(Property);
         return ListProperty;
     }
 
-    LSFP addWSFProp(String Formula,int ParamCount) {
 
-        WhereStringFormulaProperty Property = new WhereStringFormulaProperty(TableFactory,Formula);
-        LSFP ListProperty = new LSFP(Property,ParamCount);
+    LCFP addCFProp(int Compare) {
+        CompareFormulaProperty Property = new CompareFormulaProperty(tableFactory,Compare);
+        LCFP ListProperty = new LCFP(Property);
+        Properties.add(Property);
+        return ListProperty;
+    }
+
+    LNFP addNFProp() {
+        NotNullFormulaProperty Property = new NotNullFormulaProperty(tableFactory);
+        LNFP ListProperty = new LNFP(Property);
         Properties.add(Property);
         return ListProperty;
     }
 
     LMFP addMFProp(Class Value,int ParamCount) {
-        MultiplyFormulaProperty Property = new MultiplyFormulaProperty(TableFactory,Value);
-        LMFP ListProperty = new LMFP(Property,ParamCount);
+        MultiplyFormulaProperty Property = new MultiplyFormulaProperty(tableFactory,Value,ParamCount);
+        LMFP ListProperty = new LMFP(Property);
         Properties.add(Property);
         return ListProperty;
     }
 
     LOFP addOFProp(int BitCount) {
-        ObjectFormulaProperty Property = new ObjectFormulaProperty(TableFactory,objectClass);
+        ObjectFormulaProperty Property = new ObjectFormulaProperty(tableFactory,objectClass);
         LOFP ListProperty = new LOFP(Property,BitCount);
         Properties.add(Property);
         return ListProperty;
@@ -963,10 +973,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         LP PropRead = null;
         for(Object P : Params) {
             if(P instanceof Integer) {
-                // число может быть как ссылкой на родной интерфейс так и 
+                // число может быть как ссылкой на родной интерфейс так и
                 PropertyInterface PropInt = MainProp.ListInterfaces.get((Integer)P-1);
                 if(WaitInterfaces==0) {
-                    // родную берем 
+                    // родную берем
                     Result.add(PropInt);
                 } else {
                     // докидываем в маппинг
@@ -976,12 +986,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             } else {
                // имплементация, типа LP
                PropRead = (LP)P;
-               MapRead = new PropertyMapImplement(PropRead.Property);
+               MapRead = new PropertyMapImplement(PropRead.property);
                WaitInterfaces = PropRead.ListInterfaces.size();
                Result.add(MapRead);
             }
         }
-        
+
         return Result;
     }
 
@@ -994,7 +1004,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     LJP addJProp(AbstractGroup group, String sID, String caption, LP MainProp, int IntNum, Object... Params) {
-        JoinProperty Property = new JoinProperty(TableFactory,MainProp.Property);
+        JoinProperty Property = new JoinProperty(tableFactory,MainProp.property);
         Property.sID = sID;
         Property.caption = caption;
         LJP ListProperty = new LJP(Property,IntNum);
@@ -1011,7 +1021,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         return ListProperty;
     }
-    
+
     LGP addGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
         return addGProp(null, caption, GroupProp, Sum, Params);
     }
@@ -1024,10 +1034,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         GroupProperty Property;
         if(Sum)
-            Property = new SumGroupProperty(TableFactory,GroupProp.Property);
+            Property = new SumGroupProperty(tableFactory,GroupProp.property);
         else
-            Property = new MaxGroupProperty(TableFactory,GroupProp.Property);
-        
+            Property = new MaxGroupProperty(tableFactory,GroupProp.property);
+
         Property.sID = sID;
         Property.caption = caption;
 
@@ -1039,14 +1049,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         if (group != null)
             group.add(Property);
-        
+
         return ListProperty;
     }
 
     LUP addUProp(String caption, int UnionType, int IntNum, Object... Params) {
         return addUProp(null, caption, UnionType, IntNum, Params);
     }
-    
+
     LUP addUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {
         return addUProp(group, null, caption, UnionType, IntNum, Params);
     }
@@ -1055,24 +1065,24 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         UnionProperty Property = null;
         switch(UnionType) {
             case 0:
-                Property = new MaxUnionProperty(TableFactory);
+                Property = new MaxUnionProperty(tableFactory);
                 break;
             case 1:
-                Property = new SumUnionProperty(TableFactory);
+                Property = new SumUnionProperty(tableFactory);
                 break;
             case 2:
-                Property = new OverrideUnionProperty(TableFactory);
+                Property = new OverrideUnionProperty(tableFactory);
                 break;
         }
         Property.sID = sID;
         Property.caption = caption;
-        
+
         LUP ListProperty = new LUP(Property,IntNum);
 
         for(int i=0;i<Params.length/(IntNum+2);i++) {
             Integer Offs = i*(IntNum+2);
             LP OpImplement = (LP)Params[Offs+1];
-            PropertyMapImplement Operand = new PropertyMapImplement(OpImplement.Property);
+            PropertyMapImplement Operand = new PropertyMapImplement(OpImplement.property);
             for(int j=0;j<IntNum;j++)
                 Operand.Mapping.put(OpImplement.ListInterfaces.get(((Integer)Params[Offs+2+j])-1),ListProperty.ListInterfaces.get(j));
             Property.Operands.add(Operand);
@@ -1093,16 +1103,16 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     void OpenTest(DataAdapter Adapter,boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
 
         if(Classes) {
-            InitClasses();
+            initClasses();
 
             if(Implements)
                 InitImplements();
-                
+
             if(Properties) {
-                InitProperties();
+                initProperties();
 
                 if(Persistent)
-                    InitPersistents();
+                    initPersistents();
 
                 if(Changes) {
                     DataSession Session = createSession(Adapter);
@@ -1115,7 +1125,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         }
     }
-    
+
     // случайным образом генерирует классы
     void RandomClasses(Random Randomizer) {
         int CustomClasses = Randomizer.nextInt(20);//
@@ -1133,42 +1143,38 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
     // случайным образом генерирует св-ва
     void RandomProperties(Random Randomizer) {
-        
+
         List<Class> Classes = new ArrayList();
         objectClass.fillChilds(Classes);
-        
+
         List<Property> RandProps = new ArrayList();
         List<Property> RandObjProps = new ArrayList();
         List<Property> RandIntegralProps = new ArrayList();
 
-        StringFormulaProperty Dirihle = new WhereStringFormulaProperty(TableFactory,"prm1<prm2");
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(0));
-        Dirihle.Interfaces.add(new StringFormulaPropertyInterface(1));
+        CompareFormulaProperty Dirihle = new CompareFormulaProperty(tableFactory,CompareWhere.LESS);
         RandProps.add(Dirihle);
 
-        MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(TableFactory,Class.integer);
-        Multiply.Interfaces.add(new FormulaPropertyInterface(0));
-        Multiply.Interfaces.add(new FormulaPropertyInterface(1));
+        MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(tableFactory,Class.integer,2);
         RandProps.add(Multiply);
 
         int DataPropCount = Randomizer.nextInt(15)+1;
         for(int i=0;i<DataPropCount;i++) {
             // DataProperty
-            DataProperty DataProp = new DataProperty(TableFactory,(i%4==0?Class.integer :Classes.get(Randomizer.nextInt(Classes.size()))));
+            DataProperty DataProp = new DataProperty(tableFactory,(i%4==0?Class.integer :Classes.get(Randomizer.nextInt(Classes.size()))));
             DataProp.caption = "Data Property " + i;
             // генерируем классы
-            int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
+            int IntCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
             for(int j=0;j<IntCount;j++)
                 DataProp.Interfaces.add(new DataPropertyInterface(j,Classes.get(Randomizer.nextInt(Classes.size()))));
 
             RandProps.add(DataProp);
             RandObjProps.add(DataProp);
             if(DataProp.getBaseClass().contains(Class.integral))
-                RandIntegralProps.add(DataProp);    
+                RandIntegralProps.add(DataProp);
         }
 
         System.out.print("Создание аггрег. св-в ");
-                
+
         int PropCount = Randomizer.nextInt(1000)+1; //
         for(int i=0;i<PropCount;i++) {
 //            int RandClass = Randomizer.nextInt(10);
@@ -1179,21 +1185,21 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             String ResType = "";
             if(PropClass==0) {
                 // JoinProperty
-                JoinProperty RelProp = new JoinProperty(TableFactory,RandProps.get(Randomizer.nextInt(RandProps.size())));
-                
+                JoinProperty RelProp = new JoinProperty(tableFactory,RandProps.get(Randomizer.nextInt(RandProps.size())));
+
                 // генерируем случайно кол-во интерфейсов
                 List<PropertyInterface> RelPropInt = new ArrayList();
-                int IntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
+                int IntCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
                 for(int j=0;j<IntCount;j++) {
                     JoinPropertyInterface Interface = new JoinPropertyInterface(j);
                     RelProp.Interfaces.add(Interface);
                     RelPropInt.add(Interface);
                 }
-                
+
                 // чтобы 2 раза на одну и ту же ветку не натыкаться
                 List<PropertyInterface> AvailRelInt = new ArrayList(RelPropInt);
                 boolean Correct = true;
-                
+
                 for(PropertyInterface Interface : (Collection<PropertyInterface>)RelProp.Implements.Property.Interfaces) {
                     // генерируем случайно map'ы на эти интерфейсы
                     if(!(RelProp.Implements.Property instanceof FormulaProperty) && Randomizer.nextBoolean()) {
@@ -1211,7 +1217,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                             Correct = false;
                             break;
                         }
-                        
+
                         List<PropertyInterface> MapRelInt = new ArrayList(RelPropInt);
                         for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)ImpProp.Property.Interfaces) {
                             PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
@@ -1227,24 +1233,24 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     ResType = "R";
                 }
             }
-            
+
             if(PropClass==1 || PropClass==2) {
                 // группировочное
                 Property GroupProp;
                 GroupProperty Property = null;
                 if(PropClass==1) {
                     GroupProp = RandIntegralProps.get(Randomizer.nextInt(RandIntegralProps.size()));
-                    Property = new SumGroupProperty(TableFactory,GroupProp);
+                    Property = new SumGroupProperty(tableFactory,GroupProp);
                     ResType = "SG";
                 } else {
                     GroupProp = RandObjProps.get(Randomizer.nextInt(RandObjProps.size()));
-                    Property = new MaxGroupProperty(TableFactory,GroupProp);
+                    Property = new MaxGroupProperty(tableFactory,GroupProp);
                     ResType = "MG";
                 }
 
-                boolean Correct = true;                
+                boolean Correct = true;
                 List<PropertyInterface> GroupInt = new ArrayList(GroupProp.Interfaces);
-                int GroupCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
+                int GroupCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
                 for(int j=0;j<GroupCount;j++) {
                     PropertyInterfaceImplement Implement;
                     // генерируем случайно map'ы на эти интерфейсы
@@ -1266,10 +1272,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                         }
                         Implement = ImpProp;
                     }
-                    
+
                     Property.Interfaces.add(new GroupPropertyInterface(j,Implement));
                 }
-                
+
                 if(Correct)
                     GenProp = Property;
             }
@@ -1279,22 +1285,22 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 List<Property> RandValProps = RandObjProps;
                 if(PropClass==3) {
                     RandValProps = RandIntegralProps;
-                    Property = new SumUnionProperty(TableFactory);
+                    Property = new SumUnionProperty(tableFactory);
                     ResType = "SL";
                 } else {
                 if(PropClass==4) {
-                    Property = new MaxUnionProperty(TableFactory);
+                    Property = new MaxUnionProperty(tableFactory);
                     ResType = "ML";
                 } else {
-                    Property = new OverrideUnionProperty(TableFactory);
+                    Property = new OverrideUnionProperty(tableFactory);
                     ResType = "OL";
                 }
                 }
 
-                int OpIntCount = Randomizer.nextInt(TableFactory.MaxInterface)+1;
+                int OpIntCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
                 for(int j=0;j<OpIntCount;j++)
                     Property.Interfaces.add(new PropertyInterface(j));
-        
+
                 boolean Correct = true;
                 List<PropertyInterface> OpInt = new ArrayList(Property.Interfaces);
                 int OpCount = Randomizer.nextInt(4)+1;
@@ -1313,11 +1319,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     }
                     Property.Operands.add(Operand);
                 }
-                
+
                 if(Correct)
                     GenProp = Property;
             }
-                       
+
 
             if(GenProp!=null && !GenProp.getBaseClass().isEmpty()) {
                 GenProp.caption = ResType + " " + i;
@@ -1332,12 +1338,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 }
             }
         }
-        
+
         Properties.addAll(RandProps);
-        
+
         System.out.println();
     }
-    
+
     // случайным образом генерирует имплементацию
     void RandomImplement(Random Randomizer) {
         List<Class> Classes = new ArrayList();
@@ -1350,14 +1356,14 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             int ObjCount = Randomizer.nextInt(3)+1;
             for(int ioc=0;ioc<ObjCount;ioc++)
                 Include.add(new DataPropertyInterface(ioc,Classes.get(Randomizer.nextInt(Classes.size()))));
-            TableFactory.IncludeIntoGraph(Include);               
-        }        
+            tableFactory.includeIntoGraph(Include);
+        }
     }
-    
+
     // случайным образом генерирует постоянные аггрегации
     void RandomPersistent(Random Randomizer) {
 
-        Persistents.clear();
+        persistents.clear();
 
         // сначала список получим
         List<AggregateProperty> AggrProperties = new ArrayList();
@@ -1365,10 +1371,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             if(Property instanceof AggregateProperty && Property.isObject())
                 AggrProperties.add((AggregateProperty)Property);
         }
-        
+
         int PersistentNum = Randomizer.nextInt(AggrProperties.size())+1;
         for(int i=0;i<PersistentNum;i++)
-            Persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
+            persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
 
 //        for(AggregateProperty Property : AggrProperties)
 //            if(Property.caption.equals("R 1"))
@@ -1377,7 +1383,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
     static int ChangeDBIteration = 0;
     void ChangeDBTest(DataAdapter Adapter,Integer MaxIterations,Random Randomizer) throws SQLException {
-        
+
         // сначала список получим
         List<DataProperty> DataProperties = new ArrayList();
         for(Property Property : Properties) {
@@ -1400,7 +1406,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         Apply(Session);
 
         long PrevTime = System.currentTimeMillis();
-        
+
 //        Randomizer.setSeed(1);
         int Iterations = 1;
         while(Iterations<MaxIterations) {
@@ -1429,7 +1435,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 // берем случайные n св-в
                 DataProperty<?> ChangeProp = DataProperties.get(Randomizer.nextInt(DataProperties.size()));
                 int NumChanges = Randomizer.nextInt(3)+1;
-                for(int in=0;in<NumChanges;in++) {                    
+                for(int in=0;in<NumChanges;in++) {
 /*                    // теперь определяем класс найденного объекта
                     Class valueClass = null;
                     if(ChangeProp.Value instanceof ObjectClass)
@@ -1443,21 +1449,21 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     Map<DataPropertyInterface,ObjectValue> Keys = new HashMap();
                     for(DataPropertyInterface Interface : ChangeProp.Interfaces) {
                         Class RandomClass = InterfaceClasses.get(Interface).getRandom(Randomizer);
-                        Keys.put(Interface,new ObjectValue((Integer) RandomClass.GetRandomObject(Session,TableFactory,Randomizer,0),RandomClass));
+                        Keys.put(Interface,new ObjectValue((Integer) RandomClass.GetRandomObject(Session, tableFactory,Randomizer,0),RandomClass));
                     }
-                    
+
                     Object ValueObject = null;
                     if(Randomizer.nextInt(10)<8)
-                        ValueObject = ChangeProp.Value.GetRandomObject(Session,TableFactory,Randomizer,Iterations);
-                    
+                        ValueObject = ChangeProp.Value.GetRandomObject(Session, tableFactory,Randomizer,Iterations);
+
                     ChangeProp.changeProperty(Keys,ValueObject, false, Session, null);
                 }
             }
-            
+
 /*            for(DataProperty Property : Session.propertyViews) {
                 Property.OutChangesTable(Adapter, Session);
             }*/
-                
+
             Apply(Session);
             CheckPersistent(Session);
         }
@@ -1476,12 +1482,13 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     Map<DataProperty,Integer> autoQuantity(Integer Quantity,LDP... Properties) {
         Map<DataProperty,Integer> Result = new HashMap<DataProperty,Integer>();
         for(LDP<?> Property : Properties)
-            Result.put(Property.Property,Quantity);
+            Result.put(Property.property,Quantity);
         return Result;
     }
 
     static boolean AutoFillDB = false;
     static int AutoIDCounter = 0;
+    static int AutoSeed = 1400;
     void autoFillDB(DataAdapter Adapter, Map<Class, Integer> ClassQuantity, Map<DataProperty, Integer> PropQuantity, Map<DataProperty, Set<DataPropertyInterface>> PropNotNull) throws SQLException {
 
         AutoFillDB = true;
@@ -1489,11 +1496,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         // сначала вырубим все аггрегации в конце пересчитаем
         Map<AggregateProperty,PropertyField> SavePersistents = new HashMap();
-        for(AggregateProperty Property : Persistents) {
+        for(AggregateProperty Property : persistents) {
             SavePersistents.put(Property,Property.Field);
             Property.Field = null;
         }
-        Persistents.clear();
+        persistents.clear();
 
         // генерируем классы
         Map<Integer,String> ObjectNames = new HashMap();
@@ -1525,7 +1532,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                     Objects.get(Class).addAll(ListObjects);
             }
 
-        Random Randomizer = new Random();
+        Random Randomizer = new Random(AutoSeed);
 
         // бежим по св-вам
         for(Property AbstractProperty : Properties)
@@ -1535,7 +1542,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 System.out.println(Property.caption);
 
                 Set<DataPropertyInterface> InterfaceNotNull = PropNotNull.get(Property);
-                if(InterfaceNotNull==null) InterfaceNotNull = new HashSet(); 
+                if(InterfaceNotNull==null) InterfaceNotNull = new HashSet();
                 Integer Quantity = PropQuantity.get(Property);
                 if(Quantity==null) {
                     Quantity = 1;
@@ -1593,16 +1600,16 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 AggregateProperty Property = (AggregateProperty)DependProperty;
 
                 System.out.println("Recalculate - "+Property.caption);
-                
+
                 Property.Field = SavePersistents.get(Property);
-                Persistents.add(Property);
+                persistents.add(Property);
                 Property.reCalculateAggregation(Session);
             }
 
         Session.commitTransaction();
 
-        TableFactory.idTable.reserveID(Session,IDTable.OBJECT,AutoIDCounter);
-        
+        tableFactory.idTable.reserveID(Session,IDTable.OBJECT,AutoIDCounter);
+
         Session.close();
 
         AutoFillDB = false;
@@ -1651,7 +1658,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     PropertyObjectImplement addPropertyView(NavigatorForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
-        PropertyObjectImplement PropImpl = new PropertyObjectImplement(ListProp.Property);
+        PropertyObjectImplement PropImpl = new PropertyObjectImplement(ListProp.property);
 
         ListIterator<PropertyInterface> i = ListProp.ListInterfaces.listIterator();
         for(ObjectImplement Object : Params) {
@@ -1687,11 +1694,11 @@ class LP<T extends PropertyInterface,P extends Property<T>> {
     }
 
     LP(P iProperty, List<T> iListInterfaces) {
-        Property=iProperty;
+        property =iProperty;
         ListInterfaces = iListInterfaces;
     }
 
-    P Property;
+    P property;
     List<T> ListInterfaces;
 }
 
@@ -1702,7 +1709,7 @@ class LCP extends LP<DataPropertyInterface,ClassProperty> {
     void AddInterface(Class InClass) {
         DataPropertyInterface Interface = new DataPropertyInterface(ListInterfaces.size(),InClass);
         ListInterfaces.add(Interface);
-        Property.Interfaces.add(Interface);
+        property.Interfaces.add(Interface);
     }
 }
 
@@ -1713,7 +1720,7 @@ class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface,DataProp
     void AddInterface(Class InClass) {
         DataPropertyInterface Interface = new DataPropertyInterface(ListInterfaces.size(),InClass);
         ListInterfaces.add(Interface);
-        Property.Interfaces.add(Interface);
+        property.Interfaces.add(Interface);
     }
 
     void ChangeProperty(DataSession Session, Object Value, Integer... iParams) throws SQLException {
@@ -1725,7 +1732,7 @@ class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface,DataProp
             IntNum++;
         }
 
-        Property.changeProperty(Keys, Value, false, Session, null);
+        property.changeProperty(Keys, Value, false, Session, null);
     }
 
     void putNotNulls(Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls,Integer... iParams) {
@@ -1733,7 +1740,7 @@ class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface,DataProp
         for(Integer Interface : iParams)
             InterfaceNotNulls.add(ListInterfaces.get(Interface));
 
-        PropNotNulls.put(Property,InterfaceNotNulls);
+        PropNotNulls.put(property,InterfaceNotNulls);
     }
 }
 
@@ -1744,20 +1751,33 @@ class LSFP extends LP<StringFormulaPropertyInterface,StringFormulaProperty> {
         for(int i=0;i<ParamCount;i++) {
             StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(ListInterfaces.size());
             ListInterfaces.add(Interface);
-            Property.Interfaces.add(Interface);
+            property.Interfaces.add(Interface);
         }
     }
 }
 
-class LMFP extends LP<FormulaPropertyInterface,MultiplyFormulaProperty> {
+class LCFP extends LP<FormulaPropertyInterface,CompareFormulaProperty> {
 
-    LMFP(MultiplyFormulaProperty iProperty,int ParamCount) {
+    LCFP(CompareFormulaProperty iProperty) {
         super(iProperty);
-        for(int i=0;i<ParamCount;i++) {
-            FormulaPropertyInterface Interface = new FormulaPropertyInterface(ListInterfaces.size());
-            ListInterfaces.add(Interface);
-            Property.Interfaces.add(Interface);
-        }
+        ListInterfaces.add(property.Operator1);
+        ListInterfaces.add(property.Operator2);
+    }
+}
+
+class LNFP extends LP<FormulaPropertyInterface,NotNullFormulaProperty> {
+
+    LNFP(NotNullFormulaProperty iProperty) {
+        super(iProperty);
+        ListInterfaces.add(property.Property);
+    }
+}
+
+class LMFP extends LP<StringFormulaPropertyInterface,MultiplyFormulaProperty> {
+
+    LMFP(MultiplyFormulaProperty iProperty) {
+        super(iProperty);
+        ListInterfaces.addAll(property.Interfaces);
     }
 }
 
@@ -1765,11 +1785,11 @@ class LOFP extends LP<FormulaPropertyInterface,ObjectFormulaProperty> {
 
     LOFP(ObjectFormulaProperty iProperty,int BitCount) {
         super(iProperty);
-        ListInterfaces.add(Property.ObjectInterface);
+        ListInterfaces.add(property.ObjectInterface);
         for(int i=0;i<BitCount;i++) {
             FormulaPropertyInterface Interface = new FormulaPropertyInterface(ListInterfaces.size());
             ListInterfaces.add(Interface);
-            Property.Interfaces.add(Interface);
+            property.Interfaces.add(Interface);
         }
     }
 }
@@ -1781,7 +1801,7 @@ class LJP<T extends PropertyInterface> extends LP<JoinPropertyInterface,JoinProp
         for(int i=0;i<Objects;i++) {
             JoinPropertyInterface Interface = new JoinPropertyInterface(i);
             ListInterfaces.add(Interface);
-            Property.Interfaces.add(Interface);
+            property.Interfaces.add(Interface);
         }
     }
 }
@@ -1793,7 +1813,7 @@ class LUP extends LP<PropertyInterface,UnionProperty> {
         for(int i=0;i<Objects;i++) {
             JoinPropertyInterface Interface = new JoinPropertyInterface(i);
             ListInterfaces.add(Interface);
-            Property.Interfaces.add(Interface);
+            property.Interfaces.add(Interface);
         }
     }
 }
@@ -1809,7 +1829,7 @@ class LGP<T extends PropertyInterface> extends LP<GroupPropertyInterface<T>,Grou
     void AddInterface(PropertyInterfaceImplement<T> Implement) {
         GroupPropertyInterface<T> Interface = new GroupPropertyInterface<T>(ListInterfaces.size(),Implement);
         ListInterfaces.add(Interface);
-        Property.Interfaces.add(Interface);
+        property.Interfaces.add(Interface);
     }
 }
 

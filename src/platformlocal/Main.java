@@ -22,166 +22,30 @@ public class Main {
     static Layout Layout;
 
     static DataAdapter Adapter;
+    static DataSession Session = null;
 
     static boolean recreateDB = false;
-    public static Integer ForceSeed = -1;
+    public static Integer ForceSeed = -1; //1199; //3581
     public static boolean DebugFlag = false;
     static boolean ActivateCaches = true;
+    static boolean AllowNulls = false;
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter("testplat","localhost");
-//        return new MSSQLDataAdapter("testplat", "crush");
+//        return new MySQLDataAdapter("testplat","localhost");
+//          return new MSSQLDataAdapter();
     }
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-/*        DataAdapter Syntax = getDefault();
-
-        Table Table1 = new Table("table1");
-        KeyField Table1Key1 = new KeyField("key1",Type.Integer);
-        Table1.Keys.add(Table1Key1);
-        KeyField Table1Key2 = new KeyField("key2",Type.Integer);
-        Table1.Keys.add(Table1Key2);
-        PropertyField Table1Prop1 = new PropertyField("prop1",Type.Integer);
-        Table1.properties.add(Table1Prop1);
-        PropertyField Table1Prop2 = new PropertyField("prop2",Type.Integer);
-        Table1.properties.add(Table1Prop2);
-        PropertyField Table1Prop3 = new PropertyField("prop3",Type.Integer);
-        Table1.properties.add(Table1Prop3);
-        PropertyField Table1Prop4 = new PropertyField("prop4",Type.Integer);
-        Table1.properties.add(Table1Prop4);
-
-        Table Table2 = new Table("table2");
-        KeyField Table2Key1 = new KeyField("key1",Type.Integer);
-        Table2.Keys.add(Table2Key1);
-        PropertyField Table2Prop1 = new PropertyField("prop1",Type.Integer);
-        Table2.properties.add(Table2Prop1);
-        PropertyField Table2Prop2 = new PropertyField("prop2",Type.Integer);
-        Table2.properties.add(Table2Prop2);
-
-        Table Table3 = new Table("table3");
-        KeyField Table3Key1 = new KeyField("key1",Type.Integer);
-        Table3.Keys.add(Table3Key1);
-        KeyField Table3Key2 = new KeyField("key2",Type.Integer);
-        Table3.Keys.add(Table3Key2);
-        PropertyField Table3Prop1 = new PropertyField("prop1",Type.Integer);
-        Table3.properties.add(Table3Prop1);
-
-        Map<KeyField,KeyField> Map3To1 = new HashMap<KeyField, KeyField>();
-        Map3To1.put(Table3Key1,Table1Key1);
-        Map3To1.put(Table3Key2,Table1Key2);
-        
-        UnionQuery<KeyField,PropertyField> UnionQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
-
-        // 1-й запрос
-        JoinQuery<KeyField,PropertyField> JoinQuery = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
-        Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table2,true);
-        TableJoin.Joins.put(Table2Key1,JoinQuery.MapKeys.get(Table1Key1));
-        Map<KeyField, Integer> DumbMap = Collections.singletonMap(Table1Key2,5);
-        JoinQuery.putDumbJoin(DumbMap);
-        JoinQuery.add(Table2Prop1,TableJoin.Exprs.get(Table2Prop1));
-        JoinQuery.add(new FieldExprCompareWhere(TableJoin.Exprs.get(Table2Prop2),1,FieldExprCompareWhere.EQUALS));
-        UnionQ.add(JoinQuery,1);
-
-        UnionQ.add(Table1,1);
-
-        JoinQuery<KeyField,PropertyField> Join1Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
-        Join1Q.addAll((new UniJoin<KeyField,PropertyField>(UnionQ,Join1Q,true)).Exprs);
-        Join1Q.addAll((new MapJoin<KeyField,PropertyField,KeyField>(Table3,Map3To1,Join1Q,true)).Exprs);
-
-        JoinQuery<KeyField,PropertyField> Join2Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
-        Join2Q.addAll((new UniJoin<KeyField,PropertyField>(Table1,Join2Q,true)).Exprs);
-        Join2Q.addAll((new MapJoin<KeyField,PropertyField,KeyField>(Table3,Map3To1,Join2Q,true)).Exprs);
-
-        UnionQuery<KeyField,PropertyField> ResultQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
-        ResultQ.add(Join1Q,1);
-        ResultQ.add(Join2Q,1);
-  */
-/*        JoinQuery<KeyField,Object> JoinGroupQuery = new JoinQuery<KeyField,Object>(Table1.Keys);
-        Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery,true);
-        JoinGroupQuery.add(Table1Prop1,TableJoin.Exprs.get(Table1Prop1));
-        JoinGroupQuery.add(Table1Key1,JoinGroupQuery.MapKeys.get(Table1Key1));
-        GroupQuery<Object,KeyField,PropertyField> GroupQuery = new GroupQuery<Object,KeyField,PropertyField>(UnionKeys,JoinGroupQuery,Table1Prop1,1);
-        UnionQ.add(GroupQuery,2);
-
-        // 2-й запрс
-
-        JoinQuery<KeyField, PropertyField> JoinUnion = new JoinQuery<KeyField, PropertyField>(UnionKeys);
-
-        JoinQuery<KeyField,Object> JoinGroupQuery2 = new JoinQuery<KeyField,Object>(Table1.Keys);
-        Join<KeyField,PropertyField> TableJoin2 = new UniJoin<KeyField,PropertyField>(Table1,JoinGroupQuery2,true);
-        JoinGroupQuery2.add(Table1Prop2,TableJoin2.Exprs.get(Table1Prop2));
-        JoinGroupQuery2.add(Table1Key1,JoinGroupQuery2.MapKeys.get(Table1Key1));
-        List<KeyField> GroupKeys2 = new ArrayList();
-        GroupKeys2.add(Table1Key1);
-        GroupQuery<Object,KeyField,PropertyField> GroupQuery2 = new GroupQuery<Object,KeyField,PropertyField>(GroupKeys2,JoinGroupQuery2,Table1Prop2,1);
-
-        Join<KeyField,PropertyField> GroupJoin = new UniJoin<KeyField,PropertyField>(GroupQuery2,JoinUnion,true);
-        JoinUnion.add(Table1Prop1,GroupJoin.Exprs.get(Table1Prop2));
-
-        Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2,false);
-        Table2Join.Joins.put(Table2Key1,JoinUnion.MapKeys.get(Table1Key1));
-        JoinUnion.add(Table2Prop2,Table2Join.Exprs.get(Table2Prop2));
-
-        UnionQ.add(JoinUnion,-5);*/
-/*
-//        Join<KeyField,PropertyField> Table2Join = new UniJoin<KeyField,PropertyField>(Table1,Query,true);
-//        Query.properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
-        Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table1,false);
-        Table2Join.Joins.put(Table1Key1,Query.MapKeys.get(Table1Key2));
-        Table2Join.Joins.put(Table1Key2,Query.MapKeys.get(Table1Key1));
-        Query.properties.put(Table1Prop2,Table2Join.Wheres.get(Table1Prop2));
-
-//        Join<KeyField,PropertyField> Table3Join = new Join<KeyField,PropertyField>(Table1,true);
-//        Table3Join.Joins.put(Table1Key1,Query.MapKeys.get(Table1Key2));
-//        Table3Join.Joins.put(Table1Key2,Query.MapKeys.get(Table1Key1));
-//        Query.properties.put(Table1Prop3,Table3Join.Wheres.get(Table1Prop3));
-
-        Collection<String> SubKeys = new ArrayList();
-        SubKeys.add("zkey1");
-        SubKeys.add("zkey2");
-        UnionQuery<String,String> SubUnion = new UnionQuery<String,String>(SubKeys,3);
-
-        JoinQuery<String,String> SubQuery = SubUnion.newJoinQuery(1);
-        Join<KeyField,PropertyField> Table2Join1 = new Join<KeyField,PropertyField>(Table2,true);
-        Table2Join1.Joins.put(Table2Key1,SubQuery.MapKeys.get("zkey1"));
-        SubQuery.properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
-
-        Join<KeyField,PropertyField> Table2Join2 = new Join<KeyField,PropertyField>(Table1,true);
-        Table2Join2.Joins.put(Table1Key1,SubQuery.MapKeys.get("zkey1"));
-        Table2Join2.Joins.put(Table1Key2,SubQuery.MapKeys.get("zkey2"));
-        SubQuery.properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop3));
-//        SubQuery.Wheres.add(new FieldExprCompareWhere(Table2Join1.Wheres.get(Table2Prop1),11,0));
-//        SubQuery.Wheres.add(new FieldExprCompareWhere(SubQuery.MapKeys.get("zkey1"),11,0));
-
-        SubQuery = SubUnion.newJoinQuery(1);
-        Table2Join1 = new Join<KeyField,PropertyField>(Table2,true);
-        Table2Join1.Joins.put(Table2Key1,SubQuery.MapKeys.get("zkey1"));
-        SubQuery.properties.put("zprop1",Table2Join1.Wheres.get(Table2Prop2));
-
-        Table2Join2 = new Join<KeyField,PropertyField>(Table1,true);
-        Table2Join2.Joins.put(Table1Key1,SubQuery.MapKeys.get("zkey1"));
-        Table2Join2.Joins.put(Table1Key2,SubQuery.MapKeys.get("zkey2"));
-        SubQuery.properties.put("zprop2",Table2Join2.Wheres.get(Table1Prop2));
-//        SubQuery.Wheres.add(new FieldExprCompareWhere(SubQuery.MapKeys.get("zkey1"),11,0));
-
-        Join<String,String> SubJoin = new Join<String, String>(SubUnion,false);
-//        SubJoin.Joins.put("zkey1",TableJoin.Wheres.get(Table1Prop4));
-//        SubJoin.Joins.put("zkey2",TableJoin.Wheres.get(Table1Prop3));
-        SubJoin.Joins.put("zkey1",Query.MapKeys.get(Table1Key1));
-        SubJoin.Joins.put("zkey2",Query.MapKeys.get(Table1Key2));
-        Query.properties.put(Table1Prop4,SubJoin.Wheres.get("zprop2"));*/
-
-//        System.out.println((new ModifyQuery(Table1,ResultQ)).getInsertSelect(Syntax));
-//        System.out.println(Query.getSelect(new ArrayList(),new ArrayList(),Adapter));
-
+//        new SourceTest();
 //        if(1==1) return;
 
         if(ForceSeed==null || ForceSeed!=-1) {
             int a=1;
             while(a==1) {
                 System.out.println("Opened");
-                new TmcBusinessLogics(1);
+                new TmcBusinessLogics(2);
 //            System.out.println("Closed");
 //            try {
 //                new TestBusinessLogics(0);
@@ -197,7 +61,7 @@ public class Main {
         JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);
 
         Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query);
-        Query.Wheres.add(new JoinWhere(TableJoin));
+        Query.Wheres.add(new Where(TableJoin));
 
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2);
         Table2Join.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
@@ -214,7 +78,7 @@ public class Main {
 
         JoinQuery<KeyField,PropertyField> Query2 = Union.newJoinQuery(1);
         Join<KeyField,PropertyField> Q2TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query2);
-        Query2.Wheres.add(new JoinWhere(Q2TableJoin));
+        Query2.Wheres.add(new Where(Q2TableJoin));
 
         Query2.properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Q2TableJoin,Table1Prop1,false));
   */
@@ -342,8 +206,8 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ClassQuantity.put(PrihDocument,30);
         ClassQuantity.put(RashDocument,50);
 
-        PropQuantity.put((DataProperty)PrihQuantity.Property,10);
-        PropQuantity.put((DataProperty)RashQuantity.Property,3);
+        PropQuantity.put((DataProperty)PrihQuantity.property,10);
+        PropQuantity.put((DataProperty)RashQuantity.property,3);
 
         autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
 
@@ -458,7 +322,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
   */
     }
 
-    void InitGroups() {
+    void initGroups() {
 
     }
 
@@ -469,7 +333,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     Class PrihDocument;
     Class RashDocument;
 
-    void InitClasses() {
+    void initClasses() {
 
         Article = new ObjectClass(4, "Товар", objectClass);
         Store = new ObjectClass(5, "Склад", objectClass);
@@ -490,7 +354,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     LGP RashArtInt;
 
-    void InitProperties() {
+    void initProperties() {
 
         AbstractGroup groupArticleG = new AbstractGroup("Группа");
         AbstractGroup groupArticleA = new AbstractGroup("Атрибуты");
@@ -498,41 +362,41 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
         Name = addDProp("имя", Class.string, objectClass);
-        groupArticleA.add(Name.Property);
+        groupArticleA.add(Name.property);
 
         DocStore = addDProp("склад", Store, Document);
 
         PrihQuantity = addDProp("кол-во прих.", Class.integer, PrihDocument, Article);
-        PrihQuantity.Property.caption = "кол-во прих.";
+        PrihQuantity.property.caption = "кол-во прих.";
 
         RashQuantity = addDProp("кол-во расх.", Class.integer, RashDocument, Article);
 
         ArtToGroup = addDProp("гр. тов.", ArticleGroup, Article);
-        groupArticleG.add(ArtToGroup.Property);
+        groupArticleG.add(ArtToGroup.property);
 
         DocDate = addDProp("дата док.", Class.date, Document);
 
         GrAddV = addDProp("нац. по гр.", Class.integer, ArticleGroup);
 
         ArtAddV = addDProp("нац. перегр.", Class.integer, Article);
-        groupArticleC.add(ArtAddV.Property);
+        groupArticleC.add(ArtAddV.property);
 
         BarCode = addDProp("штрих-код", Class.doubleClass, Article);
-        groupArticleA.add(BarCode.Property);
+        groupArticleA.add(BarCode.property);
 
         Price = addDProp("цена", Class.longClass, Article);
-        groupArticleA.add(Price.Property);
+        groupArticleA.add(Price.property);
 
         ExpireDate = addDProp("срок годн.", Class.date, Article);
-        groupArticleA.add(ExpireDate.Property);
+        groupArticleA.add(ExpireDate.property);
 
         Weight = addDProp("вес.", Class.bit, Article);
-        groupArticleA.add(Weight.Property);
+        groupArticleA.add(Weight.property);
 
         LCP AbsQuantity = addCProp("абст. кол-во",null,Class.integer,Document,Article);
 
         LCP IsGrmat = addCProp("признак товара",0,Class.integer,Article);
-        groupArticleA.add(IsGrmat.Property);
+        groupArticleA.add(IsGrmat.property);
 
         FilledProperty = addUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
 
@@ -550,12 +414,12 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LJP RGrAddV = addJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
 
         LUP ArtActAddV = addUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
-        groupArticleC.add(ArtActAddV.Property);
+        groupArticleC.add(ArtActAddV.property);
 
 //        LJP Quantity = addUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
-        LSFP NotZero = addWSFProp("prm1<>0",1);
-        LSFP Less = addWSFProp("prm1<prm2",2);
+        LNFP NotZero = addNFProp();
+        LCFP Less = addCFProp(CompareWhere.LESS);
         LMFP Multiply = addMFProp(Class.integer,2);
         LMFP Multiply3 = addMFProp(Class.integer,3);
 
@@ -569,10 +433,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LJP InDoc = addJProp("товар в док.", NotZero,2,Quantity,1,2);
 
         LJP DDep = addJProp("предш. док.", Less,2,DocDate,1,DocDate,2);
-        DDep.Property.XL = true;
+        DDep.property.XL = true;
 
         LJP QDep = addJProp("изм. баланса", Multiply3,3,DDep,1,2,Quantity,1,3,InDoc,2,3);
-        QDep.Property.XL = true;
+        QDep.property.XL = true;
 
         GSum = addGProp("остаток до операции", QDep,true,2,3);
 
@@ -594,7 +458,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LGP ArtMaxQty = addGProp("макс. кол-во", Quantity,false,2);
 
-        LSFP BetweenDate = addWSFProp("prm1>=prm2 AND prm1<=prm3",3);
+/*        LSFP BetweenDate = addWSFProp("prm1>=prm2 AND prm1<=prm3",3);
         LJP DokBetweenDate = addJProp("документ в интервале", BetweenDate,3,DocDate,1,2,3);
 
         LJP RashBetweenDate = addJProp("расх. кол-во в интервале", Multiply,4,RashQuantity,2,1,DokBetweenDate,2,3,4);
@@ -602,10 +466,10 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         RashArtInt = addGProp("расход по товару", RashBetweenDate,true,1,3,4);
 
         ArtDateRash = addGProp("реал. за день", RashQuantity, true, DocDate, 1, 2);
-
+  */
     }
 
-    void InitConstraints() {
+    void initConstraints() {
 /*
         Constraints.put((Property)OstArtStore.Property,new PositiveConstraint());
         Constraints.put((Property)FilledProperty.Property,new NotEmptyConstraint());
@@ -613,52 +477,52 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 */
     }
 
-    void InitPersistents() {
+    void initPersistents() {
 
-        Persistents.add((AggregateProperty)GP.Property);
-        Persistents.add((AggregateProperty)GAP.Property);
-        Persistents.add((AggregateProperty)G2P.Property);
-        Persistents.add((AggregateProperty)GSum.Property);
+        persistents.add((AggregateProperty)GP.property);
+        persistents.add((AggregateProperty)GAP.property);
+        persistents.add((AggregateProperty)G2P.property);
+        persistents.add((AggregateProperty)GSum.property);
 //        Persistents.add((AggregateProperty)Quantity.Property);
-        Persistents.add((AggregateProperty)OstArtStore.Property);
-        Persistents.add((AggregateProperty)OstArt.Property);
-        Persistents.add((AggregateProperty)MaxPrih.Property);
-        Persistents.add((AggregateProperty)MaxOpStore.Property);
-        Persistents.add((AggregateProperty)SumMaxArt.Property);
-        Persistents.add((AggregateProperty)OpValue.Property);
+        persistents.add((AggregateProperty)OstArtStore.property);
+        persistents.add((AggregateProperty)OstArt.property);
+        persistents.add((AggregateProperty)MaxPrih.property);
+        persistents.add((AggregateProperty)MaxOpStore.property);
+        persistents.add((AggregateProperty)SumMaxArt.property);
+        persistents.add((AggregateProperty)OpValue.property);
     }
 
-    void InitTables() {
+    void initTables() {
         TableImplement Include;
 
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,Article));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,Store));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,ArticleGroup));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,Article));
         Include.add(new DataPropertyInterface(0,Document));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
         Include = new TableImplement();
         Include.add(new DataPropertyInterface(0,Article));
         Include.add(new DataPropertyInterface(0,Store));
-        TableFactory.IncludeIntoGraph(Include);
+        tableFactory.includeIntoGraph(Include);
     }
 
-    void InitIndexes() {
+    void initIndexes() {
 
         List indexBarCode = new ArrayList();
-        indexBarCode.add(BarCode.Property);
-        Indexes.add(indexBarCode);
+        indexBarCode.add(BarCode.property);
+        indexes.add(indexBarCode);
 
         List indexOstArtStore = new ArrayList();
-        indexOstArtStore.add(OstArtStore.Property);
-        Indexes.add(indexOstArtStore);
+        indexOstArtStore.add(OstArtStore.property);
+        indexes.add(indexOstArtStore);
 
     }
 
@@ -901,5 +765,157 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 //        formView.get(gv).singleViewType = true;
 
         richDesign = formView;
+    }
+}
+
+// тестирование Source'ов
+class SourceTest {
+
+    DataAdapter Syntax;
+
+    Table Table1;
+    KeyField Table1Key1;
+    KeyField Table1Key2;
+    PropertyField Table1Prop1;
+    PropertyField Table1Prop2;
+    PropertyField Table1Prop3;
+    PropertyField Table1Prop4;
+
+    Table Table2;
+    KeyField Table2Key1;
+    PropertyField Table2Prop1;
+    PropertyField Table2Prop2;
+
+    Table Table3;
+    KeyField Table3Key1;
+    KeyField Table3Key2;
+    PropertyField Table3Prop1;
+
+    Map<KeyField,KeyField> Map3To1;
+    Map<KeyField,KeyField> MapBack3To1;
+
+    SourceTest() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        Syntax = Main.getDefault();
+
+        // Table 1
+        Table1 = new Table("table1");
+        Table1Key1 = new KeyField("key1",Type.Integer);
+        Table1.Keys.add(Table1Key1);
+        Table1Key2 = new KeyField("key2",Type.Integer);
+        Table1.Keys.add(Table1Key2);
+        Table1Prop1 = new PropertyField("prop1",Type.Integer);
+        Table1.Properties.add(Table1Prop1);
+        Table1Prop2 = new PropertyField("prop2",Type.Integer);
+        Table1.Properties.add(Table1Prop2);
+        Table1Prop3 = new PropertyField("prop3",Type.Integer);
+        Table1.Properties.add(Table1Prop3);
+        Table1Prop4 = new PropertyField("prop4",Type.Integer);
+        Table1.Properties.add(Table1Prop4);
+
+        // Table 2
+        Table2 = new Table("table2");
+        Table2Key1 = new KeyField("key1",Type.Integer);
+        Table2.Keys.add(Table2Key1);
+        Table2Prop1 = new PropertyField("prop1",Type.Integer);
+        Table2.Properties.add(Table2Prop1);
+        Table2Prop2 = new PropertyField("prop2",Type.Integer);
+        Table2.Properties.add(Table2Prop2);
+
+        // Table 3
+        Table3 = new Table("table3");
+        Table3Key1 = new KeyField("key1",Type.Integer);
+        Table3.Keys.add(Table3Key1);
+        Table3Key2 = new KeyField("key2",Type.Integer);
+        Table3.Keys.add(Table3Key2);
+        Table3Prop1 = new PropertyField("prop1",Type.Integer);
+        Table3.Properties.add(Table3Prop1);
+
+        Map3To1 = new HashMap<KeyField, KeyField>();
+        Map3To1.put(Table3Key1,Table1Key1);
+        Map3To1.put(Table3Key2,Table1Key2);
+
+        MapBack3To1 = new HashMap<KeyField, KeyField>();
+        MapBack3To1.put(Table3Key1,Table1Key2);
+        MapBack3To1.put(Table3Key2,Table1Key1);
+
+        System.out.println(test3().getInsertSelect(Syntax));
+        System.out.println(test1().getInsertSelect(Syntax));
+        System.out.println(test2().getInsertSelect(Syntax));
+    }
+
+    // просто Union 1-й и 3-й таблицы
+    ModifyQuery test1() {
+        JoinQuery<KeyField,PropertyField> Join1Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField, PropertyField> Table11Q = new Join<KeyField, PropertyField>(Table1, Join1Q);
+        Join1Q.Properties.put(Table1Prop1, Table11Q.Exprs.get(Table1Prop1));
+        Join1Q.and(Table11Q.InJoin);
+
+        JoinQuery<KeyField,PropertyField> Join2Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField, PropertyField> Table32Q = new Join<KeyField, PropertyField>(Table3, Map3To1, Join2Q);
+        Join2Q.Properties.put(Table1Prop1, Table32Q.Exprs.get(Table3Prop1));
+        Join2Q.and(Table32Q.InJoin);
+
+        JoinQuery<KeyField,PropertyField> Join3Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField, PropertyField> Table33Q = new Join<KeyField, PropertyField>(Table3, Map3To1, Join3Q);
+        Join3Q.Properties.put(Table1Prop1, Table33Q.Exprs.get(Table3Prop1));
+        Join3Q.and(Table33Q.InJoin);
+
+        UnionQuery<KeyField,PropertyField> ResultQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
+        ResultQ.add(Join1Q,1);
+        ResultQ.add(Join2Q,1);
+        ResultQ.add(Join3Q,1);
+
+        return new ModifyQuery(Table1,ResultQ);
+    }
+
+    // просто 2-ю с первой и поле второй не null
+    ModifyQuery test3() {
+        JoinQuery<KeyField,PropertyField> Result = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField, PropertyField> Table1J = new Join<KeyField, PropertyField>(Table1, Result);
+
+        Join<KeyField, PropertyField> Table2J = new Join<KeyField, PropertyField>(Table2);
+        Table2J.Joins.put(Table2Key1, Table1J.Exprs.get(Table1Prop1));
+        Result.Properties.put(Table1Prop1, Table2J.Exprs.get(Table2Prop2));
+        Result.and(Table2J.Exprs.get(Table2Prop2).getWhere());
+
+        return new ModifyQuery(Table1,Result);
+    }
+
+    // 2 U(J(U(таблицы2 с prop2=1 и 2-м ключом таблицы1=5,таблица1),Table3),J(Table1,Table3))
+    // последний Join должен уйти
+    ModifyQuery test2() {
+        UnionQuery<KeyField,PropertyField> UnionQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,2);
+
+        // 1-й запрос
+        JoinQuery<KeyField,PropertyField> JoinQuery = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField,PropertyField> TableJoin = new Join<KeyField,PropertyField>(Table2);
+        TableJoin.Joins.put(Table2Key1,JoinQuery.MapKeys.get(Table1Key1));
+        JoinQuery.putKeyWhere(Collections.singletonMap(Table1Key2,5));
+        JoinQuery.Properties.put(Table2Prop1, TableJoin.Exprs.get(Table2Prop1));
+        JoinQuery.and(new CompareWhere(TableJoin.Exprs.get(Table2Prop2),new ValueExpr(1,Type.Integer),CompareWhere.EQUALS));
+        UnionQ.add(JoinQuery,1);
+
+        UnionQ.add(Table1,1);
+
+        JoinQuery<KeyField,PropertyField> Join1Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField, PropertyField> Union1Q = new Join<KeyField, PropertyField>(UnionQ, Join1Q);
+        Join1Q.Properties.putAll(Union1Q.Exprs);
+        Join1Q.and(Union1Q.InJoin);
+        Join<KeyField, PropertyField> Table31Q = new Join<KeyField, PropertyField>(Table3, Map3To1, Join1Q);
+        Join1Q.Properties.putAll(Table31Q.Exprs);
+
+/*        JoinQuery<KeyField,PropertyField> Join2Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
+        Join<KeyField, PropertyField> Table12Q = new Join<KeyField, PropertyField>(Table1, Join2Q);
+        Join2Q.addAll(Table12Q.Exprs);
+        Join2Q.add(Table12Q.InJoin);
+        Join<KeyField, PropertyField> Table32Q = new Join<KeyField, PropertyField>(Table3, Map3To1, Join2Q);
+        Join2Q.addAll(Table32Q.Exprs);
+        Join2Q.add(Table32Q.InJoin);
+
+        UnionQuery<KeyField,PropertyField> ResultQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);
+        ResultQ.add(Join1Q,1);
+        ResultQ.add(Join2Q,1);
+  */
+        return new ModifyQuery(Table1,Join1Q);
     }
 }

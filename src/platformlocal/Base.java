@@ -282,4 +282,18 @@ class BaseUtils {
 
         return obj;
     }
+
+    static <KA,VA,KB,VB> boolean mapEquals(Map<KA,VA> mapA,Map<KB,VB> mapB,Map<KA,KB> mapAB) {
+        for(Map.Entry<KA,VA> A : mapA.entrySet())
+            if(!mapB.get(mapAB.get(A.getKey())).equals(A.getValue()))
+                return false;    
+        return true;
+    }
+
+    static <K,E,V> Map<K,V> join(Map<K,E> map, Map<E,V> joinMap) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<K,E> entry : map.entrySet())
+            result.put(entry.getKey(),joinMap.get(entry.getValue()));
+        return result;
+    }
 }

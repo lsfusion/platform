@@ -146,7 +146,7 @@ abstract class Class extends AbstractNode {
     // получает классы у которого есть оба интерфейса
     Set<Class> commonChilds(Class ToCommon) {
         Set<Class> Result = null;
-        if(Main.ActivateCaches) CacheChilds.get(ToCommon);
+        if(Main.ActivateCaches) Result = CacheChilds.get(ToCommon);
         if(Result!=null) return Result;
         Result = new HashSet<Class>();
         CommonClassSet1(false);
@@ -335,7 +335,7 @@ class ObjectClass extends Class {
     ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
 
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
+        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).compile().executeSelect(Session, false).keySet());
         return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);
     }
 
@@ -389,6 +389,9 @@ abstract class Type<T> {
     abstract Object getMinValue();
     abstract String getEmptyString();
     abstract Object getEmptyValue();
+    ValueExpr getEmptyValueExpr() {
+        return new ValueExpr(0,this);
+    }
 
     static Type getObjectType(Object Value) {
         if(Value==null)
@@ -400,13 +403,15 @@ abstract class Type<T> {
             return String;
     }
 
-    SourceExpr getMinValueExpr() {
-        return new ValueSourceExpr(getMinValue(),this);
+    ValueExpr getMinValueExpr() {
+        return new ValueExpr(getMinValue(),this);
     }
 
     abstract public String getString(Object Value, SQLSyntax Syntax);
 
     abstract T read(Object Value);
+
+    abstract boolean greater(Object Value1,Object Value2);
 }
 
 class StringType extends Type<String> {
@@ -433,6 +438,10 @@ class StringType extends Type<String> {
 
     String read(Object Value) {
         return (String)Value;
+    }
+
+    boolean greater(Object Value1, Object Value2) {
+        throw new RuntimeException("Java не умеет сравнивать строки");
     }
 }
 
@@ -477,6 +486,10 @@ class IntegerType extends IntegralType<Integer> {
         else
             return (Integer)Value;
     }
+
+    boolean greater(Object Value1, Object Value2) {
+        return read(Value1)>read(Value2);
+    }
 }
 
 class LongType extends IntegralType<Long> {
@@ -504,6 +517,10 @@ class LongType extends IntegralType<Long> {
         else
             return (Long)Value;
     }
+
+    boolean greater(Object Value1, Object Value2) {
+        return read(Value1)>read(Value2);
+    }
 }
 
 class DoubleType extends IntegralType<Double> {
@@ -529,6 +546,10 @@ class DoubleType extends IntegralType<Double> {
             return ((Integer)Value).doubleValue();
         else
             return (Double)Value;
+    }
+
+    boolean greater(Object Value1, Object Value2) {
+        return read(Value1)>read(Value2);
     }
 }
 
@@ -564,6 +585,10 @@ class BitType extends IntegralType<Boolean> {
 
     public String getString(Object Value, SQLSyntax Syntax) {
         return Syntax.getBitString((Boolean)Value);
+    }
+
+    boolean greater(Object Value1, Object Value2) {
+        return read(Value1) && !read(Value2);
     }
 }
 
