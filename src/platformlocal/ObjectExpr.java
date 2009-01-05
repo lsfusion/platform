@@ -35,16 +35,16 @@ class KeyExpr<K> extends ObjectExpr implements QueryData {
     public <J extends Join> void fillJoins(List<J> Joins) {
     }
 
-    protected void fillAndJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    protected void fillAndJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
     }
 
     Type getType() {
         return Type.Object;
     }
 
-    // возвращает Where без следствий
-    Where getWhere() {
-        return new AndWhere();
+    // возвращает IntraWhere без следствий
+    IntraWhere getWhere() {
+        return new InnerWhere();
     }
 }
 
@@ -68,7 +68,7 @@ class NotNullWhere extends DataWhere {
         return Expr.toString() + " NOT_NULL";
     }
 
-    public Where translate(Translator Translator) {
+    public IntraWhere translate(Translator Translator) {
 
         SourceExpr TransExpr = Translator.translate(Expr);
 
@@ -82,7 +82,7 @@ class NotNullWhere extends DataWhere {
         Expr.fillJoins(Joins);
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    protected void fillDataJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
         Expr.fillAndJoinWheres(Joins,AndWhere);
     }
 
@@ -90,21 +90,21 @@ class NotNullWhere extends DataWhere {
         return Where==this || Expr.follow(Where);
     }
 
-    public Where getJoinWhere() {
+    public IntraWhere getJoinWhere() {
         return Expr.From.InJoin; // собсно ради этого все и делается
     }
 
-    public Where getNotJoinWhere() {
+    public IntraWhere getNotJoinWhere() {
 //        return super.getNotJoinWhere();
-        return new AndWhere();
+        return new InnerWhere();
     }
 
-    public Where copy() {
+    public IntraWhere copy() {
         return this;
     }
 
     // для кэша
-    public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
+    public boolean equals(IntraWhere Where, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
         return Where instanceof NotNullWhere && Expr.equals(((NotNullWhere)Where).Expr,MapExprs, MapWheres);
     }
 
@@ -116,7 +116,7 @@ class NotNullWhere extends DataWhere {
 class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     U Property;
     Join<J,U> From;
-    Where NotNull;
+    IntraWhere NotNull;
 
     JoinExpr(Join<J,U> iFrom,U iProperty) {
         From = iFrom;
@@ -132,7 +132,7 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
         return From;
     }
 
-    protected void fillAndJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    protected void fillAndJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
         Joins.add(this,AndWhere);
     }
 
@@ -149,8 +149,8 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
         return From.Source.getType(Property);
     }
 
-    // возвращает Where без следствий
-    Where getWhere() {
+    // возвращает IntraWhere без следствий
+    IntraWhere getWhere() {
         return NotNull;
     }
 
@@ -195,7 +195,7 @@ class ValueExpr extends ObjectExpr {
     public <J extends Join> void fillJoins(List<J> Joins) {
     }
 
-    protected void fillAndJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    protected void fillAndJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
     }
 
     Type getType() {
@@ -206,9 +206,9 @@ class ValueExpr extends ObjectExpr {
         return Object.Value==null;
     }
 
-    // возвращает Where без следствий
-    Where getWhere() {
-        return (Object.Value==null?new OrWhere():new AndWhere());
+    // возвращает IntraWhere без следствий
+    IntraWhere getWhere() {
+        return (Object.Value==null?new OuterWhere():new InnerWhere());
     }
 
     public boolean equals(Object o) {

@@ -42,7 +42,7 @@ class FormulaExpr extends AndExpr {
             Param.fillJoins(Joins);
     }
 
-    public void fillAndJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    public void fillAndJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
         for(SourceExpr Param : Params.values())
             Param.fillJoinWheres(Joins,AndWhere);
     }
@@ -76,11 +76,11 @@ class FormulaExpr extends AndExpr {
         return Result.getExpr();
     }
 
-    // возвращает Where без следствий
-    Where getWhere() {
-        Where Result = new AndWhere();
+    // возвращает IntraWhere без следствий
+    IntraWhere getWhere() {
+        IntraWhere Result = new InnerWhere();
         for(SourceExpr Param : Params.values())
-            Result = Result.and(Param.getWhere());
+            Result = Result.in(Param.getWhere());
         return Result;
     }
 

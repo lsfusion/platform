@@ -1,127 +1,127 @@
 package platformlocal;
 import java.util.*;
 
-interface Where extends SourceJoin {
+interface IntraWhere extends SourceJoin {
 
-    Where and(Where where);
-    Where not();
+    IntraWhere in(IntraWhere where);
+    IntraWhere not();
 
-    Where followFalse(OrWhere where);
-    Where translate(Translator translator);
+    IntraWhere followFalse(OuterWhere where);
+    IntraWhere translate(Translator translator);
 
     boolean isFalse();
     boolean isTrue();
 
     String getSource(Map<QueryData, String> joinAlias, SQLSyntax syntax);
-    OrWhere getOr();
+    OuterWhere getOr();
 
     boolean getValue(List<DataWhere> trueWheres);
 
-    Where andNot(Where where);
-    boolean means(Where where);
+    IntraWhere inNot(IntraWhere where);
+    boolean means(IntraWhere where);
 
     void fillData(Collection<DataWhere> wheres);
 
-    Where getJoinWhere();
+    IntraWhere getJoinWhere();
 
-    Where followTrue(AndWhere where);
+    IntraWhere followTrue(InnerWhere where);
 
-    Where reverseNot();
+    IntraWhere reverseNot();
 
-    Where copy();
+    IntraWhere copy();
 
     // для кэша
-    boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres);
+    boolean equals(IntraWhere where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres);
 
     int hash();
 }
 
-class OrWhere extends ArrayList<AndWhere> implements Where {
+class OuterWhere extends ArrayList<InnerWhere> implements IntraWhere {
 
     // ------------------- конструкторы ------------------------ //
 
-    OrWhere() {
+    OuterWhere() {
     }
 
-    OrWhere(ObjectWhere Where) {
-        this(new AndWhere(Where));
+    OuterWhere(ObjectWhere Where) {
+        this(new InnerWhere(Where));
     }
 
-    OrWhere(AndWhere where) {
+    OuterWhere(InnerWhere where) {
         super(Collections.singleton(where));
     }
 
-    OrWhere(ArrayList<AndWhere> iNodes) {
+    OuterWhere(ArrayList<InnerWhere> iNodes) {
         super(iNodes);
     }
 
-    OrWhere(Set<AndWhere> iNodes) {
+    OuterWhere(Set<InnerWhere> iNodes) {
         super(iNodes);
     }
 
     // ------------------- Реализация or ------------------------ //
 
-    void or(Where where) {
+    void out(IntraWhere where) {
 
         int firstSize = size();
 
-        if(where instanceof AndWhere) {
-            if (((AndWhere)where).size() == 0) { clear(); add((AndWhere)where); return; }
-            or((AndWhere)where);
+        if(where instanceof InnerWhere) {
+            if (((InnerWhere)where).size() == 0) { clear(); add((InnerWhere)where); return; }
+            out((InnerWhere)where);
         } else
-        if(where instanceof OrWhere) {
-            if (((OrWhere)where).size() == 0) return;
-            or((OrWhere)where);
+        if(where instanceof OuterWhere) {
+            if (((OuterWhere)where).size() == 0) return;
+            out((OuterWhere)where);
         } else
-            or(new AndWhere((ObjectWhere) where));
+            out(new InnerWhere((ObjectWhere) where));
 
         simplify(firstSize, size(), false);
     }
 
-    private void or(AndWhere where) {
+    private void out(InnerWhere where) {
         add(where);
     }
 
-    private void or(OrWhere where) {
+    private void out(OuterWhere where) {
         addAll(where);
     }
 
-    // ------------------- Реализация and ------------------------ //
+    // ------------------- Реализация in ------------------------ //
 
-    public Where and(Where where) {
+    public IntraWhere in(IntraWhere where) {
 
-        OrWhere result;
-        if(where instanceof AndWhere) {
-            if (((AndWhere)where).size() == 0) return new OrWhere(this);
-            result = and((AndWhere)where);
+        OuterWhere result;
+        if(where instanceof InnerWhere) {
+            if (((InnerWhere)where).size() == 0) return new OuterWhere(this);
+            result = in((InnerWhere)where);
         } else
-        if(where instanceof OrWhere) {
-            if (((OrWhere)where).size() == 0) return new OrWhere(); 
-            result = and((OrWhere)where);
+        if(where instanceof OuterWhere) {
+            if (((OuterWhere)where).size() == 0) return new OuterWhere();
+            result = in((OuterWhere)where);
         } else
-            result = and(new AndWhere((ObjectWhere)where));
+            result = in(new InnerWhere((ObjectWhere)where));
 
         result.simplify();
 
         return result;
     }
 
-    private OrWhere and(OrWhere where) {
+    private OuterWhere in(OuterWhere where) {
 
-        OrWhere result = new OrWhere();
-        for (AndWhere andWhere : where)
-            result.or(and(andWhere) );
+        OuterWhere result = new OuterWhere();
+        for (InnerWhere innerWhere : where)
+            result.out(in(innerWhere) );
 
         return result;
     }
 
-    private OrWhere and(AndWhere where) {
+    private OuterWhere in(InnerWhere where) {
 
-        OrWhere result = new OrWhere();
-        for (AndWhere andWhere : this) {
-            Where andResult = andWhere.and(where);
-            if (andResult instanceof AndWhere)
-                result.or((AndWhere)andResult);
+        OuterWhere result = new OuterWhere();
+        for (InnerWhere innerWhere : this) {
+            IntraWhere inResult = innerWhere.in(where);
+            if (inResult instanceof InnerWhere)
+                result.out((InnerWhere)inResult);
         }
 
         return result;
@@ -129,35 +129,35 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
     // ------------------- Реализация not ------------------------ //
 
-    public Where not() {
+    public IntraWhere not() {
 
-        OrWhere result = new OrWhere(new AndWhere());
-        for(AndWhere andWhere : this)
-            result = result.and(andWhere.not());
+        OuterWhere result = new OuterWhere(new InnerWhere());
+        for(InnerWhere innerWhere : this)
+            result = result.in(innerWhere.not());
 
         result.simplify();
         return result;
     }
 
-    public Where followFalse(OrWhere where) {
+    public IntraWhere followFalse(OuterWhere where) {
 
         int firstSize = size();
-        OrWhere orWhere = new OrWhere(this);
-        orWhere.or(where);
-        orWhere.simplify(firstSize, orWhere.size(), true);
+        OuterWhere outerWhere = new OuterWhere(this);
+        outerWhere.out(where);
+        outerWhere.simplify(firstSize, outerWhere.size(), true);
 
-        for (AndWhere andWhere : where)
-            orWhere.remove(andWhere);
+        for (InnerWhere innerWhere : where)
+            outerWhere.remove(innerWhere);
 
-//        orWhere.simplify();
-        return orWhere;
+//        outerWhere.simplify();
+        return outerWhere;
     }
 
     void simplifyFull() {
         simplifyBuildDNF();
         simplifyConcatenate();
         simplifyRemoveRedundant();
-        simplifyAndWheres();
+        simplifyInWheres();
         simplifyMatrix();
     }
 
@@ -183,7 +183,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         for (int i1 = 0; i1 < size(); i1++)
             if (!redundant[i1]) {
-                AndWhere where1 = get(i1);
+                InnerWhere where1 = get(i1);
                 if (keepSecond && i1 >= firstIndex && i1 < secondIndex) continue;
                 for (int i2 = 0; i2 < size(); i2++)
                     if (i1 != i2 && !redundant[i2]) {
@@ -192,7 +192,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
                         } else {
                             if (i1 < secondIndex && i2 >= firstIndex && i2 < secondIndex) continue;
                         }
-                        AndWhere where2 = get(i2);
+                        InnerWhere where2 = get(i2);
                         if (where1.follow(where2)) {
                             redundant[i1] = true;
                             redCount++;
@@ -203,7 +203,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         if (redCount == 0) return;
 
-        AndWhere[] newWheres = new AndWhere[size() - redCount];
+        InnerWhere[] newWheres = new InnerWhere[size() - redCount];
         int j = 0;
         for (int i = 0; i < size(); i++)
             if (!redundant[i]) newWheres[j++] = get(i);
@@ -223,7 +223,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         for (int i1 = 0; i1 < size(); i1++) {
             if (!redundant.get(i1)) {
-                AndWhere where1 = get(i1);
+                InnerWhere where1 = get(i1);
                 for (int i2 = i1+1; i2 < size(); i2++) {
                     if (!redundant.get(i2)) {
                         if (i1 < firstIndex) {
@@ -231,8 +231,8 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
                         } else {
                             if (i1 < secondIndex && i2 >= firstIndex && i2 < secondIndex) continue;
                         }
-                        AndWhere where2 = get(i2);
-                        AndWhere concat = where1.concatenate(where2);
+                        InnerWhere where2 = get(i2);
+                        InnerWhere concat = where1.concatenate(where2);
                         if (concat != null) {
                             if (concat.size() == 0) { clear(); add(concat); return; }
                             add(concat);
@@ -247,7 +247,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         if (redCount == 0) return;
 
-        AndWhere[] newWheres = new AndWhere[size() - redCount];
+        InnerWhere[] newWheres = new InnerWhere[size() - redCount];
         int j = 0;
         for (int i = 0; i < size(); i++)
             if (!redundant.get(i)) newWheres[j++] = get(i);
@@ -265,7 +265,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
         if (size() == 0) return;
 
         int maxSize = 0;
-        for (AndWhere where : this) {
+        for (InnerWhere where : this) {
             if (where.size() > maxSize) maxSize = where.size();
             // проверка, что .T.
             if (where.size() == 0) { clear(); add(where); return; }
@@ -273,7 +273,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
 //        System.out.println("concat started " + size());
 
-        ArrayList<AndWhere>[] wheres = new ArrayList[maxSize];
+        ArrayList<InnerWhere>[] wheres = new ArrayList[maxSize];
         int[] firstIndexes = new int[maxSize];
         int[] secondIndexes = new int[maxSize];
 
@@ -282,10 +282,10 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
         }
 
         for (int i = 0; i < size(); i++) {
-            AndWhere where = get(i);
+            InnerWhere where = get(i);
             int rowNum = where.size() - 1;
 
-            Collection<AndWhere> rowWhere = wheres[rowNum];
+            Collection<InnerWhere> rowWhere = wheres[rowNum];
             rowWhere.add(where);
 
             if (i < firstIndex) {
@@ -298,13 +298,13 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         }
 
-        Set<AndWhere> wasWheres = new HashSet(this);
+        Set<InnerWhere> wasWheres = new HashSet(this);
 
         for (int whereSize = maxSize-1; whereSize >= 0; whereSize--) {
 
-            ArrayList<AndWhere> rowWhere = wheres[whereSize];
+            ArrayList<InnerWhere> rowWhere = wheres[whereSize];
             for (int i1 = 0; i1 < rowWhere.size(); i1++) {
-                AndWhere where1 = rowWhere.get(i1);
+                InnerWhere where1 = rowWhere.get(i1);
                 for (int i2 = i1+1; i2 < rowWhere.size(); i2++) {
 
                     if (i1 < firstIndexes[whereSize]) {
@@ -313,8 +313,8 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
                         if (i1 < secondIndexes[whereSize] && i2 >= firstIndexes[whereSize] && i2 < secondIndexes[whereSize]) continue;
                     }
 
-                    AndWhere where2 = rowWhere.get(i2);
-                    AndWhere concat = where1.concatenate(where2);
+                    InnerWhere where2 = rowWhere.get(i2);
+                    InnerWhere concat = where1.concatenate(where2);
                     if (concat != null && !wasWheres.contains(concat)) {
                         add(concat);
                         wasWheres.add(concat);
@@ -329,7 +329,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 //        System.out.println("concat ended " + size());
     }
 
-    boolean simplifyConglutinate(Collection<AndWhere> secondaryWheres) {
+    boolean simplifyConglutinate(Collection<InnerWhere> secondaryWheres) {
 
         int startSize = size();
 //        System.out.println("conglut started " + size());
@@ -342,15 +342,15 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         for (int i1 = 0; i1 < size(); i1++) {
             if (!redundant.get(i1)) {
-                AndWhere where1 = get(i1);
+                InnerWhere where1 = get(i1);
                 if (where1.size() == 1 || where1.size() == 2) {
                     for (int i2 = 0; i2 < size(); i2++) {
                         if (!redundant.get(i2)) {
-                            AndWhere where2 = get(i2);
+                            InnerWhere where2 = get(i2);
                             if (where1 != where2 && !BaseUtils.findByReference(secondaryWheres, where2)) {
 
                                 if (where1.size() == 1) {
-                                    AndWhere congl = where1.conglutinate(where2);
+                                    InnerWhere congl = where1.conglutinate(where2);
                                     if (congl != null) {
                                         redundant.set(i2, true);
                                         redCount++;
@@ -361,9 +361,9 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
                                 if (where1.size() == 2) {
                                     for (int i3 = 0; i3 < size(); i3++) {
-                                        AndWhere where3 = get(i3);
+                                        InnerWhere where3 = get(i3);
                                         if (!redundant.get(i3) && where3 != where1 && where3 != where2) {
-                                            AndWhere congl2 = where1.conglutinate(where2, where3);
+                                            InnerWhere congl2 = where1.conglutinate(where2, where3);
                                             if (congl2 != null) {
                                                 redundant.set(i2, true);
                                                 redundant.set(i3, true);
@@ -383,7 +383,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         if (redCount == 0) return false;
 
-        AndWhere[] newWheres = new AndWhere[size() - redCount];
+        InnerWhere[] newWheres = new InnerWhere[size() - redCount];
         int j = 0;
         for (int i = 0; i < size(); i++)
             if (!redundant.get(i)) newWheres[j++] = get(i);
@@ -404,31 +404,31 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
         Set<Set<ObjectWhere>> resultWhere = new HashSet();
 
-        for (AndWhere where : this) {
+        for (InnerWhere where : this) {
 
             Set<DataWhere> dataWheres = new HashSet(allDataWheres);
             for (ObjectWhere objWhere : where)
                 dataWheres.remove(objWhere.getDataWhere());
 
-            Collection<AndWhere> curWheres = Collections.singleton(new AndWhere(where)); // надо именно так делать, иначе цикл будет менять where
+            Collection<InnerWhere> curWheres = Collections.singleton(new InnerWhere(where)); // надо именно так делать, иначе цикл будет менять where
 
             for (ObjectWhere objWhere : dataWheres) {
 
-                Collection<AndWhere> newWheres = new ArrayList();
+                Collection<InnerWhere> newWheres = new ArrayList();
 
-                for (AndWhere curWhere : curWheres) {
+                for (InnerWhere curWhere : curWheres) {
 
                     boolean follows = false, followed = false;
                     for (ObjectWhere objCurWhere : curWhere) {
                         if (objCurWhere instanceof DataWhere && objCurWhere.getDataWhere().follow(objWhere.getDataWhere()))
                             follows = true;
-                        if (objCurWhere instanceof NotWhere && objWhere.getDataWhere().follow(objCurWhere.getDataWhere()))
+                        if (objCurWhere instanceof NotDataWhere && objWhere.getDataWhere().follow(objCurWhere.getDataWhere()))
                             followed = true;
                         if (follows && followed) break;
                     }
 
                     if (!follows) {
-                        AndWhere newWhere = new AndWhere(curWhere);
+                        InnerWhere newWhere = new InnerWhere(curWhere);
                         newWhere.add((ObjectWhere)objWhere.not());
                         newWheres.add(newWhere);
                     }
@@ -442,23 +442,23 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
                 curWheres = newWheres;
             }
 
-            for (AndWhere curWhere : curWheres) {
+            for (InnerWhere curWhere : curWheres) {
                 resultWhere.add(new HashSet(curWhere));
             }
         }
 
         clear();
 
-        for (Set<ObjectWhere> andWhere : resultWhere) {
-            add(new AndWhere(andWhere));
+        for (Set<ObjectWhere> inWhere : resultWhere) {
+            add(new InnerWhere(inWhere));
         }
 
 //        System.out.println("bdnf ended " + size());
     }
 
-    void simplifyAndWheres() {
+    void simplifyInWheres() {
 
-        for (AndWhere where : this)
+        for (InnerWhere where : this)
             where.simplify();
     }
 
@@ -476,7 +476,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
             if (getValue(value))
                 trueValues.add(value);
 
-        Collection<AndWhere> bestWheres = calculateMinimumAndWheres(trueValues, 0, new ArrayList(), new HashSet());
+        Collection<InnerWhere> bestWheres = calculateMinimumInWheres(trueValues, 0, new ArrayList(), new HashSet());
 
         if (bestWheres.size() < size()) {
             clear();
@@ -486,14 +486,14 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 //        System.out.println("matrix ended " + size());
     }
 
-    private Collection<AndWhere> calculateMinimumAndWheres(Collection<List<DataWhere>> values, int index, Collection<AndWhere> currentWheres, Set<List<DataWhere>> currentValues) {
+    private Collection<InnerWhere> calculateMinimumInWheres(Collection<List<DataWhere>> values, int index, Collection<InnerWhere> currentWheres, Set<List<DataWhere>> currentValues) {
 
         if (currentValues.size() >= values.size()) return new ArrayList(currentWheres);
         if (index == size()) return null;
 
-        Collection<AndWhere> bestWhere = calculateMinimumAndWheres(values, index+1, currentWheres, currentValues);
+        Collection<InnerWhere> bestWhere = calculateMinimumInWheres(values, index+1, currentWheres, currentValues);
 
-        AndWhere currentWhere = get(index);
+        InnerWhere currentWhere = get(index);
         Set<List<DataWhere>> newValues = new HashSet(currentValues);
         for (List<DataWhere> value : values) {
             if (currentWhere.getValue(value))
@@ -501,7 +501,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
         }
 
         currentWheres.add(currentWhere);
-        Collection<AndWhere> resultWhere = calculateMinimumAndWheres(values, index+1, currentWheres, newValues);
+        Collection<InnerWhere> resultWhere = calculateMinimumInWheres(values, index+1, currentWheres, newValues);
         currentWheres.remove(currentWhere);
 
         if (bestWhere == null || resultWhere.size() < bestWhere.size()) bestWhere = resultWhere;
@@ -549,12 +549,12 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
     // ------------------- Реализация translate ------------------------ //
 
-    public Where translate(Translator translator) {
-        // сначала транслируем AndWhere
-        Collection<Where> transWheres = new ArrayList<Where>();
+    public IntraWhere translate(Translator translator) {
+        // сначала транслируем InnerWhere
+        Collection<IntraWhere> transWheres = new ArrayList<IntraWhere>();
         boolean changedWheres = false;
-        for(AndWhere where : this) {
-            Where transWhere = translator.translate(where);
+        for(InnerWhere where : this) {
+            IntraWhere transWhere = translator.translate(where);
             transWheres.add(transWhere);
             changedWheres = changedWheres || (transWhere!=where);
         }
@@ -562,10 +562,10 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
         if(!changedWheres)
             return this;
 
-        OrWhere transOr = new OrWhere();
-        for(Where where : transWheres)
-            transOr.or(where);
-        return transOr;
+        OuterWhere transOuter = new OuterWhere();
+        for(IntraWhere where : transWheres)
+            transOuter.out(where);
+        return transOuter;
     }
 
     // ------------------- Реализация вспомогательных  интерфейсов ------------------------ //
@@ -588,7 +588,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
             return iterator().next().getSource(QueryData, syntax);
 
         String source = "";
-        for(AndWhere where : this)
+        for(InnerWhere where : this)
             source = (source.length()==0?"":source+" OR ") + "(" + where.getSource(QueryData, syntax) + ")";
         return source;
     }
@@ -601,125 +601,125 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
             return iterator().next().toString();
 
         String source = "";
-        for(AndWhere where : this)
+        for(InnerWhere where : this)
             source = (source.length()==0?"":source+" OR ") + "(" + where.toString() + ")";
         return source;
     }
 
-    public OrWhere getOr() {
+    public OuterWhere getOr() {
         return this;
     }
 
     // -------------------- Всякие другие методы ------------------------- //
 
     public <J extends Join> void fillJoins(List<J> joins) {
-        for(AndWhere where : this)
+        for(InnerWhere where : this)
             where.fillJoins(joins);
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        for(AndWhere where : this)
-            where.fillJoinWheres(joins,andWhere);
+    public void fillJoinWheres(MapWhere<JoinData> joins, IntraWhere inWhere) {
+        for(InnerWhere where : this)
+            where.fillJoinWheres(joins, inWhere);
     }
 
     public boolean getValue(List<DataWhere> trueWheres) {
 
         boolean result = false;
-        for (AndWhere where : this) {
+        for (InnerWhere where : this) {
             result |= where.getValue(trueWheres);
         }
 
         return result;
     }
 
-    public Where andNot(Where where) {
-        if(where instanceof AndWhere)
-            return andNot(new OrWhere((AndWhere)where));
+    public IntraWhere inNot(IntraWhere where) {
+        if(where instanceof InnerWhere)
+            return inNot(new OuterWhere((InnerWhere)where));
         else
-        if(where instanceof OrWhere)
-            return andNot((OrWhere)where);
+        if(where instanceof OuterWhere)
+            return inNot((OuterWhere)where);
         else
-            return andNot(new AndWhere((ObjectWhere)where));
+            return inNot(new InnerWhere((ObjectWhere)where));
     }
 
-    public Where andNot(OrWhere where) {
+    public IntraWhere inNot(OuterWhere where) {
 
-        if (where.size() == 0) return new OrWhere(this);
+        if (where.size() == 0) return new OuterWhere(this);
 
-        Set<AndWhere> resultSet = new HashSet();
-        for (AndWhere whereFrom : this) {
-            andNot(new AndWhere(whereFrom), where, 0, resultSet);
+        Set<InnerWhere> resultSet = new HashSet();
+        for (InnerWhere whereFrom : this) {
+            inNot(new InnerWhere(whereFrom), where, 0, resultSet);
         }
 
-        OrWhere resultWhere = new OrWhere(resultSet);
+        OuterWhere resultWhere = new OuterWhere(resultSet);
         // если не делать removeRedundant до их будет вообще дофига
         resultWhere.simplifyRemoveRedundant();
         resultWhere.simplify();
         return resultWhere;
     }
 
-    private void andNot(AndWhere whereFrom, OrWhere where, int index, Set<AndWhere> resultWhere) {
+    private void inNot(InnerWhere whereFrom, OuterWhere where, int index, Set<InnerWhere> resultWhere) {
 
         if (index >= where.size()) {
             resultWhere.add(whereFrom);
             return;
         }
 
-        AndWhere whereTo = where.get(index);
+        InnerWhere whereTo = where.get(index);
         for (ObjectWhere objWhere : whereTo) {
-            Where newWhere = whereFrom.and(objWhere.not());
+            IntraWhere newWhere = whereFrom.in(objWhere.not());
             if (newWhere.isFalse()) continue;
-            andNot((AndWhere)newWhere, where, index+1, resultWhere);
+            inNot((InnerWhere)newWhere, where, index+1, resultWhere);
         }
     }
 
-    public boolean means(Where where) {
-        if(where instanceof AndWhere)
-            return means(new OrWhere((AndWhere)where));
+    public boolean means(IntraWhere where) {
+        if(where instanceof InnerWhere)
+            return means(new OuterWhere((InnerWhere)where));
         else
-        if(where instanceof OrWhere)
-            return means((OrWhere)where);
+        if(where instanceof OuterWhere)
+            return means((OuterWhere)where);
         else
-            return means(new AndWhere((ObjectWhere)where));
+            return means(new InnerWhere((ObjectWhere)where));
     }
 
-    public boolean means(OrWhere where) {
+    public boolean means(OuterWhere where) {
 
         if(where.size() == 0) return isFalse();
 
-        for (AndWhere whereFrom : this) {
-            if (meansNot(new AndWhere(whereFrom), where, 0)) return false;
+        for (InnerWhere whereFrom : this) {
+            if (meansNot(new InnerWhere(whereFrom), where, 0)) return false;
         }
 
         return true;
     }
 
-    private boolean meansNot(AndWhere whereFrom, OrWhere where, int index) {
+    private boolean meansNot(InnerWhere whereFrom, OuterWhere where, int index) {
 
         if (index >= where.size()) return !whereFrom.isFalse();
 
-        AndWhere whereTo = where.get(index);
+        InnerWhere whereTo = where.get(index);
         for (ObjectWhere objWhere : whereTo) {
-            Where newWhere = whereFrom.and(objWhere.not());
+            IntraWhere newWhere = whereFrom.in(objWhere.not());
             if (newWhere.isFalse()) continue;
-            if (meansNot((AndWhere)newWhere, where, index+1)) return true;
+            if (meansNot((InnerWhere)newWhere, where, index+1)) return true;
         }
 
         return false;
     }
 
     // преобразует ДНФ not'ом в КНФ
-    public Where reverseNot() {
-        OrWhere result = new OrWhere();
-        for(AndWhere where : this)
-            result.add((AndWhere) where.reverseNot());
+    public IntraWhere reverseNot() {
+        OuterWhere result = new OuterWhere();
+        for(InnerWhere where : this)
+            result.add((InnerWhere) where.reverseNot());
         return result;
     }
 
     // для оптимизации
     int getComplexity() {
         int complexity = 0;
-        for(AndWhere where : this)
+        for(InnerWhere where : this)
             complexity += where.size();
         return complexity;
     }
@@ -730,25 +730,25 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
     }
 
     public void fillData(Collection<DataWhere> wheres) {
-        for(AndWhere where : this)
+        for(InnerWhere where : this)
             where.fillData(wheres);
     }
 
-    public Where getJoinWhere() {
-        OrWhere result = new OrWhere();
-        for(AndWhere where : this)
-            result.or(where.getJoinWhere());
+    public IntraWhere getJoinWhere() {
+        OuterWhere result = new OuterWhere();
+        for(InnerWhere where : this)
+            result.out(where.getJoinWhere());
         return result;
     }
 
-    public Where followTrue(AndWhere where) {
+    public IntraWhere followTrue(InnerWhere where) {
         return this;
     }
 
-    public Where copy() {
-        OrWhere Result = new OrWhere();
-        for(AndWhere where : this)
-            Result.add((AndWhere) where.copy());
+    public IntraWhere copy() {
+        OuterWhere Result = new OuterWhere();
+        for(InnerWhere where : this)
+            Result.add((InnerWhere) where.copy());
         return Result;
     }
 
@@ -761,24 +761,24 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return where instanceof OrWhere && equals(this,(OrWhere)where, mapExprs, mapWheres);
+    public boolean equals(IntraWhere where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+        return where instanceof OuterWhere && equals(this,(OuterWhere)where, mapExprs, mapWheres);
     }
 
     public int hash() {
         return hash(this,5);
     }
 
-    static <T extends Where> boolean equals(Collection<T> w1, Collection<T> w2, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    static <T extends IntraWhere> boolean equals(Collection<T> w1, Collection<T> w2, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
 
         if(w1.size()!=w2.size()) return false;
 
         Collection<T> mapped = new ArrayList<T>();
-        for(T andWhere : w1) {
+        for(T inWhere : w1) {
             T mappedWhere = null;
-            for(T andEqualWhere : w2)
-                if(!mapped.contains(andEqualWhere) && andEqualWhere.equals(andWhere,mapExprs, mapWheres)) {
-                    mappedWhere = andEqualWhere;}
+            for(T inEqualWhere : w2)
+                if(!mapped.contains(inEqualWhere) && inEqualWhere.equals(inWhere,mapExprs, mapWheres)) {
+                    mappedWhere = inEqualWhere;}
             if(mappedWhere==null) return false;
             mapped.add(mappedWhere);
         }
@@ -786,7 +786,7 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
         return true;
     }
 
-    static <T extends Where> int hash(Collection<T> wheres, int Hash) {
+    static <T extends IntraWhere> int hash(Collection<T> wheres, int Hash) {
         for(T where : wheres)
             Hash += where.hash();
         return Hash;
@@ -794,33 +794,33 @@ class OrWhere extends ArrayList<AndWhere> implements Where {
 
 }
 
-class AndWhere extends ArrayList<ObjectWhere> implements Where {
+class InnerWhere extends ArrayList<ObjectWhere> implements IntraWhere {
 
     // ------------------- конструкторы ------------------------ //
 
-    AndWhere() {
+    InnerWhere() {
     }
 
-    AndWhere(ObjectWhere where) {
+    InnerWhere(ObjectWhere where) {
         super(Collections.singleton(where));
     }
 
-    AndWhere(AndWhere where) {
+    InnerWhere(InnerWhere where) {
         super(where);
     }
 
-    AndWhere(Set<ObjectWhere> where) {
+    InnerWhere(Set<ObjectWhere> where) {
         super(where);
     }
 
-    boolean follow(AndWhere where) {
+    boolean follow(InnerWhere where) {
 
         for (ObjectWhere objWhereTo : where) {
 
             boolean follows = false;
             for (ObjectWhere objWhereFrom : this) {
                 if ((objWhereTo instanceof DataWhere && objWhereFrom instanceof DataWhere && objWhereFrom.getDataWhere().follow(objWhereTo.getDataWhere())) ||
-                    (objWhereTo instanceof NotWhere && objWhereFrom instanceof NotWhere && objWhereTo.getDataWhere().follow(objWhereFrom.getDataWhere()))) {
+                    (objWhereTo instanceof NotDataWhere && objWhereFrom instanceof NotDataWhere && objWhereTo.getDataWhere().follow(objWhereFrom.getDataWhere()))) {
                     follows = true;
                     break;
                 }
@@ -834,7 +834,7 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return true;
     }
 
-    AndWhere concatenate(AndWhere where) {
+    InnerWhere concatenate(InnerWhere where) {
 
         if (where.size() != size()) return null;
 
@@ -844,15 +844,15 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         ObjectWhere objWhereTo = getDifferentObjectWhere(where, this);
         if (objWhereTo == null) return null;
 
-        if (objWhereFrom instanceof NotWhere && objWhereTo instanceof DataWhere) {
+        if (objWhereFrom instanceof NotDataWhere && objWhereTo instanceof DataWhere) {
             if (!objWhereFrom.getDataWhere().follow(objWhereTo.getDataWhere())) return null;
         } else {
-            if (objWhereFrom instanceof DataWhere && objWhereTo instanceof NotWhere) {
+            if (objWhereFrom instanceof DataWhere && objWhereTo instanceof NotDataWhere) {
                 if (!objWhereTo.getDataWhere().follow(objWhereFrom.getDataWhere())) return null;
             } else return null;
         }
 
-        AndWhere concat = new AndWhere();
+        InnerWhere concat = new InnerWhere();
         for (ObjectWhere objWhere : this)
             if (objWhere != objWhereFrom)
                 concat.add(objWhere);
@@ -868,7 +868,7 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
 //        if (calculateHashCode(this, objWhereFrom) != calculateHashCode(where, objWhereTo)) return null;
     }
 
-    private ObjectWhere getDifferentObjectWhere(AndWhere whereFrom, AndWhere whereTo) {
+    private ObjectWhere getDifferentObjectWhere(InnerWhere whereFrom, InnerWhere whereTo) {
 
         ObjectWhere result = null;
         for (ObjectWhere objWhereFrom : whereFrom)
@@ -880,7 +880,7 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return result;
     }
 
-/*    private int calculateHashCode(AndWhere where, ObjectWhere objWhereExcept) {
+/*    private int calculateHashCode(InnerWhere where, ObjectWhere objWhereExcept) {
 
         int hash1 = 0, hash2 = 1;
         for (ObjectWhere objWhere : where)
@@ -892,16 +892,16 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return hash1 + hash2;
     } */
 
-    AndWhere conglutinate(AndWhere where) {
+    InnerWhere conglutinate(InnerWhere where) {
 
         if (size() != 1) return null;
 
         ObjectWhere objWhereC = get(0);
 
         for (ObjectWhere objWhere : where) {
-            if (( objWhere instanceof NotWhere && objWhereC instanceof DataWhere && objWhere.getDataWhere().follow(objWhereC.getDataWhere()) ) ||
-                ( objWhere instanceof DataWhere && objWhereC instanceof NotWhere && objWhereC.getDataWhere().follow(objWhere.getDataWhere()) )) {
-                AndWhere result = new AndWhere(where);
+            if (( objWhere instanceof NotDataWhere && objWhereC instanceof DataWhere && objWhere.getDataWhere().follow(objWhereC.getDataWhere()) ) ||
+                ( objWhere instanceof DataWhere && objWhereC instanceof NotDataWhere && objWhereC.getDataWhere().follow(objWhere.getDataWhere()) )) {
+                InnerWhere result = new InnerWhere(where);
                 result.remove(objWhere);
                 return result;
             }
@@ -910,7 +910,7 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return null;
     }
 
-    AndWhere conglutinate(AndWhere where1, AndWhere where2) {
+    InnerWhere conglutinate(InnerWhere where1, InnerWhere where2) {
 
         if (size() != 2) return null;
         if (where1.size() != where2.size()) return null;
@@ -919,15 +919,15 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         ObjectWhere objWhereC2 = get(1);
 
         for (ObjectWhere objWhere1 : where1) {
-            if (( objWhere1 instanceof NotWhere && objWhereC1 instanceof DataWhere && objWhere1.getDataWhere().follow(objWhereC1.getDataWhere()) ) ||
-                ( objWhere1 instanceof DataWhere && objWhereC1 instanceof NotWhere && objWhereC1.getDataWhere().follow(objWhere1.getDataWhere()) )) {
+            if (( objWhere1 instanceof NotDataWhere && objWhereC1 instanceof DataWhere && objWhere1.getDataWhere().follow(objWhereC1.getDataWhere()) ) ||
+                ( objWhere1 instanceof DataWhere && objWhereC1 instanceof NotDataWhere && objWhereC1.getDataWhere().follow(objWhere1.getDataWhere()) )) {
 
-                AndWhere result = new AndWhere(where1);
+                InnerWhere result = new InnerWhere(where1);
                 result.remove(objWhere1);
 
                 for (ObjectWhere objWhere2 : where2) {
-                    if (( objWhere2 instanceof NotWhere && objWhereC2 instanceof DataWhere && objWhere2.getDataWhere().follow(objWhereC2.getDataWhere()) ) ||
-                        ( objWhere2 instanceof DataWhere && objWhereC2 instanceof NotWhere && objWhereC2.getDataWhere().follow(objWhere2.getDataWhere()) )) {
+                    if (( objWhere2 instanceof NotDataWhere && objWhereC2 instanceof DataWhere && objWhere2.getDataWhere().follow(objWhereC2.getDataWhere()) ) ||
+                        ( objWhere2 instanceof DataWhere && objWhereC2 instanceof NotDataWhere && objWhereC2.getDataWhere().follow(objWhere2.getDataWhere()) )) {
 
                         if (where2.containsAll(result) && !result.contains(objWhere2))
                             return result;
@@ -940,46 +940,46 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return null;
     }
 
-    // ------------------- Реализация and ------------------------ //
+    // ------------------- Реализация in ------------------------ //
 
-    public Where and(Where where) {
-        if(where instanceof AndWhere)
-            return and((AndWhere)where);
+    public IntraWhere in(IntraWhere where) {
+        if(where instanceof InnerWhere)
+            return in((InnerWhere)where);
         else
-        if(where instanceof OrWhere)
-            return and((OrWhere) where);
-        else // тогда уже OR
-            return and(new AndWhere((ObjectWhere)where));
+        if(where instanceof OuterWhere)
+            return in((OuterWhere) where);
+        else
+            return in(new InnerWhere((ObjectWhere)where));
     }
 
-    public Where and(AndWhere where) {
+    public IntraWhere in(InnerWhere where) {
 
-        AndWhere result = new AndWhere(this);
+        InnerWhere result = new InnerWhere(this);
 
         for (ObjectWhere whereNew : where) {
 
             boolean redundant = false;
             for (ObjectWhere whereOld : this) {
                 if (whereNew.getDataWhere().follow(whereOld.getDataWhere())) {
-                    if (whereNew instanceof DataWhere && whereOld instanceof NotWhere)
-                        return new OrWhere(); // невыполнимость
+                    if (whereNew instanceof DataWhere && whereOld instanceof NotDataWhere)
+                        return new OuterWhere(); // невыполнимость
                     if (whereNew instanceof DataWhere && whereOld instanceof DataWhere) {
                         result.remove(whereOld);
                         continue;
                     }
-                    if (whereNew instanceof NotWhere && whereOld instanceof NotWhere) {
+                    if (whereNew instanceof NotDataWhere && whereOld instanceof NotDataWhere) {
                         redundant = true;
                         continue;
                     }
                 }
                 if (whereOld.getDataWhere().follow(whereNew.getDataWhere())) {
-                    if (whereOld instanceof DataWhere && whereNew instanceof NotWhere)
-                        return new OrWhere(); // невыполнимость
+                    if (whereOld instanceof DataWhere && whereNew instanceof NotDataWhere)
+                        return new OuterWhere(); // невыполнимость
                     if (whereOld instanceof DataWhere && whereNew instanceof DataWhere) {
                         redundant = true;
                         continue;
                     }
-                    if (whereOld instanceof NotWhere && whereNew instanceof NotWhere) {
+                    if (whereOld instanceof NotDataWhere && whereNew instanceof NotDataWhere) {
                         result.remove(whereOld);
                         continue;
                     }
@@ -993,30 +993,30 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return result;
     }
 
-    public Where and(OrWhere where) {
-        return where.and(this);
+    public IntraWhere in(OuterWhere where) {
+        return where.in(this);
     }
 
     // ------------------- Реализация not ------------------------ //
 
-    public OrWhere not() {
+    public OuterWhere not() {
 
-        OrWhere result = new OrWhere();
+        OuterWhere result = new OuterWhere();
         for(ObjectWhere where : this)
-            result.or(where.not());
+            result.out(where.not());
         return result;
     }
 
     // преобразует ДНФ not'ом в КНФ
-    public Where reverseNot() {
-        AndWhere result = new AndWhere();
+    public IntraWhere reverseNot() {
+        InnerWhere result = new InnerWhere();
         for(ObjectWhere where : this)
             result.add((ObjectWhere) where.not());
         return result;
     }
 
-    public Where followFalse(OrWhere where) {
-        return new OrWhere(this).followFalse(where);
+    public IntraWhere followFalse(OuterWhere where) {
+        return new OuterWhere(this).followFalse(where);
     }
 
     public void simplify() {
@@ -1030,7 +1030,7 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
                             redundant.add(whereTo);
                             break;
                         }
-                        if (whereFrom instanceof NotWhere && whereTo instanceof NotWhere)
+                        if (whereFrom instanceof NotDataWhere && whereTo instanceof NotDataWhere)
                             redundant.add(whereFrom);
                     }
 
@@ -1040,12 +1040,12 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
 
     // ------------------- Реализация translate ------------------------ //
 
-    public Where translate(Translator translator) {
-        // сначала транслируем AndWhere
-        Collection<Where> transWheres = new ArrayList<Where>();
+    public IntraWhere translate(Translator translator) {
+        // сначала транслируем InWhere
+        Collection<IntraWhere> transWheres = new ArrayList<IntraWhere>();
         boolean changedWheres = false;
         for(ObjectWhere where : this) {
-            Where transWhere = translator.translate(where);
+            IntraWhere transWhere = translator.translate(where);
             transWheres.add(transWhere);
             changedWheres = changedWheres || (transWhere!=where);
         }
@@ -1054,15 +1054,15 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
             return this;
 
         int Complexity = 1;
-        for(Where where : transWheres) {
+        for(IntraWhere where : transWheres) {
             Complexity = Complexity*where.getOr().size();
         }
         if(Complexity>50)
             Complexity = Complexity;
 
-        Where trans = new AndWhere();
-        for(Where where : transWheres)
-            trans = trans.and(where);
+        IntraWhere trans = new InnerWhere();
+        for(IntraWhere where : transWheres)
+            trans = trans.in(where);
         return trans;
     }
 
@@ -1104,8 +1104,8 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return source;
     }
 
-    public OrWhere getOr() {
-        return new OrWhere(this);
+    public OuterWhere getOr() {
+        return new OuterWhere(this);
     }
 
     // -------------------- Всякие другие методы ------------------------- //
@@ -1115,11 +1115,11 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
             where.fillJoins(joins);
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> joins,Where andWhere) {
-        // бежим по всем элементам добавляя остальные And'ы
-        andWhere = andWhere.and(this);
+    public void fillJoinWheres(MapWhere<JoinData> joins, IntraWhere inWhere) {
+        // бежим по всем элементам добавляя остальные In'ы
+        inWhere = inWhere.in(this);
         for(ObjectWhere where : this)
-            where.fillJoinWheres(joins,andWhere);
+            where.fillJoinWheres(joins,inWhere);
     }
 
     public boolean getValue(List<DataWhere> trueWheres) {
@@ -1132,12 +1132,12 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
         return result;
     }
 
-    public Where andNot(Where where) {
-        return new OrWhere(this).andNot(where);
+    public IntraWhere inNot(IntraWhere where) {
+        return new OuterWhere(this).inNot(where);
     }
 
-    public boolean means(Where where) {
-        return new OrWhere(this).means(where);
+    public boolean means(IntraWhere where) {
+        return new OuterWhere(this).means(where);
     }
 
     public void fillData(Collection<DataWhere> wheres) {
@@ -1145,22 +1145,22 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
             where.fillData(wheres);
     }
 
-    public Where getJoinWhere() {
-        Where result = new AndWhere();
+    public IntraWhere getJoinWhere() {
+        IntraWhere result = new InnerWhere();
         for(ObjectWhere where : this)
-           result = result.and(where.getJoinWhere());
+           result = result.in(where.getJoinWhere());
         return result;
     }
 
-    public Where followTrue(AndWhere where) {
+    public IntraWhere followTrue(InnerWhere where) {
         return this;
     }
 
-    public Where copy() {
-        AndWhere Result = new AndWhere();
+    public IntraWhere copy() {
+        InnerWhere result = new InnerWhere();
         for(ObjectWhere where : this)
-            Result.add((ObjectWhere) where.copy());
-        return Result;
+            result.add((ObjectWhere) where.copy());
+        return result;
     }
 
     boolean markReadOnly = false;
@@ -1192,33 +1192,33 @@ class AndWhere extends ArrayList<ObjectWhere> implements Where {
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return where instanceof AndWhere && OrWhere.equals(this,(AndWhere)where, mapExprs, mapWheres);
+    public boolean equals(IntraWhere where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+        return where instanceof InnerWhere && OuterWhere.equals(this,(InnerWhere)where, mapExprs, mapWheres);
     }
 
     public int hash() {
-        return OrWhere.hash(this,7);
+        return OuterWhere.hash(this,7);
     }
 }
 
-abstract class ObjectWhere implements Where {
+abstract class ObjectWhere implements IntraWhere {
 
     static String TRUE = "1=1";
     static String FALSE = "1<>1";
 
     abstract DataWhere getDataWhere();
 
-    public Where followFalse(OrWhere where) {
-        return new AndWhere(this).followFalse(where);
+    public IntraWhere followFalse(OuterWhere where) {
+        return new InnerWhere(this).followFalse(where);
     }
 
-    // ------------------- Реализация and ------------------------ //
+    // ------------------- Реализация in ------------------------ //
 
-    public Where and(Where where) {
+    public IntraWhere in(IntraWhere where) {
         if(where instanceof ObjectWhere) {
-            return new AndWhere(this).and(new AndWhere((ObjectWhere) where));
+            return new InnerWhere(this).in(new InnerWhere((ObjectWhere) where));
         } else
-            return where.and(this);
+            return where.in(this);
     }
 
     // ------------------- Реализация вспомогательных  интерфейсов ------------------------ //
@@ -1233,51 +1233,51 @@ abstract class ObjectWhere implements Where {
 
     // -------------------- Выходной интерфейс ------------------------- //
 
-    public OrWhere getOr() {
-        return new OrWhere(this);
+    public OuterWhere getOr() {
+        return new OuterWhere(this);
     }
 
-    public Where andNot(Where where) {
-        return new AndWhere(this).andNot(where);
+    public IntraWhere inNot(IntraWhere where) {
+        return new InnerWhere(this).inNot(where);
     }
 
-    public boolean means(Where where) {
-        return new AndWhere(this).means(where);
+    public boolean means(IntraWhere where) {
+        return new InnerWhere(this).means(where);
     }
 
     // -------------------- Всякие другие методы ------------------------- //
 
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        fillDataJoinWheres(joins,andWhere.and(this));
+    public void fillJoinWheres(MapWhere<JoinData> joins, IntraWhere inWhere) {
+        fillDataJoinWheres(joins,inWhere.in(this));
     }
 
-    abstract protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere);
+    abstract protected void fillDataJoinWheres(MapWhere<JoinData> joins, IntraWhere inWhere);
 
-    public Where followTrue(AndWhere where) {
+    public IntraWhere followTrue(InnerWhere where) {
         return this;
     }
 
-    public Where reverseNot() {
+    public IntraWhere reverseNot() {
         return not();
     }
 }
 
-class NotWhere extends ObjectWhere {
+class NotDataWhere extends ObjectWhere {
 
     private DataWhere where;
 
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof NotWhere)) return false;
+        if (o == null || !(o instanceof NotDataWhere)) return false;
 
-        return where.equals(((NotWhere) o).where);
+        return where.equals(((NotDataWhere) o).where);
     }
 
     public int hashCode() {
         return where.hashCode();
     }
 
-    NotWhere(DataWhere iwhere) {
+    NotDataWhere(DataWhere iwhere) {
         where = iwhere;
     }
 
@@ -1285,7 +1285,7 @@ class NotWhere extends ObjectWhere {
 
     // ------------------- Реализация not ------------------------ //
 
-    public Where not() {
+    public IntraWhere not() {
         return getDataWhere();
     }
 
@@ -1295,8 +1295,8 @@ class NotWhere extends ObjectWhere {
 
     // ------------------- Реализация translate ------------------------ //
 
-    public Where translate(Translator translator) {
-        Where translatedWhere = translator.translate(where);
+    public IntraWhere translate(Translator translator) {
+        IntraWhere translatedWhere = translator.translate(where);
         if(translatedWhere == where)
             return this;
 
@@ -1319,8 +1319,8 @@ class NotWhere extends ObjectWhere {
         where.fillJoins(joins);
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        where.fillDataJoinWheres(joins, andWhere);
+    protected void fillDataJoinWheres(MapWhere<JoinData> joins, IntraWhere inWhere) {
+        where.fillDataJoinWheres(joins, inWhere);
     }
 
     public boolean getValue(List<DataWhere> trueWheres) {
@@ -1331,17 +1331,17 @@ class NotWhere extends ObjectWhere {
         where.fillData(wheres);
     }
 
-    public Where getJoinWhere() {
+    public IntraWhere getJoinWhere() {
         return where.getNotJoinWhere();
     }
 
-    public Where copy() {
+    public IntraWhere copy() {
         return where.not();
     }
 
     // для кэша
-    public boolean equals(Where equalWhere, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapExprs, mapWheres) ;
+    public boolean equals(IntraWhere equalWhere, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+        return equalWhere instanceof NotDataWhere && where.equals(((NotDataWhere)equalWhere).where, mapExprs, mapWheres) ;
     }
 
     public int hash() {
@@ -1357,12 +1357,12 @@ abstract class DataWhere extends ObjectWhere {
 
     // ------------------- Реализация not ------------------------ //
 
-    public Where not() {
-        return new NotWhere(this);
+    public IntraWhere not() {
+        return new NotDataWhere(this);
     }
 
     String getNotSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return NotWhere.PREFIX + getSource(queryData, syntax);
+        return NotDataWhere.PREFIX + getSource(queryData, syntax);
     }
 
     Map<DataWhere,Boolean> cacheFollow = new IdentityHashMap<DataWhere, Boolean>();
@@ -1386,11 +1386,11 @@ abstract class DataWhere extends ObjectWhere {
         wheres.add(this);
     }
 
-    public Where getJoinWhere() {
+    public IntraWhere getJoinWhere() {
         return this;
     }
 
-    public Where getNotJoinWhere() {
+    public IntraWhere getNotJoinWhere() {
         return not();
     }
 }

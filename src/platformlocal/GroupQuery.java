@@ -50,7 +50,7 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         if(From.compile().isEmpty()) {
             for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.Exprs.entrySet())
                 Translated.put(MapExpr.getValue(),new ValueExpr(null,MapExpr.getValue().getType()));
-            Translated.put(Join.InJoin,new OrWhere());
+            Translated.put(Join.InJoin,new OuterWhere());
         } else
             super.compileJoin(Join, Translated, TranslatedJoins);
     }

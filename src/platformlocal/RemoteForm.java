@@ -1057,7 +1057,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     // рекурсия для генерации порядка
-    private Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
+    private IntraWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
 
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
@@ -1081,14 +1081,14 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             } else
                 CompareIndex = CompareWhere.LESS;
         }
-        Where OrderWhere = new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareIndex);
+        IntraWhere OrderWhere = new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareIndex);
 
         if(!Last) {
             // >A OR (=A AND >B)
-            OrWhere ResultWhere = new OrWhere();
-            ResultWhere.or(OrderWhere);
-            ResultWhere.or(new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareWhere.EQUALS).
-                    and(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1)));
+            OuterWhere ResultWhere = new OuterWhere();
+            ResultWhere.out(OrderWhere);
+            ResultWhere.out(new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareWhere.EQUALS).
+                    in(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1)));
             return ResultWhere;
         } else
             return OrderWhere;
@@ -1438,7 +1438,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                     int ReadSize = Group.PageSize*3/(Direction==DIRECTION_CENTER?2:1);
 
-                    Where BaseWhere = SelectKeys.Where;
+                    IntraWhere BaseWhere = SelectKeys.Where;
                     // откопируем в сторону запрос чтобы еще раз потом использовать
                     // сначала Descending загоним
                     Group.DownKeys = false;

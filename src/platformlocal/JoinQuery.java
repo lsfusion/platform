@@ -7,17 +7,17 @@ import java.sql.ResultSet;
 
 interface Translator {
 
-    Where translate(Where Where);
+    IntraWhere translate(IntraWhere Where);
     SourceExpr translate(SourceExpr Expr);
 }
 
 class ExprTranslator implements Translator {
 
-    private Map<Where,Where> Wheres = new HashMap<Where, Where>();
-//    Map<DataWhere,Where> Wheres = new HashMap<DataWhere, Where>();
+    private Map<IntraWhere, IntraWhere> Wheres = new HashMap<IntraWhere, IntraWhere>();
+//    Map<DataWhere,IntraWhere> Wheres = new HashMap<DataWhere, IntraWhere>();
     private Map<SourceExpr,SourceExpr> Exprs = new HashMap<SourceExpr, SourceExpr>();
 
-    void put(DataWhere Where, Where To) {
+    void put(DataWhere Where, IntraWhere To) {
         Wheres.put(Where,To);
     }
 
@@ -25,11 +25,11 @@ class ExprTranslator implements Translator {
         Exprs.put(Expr,To);
     }
 
-    public Where translate(Where Where) {
-        Where Result = Wheres.get(Where);
+    public IntraWhere translate(IntraWhere Where) {
+        IntraWhere Result = Wheres.get(Where);
         if(Result==null) {
             Result = Where.translate(this);
-//            Wheres.put(Where,Result); // короче работает только если equals'ы и hashCode'ы перебить у Or\And'ов
+//            Wheres.put(IntraWhere,Result); // короче работает только если equals'ы и hashCode'ы перебить у Or\And'ов
             // все равно по другому работает
         }
 
@@ -46,16 +46,16 @@ class ExprTranslator implements Translator {
     }
 }
 
-class MapWhere<T> extends HashMap<T,OrWhere> {
+class MapWhere<T> extends HashMap<T, OuterWhere> {
 
-    void add(T Object, Where Where) {
-        OrWhere InWhere = get(Object);
+    void add(T Object, IntraWhere Where) {
+        OuterWhere InWhere = get(Object);
         if(InWhere==null) {
-            InWhere = new OrWhere();
-            InWhere.or(Where);
+            InWhere = new OuterWhere();
+            InWhere.out(Where);
             put(Object,InWhere);
         }
-        InWhere.or(Where);
+        InWhere.out(Where);
     }
 }
 
@@ -74,17 +74,17 @@ interface SourceJoin {
 
     <J extends Join> void fillJoins(List<J> Joins);
 //    void fillJoins(List<? extends Join> Joins);
-    void fillJoinWheres(MapWhere<JoinData> Joins,Where AndWhere);
+    void fillJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere);
 }
 
 class AndJoinQuery {
 
-    AndJoinQuery(AndWhere iWhere, String iAlias) {
+    AndJoinQuery(InnerWhere iWhere, String iAlias) {
         Where = iWhere;
         Alias = iAlias;
     }
 
-    AndWhere Where;
+    InnerWhere Where;
     String Alias;
     Map<String,SourceExpr> Properties = new HashMap<String, SourceExpr>();
 }
@@ -99,7 +99,7 @@ abstract class AbstractJoinQuery<K,V,J extends Join> extends Source<K,V> {
     }
 
     Map<V,SourceExpr> Properties = new HashMap<V, SourceExpr>();
-    Where Where = new AndWhere();
+    IntraWhere Where = new InnerWhere();
 
     Map<K,KeyExpr<K>> MapKeys = new HashMap<K, KeyExpr<K>>();
 
@@ -219,8 +219,8 @@ class JoinQuery<K,V> extends AbstractJoinQuery<K,V,Join> {
         super(iKeys);
     }
 
-    void and(Where AddWhere) {
-        Where = Where.and(AddWhere);
+    void and(IntraWhere AddWhere) {
+        Where = Where.in(AddWhere);
     }
 
     void putKeyWhere(Map<K,Integer> KeyValues) {
@@ -263,7 +263,7 @@ class JoinQuery<K,V> extends AbstractJoinQuery<K,V,Join> {
                 Join.Source.compileJoin(Join, Translated, CompiledJoins);
 
             CompiledQuery.Where = new JoinTranslator(Translated).translate(Where);
-//            CompiledQuery.Where = Translated.translate(Where);
+//            CompiledQuery.IntraWhere = Translated.translate(IntraWhere);
 
             for(Map.Entry<V,SourceExpr> MapProperty : Properties.entrySet())
                 CompiledQuery.Properties.put(MapProperty.getKey(),Translated.translate(MapProperty.getValue()).compile(CompiledQuery.Where));
@@ -286,7 +286,7 @@ class JoinQuery<K,V> extends AbstractJoinQuery<K,V,Join> {
             Translator = iTranslator;
         }
 
-        public Where translate(Where Where) {
+        public IntraWhere translate(IntraWhere Where) {
             if(Where instanceof ObjectWhere)
                 return Translator.translate(Where).getJoinWhere();
             else
@@ -318,9 +318,9 @@ class JoinQuery<K,V> extends AbstractJoinQuery<K,V,Join> {
         }
 
         // закинем их на Or
-        OrWhere Where = new OrWhere();
-        Where.or(Join.InJoin);
-        Where.or(MergeJoin.InJoin);
+        OuterWhere Where = new OuterWhere();
+        Where.out(Join.InJoin);
+        Where.out(MergeJoin.InJoin);
         MergeQuery.and(Where);
 
         CompiledQuery<K,Object> CompiledMerge = MergeQuery.compile();
@@ -452,8 +452,8 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
             return Syntax.getSelect(From,stringExpr(KeySelect,KeyOrder,PropertySelect,PropertyOrder),
                 stringWhere(WhereSelect),stringOrder(OrderSelect),"",Top);
         } else {
-            OrWhere OrWhere = Where.getOr();
-            // если оказалось что Where false - то есть не может быть в запросе
+            OuterWhere OrWhere = Where.getOr();
+            // если оказалось что IntraWhere false - то есть не может быть в запросе
             if(OrWhere.isFalse()) {
                 Map<Object,String> KeySelect = new HashMap<Object, String>();
                 Map<Object,String> PropertySelect = new HashMap<Object, String>();
@@ -473,7 +473,7 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
 
             String From = "";
             while(true) {
-                AndWhere AndWhere = OrWhere.iterator().next();
+                InnerWhere AndWhere = OrWhere.iterator().next();
                 Map<Object,String> AndKeySelect = new HashMap<Object, String>();
                 LinkedHashMap<Object,String> AndPropertySelect = new LinkedHashMap<Object, String>();
                 Collection<String> AndWhereSelect = new ArrayList<String>();
@@ -492,7 +492,7 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
                     Syntax.getSelect(AndFrom,stringExpr(AndKeySelect,From.length()==0?KeyOrder:new ArrayList<Object>(),NamedProperties),
                             stringWhere(AndWhereSelect),"","",0);
 
-                OrWhere = OrWhere.andNot(AndWhere).getOr();
+                OrWhere = OrWhere.inNot(AndWhere).getOr();
                 if(OrWhere.isFalse()) break;
             }
 
@@ -500,20 +500,20 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
         }
     }
 
-    // в общем случае получить AndJoinQuery под которые подходит Where
-    Collection<AndJoinQuery> getWhereSubSet(Collection<AndJoinQuery> AndWheres,Where Where) {
+    // в общем случае получить AndJoinQuery под которые подходит IntraWhere
+    Collection<AndJoinQuery> getWhereSubSet(Collection<AndJoinQuery> AndWheres, IntraWhere Where) {
 
         Collection<AndJoinQuery> Result = new ArrayList<AndJoinQuery>();
-        OrWhere ResultWhere = new OrWhere();
+        OuterWhere ResultWhere = new OuterWhere();
         while(Result.size()<AndWheres.size()) {
             // ищем куда закинуть заодно считаем
             AndJoinQuery LastQuery = null;
-            OrWhere LastWhere = null;
+            OuterWhere LastWhere = null;
             for(AndJoinQuery And : AndWheres)
                 if(!Result.contains(And)) {
                     LastQuery = And;
-                    LastWhere = new OrWhere(ResultWhere);
-                    LastWhere.or(LastQuery.Where);
+                    LastWhere = new OuterWhere(ResultWhere);
+                    LastWhere.out(LastQuery.Where);
                     if(Where.followFalse(LastWhere).means(LastWhere)) {
                         Result.add(LastQuery);
                         return Result;
@@ -527,42 +527,42 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
 
     String fillSelect(Map<Object, String> KeySelect, Map<Object, String> PropertySelect, Collection<String> WhereSelect, LinkedHashMap<String,Boolean> OrderSelect, SQLSyntax Syntax) {
 
-        if(Syntax.useFJ()) { // OrWhere - сложный придется разбивать на подзапросы и FULL JOIN'ить
-            OrWhere CompiledWhere = Where.getOr(); //getJoinWhere()
+        if(Syntax.useFJ()) { // OuterWhere - сложный придется разбивать на подзапросы и FULL JOIN'ить
+            OuterWhere CompiledWhere = Where.getOr(); //getJoinWhere()
 
-            // если оказалось что Where false - то есть не может быть в запросе
+            // если оказалось что IntraWhere false - то есть не может быть в запросе
             if(CompiledWhere.isFalse())
                 return fillEmptySelect(KeySelect, PropertySelect);
 
-            // если OrWhere простой
+            // если OuterWhere простой
             if(CompiledWhere.size()==1)
                 return fillAndSelect(CompiledWhere.iterator().next(), Properties, Orders, KeySelect, PropertySelect, WhereSelect, OrderSelect, Syntax);
 
             Collection<AndJoinQuery> AndProps = new ArrayList<AndJoinQuery>();
-            for(AndWhere AndWhere : CompiledWhere)
+            for(InnerWhere AndWhere : CompiledWhere)
                 AndProps.add(new AndJoinQuery(AndWhere,"f"+AndProps.size()));
 
             // сюда будут класться данные для чтения
             Map<QueryData,String> FJSource = new HashMap<QueryData, String>();
 
-            // бежим по всем property, определяем Join параметры с Where
+            // бежим по всем property, определяем Join параметры с IntraWhere
             MapWhere<JoinData> JoinDataWheres = new MapWhere<JoinData>();
             for(Map.Entry<Object,SourceExpr> JoinProp : Properties.entrySet())
-                JoinProp.getValue().fillJoinWheres(JoinDataWheres,new AndWhere());
+                JoinProp.getValue().fillJoinWheres(JoinDataWheres,new InnerWhere());
 
             // группируем по Join'ам
             MapWhere<Join> JoinWheres = new MapWhere<Join>();
-            for(Map.Entry<JoinData,OrWhere> JoinData : JoinDataWheres.entrySet())
+            for(Map.Entry<JoinData, OuterWhere> JoinData : JoinDataWheres.entrySet())
                 JoinWheres.add(JoinData.getKey().getJoin(),JoinData.getValue());
 
             // сначала распихиваем Join по And'ам
             Map<Join,Collection<AndJoinQuery>> JoinAnds = new HashMap<Join,Collection<AndJoinQuery>>();
-            for(Map.Entry<Join,OrWhere> JoinWhere : JoinWheres.entrySet())
+            for(Map.Entry<Join, OuterWhere> JoinWhere : JoinWheres.entrySet())
                 JoinAnds.put(JoinWhere.getKey(),getWhereSubSet(AndProps,JoinWhere.getValue()));
 
             // затем все данные по Join'ам по вариантам
             int JoinNum = 0;
-            for(Map.Entry<JoinData,OrWhere> JoinData : JoinDataWheres.entrySet()) {
+            for(Map.Entry<JoinData, OuterWhere> JoinData : JoinDataWheres.entrySet()) {
                 String JoinName = "join_" + (JoinNum++);
                 Collection<AndJoinQuery> DataAnds = getWhereSubSet(JoinAnds.get(JoinData.getKey().getJoin()), JoinData.getValue());
                 for(AndJoinQuery And : DataAnds)
@@ -690,15 +690,15 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
         }
     }
 
-    <AV> String fillAndSelect(AndWhere AndWhere,Map<AV,SourceExpr> CompiledProps,LinkedHashMap<SourceExpr,Boolean> CompiledOrders,Map<Object, String> KeySelect, Map<AV, String> PropertySelect, Collection<String> WhereSelect, LinkedHashMap<String,Boolean> OrderSelect, SQLSyntax Syntax) {
+    <AV> String fillAndSelect(InnerWhere AndWhere,Map<AV,SourceExpr> CompiledProps,LinkedHashMap<SourceExpr,Boolean> CompiledOrders,Map<Object, String> KeySelect, Map<AV, String> PropertySelect, Collection<String> WhereSelect, LinkedHashMap<String,Boolean> OrderSelect, SQLSyntax Syntax) {
 
-        // скопируем и будем вырезать Where
+        // скопируем и будем вырезать IntraWhere
         Collection<ObjectWhere> SelectWheres = new ArrayList<ObjectWhere>(AndWhere);
 
         Map<AndExpr,ValueExpr> ExprValues = new HashMap<AndExpr,ValueExpr>();
         Map<QueryData,String> QueryData = new HashMap<QueryData,String>();
 
-        // сначала вычистим избыточные Where из Join'ов и узнаем все Join'ы
+        // сначала вычистим избыточные IntraWhere из Join'ов и узнаем все Join'ы
         // заодно поищем ExprValues запишем их в Source
         List<CompiledJoin> AllJoins = new ArrayList<CompiledJoin>();
         // сначала прямые чтобы Inner'ы вперед пошли
@@ -747,7 +747,7 @@ class CompiledJoinQuery extends AbstractJoinQuery<Object,Object,CompiledJoin> {
         for(Map.Entry<SourceExpr,Boolean> Order : CompiledOrders.entrySet())
             OrderSelect.put(Order.getKey().getSource(QueryData, Syntax),Order.getValue());
 
-        for(Where Where : SelectWheres)
+        for(IntraWhere Where : SelectWheres)
             WhereSelect.add(Where.getSource(QueryData, Syntax));
 
         return From;
@@ -793,7 +793,7 @@ class UnionQuery<K,V> extends JoinQuery<K,V> {
     UnionQuery(Collection<? extends K> iKeys, int iDefaultOperator) {
         super(iKeys);
         DefaultOperator = iDefaultOperator;
-        Where = new OrWhere();
+        Where = new OuterWhere();
     }
 
     // как в List 0 - MAX, 1 - SUM, 2 - NVL, плюс 3 - если есть в Source
@@ -812,9 +812,9 @@ class UnionQuery<K,V> extends JoinQuery<K,V> {
         SourceExpr Result;
         switch(Operator) {
             case 0: // MAX CE(New.notNull AND !(Prev>New),New,Prev)
-                OrWhere Where = new OrWhere();
-                Where.or(new CompareWhere(PrevExpr,Expr,CompareWhere.GREATER));
-                Where.or(Expr.getWhere().not());
+                OuterWhere Where = new OuterWhere();
+                Where.out(new CompareWhere(PrevExpr,Expr,CompareWhere.GREATER));
+                Where.out(Expr.getWhere().not());
                 Result = new CaseExpr(Where,PrevExpr,Expr);
                 break;
             case 1: // SUM CE(Prev.null,New,New.null,Prev,true,New+Prev)
@@ -848,6 +848,6 @@ class UnionQuery<K,V> extends JoinQuery<K,V> {
         Join<K,V> Join = new Join<K,V>((Source<K,V>) Source,this);
         for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.Exprs.entrySet())
             Properties.put(MapExpr.getKey(), getUnionExpr(Properties.get(MapExpr.getKey()),MapExpr.getValue(),Coeff, Join.InJoin));
-        ((OrWhere)Where).or(Join.InJoin);
+        ((OuterWhere)Where).out(Join.InJoin);
     }
 }

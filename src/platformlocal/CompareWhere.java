@@ -73,18 +73,18 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return Operator1.toString() + getCompare(Compare) + Operator2.toString(); 
     }
 
-    public Where getCaseWhere(MapCase<Integer> Case) {
+    public IntraWhere getCaseWhere(MapCase<Integer> Case) {
         AndExpr CaseOp1 = Case.Data.get(0);
         AndExpr CaseOp2 = Case.Data.get(1);
         if(CaseOp1.getWhere().means(CaseOp2.getWhere().not())) // проверим может значения изначально не равны
-            return new OrWhere();
+            return new OuterWhere();
         else {
             if(CaseOp1 instanceof ValueExpr) {
                 if(CaseOp2 instanceof ValueExpr) {
                     if(compare(((ValueExpr)CaseOp1).Object,((ValueExpr)CaseOp2).Object,Compare))
-                        return new AndWhere();
+                        return new InnerWhere();
                     else
-                        return new OrWhere();
+                        return new OuterWhere();
                 } else
                     return new CompareWhere(CaseOp1,CaseOp2, reverse(Compare));
             } else
@@ -92,7 +92,7 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         }
     }
 
-    public Where translate(Translator Translator) {
+    public IntraWhere translate(Translator Translator) {
         Map<Integer,SourceExpr> MapExprs = new HashMap<Integer, SourceExpr>();
         MapExprs.put(0,Operator1);
         MapExprs.put(1,Operator2);
@@ -104,7 +104,7 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         Operator2.fillJoins(Joins);
     }
 
-    public void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    public void fillDataJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
         Operator1.fillJoinWheres(Joins,AndWhere);
         Operator2.fillJoinWheres(Joins,AndWhere);
     }
@@ -130,12 +130,12 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return result;
     }
 
-    public Where copy() {
+    public IntraWhere copy() {
         return new CompareWhere(Operator1,Operator2,Compare);
     }
 
     // для кэша
-    public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(IntraWhere Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
         return Where instanceof CompareWhere && Compare == ((CompareWhere)Where).Compare &&
                 Operator1.equals(((CompareWhere)Where).Operator1,mapExprs,mapWheres) &&
                 Operator2.equals(((CompareWhere)Where).Operator2,mapExprs,mapWheres);
@@ -178,11 +178,11 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return Expr.toString() + " IN (" + Values + ")";
     }
 
-    public Where getCaseWhere(MapCase<Integer> Case) {
+    public IntraWhere getCaseWhere(MapCase<Integer> Case) {
         return new InListWhere(Case.Data.get(0),Values);
     }
 
-    public Where translate(Translator Translator) {
+    public IntraWhere translate(Translator Translator) {
         Map<Integer,SourceExpr> MapExprs = new HashMap<Integer, SourceExpr>();
         MapExprs.put(0,Expr);
         return CaseExpr.translateCase(MapExprs,Translator,true).getWhere(this);
@@ -192,7 +192,7 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         Expr.fillJoins(Joins);
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> Joins,Where AndWhere) {
+    protected void fillDataJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
         Expr.fillJoinWheres(Joins,AndWhere);
     }
 
@@ -200,12 +200,12 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return Where==this || Expr.follow(Where);
     }
 
-    public Where copy() {
+    public IntraWhere copy() {
         return new InListWhere(Expr,Values);
     }
 
     // для кэша
-    public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(IntraWhere Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
         return Where instanceof InListWhere && Values.equals(((InListWhere)Where).Values) &&
                 Expr.equals(((InListWhere)Where).Expr,mapExprs,mapWheres);
     }

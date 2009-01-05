@@ -17,14 +17,14 @@ abstract class SourceExpr implements SourceJoin {
         return false;
     }
 
-    // возвращает Where на notNull
-    abstract Where getWhere();
+    // возвращает IntraWhere на notNull
+    abstract IntraWhere getWhere();
 
     // получает список ExprCase'ов
     abstract ExprCaseList getCases();
 
-    SourceExpr compile(Where QueryWhere) {
-        if(1==2 && QueryWhere.and(getWhere()).isFalse())
+    SourceExpr compile(IntraWhere QueryWhere) {
+        if(1==2 && QueryWhere.in(getWhere()).isFalse())
             return new ValueExpr(null,getType());
         else
             return this;
@@ -45,10 +45,10 @@ abstract class AndExpr extends SourceExpr {
 
     abstract boolean follow(DataWhere Where);
 
-    public void fillJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
-        fillAndJoinWheres(Joins,AndWhere.and(getWhere()));
+    public void fillJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
+        fillAndJoinWheres(Joins,AndWhere.in(getWhere()));
     }
 
-    abstract protected void fillAndJoinWheres(MapWhere<JoinData> Joins,Where AndWhere);
+    abstract protected void fillAndJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere);
 }
 

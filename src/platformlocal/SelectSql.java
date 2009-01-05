@@ -237,7 +237,7 @@ class Table extends DataSource<KeyField,PropertyField> {
         JoinQuery<KeyField,PropertyField> OutQuery = new JoinQuery<KeyField,PropertyField>(Keys);
         Join<KeyField,PropertyField> OutJoin = new Join<KeyField,PropertyField>(this,OutQuery);
         OutQuery.Properties.putAll(OutJoin.Exprs);
-        OutQuery.Where = OutQuery.Where.and(OutJoin.InJoin);
+        OutQuery.Where = OutQuery.Where.in(OutJoin.InJoin);
         OutQuery.outSelect(Session);
     }
 }

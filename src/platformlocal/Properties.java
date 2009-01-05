@@ -1044,7 +1044,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         JoinQuery<DataPropertyInterface,String> Query = new JoinQuery<DataPropertyInterface,String>(Interfaces);
 
         if(Value==null) // если Value null закинем false по сути в запрос
-            Query.and(new OrWhere());
+            Query.and(new OuterWhere());
         else
             for(DataPropertyInterface ValueInterface : Interfaces)
                 joinObjects(Query,ValueInterface);
@@ -1575,10 +1575,10 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         SuspiciousQuery.Properties.put(ChangeTable.Value, NewValue);
         SuspiciousQuery.Properties.put(ChangeTable.PrevValue, PrevValue);
 
-        OrWhere Where = new OrWhere();
-        Where.or(new CompareWhere(PrevValue,NewValue,CompareWhere.LESS));
-        Where.or(new CompareWhere(PrevValue,OldValue,CompareWhere.EQUALS));
-        Where.or(NewValue.getWhere().and(PrevValue.getWhere().not()));
+        OuterWhere Where = new OuterWhere();
+        Where.out(new CompareWhere(PrevValue,NewValue,CompareWhere.LESS));
+        Where.out(new CompareWhere(PrevValue,OldValue,CompareWhere.EQUALS));
+        Where.out(NewValue.getWhere().in(PrevValue.getWhere().not()));
         SuspiciousQuery.and(Where);
 
         // сохраняем
@@ -1589,9 +1589,9 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         Join<GroupPropertyInterface<T>,PropertyField> SourceJoin = new Join<GroupPropertyInterface<T>,PropertyField>(IncrementChange.Source,ReReadQuery);
 
         NewValue = SourceJoin.Exprs.get(ChangeTable.Value);
-        Where = new OrWhere();
-        Where.or(SourceJoin.InJoin.and(NewValue.getWhere().not())); // новое null и InJoin
-        Where.or(new CompareWhere(NewValue,SourceJoin.Exprs.get(ChangeTable.PrevValue),CompareWhere.LESS)); // или ноаое меньше старого 
+        Where = new OuterWhere();
+        Where.out(SourceJoin.InJoin.in(NewValue.getWhere().not())); // новое null и InJoin
+        Where.out(new CompareWhere(NewValue,SourceJoin.Exprs.get(ChangeTable.PrevValue),CompareWhere.LESS)); // или ноаое меньше старого
         ReReadQuery.and(Where);
 
         if(!(ReReadQuery.compile(new LinkedHashMap<SourceExpr,Boolean>(),1).executeSelect(Session,false).size() == 0)) {
@@ -1966,7 +1966,7 @@ abstract class WhereFormulaProperty extends ValueFormulaProperty<FormulaProperty
         return new CaseExpr(getWhere(JoinImplement),new ValueExpr(true,Type.Bit));
     }
 
-    abstract Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement);
+    abstract IntraWhere getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement);
 }
 
 class CompareFormulaProperty extends WhereFormulaProperty {
@@ -1984,7 +1984,7 @@ class CompareFormulaProperty extends WhereFormulaProperty {
         Interfaces.add(Operator2);
     }
 
-    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
+    IntraWhere getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
         return new CompareWhere(JoinImplement.get(Operator1),JoinImplement.get(Operator2),Compare);
     }
 }
@@ -1999,7 +1999,7 @@ class NotNullFormulaProperty extends WhereFormulaProperty {
         Interfaces.add(Property);
     }
 
-    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
+    IntraWhere getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
         return JoinImplement.get(Property).getWhere();
     }
 }
@@ -2034,10 +2034,10 @@ class ObjectFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
     }
 
     SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface,? extends SourceExpr> JoinImplement, InterfaceClassSet<FormulaPropertyInterface> JoinClasses) {
-        Where Where = new AndWhere();
+        IntraWhere Where = new InnerWhere();
         for(FormulaPropertyInterface Interface : Interfaces)
             if(Interface!=ObjectInterface)
-                Where = Where.and(JoinImplement.get(Interface).getWhere());
+                Where = Where.in(JoinImplement.get(Interface).getWhere());
 
         return new CaseExpr(Where,JoinImplement.get(ObjectInterface));
     }
@@ -2219,7 +2219,7 @@ class DataSession  {
             DataProperty<?> extPropID = Property.Value.getExternalID();
 
             JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID.Interfaces);
-            query.Where = query.Where.and(new CompareWhere(extPropID.getSourceExpr(query.MapKeys,extPropID.getClassSet(ClassSet.universal)),new ValueExpr(NewValue,Property.getType()),CompareWhere.EQUALS));
+            query.Where = query.Where.in(new CompareWhere(extPropID.getSourceExpr(query.MapKeys,extPropID.getClassSet(ClassSet.universal)),new ValueExpr(NewValue,Property.getType()),CompareWhere.EQUALS));
 
             LinkedHashMap<Map<DataPropertyInterface,Integer>,Map<String,Object>> result = query.compile().executeSelect(this,false);
 

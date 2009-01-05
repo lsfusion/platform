@@ -71,13 +71,13 @@ class Join<J,U>  {
             TranslatedJoins = iTranslatedJoins;
         }
 
-        public Where getCaseWhere(MapCase<J> Case) {
+        public IntraWhere getCaseWhere(MapCase<J> Case) {
             if(SourceExpr.containsNull(Case.Data)) { // если есть null просто все null'им
                 Map<U,AndExpr> Exprs = new HashMap<U, AndExpr>();
                 for(U Expr : Source.getProperties())
                     Exprs.put(Expr,new ValueExpr(null,Source.getType(Expr)));
                 put(Case,Exprs);
-                return new OrWhere();
+                return new OuterWhere();
             }
 
             for(CompiledJoin<?> Join : TranslatedJoins) {
@@ -99,7 +99,7 @@ class Join<J,U>  {
     void translate(Translator Translated, ExprTranslator JoinTranslated,Collection<CompiledJoin> TranslatedJoins) {
         MapCaseList<J> CaseList = CaseExpr.translateCase(Joins, Translated, true);
 
-        // перетранслируем InJoin'ы в OR (And Where And NotWhere And InJoin)
+        // перетранслируем InJoin'ы в OR (And IntraWhere And NotWhere And InJoin)
         CaseJoins CaseJoins = new CaseJoins(TranslatedJoins);
         JoinTranslated.put(InJoin,CaseList.getWhere(CaseJoins));
         // перетранслируем все выражения в CaseWhen'ы
@@ -224,7 +224,7 @@ class CompiledJoin<J> extends Join<J,Object> {
             }
         }
 
-        // закинем все Expr'ы и Where
+        // закинем все Expr'ы и IntraWhere
         for(Map.Entry<Object,JoinExpr<J,Object>> JoinExpr : Exprs.entrySet())
             QueryData.put(JoinExpr.getValue(),Alias+"."+FromSource.getPropertyName(JoinExpr.getKey()));
         QueryData.put(InJoin,Alias+"."+FromSource.getInSourceName()+" IS NOT NULL");
@@ -281,7 +281,7 @@ class JoinWhere extends DataWhere implements JoinData {
         return From;
     }
 
-    protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
+    protected void fillDataJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
         Joins.add(this,AndWhere);
     }
 
@@ -293,7 +293,7 @@ class JoinWhere extends DataWhere implements JoinData {
         return "IN JOIN " + From.toString();
     }
 
-    public Where translate(Translator Translator) {
+    public IntraWhere translate(Translator Translator) {
         return this;
     }
 
@@ -312,12 +312,12 @@ class JoinWhere extends DataWhere implements JoinData {
         return FJExpr + " IS NOT NULL"; 
     }
 
-    public Where copy() {
+    public IntraWhere copy() {
         return this;
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(IntraWhere where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
         return mapWheres.get(this)==where;
     }
 

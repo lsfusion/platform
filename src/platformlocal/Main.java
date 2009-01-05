@@ -61,7 +61,7 @@ public class Main {
         JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);
 
         Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query);
-        Query.Wheres.add(new Where(TableJoin));
+        Query.Wheres.add(new IntraWhere(TableJoin));
 
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2);
         Table2Join.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
@@ -78,7 +78,7 @@ public class Main {
 
         JoinQuery<KeyField,PropertyField> Query2 = Union.newJoinQuery(1);
         Join<KeyField,PropertyField> Q2TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query2);
-        Query2.Wheres.add(new Where(Q2TableJoin));
+        Query2.Wheres.add(new IntraWhere(Q2TableJoin));
 
         Query2.properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Q2TableJoin,Table1Prop1,false));
   */
@@ -134,13 +134,13 @@ public class Main {
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> remoteNavigator =  new RemoteNavigator(Adapter,BL);
 
-//            remoteNavigator.changeCurrentUser("user1", "user1");
+            remoteNavigator.changeCurrentUser("user1", "user1");
 
-            LoginDialog loginDialog = new LoginDialog(remoteNavigator);
-            if (loginDialog.login()) {
+//            LoginDialog loginDialog = new LoginDialog(remoteNavigator);
+//            if (loginDialog.login()) {
                 Layout = new Layout(remoteNavigator);
                 Layout.setVisible(true);
-            }
+//            }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {

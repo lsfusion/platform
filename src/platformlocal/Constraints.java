@@ -99,12 +99,12 @@ class UniqueConstraint extends Constraint {
         Changed.and(ChangedExpr.getWhere());
 
         // не равны ключи
-        OrWhere OrDiffKeys = new OrWhere();
+        OuterWhere OrDiffKeys = new OuterWhere();
         
         Map<PropertyInterface,String> KeyFields = new HashMap();
         Integer KeyNum = 0;
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-            OrDiffKeys.or(new CompareWhere(MapChange.get(Interface),MapPrev.get(Interface),CompareWhere.NOT_EQUALS));
+            OrDiffKeys.out(new CompareWhere(MapChange.get(Interface),MapPrev.get(Interface),CompareWhere.NOT_EQUALS));
         Changed.and(OrDiffKeys);
         Changed.Properties.put("value", ChangedExpr);
 
