@@ -74,7 +74,7 @@ interface SourceJoin {
 
     <J extends Join> void fillJoins(List<J> Joins);
 //    void fillJoins(List<? extends Join> Joins);
-    void fillJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere);
+    void fillJoinWheres(MapWhere<JoinData> Joins, OuterWhere AndWhere);
 }
 
 class AndJoinQuery {

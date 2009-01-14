@@ -17,9 +17,10 @@ public class WhereTester {
     private static int AND = 1;
     private static int OR = 2;
     private static int FOLLOW_FALSE = 3;
-    private static int AND_NOT = 4;
-    private static int MEANS = 5;
-    private static int OPERATION_COUNT = 6;
+    private static int FOLLOW_TRUE = 4;
+    private static int AND_NOT = 5;
+    private static int MEANS = 6;
+    private static int OPERATION_COUNT = 7;
 
     public void test() {
 
@@ -29,16 +30,6 @@ public class WhereTester {
         for (int i = 0; i < DATAWHERE_COUNT; i++) {
             dataWheres.add(new TestDataWhere());
         }
-
-        IntraWhere andWhere1 = new InnerWhere(dataWheres.get(0));
-        andWhere1 = andWhere1.in(dataWheres.get(1));
-
-        IntraWhere andWhere2 = new InnerWhere(dataWheres.get(1));
-        andWhere2 = andWhere2.in(dataWheres.get(0));
-
-        OuterWhere outerWhere1 = new OuterWhere((InnerWhere)andWhere1);
-        OuterWhere outerWhere2 = new OuterWhere((InnerWhere)andWhere2);
-        IntraWhere resWhere = outerWhere1.followFalse(outerWhere2);
 
         for (int i = 0; i < DATAWHERE_COUNT; i++) {
 
@@ -59,7 +50,7 @@ public class WhereTester {
                 }
             }
         }
-               
+
 
         List<List<DataWhere>> allValues = SetBuilder.buildSubSetList(dataWheres);
 
@@ -74,25 +65,28 @@ public class WhereTester {
 
         values = values2;
 
-        List<IntraWhere> wheres = new ArrayList(dataWheres);
-        wheres.add(new OuterWhere());
-        wheres.add(new InnerWhere());
+        List<CNFWhere> wheres = new ArrayList();
+        wheres.add(new CNFWhere());
+        wheres.add(new CNFWhere(new DisjunctWhere()));
+
+        for (DataWhere dataWhere : dataWheres)
+            wheres.add(new CNFWhere(new DisjunctWhere(dataWhere)));
 
         List<Integer> lengths = new ArrayList();
 
         for (int iteration = 0; iteration < ITERATION_COUNT; iteration++) {
 
             System.out.println(iteration);
-            if (iteration == 232) {
+            if (iteration == 5) {
                 int a = 1;
 //                break;
             }
 
-            IntraWhere where1 = wheres.get(rand.nextInt(wheres.size()));
+            CNFWhere where1 = wheres.get(rand.nextInt(wheres.size()));
 
             int operation = rand.nextInt(OPERATION_COUNT);
 
-            IntraWhere resultWhere;
+            CNFWhere resultWhere;
 
             if (operation == NOT) {
 
@@ -108,28 +102,29 @@ public class WhereTester {
 
             } else {
 
-                if (! (where1 instanceof OuterWhere) && (operation == OR || operation == FOLLOW_FALSE))
-                    operation = AND;
+//                if (! (where1 instanceof OrWhere) && (operation == OR || operation == FOLLOW_FALSE))
+//                    operation = AND;
 
-                IntraWhere where2 = wheres.get(rand.nextInt(wheres.size()));
+                CNFWhere where2 = wheres.get(rand.nextInt(wheres.size()));
 
                 if (operation == AND)
-                    resultWhere = where1.in(where2);
+                    resultWhere = where1.and(where2);
                 else {
                     if (operation == OR) {
-                        resultWhere = new OuterWhere((OuterWhere)where1);
-                        ((OuterWhere)resultWhere).out(where2);
-                        ((OuterWhere)resultWhere).simplifyFull();
+                        resultWhere = where1.or(where2);
                     } else {
                         if (operation == FOLLOW_FALSE)
-                            resultWhere = where2.followFalse((OuterWhere)where1);
+                            resultWhere = where2.followFalse(where1);
                         else {
-                            if (operation == AND_NOT) {
-                                resultWhere = where1.inNot(where2);
-                                if (resultWhere instanceof OuterWhere)
-                                    ((OuterWhere)resultWhere).simplifyFull();
-                            } else
-                                resultWhere = where1;
+                            if (operation == FOLLOW_TRUE)
+                                resultWhere = where2.followTrue(where1);
+                            else {
+                                if (operation == AND_NOT) {
+                                    resultWhere = where1.andNot(where2);
+                                    resultWhere.simplifyFull();
+                                } else
+                                    resultWhere = where1;
+                            }
                         }
                     }
                 }
@@ -165,6 +160,9 @@ public class WhereTester {
                         if (operation == FOLLOW_FALSE)
                             correctValue = (value2 | value1) == (resultValue | value1);
                         else
+                        if (operation == FOLLOW_TRUE)
+                            correctValue = (value2 & value1) == (resultValue & value1);
+                        else
                             correctValue = resultValue == (value1 & (!value2));
 
                         if (!correctValue)
@@ -177,10 +175,7 @@ public class WhereTester {
 
             lengths.add(resultWhere.getOr().size());
             if (wheres.contains(resultWhere)) continue;
-            if (resultWhere instanceof OuterWhere && ((OuterWhere)resultWhere).size() > 7)
-                continue;
-            if (resultWhere instanceof InnerWhere && ((InnerWhere)resultWhere).size() > 10)
-                continue;
+            if (resultWhere.size() > 7) continue;
 
             wheres.add(resultWhere);
 
@@ -189,7 +184,6 @@ public class WhereTester {
         }
 
         System.out.println(lengths.toString());
-
     }
 
     private boolean correct(List<DataWhere> value, List<DataWhere> dataWheres) {
