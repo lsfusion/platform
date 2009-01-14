@@ -27,6 +27,9 @@ abstract class OperandWhere implements Where {
 
     Collection<Where> operands = new ArrayList();
 
+    OperandWhere() {
+    }
+
     OperandWhere(Where where) {
         operands.add(where);
     }
@@ -218,4 +221,43 @@ class FollowTrueWhere extends OperandWhere {
     Where createWhere(List<Where> wheres) {
         return new FollowTrueWhere(wheres.get(0), wheres.get(1));
     }
+}
+
+class TrueWhere extends OperandWhere {
+
+    TrueWhere() {
+        super();
+    }
+
+    DNFWhere calculateDNFWhere() {
+        return new DNFWhere();
+    }
+
+    CNFWhere calculateCNFWhere() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    Where createWhere(List<Where> wheres) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+}
+
+class FalseWhere extends OperandWhere {
+
+    FalseWhere() {
+        super();
+    }
+
+    DNFWhere calculateDNFWhere() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    CNFWhere calculateCNFWhere() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    Where createWhere(List<Where> wheres) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
 }
