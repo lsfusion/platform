@@ -74,7 +74,7 @@ class ObjectImplement {
     }
 
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, ? extends SourceExpr> ClassSource) {
-        return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):new ValueExpr(idObject,Type.Object));
+        return (ClassGroup!=null && ClassGroup.contains(GroupTo)?ClassSource.get(this):Type.Object.getExpr(idObject));
     }
 }
 
@@ -450,7 +450,7 @@ class UserValueLink extends ValueLink {
     UserValueLink(Object iValue) {Value=iValue;}
 
     SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, ? extends SourceExpr> ClassSource, DataSession Session, Type DBType) {
-        return new ValueExpr(Value,DBType);
+        return DBType.getExpr(Value);
     }
 }
 
@@ -940,7 +940,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                 SubQuery.Properties.put("newvalue", Filter.Value.getValueExpr(Object.GroupTo.GetClassGroup(),SubQuery.MapKeys,Session, Filter.Property.Property.getType()));
 
-                LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.compile().executeSelect(Session, false);
+                LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = SubQuery.executeSelect(Session);
                 // изменяем св-ва
                 for(Entry<Map<ObjectImplement,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                     Property ChangeProperty = Filter.Property.Property;
@@ -1057,7 +1057,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     // рекурсия для генерации порядка
-    private IntraWhere GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
+    private Where GenerateOrderWheres(List<SourceExpr> OrderSources,List<Object> OrderWheres,List<Boolean> OrderDirs,boolean Down,int Index) {
 
         SourceExpr OrderExpr = OrderSources.get(Index);
         Object OrderValue = OrderWheres.get(Index);
@@ -1081,16 +1081,12 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             } else
                 CompareIndex = CompareWhere.LESS;
         }
-        IntraWhere OrderWhere = new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareIndex);
+        Where OrderWhere = new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareIndex);
 
-        if(!Last) {
-            // >A OR (=A AND >B)
-            OuterWhere ResultWhere = new OuterWhere();
-            ResultWhere.out(OrderWhere);
-            ResultWhere.out(new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareWhere.EQUALS).
-                    in(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1)));
-            return ResultWhere;
-        } else
+        if(!Last) // >A OR (=A AND >B)
+            return new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareWhere.EQUALS).
+                    and(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1)).or(OrderWhere);
+        else
             return OrderWhere;
     }
 
@@ -1349,7 +1345,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                                 new ValueExpr(Property.getValue(),Property.getKey().Property.getType()),CompareWhere.EQUALS));
 
                     // докидываем найденные ключи
-                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.compile().executeSelect(Session, false);
+                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Session);
                     if(ResultKeys.size()>0)
                         for(ObjectImplement ObjectKey : Group)
                             ObjectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
@@ -1364,7 +1360,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                         JoinQuery<ObjectImplement,Object> SelectKeys = new JoinQuery<ObjectImplement,Object>(Group);
                         Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.tableFactory,Session);
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.compile(new LinkedHashMap<SourceExpr,Boolean>(),1).executeSelect(Session,false);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Session,new LinkedHashMap<SourceExpr,Boolean>(),1);
                         if(ResultKeys.size()>0)
                             for(ObjectImplement ObjectKey : Group)
                                 ObjectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
@@ -1383,7 +1379,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                         for(PropertyObjectImplement Order : Group.Orders.keySet())
                             OrderQuery.Properties.put(Order, Order.getSourceExpr(Group.GetClassGroup(),OrderQuery.MapKeys,Session));
 
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.compile().executeSelect(Session,false);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ResultOrders = OrderQuery.executeSelect(Session);
                         for(PropertyObjectImplement Order : Group.Orders.keySet())
                             PropertySeeks.put(Order,ResultOrders.values().iterator().next().get(Order));
                     }
@@ -1438,7 +1434,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
                     int ReadSize = Group.PageSize*3/(Direction==DIRECTION_CENTER?2:1);
 
-                    IntraWhere BaseWhere = SelectKeys.Where;
+                    JoinQuery<ObjectImplement,PropertyObjectImplement> CopySelect = null;
+                    if(Direction==DIRECTION_CENTER)
+                        CopySelect = new JoinQuery<ObjectImplement, PropertyObjectImplement>(SelectKeys);
                     // откопируем в сторону запрос чтобы еще раз потом использовать
                     // сначала Descending загоним
                     Group.DownKeys = false;
@@ -1449,7 +1447,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                             Group.DownKeys = hasMoreKeys;
                         }
 
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecResult = SelectKeys.compile(JoinQuery.reverseOrder(SelectOrders),ReadSize).executeSelect(Session, false);
+//                        System.out.println(Group + " KEYS UP ");
+//                        SelectKeys.outSelect(Session,JoinQuery.reverseOrder(SelectOrders),ReadSize);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecResult = SelectKeys.executeSelect(Session,JoinQuery.reverseOrder(SelectOrders),ReadSize);
                         ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList(ExecResult.keySet())).listIterator();
                         while(ik.hasNext()) ik.next();
                         while(ik.hasPrevious()) {
@@ -1464,7 +1464,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                         ActiveRow = KeyResult.size()-1;
 
                     }
-                    SelectKeys.Where = BaseWhere;
+                    if(Direction==DIRECTION_CENTER) SelectKeys = CopySelect;
                     // потом Ascending
                     if(Direction==DIRECTION_DOWN || Direction==DIRECTION_CENTER) {
                         if(OrderSources.size()>0) {
@@ -1472,7 +1472,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                             if(Direction!=DIRECTION_CENTER) Group.UpKeys = hasMoreKeys;
                         }
 
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.compile(SelectOrders,ReadSize).executeSelect(Session,false);
+//                        System.out.println(Group + " KEYS DOWN ");
+//                        SelectKeys.outSelect(Session,SelectOrders,ReadSize);
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> ExecuteList = SelectKeys.executeSelect(Session,SelectOrders,ReadSize);
 //                        if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
                         KeyResult.putAll(ExecuteList);
                         Group.DownKeys = (ExecuteList.size()==ReadSize);
@@ -1638,7 +1640,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             for(PropertyView DrawProp : PanelProps)
                 SelectProps.Properties.put(DrawProp, DrawProp.View.getSourceExpr(null,null,Session));
 
-            Map<PropertyView,Object> ResultProps = SelectProps.compile().executeSelect(Session,false).values().iterator().next();
+            Map<PropertyView,Object> ResultProps = SelectProps.executeSelect(Session).values().iterator().next();
             for(PropertyView DrawProp : PanelProps)
                 Result.PanelProperties.put(DrawProp,ResultProps.get(DrawProp));
         }
@@ -1661,9 +1663,9 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             for(PropertyView DrawProp : GroupList)
                 SelectProps.Properties.put(DrawProp, DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.MapKeys,Session));
 
-//            System.out.println(Group);
-//            SelectProps.outSelect(Session);
-            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.compile().executeSelect(Session, false);
+//            System.out.println(Group + " Props ");
+//            SelectProps.compile(Session.Syntax).outSelect(Session);
+            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
             for(PropertyView DrawProp : GroupList) {
                 Map<GroupObjectValue,Object> PropResult = new HashMap();
@@ -1748,7 +1750,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             Result.properties.put(Property.ID,new HashMap());
         }
 
-        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.compile(QueryOrders,0).executeSelect(Session, false);
+        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultSelect = Query.executeSelect(Session,QueryOrders,0);
 
         for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> Row : ResultSelect.entrySet()) {
             Map<Integer,Integer> GroupValue = new HashMap();

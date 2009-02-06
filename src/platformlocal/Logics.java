@@ -193,7 +193,7 @@ class ObjectTable extends Table {
         JoinTable.Joins.put(Key,new ValueExpr(idObject,Key.Type));
         Query.and(JoinTable.InJoin);
         Query.Properties.put("classid", JoinTable.Exprs.get(Class));
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.compile().executeSelect(Session, false);
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
         if(Result.size()>0)
             return (Integer)Result.values().iterator().next().get("classid");
         else
@@ -250,7 +250,7 @@ class IDTable extends Table {
 
         Query.and(new CompareWhere(Query.MapKeys.get(Key),new ValueExpr(idType,Type.Object),CompareWhere.EQUALS));
 
-        Integer FreeID = (Integer) Query.compile().executeSelect(dataSession, false).values().iterator().next().get(Value);
+        Integer FreeID = (Integer) Query.executeSelect(dataSession).values().iterator().next().get(Value);
 
         // замещаем
         reserveID(dataSession, idType, FreeID);

@@ -38,12 +38,41 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-//        new SourceTest();
-//        if(1==1) return;
+/*        Where a = new TestDataWhere("a");
+        Where b = new TestDataWhere("b");
+        Where c = new TestDataWhere("c");
+        Where d = new TestDataWhere("d");
+        Where x = new TestDataWhere("x");
+        Where y = new TestDataWhere("y");
+        System.out.println(a.and(b).and(a.not())); // a.b.a' = FALSE
+        System.out.println(a.not().and(c.not()).or(d.and(a.or(c)))); // a'.c'+d.(a+c) = a'.c'+d
+        System.out.println(a.or(b).and(a.or(b.not()))); // (a+b).(a+b') = a
+        System.out.println(a.not().or(d.and(a))); // a'+d.a = a'+d
+        System.out.println(a.not().or(d.or(a).and(b))); // a'+(b.(d+a)) = a'+b
+        System.out.println(a.or(b.not().and(b.not()))); // a+b'.b' = a+b'
+        System.out.println(a.and(b.not()).or(a.not().and(b)).and(a.not().and(b))); // (a.b'+a'b).(a'.b)
+        System.out.println(a.and(b).or(a.not().and(b.not())).and(a.and(x).or(a.not().and(y)))); // (a.b+a'.b').(a.x+a'.y)
+        System.out.println(a.and(b).followFalse(a.not().or(b.not()))); // a.b.a' = FALSE
+
+        Where result = new AndWhere();
+        Where wb = new TestDataWhere("b");
+        for(int i=0;i<6;i++) {
+            Where iteration = new OrWhere();
+            iteration = iteration.or(wb);
+            for(int j=0;j<4;j++)
+                iteration = iteration.or(new TestDataWhere("w"+i+"_"+j));
+            result = result.and(iteration);
+        }
+        System.out.println(result);
+
+        WhereTester test = new WhereTester();
+        test.test();
+        if(1==1) return;*/
+/*        new SourceTest();
+        if(1==1) return;*/
 
         if(ForceSeed==null || ForceSeed!=-1) {
-            int a=1;
-            while(a==1) {
+            while(true) {
                 System.out.println("Opened");
                 new TmcBusinessLogics(2);
 //            System.out.println("Closed");
@@ -61,7 +90,7 @@ public class Main {
         JoinQuery<KeyField,PropertyField> Query = Union.newJoinQuery(1);
 
         Join<KeyField,PropertyField> TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query);
-        Query.Wheres.add(new IntraWhere(TableJoin));
+        Query.Wheres.add(new Where(TableJoin));
 
         Join<KeyField,PropertyField> Table2Join = new Join<KeyField,PropertyField>(Table2);
         Table2Join.Joins.put(Table2Key1,new JoinExpr<KeyField,PropertyField>(TableJoin,Table1Prop1,true));
@@ -78,7 +107,7 @@ public class Main {
 
         JoinQuery<KeyField,PropertyField> Query2 = Union.newJoinQuery(1);
         Join<KeyField,PropertyField> Q2TableJoin = new UniJoin<KeyField,PropertyField>(Table1,Query2);
-        Query2.Wheres.add(new IntraWhere(Q2TableJoin));
+        Query2.Wheres.add(new Where(Q2TableJoin));
 
         Query2.properties.put(Table1Prop1,new JoinExpr<KeyField,PropertyField>(Q2TableJoin,Table1Prop1,false));
   */
@@ -790,6 +819,7 @@ class SourceTest {
     KeyField Table3Key1;
     KeyField Table3Key2;
     PropertyField Table3Prop1;
+    PropertyField Table3Prop2;
 
     Map<KeyField,KeyField> Map3To1;
     Map<KeyField,KeyField> MapBack3To1;
@@ -829,6 +859,8 @@ class SourceTest {
         Table3.Keys.add(Table3Key2);
         Table3Prop1 = new PropertyField("prop1",Type.Integer);
         Table3.Properties.add(Table3Prop1);
+        Table3Prop2 = new PropertyField("prop2",Type.Integer);
+        Table3.Properties.add(Table3Prop2);
 
         Map3To1 = new HashMap<KeyField, KeyField>();
         Map3To1.put(Table3Key1,Table1Key1);
@@ -838,9 +870,9 @@ class SourceTest {
         MapBack3To1.put(Table3Key1,Table1Key2);
         MapBack3To1.put(Table3Key2,Table1Key1);
 
-        System.out.println(test3().getInsertSelect(Syntax));
-        System.out.println(test1().getInsertSelect(Syntax));
         System.out.println(test2().getInsertSelect(Syntax));
+        System.out.println(test1().getInsertSelect(Syntax));
+        System.out.println(test3().getInsertSelect(Syntax));
     }
 
     // просто Union 1-й и 3-й таблицы
@@ -856,8 +888,8 @@ class SourceTest {
         Join2Q.and(Table32Q.InJoin);
 
         JoinQuery<KeyField,PropertyField> Join3Q = new JoinQuery<KeyField,PropertyField>(Table1.Keys);
-        Join<KeyField, PropertyField> Table33Q = new Join<KeyField, PropertyField>(Table3, Map3To1, Join3Q);
-        Join3Q.Properties.put(Table1Prop1, Table33Q.Exprs.get(Table3Prop1));
+        Join<KeyField, PropertyField> Table33Q = new Join<KeyField, PropertyField>(Table3, MapBack3To1, Join3Q);
+        Join3Q.Properties.put(Table1Prop1, Table33Q.Exprs.get(Table3Prop2));
         Join3Q.and(Table33Q.InJoin);
 
         UnionQuery<KeyField,PropertyField> ResultQ = new UnionQuery<KeyField,PropertyField>(Table1.Keys,1);

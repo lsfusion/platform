@@ -55,9 +55,9 @@ interface SQLSyntax {
 
     String getBitString(Boolean Value);
 
-    String getSelect(String From,String Exprs,String Where,String OrderBy,String GroupBy,int Top);
+    String getSelect(String From,String Exprs,String Where,String OrderBy,String GroupBy, String Top);
 
-    String getUnionOrder(String Union,String OrderBy,int Top);
+    String getUnionOrder(String Union,String OrderBy, String Top);
 }
 
 abstract class DataAdapter implements SQLSyntax {
@@ -197,11 +197,11 @@ class MySQLDataAdapter extends DataAdapter {
         return "IFNULL(" + Expr1 + "," + "Expr2" + ")";
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
         return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
     }
 
-    public String getUnionOrder(String Union, String OrderBy, int Top) {
+    public String getUnionOrder(String Union, String OrderBy, String Top) {
         return Union + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
     }
 }
@@ -290,12 +290,12 @@ class MSSQLDataAdapter extends DataAdapter {
         return false;
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
         return "SELECT " + clause("TOP",Top) + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy);
     }
 
-    public String getUnionOrder(String Union, String OrderBy, int Top) {
-        if(Top==0)
+    public String getUnionOrder(String Union, String OrderBy, String Top) {
+        if(Top.length()==0)
             return Union + clause("ORDER BY",OrderBy);
         return "SELECT" + clause("TOP",Top) + " * FROM (" + Union + ")" + clause("ORDER BY",OrderBy);
     }
@@ -376,11 +376,11 @@ class PostgreDataAdapter extends DataAdapter {
         return "COALESCE("+Expr1+","+Expr2+")";
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
         return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
     }
 
-    public String getUnionOrder(String Union, String OrderBy, int Top) {
+    public String getUnionOrder(String Union, String OrderBy, String Top) {
         return Union + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
     }
 }
@@ -474,8 +474,8 @@ class OracleDataAdapter extends DataAdapter {
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, int Top) {
-        if(Top!=0)
+    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
+        if(Top.length()!=0)
             Where = (Where.length()==0?"":Where+" AND ") + "rownum<=" + Top;
         return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy);
     }
@@ -485,8 +485,8 @@ class OracleDataAdapter extends DataAdapter {
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
     }
 
-    public String getUnionOrder(String Union, String OrderBy, int Top) {
-        if(Top==0)
+    public String getUnionOrder(String Union, String OrderBy, String Top) {
+        if(Top.length()==0)
             return Union + clause("ORDER BY",OrderBy);
         return "SELECT * FROM (" + Union + ") WHERE rownum<=" + Top + clause("ORDER BY",OrderBy);
     }

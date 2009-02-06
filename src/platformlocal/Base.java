@@ -176,8 +176,8 @@ class MapUtils<T,V> {
 }
 
 class CollectionExtend {
-    static void removeAll(Map<?,?> Map,Set<?> Keys) {
-        for(Object Key : Keys)
+    static <K,V> void removeAll(Map<K,V> Map,Collection<? extends K> Keys) {
+        for(K Key : Keys)
             Map.remove(Key);
     }
 
@@ -206,6 +206,12 @@ class CollectionExtend {
         for(Map.Entry<MK,K> MapKey : Map.entrySet())
             ReverseKeys.put(MapKey.getValue(),MapKey.getKey());
         return ReverseKeys;
+    }
+
+    static <K> Set<K> add(Set<K> set1,Set<K> set2) {
+        HashSet<K> result = new HashSet<K>(set1);
+        result.addAll(set2);
+        return result;
     }
 }
 
@@ -295,5 +301,39 @@ class BaseUtils {
         for(Map.Entry<K,E> entry : map.entrySet())
             result.put(entry.getKey(),joinMap.get(entry.getValue()));
         return result;
+    }
+
+    static <K,E,V> Map<K,V> innerJoin(Map<K,E> map, Map<E,V> joinMap) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<K,E> entry : map.entrySet()) {
+            V joinValue = joinMap.get(entry.getValue());
+            if(joinValue!=null) result.put(entry.getKey(), joinValue);
+        }
+        return result;
+    }
+
+    static <K,V> Map<K,V> filter(Map<K,V> map, Collection<V> values) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<K,V> entry : map.entrySet())
+            if(values.contains(entry.getValue()))
+                result.put(entry.getKey(),entry.getValue());
+        return result;        
+    }
+
+    static <K,V> Map<V,K> reverse(Map<K,V> map) {
+        Map<V,K> result = new HashMap<V, K>();
+        for(Map.Entry<K,V> entry : map.entrySet())
+            result.put(entry.getValue(),entry.getKey());
+        return result;
+    }
+
+    static <KA,VA,KB,VB> Map<VA,VB> crossJoin(Map<KA,VA> map,Map<KB,VB> mapTo,Map<KA,KB> mapJoin) {
+        return join(join(reverse(map),mapJoin),mapTo);
+    }
+
+    static <K,V> boolean identity(Map<K,V> map) {
+        for(Map.Entry<K,V> entry : map.entrySet())
+            if(!entry.getKey().equals(entry.getValue())) return false;
+        return true;
     }
 }

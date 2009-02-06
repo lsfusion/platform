@@ -335,7 +335,7 @@ class ObjectClass extends Class {
     ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
 
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).compile().executeSelect(Session, false).keySet());
+        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
         return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);
     }
 
@@ -391,6 +391,13 @@ abstract class Type<T> {
     abstract Object getEmptyValue();
     ValueExpr getEmptyValueExpr() {
         return new ValueExpr(0,this);
+    }
+
+    SourceExpr getExpr(Object Value) {
+        if(Value==null)
+            return new NullExpr(this);
+        else
+            return new ValueExpr(Value,this);
     }
 
     static Type getObjectType(Object Value) {

@@ -35,7 +35,7 @@ abstract class ValueConstraint extends Constraint {
         Changed.and(new CompareWhere(ValueExpr,Property.ChangeTable.Value.Type.getEmptyValueExpr(),Invalid));
         Changed.Properties.put("value", ValueExpr);
 
-        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.compile().executeSelect(Session, false);
+        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
             String ResultString = "Ограничение на св-во "+Property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> Row : Result.entrySet()) {
@@ -99,22 +99,22 @@ class UniqueConstraint extends Constraint {
         Changed.and(ChangedExpr.getWhere());
 
         // не равны ключи
-        OuterWhere OrDiffKeys = new OuterWhere();
+        Where OrDiffKeys = new OrWhere();
         
         Map<PropertyInterface,String> KeyFields = new HashMap();
         Integer KeyNum = 0;
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-            OrDiffKeys.out(new CompareWhere(MapChange.get(Interface),MapPrev.get(Interface),CompareWhere.NOT_EQUALS));
+            OrDiffKeys = OrDiffKeys.or(new CompareWhere(MapChange.get(Interface),MapPrev.get(Interface),CompareWhere.NOT_EQUALS));
         Changed.and(OrDiffKeys);
         Changed.Properties.put("value", ChangedExpr);
 
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.compile().executeSelect(Session, false);
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
             String ResultString = "Уникальное ограничение на св-во "+Property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<Object,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                 ResultString += "   Объекты (1,2) : ";
                 for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
-                    ResultString += Row.getKey().get(((KeyExpr<Object>)MapChange.get(Interface)).Key)+","+Row.getKey().get(((KeyExpr<Object>)MapPrev.get(Interface)).Key)+" ";
+                    ResultString += Row.getKey().get(Interface)+","+Row.getKey().get((MapPrevKeys.get(Interface)))+" ";
                 ResultString += "Значение : "+Row.getValue().get("value")+'\n';
             }
             

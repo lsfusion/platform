@@ -3,17 +3,17 @@ package platformlocal;
 import java.util.*;
 
 abstract class Case<D> {
-    IntraWhere Where;
+    Where Where;
     D Data;
 
-    Case(IntraWhere iWhere,D iData) {
+    Case(Where iWhere,D iData) {
         Where = iWhere;
         Data = iData; 
     }
 }
 
 interface CaseWhere<C> {
-    IntraWhere getCaseWhere(C Case);
+    Where getCaseWhere(C Case);
 }
 
 abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
@@ -21,23 +21,23 @@ abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
     CaseList() {
     }
     CaseList(D Data) {
-        add(create(new InnerWhere(),Data));
+        add(create(new AndWhere(),Data));
     }
-    CaseList(IntraWhere Where,D Data) {
+    CaseList(Where Where,D Data) {
         add(create(Where,Data));
         LastWhere = Where;
     }
-    CaseList(IntraWhere Where,D True,D False) {
+    CaseList(Where Where,D True,D False) {
         super();
         add(create(Where,True));
-        add(create(new InnerWhere(),False));
+        add(create(new AndWhere(),False));
     }
 
-    OuterWhere PrevUpWhere = new OuterWhere();
-    IntraWhere LastWhere = null;
-    OuterWhere getUpWhere() { // для оптимизации последних элементов
+    Where PrevUpWhere = new OrWhere();
+    Where LastWhere = null;
+    Where getUpWhere() { // для оптимизации последних элементов
         if(LastWhere!=null) {
-            PrevUpWhere.out(LastWhere);
+            PrevUpWhere = PrevUpWhere.or(LastWhere);
             LastWhere = null;
         }
 
@@ -45,73 +45,49 @@ abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
     }
 
     // добавляет Case, проверяя все что можно
-    void add(IntraWhere Where,D Data) {
+    void add(Where Where,D Data) {
 
-        OuterWhere UpWhere = getUpWhere();
+        Where UpWhere = getUpWhere();
+//        if(Where.getSize()+UpWhere.getSize()>25)
+//            Where = Where;
         Where = Where.followFalse(UpWhere);
-        if(!Where.means(UpWhere)) {
+        if(!Where.isFalse()) {
             C LastCase = size()>0?get(size()-1):null;
-            if(LastCase!=null && LastCase.Data.equals(Data)) {
-                // заOr'им
-                OuterWhere LastOr = new OuterWhere(LastCase.Where.getOr());
-                LastOr.out(Where);
-                LastCase.Where = LastOr;
-            } else
+            if(LastCase!=null && LastCase.Data.equals(Data)) // заOr'им
+                LastCase.Where = LastCase.Where.or(Where);
+            else
                 add(create(Where,Data));
             LastWhere = Where;
         }
     }
 
-    int getComplexity() {
-        int Complexity = 0;
-        for(C Case : this)
-            Complexity += Case.Where.getOr().getComplexity();
-        return Complexity;
-    }
+    Where getWhere(CaseWhere<C> CaseInterface) {
 
-    IntraWhere getWhere(CaseWhere<C> CaseInterface) {
+        if(size()>10)
+            LastWhere = LastWhere;
 
-        OuterWhere Result = new OuterWhere();
-        OuterWhere Up = new OuterWhere();
+        Where Result = new OrWhere();
+        Where Up = new OrWhere();
         for(C Case : this) {
-            IntraWhere CaseWhere = CaseInterface.getCaseWhere(Case);
-            if(Case.Where.means(CaseWhere))
-                Result.out(Case.Where.inNot(Up));
-            else {
-                Result.out(Case.Where.in(CaseWhere).inNot(Up));
-                Up.out(Case.Where);
-            }
+            Where CaseWhere = CaseInterface.getCaseWhere(Case);
+            Result = Result.or(Case.Where.and(CaseWhere).and(Up.not()));
+            Up = Up.or(Case.Where);
         }
 
-/*        // эмуляция КНФ
-        OuterWhere Result = new OuterWhere();
-        IntraWhere Up = new AndWhere();
-        for(Iterator<C> i = iterator();i.hasNext();) {
-            C Case = i.next();
-            IntraWhere CaseWhere = CaseInterface.getCaseWhere(Case);
-            if(Case.IntraWhere.means(CaseWhere))
-                Result.or(Case.IntraWhere.and(Up));
-            else {
-                Result.or(Case.IntraWhere.and(CaseWhere).and(Up));
-                if(i.hasNext()) // чтобы последнюю не And'ить
-                    Up = Up.and(Case.IntraWhere.reverseNot());
-            }
-        }
-  */
         return Result;
     }
     
-    abstract C create(IntraWhere Where,D Data);
+    abstract C create(Where Where,D Data);
 }
 
 class ExprCase extends Case<SourceExpr> {
 
-    ExprCase(IntraWhere iWhere, AndExpr iExpr) {
+    ExprCase(Where iWhere, AndExpr iExpr) {
         this(iWhere,(SourceExpr)iExpr);
     }
 
     // дублируем чтобы различать
-    ExprCase(IntraWhere iWhere, SourceExpr iExpr) {
+    ExprCase(Where iWhere, SourceExpr iExpr) {
         super(iWhere,iExpr);
 
 //        if(!iWhere.means(iExpr.getWhere()))
@@ -139,38 +115,41 @@ class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
     ExprCaseList(SourceExpr Data) {
         super(Data);
     }
-    ExprCaseList(IntraWhere Where, SourceExpr Data) {
+    ExprCaseList(Where Where, SourceExpr Data) {
         super(Where, Data);
     }
-    ExprCaseList(IntraWhere Where, SourceExpr True, SourceExpr False) {
+    ExprCaseList(Where Where, SourceExpr True, SourceExpr False) {
         super(Where, True, False);
     }
-    ExprCaseList(SourceExpr Expr,SourceExpr OpExpr,boolean Sum) {
-        add(new ExprCase(Expr.getWhere().in(OpExpr.getWhere()),new FormulaExpr(Expr,OpExpr,Sum)));
+/*    ExprCaseList(SourceExpr Expr,SourceExpr OpExpr,boolean Sum) {
+        add(new ExprCase(Expr.getWhere().and(OpExpr.getWhere()),new FormulaExpr(Expr,OpExpr,Sum)));
         add(new ExprCase(Expr.getWhere(),Expr));
-        add(new ExprCase(new InnerWhere(),OpExpr));
-    }
+        add(new ExprCase(new AndWhere(),OpExpr));
+    }*/
 
     Type Type = null;
-    void add(IntraWhere Where, SourceExpr Data) {
+    void add(Where Where, SourceExpr Data) {
         if(Type==null) Type = Data.getType(); // получим тип на всякий случай
         super.add(Where, Data);
     }
 
-    ExprCase create(IntraWhere Where, SourceExpr Data) {
+    ExprCase create(Where Where, SourceExpr Data) {
         return new ExprCase(Where,Data);
     }
 
     // возвращает CaseExpr
     SourceExpr getExpr() {
 
+        if(size()>10)
+            LastWhere = LastWhere;
+
         ExprCase LastCase = null;
         // срезаем null'ы
         while(size()>0) {
             LastCase = get(size()-1);
-            IntraWhere NullWhere = LastCase.Data.getWhere().not();
-            LastCase.Where = LastCase.Where.followFalse(NullWhere.getOr());
-            if(LastCase.Where.means(NullWhere)) {
+            Where NullWhere = LastCase.Data.getWhere().not();
+            LastCase.Where = LastCase.Where.followFalse(NullWhere);
+            if(LastCase.Where.isFalse()) {
                 remove(size()-1);
             } else
                 break;
@@ -178,7 +157,7 @@ class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
 
         // если не осталось элементов вернем просто NULL
         if(isEmpty())
-            return new ValueExpr(null,LastCase==null?Type:LastCase.Data.getType());
+            return new NullExpr(LastCase==null?Type:LastCase.Data.getType());
 
         // если остался один его и возвращаем
         if(size()==1 && get(0).Where.isTrue())
@@ -191,10 +170,10 @@ class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
 class MapCase<K> extends Case<Map<K,AndExpr>> {
 
     MapCase() {
-        super(new InnerWhere(),new HashMap<K,AndExpr>());
+        super(new AndWhere(),new HashMap<K,AndExpr>());
     }
 
-    MapCase(IntraWhere iWhere, Map<K, AndExpr> iData) {
+    MapCase(Where iWhere, Map<K, AndExpr> iData) {
         super(iWhere, iData);
     }
 }
@@ -203,11 +182,11 @@ class MapCaseList<K> extends CaseList<Map<K,AndExpr>,MapCase<K>> {
 
     MapCaseList() {
     }
-    MapCaseList(IntraWhere Where, Map<K, AndExpr> Data) {
+    MapCaseList(Where Where, Map<K, AndExpr> Data) {
         super(Where, Data);
     }
 
-    MapCase<K> create(IntraWhere Where, Map<K, AndExpr> Data) {
+    MapCase<K> create(Where Where, Map<K, AndExpr> Data) {
         return new MapCase<K>(Where,Data);
     }
 }
@@ -222,21 +201,17 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         Cases = iCases;
     }
 
-    CaseExpr(IntraWhere Where,SourceExpr Expr) {
+    CaseExpr(Where Where,SourceExpr Expr) {
         Cases = new ExprCaseList(Where,Expr);
     }
 
-    CaseExpr(IntraWhere Where,SourceExpr True,SourceExpr False) {
+    CaseExpr(Where Where,SourceExpr True,SourceExpr False) {
         Cases = new ExprCaseList(Where,True,False);
     }
 
-    CaseExpr(SourceExpr Expr,SourceExpr OpExpr,boolean Sum) {
+/*    CaseExpr(SourceExpr Expr,SourceExpr OpExpr,boolean Sum) {
         Cases = new ExprCaseList(Expr,OpExpr,Sum);
-    }
-
-    boolean isNull() {
-        return Cases.isEmpty();
-    }
+    }*/
 
     // получает список ExprCase'ов
     ExprCaseList getCases() {
@@ -244,6 +219,11 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
 
     public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
+
+        if(Cases.size()==0)
+            return Type.NULL;
+        if(Cases.size()==1 && Cases.get(0).Where.isTrue())
+            return Cases.get(0).Data.getSource(QueryData, Syntax);
 
         String Source = "CASE";
         boolean Else = false;
@@ -266,7 +246,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         return "CE(" + Result + ")";
     }
 
-/*    SourceExpr compile(IntraWhere QueryWhere) {
+/*    SourceExpr compile(Where QueryWhere) {
 
         if(getComplexity()>90)
             Cases = Cases;
@@ -278,18 +258,18 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
             ExprCase ExprCase = itCase.next();
             itCase.remove();
 
-            OuterWhere Equal = new OuterWhere();
-            Equal.or(ExprCase.IntraWhere);
+            OrWhere Equal = new OrWhere();
+            Equal.or(ExprCase.Where);
 
-            OuterWhere NotEqual = new OuterWhere();
+            OrWhere NotEqual = new OrWhere();
             while(itCase.hasNext()) {
                 ExprCase CheckCase = itCase.next();
 
                 if(CheckCase.Expr.equals(ExprCase.Expr)) {
-                    Equal.or(CheckCase.IntraWhere.andNot(NotEqual));
+                    Equal.or(CheckCase.Where.andNot(NotEqual));
                     itCase.remove();
                 } else
-                    NotEqual.or(CheckCase.IntraWhere);
+                    NotEqual.or(CheckCase.Where);
             }
 
             MergedCases.add(new ExprCase(Equal,ExprCase.Expr));
@@ -313,11 +293,11 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         ExprCaseList TranslatedCases = new ExprCaseList();
         for(Iterator<ExprCase> i=Cases.iterator();i.hasNext();) {
             ExprCase Case = i.next();
-            IntraWhere TranslatedWhere = Translator.translate(Case.Where);
-            for(ExprCase TranslatedCase : Translator.translate(Case.Data).getCases()) // здесь на самом деле заведомо будут AndExpr'ы
-                TranslatedCases.add(TranslatedWhere.in(TranslatedCase.Where),TranslatedCase.Data);
-            if(i.hasNext()) // для оптимизации последнюю не добавлять
-                TranslatedCases.add(TranslatedWhere,new ValueExpr(null,getType()));
+            Where TranslatedWhere = Case.Where.translate(Translator);
+            for(ExprCase TranslatedCase : Case.Data.translate(Translator).getCases()) // здесь на самом деле заведомо будут AndExpr'ы
+                TranslatedCases.add(TranslatedWhere.and(TranslatedCase.Where),TranslatedCase.Data);
+            if(i.hasNext()) // для оптимизации последнюю не добавлять  && !TranslatedData.get(TranslatedData.size()-1).Where.isTrue()
+                TranslatedCases.add(TranslatedWhere,new NullExpr(getType()));
         }
 
         return TranslatedCases.getExpr();
@@ -333,8 +313,8 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         Map.Entry<K,? extends SourceExpr> MapExpr = ic.next();
 
         for(ExprCase Case : MapExpr.getValue().getCases()) {
-            IntraWhere PrevWhere = Current.Where;
-            Current.Where = Current.Where.in(Case.Where);
+            Where PrevWhere = Current.Where;
+            Current.Where = Current.Where.and(Case.Where);
             Current.Data.put(MapExpr.getKey(), (AndExpr) Case.Data);
             recTranslateCase(ic,Current,Result);
             Current.Where = PrevWhere;
@@ -348,7 +328,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         Map<K,SourceExpr> TranslateExprs = new HashMap<K,SourceExpr>();
         boolean HasCases = false;
         for(Map.Entry<K,? extends SourceExpr> MapExpr : MapExprs.entrySet()) {
-            SourceExpr TranslatedExpr = Translator.translate(MapExpr.getValue());
+            SourceExpr TranslatedExpr = MapExpr.getValue().translate(Translator);
             TranslateExprs.put(MapExpr.getKey(), TranslatedExpr);
             HasCases = HasCases || TranslatedExpr instanceof CaseExpr;
         }
@@ -362,46 +342,46 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         }
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins) {
+    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
         for(ExprCase Case : Cases) {
-            Case.Where.fillJoins(Joins);
-            Case.Data.fillJoins(Joins);
+            Case.Where.fillJoins(Joins, Values);
+            Case.Data.fillJoins(Joins, Values);
         }
     }
 
-    public void fillJoinWheres(MapWhere<JoinData> Joins, IntraWhere AndWhere) {
+    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         // здесь по-хорошему надо andNot(верхних) но будет тормозить
         for(ExprCase Case : Cases) {
-            Case.Where.fillJoinWheres(Joins,AndWhere);
-            Case.Data.fillJoinWheres(Joins,AndWhere.in(Case.Where));
+            Case.Where.fillJoinWheres(joins, andWhere);
+            Case.Data.fillJoinWheres(joins, andWhere.and(Case.Where));
         }
     }
 
-    public IntraWhere getCaseWhere(ExprCase Case) {
+    public Where getCaseWhere(ExprCase Case) {
         return Case.Data.getWhere();
     }
 
-    // возвращает IntraWhere без следствий
-    IntraWhere getWhere() {
+    // возвращает Where без следствий
+    Where getWhere() {
         return Cases.getWhere(this);
     }
 
     // для кэша
-    boolean equals(SourceExpr Expr, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
-        if(!(Expr instanceof CaseExpr)) return false;
+    boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+        if(!(expr instanceof CaseExpr)) return false;
 
-        CaseExpr CaseExpr = (CaseExpr)Expr;
+        CaseExpr CaseExpr = (CaseExpr) expr;
 
         if(Cases.size()!=CaseExpr.Cases.size()) return false;
 
         for(int i=0;i<Cases.size();i++)
-            if(!Cases.get(i).equals(CaseExpr.Cases.get(i), MapExprs, MapWheres))
+            if(!Cases.get(i).equals(CaseExpr.Cases.get(i), mapExprs, mapWheres))
                 return false;
 
         return true;
     }
 
-    int hash() {
+    int getHash() {
         int Hash = 0;
         for(ExprCase Case : Cases)
             Hash = 31*Hash + Case.hash();    

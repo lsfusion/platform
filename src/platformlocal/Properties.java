@@ -434,11 +434,11 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
                 if(isInInterface(Classes.getClassSet(ClassSet.universal)))
                     PrevExpr = getSourceExpr(NewQuery.MapKeys,Classes.getClassSet(ClassSet.universal));
                 else
-                    PrevExpr = new ValueExpr(null,getType());
+                    PrevExpr = new NullExpr(getType());
                 // по любому 2 нету надо докинуть
                 NewQuery.Properties.put(ChangeTable.PrevValue, PrevExpr);
                 if(Type==1) // есть 1, а надо по сути 0
-                    NewExpr = new CaseExpr(NewExpr,PrevExpr,true);
+                    NewExpr = new LinearExpr(NewExpr,PrevExpr,true);
                 NewQuery.Properties.put(ChangeTable.Value, NewExpr);
 
                 Source = NewQuery;
@@ -517,7 +517,7 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
             if(Value==1 && Type==2) {
                 JoinQuery<T,PropertyField> DiffQuery = new JoinQuery<T,PropertyField>(Interfaces);
                 Join<T,PropertyField> ChangeJoin = new Join<T,PropertyField>(Source,DiffQuery);
-                DiffQuery.Properties.put(ChangeTable.Value, new CaseExpr(ChangeJoin.Exprs.get(ChangeTable.Value),
+                DiffQuery.Properties.put(ChangeTable.Value, new LinearExpr(ChangeJoin.Exprs.get(ChangeTable.Value),
                                         ChangeJoin.Exprs.get(ChangeTable.PrevValue),false));
                 DiffQuery.and(ChangeJoin.InJoin);
                 return new Join<T,PropertyField>(DiffQuery,JoinImplement).Exprs.get(ChangeTable.Value);
@@ -746,7 +746,7 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
 
                 InterfaceClassSet<DataPropertyInterface> RemoveClassSet = getClassSet(ClassSet.universal).and(new InterfaceClass<DataPropertyInterface>(RemoveInterface,Session.RemoveChanges.get(RemoveInterface.Class)));
                 // пока сделаем что наплевать на старое значение хотя конечно 2 раза может тоже не имеет смысл считать
-                Query.Properties.put(ChangeTable.Value, new ValueExpr(null, ChangeTable.Value.Type));
+                Query.Properties.put(ChangeTable.Value, new NullExpr(ChangeTable.Value.Type));
                 Query.and(getSourceExpr(Query.MapKeys,RemoveClassSet).getWhere());
 
                 ResultQuery.add(Query,1);
@@ -764,7 +764,7 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
             InterfaceClassSet<DataPropertyInterface> RemoveClassSet = getClassSet(Session.RemoveChanges.get(Value));
             RemoveJoin.Joins.put(TableFactory.RemoveClassTable.Object,getSourceExpr(Query.MapKeys,RemoveClassSet));
             Query.and(RemoveJoin.InJoin);
-            Query.Properties.put(ChangeTable.Value, new ValueExpr(null, ChangeTable.Value.Type));
+            Query.Properties.put(ChangeTable.Value, new NullExpr(ChangeTable.Value.Type));
 
             ResultQuery.add(Query,1);
             ResultClass.or(new ValueClassSet<DataPropertyInterface>(new ClassSet(),RemoveClassSet));
@@ -828,7 +828,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
             System.out.println("AGGR - "+caption);
             AggrSelect.outSelect(Session);
         }*/
-        LinkedHashMap<Map<T, Integer>, Map<String, Object>> AggrResult = AggrSelect.compile().executeSelect(Session, false);
+        LinkedHashMap<Map<T, Integer>, Map<String, Object>> AggrResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = true;
         AggrSelect = getOutSelect("value");
 /*        if(caption.equals("Дата 8") || caption.equals("Склад")) {
@@ -840,7 +840,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
 //            AggrSelect.outSelect(Session);
 //        }
 
-        LinkedHashMap<Map<T, Integer>, Map<String, Object>> CalcResult = AggrSelect.compile().executeSelect(Session, false);
+        LinkedHashMap<Map<T, Integer>, Map<String, Object>> CalcResult = AggrSelect.executeSelect(Session);
         TableFactory.ReCalculateAggr = false;
 
         Iterator<Map.Entry<Map<T,Integer>,Map<String,Object>>> i = AggrResult.entrySet().iterator();
@@ -987,7 +987,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                     RemoveClass.put(ValueInterface,ClassSet.getUp(ValueInterface.Class));
                 }
 
-            Query.Properties.put(ChangeTable.Value, new ValueExpr(null, ChangeTable.Value.Type));
+            Query.Properties.put(ChangeTable.Value, new NullExpr(ChangeTable.Value.Type));
             Query.Properties.put(ChangeTable.PrevValue, new ValueExpr(Value, ChangeTable.PrevValue.Type));
 
             ResultQuery.add(Query,1);
@@ -1022,7 +1022,7 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
                 }
             }
 
-            Query.Properties.put(ChangeTable.PrevValue, new ValueExpr(null, ChangeTable.PrevValue.Type));
+            Query.Properties.put(ChangeTable.PrevValue, new NullExpr(ChangeTable.PrevValue.Type));
             Query.Properties.put(ChangeTable.Value, new ValueExpr(Value, ChangeTable.Value.Type));
 
             ResultQuery.add(Query,1);
@@ -1044,11 +1044,11 @@ class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         JoinQuery<DataPropertyInterface,String> Query = new JoinQuery<DataPropertyInterface,String>(Interfaces);
 
         if(Value==null) // если Value null закинем false по сути в запрос
-            Query.and(new OuterWhere());
+            Query.and(new OrWhere());
         else
             for(DataPropertyInterface ValueInterface : Interfaces)
                 joinObjects(Query,ValueInterface);
-        Query.Properties.put(ValueString, new ValueExpr(Value,ValueClass.getType()));
+        Query.Properties.put(ValueString,ValueClass.getType().getExpr(Value));
 
         return (new Join<DataPropertyInterface,String>(Query,JoinImplement)).Exprs.get(ValueString);
     }
@@ -1575,11 +1575,9 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         SuspiciousQuery.Properties.put(ChangeTable.Value, NewValue);
         SuspiciousQuery.Properties.put(ChangeTable.PrevValue, PrevValue);
 
-        OuterWhere Where = new OuterWhere();
-        Where.out(new CompareWhere(PrevValue,NewValue,CompareWhere.LESS));
-        Where.out(new CompareWhere(PrevValue,OldValue,CompareWhere.EQUALS));
-        Where.out(NewValue.getWhere().in(PrevValue.getWhere().not()));
-        SuspiciousQuery.and(Where);
+        SuspiciousQuery.and(NewValue.getWhere().and(PrevValue.getWhere().not()).or(
+                new CompareWhere(PrevValue,NewValue,CompareWhere.LESS)).or(new CompareWhere(PrevValue,OldValue,CompareWhere.EQUALS)));
+
 
         // сохраняем
         Change IncrementChange = new Change(2,SuspiciousQuery,ResultClass);
@@ -1589,12 +1587,10 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         Join<GroupPropertyInterface<T>,PropertyField> SourceJoin = new Join<GroupPropertyInterface<T>,PropertyField>(IncrementChange.Source,ReReadQuery);
 
         NewValue = SourceJoin.Exprs.get(ChangeTable.Value);
-        Where = new OuterWhere();
-        Where.out(SourceJoin.InJoin.in(NewValue.getWhere().not())); // новое null и InJoin
-        Where.out(new CompareWhere(NewValue,SourceJoin.Exprs.get(ChangeTable.PrevValue),CompareWhere.LESS)); // или ноаое меньше старого
-        ReReadQuery.and(Where);
+        // новое null и InJoin или ноаое меньше старого 
+        ReReadQuery.and(SourceJoin.InJoin.and(NewValue.getWhere().not()).or(new CompareWhere(NewValue,SourceJoin.Exprs.get(ChangeTable.PrevValue),CompareWhere.LESS)));
 
-        if(!(ReReadQuery.compile(new LinkedHashMap<SourceExpr,Boolean>(),1).executeSelect(Session,false).size() == 0)) {
+        if(!(ReReadQuery.executeSelect(Session,new LinkedHashMap<SourceExpr,Boolean>(),1).size() == 0)) {
             // если кол-во > 0 перечитываем, делаем LJ GQ с протолкнутым ReReadQuery
             JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField,PropertyField>(ChangeTable.Keys);
             UpdateQuery.putKeyWhere(Collections.singletonMap(ChangeTable.Property,ID));
@@ -1783,7 +1779,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
             ResultClass.or(ChangeClass);
         }
         if(ResultQuery.Where.isFalse())
-            ResultQuery.Properties.put(Value, new ValueExpr(null,getType()));
+            ResultQuery.Properties.put(Value, new NullExpr(getType()));
 
         return ResultQuery;
     }
@@ -1966,7 +1962,7 @@ abstract class WhereFormulaProperty extends ValueFormulaProperty<FormulaProperty
         return new CaseExpr(getWhere(JoinImplement),new ValueExpr(true,Type.Bit));
     }
 
-    abstract IntraWhere getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement);
+    abstract Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement);
 }
 
 class CompareFormulaProperty extends WhereFormulaProperty {
@@ -1984,7 +1980,7 @@ class CompareFormulaProperty extends WhereFormulaProperty {
         Interfaces.add(Operator2);
     }
 
-    IntraWhere getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
+    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
         return new CompareWhere(JoinImplement.get(Operator1),JoinImplement.get(Operator2),Compare);
     }
 }
@@ -1999,7 +1995,7 @@ class NotNullFormulaProperty extends WhereFormulaProperty {
         Interfaces.add(Property);
     }
 
-    IntraWhere getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
+    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
         return JoinImplement.get(Property).getWhere();
     }
 }
@@ -2034,10 +2030,10 @@ class ObjectFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
     }
 
     SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface,? extends SourceExpr> JoinImplement, InterfaceClassSet<FormulaPropertyInterface> JoinClasses) {
-        IntraWhere Where = new InnerWhere();
+        Where Where = new AndWhere();
         for(FormulaPropertyInterface Interface : Interfaces)
             if(Interface!=ObjectInterface)
-                Where = Where.in(JoinImplement.get(Interface).getWhere());
+                Where = Where.and(JoinImplement.get(Interface).getWhere());
 
         return new CaseExpr(Where,JoinImplement.get(ObjectInterface));
     }
@@ -2208,20 +2204,20 @@ class DataSession  {
         ReadQuery.putKeyWhere(KeyValues);
 
         ReadQuery.Properties.put(ReadValue, getSourceExpr(Property,ReadQuery.MapKeys,new InterfaceClassSet<T>(new InterfaceClass<T>(Keys))));
-        return ReadQuery.compile().executeSelect(this, false).values().iterator().next().get(ReadValue);
+        return ReadQuery.executeSelect(this).values().iterator().next().get(ReadValue);
     }
 
     void changeProperty(DataProperty Property, Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, boolean externalID) throws SQLException {
 
         // если изменяем по внешнему коду, но сначала надо найти внутренний код, а затем менять
-        if (externalID) {
+        if (externalID && NewValue!=null) {
 
             DataProperty<?> extPropID = Property.Value.getExternalID();
 
             JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID.Interfaces);
-            query.Where = query.Where.in(new CompareWhere(extPropID.getSourceExpr(query.MapKeys,extPropID.getClassSet(ClassSet.universal)),new ValueExpr(NewValue,Property.getType()),CompareWhere.EQUALS));
+            query.Where = query.Where.and(new CompareWhere(extPropID.getSourceExpr(query.MapKeys,extPropID.getClassSet(ClassSet.universal)),new ValueExpr(NewValue,Property.getType()),CompareWhere.EQUALS));
 
-            LinkedHashMap<Map<DataPropertyInterface,Integer>,Map<String,Object>> result = query.compile().executeSelect(this,false);
+            LinkedHashMap<Map<DataPropertyInterface,Integer>,Map<String,Object>> result = query.executeSelect(this);
 
             if (result.size() == 0) return;
 
@@ -2317,6 +2313,7 @@ class DataSession  {
 //            Main.Session = null;
             if(!(Property instanceof MaxGroupProperty) && ToUpdate.toSave(Property))
                 Change.save(this);
+//            System.out.println(Property.caption + " incComplexity : " + Change.Source.getComplexity());
 //            Change.out(this);
 /*            System.out.println(Property.caption+" - CHANGES");
             Property.OutChangesTable(this);
@@ -2443,7 +2440,7 @@ class DataSession  {
         if(inInterface)
             return Property.getSourceExpr(JoinImplement,JoinClasses);
         else
-            return new ValueExpr(null,Property.getType());
+            return new NullExpr(Property.getType());
     }
 
     boolean InTransaction = false;
@@ -2529,7 +2526,7 @@ class DataSession  {
 //            if(!ExecuteString.startsWith("DROP") && !ExecuteString.startsWith("CREATE")) {
 //            System.out.println(ExecuteString+Syntax.getCommandEnd());
 //            e = e;
-//            }
+//           }
         } finally {
             Statement.close();
         }
@@ -2560,7 +2557,7 @@ class DataSession  {
             ValueString = ValueString+","+TypedObject.getString(PropFields.get(Prop),Prop.Type,Syntax);
         }
 
-        Execute("INSERT INTO "+Table.getSource(Syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
+        Execute("INSERT INTO "+Table.getName(Syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
     }
 
     void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
@@ -2575,11 +2572,11 @@ class DataSession  {
         // сначала закинем KeyField'ы и прогоним Select
         IsRecQuery.and(new Join<KeyField,PropertyField>(Table,KeyExprs).InJoin);
 
-        if(IsRecQuery.compile().executeSelect(this, false).size()>0) {
+        if(IsRecQuery.executeSelect(this).size()>0) {
             JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField, PropertyField>(Table.Keys);
             UpdateQuery.putKeyWhere(KeyFields);
             for(Map.Entry<PropertyField,Object> MapProp : PropFields.entrySet())
-                UpdateQuery.Properties.put(MapProp.getKey(), new ValueExpr(MapProp.getValue(),MapProp.getKey().Type));
+                UpdateQuery.Properties.put(MapProp.getKey(), MapProp.getKey().Type.getExpr(MapProp.getValue()));
 
             // есть запись нужно Update лупить
             UpdateRecords(new ModifyQuery(Table,UpdateQuery));
@@ -2594,7 +2591,7 @@ class DataSession  {
         for(Map.Entry<KeyField,Integer> DeleteKey : Keys.entrySet())
             DeleteWhere = (DeleteWhere.length()==0?"":DeleteWhere+" AND ") + DeleteKey.getKey().Name + "=" + DeleteKey.getValue();
 
-        Execute("DELETE FROM "+Table.getSource(Syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
+        Execute("DELETE FROM "+Table.getName(Syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
     }
 
     void UpdateRecords(ModifyQuery Modify) throws SQLException {
@@ -2709,15 +2706,15 @@ class MapChangedRead<P extends PropertyInterface> extends MapRead<P> {
         if(MapChanged) {
             JoinExpr MapExpr = Session.getChange(MapProperty).getExpr(JoinImplement,MapType==3?0:MapType);
             Query.and(MapExpr.From.InJoin);
-            SourceExpr expr = (MapType==3?new ValueExpr(null,MapExpr.getType()):MapExpr);
+            SourceExpr expr = (MapType==3?new NullExpr(MapExpr.getType()):MapExpr);
             Query.Properties.put(Value, expr);
         } else {
             if(MapType==1) // просто null кидаем
-                Query.Properties.put(Value, new ValueExpr(null, MapProperty.getType()));
+                Query.Properties.put(Value, new NullExpr(MapProperty.getType()));
             else {
                 SourceExpr MapExpr = MapProperty.getSourceExpr(JoinImplement,JoinClasses);
                 Query.and(MapExpr.getWhere());
-                SourceExpr expr = (MapType==2?new ValueExpr(null,MapExpr.getType()):MapExpr);
+                SourceExpr expr = (MapType==2?new NullExpr(MapExpr.getType()):MapExpr);
                 Query.Properties.put(Value, expr);
             }
         }
@@ -2801,7 +2798,7 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
                 fillChangedRead(ListQuery, Value, Read, ReadClass);
         if(ListQuery.Where.isFalse())
             for(Map.Entry<OM,Type> NullProp : getMapNullProps(Value).entrySet())
-                ListQuery.Properties.put(NullProp.getKey(), new ValueExpr(null,NullProp.getValue()));
+                ListQuery.Properties.put(NullProp.getKey(), new NullExpr(NullProp.getValue()));
 
         return ListQuery;
     }

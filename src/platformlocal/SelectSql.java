@@ -20,48 +20,12 @@ abstract class Source<K,V> {
 
     abstract Collection<V> getProperties();
     abstract Type getType(V Property);
-    
-    Map<K,String> KeyNames = new HashMap();
-    int KeyCount = 0;
 
-    String getKeyName(K Key) {
-        String KeyName = KeyNames.get(Key);
-        if(KeyName==null) {
-            KeyName = "dkey"+(KeyCount++);
-            KeyNames.put(Key,KeyName);
-        }
-
-        return KeyNames.get(Key);
-    }
-
-    // сделаем кэш Value
-    Map<V,String> ValueNames = new HashMap();
-    int ValueCount = 0;
-
-    String getPropertyName(V Value) {
-        String ValueName = ValueNames.get(Value);
-        if(ValueName==null) {
-            ValueName = "value"+(ValueCount++);
-            ValueNames.put(Value,ValueName);
-        }
-        return ValueName;
-    }
-
-    String stringExpr(Map<K,String> KeySelect,List<K> KeyOrder,Map<V,String> PropertySelect, List<V> PropertyOrder) {
-        LinkedHashMap<String,String> NamedProperties = new LinkedHashMap<String, String>();
-        for(Map.Entry<V,String> Property : PropertySelect.entrySet()) {
-            NamedProperties.put(getPropertyName(Property.getKey()),Property.getValue());
-            PropertyOrder.add(Property.getKey());
-        }
-        return stringExpr(KeySelect,KeyOrder,NamedProperties);
-    }
-
-    String stringExpr(Map<K,String> KeySelect,List<K> KeyOrder,LinkedHashMap<String,String> PropertySelect) {
+    // вспомогательные методы
+    static String stringExpr(LinkedHashMap<String,String> KeySelect,LinkedHashMap<String,String> PropertySelect) {
         String ExpressionString = "";
-        for(Map.Entry<K,String> Key : KeySelect.entrySet()) {
-            ExpressionString = (ExpressionString.length()==0?"":ExpressionString+",") + Key.getValue() + " AS " + getKeyName(Key.getKey());
-            KeyOrder.add(Key.getKey());
-        }
+        for(Map.Entry<String,String> Key : KeySelect.entrySet())
+            ExpressionString = (ExpressionString.length()==0?"":ExpressionString+",") + Key.getValue() + " AS " + Key.getKey();
         if(KeySelect.size()==0)
             ExpressionString = "1 AS subkey";
         for(Map.Entry<String,String> Property : PropertySelect.entrySet())
@@ -69,17 +33,28 @@ abstract class Source<K,V> {
         return ExpressionString;
     }
 
-    String stringWhere(Collection<String> WhereSelect) {
+    static <T> LinkedHashMap<String,String> mapNames(Map<T,String> Exprs,Map<T,String> Names,List<T> Order) {
+        LinkedHashMap<String,String> Result = new LinkedHashMap<String, String>();
+        for(Map.Entry<T,String> Name : Names.entrySet()) {
+            Result.put(Name.getValue(),Exprs.get(Name.getKey()));
+            Order.add(Name.getKey());
+        }
+        return Result;
+    }
+
+    static String stringWhere(Collection<String> WhereSelect) {
         String WhereString = "";
         for(String Where : WhereSelect)
             WhereString = (WhereString.length()==0?"":WhereString+" AND ") + Where;
         return WhereString;
     }
 
+    abstract Map<ValueExpr,ValueExpr> getValues();
+
     // записывается в Join'ы
     abstract void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins);
 
-    <EK, EV> boolean equals(Source<EK, EV> Source, Map<K, EK> MapKeys, Map<V, EV> MapProperties, Map<ObjectExpr, ObjectExpr> MapValues) {
+    <EK, EV> boolean equals(Source<EK, EV> Source, Map<K, EK> MapKeys, Map<V, EV> MapProperties, Map<ValueExpr, ValueExpr> MapValues) {
         if(this==Source) {
             for(Map.Entry<K,EK> MapKey : MapKeys.entrySet())
                 if(!MapKey.getKey().equals(MapKey.getValue()))
@@ -93,9 +68,27 @@ abstract class Source<K,V> {
         return false;
     }
 
+    boolean Hashed = false;
+    int Hash;
     int hash() {
+        if(!Hashed) {
+            Hash = getHash();
+            Hashed = true;
+        }
+        return Hash;
+    }
+    int getHash() {
         return hashCode();
     }
+
+    abstract int hashProperty(V Property);
+
+    int getComplexity() {
+        Set<JoinQuery> Queries = new HashSet<JoinQuery>();
+        fillJoinQueries(Queries);
+        return Queries.size();
+    }
+    abstract void fillJoinQueries(Set<JoinQuery> Queries);
 }
 
 abstract class DataSource<K,V> extends Source<K,V> {
@@ -106,7 +99,10 @@ abstract class DataSource<K,V> extends Source<K,V> {
     DataSource() {
     }
 
-    abstract String getSource(SQLSyntax Syntax);
+    abstract String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params);
+
+    abstract String getKeyName(K Key);
+    abstract String getPropertyName(V Property);
 
     // получает строку по которой можно определить входит ли ряд в запрос Select
     String getInSourceName() {
@@ -129,8 +125,10 @@ abstract class DataSource<K,V> extends Source<K,V> {
     }
 
     void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins) {
-        Join.translate(Translated, Translated, TranslatedJoins);
+        Join.translate(Translated, TranslatedJoins, this);
     }
+
+    abstract DataSource<K,V> translateValues(Map<ValueExpr, ValueExpr> Values);
 }
 
 class TypedObject {
@@ -207,8 +205,15 @@ class Table extends DataSource<KeyField,PropertyField> {
 
     Table(String iName) {Name=iName;}
 
-    String getSource(SQLSyntax Syntax) {
+    String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params) {
+        return getName(Syntax);
+    }
+    
+    String getName(SQLSyntax Syntax) {
         return Name;
+    }
+
+    void fillJoinQueries(Set<JoinQuery> Queries) {
     }
 
     public String toString() {
@@ -233,12 +238,24 @@ class Table extends DataSource<KeyField,PropertyField> {
         return Property.Name;
     }
 
+    Map<ValueExpr,ValueExpr> getValues() {
+        return new HashMap<ValueExpr,ValueExpr>();
+    }
+
     public void outSelect(DataSession Session) throws SQLException {
         JoinQuery<KeyField,PropertyField> OutQuery = new JoinQuery<KeyField,PropertyField>(Keys);
         Join<KeyField,PropertyField> OutJoin = new Join<KeyField,PropertyField>(this,OutQuery);
         OutQuery.Properties.putAll(OutJoin.Exprs);
-        OutQuery.Where = OutQuery.Where.in(OutJoin.InJoin);
+        OutQuery.Where = OutQuery.Where.and(OutJoin.InJoin);
         OutQuery.outSelect(Session);
+    }
+
+    int hashProperty(PropertyField Property) {
+        return Property.hashCode();
+    }
+
+    DataSource<KeyField, PropertyField> translateValues(Map<ValueExpr, ValueExpr> Values) {
+        return this;
     }
 }
 
@@ -249,7 +266,7 @@ class SessionTable extends Table {
         super(iName);
     }
 
-    String getSource(SQLSyntax Syntax) {
+    String getName(SQLSyntax Syntax) {
         return Syntax.getSessionTableName(Name);
     }
 
@@ -284,15 +301,18 @@ class ModifyQuery {
             Map<KeyField,String> KeySelect = new HashMap<KeyField, String>();
             Map<PropertyField,String> PropertySelect = new HashMap<PropertyField, String>();
             Collection<String> WhereSelect = new ArrayList<String>();
-            String FromSelect = Change.fillSelect(KeySelect,PropertySelect,WhereSelect, Syntax);
+            CompiledQuery<KeyField, PropertyField> ChangeCompile = Change.compile(Syntax);
+            String FromSelect = ChangeCompile.fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
             for(KeyField Key : Table.Keys)
-                WhereSelect.add(Table.getSource(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
+                WhereSelect.add(Table.getName(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
             
             List<KeyField> KeyOrder = new ArrayList<KeyField>();
             List<PropertyField> PropertyOrder = new ArrayList<PropertyField>();
-            String SelectString = Syntax.getSelect(FromSelect,Change.stringExpr(KeySelect,KeyOrder,PropertySelect,PropertyOrder),
-                    Change.stringWhere(WhereSelect),"","",0);
+            String SelectString = Syntax.getSelect(FromSelect,Source.stringExpr(
+                    Source.mapNames(KeySelect,ChangeCompile.KeyNames,KeyOrder),
+                    Source.mapNames(PropertySelect,ChangeCompile.PropertyNames,PropertyOrder)),
+                    Source.stringWhere(WhereSelect),"","","");
 
             String SetString = "";
             for(KeyField Field : KeyOrder) 
@@ -300,7 +320,7 @@ class ModifyQuery {
             for(PropertyField Field : PropertyOrder) 
                 SetString = (SetString.length()==0?"":SetString+",") + Field.Name;
 
-            return "UPDATE " + Table.getSource(Syntax) + " SET ("+SetString+") = ("+SelectString+") WHERE EXISTS ("+SelectString+")";
+            return "UPDATE " + Table.getName(Syntax) + " SET ("+SetString+") = ("+SelectString+") WHERE EXISTS ("+SelectString+")";
         } else {
             Map<KeyField,String> KeySelect = new HashMap<KeyField, String>();
             Map<PropertyField,String> PropertySelect = new HashMap<PropertyField, String>();
@@ -321,12 +341,12 @@ class ModifyQuery {
                 UpdateQuery.and(ChangeJoin.InJoin);
                 for(PropertyField ChangeField : Change.Properties.keySet())
                     UpdateQuery.Properties.put(ChangeField, ChangeJoin.Exprs.get(ChangeField));
-                FromSelect = UpdateQuery.fillSelect(KeySelect,PropertySelect,WhereSelect, Syntax);
+                FromSelect = UpdateQuery.compile(Syntax).fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
             } else {
-                FromSelect = Change.fillSelect(KeySelect,PropertySelect,WhereSelect, Syntax);
+                FromSelect = Change.compile(Syntax).fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
                 for(KeyField Key : Table.Keys)
-                    WhereSelect.add(Table.getSource(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
+                    WhereSelect.add(Table.getName(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
             }
 
             for(String Where : WhereSelect)
@@ -336,7 +356,7 @@ class ModifyQuery {
             for(Map.Entry<PropertyField,String> SetProperty : PropertySelect.entrySet())
                 SetString = (SetString.length()==0?"":SetString+",") + SetProperty.getKey().Name + "=" + SetProperty.getValue();
 
-            return "UPDATE " + Syntax.getUpdate(Table.getSource(Syntax)," SET "+SetString,FromSelect,(WhereString.length()==0?"":" WHERE "+WhereString));
+            return "UPDATE " + Syntax.getUpdate(Table.getName(Syntax)," SET "+SetString,FromSelect,(WhereString.length()==0?"":" WHERE "+WhereString));
         }
     }
 
@@ -354,17 +374,15 @@ class ModifyQuery {
 
     String getInsertSelect(SQLSyntax Syntax) {
 
-        List<KeyField> KeyOrder = new ArrayList<KeyField>();
-        List<PropertyField> PropertyOrder = new ArrayList<PropertyField>();
-        String SelectString = Change.compile().getSelect(KeyOrder,PropertyOrder,Syntax,0);
+        CompiledQuery<KeyField, PropertyField> ChangeCompile = Change.compile(Syntax);
 
         String InsertString = "";
-        for(KeyField KeyField : KeyOrder)
+        for(KeyField KeyField : ChangeCompile.KeyOrder)
             InsertString = (InsertString.length()==0?"":InsertString+",") + KeyField.Name;
-        for(PropertyField PropertyField : PropertyOrder)
+        for(PropertyField PropertyField : ChangeCompile.PropertyOrder)
             InsertString = (InsertString.length()==0?"":InsertString+",") + PropertyField.Name;
 
-        return "INSERT INTO " + Table.getSource(Syntax) + " (" + InsertString + ") " + SelectString;
+        return "INSERT INTO " + Table.getName(Syntax) + " (" + InsertString + ") " + ChangeCompile.getSelect(Syntax);
     }
 
     void outSelect(DataSession Session) throws SQLException {
