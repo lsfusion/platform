@@ -8,7 +8,7 @@ abstract class SourceExpr implements SourceJoin {
     abstract Type getType();
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
-    abstract SourceExpr translate(Translator Translator);
+    abstract SourceExpr translate(Translator translator);
 
     static <K> boolean containsNull(Map<K,? extends SourceExpr> Map) {
         for(SourceExpr CaseExpr : Map.values())
@@ -51,8 +51,7 @@ abstract class AndExpr extends SourceExpr {
         return new ExprCaseList(this);
     }
 
-    abstract boolean follow(DataWhere Where);
-    abstract Set<DataWhere> getFollows();
+    abstract DataWhereSet getFollows();
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));

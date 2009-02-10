@@ -15,38 +15,38 @@ class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implem
     }
 
     public Where getCaseWhere(MapCase<J> Case) {
-        if(SourceExpr.containsNull(Case.Data)) { // если есть null просто все null'им
+        if(SourceExpr.containsNull(Case.data)) { // если есть null просто все null'им
             Map<U,AndExpr> Exprs = new HashMap<U, AndExpr>();
             for(U Expr : JoinSource.getProperties())
                 Exprs.put(Expr,new NullExpr(JoinSource.getType(Expr)));
             put(Case,Exprs);
-            return new OrWhere();
+            return Where.FALSE;
         }
 
         for(CompiledJoin<?> Join : TranslatedJoins) {
-            Map<U,JoinExpr> MergeExprs = Join.merge(JoinSource,Case.Data);
+            Map<U,JoinExpr> MergeExprs = Join.merge(JoinSource,Case.data);
             if(MergeExprs!=null) {
                 put(Case,MergeExprs);
-                return Join.InJoin;
+                return Join.inJoin;
             }
         }
 
         // создаем новый
-        CompiledJoin<J> AddJoin = new CompiledJoin<J>((DataSource<J,Object>)JoinSource,Case.Data,NoAlias);
+        CompiledJoin<J> AddJoin = new CompiledJoin<J>((DataSource<J,Object>)JoinSource,Case.data,NoAlias);
         TranslatedJoins.add(AddJoin);
-        put(Case, (Map<U,? extends AndExpr>) AddJoin.Exprs);
-        return AddJoin.InJoin;
+        put(Case, (Map<U,? extends AndExpr>) AddJoin.exprs);
+        return AddJoin.inJoin;
     }
 }
 
 class Join<J,U>  {
-    Source<J,U> Source;
-    Map<J,SourceExpr> Joins;
-    Map<U,JoinExpr<J,U>> Exprs = new HashMap<U, JoinExpr<J,U>>();
-    JoinWhere InJoin;
+    Source<J,U> source;
+    Map<J,SourceExpr> joins;
+    Map<U,JoinExpr<J,U>> exprs = new HashMap<U, JoinExpr<J,U>>();
+    JoinWhere inJoin;
 
     // теоретически только для таблиц может быть
-    boolean NoAlias = false;
+    boolean noAlias = false;
 
     Join(Source<J,U> iSource) {
         this(iSource,new HashMap<J, SourceExpr>());
@@ -57,35 +57,35 @@ class Join<J,U>  {
     }
 
     Join(Source<J, U> iSource, Map<J,? extends SourceExpr> iJoins, boolean iNoAlias) {
-        Source = iSource;
-        Joins = (Map<J,SourceExpr>) iJoins;
-        NoAlias = iNoAlias;
+        source = iSource;
+        joins = (Map<J,SourceExpr>) iJoins;
+        noAlias = iNoAlias;
 
-        InJoin = new JoinWhere(this);
-        for(U Property : Source.getProperties())
-            Exprs.put(Property,new JoinExpr<J,U>(this,Property));
+        inJoin = new JoinWhere(this);
+        for(U property : source.getProperties())
+            exprs.put(property,new JoinExpr<J,U>(this,property));
     }
 
     // конструктор когда надо просто ключи протранслировать
     <K> Join(Source<J,U> iSource,Map<J,K> iJoins,JoinQuery<K,?> MapSource) {
         this(iSource);
 
-        for(J Implement : Source.Keys)
-            Joins.put(Implement,MapSource.MapKeys.get(iJoins.get(Implement)));
+        for(J Implement : source.keys)
+            joins.put(Implement,MapSource.mapKeys.get(iJoins.get(Implement)));
     }
 
     <K> Join(Source<J,U> iSource,JoinQuery<K,?> MapSource,Map<K,J> iJoins) {
          this(iSource);
 
-         for(K Implement : MapSource.Keys)
-             Joins.put(iJoins.get(Implement),MapSource.MapKeys.get(Implement));
+         for(K Implement : MapSource.keys)
+             joins.put(iJoins.get(Implement),MapSource.mapKeys.get(Implement));
     }
 
     <V> Join(Source<J,U> iSource,JoinQuery<J,V> MapSource) {
         this(iSource);
 
-        for(J Key : Source.Keys)
-            Joins.put(Key,MapSource.MapKeys.get(Key));
+        for(J Key : source.keys)
+            joins.put(Key,MapSource.mapKeys.get(Key));
     }
 
     void addJoin(List<Join> FillJoins) {
@@ -95,41 +95,41 @@ class Join<J,U>  {
     void fillJoins(List<? extends Join> FillJoins, Set<ValueExpr> Values) {
         if(FillJoins.contains(this)) return;
 
-        for(SourceExpr Join : Joins.values())
+        for(SourceExpr Join : joins.values())
             Join.fillJoins(FillJoins, Values);
         addJoin((List<Join>) FillJoins);
     }
 
     void translate(ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins, DataSource<J,U> JoinSource) {
-        MapCaseList<J> CaseList = CaseExpr.translateCase(Joins, Translated, true);
+        MapCaseList<J> CaseList = CaseExpr.translateCase(joins, Translated, true, false);
 
         // перетранслируем InJoin'ы в OR (And Where And NotWhere And InJoin)
-        CaseJoins<J,U> CaseJoins = new CaseJoins<J,U>(TranslatedJoins,JoinSource,NoAlias);
-        Translated.put(InJoin,CaseList.getWhere(CaseJoins));
+        CaseJoins<J,U> CaseJoins = new CaseJoins<J,U>(TranslatedJoins,JoinSource, noAlias);
+        Translated.put(inJoin,CaseList.getWhere(CaseJoins));
         // перетранслируем все выражения в CaseWhen'ы
-        for(Map.Entry<U,JoinExpr<J,U>> MapJoin : Exprs.entrySet()) {
+        for(Map.Entry<U,JoinExpr<J,U>> MapJoin : exprs.entrySet()) {
             ExprCaseList TranslatedExpr = new ExprCaseList();
             for(MapCase<J> Case : CaseList) // здесь напрямую потому как MapCaseList уже все проверил
-                TranslatedExpr.add(new ExprCase(Case.Where,CaseJoins.get(Case).get(MapJoin.getKey())));
+                TranslatedExpr.add(new ExprCase(Case.where,CaseJoins.get(Case).get(MapJoin.getKey())));
             Translated.put(MapJoin.getValue(),TranslatedExpr.getExpr());
         }
     }
 
     public String toString() {
-        return Source.toString();
+        return source.toString();
     }
 
     // для кэша
     public <EJ,EU> boolean equals(Join<EJ, EU> Join, Map<ValueExpr, ValueExpr> MapValues, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
 
         // проверить что кол-во Keys в Source совпадает
-        Collection<Map<J,EJ>> MapSet = MapBuilder.buildPairs(Source.Keys,Join.Source.Keys);
+        Collection<Map<J,EJ>> MapSet = MapBuilder.buildPairs(source.keys,Join.source.keys);
         if(MapSet==null) return false;
 
         for(Map<J,EJ> MapKeys : MapSet) {
             boolean Equal = true;
             for(Map.Entry<J,EJ> MapKey : MapKeys.entrySet()) {
-                if(!Joins.get(MapKey.getKey()).equals(Join.Joins.get(MapKey.getValue()), MapExprs, MapWheres)) {
+                if(!joins.get(MapKey.getKey()).equals(Join.joins.get(MapKey.getValue()), MapExprs, MapWheres)) {
                     Equal = false;
                     break;
                 }
@@ -137,10 +137,10 @@ class Join<J,U>  {
             if(!Equal) continue;
 
             Map<U,EU> MapProperties = new HashMap<U, EU>();
-            if(Source.equals(Join.Source,MapKeys,MapProperties,MapValues)) {
+            if(source.equals(Join.source,MapKeys,MapProperties,MapValues)) {
                 for(Map.Entry<U,EU> MapProp : MapProperties.entrySet())
-                    MapExprs.put(Exprs.get(MapProp.getKey()),Join.Exprs.get(MapProp.getValue()));
-                MapWheres.put(InJoin,Join.InJoin);
+                    MapExprs.put(exprs.get(MapProp.getKey()),Join.exprs.get(MapProp.getValue()));
+                MapWheres.put(inJoin,Join.inJoin);
                 return true;
             }
         }
@@ -154,9 +154,9 @@ class Join<J,U>  {
     int hash() {
         if(!Hashed) {
             // нужен симметричный хэш относительно выражений
-            for(SourceExpr Join : Joins.values())
+            for(SourceExpr Join : joins.values())
                 Hash += Join.hash();
-            Hash += Source.hash()*31;
+            Hash += source.hash()*31;
             Hashed = true;
         }
         return Hash;
@@ -170,34 +170,34 @@ class CompiledJoin<J> extends Join<J,Object> {
     }
 
     DataSource<J,Object> getDataSource() {
-        return (DataSource<J,Object>)Source;
+        return (DataSource<J,Object>) source;
     }
 
     <MJ,MU> Map<MU, JoinExpr> merge(DataSource<MJ,MU> MergeSource,Map<MJ,? extends SourceExpr> MergeJoins) {
 
         // проверить что кол-во Keys в Source совпадает
-        Collection<Map<J, MJ>> MapSet = MapBuilder.buildPairs(Source.Keys,MergeSource.Keys);
-        if(MapSet==null) return null;
+        Collection<Map<J, MJ>> mapSet = MapBuilder.buildPairs(source.keys,MergeSource.keys);
+        if(mapSet==null) return null;
 
-        Map<MU,Object> MergeProps = new HashMap<MU,Object>();
-        for(Map<J,MJ> MapKeys : MapSet) {
-            if(!BaseUtils.mapEquals(Joins,MergeJoins,MapKeys)) // нужны только совпадающие ключи
+        Map<MU,Object> mergeProps = new HashMap<MU,Object>();
+        for(Map<J,MJ> mapKeys : mapSet) {
+            if(!BaseUtils.mapEquals(joins,MergeJoins,mapKeys)) // нужны только совпадающие ключи
                 continue;
 
             // есть уже карта попробуем merge'уть
-            Source<J, Object> Merged = getDataSource().merge(MergeSource, MapKeys, MergeProps);
-            if(Merged!=null) { // нашли, изменим Source
-                Source = Merged;
-                Map<MU,JoinExpr> MergeExprs = new HashMap<MU,JoinExpr>();
-                for(Map.Entry<MU,Object> MergeProp : MergeProps.entrySet()) { // докинем недостающие JoinExpr'ы
-                    JoinExpr<J,Object> JoinExpr = Exprs.get(MergeProp.getValue());
-                    if(JoinExpr==null) {
-                        JoinExpr = new JoinExpr<J,Object>(this,MergeProp.getValue());
-                        Exprs.put(MergeProp,JoinExpr);
+            Source<J, Object> merged = getDataSource().merge(MergeSource, mapKeys, mergeProps);
+            if(merged!=null) { // нашли, изменим Source
+                source = merged;
+                Map<MU,JoinExpr> mergeExprs = new HashMap<MU,JoinExpr>();
+                for(Map.Entry<MU,Object> mergeProp : mergeProps.entrySet()) { // докинем недостающие JoinExpr'ы
+                    JoinExpr<J,Object> joinExpr = exprs.get(mergeProp.getValue());
+                    if(joinExpr ==null) {
+                        joinExpr = new JoinExpr<J,Object>(this,mergeProp.getValue());
+                        exprs.put(mergeProp.getValue(), joinExpr);
                     }
-                    MergeExprs.put(MergeProp.getKey(),JoinExpr);
+                    mergeExprs.put(mergeProp.getKey(), joinExpr);
                 }
-                return MergeExprs;
+                return mergeExprs;
             }
         }
         return null;
@@ -211,11 +211,11 @@ class CompiledJoin<J> extends Join<J,Object> {
         // если GroupQuery проталкиваем внутрь ValueExpr'ы, и And в частности KeyExpr'ы внутрь
         DataSource<J,Object> FromSource = null;
         Map<J,SourceExpr> FromJoins;
-        if(Source instanceof GroupQuery) {
+        if(source instanceof GroupQuery) {
             FromJoins = new HashMap<J,SourceExpr>();
             // заполняем статичные значения
             Map<J,ValueExpr> MergeKeys = new HashMap<J, ValueExpr>();
-            for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet()) {
+            for(Map.Entry<J,SourceExpr> MapJoin : joins.entrySet()) {
                 ValueExpr JoinValue = null;
                 if(MapJoin.getValue() instanceof ValueExpr)
                     JoinValue = (ValueExpr) MapJoin.getValue();
@@ -230,16 +230,16 @@ class CompiledJoin<J> extends Join<J,Object> {
             }
 
             if(MergeKeys.size() > 0)
-                FromSource = (DataSource<J,Object>) ((GroupQuery)Source).mergeKeyValue(MergeKeys,FromJoins.keySet());
+                FromSource = (DataSource<J,Object>) ((GroupQuery) source).mergeKeyValue(MergeKeys,FromJoins.keySet());
         } else
-            FromJoins = Joins;
+            FromJoins = joins;
 
         if(FromSource==null) FromSource = getDataSource();
 
         String JoinString = "";
         String SourceString = FromSource.getSource(Syntax, Params);
         String Alias = null;
-        if(NoAlias)
+        if(noAlias)
             Alias = SourceString;
         else {
             Alias = "t"+(QueryData.size()+1);
@@ -264,26 +264,26 @@ class CompiledJoin<J> extends Join<J,Object> {
         }
 
         // закинем все Expr'ы и Where
-        for(Map.Entry<Object,JoinExpr<J,Object>> JoinExpr : Exprs.entrySet())
+        for(Map.Entry<Object,JoinExpr<J,Object>> JoinExpr : exprs.entrySet())
             QueryData.put(JoinExpr.getValue(),Alias+"."+FromSource.getPropertyName(JoinExpr.getKey()));
-        QueryData.put(InJoin,Alias+"."+FromSource.getInSourceName()+" IS NOT NULL");
+        QueryData.put(inJoin,Alias+"."+FromSource.getInSourceName()+" IS NOT NULL");
 
         if(From.length()==0)
             return SourceString;
         else
-            return From + (Inner?"":" LEFT")+" JOIN " + SourceString + " ON "+(JoinString.length()==0?Where.TRUE:JoinString);
+            return From + (Inner?"":" LEFT")+" JOIN " + SourceString + " ON "+(JoinString.length()==0?Where.TRUE_STRING :JoinString);
     }
 
     CompiledJoin<J> translate(ExprTranslator Translated,Map<ValueExpr,ValueExpr> MapValues) {
 
         Map<J,SourceExpr> TransJoins = new HashMap<J, SourceExpr>();
-        for(Map.Entry<J,SourceExpr> MapJoin : Joins.entrySet())
+        for(Map.Entry<J,SourceExpr> MapJoin : joins.entrySet())
             TransJoins.put(MapJoin.getKey(),MapJoin.getValue().translate(Translated));
 
         CompiledJoin<J> TransJoin = new CompiledJoin<J>(getDataSource().translateValues(MapValues),TransJoins,false);
-        Translated.put(InJoin,TransJoin.InJoin);
-        for(Map.Entry<Object,JoinExpr<J,Object>> Expr : Exprs.entrySet())
-            Translated.put(Expr.getValue(),TransJoin.Exprs.get(Expr.getKey()));
+        Translated.put(inJoin,TransJoin.inJoin);
+        for(Map.Entry<Object,JoinExpr<J,Object>> Expr : exprs.entrySet())
+            Translated.put(Expr.getValue(),TransJoin.exprs.get(Expr.getKey()));
 
         return TransJoin;
     }
@@ -305,7 +305,7 @@ class JoinWhere extends DataWhere implements JoinData {
     }
 
     public JoinWheres getInnerJoins() {
-        return new JoinWheres(this,new AndWhere());
+        return new JoinWheres(this,Where.TRUE);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
@@ -324,18 +324,11 @@ class JoinWhere extends DataWhere implements JoinData {
         return Translator.translate(this);
     }
 
-    boolean calculateFollow(DataWhere Where) {
-        if(Where==this) return true;
-        for(SourceExpr Expr : From.Joins.values())
-            if(((AndExpr)Expr).follow(Where)) return true;
-        return false;
-    }
-    Set<DataWhere> getFollows() {
-        Set<DataWhere> Follows = new HashSet<DataWhere>();
-        Follows.add(this);
-        for(SourceExpr Expr : From.Joins.values())
-            Follows.addAll(((AndExpr)Expr).getFollows());
-        return Follows;
+    DataWhereSet getExprFollows() {
+        DataWhereSet follows = new DataWhereSet();
+        for(SourceExpr Expr : From.joins.values())
+            follows.addAll(((AndExpr)Expr).getFollows());
+        return follows;
     }
 
     public SourceExpr getFJExpr() {

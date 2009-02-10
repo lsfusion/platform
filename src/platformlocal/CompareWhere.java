@@ -74,10 +74,10 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     public Where getCaseWhere(MapCase<Integer> Case) {
-        AndExpr CaseOp1 = Case.Data.get(0);
-        AndExpr CaseOp2 = Case.Data.get(1);
+        AndExpr CaseOp1 = Case.data.get(0);
+        AndExpr CaseOp2 = Case.data.get(1);
         if(CaseOp1.getWhere().means(CaseOp2.getWhere().not())) // проверим может значения изначально не равны
-            return new OrWhere();
+            return Where.FALSE;
         else {
 /*            if(CaseOp1 instanceof ValueExpr) { // нельзя так как навредит кэшу
                 if(CaseOp2 instanceof ValueExpr) {
@@ -96,7 +96,7 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         Map<Integer,SourceExpr> MapExprs = new HashMap<Integer, SourceExpr>();
         MapExprs.put(0,Operator1);
         MapExprs.put(1,Operator2);
-        return CaseExpr.translateCase(MapExprs,Translator,true).getWhere(this);
+        return CaseExpr.translateCase(MapExprs,Translator,true, false).getWhere(this);
     }
 
     public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
@@ -109,26 +109,21 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         Operator2.fillJoinWheres(Joins,AndWhere);
     }
 
-    boolean calculateFollow(DataWhere Where) {
-        return Where.equals(this) || ((AndExpr)Operator1).follow(Where) || ((AndExpr)Operator2).follow(Where);
-    }
-    Set<DataWhere> getFollows() {
-        Set<DataWhere> Follows = new HashSet<DataWhere>();
-        Follows.add(this);
-        Follows.addAll(((AndExpr)Operator1).getFollows());
-        Follows.addAll(((AndExpr)Operator2).getFollows());
-        return Follows;
+    DataWhereSet getExprFollows() {
+        DataWhereSet follows = new DataWhereSet(((AndExpr)Operator1).getFollows());
+        follows.addAll(((AndExpr)Operator2).getFollows());
+        return follows;
     }
 
     public JoinWheres getInnerJoins() {
         if(Operator1 instanceof KeyExpr && Operator2 instanceof ValueExpr && Compare==EQUALS)
-            return new JoinWheres(this,new AndWhere());
+            return new JoinWheres(this,Where.TRUE);
 
-        Where InJoinWhere = new AndWhere();
+        Where InJoinWhere = Where.TRUE;
         if(Operator1 instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr)Operator1).From.InJoin);
+            InJoinWhere = InJoinWhere.and(((JoinExpr)Operator1).From.inJoin);
         if(Operator2 instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr)Operator2).From.InJoin);
+            InJoinWhere = InJoinWhere.and(((JoinExpr)Operator2).From.inJoin);
         return new JoinWheres(InJoinWhere,this);
     }
 
@@ -163,85 +158,79 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
 class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
-    AndExpr Expr;
+    AndExpr expr;
     String Values;
 
     InListWhere(AndExpr iExpr, Collection<Integer> SetValues) {
-        Expr = iExpr;
+        expr = iExpr;
         Values = "";
         for(Integer Value : SetValues)
             Values = (Values.length()==0?"":Values+',') + Value;
     }
 
     InListWhere(AndExpr iExpr, String iValues) {
-        Expr = iExpr;
+        expr = iExpr;
         Values = iValues;
     }
 
     public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        return Expr.getSource(QueryData, Syntax) + " IN (" + Values + ")";
+        return expr.getSource(QueryData, Syntax) + " IN (" + Values + ")";
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы
     public String getNotSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        String ExprSource = Expr.getSource(QueryData, Syntax);
+        String ExprSource = expr.getSource(QueryData, Syntax);
         return "(" + ExprSource + " IS NULL OR NOT " + ExprSource + " IN (" + Values + "))";
     }
 
     public String toString() {
-        return Expr.toString() + " IN (" + Values + ")";
+        return expr.toString() + " IN (" + Values + ")";
     }
 
     public Where getCaseWhere(MapCase<Integer> Case) {
-        return new InListWhere(Case.Data.get(0),Values);
+        return new InListWhere(Case.data.get(0),Values);
     }
 
     public Where translate(Translator Translator) {
         Map<Integer,SourceExpr> MapExprs = new HashMap<Integer, SourceExpr>();
-        MapExprs.put(0,Expr);
-        return CaseExpr.translateCase(MapExprs,Translator,true).getWhere(this);
+        MapExprs.put(0, expr);
+        return CaseExpr.translateCase(MapExprs,Translator,true, false).getWhere(this);
     }
 
     public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
-        Expr.fillJoins(Joins, Values);
+        expr.fillJoins(Joins, Values);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
-        Expr.fillJoinWheres(Joins,AndWhere);
+        expr.fillJoinWheres(Joins,AndWhere);
     }
 
-    boolean calculateFollow(DataWhere Where) {
-        return Where==this || Expr.follow(Where);
-    }
-    Set<DataWhere> getFollows() {
-        Set<DataWhere> Follows = new HashSet<DataWhere>();
-        Follows.add(this);
-        Follows.addAll(Expr.getFollows());
-        return Follows;
+    DataWhereSet getExprFollows() {
+        return expr.getFollows();
     }
 
     public Where copy() {
-        return new InListWhere(Expr,Values);
+        return new InListWhere(expr,Values);
     }
 
     public JoinWheres getInnerJoins() {
-        Where InJoinWhere = new AndWhere();
-        if(Expr instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr)Expr).From.InJoin);
+        Where InJoinWhere = Where.TRUE;
+        if(expr instanceof JoinExpr)
+            InJoinWhere = InJoinWhere.and(((JoinExpr) expr).From.inJoin);
         return new JoinWheres(InJoinWhere,this);
     }
 
     // для кэша
     public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
         return Where instanceof InListWhere && Values.equals(((InListWhere)Where).Values) &&
-                Expr.equals(((InListWhere)Where).Expr,mapExprs,mapWheres);
+                expr.equals(((InListWhere)Where).expr,mapExprs,mapWheres);
     }
 
     public int getHash() {
-        return Expr.hash() + Values.hashCode()*31;
+        return expr.hash() + Values.hashCode()*31;
     }
 
     int getHashCode() {
-        return Expr.hashCode() + Values.hashCode()*31;
+        return expr.hashCode() + Values.hashCode()*31;
     }
 }

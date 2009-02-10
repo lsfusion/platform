@@ -23,7 +23,7 @@ class TestDataWhere extends DataWhere {
     }
 
     public JoinWheres getInnerJoins() {
-        return new JoinWheres(new AndWhere(),this);
+        return new JoinWheres(Where.TRUE,this);
     }
 
     public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
@@ -45,13 +45,8 @@ class TestDataWhere extends DataWhere {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    boolean calculateFollow(DataWhere dataWhere) {
-        return equals(dataWhere);
-    }
-    Set<DataWhere> getFollows() {
-        Set<DataWhere> Follows = new HashSet<DataWhere>();
-        Follows.add(this);
-        return Follows;
+    DataWhereSet getExprFollows() {
+        return new DataWhereSet();
     }
 }
 
@@ -110,8 +105,8 @@ class WhereTester {
         }
 
         List<Where> wheres = new ArrayList();
-        wheres.add(new OrWhere());
-        wheres.add(new AndWhere());
+        wheres.add(Where.FALSE);
+        wheres.add(Where.TRUE);
 
         for (DataWhere dataWhere : dataWheres)
             wheres.add(dataWhere);

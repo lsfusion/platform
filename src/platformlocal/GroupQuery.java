@@ -5,32 +5,43 @@ import java.util.*;
 class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 
     void fillJoinQueries(Set<JoinQuery> Queries) {
-        From.fillJoinQueries(Queries);
+        from.fillJoinQueries(Queries);
     }
 
     String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params) {
+        
+        // сделаем запрос который поставит фильтр на ключи и на properties на или ???
+        JoinQuery<F,B> fromSource = new JoinQuery<F,B>(from.keys);
+        Join<F,B> joinFrom = new Join<F,B>(from,fromSource);
+        fromSource.properties.putAll(joinFrom.exprs);
+        for(K key : keys)
+            fromSource.and(joinFrom.exprs.get(key).getWhere());
+        Where propertiesWhere = Where.FALSE;
+        for(V property : properties.keySet())
+            propertiesWhere = propertiesWhere.or(joinFrom.exprs.get(property).getWhere());
+        fromSource.and(propertiesWhere);
+
         // ключи не колышат
         Map<B,String> FromPropertySelect = new HashMap<B, String>();
         Collection<String> WhereSelect = new ArrayList<String>();
-        CompiledQuery<F,B> FromCompile = From.compile(Syntax);
-        String FromSelect = FromCompile.fillSelect(new HashMap<F, String>(),FromPropertySelect,WhereSelect,Params);
+        String FromSelect = fromSource.compile(Syntax).fillSelect(new HashMap<F, String>(),FromPropertySelect,WhereSelect,Params);
 
         String GroupBy = "";
         Map<K,String> KeySelect = new HashMap<K, String>();
         Map<V,String> PropertySelect = new HashMap<V, String>();
-        for(K Key : Keys) {
+        for(K Key : keys) {
             String KeyExpr = FromPropertySelect.get(Key);
             KeySelect.put(Key,KeyExpr);
             GroupBy = (GroupBy.length()==0?"":GroupBy+",") + KeyExpr;
-            if(!(From.Properties.get(Key) instanceof KeyExpr)) // Main.AllowNulls &&
-                WhereSelect.add(KeyExpr + " IS NOT NULL");
+//            if(!(from.properties.get(Key) instanceof KeyExpr)) // Main.AllowNulls &&
+//                WhereSelect.add(KeyExpr + " IS NOT NULL");
         }
-        for(Map.Entry<V,Integer> Property : Properties.entrySet())
+        for(Map.Entry<V,Integer> Property : properties.entrySet())
             PropertySelect.put(Property.getKey(),(Property.getValue()==0?"MAX":"SUM")+"("+ FromPropertySelect.get(Property.getKey()) +")");
 
         return "(" + Syntax.getSelect(FromSelect,stringExpr(
-                mapNames(KeySelect,KeyNames,new ArrayList<K>()),
-                mapNames(PropertySelect,PropertyNames,new ArrayList<V>())),
+                mapNames(KeySelect, keyNames,new ArrayList<K>()),
+                mapNames(PropertySelect, propertyNames,new ArrayList<V>())),
                 stringWhere(WhereSelect),"",GroupBy,"") + ")";
     }
 
@@ -38,52 +49,62 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         this(iKeys,iFrom, Collections.singletonMap(Property,iOperator));
     }
 
-    Map<K,String> KeyNames = new HashMap<K, String>();
-    Map<V,String> PropertyNames = new HashMap<V, String>();
+    Map<K,String> keyNames = new HashMap<K, String>();
+    Map<V,String> propertyNames = new HashMap<V, String>();
 
     String getKeyName(K Key) {
-        return KeyNames.get(Key);
+        return keyNames.get(Key);
     }
 
+    String string = null;
     public String toString() {
-        return "GQ";
+        if(string==null) {
+            Map<ValueExpr,String> valueParams = new HashMap<ValueExpr,String>();
+            for(Map.Entry<ValueExpr,ValueExpr> value : getValues().entrySet())
+                valueParams.put(value.getKey(),value.getValue().getString(Main.Adapter));
+            string = getSource(Main.Adapter,valueParams);
+        }
+        // временно
+        return string;
+
+//        return "GQ";
     }
 
     String getPropertyName(V Property) {
-        return PropertyNames.get(Property);
+        return propertyNames.get(Property);
     }
 
     GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom, Map<V,Integer> iProperties) {
         super(iKeys);
-        From = iFrom;
-        Properties = iProperties;
+        from = iFrom;
+        properties = iProperties;
 
         // докидываем условия на NotNull ключей
-        int KeyCount = 0;
-        for(K Key : Keys) {
-            From.and(From.Properties.get(Key).getWhere());
-            KeyNames.put(Key,"dkey"+(KeyCount++));
+        int keyCount = 0;
+        for(K key : keys) {
+//            from.and(from.properties.get(key).getWhere());
+            keyNames.put(key,"dkey"+(keyCount++));
         }
-        int PropertyCount = 0;
-        for(V Property : Properties.keySet()) {
-            From.and(From.Properties.get(Property).getWhere());
-            PropertyNames.put(Property,"dprop"+(PropertyCount++));
+        int propertyCount = 0;
+        for(V property : properties.keySet()) {
+//            from.and(from.properties.get(property).getWhere());
+            propertyNames.put(property,"dprop"+(propertyCount++));
         }
     }
 
-    JoinQuery<F,B> From;
-    Map<V,Integer> Properties;
+    JoinQuery<F,B> from;
+    Map<V,Integer> properties;
 
     // заменяет параметры на другие
     DataSource<K, V> translateValues(Map<ValueExpr, ValueExpr> MapValues) {
-        return new GroupQuery<B,K,V,F>(Keys,new JoinQuery<F,B>(From, BaseUtils.filter(MapValues,getValues().keySet())),Properties);
+        return new GroupQuery<B,K,V,F>(keys,new JoinQuery<F,B>(from, BaseUtils.filter(MapValues,getValues().keySet())), properties);
     }
     
     void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins) {
-        if(From.parse().isEmpty()) {
-            for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.Exprs.entrySet())
+        if(from.parse().isEmpty()) {
+            for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.exprs.entrySet())
                 Translated.put(MapExpr.getValue(),new NullExpr(MapExpr.getValue().getType()));
-            Translated.put(Join.InJoin,new OrWhere());
+            Translated.put(Join.inJoin,Where.FALSE);
         } else
             super.compileJoin(Join, Translated, TranslatedJoins);
     }
@@ -99,34 +120,34 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return proceedGroupMerge((GroupQuery)Merge,MergeKeys,MergeProps);
     }
 
-    <MB,MK extends MB,MV extends MB,MF> DataSource<K, Object> proceedGroupMerge(GroupQuery<MB,MK,MV,MF> MergeGroup, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps) {
+    <MB,MK extends MB,MV extends MB,MF> DataSource<K, Object> proceedGroupMerge(GroupQuery<MB,MK,MV,MF> mergeGroup, Map<K,MK> mergeKeys, Map<MV, Object> mergeProps) {
             // если Merge'ся From'ы
 
-        if(Keys.size()!=MergeGroup.Keys.size()) return null;
+        if(keys.size()!= mergeGroup.keys.size()) return null;
 
         if(1==1) return null;
 
         // попробуем смерджить со всеми мапами пока не получим нужный набор ключей
-        Collection<Map<F, MF>> MapSet = MapBuilder.buildPairs(From.Keys, MergeGroup.From.Keys);
-        if(MapSet==null) return null;
+        Collection<Map<F, MF>> mapSet = MapBuilder.buildPairs(from.keys, mergeGroup.from.keys);
+        if(mapSet==null) return null;
 
-        for(Map<F, MF> MapKeys : MapSet) {
-            Map<MB,Object> FromMergeProps = new HashMap<MB, Object>();
-            JoinQuery<F, Object> MergedFrom = From.or(MergeGroup.From, MapKeys, FromMergeProps);
+        for(Map<F, MF> MapKeys : mapSet) {
+            Map<MB,Object> fromMergeProps = new HashMap<MB, Object>();
+            JoinQuery<F, Object> mergedFrom = from.or(mergeGroup.from, MapKeys, fromMergeProps);
             // проверим что ключи совпали
-            boolean KeyMatch = true;
-            for(K Key : Keys)
-                KeyMatch = KeyMatch && Key.equals(FromMergeProps.get(MergeKeys.get(Key)));
+            boolean keyMatch = true;
+            for(K key : keys)
+                keyMatch = keyMatch && key.equals(fromMergeProps.get(mergeKeys.get(key)));
 
-            if(KeyMatch) {
-                Map<Object,Integer> MergedProperties = new HashMap<Object, Integer>(Properties);
-                for(Map.Entry<MV,Integer> MergeProp : MergeGroup.Properties.entrySet()) {
-                    Object MapProp = FromMergeProps.get(MergeProp.getKey());
-                    MergedProperties.put(MapProp,MergeProp.getValue());
-                    MergeProps.put(MergeProp.getKey(),MapProp);
+            if(keyMatch) {
+                Map<Object,Integer> mergedProperties = new HashMap<Object, Integer>(properties);
+                for(Map.Entry<MV,Integer> mergeProp : mergeGroup.properties.entrySet()) {
+                    Object mapProp = fromMergeProps.get(mergeProp.getKey());
+                    mergedProperties.put(mapProp,mergeProp.getValue());
+                    mergeProps.put(mergeProp.getKey(),mapProp);
                 }
 
-                return new GroupQuery<Object, K, Object, F>(Keys, MergedFrom, MergedProperties);
+                return new GroupQuery<Object, K, Object, F>(keys, mergedFrom, mergedProperties);
             }
         }
 
@@ -134,19 +155,19 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
     }
 
     Collection<V> getProperties() {
-        return Properties.keySet();
+        return properties.keySet();
     }
 
     Type getType(V Property) {
-        return From.Properties.get(Property).getType();
+        return from.properties.get(Property).getType();
     }
 
     DataSource<K, V> mergeKeyValue(Map<K, ValueExpr> MergeKeys, Collection<K> CompileKeys) {
-        return new GroupQuery<B, K, V, F>(CompileKeys,new JoinQuery<F,B>(MergeKeys,From), Properties);
+        return new GroupQuery<B, K, V, F>(CompileKeys,new JoinQuery<F,B>(MergeKeys, from), properties);
     }
 
     Map<ValueExpr,ValueExpr> getValues() {
-        return From.getValues();
+        return from.getValues();
     }
 
     // для кэша
@@ -156,12 +177,12 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 
     <EB,EK extends EB,EV extends EB,EF> boolean equalsGroup(GroupQuery<EB,EK,EV,EF> Query,Map<K,EK> MapKeys,Map<V,EV> MapProperties,Map<ValueExpr,ValueExpr> MapExprs) {
 
-        Collection<Map<F,EF>> MapSet = MapBuilder.buildPairs(From.Keys, Query.From.Keys);
+        Collection<Map<F,EF>> MapSet = MapBuilder.buildPairs(from.keys, Query.from.keys);
         if(MapSet==null) return false;
 
         for(Map<F, EF> MapGroupKeys : MapSet) {
             Map<B,EB> MapGroupProperties = new HashMap<B, EB>();
-            if(From.equals(Query.From,MapGroupKeys,MapGroupProperties,MapExprs)) {
+            if(from.equals(Query.from,MapGroupKeys,MapGroupProperties,MapExprs)) {
                 // проверим что ключи совпали
                 boolean Equal = true;
                 for(Map.Entry<K,EK> MapKey : MapKeys.entrySet())
@@ -169,12 +190,12 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
                 if(!Equal) continue;
 
                 // проверим что операторы св-в совпали
-                for(Map.Entry<V,Integer> Property : Properties.entrySet())
-                    if(!Property.getValue().equals(Query.Properties.get(MapGroupProperties.get(Property.getKey())))) {Equal=false; break;}
+                for(Map.Entry<V,Integer> Property : properties.entrySet())
+                    if(!Property.getValue().equals(Query.properties.get(MapGroupProperties.get(Property.getKey())))) {Equal=false; break;}
                 if(!Equal) continue;
 
                 // уже точно true, заполним карту
-                for(V Property : Properties.keySet())
+                for(V Property : properties.keySet())
                     MapProperties.put(Property,(EV)MapGroupProperties.get(Property));
 
                 return true;
@@ -186,10 +207,10 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 
     int getHash() {
         // должны совпасть источники, количество Properties, типы, кол-во ключей
-        return From.hash()+Properties.values().hashCode()*31+Keys.size()*31*31;
+        return from.hash()+ properties.values().hashCode()*31+ keys.size()*31*31;
     }
 
     int hashProperty(V Property) {
-        return From.hashProperty(Property)*31 + Properties.get(Property).hashCode();
+        return from.hashProperty(Property)*31 + properties.get(Property).hashCode();
     }
 }

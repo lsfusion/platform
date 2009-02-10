@@ -1234,7 +1234,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void initPersistents() {
 
-        persistents.add((AggregateProperty)docStore.property);
+//        persistents.add((AggregateProperty)docStore.property);
 
         persistents.add((AggregateProperty)extIncQuantity.property);
 

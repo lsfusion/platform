@@ -43,13 +43,8 @@ class FormulaExpr extends AndExpr {
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        for(SourceExpr param : params.values()) {
-            Where siblingWhere = new AndWhere();
-            for(SourceExpr siblingParam : params.values())
-                if(siblingParam!=param)
-                    siblingWhere = siblingWhere.and(siblingParam.getWhere());
-            param.fillJoinWheres(joins, andWhere.and(siblingWhere));
-        }
+        for(SourceExpr param : params.values())
+            param.fillJoinWheres(joins, andWhere);
     }
 
     public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
@@ -70,44 +65,27 @@ class FormulaExpr extends AndExpr {
         return DBType;
     }
 
-    public SourceExpr translate(Translator Translator) {
-        MapCaseList<String> CaseList = CaseExpr.translateCase(params, Translator, false);
+    public SourceExpr translate(Translator translator) {
+        MapCaseList<String> CaseList = CaseExpr.translateCase(params, translator, false, false);
         if(CaseList==null)
             return this;
 
         ExprCaseList Result = new ExprCaseList();
         for(MapCase<String> Case : CaseList)  // здесь напрямую потому как MapCaseList уже все проверил
-            Result.add(new ExprCase(Case.Where,SourceExpr.containsNull(Case.Data)?new NullExpr(getType()):new FormulaExpr(Formula,Case.Data,DBType)));
+            Result.add(new ExprCase(Case.where,SourceExpr.containsNull(Case.data)?new NullExpr(getType()):new FormulaExpr(Formula,Case.data,DBType)));
         return Result.getExpr();
     }
 
     // возвращает Where без следствий
     Where getWhere() {
-        Where Result = new AndWhere();
+        Where Result = Where.TRUE;
         for(SourceExpr Param : params.values())
             Result = Result.and(Param.getWhere());
         return Result;
     }
 
-    Map<DataWhere,Boolean> CacheFollow = new IdentityHashMap<DataWhere,Boolean>();
-    boolean follow(DataWhere Where) {
-        if(!Main.ActivateCaches) return calculateFollow(Where);
-        Boolean Result = CacheFollow.get(Where);
-        if(Result==null) {
-            Result = calculateFollow(Where);
-            CacheFollow.put(Where,Result);
-        }
-
-        return Result;
-    }
-
-    boolean calculateFollow(DataWhere Where) {
-        for(SourceExpr Param : params.values())
-            if(((AndExpr)Param).follow(Where)) return true;
-        return false;
-    }
-    Set<DataWhere> getFollows() {
-        Set<DataWhere> Follows = new HashSet<DataWhere>();
+    DataWhereSet getFollows() {
+        DataWhereSet Follows = new DataWhereSet();
         for(SourceExpr Param : params.values())
             Follows.addAll(((AndExpr)Param).getFollows());
         return Follows;

@@ -180,7 +180,7 @@ class ObjectTable extends Table {
     ObjectTable() {
         super("objects");
         Key = new KeyField("object",Type.Object);
-        Keys.add(Key);
+        keys.add(Key);
         Class = new PropertyField("class",Type.System);
         Properties.add(Class);
     };
@@ -190,9 +190,9 @@ class ObjectTable extends Table {
 
         JoinQuery<Object,String> Query = new JoinQuery<Object,String>(new ArrayList<Object>());
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
-        JoinTable.Joins.put(Key,new ValueExpr(idObject,Key.Type));
-        Query.and(JoinTable.InJoin);
-        Query.Properties.put("classid", JoinTable.Exprs.get(Class));
+        JoinTable.joins.put(Key,new ValueExpr(idObject,Key.Type));
+        Query.and(JoinTable.inJoin);
+        Query.properties.put("classid", JoinTable.exprs.get(Class));
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
         if(Result.size()>0)
             return (Integer)Result.values().iterator().next().get("classid");
@@ -208,8 +208,8 @@ class ObjectTable extends Table {
         for(Class ChildClass : ClassSet)
             IDSet.add(ChildClass.ID);
 
-        JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(Keys);
-        ClassQuery.and(new InListWhere((new Join<KeyField,PropertyField>(this,ClassQuery)).Exprs.get(Class), IDSet));
+        JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(keys);
+        ClassQuery.and(new InListWhere((new Join<KeyField,PropertyField>(this,ClassQuery)).exprs.get(Class), IDSet));
 
         return ClassQuery;
     }
@@ -223,7 +223,7 @@ class IDTable extends Table {
     IDTable() {
         super("idtable");
         Key = new KeyField("id",Type.System);
-        Keys.add(Key);
+        keys.add(Key);
 
         Value = new PropertyField("value",Type.System);
         Properties.add(Value);
@@ -242,13 +242,13 @@ class IDTable extends Table {
 
         if(BusinessLogics.AutoFillDB) return BusinessLogics.AutoIDCounter++;
         // читаем
-        JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(Keys);
+        JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(keys);
         Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
-        JoinTable.Joins.put(Key,Query.MapKeys.get(Key));
-        Query.and(JoinTable.InJoin);
-        Query.Properties.put(Value, JoinTable.Exprs.get(Value));
+        JoinTable.joins.put(Key,Query.mapKeys.get(Key));
+        Query.and(JoinTable.inJoin);
+        Query.properties.put(Value, JoinTable.exprs.get(Value));
 
-        Query.and(new CompareWhere(Query.MapKeys.get(Key),new ValueExpr(idType,Type.Object),CompareWhere.EQUALS));
+        Query.and(new CompareWhere(Query.mapKeys.get(Key),new ValueExpr(idType,Type.Object),CompareWhere.EQUALS));
 
         Integer FreeID = (Integer) Query.executeSelect(dataSession).values().iterator().next().get(Value);
 
@@ -258,9 +258,9 @@ class IDTable extends Table {
     }
 
     void reserveID(DataSession Session, int idType, Integer ID) throws SQLException {
-        JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField,PropertyField>(Keys);
+        JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField,PropertyField>(keys);
         UpdateQuery.putKeyWhere(Collections.singletonMap(Key,idType));
-        UpdateQuery.Properties.put(Value, new ValueExpr(ID+1,Value.Type));
+        UpdateQuery.properties.put(Value, new ValueExpr(ID+1,Value.Type));
         Session.UpdateRecords(new ModifyQuery(this,UpdateQuery));
     }
 }
@@ -273,11 +273,11 @@ class ViewTable extends SessionTable {
         for(Integer i=0;i<iObjects;i++) {
             KeyField ObjKeyField = new KeyField("object"+i,Type.Object);
             Objects.add(ObjKeyField);
-            Keys.add(ObjKeyField);
+            keys.add(ObjKeyField);
         }
 
         View = new KeyField("viewid",Type.System);
-        Keys.add(View);
+        keys.add(View);
     }
 
     List<KeyField> Objects;
@@ -315,11 +315,11 @@ class ChangeObjectTable extends ChangeTable {
         for(Integer i=0;i<iObjects;i++) {
             KeyField ObjKeyField = new KeyField("object"+i,Type.Object);
             Objects.add(ObjKeyField);
-            Keys.add(ObjKeyField);
+            keys.add(ObjKeyField);
         }
 
         Property = new KeyField("property",Type.System);
-        Keys.add(Property);
+        keys.add(Property);
 
         Value = new PropertyField("value",Type.Enum.get(iDBType));
         Properties.add(Value);
@@ -356,10 +356,10 @@ class ChangeClassTable extends ChangeTable {
         super(iTable);
 
         Object = new KeyField("object",Type.Object);
-        Keys.add(Object);
+        keys.add(Object);
 
         Class = new KeyField("class",Type.System);
-        Keys.add(Class);
+        keys.add(Class);
     }
 
     void changeClass(DataSession ChangeSession, Integer idObject, Collection<Class> Classes,boolean Drop) throws SQLException {
@@ -388,9 +388,9 @@ class ChangeClassTable extends ChangeTable {
         JoinQuery<KeyField,PropertyField> ClassQuery = new JoinQuery<KeyField,PropertyField>(ObjectKeys);
 
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(this);
-        ClassJoin.Joins.put(Object,ClassQuery.MapKeys.get(Object));
-        ClassJoin.Joins.put(Class,new ValueExpr(ChangeClass.ID,Class.Type));
-        ClassQuery.and(ClassJoin.InJoin);
+        ClassJoin.joins.put(Object,ClassQuery.mapKeys.get(Object));
+        ClassJoin.joins.put(Class,new ValueExpr(ChangeClass.ID,Class.Type));
+        ClassQuery.and(ClassJoin.inJoin);
 
         return ClassQuery;
     }
@@ -412,8 +412,8 @@ class RemoveClassTable extends ChangeClassTable {
 
     void excludeJoin(JoinQuery<?,?> Query, DataSession Session,Class ChangeClass,SourceExpr Join) {
         Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass));
-        ClassJoin.Joins.put(Object,Join);
-        Query.and(ClassJoin.InJoin.not());
+        ClassJoin.joins.put(Object,Join);
+        Query.and(ClassJoin.inJoin.not());
     }
 
 }
@@ -488,7 +488,7 @@ class TableFactory extends TableImplement{
             for(DataPropertyInterface Interface : Node) {
                 FieldNum++;
                 KeyField Field = new KeyField("key"+FieldNum.toString(),Type.Object);
-                Node.Table.Keys.add(Field);
+                Node.Table.keys.add(Field);
                 Node.MapFields.put(Interface,Field);
             }
         }
@@ -581,7 +581,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     public boolean toSave(Property Property) {
-        return true;//Property.IsPersistent();
+        return Property.IsPersistent();
     }
 
     public Collection<Property> getNoUpdateProperties() {
@@ -847,12 +847,12 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
       */
             // создадим dumb
             Table DumbTable = new Table("dumb");
-            DumbTable.Keys.add(new KeyField("dumb",Type.System));
+            DumbTable.keys.add(new KeyField("dumb",Type.System));
             Session.CreateTable(DumbTable);
             Session.Execute("INSERT INTO dumb (dumb) VALUES (1)");
 
             Table EmptyTable = new Table("empty");
-            EmptyTable.Keys.add(new KeyField("dumb",Type.System));
+            EmptyTable.keys.add(new KeyField("dumb",Type.System));
             Session.CreateTable(EmptyTable);
         }
     }

@@ -3,19 +3,18 @@ package platformlocal;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 
 abstract class ObjectExpr extends AndExpr {
 
-    public SourceExpr translate(Translator Translator) {
-        return Translator.translate(this);
+    public SourceExpr translate(Translator translator) {
+        return translator.translate(this);
     }
 
     boolean follow(DataWhere Where) {
         return false;
     }
-    Set<DataWhere> getFollows() {
-        return new HashSet<DataWhere>();
+    DataWhereSet getFollows() {
+        return new DataWhereSet();
     }
 
     // для кэша
@@ -48,7 +47,7 @@ class KeyExpr extends ObjectExpr implements QueryData {
 
     // возвращает Where без следствий
     Where getWhere() {
-        return new AndWhere();
+        return Where.TRUE;
     }
 }
 
@@ -90,20 +89,17 @@ class NotNullWhere extends DataWhere {
         Expr.fillAndJoinWheres(Joins,AndWhere);
     }
 
-    boolean calculateFollow(DataWhere Where) {
-        return Where==this || Expr.follow(Where);
-    }
-    Set<DataWhere> getFollows() {
-        return Expr.getFollows();
+    DataWhereSet getExprFollows() {
+        return Expr.From.inJoin.getFollows();
     }
 
     public Where getJoinWhere() {
-        return Expr.From.InJoin; // собсно ради этого все и делается
+        return Expr.From.inJoin; // собсно ради этого все и делается
     }
 
     public Where getNotJoinWhere() {
 //        return super.getNotJoinWhere();
-        return new AndWhere();
+        return Where.TRUE;
     }
 
     public Where copy() {
@@ -111,7 +107,7 @@ class NotNullWhere extends DataWhere {
     }
 
     public JoinWheres getInnerJoins() {
-        return new JoinWheres(Expr.From.InJoin,this);
+        return new JoinWheres(Expr.From.inJoin,this);
     }
 
     // для кэша
@@ -157,7 +153,7 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     }
 
     Type getType() {
-        return From.Source.getType(Property);
+        return From.source.getType(Property);
     }
 
     // возвращает Where без следствий
@@ -166,13 +162,10 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     }
 
     boolean follow(DataWhere Where) {
-        return Where==NotNull || From.InJoin.follow(Where);
+        return Where==NotNull || From.inJoin.follow(Where);
     }
-    Set<DataWhere> getFollows() {
-        Set<DataWhere> Follows = new HashSet<DataWhere>();
-        Follows.add(NotNull);
-        Follows.addAll(From.InJoin.getFollows());
-        return Follows;
+    DataWhereSet getFollows() {
+        return NotNull.getFollows();
     }
 
     public SourceExpr getFJExpr() {
@@ -184,7 +177,7 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     }
 
     int getHash() {
-        return From.hash()*31+From.Source.hashProperty(Property);
+        return From.hash()*31+From.source.hashProperty(Property);
     }
 }
 
@@ -215,7 +208,7 @@ class NullExpr extends ObjectExpr {
 
     // возвращает Where на notNull
     Where getWhere() {
-        return new OrWhere();
+        return Where.FALSE;
     }
 
     public boolean equals(Object o) {
@@ -276,7 +269,7 @@ class ValueExpr extends ObjectExpr implements QueryData {
 
     // возвращает Where без следствий
     Where getWhere() {
-        return new AndWhere();
+        return Where.TRUE;
     }
 
     public boolean equals(Object o) {

@@ -23,14 +23,14 @@ interface Where<Not extends Where> extends SourceJoin {
     AndObjectWhere[] getAnd();
     OrObjectWhere[] getOr();
 
-    ObjectWhere[] getObjects();
+    ObjectWhereSet getObjects();
 
     boolean evaluate(Collection<DataWhere> data);
 
     boolean hashEquals(Where where);
 
-    static String TRUE = "1=1";
-    static String FALSE = "1<>1";
+    static String TRUE_STRING = "1=1";
+    static String FALSE_STRING = "1<>1";
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
@@ -45,7 +45,8 @@ interface Where<Not extends Where> extends SourceJoin {
     int getSize();
     int getHeight();
 
-
+    static AndWhere TRUE = new AndWhere();
+    static OrWhere FALSE = new OrWhere();
 }
 
 abstract class AbstractWhere<Not extends Where> implements Where<Not> {
@@ -102,11 +103,7 @@ abstract class AbstractWhere<Not extends Where> implements Where<Not> {
 
     // не пересекаются ни в одном направлении
     static boolean decomposed(Where where1,Where where2) {
-        for(ObjectWhere thisWhere : where1.getObjects())
-            for(ObjectWhere thatWhere : where2.getObjects())
-                if(thisWhere.depends(thatWhere))
-                    return true;
-        return false;
+        return where1.getObjects().depends(where2.getObjects());
     }
 
     public boolean hashEquals(Where where) {
@@ -134,6 +131,14 @@ abstract class AbstractWhere<Not extends Where> implements Where<Not> {
         System.arraycopy(wheres,0,siblings,0,i);
         System.arraycopy(wheres,i+1,siblings,i,wheres.length-i-1);
         return siblings;
+    }
+
+
+    abstract ObjectWhereSet calculateObjects();
+    ObjectWhereSet objects = null;
+    public ObjectWhereSet getObjects() {
+        if(objects==null) objects = calculateObjects();
+        return objects;
     }
 }
 
@@ -170,7 +175,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
     }
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        if(wheres.length==0) return getOp().equals("AND")?TRUE:FALSE;
+        if(wheres.length==0) return getOp().equals("AND")? TRUE_STRING : FALSE_STRING;
 
         String result = "";
         for(Where where : wheres)
@@ -225,24 +230,15 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return hashCode;
     }
     
-    ObjectWhere[] objects = null;
-    public ObjectWhere[] getObjects() {
-        if(objects==null) {
-            ObjectWhere[] findObjects = new ObjectWhere[100]; int objnum = 0;
-            for(Where<?> where : wheres)
-                for(ObjectWhere object : where.getObjects()) {
-                    boolean found = false;
-                    for(int i=0;i<objnum;i++)
-                        if(findObjects[i].equals(object)) {
-                            found = true;
-                            break;
-                        }
-                    if(!found) findObjects[objnum++]=object;
-                }
-            objects = new ObjectWhere[objnum];
-            System.arraycopy(findObjects,0,objects,0,objnum);
+    public ObjectWhereSet calculateObjects() {
+        if(wheres.length==0)
+            return new ObjectWhereSet();
+        else {
+            ObjectWhereSet result = new ObjectWhereSet(wheres[0].getObjects());
+            for(int i=1;i<wheres.length;i++)
+                result.addAll(wheres[i].getObjects());
+            return result;
         }
-        return objects;
     }
 
     static OrObjectWhere[] not(AndObjectWhere[] wheres) {
@@ -283,14 +279,17 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return size;
     }
 
+    int height;
     public int getHeight() {
         if(wheres.length==0) return 0;
-
-        int maxHeight = 0;
-        for(int i=1;i<wheres.length;i++)
-            if(wheres[i].getHeight()>wheres[maxHeight].getHeight())
-                maxHeight = i;
-        return wheres[maxHeight].getHeight();
+        if(height==0) {
+            int maxHeight = 0;
+            for(int i=1;i<wheres.length;i++)
+                if(wheres[i].getHeight()>wheres[maxHeight].getHeight())
+                    maxHeight = i;
+            height = wheres[maxHeight].getHeight()+1;
+        }
+        return height;
     }
 
     boolean equalWheres(WhereType[] equals) {
@@ -427,9 +426,12 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
         return new OrObjectWhere[]{this};
     }
 
+    static int followed = 0;
+    static int decomposed = 0;
+
     static Where followFalse(Where followWhere, Where falseWhere, boolean plainFollow) {
 
-        if(falseWhere.isTrue()) return new OrWhere();        
+        if(falseWhere.isTrue()) return Where.FALSE;
         if(!decomposed(followWhere,falseWhere)) return followWhere;
 
         AndObjectWhere[] wheres = followWhere.getAnd();
@@ -445,7 +447,7 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
         for(AndObjectWhere where : wheres) {
             if(where instanceof ObjectWhere) {
                 if(falseWhere.directMeansFrom(((ObjectWhere<?>)where).not())) // проверяем если not возвращаем true
-                    return new AndWhere();
+                    return Where.TRUE;
                 staticWheres[statics++] = where;
             } else {
                 boolean isFalse = false;
@@ -460,7 +462,7 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
                 }
                 if(!isFalse) {
                     if(follows==0) // остался True значит и результат true
-                        return new AndWhere();
+                        return Where.TRUE;
 
                     if(follows==((AndWhere)where).wheres.length)
                         staticWheres[statics++] = where;
@@ -491,9 +493,9 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
     public Where siblingsFollow(Where falseWhere) {
         
         if(op(this,falseWhere,true).checkTrue())
-            return new AndWhere();
+            return Where.TRUE;
 
-        Where followWhere = new OrWhere(); //false
+        Where followWhere = Where.FALSE; //false
         AndObjectWhere[] staticWheres = wheres;
         int current = 0;
         for(AndObjectWhere where : wheres) { // после упрощения важно использовать именно этот элемент, иначе неправильно работать будет
@@ -523,10 +525,20 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
         if(maxWhere<0)
             return false;
 
-        AndObjectWhere[] siblingWheres = siblings(wheres, maxWhere);
-        for(OrObjectWhere where : ((AndWhere)wheres[maxWhere]).wheres)
-            if(!op(where,toWhere(siblingWheres),true).checkTrue())
+        Where siblingWhere = toWhere(siblings(wheres, maxWhere));
+        // будем бежать с высот поменьше, будем бежать своего рода пузырьком
+        OrObjectWhere[] maxWheres = new OrObjectWhere[((AndWhere)wheres[maxWhere]).wheres.length];
+        System.arraycopy(((AndWhere)wheres[maxWhere]).wheres,0,maxWheres,0,maxWheres.length);
+        for(int i=0;i<maxWheres.length;i++) {
+            for(int j=maxWheres.length-1;j>i;j--)
+                if(maxWheres[j].getHeight()<maxWheres[j-1].getHeight()) {
+                    OrObjectWhere t = maxWheres[j];
+                    maxWheres[j] = maxWheres[j-1];
+                    maxWheres[j-1] = t;
+                }
+            if(!op(maxWheres[i],siblingWhere,true).checkTrue())
                 return false;
+        }
         return true;
     }
 
@@ -741,7 +753,7 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
     }
 
     public JoinWheres getInnerJoins() {
-        JoinWheres result = new JoinWheres(new AndWhere(),new AndWhere());
+        JoinWheres result = new JoinWheres(Where.TRUE,Where.TRUE);
         for(Where<?> where : wheres)
             result = result.and(where.getInnerJoins());
         return result;        
@@ -856,10 +868,6 @@ abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> i
         return false; 
     }
 
-    public ObjectWhere[] getObjects() {
-        return new ObjectWhere[]{this};
-    }
-
     public AndObjectWhere[] getAnd() {
         return new AndObjectWhere[]{this};
     }
@@ -870,7 +878,7 @@ abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> i
 
     public Where siblingsFollow(Where falseWhere) {
         if(OrWhere.op(not(),falseWhere,true).checkTrue())
-            return new OrWhere();
+            return Where.FALSE;
         else
             return this;
     }
@@ -912,31 +920,26 @@ abstract class DataWhere extends ObjectWhere<NotWhere> {
         return new NotWhere(this);
     }
 
-    DataWhere[] follows = null;
     Map<DataWhere,Boolean> cacheFollow = new IdentityHashMap<DataWhere, Boolean>();
     boolean follow(DataWhere dataWhere) {
-        if(follows==null) {
-            Set<DataWhere> setFollows = getFollows();
-            follows = new DataWhere[setFollows.size()];
-            setFollows.toArray(follows);            
-        }
-
-        for(DataWhere follow : follows)
-            if(dataWhere.equals(follow))
-                return true;
-        return false;
-/*      if(!Main.ActivateCaches) return calculateFollow(dataWhere);
-        Boolean Result = cacheFollow.get(dataWhere);
-        if(Result==null) {
-            Result = calculateFollow(dataWhere);
-            cacheFollow.put(dataWhere,Result);
-        }
-
-        return Result;*/
+        return getFollows().contains(dataWhere);
     }
 
-    abstract boolean calculateFollow(DataWhere dataWhere);
-    abstract Set<DataWhere> getFollows();
+    public ObjectWhereSet calculateObjects() {
+        return new ObjectWhereSet(this);
+    }
+
+    // определяет все
+    abstract DataWhereSet getExprFollows();
+    // возвращает себя и все зависимости
+    DataWhereSet follows = null;
+    DataWhereSet getFollows() {
+        if(follows==null) {
+            follows = new DataWhereSet(getExprFollows());
+            follows.add(this);
+        }
+        return follows;
+    }
     
     public boolean evaluate(Collection<DataWhere> data) {
         return data.contains(this);
@@ -954,6 +957,10 @@ class NotWhere extends ObjectWhere<DataWhere> {
     DataWhere where;
     NotWhere(DataWhere iWhere) {
         where = iWhere;
+    }
+
+    public ObjectWhereSet calculateObjects() {
+        return new ObjectWhereSet(this);
     }
 
     public boolean directMeansFrom(AndObjectWhere meanWhere) {
@@ -1004,7 +1011,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
     }
 
     public JoinWheres getInnerJoins() {
-        return new JoinWheres(new AndWhere(),this);
+        return new JoinWheres(Where.TRUE,this);
     }
 
     public boolean equals(Where equalWhere, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
@@ -1013,5 +1020,155 @@ class NotWhere extends ObjectWhere<DataWhere> {
 
     public int getHash() {
         return where.hash()*3;
+    }
+}
+
+class ObjectWhereSet {
+    DataWhereSet data;
+    DataWhereSet not;
+
+    DataWhereSet followData;
+    DataWhereSet followNot;
+
+    ObjectWhereSet() {
+        data = new DataWhereSet();
+        not = new DataWhereSet();
+
+        followData = new DataWhereSet();
+        followNot = new DataWhereSet();
+    }
+
+    ObjectWhereSet(ObjectWhereSet set) {
+        data = new DataWhereSet(set.data);
+        not = new DataWhereSet(set.not);
+
+        followData = new DataWhereSet(set.followData);
+        followNot = new DataWhereSet(set.followNot);
+    }
+
+    ObjectWhereSet(DataWhere where) {
+        data = new DataWhereSet();
+        data.add(where);
+        not = new DataWhereSet();
+
+        followData = new DataWhereSet(where.getFollows());
+        followNot = new DataWhereSet();
+    }
+
+    ObjectWhereSet(NotWhere where) {
+        data = new DataWhereSet();
+        not = new DataWhereSet();
+        not.add(where.where);
+
+        followData = new DataWhereSet();
+        followNot = new DataWhereSet(where.where.getFollows());
+    }
+
+    void addAll(ObjectWhereSet set) {
+        data.addAll(set.data);
+        not.addAll(set.not);
+
+        followData.addAll(set.followData);
+        followNot.addAll(set.followNot);
+    }
+
+    boolean depends(ObjectWhereSet set) {
+        return set.data.intersect(followData) || set.data.intersect(followNot) || data.intersect(set.followNot) || not.intersect(set.followNot);
+    }
+}
+
+class DataWhereEntry {
+    int hash;
+    DataWhereEntry next;
+    DataWhere where;
+
+    DataWhereEntry(int iHash, DataWhereEntry iNext, DataWhere iWhere) {
+        hash = iHash;
+        next = iNext;
+        where = iWhere;
+    }
+}
+
+// быстрый хэш set
+class DataWhereSet {
+
+    int size;
+    DataWhereEntry[] table;
+    DataWhereEntry[] wheres;
+
+    float loadFactor;
+    DataWhereSet() {
+        table = new DataWhereEntry[16];
+        loadFactor = 0.75f;
+        wheres = new DataWhereEntry[(int)(table.length * loadFactor)];
+    }
+
+    DataWhereSet(DataWhereSet set) {
+        // нужно переинстанцировать entry
+        wheres = new DataWhereEntry[set.wheres.length];
+        table = new DataWhereEntry[set.table.length];
+        for(int i=0;i<set.size;i++) {
+            int hash = (set.wheres[i].hash & (table.length-1));
+            wheres[i] = new DataWhereEntry(set.wheres[i].hash,table[hash],set.wheres[i].where);
+            table[hash] = wheres[i];
+        }
+        loadFactor = set.loadFactor;
+        size = set.size;
+    }
+
+    boolean contains(Where where) {
+        int hash = hash(where.hashCode());
+        for(DataWhereEntry entry = table[hash & (table.length-1)];entry!=null;entry=entry.next)
+            if(entry.hash==hash && entry.where.equals(where))
+                return true;
+        return false;
+    }
+
+    boolean intersect(DataWhereSet set) {
+        if(size>set.size) return set.intersect(this);
+
+        for(int i=0;i<size;i++)
+            for(DataWhereEntry entry = set.table[wheres[i].hash & (set.table.length - 1)];entry!=null;entry=entry.next)
+                if(entry.hash==wheres[i].hash && entry.where.equals(wheres[i].where))
+                    return true;
+        return false;
+    }
+
+    void resize(int length) {
+        table = new DataWhereEntry[length];
+        for(int i=0;i<size;i++) {
+            int newHash = (wheres[i].hash & (length-1));
+            wheres[i].next = table[newHash];
+            table[newHash] = wheres[i];
+        }
+        DataWhereEntry[] newWheres = new DataWhereEntry[(int)(length * 0.75f)];
+        System.arraycopy(wheres,0,newWheres,0,wheres.length);
+        wheres = newWheres;
+    }
+
+    int hash(int h) { // копися с hashSet'а
+        h ^= (h >>> 20) ^ (h >>> 12);
+        return (h ^ (h >>> 7) ^ (h >>> 4));
+    }
+
+    void add(DataWhere where) {
+        add(where,hash(where.hashCode()));
+    }
+
+    void add(DataWhere where,int hash) {
+        int first = hash & (table.length - 1);
+        for(DataWhereEntry entry = table[first];entry!=null;entry=entry.next)
+            if (entry.hash == hash && (entry.where == where || entry.where.equals(where)))
+                return;
+        table[first] = new DataWhereEntry(hash,table[first],where);
+        wheres[size++] = table[first];
+        if(size>=wheres.length)
+            resize(2*table.length);
+    }
+
+    // здесь можно еще сократить equals не проверяя друг с другом
+    void addAll(DataWhereSet set) {
+        for(int i=0;i<set.size;i++)
+            add(set.wheres[i].where,set.wheres[i].hash);
     }
 }

@@ -30,10 +30,10 @@ abstract class ValueConstraint extends Constraint {
 
         JoinQuery<PropertyInterface,String> Changed = new JoinQuery<PropertyInterface,String>(Property.Interfaces);
 
-        SourceExpr ValueExpr = Session.PropertyChanges.get(Property).getExpr(Changed.MapKeys,0);
+        SourceExpr ValueExpr = Session.PropertyChanges.get(Property).getExpr(Changed.mapKeys,0);
         // закинем условие на то что мы ищем
         Changed.and(new CompareWhere(ValueExpr,Property.ChangeTable.Value.Type.getEmptyValueExpr(),Invalid));
-        Changed.Properties.put("value", ValueExpr);
+        Changed.properties.put("value", ValueExpr);
 
         LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {
@@ -86,8 +86,8 @@ class UniqueConstraint extends Constraint {
         Map<PropertyInterface,KeyExpr> MapChange = new HashMap<PropertyInterface, KeyExpr>();
         Map<PropertyInterface,KeyExpr> MapPrev = new HashMap<PropertyInterface, KeyExpr>();
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces) {
-            MapChange.put(Interface,Changed.MapKeys.get(Interface));
-            MapPrev.put(Interface,Changed.MapKeys.get(MapPrevKeys.get(Interface)));
+            MapChange.put(Interface,Changed.mapKeys.get(Interface));
+            MapPrev.put(Interface,Changed.mapKeys.get(MapPrevKeys.get(Interface)));
         }
 
         JoinExpr ChangedExpr = Session.PropertyChanges.get(Property).getExpr(MapChange,0);
@@ -99,14 +99,14 @@ class UniqueConstraint extends Constraint {
         Changed.and(ChangedExpr.getWhere());
 
         // не равны ключи
-        Where OrDiffKeys = new OrWhere();
+        Where OrDiffKeys = Where.FALSE;
         
         Map<PropertyInterface,String> KeyFields = new HashMap();
         Integer KeyNum = 0;
         for(PropertyInterface Interface : (Collection<PropertyInterface>)Property.Interfaces)
             OrDiffKeys = OrDiffKeys.or(new CompareWhere(MapChange.get(Interface),MapPrev.get(Interface),CompareWhere.NOT_EQUALS));
         Changed.and(OrDiffKeys);
-        Changed.Properties.put("value", ChangedExpr);
+        Changed.properties.put("value", ChangedExpr);
 
         LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Changed.executeSelect(Session);
         if(Result.size()>0) {

@@ -11,12 +11,13 @@ import java.sql.SQLException;
 // абстрактный класс источников
 abstract class Source<K,V> {
 
-    Collection<K> Keys;
+    Collection<K> keys;
 
     Source(Collection<? extends K> iKeys) {
-        Keys=(Collection<K>)iKeys;
+        keys =(Collection<K>)iKeys;
     }
-    Source() {Keys=new ArrayList();}
+    Source() {
+        keys =new ArrayList();}
 
     abstract Collection<V> getProperties();
     abstract Type getType(V Property);
@@ -106,7 +107,7 @@ abstract class DataSource<K,V> extends Source<K,V> {
 
     // получает строку по которой можно определить входит ли ряд в запрос Select
     String getInSourceName() {
-        return (Keys.size()>0?getKeyName(Keys.iterator().next()):"subkey");
+        return (keys.size()>0?getKeyName(keys.iterator().next()):"subkey");
     }
 
 //    abstract <MK,MV> DataSource<K, Object> merge(DataSource<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps);
@@ -243,10 +244,10 @@ class Table extends DataSource<KeyField,PropertyField> {
     }
 
     public void outSelect(DataSession Session) throws SQLException {
-        JoinQuery<KeyField,PropertyField> OutQuery = new JoinQuery<KeyField,PropertyField>(Keys);
+        JoinQuery<KeyField,PropertyField> OutQuery = new JoinQuery<KeyField,PropertyField>(keys);
         Join<KeyField,PropertyField> OutJoin = new Join<KeyField,PropertyField>(this,OutQuery);
-        OutQuery.Properties.putAll(OutJoin.Exprs);
-        OutQuery.Where = OutQuery.Where.and(OutJoin.InJoin);
+        OutQuery.properties.putAll(OutJoin.exprs);
+        OutQuery.where = OutQuery.where.and(OutJoin.inJoin);
         OutQuery.outSelect(Session);
     }
 
@@ -304,7 +305,7 @@ class ModifyQuery {
             CompiledQuery<KeyField, PropertyField> ChangeCompile = Change.compile(Syntax);
             String FromSelect = ChangeCompile.fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
-            for(KeyField Key : Table.Keys)
+            for(KeyField Key : Table.keys)
                 WhereSelect.add(Table.getName(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
             
             List<KeyField> KeyOrder = new ArrayList<KeyField>();
@@ -332,20 +333,20 @@ class ModifyQuery {
             if(UpdateModel==1) {
                 // SQL-серверная модель когда она подхватывает первый Join и старую таблицу уже не вилит
                 // построим JoinQuery куда переJoin'им все эти поля (оптимизатор уберет все дублирующиеся таблицы)
-                JoinQuery<KeyField, PropertyField> UpdateQuery = new JoinQuery<KeyField, PropertyField>(Table.Keys);
+                JoinQuery<KeyField, PropertyField> UpdateQuery = new JoinQuery<KeyField, PropertyField>(Table.keys);
                 Join<KeyField, PropertyField> TableJoin = new Join<KeyField, PropertyField>(Table, UpdateQuery);
-                TableJoin.NoAlias = true;
-                UpdateQuery.and(TableJoin.InJoin);
+                TableJoin.noAlias = true;
+                UpdateQuery.and(TableJoin.inJoin);
 
                 Join<KeyField, PropertyField> ChangeJoin = new Join<KeyField, PropertyField>(Change, UpdateQuery);
-                UpdateQuery.and(ChangeJoin.InJoin);
-                for(PropertyField ChangeField : Change.Properties.keySet())
-                    UpdateQuery.Properties.put(ChangeField, ChangeJoin.Exprs.get(ChangeField));
+                UpdateQuery.and(ChangeJoin.inJoin);
+                for(PropertyField ChangeField : Change.properties.keySet())
+                    UpdateQuery.properties.put(ChangeField, ChangeJoin.exprs.get(ChangeField));
                 FromSelect = UpdateQuery.compile(Syntax).fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
             } else {
                 FromSelect = Change.compile(Syntax).fillSelect(KeySelect, PropertySelect, WhereSelect, Syntax);
 
-                for(KeyField Key : Table.Keys)
+                for(KeyField Key : Table.keys)
                     WhereSelect.add(Table.getName(Syntax)+"."+Key.Name+"="+KeySelect.get(Key));
             }
 
@@ -363,11 +364,11 @@ class ModifyQuery {
     String getInsertLeftKeys(SQLSyntax Syntax) {
 
         // делаем для этого еще один запрос
-        JoinQuery<KeyField,PropertyField> LeftKeysQuery = new JoinQuery<KeyField,PropertyField>(Table.Keys);
+        JoinQuery<KeyField,PropertyField> LeftKeysQuery = new JoinQuery<KeyField,PropertyField>(Table.keys);
         // при Join'им ModifyQuery
-        LeftKeysQuery.and(new Join<KeyField,PropertyField>(Change,LeftKeysQuery).InJoin);
+        LeftKeysQuery.and(new Join<KeyField,PropertyField>(Change,LeftKeysQuery).inJoin);
         // исключим ключи которые есть
-        LeftKeysQuery.and((new Join<KeyField,PropertyField>(Table,LeftKeysQuery)).InJoin.not());
+        LeftKeysQuery.and((new Join<KeyField,PropertyField>(Table,LeftKeysQuery)).inJoin.not());
 
         return (new ModifyQuery(Table,LeftKeysQuery)).getInsertSelect(Syntax);
     }
