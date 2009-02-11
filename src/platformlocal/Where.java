@@ -617,38 +617,6 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
     }
 }
 
-// нужен для "расщепления" Where на типы Join'ов,равенств ключей и остальных Where
-class JoinWheres extends HashMap<Where,Where> {
-
-    void or(JoinWheres joins) {
-        for(Map.Entry<Where,Where> whereJoin : joins.entrySet())
-            or(whereJoin.getKey(),whereJoin.getValue());
-    }
-
-    void or(Where join,Where where) {
-        if(!where.isFalse()) {
-            Where resultWhereJoin = get(join);
-            put(join,resultWhereJoin==null?where:resultWhereJoin.or(where));
-        }
-    }
-
-    JoinWheres() {
-    }
-
-    JoinWheres(Where join,Where where) {
-        put(join,where);
-    }
-
-    JoinWheres and(JoinWheres joins) {
-        JoinWheres result = new JoinWheres();
-        // берем все пары joins'ов
-        for(Map.Entry<Where,Where> whereJoin1 : entrySet())
-            for(Map.Entry<Where,Where> whereJoin2 : joins.entrySet())
-                result.or(whereJoin1.getKey().and(whereJoin2.getKey()),whereJoin1.getValue().and(whereJoin2.getValue()));
-        return result;
-    }
-}
-
 class Decision {
     AndObjectWhere condition;
     Where addTrue;

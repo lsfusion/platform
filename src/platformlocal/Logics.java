@@ -887,9 +887,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     LDP addDProp(String caption, Class Value, Class... Params) {
-        return addDProp(null, caption, Value, Params);
+        return addDProp((AbstractGroup)null, caption, Value, Params);
     }
-
+    LDP addDProp(String sID, String caption, Class Value, Class... Params) {
+        return addDProp(null, sID, caption, Value, Params);
+    }
     LDP addDProp(AbstractGroup group, String caption, Class Value, Class... Params) {
         return addDProp(group, null, caption, Value, Params);
     }
@@ -1054,7 +1056,11 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     LUP addUProp(String caption, int UnionType, int IntNum, Object... Params) {
-        return addUProp(null, caption, UnionType, IntNum, Params);
+        return addUProp((AbstractGroup)null, caption, UnionType, IntNum, Params);
+    }
+
+    LUP addUProp(String sID, String caption, int UnionType, int IntNum, Object... Params) {
+        return addUProp(null, sID, caption, UnionType, IntNum, Params);
     }
 
     LUP addUProp(AbstractGroup group, String caption, int UnionType, int IntNum, Object... Params) {

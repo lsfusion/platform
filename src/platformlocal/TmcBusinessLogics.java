@@ -257,7 +257,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument);
         extIncSupplierName = addJProp(supplierGroup, "extIncSupplierName", "Имя поставщика", name, 1, extIncSupplier, 1);
 
-        extIncDetailDocument = addDProp("Документ", extIncomeDocument, extIncomeDetail);
+        extIncDetailDocument = addDProp("extIncDetailDocument", "Документ", extIncomeDocument, extIncomeDetail);
 
         extIncDetailArticle = addDProp("Товар", article, extIncomeDetail);
         extIncDetailArticleName = addJProp(artclGroup, "extIncDetailArticleName", "Имя товара", name, 1, extIncDetailArticle, 1);
@@ -271,7 +271,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitReceiptProperties() {
 
-        receiptSaleDocument = addDProp("Документ продажи", cashSaleDocument, receipt);
+        receiptSaleDocument = addDProp("receiptSaleDocument","Документ продажи", cashSaleDocument, receipt);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -283,7 +283,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitClearingSaleProperties() {
 
-        clearingSaleCustomer = addDProp("Покупатель", customer, clearingSaleDocument);
+        clearingSaleCustomer = addDProp("clearingSaleCustomer","Покупатель", customer, clearingSaleDocument);
         clearingSaleCustomerName = addJProp(customerGroup, "Имя покупателя", name, 1, clearingSaleCustomer, 1);
     }
 
@@ -296,7 +296,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitReturnProperties() {
 
-        returnSupplier = addDProp("Поставщик", supplier, returnDocument);
+        returnSupplier = addDProp("returnSupplier","Поставщик", supplier, returnDocument);
         returnSupplierName = addJProp(supplierGroup, "Имя поставщика", name, 1, returnSupplier, 1);
     }
 
@@ -345,10 +345,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     private void InitDatePrimaryProperties() {
 
         extIncDate = addDProp(baseGroup, "extIncDate", "Дата", Class.date, extIncomeDocument);
-        intraDate = addDProp(baseGroup, "Дата", Class.date, intraDocument);
-        extOutDate = addDProp(baseGroup, "Дата", Class.date, extOutcomeDocument);
-        exchDate = addDProp(baseGroup, "Дата", Class.date, exchangeDocument);
-        revalDate = addDProp(baseGroup, "Дата", Class.date, revalDocument);
+        intraDate = addDProp(baseGroup, "intraDate", "Дата", Class.date, intraDocument);
+        extOutDate = addDProp(baseGroup, "extOutDate", "Дата", Class.date, extOutcomeDocument);
+        exchDate = addDProp(baseGroup, "exchDate", "Дата", Class.date, exchangeDocument);
+        revalDate = addDProp(baseGroup, "revalDate", "Дата", Class.date, revalDocument);
     }
 
     // ------------------------------------ Перегруженные свойства ------------------------------------------- //
@@ -399,15 +399,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitStorePrimaryProperties() {
 
-        extIncStore = addDProp("Склад", store, extIncomeDocument);
+        extIncStore = addDProp("extIncStore", "Склад", store, extIncomeDocument);
 
-        intraOutStore = addDProp("Склад отпр.", store, intraDocument);
-        intraIncStore = addDProp("Склад назн.", store, intraDocument);
+        intraOutStore = addDProp("intraOutStore", "Склад отпр.", store, intraDocument);
+        intraIncStore = addDProp("intraIncStore", "Склад назн.", store, intraDocument);
         intraStoreName = addJProp(storeGroup, "Имя склада (назн.)", name, 1, intraIncStore, 1);
 
-        extOutStore = addDProp("Склад", store, extOutcomeDocument);
-        exchStore = addDProp("Склад", store, exchangeDocument);
-        revalStore = addDProp("Склад", store, revalDocument);
+        extOutStore = addDProp("extOutStore", "Склад", store, extOutcomeDocument);
+        exchStore = addDProp("exchStore", "Склад", store, exchangeDocument);
+        revalStore = addDProp("revalStore", "Склад", store, revalDocument);
 
         receiptStore = addJProp(storeGroup, "Склад чека", extOutStore, 1, receiptSaleDocument, 1);
     }
@@ -435,7 +435,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         primDocStore = addUProp(paramsGroup, "Склад (изм.)", 2, 1, 1, storePrimDoc, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, revalStore, 1);
         fixedStore = addUProp("Склад (парам.)", 2, 1, 1, receiptStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
 
-        docStore = addUProp("Склад", 2, 1, 1, extIncStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1, 1, revalStore, 1);
+        docStore = addUProp("docStore", "Склад", 2, 1, 1, extIncStore, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1, 1, revalStore, 1);
 
         docStoreName = addJProp(storeGroup, "docStoreName", "Имя склада", name, 1, docStore, 1);
     }
@@ -507,25 +507,25 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         intraQuantity = addDProp(quantGroup, "Кол-во внутр.", Class.doubleClass, intraDocument, article);
 
-        receiptQuantity = addDProp(quantGroup, "Кол-во в чеке", Class.doubleClass, receipt, article);
-        cashSaleQuantity = addGProp(quantGroup, "Кол-во прод.", receiptQuantity, true, receiptSaleDocument, 1, 2);
+        receiptQuantity = addDProp(quantGroup, "receiptQuantity", "Кол-во в чеке", Class.doubleClass, receipt, article);
+        cashSaleQuantity = addGProp(quantGroup, "cashSaleQuantity", "Кол-во прод.", receiptQuantity, true, receiptSaleDocument, 1, 2);
 
-        clearingSaleQuantity = addDProp(quantGroup, "Кол-во расх.", Class.doubleClass, clearingSaleDocument, article);
+        clearingSaleQuantity = addDProp(quantGroup, "clearingSaleQuantity", "Кол-во расх.", Class.doubleClass, clearingSaleDocument, article);
 
         saleQuantity = addUProp("Кол-во реал.", 1, 2, 1, clearingSaleQuantity, 1, 2, 1, cashSaleQuantity, 1, 2);
 
-        invQuantity = addDProp(quantGroup, "Кол-во инв.", Class.doubleClass, invDocument, article);
-        invBalance = addDProp(quantGroup, "Остаток инв.", Class.doubleClass, invDocument, article);
+        invQuantity = addDProp(quantGroup, "invQuantity", "Кол-во инв.", Class.doubleClass, invDocument, article);
+        invBalance = addDProp(quantGroup, "invBalance", "Остаток инв.", Class.doubleClass, invDocument, article);
 //        LP defInvQuantity = addUProp("Кол-во инв. (по умолч.)", 1, 2, 1, docOutBalanceQuantity, 1, 2, -1, invBalance, 1, 2);
 //        setDefProp(invQuantity, defInvQuantity, true);
 
-        returnQuantity = addDProp(quantGroup, "Кол-во возвр.", Class.doubleClass, returnDocument, article);
+        returnQuantity = addDProp(quantGroup, "returnQuantity", "Кол-во возвр.", Class.doubleClass, returnDocument, article);
 
         extOutQuantity = addUProp("Кол-во расх.", 1, 2, 1, doubleExtOutDocArticle, 1, 2, 1, returnQuantity, 1, 2, 1, invQuantity, 1, 2, 1, clearingSaleQuantity, 1, 2, 1, cashSaleQuantity, 1, 2);
 
-        exchangeQuantity = addDProp(quantGroup, "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
+        exchangeQuantity = addDProp(quantGroup, "exchangeQuantity", "Кол-во перес.", Class.doubleClass, exchangeDocument, article, article);
 
-        revalBalanceQuantity = addDProp(quantGroup, "Остаток", Class.doubleClass, revalDocument, article);
+        revalBalanceQuantity = addDProp(quantGroup, "revalBalanceQuantity", "Остаток", Class.doubleClass, revalDocument, article);
 
         exchIncQuantity = addGProp("Прих. перес.", exchangeQuantity, true, 1, 3);
         exchOutQuantity = addGProp("Расх. перес.", exchangeQuantity, true, 1, 2);
@@ -651,7 +651,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         LP incPrmsQuantity = addUProp("Кол-во прих. (парам.)", 2, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2);
         notZeroIncPrmsQuantity = addJProp("Есть в перв. док.", notZero, 2, incPrmsQuantity, 1, 2);
 
-        isRevalued = addDProp("Переоц.", Class.bit, revalDocument, article);
+        isRevalued = addDProp("isRevalued", "Переоц.", Class.bit, revalDocument, article);
 
         isDocArtChangesParams = addUProp(paramsGroup, "Изм. парам.", 2, 2, 1, bitPrimDocArticle, 1, 2, 1, isRevalued, 1, 2, 1, notZeroIncPrmsQuantity, 1, 2);
 
@@ -778,12 +778,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitParamsPrimaryFixedProperties() {
 
-        fixedPriceIn = addDProp("Цена пост.", Class.doubleClass, fixedDocument, article);
-        fixedVATIn = addDProp("НДС пост.", Class.doubleClass, fixedDocument, article);
-        fixedAdd = addDProp("Надбавка", Class.doubleClass, fixedDocument, article);
-        fixedVATOut = addDProp("НДС прод.", Class.doubleClass, fixedDocument, article);
-        fixedLocTax = addDProp("Местн. нал.", Class.doubleClass, fixedDocument, article);
-        fixedPriceOut = addDProp("Цена розн.", Class.doubleClass, fixedDocument, article);
+        fixedPriceIn = addDProp("fixedPriceIn", "Цена пост.", Class.doubleClass, fixedDocument, article);
+        fixedVATIn = addDProp("fixedVATIn", "НДС пост.", Class.doubleClass, fixedDocument, article);
+        fixedAdd = addDProp("fixedAdd", "Надбавка", Class.doubleClass, fixedDocument, article);
+        fixedVATOut = addDProp("fixedVATOut", "НДС прод.", Class.doubleClass, fixedDocument, article);
+        fixedLocTax = addDProp("fixedLocTax", "Местн. нал.", Class.doubleClass, fixedDocument, article);
+        fixedPriceOut = addDProp("fixedPriceOut", "Цена розн.", Class.doubleClass, fixedDocument, article);
     }
 
     // Переоценка
@@ -799,16 +799,16 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         revaluedBalanceQuantity = addJProp("Остаток (переоц.)", multiplyDouble2, 2, revalBalanceQuantity, 1, 2, isRevalued, 1, 2);
 
-        revalPriceIn = addDProp("Цена пост.", Class.doubleClass, revalDocument, article);
-        revalVATIn = addDProp("НДС пост.", Class.doubleClass, revalDocument, article);
-        revalAddBefore = addDProp("Надбавка (до)", Class.doubleClass, revalDocument, article);
-        revalVATOutBefore = addDProp("НДС прод. (до)", Class.doubleClass, revalDocument, article);
-        revalLocTaxBefore = addDProp("Местн. нал. (до)", Class.doubleClass, revalDocument, article);
-        revalPriceOutBefore = addDProp("Цена розн. (до)", Class.doubleClass, revalDocument, article);
-        revalAddAfter = addDProp(outPrmsGroupAfter, "Надбавка (после)", Class.doubleClass, revalDocument, article);
-        revalVATOutAfter = addDProp(outPrmsGroupAfter, "НДС прод. (после)", Class.doubleClass, revalDocument, article);
-        revalLocTaxAfter = addDProp(outPrmsGroupAfter, "Местн. нал. (после)", Class.doubleClass, revalDocument, article);
-        revalPriceOutAfter = addDProp(outPrmsGroupAfter, "Цена розн. (после)", Class.doubleClass, revalDocument, article);
+        revalPriceIn = addDProp("revalPriceIn", "Цена пост.", Class.doubleClass, revalDocument, article);
+        revalVATIn = addDProp("revalVATIn", "НДС пост.", Class.doubleClass, revalDocument, article);
+        revalAddBefore = addDProp("revalAddBefore", "Надбавка (до)", Class.doubleClass, revalDocument, article);
+        revalVATOutBefore = addDProp("revalVATOutBefore", "НДС прод. (до)", Class.doubleClass, revalDocument, article);
+        revalLocTaxBefore = addDProp("revalLocTaxBefore", "Местн. нал. (до)", Class.doubleClass, revalDocument, article);
+        revalPriceOutBefore = addDProp("revalPriceOutBefore", "Цена розн. (до)", Class.doubleClass, revalDocument, article);
+        revalAddAfter = addDProp(outPrmsGroupAfter, "revalAddAfter", "Надбавка (после)", Class.doubleClass, revalDocument, article);
+        revalVATOutAfter = addDProp(outPrmsGroupAfter, "revalVATOutAfter", "НДС прод. (после)", Class.doubleClass, revalDocument, article);
+        revalLocTaxAfter = addDProp(outPrmsGroupAfter, "revalLocTaxAfter", "Местн. нал. (после)", Class.doubleClass, revalDocument, article);
+        revalPriceOutAfter = addDProp(outPrmsGroupAfter, "revalPriceOutAfter", "Цена розн. (после)", Class.doubleClass, revalDocument, article);
     }
 
     // ------------------------------------ Перегруженные свойства ------------------------------------------- //
@@ -934,7 +934,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         intraSumPriceOut = addJProp("Сумма розн. (вн.)", multiplyDouble2, 2, intraQuantity, 1, 2, fixedPriceOut, 1, 2);
 
-        receiptSumPriceOut = addDProp(outSumsGroup, "Сумма по чеку", Class.doubleClass, receipt, article);
+        receiptSumPriceOut = addDProp(outSumsGroup, "receiptSumPriceOut", "Сумма по чеку", Class.doubleClass, receipt, article);
         receiptDocumentSumPriceOut = addGProp(outSumsGroup, "Сумма чека", receiptSumPriceOut, true, 1);
         cashSaleSumPriceOut = addGProp(outSumsGroup, "Сумма прод.", receiptSumPriceOut, true, receiptSaleDocument, 1, 2);
 
@@ -1028,7 +1028,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitSumAccountProperties() {
 
-        accExcl = addDProp(accountGroup, "Искл.", Class.bit, accountDocument, article);
+        accExcl = addDProp(accountGroup, "accExcl", "Искл.", Class.bit, accountDocument, article);
 
         extIncDetailSumAccount = extIncDetailSumPriceOut;
         extIncSumAccount = addGProp("Сумма учетн. (вх.)", extIncDetailSumAccount, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
@@ -1234,7 +1234,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void initPersistents() {
 
-//        persistents.add((AggregateProperty)docStore.property);
+        persistents.add((AggregateProperty)docStore.property);
 
         persistents.add((AggregateProperty)extIncQuantity.property);
 
@@ -1245,6 +1245,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         persistents.add((AggregateProperty)extIncLastDetail.property);
 
+//        persistents.add((AggregateProperty)docOutBalanceQuantity.property);
+//        persistents.add((AggregateProperty)docIncBalanceQuantity.property);
+
+        persistents.add((AggregateProperty)outQStore.property);
+        persistents.add((AggregateProperty)incQStore.property);
     }
 
     void initTables() {

@@ -97,6 +97,14 @@ class ExprCase extends Case<SourceExpr> {
         return where.toString() + "-" + data.toString();
     }
 
+    public boolean equals(Object obj) {
+        return this==obj || obj instanceof ExprCase && where.equals(((ExprCase)obj).where) && data.equals(((ExprCase)obj).data);
+    }
+
+    public int hashCode() {
+        return where.hashCode()*31+data.hashCode();
+    }
+
     // для кэша
     boolean equals(ExprCase Case, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
         return where.equals(Case.where, MapExprs, MapWheres) && data.equals(Case.data, MapExprs, MapWheres);
@@ -193,19 +201,19 @@ class MapCaseList<K> extends CaseList<Map<K,AndExpr>,MapCase<K>> {
 
 class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
-    ExprCaseList Cases;
+    ExprCaseList cases;
 
     // этот конструктор нужен для создания CaseExpr'а в результать mapCase'а
     CaseExpr(ExprCaseList iCases) {
-        Cases = iCases;
+        cases = iCases;
     }
 
     CaseExpr(Where Where,SourceExpr Expr) {
-        Cases = new ExprCaseList(Where,Expr);
+        cases = new ExprCaseList(Where,Expr);
     }
 
     CaseExpr(Where Where,SourceExpr True,SourceExpr False) {
-        Cases = new ExprCaseList(Where,True,False);
+        cases = new ExprCaseList(Where,True,False);
     }
 
 /*    CaseExpr(SourceExpr Expr,SourceExpr OpExpr,boolean Sum) {
@@ -214,22 +222,22 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     // получает список ExprCase'ов
     ExprCaseList getCases() {
-        return Cases;
+        return cases;
     }
 
     public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
 
-        if(Cases.size()==0)
+        if(cases.size()==0)
             return Type.NULL;
-        if(Cases.size()==1 && Cases.get(0).where.isTrue())
-            return Cases.get(0).data.getSource(QueryData, Syntax);
+        if(cases.size()==1 && cases.get(0).where.isTrue())
+            return cases.get(0).data.getSource(QueryData, Syntax);
 
         String Source = "CASE";
         boolean Else = false;
-        for(int i=0;i<Cases.size();i++) {
-            ExprCase Case = Cases.get(i);
+        for(int i=0;i< cases.size();i++) {
+            ExprCase Case = cases.get(i);
             String CaseSource = Case.data.getSource(QueryData, Syntax);
-            if(i==Cases.size()-1 && Case.where.isTrue()) {
+            if(i== cases.size()-1 && Case.where.isTrue()) {
                 Source = Source + " ELSE " + CaseSource;
                 Else = true;
             } else
@@ -240,7 +248,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     public String toString() {
         String Result = "";
-        for(ExprCase Case : Cases)
+        for(ExprCase Case : cases)
             Result = (Result.length()==0?"":Result+",")+Case.toString();
         return "CE(" + Result + ")";
     }
@@ -276,7 +284,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
      */
     Type getType() {
-        return Cases.get(0).data.getType();
+        return cases.get(0).data.getType();
     }
 
     // не means OR верхних +
@@ -290,7 +298,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     public SourceExpr translate(Translator translator) {
 
         ExprCaseList TranslatedCases = new ExprCaseList();
-        for(Iterator<ExprCase> i=Cases.iterator();i.hasNext();) {
+        for(Iterator<ExprCase> i= cases.iterator();i.hasNext();) {
             ExprCase Case = i.next();
             Where TranslatedWhere = Case.where.translate(translator);
             for(ExprCase TranslatedCase : Case.data.translate(translator).getCases()) // здесь на самом деле заведомо будут AndExpr'ы
@@ -300,8 +308,8 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         }
 
         SourceExpr result = TranslatedCases.getExpr();
-        if(result instanceof CaseExpr && ((CaseExpr)result).Cases.size()>15)
-            result = result;
+//        if(result instanceof CaseExpr && ((CaseExpr)result).cases.size()>5)
+//            result = result;
 //        System.out.println(result.getCases().size());
         return result;
     }
@@ -348,7 +356,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
 
     public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
-        for(ExprCase Case : Cases) {
+        for(ExprCase Case : cases) {
             Case.where.fillJoins(Joins, Values);
             Case.data.fillJoins(Joins, Values);
         }
@@ -356,7 +364,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         // здесь по-хорошему надо andNot(верхних) но будет тормозить
-        for(ExprCase Case : Cases) {
+        for(ExprCase Case : cases) {
             Case.where.fillJoinWheres(joins, andWhere);
             Case.data.fillJoinWheres(joins, andWhere.and(Case.where));
         }
@@ -368,7 +376,15 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     // возвращает Where без следствий
     Where getWhere() {
-        return Cases.getWhere(this);
+        return cases.getWhere(this);
+    }
+
+    public int hashCode() {
+        return cases.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return this==obj || obj instanceof CaseExpr && cases.equals(((CaseExpr)obj).cases);
     }
 
     // для кэша
@@ -377,10 +393,10 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
         CaseExpr CaseExpr = (CaseExpr) expr;
 
-        if(Cases.size()!=CaseExpr.Cases.size()) return false;
+        if(cases.size()!=CaseExpr.cases.size()) return false;
 
-        for(int i=0;i<Cases.size();i++)
-            if(!Cases.get(i).equals(CaseExpr.Cases.get(i), mapExprs, mapWheres))
+        for(int i=0;i< cases.size();i++)
+            if(!cases.get(i).equals(CaseExpr.cases.get(i), mapExprs, mapWheres))
                 return false;
 
         return true;
@@ -388,7 +404,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     int getHash() {
         int Hash = 0;
-        for(ExprCase Case : Cases)
+        for(ExprCase Case : cases)
             Hash = 31*Hash + Case.hash();    
         return Hash;
     }
