@@ -888,7 +888,6 @@ abstract class DataWhere extends ObjectWhere<NotWhere> {
         return new NotWhere(this);
     }
 
-    Map<DataWhere,Boolean> cacheFollow = new IdentityHashMap<DataWhere, Boolean>();
     boolean follow(DataWhere dataWhere) {
         return getFollows().contains(dataWhere);
     }
@@ -1045,49 +1044,45 @@ class ObjectWhereSet {
     }
 }
 
-class DataWhereEntry {
-    int hash;
-    DataWhereEntry next;
-    DataWhere where;
-
-    DataWhereEntry(int iHash, DataWhereEntry iNext, DataWhere iWhere) {
-        hash = iHash;
-        next = iNext;
-        where = iWhere;
-    }
-}
-
 // быстрый хэш set
 class DataWhereSet {
 
     int size;
-    DataWhereEntry[] table;
-    DataWhereEntry[] wheres;
+    DataWhere[] table;
+    int[] htable;
+    DataWhere[] wheres;
+    int[] hwheres;
 
     float loadFactor;
     DataWhereSet() {
-        table = new DataWhereEntry[16];
-        loadFactor = 0.75f;
-        wheres = new DataWhereEntry[(int)(table.length * loadFactor)];
+        loadFactor = 0.3f;
+
+        table = new DataWhere[4];
+        htable = new int[table.length];
+        
+        wheres = new DataWhere[(int)(table.length * loadFactor)];
+        hwheres = new int[wheres.length];
     }
 
     DataWhereSet(DataWhereSet set) {
-        // нужно переинстанцировать entry
-        wheres = new DataWhereEntry[set.wheres.length];
-        table = new DataWhereEntry[set.table.length];
-        for(int i=0;i<set.size;i++) {
-            int hash = (set.wheres[i].hash & (table.length-1));
-            wheres[i] = new DataWhereEntry(set.wheres[i].hash,table[hash],set.wheres[i].where);
-            table[hash] = wheres[i];
-        }
-        loadFactor = set.loadFactor;
         size = set.size;
+        loadFactor = set.loadFactor;
+
+        wheres = new DataWhere[set.wheres.length];
+        System.arraycopy(set.wheres,0,wheres,0,size);
+        hwheres = new int[wheres.length];
+        System.arraycopy(set.hwheres,0,hwheres,0,size);
+
+        table = new DataWhere[set.table.length];
+        System.arraycopy(set.table,0,table,0,table.length);
+        htable = new int[table.length];
+        System.arraycopy(set.htable,0,htable,0,table.length);
     }
 
     boolean contains(Where where) {
         int hash = hash(where.hashCode());
-        for(DataWhereEntry entry = table[hash & (table.length-1)];entry!=null;entry=entry.next)
-            if(entry.hash==hash && entry.where.equals(where))
+        for(int i=hash & (table.length-1);table[i]!=null;i=(i==table.length-1?0:i+1))
+            if(htable[i]==hash && table[i].equals(where))
                 return true;
         return false;
     }
@@ -1096,22 +1091,27 @@ class DataWhereSet {
         if(size>set.size) return set.intersect(this);
 
         for(int i=0;i<size;i++)
-            for(DataWhereEntry entry = set.table[wheres[i].hash & (set.table.length - 1)];entry!=null;entry=entry.next)
-                if(entry.hash==wheres[i].hash && entry.where.equals(wheres[i].where))
+            for(int j=hwheres[i] & (set.table.length-1);set.table[j]!=null;j=(j==set.table.length-1?0:j+1))
+                if(hwheres[i]==set.htable[j] && wheres[i].equals(set.table[j]))
                     return true;
         return false;
     }
 
     void resize(int length) {
-        table = new DataWhereEntry[length];
+        table = new DataWhere[length];
+        htable = new int[length];
         for(int i=0;i<size;i++) {
-            int newHash = (wheres[i].hash & (length-1));
-            wheres[i].next = table[newHash];
+            int newHash = (hwheres[i] & (length-1));
+            while(table[newHash]!=null) newHash = (newHash==length-1?0:newHash+1); 
             table[newHash] = wheres[i];
+            htable[newHash] = hwheres[i];
         }
-        DataWhereEntry[] newWheres = new DataWhereEntry[(int)(length * 0.75f)];
-        System.arraycopy(wheres,0,newWheres,0,wheres.length);
+        DataWhere[] newWheres = new DataWhere[(int)(length * loadFactor)];
+        System.arraycopy(wheres,0,newWheres,0,size);
+        int[] newHashes = new int[newWheres.length];
+        System.arraycopy(hwheres,0,newHashes,0,size);
         wheres = newWheres;
+        hwheres = newHashes;
     }
 
     int hash(int h) { // копися с hashSet'а
@@ -1124,12 +1124,14 @@ class DataWhereSet {
     }
 
     void add(DataWhere where,int hash) {
-        int first = hash & (table.length - 1);
-        for(DataWhereEntry entry = table[first];entry!=null;entry=entry.next)
-            if (entry.hash == hash && (entry.where == where || entry.where.equals(where)))
+        int i=hash & (table.length-1);
+        while(table[i]!=null) {
+            if(htable[i]==hash && (table[i]==where || table[i].equals(where)))
                 return;
-        table[first] = new DataWhereEntry(hash,table[first],where);
-        wheres[size++] = table[first];
+            i=(i==table.length-1?0:i+1);
+        }
+        table[i] = where; htable[i] = hash;
+        wheres[size] = where; hwheres[size++] = hash;
         if(size>=wheres.length)
             resize(2*table.length);
     }
@@ -1137,6 +1139,99 @@ class DataWhereSet {
     // здесь можно еще сократить equals не проверяя друг с другом
     void addAll(DataWhereSet set) {
         for(int i=0;i<set.size;i++)
-            add(set.wheres[i].where,set.wheres[i].hash);
+            add(set.wheres[i],set.hwheres[i]);
     }
 }
+  
+/*
+// быстрый хэш set
+class DataWhereSet {
+
+    int size;
+    DataWhere[] table;
+    int[] htable;
+    int threshold;
+
+    float loadFactor;
+    DataWhereSet() {
+        loadFactor = 0.3f;
+
+        table = new DataWhere[4];
+        htable = new int[table.length];
+
+        threshold = (int)(table.length * loadFactor);
+    }
+
+    DataWhereSet(DataWhereSet set) {
+        size = set.size;
+        loadFactor = set.loadFactor;
+
+        table = new DataWhere[set.table.length];
+        System.arraycopy(set.table,0,table,0,table.length);
+        htable = new int[table.length];
+        System.arraycopy(set.htable,0,htable,0,table.length);
+    }
+
+    boolean contains(Where where) {
+        int hash = hash(where.hashCode());
+        for(int i=hash & (table.length-1);table[i]!=null;i=(i==table.length-1?0:i+1))
+            if(htable[i]==hash && table[i].equals(where))
+                return true;
+        return false;
+    }
+
+    boolean intersect(DataWhereSet set) {
+        if(size>set.size) return set.intersect(this);
+
+        for(int i=0;i<table.length;i++)
+            if(table[i]!=null)
+                for(int j=htable[i] & (set.table.length-1);set.table[j]!=null;j=(j==set.table.length-1?0:j+1))
+                    if(htable[i]==set.htable[j] && table[i].equals(set.table[j]))
+                        return true;
+        return false;
+    }
+
+    void resize(int length) {
+        DataWhere[] newTable = new DataWhere[length];
+        int[] newHTable = new int[length];
+        for(int i=0;i<table.length;i++)
+            if(table[i]!=null) {
+                int newHash = (htable[i] & (length-1));
+                while(newTable[newHash]!=null) newHash = (newHash==length-1?0:newHash+1);
+                newTable[newHash] = table[i];
+                newHTable[newHash] = htable[i];
+            }
+        table = newTable;
+        htable = newHTable;
+
+        threshold = (int)(length * loadFactor);
+    }
+
+    int hash(int h) { // копися с hashSet'а
+        h ^= (h >>> 20) ^ (h >>> 12);
+        return (h ^ (h >>> 7) ^ (h >>> 4));
+    }
+
+    void add(DataWhere where) {
+        add(where,hash(where.hashCode()));
+    }
+
+    void add(DataWhere where,int hash) {
+        int i=hash & (table.length-1);
+        while(table[i]!=null) {
+            if(htable[i]==hash && (table[i]==where || table[i].equals(where)))
+                return;
+            i=(i==table.length-1?0:i+1);
+        }
+        table[i] = where; htable[i] = hash;
+        if(size++>=threshold)
+            resize(2*table.length);
+    }
+
+    // здесь можно еще сократить equals не проверяя друг с другом
+    void addAll(DataWhereSet set) {
+        for(int i=0;i<set.table.length;i++)
+            if(set.table[i]!=null)
+                add(set.table[i],set.htable[i]);
+    }
+} */

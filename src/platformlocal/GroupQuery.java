@@ -11,8 +11,8 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
     String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params) {
         
         // сделаем запрос который поставит фильтр на ключи и на properties на или ???
-        JoinQuery<F,B> propertiesFrom = new JoinQuery<F,B>(keysFrom.keys);
-        Join<F,B> joinFrom = new Join<F,B>(keysFrom,propertiesFrom);
+        JoinQuery<F,B> propertiesFrom = new JoinQuery<F,B>(from.keys);
+        Join<F,B> joinFrom = new Join<F,B>(from,propertiesFrom);
         propertiesFrom.properties.putAll(joinFrom.exprs);
         Where propertiesWhere = Where.FALSE;
         for(V property : properties.keySet())
@@ -72,21 +72,15 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return propertyNames.get(Property);
     }
 
-    // not null ключи
-    JoinQuery<F,B> keysFrom;
-
     GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom, Map<V,Integer> iProperties) {
         super(iKeys);
         from = iFrom;
         properties = iProperties;
 
-        keysFrom = new JoinQuery<F,B>(from.keys);
-        Join<F,B> joinFrom = new Join<F,B>(from,keysFrom);
-        keysFrom.properties.putAll(joinFrom.exprs);
         // докидываем условия на NotNull ключей
         int keyCount = 0;
         for(K key : keys) {
-            keysFrom.and(joinFrom.exprs.get(key).getWhere());
+            from.and(from.properties.get(key).getWhere());
             keyNames.put(key,"dkey"+(keyCount++));
         }
         int propertyCount = 0;
@@ -130,7 +124,7 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 //        if(1==1) return null;
 
         // вроде проверено достаточно эффективно работает - ключи должны совпадать
-        if(keysFrom.parse().where.hash()!=mergeGroup.keysFrom.parse().where.hash()) return null;
+        if(from.parse().where.hash()!=mergeGroup.from.parse().where.hash()) return null;
 
         // проверим вот что у этого и сливаемого возьмем from'ы с ключами на не null про pars'им 
 

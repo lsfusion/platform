@@ -1664,6 +1664,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 SelectProps.properties.put(DrawProp, DrawProp.View.getSourceExpr(Group.GetClassGroup(),SelectProps.mapKeys,Session));
 
 //            System.out.println(Group + " Props ");
+//            System.out.println(SelectProps.getComplexity());
 //            SelectProps.outSelect(Session);
             LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> ResultProps = SelectProps.executeSelect(Session);
 
