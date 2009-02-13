@@ -13,7 +13,6 @@ import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import javax.swing.*;
-import javax.swing.plaf.TreeUI;
 import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
@@ -327,8 +326,8 @@ public class ClientForm extends JPanel {
 
         // Сначала новые объекты
 
-        for (ClientGroupObjectImplement groupObject : formChanges.GridObjects.keySet()) {
-            models.get(groupObject).grid.setGridObjects(formChanges.GridObjects.get(groupObject));
+        for (ClientGroupObjectImplement groupObject : formChanges.gridObjects.keySet()) {
+            models.get(groupObject).grid.setGridObjects(formChanges.gridObjects.get(groupObject));
         }
 
         for (ClientGroupObjectImplement groupObject : formChanges.Objects.keySet()) {

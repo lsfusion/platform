@@ -55,14 +55,14 @@ abstract class Source<K,V> {
     // записывается в Join'ы
     abstract void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins);
 
-    <EK, EV> boolean equals(Source<EK, EV> Source, Map<K, EK> MapKeys, Map<V, EV> MapProperties, Map<ValueExpr, ValueExpr> MapValues) {
-        if(this==Source) {
-            for(Map.Entry<K,EK> MapKey : MapKeys.entrySet())
+    <EK, EV> boolean equals(Source<EK, EV> source, Map<K, EK> mapKeys, Map<V, EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
+        if(this== source) {
+            for(Map.Entry<K,EK> MapKey : mapKeys.entrySet())
                 if(!MapKey.getKey().equals(MapKey.getValue()))
                     return false;
 
             for(V Field : getProperties())
-                MapProperties.put(Field, (EV) Field);
+                mapProperties.put(Field, (EV) Field);
 
             return true;
         }
@@ -318,8 +318,8 @@ class ModifyQuery {
             List<KeyField> KeyOrder = new ArrayList<KeyField>();
             List<PropertyField> PropertyOrder = new ArrayList<PropertyField>();
             String SelectString = Syntax.getSelect(FromSelect,Source.stringExpr(
-                    Source.mapNames(KeySelect,ChangeCompile.KeyNames,KeyOrder),
-                    Source.mapNames(PropertySelect,ChangeCompile.PropertyNames,PropertyOrder)),
+                    Source.mapNames(KeySelect,ChangeCompile.keyNames,KeyOrder),
+                    Source.mapNames(PropertySelect,ChangeCompile.propertyNames,PropertyOrder)),
                     Source.stringWhere(WhereSelect),"","","");
 
             String SetString = "";
@@ -385,9 +385,9 @@ class ModifyQuery {
         CompiledQuery<KeyField, PropertyField> ChangeCompile = Change.compile(Syntax);
 
         String InsertString = "";
-        for(KeyField KeyField : ChangeCompile.KeyOrder)
+        for(KeyField KeyField : ChangeCompile.keyOrder)
             InsertString = (InsertString.length()==0?"":InsertString+",") + KeyField.Name;
-        for(PropertyField PropertyField : ChangeCompile.PropertyOrder)
+        for(PropertyField PropertyField : ChangeCompile.propertyOrder)
             InsertString = (InsertString.length()==0?"":InsertString+",") + PropertyField.Name;
 
         return "INSERT INTO " + Table.getName(Syntax) + " (" + InsertString + ") " + ChangeCompile.getSelect(Syntax);

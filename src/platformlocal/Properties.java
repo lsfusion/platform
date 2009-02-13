@@ -711,7 +711,7 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
                     JoinExpr NewExpr = DefaultChange.getExpr(JoinImplement,0);
                     Query.properties.put(changeTable.value, NewExpr);
                     // new, не равно prev
-                    Query.and(NewExpr.From.inJoin);
+                    Query.and(NewExpr.from.inJoin);
                     Query.and(new CompareWhere(NewExpr,DefaultChange.getExpr(JoinImplement,2),CompareWhere.EQUALS).not());
 
                     ResultQuery.add(Query,1);
@@ -1590,7 +1590,7 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
         // новое null и InJoin или ноаое меньше старого 
         ReReadQuery.and(SourceJoin.inJoin.and(NewValue.getWhere().not()).or(new CompareWhere(NewValue,SourceJoin.exprs.get(changeTable.prevValue),CompareWhere.LESS)));
 
-        if(!(ReReadQuery.executeSelect(Session,new LinkedHashMap<SourceExpr,Boolean>(),1).size() == 0)) {
+        if(!(ReReadQuery.executeSelect(Session,new LinkedHashMap<PropertyField,Boolean>(),1).size() == 0)) {
             // если кол-во > 0 перечитываем, делаем LJ GQ с протолкнутым ReReadQuery
             JoinQuery<KeyField,PropertyField> UpdateQuery = new JoinQuery<KeyField,PropertyField>(changeTable.keys);
             UpdateQuery.putKeyWhere(Collections.singletonMap(changeTable.property,ID));
@@ -1726,7 +1726,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
                 JoinQuery<PropertyInterface,PropertyField> Query = new JoinQuery<PropertyInterface, PropertyField>(interfaces);
                 JoinExpr ChangeExpr = Operand.mapChangeExpr(Session, Query.mapKeys, 1);
                 Query.properties.put(changeTable.value, ChangeExpr);
-                Query.and(ChangeExpr.From.inJoin);
+                Query.and(ChangeExpr.from.inJoin);
                 ResultQuery.add(Query,Coeffs.get(Operand));
 
                 ResultClass.or(Operand.mapValueClassSet(Session));
@@ -1763,7 +1763,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
                 if(ChangedProps.contains(Operand)) {
                     JoinExpr ChangedExpr = Operand.mapChangeExpr(Session, Query.mapKeys, MapType);
                     ResultOperands.add(new LinearExpr(ChangedExpr,Coeffs.get(Operand)));
-                    Query.and(ChangedExpr.From.inJoin);
+                    Query.and(ChangedExpr.from.inJoin);
                 } else { // AND'им как если Join результат
                     ValueClassSet<PropertyInterface> LeftClass = ChangeClass.and(Operand.mapValueClassSet());
                     if(!LeftClass.isEmpty()) {
@@ -2092,8 +2092,8 @@ interface PropertyUpdateView {
 
 class DataSession  {
 
-    Connection Connection;
-    SQLSyntax Syntax;
+    Connection connection;
+    SQLSyntax syntax;
 
     DataChanges Changes = new DataChanges();
     Map<PropertyUpdateView,DataChanges> IncrementChanges = new HashMap<PropertyUpdateView,DataChanges>();
@@ -2115,12 +2115,12 @@ class DataSession  {
     DataSession(DataAdapter Adapter,int iID,TableFactory iTableFactory,ObjectClass iObjectClass) throws SQLException{
 
         ID = iID;
-        Syntax = Adapter;
+        syntax = Adapter;
         TableFactory = iTableFactory;
         ObjectClass = iObjectClass;
 
         try {
-            Connection = Adapter.startConnection();
+            connection = Adapter.startConnection();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InstantiationException e) {
@@ -2432,7 +2432,7 @@ class DataSession  {
             JoinQuery<P,String> NewQuery = new JoinQuery<P,String>(Property.interfaces);
             JoinExpr ChangeExpr = getChange(Property).getExpr(NewQuery.mapKeys, 0);
             NewQuery.properties.put(Value, ChangeExpr);
-            NewQuery.and(ChangeExpr.From.inJoin);
+            NewQuery.and(ChangeExpr.from.inJoin);
             UnionQuery.add(NewQuery,1);
 
             return (new Join<P,String>(UnionQuery,JoinImplement)).exprs.get(Value);
@@ -2448,18 +2448,18 @@ class DataSession  {
     void startTransaction() throws SQLException {
         InTransaction = true;
 
-        if(!Syntax.noAutoCommit())
-            execute(Syntax.startTransaction());
+        if(!syntax.noAutoCommit())
+            execute(syntax.startTransaction());
     }
 
     void rollbackTransaction() throws SQLException {
-        execute(Syntax.rollbackTransaction());
+        execute(syntax.rollbackTransaction());
 
         InTransaction = false;
     }
 
     void commitTransaction() throws SQLException {
-        execute(Syntax.commitTransaction());
+        execute(syntax.commitTransaction());
 
         InTransaction = false;
     }
@@ -2468,12 +2468,12 @@ class DataSession  {
         String CreateString = "";
         String KeyString = "";
         for(KeyField Key : Table.keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(Syntax);
+            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(syntax);
             KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
         }
         for(PropertyField Prop : Table.Properties)
-            CreateString = CreateString+',' + Prop.GetDeclare(Syntax);
-        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")";
+            CreateString = CreateString+',' + Prop.GetDeclare(syntax);
+        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + syntax.getClustered() + " (" + KeyString + ")";
 
         try {
             execute("DROP TABLE "+Table.Name+" CASCADE CONSTRAINTS");
@@ -2498,11 +2498,11 @@ class DataSession  {
         String CreateString = "";
         String KeyString = "";
         for(KeyField Key : Table.keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(Syntax);
+            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(syntax);
             KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
         }
         for(PropertyField Prop : Table.Properties)
-            CreateString = CreateString+',' + Prop.GetDeclare(Syntax);
+            CreateString = CreateString+',' + Prop.GetDeclare(syntax);
 
         try {
             execute("DROP TABLE "+Table.Name+" CASCADE CONSTRAINTS");
@@ -2511,17 +2511,17 @@ class DataSession  {
         }
 
         try {
-            execute(Syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.Name + " PRIMARY KEY " + Syntax.getClustered() + " (" + KeyString + ")"));
+            execute(syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.Name + " PRIMARY KEY " + syntax.getClustered() + " (" + KeyString + ")"));
         } catch (SQLException e) {
             e.getErrorCode();
         }
     }
 
     void execute(String ExecuteString) throws SQLException {
-        Statement Statement = Connection.createStatement();
+        Statement Statement = connection.createStatement();
 //        System.out.println(ExecuteString+Syntax.getCommandEnd());
         try {
-            Statement.execute(ExecuteString+Syntax.getCommandEnd());
+            Statement.execute(ExecuteString+ syntax.getCommandEnd());
 //        } catch(SQLException e) {
 //            if(!ExecuteString.startsWith("DROP") && !ExecuteString.startsWith("CREATE")) {
 //            System.out.println(ExecuteString+Syntax.getCommandEnd());
@@ -2530,8 +2530,8 @@ class DataSession  {
         } finally {
             Statement.close();
         }
-        if(!InTransaction && Syntax.noAutoCommit())
-            Statement.execute(Syntax.commitTransaction()+Syntax.getCommandEnd());
+        if(!InTransaction && syntax.noAutoCommit())
+            Statement.execute(syntax.commitTransaction()+ syntax.getCommandEnd());
 
         try {
             Statement.close();
@@ -2540,7 +2540,7 @@ class DataSession  {
         }
     }
 
-    void InsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
+    void insertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
 
         String InsertString = "";
         String ValueString = "";
@@ -2554,10 +2554,10 @@ class DataSession  {
         // пробежим по Fields'ам
         for(PropertyField Prop : PropFields.keySet()) {
             InsertString = InsertString+","+Prop.Name;
-            ValueString = ValueString+","+TypedObject.getString(PropFields.get(Prop),Prop.type,Syntax);
+            ValueString = ValueString+","+TypedObject.getString(PropFields.get(Prop),Prop.type, syntax);
         }
 
-        execute("INSERT INTO "+Table.getName(Syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
+        execute("INSERT INTO "+Table.getName(syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
     }
 
     void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
@@ -2582,7 +2582,7 @@ class DataSession  {
             UpdateRecords(new ModifyQuery(Table,UpdateQuery));
         } else
             // делаем Insert
-            InsertRecord(Table,KeyFields,PropFields);
+            insertRecord(Table,KeyFields,PropFields);
     }
 
     void deleteKeyRecords(Table Table,Map<KeyField,Integer> Keys) throws SQLException {
@@ -2591,29 +2591,29 @@ class DataSession  {
         for(Map.Entry<KeyField,Integer> DeleteKey : Keys.entrySet())
             DeleteWhere = (DeleteWhere.length()==0?"":DeleteWhere+" AND ") + DeleteKey.getKey().Name + "=" + DeleteKey.getValue();
 
-        execute("DELETE FROM "+Table.getName(Syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
+        execute("DELETE FROM "+Table.getName(syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
     }
 
     void UpdateRecords(ModifyQuery Modify) throws SQLException {
 //        try {
-            execute(Modify.getUpdate(Syntax));
+            execute(Modify.getUpdate(syntax));
 //        } catch(SQLException e) {
 //            Execute(Modify.getUpdate(Syntax));
 //        }
     }
 
     void InsertSelect(ModifyQuery Modify) throws SQLException {
-        execute(Modify.getInsertSelect(Syntax));
+        execute(Modify.getInsertSelect(syntax));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
     void ModifyRecords(ModifyQuery Modify) throws SQLException {
-        execute(Modify.getInsertLeftKeys(Syntax));
-        execute(Modify.getUpdate(Syntax));
+        execute(Modify.getInsertLeftKeys(syntax));
+        execute(Modify.getUpdate(syntax));
     }
 
     void close() throws SQLException {
-        Connection.close();
+        connection.close();
     }
 
     public boolean hasChanges() {
@@ -2699,13 +2699,13 @@ class MapChangedRead<P extends PropertyInterface> extends MapRead<P> {
         // закинем всем условия на Implement'ы (Join'у нужно только для !MapChanged и MapType==1, но переживет)
         for(Map.Entry<PropertyInterfaceImplement<P>,SourceExpr> ImplementExpr : implementExprs.entrySet())
             if(ImplementChanged.contains(ImplementExpr.getKey())) // нужно закинуть не Changed'ы на notNull, а Changed'ы на InJoin
-                query.and(((JoinExpr)ImplementExpr.getValue()).From.inJoin);
+                query.and(((JoinExpr)ImplementExpr.getValue()).from.inJoin);
             else
                 query.and(ImplementExpr.getValue().getWhere());
 
         if(mapChanged) {
             JoinExpr mapExpr = session.getChange(mapProperty).getExpr(joinImplement, mapType ==3?0: mapType);
-            query.and(mapExpr.From.inJoin);
+            query.and(mapExpr.from.inJoin);
             SourceExpr expr = (mapType ==3?mapExpr.getType().getExpr(null):mapExpr);
             query.properties.put(value, expr);
         } else {

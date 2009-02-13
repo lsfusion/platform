@@ -117,7 +117,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         DataSession session;
         if (currentSession && currentForm != null)
-            session = currentForm.Session;
+            session = currentForm.session;
         else
             session = BL.createSession(Adapter);
 
@@ -140,15 +140,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         PropertyViewMapper propertyViewMapper = new PropertyViewMapper(propertyMapper, groupObjectMapper);
         FilterMapper filterMapper = new FilterMapper(objectMapper, propertyMapper);
 
-        remoteForm.Groups = new ArrayList();
+        remoteForm.groups = new ArrayList();
         for (GroupObjectImplement navigatorGroupObject : (List<GroupObjectImplement>)navigatorForm.Groups) {
-            remoteForm.Groups.add(groupObjectMapper.doMapping(navigatorGroupObject));
+            remoteForm.groups.add(groupObjectMapper.doMapping(navigatorGroupObject));
         }
 
-        remoteForm.Properties = new ArrayList();
+        remoteForm.properties = new ArrayList();
         for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.propertyViews) {
-            if (securityPolicy.property.view.checkPermission(navigatorProperty.View.Property))
-                remoteForm.Properties.add(propertyViewMapper.doMapping(navigatorProperty));
+            if (securityPolicy.property.view.checkPermission(navigatorProperty.view.Property))
+                remoteForm.properties.add(propertyViewMapper.doMapping(navigatorProperty));
         }
 
         remoteForm.fixedFilters = new HashSet();
@@ -174,7 +174,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.reportDesign = navigatorForm.getReportDesign();
 
-        for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.Groups)
+        for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.groups)
             for (ObjectImplement object : groupObject) {
                 int objectID = classCache.getObject(object.BaseClass);
                 if (objectID != -1)
@@ -267,7 +267,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
             if (mapper.containsKey(propKey)) return mapper.get(propKey);
 
-            PropertyView propValue = new PropertyView(propKey.ID, propertyMapper.doMapping(propKey.View), groupMapper.doMapping(propKey.ToDraw));
+            PropertyView propValue = new PropertyView(propKey.ID, propertyMapper.doMapping(propKey.view), groupMapper.doMapping(propKey.ToDraw));
             propValue.sID = propKey.sID;
 
             mapper.put(propKey, propValue);
@@ -568,7 +568,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyView resultPropView = null;
         for (PropertyView propView : propertyViews) {
-            if (propView.View == prop)
+            if (propView.view == prop)
                 resultPropView = propView;
         }
 
@@ -580,7 +580,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyView resultPropView = null;
         for (PropertyView propView : propertyViews) {
-            if (propView.View.Property == prop)
+            if (propView.view.Property == prop)
                 resultPropView = propView;
         }
 
@@ -591,7 +591,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyView resultPropView = null;
         for (PropertyView propView : propertyViews) {
-            if (propView.View.Property == prop && propView.ToDraw == groupObject)
+            if (propView.view.Property == prop && propView.ToDraw == groupObject)
                 resultPropView = propView;
         }
 

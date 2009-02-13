@@ -269,23 +269,23 @@ class IDTable extends Table {
 class ViewTable extends SessionTable {
     ViewTable(Integer iObjects) {
         super("viewtable"+iObjects.toString());
-        Objects = new ArrayList();
+        objects = new ArrayList();
         for(Integer i=0;i<iObjects;i++) {
             KeyField ObjKeyField = new KeyField("object"+i,Type.Object);
-            Objects.add(ObjKeyField);
+            objects.add(ObjKeyField);
             keys.add(ObjKeyField);
         }
 
-        View = new KeyField("viewid",Type.System);
-        keys.add(View);
+        view = new KeyField("viewid",Type.System);
+        keys.add(view);
     }
 
-    List<KeyField> Objects;
-    KeyField View;
+    List<KeyField> objects;
+    KeyField view;
 
     void DropViewID(DataSession Session,Integer ViewID) throws SQLException {
         Map<KeyField,Integer> ValueKeys = new HashMap();
-        ValueKeys.put(View,ViewID);
+        ValueKeys.put(view,ViewID);
         Session.deleteKeyRecords(this,ValueKeys);
     }
 }
@@ -372,7 +372,7 @@ class ChangeClassTable extends ChangeTable {
                 if(!BusinessLogics.AutoFillDB)
                     ChangeSession.deleteKeyRecords(this,ChangeKeys);
             } else
-                ChangeSession.InsertRecord(this,ChangeKeys,new HashMap());
+                ChangeSession.insertRecord(this,ChangeKeys,new HashMap());
         }
     }
 
@@ -422,7 +422,7 @@ class TableFactory extends TableImplement{
 
     ObjectTable ObjectTable;
     IDTable idTable;
-    List<ViewTable> ViewTables;
+    List<ViewTable> viewTables;
     List<List<DataChangeTable>> DataChangeTables;
     List<List<IncrementChangeTable>> ChangeTables;
 
@@ -447,7 +447,7 @@ class TableFactory extends TableImplement{
     TableFactory() {
         ObjectTable = new ObjectTable();
         idTable = new IDTable();
-        ViewTables = new ArrayList();
+        viewTables = new ArrayList();
         ChangeTables = new ArrayList();
         DataChangeTables = new ArrayList();
 
@@ -455,7 +455,7 @@ class TableFactory extends TableImplement{
         RemoveClassTable = new RemoveClassTable();
 
         for(int i=1;i<=MaxBeanObjects;i++)
-            ViewTables.add(new ViewTable(i));
+            viewTables.add(new ViewTable(i));
 
         for(int i=1;i<=MaxInterface;i++) {
             List<IncrementChangeTable> ObjChangeTables = new ArrayList();
@@ -504,7 +504,7 @@ class TableFactory extends TableImplement{
                 InsertKeys.put(idTable.key, idType);
                 Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
                 InsertProps.put(idTable.value,0);
-                Session.InsertRecord(idTable,InsertKeys,InsertProps);
+                Session.insertRecord(idTable,InsertKeys,InsertProps);
             }
         }
 
@@ -521,7 +521,7 @@ class TableFactory extends TableImplement{
         for(List<DataChangeTable> ListTables : DataChangeTables)
             for(ChangeObjectTable DataChangeTable : ListTables) Session.createTemporaryTable(DataChangeTable);
 
-        for(ViewTable ViewTable : ViewTables) Session.createTemporaryTable(ViewTable);
+        for(ViewTable ViewTable : viewTables) Session.createTemporaryTable(ViewTable);
     }
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать

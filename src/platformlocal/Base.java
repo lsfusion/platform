@@ -303,6 +303,13 @@ class BaseUtils {
         return result;
     }
 
+    static <K,E,V> LinkedHashMap<V,E> linkedJoin(LinkedHashMap<K,E> map, Map<K,V> joinMap) {
+        LinkedHashMap<V,E> result = new LinkedHashMap<V, E>();
+        for(Map.Entry<K,E> entry : map.entrySet())
+            result.put(joinMap.get(entry.getKey()),entry.getValue());
+        return result;
+    }
+
     static <K,E,V> Map<K,V> innerJoin(Map<K,E> map, Map<E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,E> entry : map.entrySet()) {
@@ -335,5 +342,12 @@ class BaseUtils {
         for(Map.Entry<K,V> entry : map.entrySet())
             if(!entry.getKey().equals(entry.getValue())) return false;
         return true;
+    }
+
+    static <K> Map<K,K> toMap(Collection<K> collection) {
+        Map<K,K> result = new HashMap<K, K>();
+        for(K object : collection)
+            result.put(object,object);
+        return result;
     }
 }

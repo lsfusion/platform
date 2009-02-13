@@ -28,12 +28,12 @@ class Serializer {
 //        System.out.println("Objects : " + outStream.size());
 
         //GridObjects
-        outStream.writeInt(formChanges.GridObjects.size());
-        for (GroupObjectImplement groupObject : formChanges.GridObjects.keySet()) {
+        outStream.writeInt(formChanges.gridObjects.size());
+        for (GroupObjectImplement groupObject : formChanges.gridObjects.keySet()) {
 
             serializeGroupObjectImplement(outStream, groupObject);
 
-            List<GroupObjectValue> gridObjects = formChanges.GridObjects.get(groupObject);
+            List<GroupObjectValue> gridObjects = formChanges.gridObjects.get(groupObject);
 
             outStream.writeInt(gridObjects.size());
             for (GroupObjectValue groupObjectValue : gridObjects)
@@ -110,7 +110,7 @@ class Serializer {
 //        System.out.println("Objects read : " + (all-inStream.available()));
 
         //GridObjects
-        clientFormChanges.GridObjects = new HashMap();
+        clientFormChanges.gridObjects = new HashMap();
 
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
@@ -124,7 +124,7 @@ class Serializer {
                 clientGridObjects.add(deserializeClientGroupObjectValue(inStream, clientGroupObject));
             }
 
-            clientFormChanges.GridObjects.put(clientGroupObject, clientGridObjects);
+            clientFormChanges.gridObjects.put(clientGroupObject, clientGridObjects);
         }
 //        System.out.println("GridObjects read : " + (all-inStream.available()));
 
@@ -444,7 +444,7 @@ class Serializer {
 
     public static Filter deserializeFilter(DataInputStream inStream, RemoteForm remoteForm) throws IOException {
 
-        PropertyObjectImplement property = remoteForm.getPropertyView(inStream.readInt()).View;
+        PropertyObjectImplement property = remoteForm.getPropertyView(inStream.readInt()).view;
 
         int compare = inStream.readInt();
 
@@ -461,7 +461,7 @@ class Serializer {
         }
 
         if (classValueLink == 2) {
-            valueLink = new PropertyValueLink(remoteForm.getPropertyView(inStream.readInt()).View);
+            valueLink = new PropertyValueLink(remoteForm.getPropertyView(inStream.readInt()).view);
         }
 
         return new Filter(property, compare, valueLink);

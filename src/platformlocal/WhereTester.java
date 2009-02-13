@@ -30,11 +30,11 @@ class TestDataWhere extends DataWhere {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
     
-    public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
+    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
         return caption;
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
+    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
     }
 
     int getHash() {

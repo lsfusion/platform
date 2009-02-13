@@ -27,8 +27,8 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         Compare = iCompare;
     }
 
-    public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        return operator1.getSource(QueryData, Syntax) + getCompare(Compare) + operator2.getSource(QueryData, Syntax);
+    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+        return operator1.getSource(queryData, syntax) + getCompare(Compare) + operator2.getSource(queryData, syntax);
     }
 
     static String getCompare(int Compare) {
@@ -99,9 +99,9 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return CaseExpr.translateCase(MapExprs,Translator,true, false).getWhere(this);
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
-        operator1.fillJoins(Joins, Values);
-        operator2.fillJoins(Joins, Values);
+    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
+        operator1.fillJoins(joins, values);
+        operator2.fillJoins(joins, values);
     }
 
     public void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
@@ -121,9 +121,9 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
         Where InJoinWhere = Where.TRUE;
         if(operator1 instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr) operator1).From.inJoin);
+            InJoinWhere = InJoinWhere.and(((JoinExpr) operator1).from.inJoin);
         if(operator2 instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr) operator2).From.inJoin);
+            InJoinWhere = InJoinWhere.and(((JoinExpr) operator2).from.inJoin);
         return new JoinWheres(InJoinWhere,this);
     }
 
@@ -173,8 +173,8 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         Values = iValues;
     }
 
-    public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        return expr.getSource(QueryData, Syntax) + " IN (" + Values + ")";
+    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+        return expr.getSource(queryData, syntax) + " IN (" + Values + ")";
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы
@@ -197,8 +197,8 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return CaseExpr.translateCase(MapExprs,Translator,true, false).getWhere(this);
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
-        expr.fillJoins(Joins, Values);
+    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
+        expr.fillJoins(joins, values);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
@@ -216,7 +216,7 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     public JoinWheres getInnerJoins() {
         Where InJoinWhere = Where.TRUE;
         if(expr instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr) expr).From.inJoin);
+            InJoinWhere = InJoinWhere.and(((JoinExpr) expr).from.inJoin);
         return new JoinWheres(InJoinWhere,this);
     }
 

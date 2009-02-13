@@ -173,8 +173,8 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
     }
 
     // для кэша
-    <EK, EV> boolean equals(Source<EK, EV> Source, Map<K, EK> MapKeys, Map<V, EV> MapProperties, Map<ValueExpr, ValueExpr> MapValues) {
-        return Source instanceof GroupQuery && equalsGroup((GroupQuery)Source,MapKeys,MapProperties, MapValues);
+    <EK, EV> boolean equals(Source<EK, EV> source, Map<K, EK> mapKeys, Map<V, EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
+        return source instanceof GroupQuery && equalsGroup((GroupQuery) source, mapKeys, mapProperties, mapValues);
     }
 
     <EB,EK extends EB,EV extends EB,EF> boolean equalsGroup(GroupQuery<EB,EK,EV,EF> Query,Map<K,EK> MapKeys,Map<V,EV> MapProperties,Map<ValueExpr,ValueExpr> MapExprs) {

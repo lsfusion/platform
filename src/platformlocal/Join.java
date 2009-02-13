@@ -296,8 +296,8 @@ class JoinWhere extends DataWhere implements JoinData {
         From=iFrom;
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
-        From.fillJoins(Joins,Values);
+    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
+        From.fillJoins(joins, values);
     }
 
     public Join getJoin() {
@@ -312,8 +312,8 @@ class JoinWhere extends DataWhere implements JoinData {
         Joins.add(this,AndWhere);
     }
 
-    public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        return QueryData.get(this);
+    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+        return queryData.get(this);
     }
 
     public String toString() {
@@ -335,8 +335,8 @@ class JoinWhere extends DataWhere implements JoinData {
         return new CaseExpr(this,Type.Bit.getExpr(true));
     }
 
-    public String getFJString(String FJExpr) {
-        return FJExpr + " IS NOT NULL"; 
+    public String getFJString(String exprFJ) {
+        return exprFJ + " IS NOT NULL";
     }
 
     public Where copy() {

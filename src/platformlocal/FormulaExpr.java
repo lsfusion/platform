@@ -37,9 +37,9 @@ class FormulaExpr extends AndExpr {
         DBType = Expr.getType();
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
+    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
         for(SourceExpr Param : params.values())
-            Param.fillJoins(Joins, Values);
+            Param.fillJoins(joins, values);
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -47,10 +47,10 @@ class FormulaExpr extends AndExpr {
             param.fillJoinWheres(joins, andWhere);
     }
 
-    public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
+    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
         String SourceString = Formula;
         for(String Prm : params.keySet())
-            SourceString = SourceString.replace(Prm, params.get(Prm).getSource(QueryData, Syntax));
+            SourceString = SourceString.replace(Prm, params.get(Prm).getSource(queryData, syntax));
          return "("+SourceString+")";
      }
 

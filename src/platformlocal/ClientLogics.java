@@ -435,14 +435,14 @@ class DefaultClientFormView extends ClientFormView {
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             //временно
-            clientProperty.caption = property.View.Property.caption;
+            clientProperty.caption = property.view.Property.caption;
             clientProperty.baseClass = ByteArraySerializer.deserializeClientClass(
-                                       ByteArraySerializer.serializeClass(property.View.Property.getBaseClass().getCommonClass()));
+                                       ByteArraySerializer.serializeClass(property.view.Property.getBaseClass().getCommonClass()));
 
             mproperties.put(property, clientProperty);
             properties.add(clientProperty);
 
-            addComponent(groupObject, clientProperty, property.View.Property.getParent());
+            addComponent(groupObject, clientProperty, property.view.Property.getParent());
             order.add(clientProperty);
         }
 

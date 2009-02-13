@@ -220,18 +220,18 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         return cases;
     }
 
-    public String getSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
+    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
 
         if(cases.size()==0)
             return Type.NULL;
         if(cases.size()==1 && cases.get(0).where.isTrue())
-            return cases.get(0).data.getSource(QueryData, Syntax);
+            return cases.get(0).data.getSource(queryData, syntax);
 
         String Source = "CASE";
         boolean Else = false;
         for(int i=0;i< cases.size();i++) {
             ExprCase Case = cases.get(i);
-            String CaseSource = Case.data.getSource(QueryData, Syntax);
+            String CaseSource = Case.data.getSource(queryData, syntax);
 
             if(CaseSource.startsWith("0") && CaseSource.length()>5)
                 CaseSource = CaseSource;
@@ -239,7 +239,7 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
                 Source = Source + " ELSE " + CaseSource;
                 Else = true;
             } else
-                Source = Source + " WHEN " + Case.where.getSource(QueryData, Syntax) + " THEN " + CaseSource;
+                Source = Source + " WHEN " + Case.where.getSource(queryData, syntax) + " THEN " + CaseSource;
         }
         return Source + (Else?"":" ELSE "+Type.NULL)+" END";
     }
@@ -325,10 +325,10 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         }
     }
 
-    public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
+    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
         for(ExprCase Case : cases) {
-            Case.where.fillJoins(Joins, Values);
-            Case.data.fillJoins(Joins, Values);
+            Case.where.fillJoins(joins, values);
+            Case.data.fillJoins(joins, values);
         }
     }
 
