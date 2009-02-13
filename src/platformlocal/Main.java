@@ -925,7 +925,7 @@ class SourceTest {
         TableJoin.joins.put(Table2Key1,JoinQuery.mapKeys.get(Table1Key1));
         JoinQuery.putKeyWhere(Collections.singletonMap(Table1Key2,5));
         JoinQuery.properties.put(Table2Prop1, TableJoin.exprs.get(Table2Prop1));
-        JoinQuery.and(new CompareWhere(TableJoin.exprs.get(Table2Prop2),new ValueExpr(1,Type.Integer),CompareWhere.EQUALS));
+        JoinQuery.and(new CompareWhere(TableJoin.exprs.get(Table2Prop2),Type.Integer.getExpr(1),CompareWhere.EQUALS));
         UnionQ.add(JoinQuery,1);
 
         UnionQ.add(Table1,1);

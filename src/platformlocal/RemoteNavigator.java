@@ -493,7 +493,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
             if (group != null && !group.hasChild(property)) continue;
 
-            if (property.Interfaces.size() == objects.length) {
+            if (property.interfaces.size() == objects.length) {
 
                 addPropertyView(property, upClasses, groupObject, objects);
             }
@@ -502,7 +502,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, Boolean upClasses, GroupObjectImplement groupObject, ObjectImplement... objects) {
 
-        Collection<List<P>> permutations = MapBuilder.buildPermutations(property.Interfaces);
+        Collection<List<P>> permutations = MapBuilder.buildPermutations(property.interfaces);
 
         for (List<P> mapping : permutations) {
 

@@ -177,7 +177,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
                 // придется создавать запрос чтобы ключи перекодировать
                 JoinQuery<KeyField,PropertyField> AddQuery = new JoinQuery<KeyField, PropertyField>(ObjectQuery.keys);
                 Join<KeyField,PropertyField> AddJoin = new Join<KeyField,PropertyField>(TableFactory.AddClassTable.getClassJoin(Session,Object.GridClass));
-                AddJoin.joins.put(TableFactory.AddClassTable.Object,AddQuery.mapKeys.get(TableFactory.ObjectTable.Key));
+                AddJoin.joins.put(TableFactory.AddClassTable.object,AddQuery.mapKeys.get(TableFactory.ObjectTable.key));
                 AddQuery.and(AddJoin.inJoin);
                 ResultQuery.add(AddQuery,1);
 
@@ -185,7 +185,7 @@ class GroupObjectImplement extends ArrayList<ObjectImplement> {
             }
 
             Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(ObjectQuery);
-            ObjectJoin.joins.put(TableFactory.ObjectTable.Key,Query.mapKeys.get(Object));
+            ObjectJoin.joins.put(TableFactory.ObjectTable.key,Query.mapKeys.get(Object));
             Query.and(ObjectJoin.inJoin);
 
             if(Session!=null && Session.Changes.RemoveClasses.contains(Object.GridClass))
@@ -211,7 +211,7 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
     // получает класс значения
     ClassSet getValueClass(GroupObjectImplement ClassGroup) {
         InterfaceClass<P> ClassImplement = new InterfaceClass<P>();
-        for(P Interface : Property.Interfaces) {
+        for(P Interface : Property.interfaces) {
             ObjectImplement IntObject = Mapping.get(Interface);
             ClassSet ImpClass;
             if(IntObject.GroupTo==ClassGroup)
@@ -262,7 +262,7 @@ class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImple
     SourceExpr getSourceExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, ? extends SourceExpr> ClassSource, DataSession Session) {
 
         Map<P,SourceExpr> JoinImplement = new HashMap<P,SourceExpr>();
-        for(P Interface : Property.Interfaces)
+        for(P Interface : Property.interfaces)
             JoinImplement.put(Interface,Mapping.get(Interface).getSourceExpr(ClassGroup,ClassSource));
 
         InterfaceClass<P> JoinClasses = new InterfaceClass<P>();
@@ -929,7 +929,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     } else {
                         if(SibObject!=Object) {
                             Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(BL.tableFactory.ObjectTable.getClassJoin(SibObject.GridClass));
-                            ObjectJoin.joins.put(BL.tableFactory.ObjectTable.Key,SubQuery.mapKeys.get(SibObject));
+                            ObjectJoin.joins.put(BL.tableFactory.ObjectTable.key,SubQuery.mapKeys.get(SibObject));
                             SubQuery.and(ObjectJoin.inJoin);
                         } else
                             FixedObjects.put(SibObject,AddID);
@@ -945,7 +945,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                 for(Entry<Map<ObjectImplement,Integer>,Map<String,Object>> Row : Result.entrySet()) {
                     Property ChangeProperty = Filter.Property.Property;
                     Map<PropertyInterface,ObjectValue> Keys = new HashMap();
-                    for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.Interfaces) {
+                    for(PropertyInterface Interface : (Collection<PropertyInterface>)ChangeProperty.interfaces) {
                         ObjectImplement ChangeObject = Filter.Property.Mapping.get(Interface);
                         Keys.put(Interface,new ObjectValue(Row.getKey().get(ChangeObject),ChangeObject.GridClass));
                     }
@@ -1048,7 +1048,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         Property changeProperty = property.Property;
         Map<PropertyInterface,ObjectValue> keys = new HashMap();
-        for(PropertyInterface Interface : (Collection<PropertyInterface>)changeProperty.Interfaces) {
+        for(PropertyInterface Interface : (Collection<PropertyInterface>)changeProperty.interfaces) {
             ObjectImplement object = property.Mapping.get(Interface);
             keys.put(Interface,new ObjectValue(object.idObject,object.Class));
         }
@@ -1081,10 +1081,10 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             } else
                 CompareIndex = CompareWhere.LESS;
         }
-        Where OrderWhere = new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareIndex);
+        Where OrderWhere = new CompareWhere(OrderExpr,OrderExpr.getType().getExpr(OrderValue),CompareIndex);
 
         if(!Last) // >A OR (=A AND >B)
-            return new CompareWhere(OrderExpr,new ValueExpr(OrderValue,OrderExpr.getType()),CompareWhere.EQUALS).
+            return new CompareWhere(OrderExpr,OrderExpr.getType().getExpr(OrderValue),CompareWhere.EQUALS).
                     and(GenerateOrderWheres(OrderSources,OrderWheres,OrderDirs,Down,Index+1)).or(OrderWhere);
         else
             return OrderWhere;
@@ -1342,7 +1342,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
                     Group.fillSourceSelect(SelectKeys,Group.GetClassGroup(),BL.tableFactory,Session);
                     for(Entry<PropertyObjectImplement,Object> Property : PropertySeeks.entrySet())
                         SelectKeys.and(new CompareWhere(Property.getKey().getSourceExpr(Group.GetClassGroup(),SelectKeys.mapKeys,Session),
-                                new ValueExpr(Property.getValue(),Property.getKey().Property.getType()),CompareWhere.EQUALS));
+                                Property.getKey().Property.getType().getExpr(Property.getValue()),CompareWhere.EQUALS));
 
                     // докидываем найденные ключи
                     LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(Session);
@@ -1657,7 +1657,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             ListIterator<KeyField> ikt = KeyTable.Objects.listIterator();
             for(ObjectImplement Object : Group)
                 KeyJoin.joins.put(ikt.next(),SelectProps.mapKeys.get(Object));
-            KeyJoin.joins.put(KeyTable.View,new ValueExpr(getGroupObjectGID(Group),KeyTable.View.Type));
+            KeyJoin.joins.put(KeyTable.View,KeyTable.View.type.getExpr(getGroupObjectGID(Group)));
             SelectProps.and(KeyJoin.inJoin);
 
             for(PropertyView DrawProp : GroupList)

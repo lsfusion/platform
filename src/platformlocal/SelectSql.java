@@ -100,7 +100,7 @@ abstract class DataSource<K,V> extends Source<K,V> {
     DataSource() {
     }
 
-    abstract String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params);
+    abstract String getSource(SQLSyntax syntax, Map<ValueExpr, String> params);
 
     abstract String getKeyName(K Key);
     abstract String getPropertyName(V Property);
@@ -133,11 +133,11 @@ abstract class DataSource<K,V> extends Source<K,V> {
 }
 
 class TypedObject {
-    Object Value;
+    Object value;
     Type type;
 
     TypedObject(Object iValue, Type iType) {
-        Value = iValue;
+        value = iValue;
         type = iType;
     }
 
@@ -149,14 +149,20 @@ class TypedObject {
     }
 
     String getString(SQLSyntax Syntax) {
-        return getString(Value, type,Syntax);
+        return getString(value, type,Syntax);
     }
 
     public String toString() {
-        if(Value==null)
+        if(value ==null)
             return Type.NULL;
         else
-            return Value.toString();
+            return value.toString();
+    }
+
+    public Object multiply(int mult) {
+        if(value instanceof Boolean)
+            value = value;    
+        return ((Integer)value)*mult;
     }
 
     public boolean equals(Object o) {
@@ -165,13 +171,13 @@ class TypedObject {
 
         TypedObject that = (TypedObject) o;
 
-        if (Value != null ? !Value.equals(that.Value) : that.Value != null) return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
     }
 
     public int hashCode() {
-        return (Value != null ? Value.hashCode() : 0);
+        return (value != null ? value.hashCode() : 0);
     }
 }
 
@@ -179,12 +185,13 @@ class TypedObject {
 
 class Field {
     String Name;
-    Type Type;
+    Type type;
 
-    Field(String iName,Type iType) {Name=iName;Type=iType;}
+    Field(String iName,Type iType) {Name=iName;
+        type =iType;}
 
     String GetDeclare(SQLSyntax Syntax) {
-        return Name + " " + Type.getDB(Syntax);
+        return Name + " " + type.getDB(Syntax);
     }
 
     public String toString() {
@@ -206,8 +213,8 @@ class Table extends DataSource<KeyField,PropertyField> {
 
     Table(String iName) {Name=iName;}
 
-    String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params) {
-        return getName(Syntax);
+    String getSource(SQLSyntax syntax, Map<ValueExpr, String> params) {
+        return getName(syntax);
     }
     
     String getName(SQLSyntax Syntax) {
@@ -228,7 +235,7 @@ class Table extends DataSource<KeyField,PropertyField> {
     }
 
     Type getType(PropertyField Property) {
-        return Property.Type;
+        return Property.type;
     }
 
     String getKeyName(KeyField Key) {

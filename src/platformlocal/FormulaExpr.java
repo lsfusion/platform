@@ -66,14 +66,14 @@ class FormulaExpr extends AndExpr {
     }
 
     public SourceExpr translate(Translator translator) {
-        MapCaseList<String> CaseList = CaseExpr.translateCase(params, translator, false, false);
-        if(CaseList==null)
+        MapCaseList<String> caseList = CaseExpr.translateCase(params, translator, false, false);
+        if(caseList==null)
             return this;
 
-        ExprCaseList Result = new ExprCaseList();
-        for(MapCase<String> Case : CaseList)  // здесь напрямую потому как MapCaseList уже все проверил
-            Result.add(new ExprCase(Case.where,SourceExpr.containsNull(Case.data)?new NullExpr(getType()):new FormulaExpr(Formula,Case.data,DBType)));
-        return Result.getExpr();
+        ExprCaseList result = new ExprCaseList();
+        for(MapCase<String> mapCase : caseList)  // здесь напрямую потому как MapCaseList уже все проверил
+            result.add(new ExprCase(mapCase.where,SourceExpr.containsNull(mapCase.data)?getType().getExpr(null):new FormulaExpr(Formula,mapCase.data,DBType)));
+        return result.getExpr(getType());
     }
 
     // возвращает Where без следствий

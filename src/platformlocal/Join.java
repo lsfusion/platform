@@ -18,7 +18,7 @@ class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implem
         if(SourceExpr.containsNull(Case.data)) { // если есть null просто все null'им
             Map<U,AndExpr> Exprs = new HashMap<U, AndExpr>();
             for(U Expr : JoinSource.getProperties())
-                Exprs.put(Expr,new NullExpr(JoinSource.getType(Expr)));
+                Exprs.put(Expr,JoinSource.getType(Expr).getExpr(null));
             put(Case,Exprs);
             return Where.FALSE;
         }
@@ -100,18 +100,18 @@ class Join<J,U>  {
         addJoin((List<Join>) FillJoins);
     }
 
-    void translate(ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins, DataSource<J,U> JoinSource) {
-        MapCaseList<J> CaseList = CaseExpr.translateCase(joins, Translated, true, false);
+    void translate(ExprTranslator translated, Collection<CompiledJoin> translatedJoins, DataSource<J,U> joinSource) {
+        MapCaseList<J> caseList = CaseExpr.translateCase(joins, translated, true, false);
 
         // перетранслируем InJoin'ы в OR (And Where And NotWhere And InJoin)
-        CaseJoins<J,U> CaseJoins = new CaseJoins<J,U>(TranslatedJoins,JoinSource, noAlias);
-        Translated.put(inJoin,CaseList.getWhere(CaseJoins));
+        CaseJoins<J,U> caseJoins = new CaseJoins<J,U>(translatedJoins, joinSource, noAlias);
+        translated.put(inJoin,caseList.getWhere(caseJoins));
         // перетранслируем все выражения в CaseWhen'ы
-        for(Map.Entry<U,JoinExpr<J,U>> MapJoin : exprs.entrySet()) {
+        for(Map.Entry<U,JoinExpr<J,U>> mapJoin : exprs.entrySet()) {
             ExprCaseList TranslatedExpr = new ExprCaseList();
-            for(MapCase<J> Case : CaseList) // здесь напрямую потому как MapCaseList уже все проверил
-                TranslatedExpr.add(new ExprCase(Case.where,CaseJoins.get(Case).get(MapJoin.getKey())));
-            Translated.put(MapJoin.getValue(),TranslatedExpr.getExpr());
+            for(MapCase<J> mapCase : caseList) // здесь напрямую потому как MapCaseList уже все проверил
+                TranslatedExpr.add(new ExprCase(mapCase.where,caseJoins.get(mapCase).get(mapJoin.getKey())));
+            translated.put(mapJoin.getValue(),TranslatedExpr.getExpr(mapJoin.getValue().getType()));
         }
     }
 
@@ -332,7 +332,7 @@ class JoinWhere extends DataWhere implements JoinData {
     }
 
     public SourceExpr getFJExpr() {
-        return new CaseExpr(this,new ValueExpr(true,Type.Bit));
+        return new CaseExpr(this,Type.Bit.getExpr(true));
     }
 
     public String getFJString(String FJExpr) {

@@ -8,39 +8,29 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         from.fillJoinQueries(Queries);
     }
 
-    String getSource(SQLSyntax Syntax, Map<ValueExpr, String> Params) {
+    String getSource(SQLSyntax syntax, Map<ValueExpr, String> params) {
         
         // сделаем запрос который поставит фильтр на ключи и на properties на или ???
-        JoinQuery<F,B> propertiesFrom = new JoinQuery<F,B>(from.keys);
-        Join<F,B> joinFrom = new Join<F,B>(from,propertiesFrom);
-        propertiesFrom.properties.putAll(joinFrom.exprs);
-        Where propertiesWhere = Where.FALSE;
-        for(V property : properties.keySet())
-            propertiesWhere = propertiesWhere.or(joinFrom.exprs.get(property).getWhere());
-        propertiesFrom.and(propertiesWhere);
-
         // ключи не колышат
-        Map<B,String> FromPropertySelect = new HashMap<B, String>();
-        Collection<String> WhereSelect = new ArrayList<String>();
-        String FromSelect = propertiesFrom.compile(Syntax).fillSelect(new HashMap<F, String>(),FromPropertySelect,WhereSelect,Params);
+        Map<B,String> fromPropertySelect = new HashMap<B, String>();
+        Collection<String> whereSelect = new ArrayList<String>();
+        String fromSelect = propertiesFrom.compile(syntax).fillSelect(new HashMap<F, String>(),fromPropertySelect, whereSelect, params);
 
-        String GroupBy = "";
-        Map<K,String> KeySelect = new HashMap<K, String>();
-        Map<V,String> PropertySelect = new HashMap<V, String>();
-        for(K Key : keys) {
-            String KeyExpr = FromPropertySelect.get(Key);
-            KeySelect.put(Key,KeyExpr);
-            GroupBy = (GroupBy.length()==0?"":GroupBy+",") + KeyExpr;
-//            if(!(from.properties.get(Key) instanceof KeyExpr)) // Main.AllowNulls &&
-//                WhereSelect.add(KeyExpr + " IS NOT NULL");
+        String groupBy = "";
+        Map<K,String> keySelect = new HashMap<K, String>();
+        Map<V,String> propertySelect = new HashMap<V, String>();
+        for(K key : keys) {
+            String keyExpr = fromPropertySelect.get(key);
+            keySelect.put(key, keyExpr);
+            groupBy = (groupBy.length()==0?"":groupBy+",") + keyExpr;
         }
-        for(Map.Entry<V,Integer> Property : properties.entrySet())
-            PropertySelect.put(Property.getKey(),(Property.getValue()==0?"MAX":"SUM")+"("+ FromPropertySelect.get(Property.getKey()) +")");
+        for(Map.Entry<V,Integer> property : properties.entrySet())
+            propertySelect.put(property.getKey(),(property.getValue()==0?"MAX":"SUM")+"("+ fromPropertySelect.get(property.getKey()) +")");
 
-        return "(" + Syntax.getSelect(FromSelect,stringExpr(
-                mapNames(KeySelect, keyNames,new ArrayList<K>()),
-                mapNames(PropertySelect, propertyNames,new ArrayList<V>())),
-                stringWhere(WhereSelect),"",GroupBy,"") + ")";
+        return "(" + syntax.getSelect(fromSelect,stringExpr(
+                mapNames(keySelect, keyNames,new ArrayList<K>()),
+                mapNames(propertySelect, propertyNames,new ArrayList<V>())),
+                stringWhere(whereSelect),"",groupBy,"") + ")";
     }
 
     GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom,V Property,int iOperator) {
@@ -72,6 +62,9 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return propertyNames.get(Property);
     }
 
+    // с хоть одним property where
+    JoinQuery<F,B> propertiesFrom;
+
     GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom, Map<V,Integer> iProperties) {
         super(iKeys);
         from = iFrom;
@@ -86,6 +79,14 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         int propertyCount = 0;
         for(V property : properties.keySet())
             propertyNames.put(property,"dprop"+(propertyCount++));
+
+        propertiesFrom = new JoinQuery<F,B>(from.keys);
+        Join<F,B> joinFrom = new Join<F,B>(from,propertiesFrom);
+        propertiesFrom.properties.putAll(joinFrom.exprs);
+        Where propertiesWhere = Where.FALSE;
+        for(V property : properties.keySet())
+            propertiesWhere = propertiesWhere.or(joinFrom.exprs.get(property).getWhere());
+        propertiesFrom.and(propertiesWhere);
     }
 
     JoinQuery<F,B> from;
@@ -97,9 +98,9 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
     }
     
     void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins) {
-        if(from.parse().isEmpty()) {
+        if(propertiesFrom.parse().isEmpty()) {
             for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.exprs.entrySet())
-                Translated.put(MapExpr.getValue(),new NullExpr(MapExpr.getValue().getType()));
+                Translated.put(MapExpr.getValue(),MapExpr.getValue().getType().getExpr(null));
             Translated.put(Join.inJoin,Where.FALSE);
         } else
             super.compileJoin(Join, Translated, TranslatedJoins);

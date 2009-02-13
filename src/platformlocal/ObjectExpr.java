@@ -227,17 +227,22 @@ class NullExpr extends ObjectExpr {
     int getHash() {
         return hashCode();
     }
+
+    // получает список ExprCase'ов
+    ExprCaseList getCases() {
+        return new ExprCaseList();
+    }
 }
 
 // формулы
 class ValueExpr extends ObjectExpr implements QueryData {
 
-    TypedObject Object;
+    TypedObject object;
 
     ValueExpr(Object Value,Type Type) {
         if(Value==null)
             throw new RuntimeException("use NullExpr");
-        Object = new TypedObject(Value,Type);
+        object = new TypedObject(Value,Type);
     }
 
 
@@ -249,11 +254,11 @@ class ValueExpr extends ObjectExpr implements QueryData {
     }
 
     public String getString(SQLSyntax Syntax) {
-        return Object.getString(Syntax);
+        return object.getString(Syntax);
     }
 
     public String toString() {
-        return Object.toString();
+        return object.toString();
     }
 
     public <J extends Join> void fillJoins(List<J> Joins, Set<ValueExpr> Values) {
@@ -261,7 +266,7 @@ class ValueExpr extends ObjectExpr implements QueryData {
     }
 
     Type getType() {
-        return Object.type;
+        return object.type;
     }
 
     protected void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -278,12 +283,12 @@ class ValueExpr extends ObjectExpr implements QueryData {
 
         ValueExpr valueExpr = (ValueExpr) o;
 
-        if (!Object.equals(valueExpr.Object)) return false;
+        if (!object.equals(valueExpr.object)) return false;
 
         return true;
     }
 
     public int hashCode() {
-        return Object.hashCode();
+        return object.hashCode();
     }
 }

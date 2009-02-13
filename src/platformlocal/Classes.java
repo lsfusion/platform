@@ -5,8 +5,6 @@
 
 package platformlocal;
 
-import net.sf.jasperreports.engine.JRAlignment;
-
 import java.sql.SQLException;
 import java.util.*;
 import java.math.BigDecimal;
@@ -336,7 +334,7 @@ class ObjectClass extends Class {
 
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
         ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
-        return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.Key);
+        return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.key);
     }
 
     Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
@@ -393,7 +391,7 @@ abstract class Type<T> {
         return new ValueExpr(0,this);
     }
 
-    SourceExpr getExpr(Object Value) {
+    AndExpr getExpr(Object Value) {
         if(Value==null)
             return new NullExpr(this);
         else

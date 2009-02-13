@@ -16,7 +16,8 @@ class LinearExpr extends AndExpr {
         }
 
         String addToString(boolean first, String string) {
-            if(coeff>=0) return (first?"":"+") + (coeff==1?"":coeff+"*") + string;
+            if(coeff==0) return (first?"0":"");
+            if(coeff>0) return (first?"":"+") + (coeff==1?"":coeff+"*") + string;
             if(coeff==-1) return "-"+string;
             return coeff+"*"+string; // <0
         }
@@ -68,7 +69,7 @@ class LinearExpr extends AndExpr {
 
         if(operands.size()==1) {
             Operand operand = operands.iterator().next();
-            return (operand.coeff==-1?"-":operand.coeff) + operand.expr.getSource(queryData, syntax);                    
+            return operand.addToString(true,operand.expr.getSource(queryData, syntax));
         }
 
         String source = "";
@@ -153,16 +154,20 @@ class LinearExpr extends AndExpr {
 
         for(Map.Entry<Operand,? extends SourceExpr> mapOperand : mapOperands.entrySet()) {
             SourceExpr transExpr = mapOperand.getValue();
-            if(transExpr instanceof LinearExpr) {
+            if(transExpr instanceof LinearExpr) { // LinearExpr, его нужно влить сюда
                 for(Operand transOperand : ((LinearExpr)transExpr).operands)
                     transLinear.add(transOperand.expr,mapOperand.getKey().coeff*transOperand.coeff);
-            } else // LinearExpr, его нужно влить сюда
-                if(!(transExpr instanceof NullExpr))
-                    transLinear.add(transExpr,mapOperand.getKey().coeff);
+            } else {
+            if(transExpr instanceof ValueExpr && mapOperand.getKey().coeff!=1)
+                transLinear.add(new ValueExpr(((ValueExpr)transExpr).object.multiply(mapOperand.getKey().coeff),getType()),1);
+            else
+            if(!(transExpr instanceof NullExpr))
+                transLinear.add(transExpr,mapOperand.getKey().coeff);
+            }
         }
 
         if(transLinear.operands.size()==0)
-            return new NullExpr(getType());
+            return getType().getExpr(null);
 
         if(transLinear.operands.size()==1) {
             Operand operand = transLinear.operands.iterator().next();
@@ -179,14 +184,10 @@ class LinearExpr extends AndExpr {
         for(Operand operand : operands)
             mapOperands.put(operand,operand.expr);
 
-        MapCaseList<Operand> caseList = CaseExpr.translateCase(mapOperands, translator, false, false);
-        if(caseList==null)
-            return this;
-
         ExprCaseList result = new ExprCaseList();
-        for(MapCase<Operand> mapCase : caseList)  // здесь напрямую потому как MapCaseList уже все проверил
+        for(MapCase<Operand> mapCase : CaseExpr.translateCase(mapOperands, translator, true, true))  // здесь напрямую потому как MapCaseList уже все проверил
             result.add(new ExprCase(mapCase.where,translateCase(mapCase.data))); // кстати могут быть и одинаковые case'ы
-        return result.getExpr();
+        return result.getExpr(getType());
     }
 
     public int hashCode() {
@@ -201,5 +202,19 @@ class LinearExpr extends AndExpr {
     }
 
     protected void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    }
+
+    SourceExpr followFalse(Where where) {
+        LinearExpr followedLinear = new LinearExpr();
+        boolean changed = false;
+        for(Operand operand : operands) {
+            SourceExpr followedOperand = operand.expr.followFalse(where);
+            followedLinear.add(followedOperand,operand.coeff);
+            changed = changed || (followedOperand != operand.expr);
+        }
+        if(!changed)
+            return this;
+        else
+            return followedLinear;
     }
 }
