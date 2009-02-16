@@ -448,7 +448,8 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
     static Where followFalse(Where followWhere, Where falseWhere, boolean plainFollow) {
 
         if(falseWhere.isTrue()) return Where.FALSE;
-        if(!decomposed(followWhere,falseWhere)) return followWhere;
+        if(falseWhere.isFalse()) return followWhere;
+//        if(!decomposed(followWhere,falseWhere)) return followWhere;
 
         AndObjectWhere[] wheres = followWhere.getAnd();
 
@@ -507,7 +508,8 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
     }
 
     public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
-        Where result = new OrWhere(); 
+        AndObjectWhere[] staticWheres = new AndObjectWhere[wheres.length]; int stat = 0;
+        Where[] decomposedWheres = new Where[wheres.length]; int decomp = 0;
         AndObjectWhere[] maxWheres = wheres.clone();
         for(int i=0;i<maxWheres.length;i++) { // будем бежать с высот поменьше - своего рода пузырьком
             for(int j=maxWheres.length-1;j>i;j--)
@@ -516,10 +518,22 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
                     maxWheres[j] = maxWheres[j-1];
                     maxWheres[j-1] = t;
                 }
-            result = op(result,maxWheres[i].decompose(decompose,objects),true);
-            if(result.isTrue()) return result;
+            Where decomposedWhere = maxWheres[i].decompose(decompose,objects);
+            if(decomposedWhere == maxWheres[i])
+                staticWheres[stat++] = maxWheres[i];
+            else {
+                if(decomposedWhere.isTrue()) return decomposedWhere;
+                decomposedWheres[decomp++] = decomposedWhere;
+            }
         }
-        return result;
+
+        if(stat < wheres.length) {
+            Where result = toWhere(staticWheres,stat);
+            for(int i=0;i<decomp;i++)
+                result = op(result,decomposedWheres[i],true);
+            return result;
+        } else
+            return this;
     }
 
     // вычищает те Or'ы которые заведомо не будут false
@@ -576,8 +590,6 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
     }
 
     public Where siblingsFollow(Where falseWhere) {
-
-        AbstractWhere.follows++;
 
         if(op(this,falseWhere,true).checkTrue())
             return Where.TRUE;
@@ -825,10 +837,23 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
 
     public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
         // в отличии от or сразу заведомо известный результат мы никак не получим поэтому просто прямо бежим
-        Where result = new AndWhere();
-        for(OrObjectWhere where : wheres)
-            result = OrWhere.op(result.not(),where.decompose(decompose,objects).not(),true).not();
-        return result;
+        OrObjectWhere[] staticWheres = new OrObjectWhere[wheres.length]; int stat = 0;
+        Where[] decomposedWheres = new Where[wheres.length]; int decomp = 0;
+        for(OrObjectWhere where : wheres) {
+            Where decomposedWhere = where.decompose(decompose,objects);
+            if(decomposedWhere == where)
+                staticWheres[stat++] = where;
+            else
+                decomposedWheres[decomp++] = decomposedWhere;
+        }
+
+        if(stat < wheres.length) {
+            Where result = toWhere(staticWheres,stat);
+            for(int i=0;i<decomp;i++)
+                result = OrWhere.op(result.not(),decomposedWheres[i].not(),true).not();
+            return result;
+        } else
+            return this;
     }
 
     public Where siblingsFollow(Where falseWhere) {

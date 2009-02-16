@@ -147,6 +147,8 @@ class CompiledQuery<K,V> {
 
     CompiledQuery(CompiledJoinQuery<K,V> query, SQLSyntax syntax, LinkedHashMap<V,Boolean> orders, int top) {
 
+        query.packProperties();
+
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
         whereSelect = new ArrayList<String>();
@@ -673,6 +675,7 @@ class JoinQuery<K,V> extends Source<K,V> {
         mergeQuery.and(join.inJoin.or(mergeJoin.inJoin));
 
         CompiledJoinQuery<K, Object> parsedMerge = mergeQuery.parse();
+        parsedMerge.packProperties();
 
         // погнали сливать одинаковые (именно из раных)
         for(Map.Entry<MV,Object> mergeProperty : mergeProps.entrySet()) {
@@ -947,12 +950,21 @@ class CompiledJoinQuery<K,V> {
 
         // свойства
         properties = new HashMap<V, SourceExpr>();
-        for(Map.Entry<V,SourceExpr> MapProperty : query.properties.entrySet())
-            properties.put(MapProperty.getKey(),MapProperty.getValue().translate(translated).followFalse(where.not()));
+        for(Map.Entry<V,SourceExpr> mapProperty : query.properties.entrySet())
+            properties.put(mapProperty.getKey(),mapProperty.getValue().translate(translated)); //.followFalse(where.not())
+//        packProperties();
         // Values
         values = query.getValues();
 
         compiler = new Compiler();
+    }
+
+    boolean packed = false;
+    // собсно паковать их имеет смысл только при выполнении, с другой стороны при трансляции сложнее будет, пока с паком лучше
+    void packProperties() {
+        if(!packed)
+            for(Map.Entry<V,SourceExpr> mapProperty : properties.entrySet())
+                mapProperty.setValue(mapProperty.getValue().followFalse(where.not()));
     }
 
     Compiler compiler;
