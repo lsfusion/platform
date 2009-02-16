@@ -360,7 +360,7 @@ class CompiledQuery<K,V> {
             for(AndJoinQuery and : andWheres)
                 if(!result.contains(and)) {
                     lastQuery = and;
-                    lastWhere = resultWhere.or(lastQuery.where);
+                    lastWhere = OrWhere.op(resultWhere,lastQuery.where,true);
                     if(where.means(lastWhere)) {
                         result.add(lastQuery);
                         return result;
