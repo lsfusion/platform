@@ -71,73 +71,6 @@ class SetBuilder<T> {
 }
 
 class MapBuilder {
-    
-    private static<T,V> void RecBuildMap(T[] From,V[] To,int iFr,List<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
-        if(iFr==From.length) {
-            Result.add((Map<T,V>)CurrentMap.clone());
-            return;
-        }
-
-        for(int v=0;v<To.length;v++)
-            if(!CurrentMap.containsValue(To[v])){
-                CurrentMap.put(From[iFr],To[v]);
-                RecBuildMap(From,To,iFr+1,Result,CurrentMap);
-                CurrentMap.remove(From[iFr]);
-            }
-    }
-    
-    static <T,V> List<Map<T,V>> BuildMap(T[] From,V[] To) {
-        List<Map<T,V>> Result = new ArrayList<Map<T,V>>();
-        RecBuildMap(From,To,0,Result,new HashMap<T,V>(0));
-        return Result;
-    }
-
-    private static <T,V> void recBuildCombination(Map<T,Collection<V>> Map,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
-        if(!iT.hasNext()) {
-            Result.add((Map<T,V>)CurrentMap.clone());
-            return;
-        }
-
-        T Current = iT.next();
-
-        for(V toV : Map.get(Current)) {
-            CurrentMap.put(Current,toV);
-            recBuildCombination(Map,iT,Result,CurrentMap);
-        }
-
-        iT.previous();
-    }
-
-    static <T,V> Collection<Map<T,V>> buildCombination(Map<T,Collection<V>> Map) {
-        Collection<Map<T,V>> Result = new ArrayList<Map<T,V>>();
-        recBuildCombination(Map,(new ArrayList(Map.keySet())).listIterator(),Result,new HashMap<T,V>());
-        return Result;
-    }
-
-    private static <T,V> void recBuildPairs(Collection<? extends V> Set,ListIterator<T> iT,Collection<Map<T,V>> Result,HashMap<T,V> CurrentMap) {
-        if(!iT.hasNext()) {
-            Result.add((Map<T,V>)CurrentMap.clone());
-            return;
-        }
-
-        T Current = iT.next();
-
-        for(V toV : Set)
-            if(!CurrentMap.values().contains(toV)){
-                CurrentMap.put(Current,toV);
-                recBuildPairs(Set,iT,Result,CurrentMap);
-                CurrentMap.remove(Current);
-            }
-
-        iT.previous();
-    }
-
-    static <T,V> Collection<Map<T,V>> buildPairs(Collection<? extends T> Set1,Collection<? extends V> Set2) {
-        if(Set1.size()!=Set2.size()) return null;
-        Collection<Map<T,V>> Result = new ArrayList<Map<T,V>>();
-        recBuildPairs(Set2,(new ArrayList(Set1)).listIterator(),Result,new HashMap<T,V>());
-        return Result;
-    }
 
     private static <T> void recBuildPermutations(Collection<T> col, List<T> cur, Collection<List<T>> result) {
 
@@ -160,10 +93,166 @@ class MapBuilder {
     }
 }
 
+class Combinations<T,V> implements Iterable<Map<T,V>> {
+    
+    public Iterator<Map<T, V>> iterator() {
+        return new CombinationIterator();
+    }
+
+    List<T> from = new ArrayList<T>();
+    List<List<V>> to = new ArrayList<List<V>>();
+    Combinations(Map<T,Collection<V>> map) {
+        for(Map.Entry<T,Collection<V>> entry : map.entrySet()) {
+            from.add(entry.getKey());
+            to.add(new ArrayList<V>(entry.getValue()));
+        }
+    }
+
+    class CombinationIterator implements Iterator<Map<T,V>> {
+
+        int[] nums;
+        int size;
+
+        CombinationIterator() {
+            for(List<V> list : to)
+                if(list.size()==0) {
+                    hasNext = false;
+                    return;
+                }
+            size = from.size();
+            nums = new int[size];
+        }
+
+        boolean hasNext = true;
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        public Map<T, V> next() {
+
+            Map<T,V> next = new HashMap<T,V>();
+            for(int i=0;i<size;i++)
+                next.put(from.get(i),to.get(i).get(nums[i]));
+
+            // переходим к следующей паре
+            int i = 0;
+            while(i<size && nums[i]==to.get(i).size()-1) {
+                nums[i] = 0;
+                i++;
+            }
+            if(i==size)
+                hasNext = false;
+            else
+                nums[i]++;
+
+            return next;
+        }
+
+        public void remove() { // не поддерживает
+        }
+    }
+}
+
+abstract class Permutations<Permute> implements Iterable<Permute> {
+
+    int size;
+
+    public Iterator<Permute> iterator() {
+        return new PermuteIterator();
+    }
+
+    abstract Permute getPermute(PermuteIterator permute);
+
+    class PermuteIterator implements Iterator<Permute> {
+
+        int[] nums;
+
+        PermuteIterator() {
+            if(size<0)
+                hasNext = false;
+            else {
+                nums = new int[size];
+                for(int i=0;i<size;i++) // начальная перестановка
+                    nums[i] = i;
+            }
+        }
+
+        boolean hasNext = true;
+        public boolean hasNext() {
+            return hasNext;
+        }
+        
+        public Permute next() {
+
+            Permute next = getPermute(this);
+
+            int i=size-1;
+            while(i>=1 && nums[i-1]>nums[i]) i--; // находим первый нарушающий порядок
+            if(i<=0)
+                hasNext = false;
+            else {
+                // находим минимальный элемент больше это
+                int min = i;
+                for(int j=i+1;j<size;j++)
+                    if(nums[j]>nums[i-1] && nums[j]<nums[min])
+                        min = j;
+                int t = nums[i-1]; nums[i-1] = nums[min]; nums[min] = t;
+                for(int j=0;j<(size-i)/2;j++) { // переворачиваем
+                    t = nums[i+j]; nums[i+j] = nums[size-1-j]; nums[size-1-j] = t; }
+            }
+
+            return next;
+        }
+
+        public void remove() { // не поддерживает
+        }
+    }
+}
+
+class Pairs<T,V> extends Permutations<Map<T,V>> {
+
+    List<T> from;
+    List<V> to;
+    Pairs(Collection<? extends T> iFrom, Collection<? extends V> iTo) {
+        from = new ArrayList<T>(iFrom);
+        to = new ArrayList<V>(iTo);
+        if((size=from.size())!=to.size())
+            size = -1;
+    }
+
+    Map<T, V> getPermute(PermuteIterator permute) {
+        Map<T,V> next = new HashMap<T,V>();
+        for(int i=0;i<size;i++)
+            next.put(from.get(i),to.get(permute.nums[i]));
+        return next;
+    }
+
+    boolean isEmpty() {
+        return from.size()!=to.size();
+    }
+}
+
+class ListPermutations<T> extends Permutations<List<T>> {
+
+    List<T> to;
+
+    ListPermutations(Collection<T> toCollection) {
+        to = new ArrayList<T>(toCollection);
+        size = to.size();
+    }
+
+    List<T> getPermute(PermuteIterator permute) {
+        List<T> result = new ArrayList<T>();
+        for(int i=0;i<size;i++)
+            result.add(to.get(permute.nums[i]));
+        return result;
+    }
+}
+
 class MapUtils<T,V> {
     
     public T getKey(Map<T,V> m, V v) {
-        
+
         Iterator<T> it = m.keySet().iterator();
         while (it.hasNext()) {
            T t = it.next();

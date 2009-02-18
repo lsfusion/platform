@@ -11,43 +11,39 @@ import java.sql.Connection;
 import java.util.*;
 
 class ObjectValue {
-    Integer Object;
-    Class Class;
+    Integer object;
+    Class objectClass;
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ObjectValue that = (ObjectValue) o;
-
-        return Object.equals(that.Object);
+        return this==o || o instanceof ObjectValue && object.equals(((ObjectValue) o).object);
     }
 
     public int hashCode() {
-        return Object.hashCode();
+        return object.hashCode();
     }
 
     ObjectValue(Integer iObject,Class iClass) {
-        Object=iObject;Class=iClass;}
+        object =iObject;
+        objectClass =iClass;}
 }
 
 class PropertyImplement<T,P extends PropertyInterface> {
 
     PropertyImplement(PropertyImplement<T,P> iProperty) {
-        Property = iProperty.Property;
-        Mapping = new HashMap<P,T>(iProperty.Mapping);
+        property = iProperty.property;
+        mapping = new HashMap<P,T>(iProperty.mapping);
     }
 
     PropertyImplement(Property<P> iProperty) {
-        Property = iProperty;
-        Mapping = new HashMap<P,T>();
+        property = iProperty;
+        mapping = new HashMap<P,T>();
     }
 
-    Property<P> Property;
-    Map<P,T> Mapping;
+    Property<P> property;
+    Map<P,T> mapping;
 
     public String toString() {
-        return Property.toString();
+        return property.toString();
     }
 }
 
@@ -907,7 +903,7 @@ abstract class AggregateProperty<T extends PropertyInterface> extends Property<T
     PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
         List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys, securityPolicy);
         for(int i=Implements.size()-1;i>=0;i--)
-            if(Implements.get(i).mapGetChangeProperty(null, Keys, 0, securityPolicy)!=null && (securityPolicy == null || securityPolicy.checkPermission(Implements.get(i).Property)))
+            if(Implements.get(i).mapGetChangeProperty(null, Keys, 0, securityPolicy)!=null && (securityPolicy == null || securityPolicy.checkPermission(Implements.get(i).property)))
                 return Implements.get(i);
         return null;
     }
@@ -1084,64 +1080,64 @@ class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterfa
 
     // NotNull только если сессии нету
     public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> JoinImplement, InterfaceClassSet<P> JoinClasses) {
-        return Property.getSourceExpr(getMapImplement(JoinImplement),JoinClasses.mapBack(Mapping));
+        return property.getSourceExpr(getMapImplement(JoinImplement),JoinClasses.mapBack(mapping));
     }
 
     public JoinExpr mapChangeExpr(DataSession Session, Map<P, ? extends SourceExpr> JoinImplement, int Value) {
-        return Session.getChange(Property).getExpr(getMapImplement(JoinImplement),Value);
+        return Session.getChange(property).getExpr(getMapImplement(JoinImplement),Value);
     }
 
     private <V> Map<T, V> getMapImplement(Map<P, V> JoinImplement) {
         Map<T,V> MapImplement = new HashMap<T,V>();
-        for(T ImplementInterface : Property.interfaces)
-            MapImplement.put(ImplementInterface,JoinImplement.get(Mapping.get(ImplementInterface)));
+        for(T ImplementInterface : property.interfaces)
+            MapImplement.put(ImplementInterface,JoinImplement.get(mapping.get(ImplementInterface)));
         return MapImplement;
     }
 
     public ClassSet mapValueClass(InterfaceClass<P> ClassImplement) {
-        return Property.getValueClass(ClassImplement.mapBack(Mapping));
+        return property.getValueClass(ClassImplement.mapBack(mapping));
     }
 
     public boolean mapIsInInterface(InterfaceClassSet<P> ClassImplement) {
-        return Property.isInInterface(ClassImplement.mapBack(Mapping));
+        return property.isInInterface(ClassImplement.mapBack(mapping));
     }
 
     public InterfaceClassSet<P> mapClassSet(ClassSet ReqValue) {
-        return Property.getClassSet(ReqValue).map(Mapping);
+        return property.getClassSet(ReqValue).map(mapping);
     }
 
     public ValueClassSet<P> mapValueClassSet() {
-        return Property.getValueClassSet().map(Mapping);
+        return property.getValueClassSet().map(mapping);
     }
 
     public boolean mapHasChanges(DataSession Session) {
-        return Session.getChange(Property)!=null;
+        return Session.getChange(property)!=null;
     }
 
     // заполняет список, возвращает есть ли изменения
     public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
-        return Property.fillChangedList(ChangedProperties, Changes, NoUpdate);
+        return property.fillChangedList(ChangedProperties, Changes, NoUpdate);
     }
 
     ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) {
-        return Property.getChangeProperty(Session,getMapImplement(Keys), Coeff, securityPolicy);
+        return property.getChangeProperty(Session,getMapImplement(Keys), Coeff, securityPolicy);
     }
 
     // для OverrideList'а по сути
     void mapChangeProperty(Map<P, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        Property.changeProperty(getMapImplement(Keys), NewValue, externalID, Session, securityPolicy);
+        property.changeProperty(getMapImplement(Keys), NewValue, externalID, Session, securityPolicy);
     }
 
     public ClassSet mapChangeValueClass(DataSession Session, InterfaceClass<P> ClassImplement) {
-        return Session.getChange(Property).Classes.getValueClass(ClassImplement.mapBack(Mapping));
+        return Session.getChange(property).Classes.getValueClass(ClassImplement.mapBack(mapping));
     }
 
     public InterfaceClassSet<P> mapChangeClassSet(DataSession Session, ClassSet ReqValue) {
-        return Session.getChange(Property).Classes.getClassSet(ReqValue).map(Mapping);
+        return Session.getChange(property).Classes.getClassSet(ReqValue).map(mapping);
     }
 
     public ValueClassSet<P> mapValueClassSet(DataSession Session) {
-        return Session.getChange(Property).Classes.getValueClassSet().map(Mapping);
+        return Session.getChange(property).Classes.getValueClassSet().map(mapping);
     }
 }
 
@@ -1162,7 +1158,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
 
     InterfaceClassSet<JoinPropertyInterface> getMapClassSet(MapRead<JoinPropertyInterface> Read, InterfaceClass<T> InterfaceImplement) {
         InterfaceClassSet<JoinPropertyInterface> Result = getUniversalInterface();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : Implements.Mapping.entrySet())
+        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : Implements.mapping.entrySet())
            Result = Result.and(Read.getImplementClassSet(MapInterface.getValue(),InterfaceImplement.get(MapInterface.getKey())));
         return Result;
     }
@@ -1174,14 +1170,14 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         // иначе (основное MultiplyProperty и 1) - Implements ->1 - как было (но с другим оператором), возвр. 1
 
         if(!containsImplement(RequiredTypes.keySet())) {
-            Implements.Property.setChangeType(RequiredTypes,IncrementType);
+            Implements.property.setChangeType(RequiredTypes,IncrementType);
         } else {
             int ReqType = (implementAllInterfaces() && IncrementType.equals(0)?0:2);
 
-            Implements.Property.setChangeType(RequiredTypes,ReqType);
-            for(PropertyInterfaceImplement Interface : Implements.Mapping.values())
+            Implements.property.setChangeType(RequiredTypes,ReqType);
+            for(PropertyInterfaceImplement Interface : Implements.mapping.values())
                 if(Interface instanceof PropertyMapImplement)
-                    (((PropertyMapImplement)Interface).Property).setChangeType(RequiredTypes,(Implements.Property instanceof MultiplyFormulaProperty && IncrementType.equals(1)?1:ReqType));
+                    (((PropertyMapImplement)Interface).property).setChangeType(RequiredTypes,(Implements.property instanceof MultiplyFormulaProperty && IncrementType.equals(1)?1:ReqType));
         }
     }
 
@@ -1197,7 +1193,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         ValueClassSet<JoinPropertyInterface> ResultClass = new ValueClassSet<JoinPropertyInterface>();
 
         int QueryIncrementType = ChangeType;
-        if(Implements.Property instanceof MultiplyFormulaProperty && ChangeType==1)
+        if(Implements.property instanceof MultiplyFormulaProperty && ChangeType==1)
             ResultQuery.add(getMapQuery(getChangeImplements(Session,1), changeTable.value,ResultClass,true),1);
         else {
             // если нужна 1 и изменились св-ва то придется просто 2-ку считать (хотя это потом можно поменять)
@@ -1214,21 +1210,21 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
 
     Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
         if(!containsImplement(ChangedProps)) {
-            ToWait.add(Implements.Property);
+            ToWait.add(Implements.property);
             return null;
         } else
-        if(Implements.Property instanceof MultiplyFormulaProperty)
+        if(Implements.property instanceof MultiplyFormulaProperty)
             return 1;
         else
             return 0;
     }
 
     Property<T> getMapProperty() {
-        return Implements.Property;
+        return Implements.property;
     }
 
     Map<T, PropertyInterfaceImplement<JoinPropertyInterface>> getMapImplements() {
-        return Implements.Mapping;
+        return Implements.mapping;
     }
 
     Collection<JoinPropertyInterface> getMapInterfaces() {
@@ -1239,21 +1235,21 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
     ValueClassSet<JoinPropertyInterface> getReadValueClassSet(MapRead<JoinPropertyInterface> Read,InterfaceClassSet<T> MapClasses) {
         ValueClassSet<JoinPropertyInterface> Result = new ValueClassSet<JoinPropertyInterface>();
         
-        if(Implements.Property instanceof ObjectFormulaProperty) {
-            ObjectFormulaProperty ObjectProperty = (ObjectFormulaProperty) Implements.Property;
+        if(Implements.property instanceof ObjectFormulaProperty) {
+            ObjectFormulaProperty ObjectProperty = (ObjectFormulaProperty) Implements.property;
             // сначала кидаем на baseClass, bit'ы
             for(InterfaceClass<JoinPropertyInterface> ValueInterface : getMapClassSet(Read, (InterfaceClass<T>) ObjectProperty.getInterfaceClass(ClassSet.getUp(Class.base)))) {
                 InterfaceClass<T> ImplementInterface = new InterfaceClass<T>();
-                for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : Implements.Mapping.entrySet()) // если null то уже не подходит по интерфейсу
+                for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : Implements.mapping.entrySet()) // если null то уже не подходит по интерфейсу
                     ImplementInterface.put(MapInterface.getKey(), MapInterface.getValue().mapValueClass(ValueInterface));
 
                 if(!ImplementInterface.isEmpty()) {
-                    Result.or(new ChangeClass<JoinPropertyInterface>(ValueInterface, Implements.Property.getValueClass(ImplementInterface)));
+                    Result.or(new ChangeClass<JoinPropertyInterface>(ValueInterface, Implements.property.getValueClass(ImplementInterface)));
                     MapClasses.or(ImplementInterface);
                 }
             }
         } else {
-            for(ChangeClass<T> ImplementChange : Read.getMapChangeClass(Implements.Property))
+            for(ChangeClass<T> ImplementChange : Read.getMapChangeClass(Implements.property))
                 for(InterfaceClass<T> ImplementInterface : ImplementChange.Interface) {
                     InterfaceClassSet<JoinPropertyInterface> ResultInterface = getMapClassSet(Read, ImplementInterface);
                     if(!ResultInterface.isEmpty()) {
@@ -1277,12 +1273,12 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         // далее создается для getMapImplements - map <ImplementClass,SourceExpr> имплементаций - по getExpr'ы (Changed,SourceExpr) с переданным map интерфейсов
         Map<T,SourceExpr> ImplementSources = new HashMap<T,SourceExpr>();
         Map<PropertyInterfaceImplement<JoinPropertyInterface>,SourceExpr> ImplementExprs = new HashMap<PropertyInterfaceImplement<JoinPropertyInterface>, SourceExpr>();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : Implements.Mapping.entrySet()) {
+        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : Implements.mapping.entrySet()) {
             SourceExpr ImplementExpr = Read.getImplementExpr(Implement.getValue(), Query.mapKeys, Result.getClassSet(ClassSet.universal));
             ImplementSources.put(Implement.getKey(), ImplementExpr);
             ImplementExprs.put(Implement.getValue(), ImplementExpr);
         }
-        Read.fillMapExpr(Query,Value,Implements.Property,ImplementSources,ImplementExprs,MapClasses);
+        Read.fillMapExpr(Query,Value,Implements.property,ImplementSources,ImplementExprs,MapClasses);
 
         ReadClasses.or(Result);
         ListQuery.add(Query,1);
@@ -1294,7 +1290,7 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
 
     public InterfaceClassSet<JoinPropertyInterface> calculateClassSet(ClassSet ReqValue) {
         InterfaceClassSet<JoinPropertyInterface> Result = new InterfaceClassSet<JoinPropertyInterface>();
-        for(InterfaceClass<T> ImplementClass : Implements.Property.getClassSet(ReqValue))
+        for(InterfaceClass<T> ImplementClass : Implements.property.getClassSet(ReqValue))
             Result.or(getMapClassSet(new MapRead<JoinPropertyInterface>(),ImplementClass));
         return Result;
     }
@@ -1310,18 +1306,18 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
         JoinQuery<JoinPropertyInterface,Object> Query = new JoinQuery<JoinPropertyInterface,Object>(interfaces);
         // считаем новые SourceExpr'ы и классы
         Map<T,SourceExpr> ImplementSources = new HashMap<T,SourceExpr>();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : Implements.Mapping.entrySet())
+        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : Implements.mapping.entrySet())
             ImplementSources.put(Implement.getKey(),Implement.getValue().mapSourceExpr(Query.mapKeys, JoinClasses));
 
         InterfaceClassSet<T> ImplementClasses = new InterfaceClassSet<T>();
         for(InterfaceClass<JoinPropertyInterface> JoinClass : JoinClasses) {
             InterfaceClass<T> ImplementClass = new InterfaceClass<T>();
-            for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : Implements.Mapping.entrySet())
+            for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : Implements.mapping.entrySet())
                 ImplementClass.put(Implement.getKey(),Implement.getValue().mapValueClass(JoinClass));
             ImplementClasses.or(ImplementClass);
         }
 
-        Query.properties.put(JoinValue, Implements.Property.getSourceExpr(ImplementSources, ImplementClasses));
+        Query.properties.put(JoinValue, Implements.property.getSourceExpr(ImplementSources, ImplementClasses));
         return (new Join<JoinPropertyInterface,Object>(Query,JoinImplement)).exprs.get(JoinValue);
     }
 
@@ -1338,11 +1334,11 @@ class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinProperty
     List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
         List<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>> Result = new ArrayList<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>>();
         List<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>> BitProps = new ArrayList<PropertyMapImplement<PropertyInterface,JoinPropertyInterface>>();
-        for(PropertyInterfaceImplement<JoinPropertyInterface> Implement : Implements.Mapping.values())
+        for(PropertyInterfaceImplement<JoinPropertyInterface> Implement : Implements.mapping.values())
             if(Implement instanceof PropertyMapImplement) {
                 PropertyMapImplement<PropertyInterface,JoinPropertyInterface> PropertyImplement = (PropertyMapImplement<PropertyInterface,JoinPropertyInterface>)Implement;
                 // все Data вперед, биты назад, остальные попорядку
-                if(PropertyImplement.Property instanceof DataProperty)
+                if(PropertyImplement.property instanceof DataProperty)
                     Result.add(PropertyImplement);
                 else {
                     ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, 0, securityPolicy);
@@ -1514,7 +1510,7 @@ class SumGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
         for(GroupPropertyInterface<T> Interface : interfaces)
             if(Interface.Implement instanceof PropertyMapImplement)
-                (((PropertyMapImplement)Interface.Implement).Property).setChangeType(RequiredTypes,2);
+                (((PropertyMapImplement)Interface.Implement).property).setChangeType(RequiredTypes,2);
     }
 
     Change incrementChanges(DataSession Session, int ChangeType) {
@@ -1546,7 +1542,7 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
         for(GroupPropertyInterface<T> Interface : interfaces)
             if(Interface.Implement instanceof PropertyMapImplement)
-                ((PropertyMapImplement)Interface.Implement).Property.setChangeType(RequiredTypes,2);
+                ((PropertyMapImplement)Interface.Implement).property.setChangeType(RequiredTypes,2);
     }
 
     Change incrementChanges(DataSession Session, int ChangeType) throws SQLException {
@@ -1557,7 +1553,7 @@ class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
         ValueClassSet<GroupPropertyInterface<T>> ResultClass = new ValueClassSet<GroupPropertyInterface<T>>();
 
-        PropertyField PrevMapValue = new PropertyField("drop",Type.Integer);
+        PropertyField PrevMapValue = new PropertyField("drop",Type.integer);
 
         UnionQuery<GroupPropertyInterface<T>,PropertyField> ChangeQuery = new UnionQuery<GroupPropertyInterface<T>,PropertyField>(interfaces,3);
 
@@ -1811,7 +1807,7 @@ abstract class UnionProperty extends AggregateProperty<PropertyInterface> {
         if(getUnionType()==0 && IncrementType.equals(1)) IncrementType = 2;
 
         for(PropertyMapImplement Operand : Operands)
-            Operand.Property.setChangeType(RequiredTypes,IncrementType);
+            Operand.property.setChangeType(RequiredTypes,IncrementType);
     }
 
     List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
@@ -1959,7 +1955,7 @@ abstract class WhereFormulaProperty extends ValueFormulaProperty<FormulaProperty
     }
 
     SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement, InterfaceClassSet<FormulaPropertyInterface> JoinClasses) {
-        return new CaseExpr(getWhere(JoinImplement),Type.Bit.getExpr(true));
+        return new CaseExpr(getWhere(JoinImplement),Type.bit.getExpr(true));
     }
 
     abstract Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement);
@@ -2200,7 +2196,7 @@ class DataSession  {
 
         Map<T,Integer> KeyValues = new HashMap<T,Integer>();
         for(Map.Entry<T,ObjectValue> MapKey : Keys.entrySet())
-            KeyValues.put(MapKey.getKey(), (Integer) MapKey.getValue().Object);
+            KeyValues.put(MapKey.getKey(), (Integer) MapKey.getValue().object);
         ReadQuery.putKeyWhere(KeyValues);
 
         ReadQuery.properties.put(ReadValue, getSourceExpr(Property,ReadQuery.mapKeys,new InterfaceClassSet<T>(new InterfaceClass<T>(Keys))));
@@ -2229,7 +2225,7 @@ class DataSession  {
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
         InterfaceClass<DataPropertyInterface> InterfaceClass = new InterfaceClass<DataPropertyInterface>();
         for(Map.Entry<KeyField,DataPropertyInterface> Field : (Set<Map.Entry<KeyField,DataPropertyInterface>>)Property.dataTableMap.entrySet()) {
-            Integer idObject = (Integer) Keys.get(Field.getValue()).Object;
+            Integer idObject = (Integer) Keys.get(Field.getValue()).object;
             InsertKeys.put(Field.getKey(), idObject);
             InterfaceClass.put(Field.getValue(),getBaseClassSet(idObject));
         }
@@ -2519,7 +2515,7 @@ class DataSession  {
 
     void execute(String ExecuteString) throws SQLException {
         Statement Statement = connection.createStatement();
-//        System.out.println(ExecuteString+Syntax.getCommandEnd());
+//        System.out.println(ExecuteString+syntax.getCommandEnd());
         try {
             Statement.execute(ExecuteString+ syntax.getCommandEnd());
 //        } catch(SQLException e) {
@@ -2901,7 +2897,7 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
 
     boolean containsImplement(Collection<Property> Properties) {
         for(PropertyInterfaceImplement Implement : getMapImplements().values())
-            if(Implement instanceof PropertyMapImplement && Properties.contains(((PropertyMapImplement)Implement).Property))
+            if(Implement instanceof PropertyMapImplement && Properties.contains(((PropertyMapImplement)Implement).property))
                 return true;
         return false;
     }
@@ -2913,7 +2909,7 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
         Set<PropertyInterface> ImplementInterfaces = new HashSet<PropertyInterface>();
         for(PropertyInterfaceImplement<IN> InterfaceImplement : getMapImplements().values()) {
             if(InterfaceImplement instanceof PropertyMapImplement)
-                ImplementInterfaces.addAll(((PropertyMapImplement<?,IN>)InterfaceImplement).Mapping.values());
+                ImplementInterfaces.addAll(((PropertyMapImplement<?,IN>)InterfaceImplement).mapping.values());
         }
 
         return ImplementInterfaces.size()==getMapInterfaces().size();

@@ -19,11 +19,11 @@ class Serializer {
         }
 
         //Objects
-        outStream.writeInt(formChanges.Objects.size());
-        for (GroupObjectImplement groupObject : formChanges.Objects.keySet()) {
+        outStream.writeInt(formChanges.objects.size());
+        for (GroupObjectImplement groupObject : formChanges.objects.keySet()) {
 
             serializeGroupObjectImplement(outStream, groupObject);
-            serializeGroupObjectValue(outStream, groupObject, formChanges.Objects.get(groupObject));
+            serializeGroupObjectValue(outStream, groupObject, formChanges.objects.get(groupObject));
         }
 //        System.out.println("Objects : " + outStream.size());
 
@@ -42,33 +42,33 @@ class Serializer {
 //        System.out.println("GridObjects : " + outStream.size());
 
         //GridProperties
-        outStream.writeInt(formChanges.GridProperties.size());
-        for (PropertyView propertyView : formChanges.GridProperties.keySet()) {
+        outStream.writeInt(formChanges.gridProperties.size());
+        for (PropertyView propertyView : formChanges.gridProperties.keySet()) {
 
             serializePropertyView(outStream, propertyView);
 
-            Map<GroupObjectValue, Object> gridProperties = formChanges.GridProperties.get(propertyView);
+            Map<GroupObjectValue, Object> gridProperties = formChanges.gridProperties.get(propertyView);
 
             outStream.writeInt(gridProperties.size());
             for (GroupObjectValue groupObjectValue : gridProperties.keySet()) {
-                serializeGroupObjectValue(outStream, propertyView.ToDraw, groupObjectValue);
+                serializeGroupObjectValue(outStream, propertyView.toDraw, groupObjectValue);
                 serializeObject(outStream, gridProperties.get(groupObjectValue));
             }
         }
 //        System.out.println("GridProperties : " + outStream.size());
 
         //PanelProperties
-        outStream.writeInt(formChanges.PanelProperties.size());
-        for (PropertyView propertyView : formChanges.PanelProperties.keySet()) {
+        outStream.writeInt(formChanges.panelProperties.size());
+        for (PropertyView propertyView : formChanges.panelProperties.keySet()) {
 
             serializePropertyView(outStream, propertyView);
-            serializeObject(outStream, formChanges.PanelProperties.get(propertyView));
+            serializeObject(outStream, formChanges.panelProperties.get(propertyView));
         }
 //        System.out.println("PanelProperties : " + outStream.size());
 
         //DropProperties
-        outStream.writeInt(formChanges.DropProperties.size());
-        for (PropertyView propertyView : formChanges.DropProperties) {
+        outStream.writeInt(formChanges.dropProperties.size());
+        for (PropertyView propertyView : formChanges.dropProperties) {
             serializePropertyView(outStream, propertyView);
         }
 //        System.out.println("DropProperties : " + outStream.size());
@@ -97,14 +97,14 @@ class Serializer {
         }
 
         //Objects
-        clientFormChanges.Objects = new HashMap();
+        clientFormChanges.objects = new HashMap();
 
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
 
             ClientGroupObjectImplement clientGroupObject = deserializeClientGroupObjectImplement(inStream, clientFormView);
 
-            clientFormChanges.Objects.put(clientGroupObject,
+            clientFormChanges.objects.put(clientGroupObject,
                                           deserializeClientGroupObjectValue(inStream, clientGroupObject));
         }
 //        System.out.println("Objects read : " + (all-inStream.available()));
@@ -129,7 +129,7 @@ class Serializer {
 //        System.out.println("GridObjects read : " + (all-inStream.available()));
 
         //GridProperties
-        clientFormChanges.GridProperties = new HashMap();
+        clientFormChanges.gridProperties = new HashMap();
 
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
@@ -145,28 +145,28 @@ class Serializer {
                                    deserializeObject(inStream));
             }
 
-            clientFormChanges.GridProperties.put(clientPropertyView, gridProperties);
+            clientFormChanges.gridProperties.put(clientPropertyView, gridProperties);
         }
 //        System.out.println("GridProperties read : " + (all-inStream.available()));
 
         //PanelProperties
-        clientFormChanges.PanelProperties = new HashMap();
+        clientFormChanges.panelProperties = new HashMap();
 
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
 
             ClientPropertyView clientPropertyView = deserializeClientPropertyView(inStream, clientFormView);
-            clientFormChanges.PanelProperties.put(clientPropertyView,
+            clientFormChanges.panelProperties.put(clientPropertyView,
                                                   deserializeObject(inStream));
         }
 //        System.out.println("PanelProperties read : " + (all-inStream.available()));
 
         //DropProperties
-        clientFormChanges.DropProperties = new HashSet();
+        clientFormChanges.dropProperties = new HashSet();
 
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            clientFormChanges.DropProperties.add(deserializeClientPropertyView(inStream, clientFormView));
+            clientFormChanges.dropProperties.add(deserializeClientPropertyView(inStream, clientFormView));
         }
 //        System.out.println("DropProperties read : " + (all-inStream.available()));
 
@@ -366,8 +366,8 @@ class Serializer {
     }
 
     public static void serializeObjectValue(DataOutputStream outStream, ObjectValue objectValue) throws IOException {
-        serializeClass(outStream, objectValue.Class);
-        serializeObject(outStream, objectValue.Object);
+        serializeClass(outStream, objectValue.objectClass);
+        serializeObject(outStream, objectValue.object);
     }
 
     public static ClientObjectValue deserializeClientObjectValue(DataInputStream inStream) throws IOException {

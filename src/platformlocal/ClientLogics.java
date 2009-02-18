@@ -404,9 +404,9 @@ class DefaultClientFormView extends ClientFormView {
                 clientObject.objectIDView.caption = object.caption;
 
                 clientObject.objectIDView.baseClass = ByteArraySerializer.deserializeClientClass(
-                                           ByteArraySerializer.serializeClass(object.BaseClass));
+                                           ByteArraySerializer.serializeClass(object.baseClass));
 
-                addComponent(clientGroup, clientObject.objectIDView, object.BaseClass.getParent());
+                addComponent(clientGroup, clientObject.objectIDView, object.baseClass.getParent());
 
                 clientObject.classView.container = gridContainer;
                 clientObject.classView.constraints.order = 0;
@@ -424,7 +424,7 @@ class DefaultClientFormView extends ClientFormView {
 
         for (PropertyView property : (List<PropertyView>)navigatorForm.propertyViews) {
 
-            ClientGroupObjectImplement groupObject = mgroupObjects.get(property.ToDraw);
+            ClientGroupObjectImplement groupObject = mgroupObjects.get(property.toDraw);
 
             ClientPropertyView clientProperty = new ClientPropertyView();
             clientProperty.ID = property.ID;
@@ -435,14 +435,14 @@ class DefaultClientFormView extends ClientFormView {
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             //временно
-            clientProperty.caption = property.view.Property.caption;
+            clientProperty.caption = property.view.property.caption;
             clientProperty.baseClass = ByteArraySerializer.deserializeClientClass(
-                                       ByteArraySerializer.serializeClass(property.view.Property.getBaseClass().getCommonClass()));
+                                       ByteArraySerializer.serializeClass(property.view.property.getBaseClass().getCommonClass()));
 
             mproperties.put(property, clientProperty);
             properties.add(clientProperty);
 
-            addComponent(groupObject, clientProperty, property.view.Property.getParent());
+            addComponent(groupObject, clientProperty, property.view.property.getParent());
             order.add(clientProperty);
         }
 

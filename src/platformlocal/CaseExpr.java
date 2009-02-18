@@ -13,7 +13,7 @@ abstract class Case<D> {
 }
 
 interface CaseWhere<C> {
-    Where getCaseWhere(C Case);
+    Where getCaseWhere(C cCase);
 }
 
 abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
@@ -233,8 +233,6 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
             ExprCase Case = cases.get(i);
             String CaseSource = Case.data.getSource(queryData, syntax);
 
-            if(CaseSource.startsWith("0") && CaseSource.length()>5)
-                CaseSource = CaseSource;
             if(i== cases.size()-1 && Case.where.isTrue()) {
                 Source = Source + " ELSE " + CaseSource;
                 Else = true;
@@ -268,12 +266,19 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases) {
             Where translatedWhere = exprCase.where.translate(translator);
-            for(ExprCase translatedCase : exprCase.data.translate(translator).getCases()) // здесь на самом деле заведомо будут AndExpr'ы
-                translatedCases.add(translatedWhere.and(translatedCase.where),translatedCase.data);
-            translatedCases.add(translatedWhere,getType().getExpr(null));
+            if(translator.direct())
+                translatedCases.add(new ExprCase(translatedWhere,exprCase.data.translate(translator))); // здесь на самом деле заведомо будут AndExpr'ы
+            else {
+                for(ExprCase translatedCase : exprCase.data.translate(translator).getCases())
+                    translatedCases.add(translatedWhere.and(translatedCase.where),translatedCase.data);
+                translatedCases.add(translatedWhere,getType().getExpr(null));
+            }
         }
 
-        return translatedCases.getExpr(getType());
+        if(translator.direct())
+            return new CaseExpr(translatedCases);
+        else
+            return translatedCases.getExpr(getType());
     }
 
     SourceExpr followFalse(Where where) {
@@ -340,12 +345,12 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         }
     }
 
-    public Where getCaseWhere(ExprCase Case) {
-        return Case.data.getWhere();
+    public Where getCaseWhere(ExprCase cCase) {
+        return cCase.data.getWhere();
     }
 
     // возвращает Where без следствий
-    Where getWhere() {
+    Where calculateWhere() {
         return cases.getWhere(this);
     }
 
@@ -373,9 +378,9 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
 
     int getHash() {
-        int Hash = 0;
-        for(ExprCase Case : cases)
-            Hash = 31*Hash + Case.hash();    
-        return Hash;
+        int hash = 0;
+        for(ExprCase exprCase : cases)
+            hash = 31*hash + exprCase.hash();
+        return hash;
     }
 }

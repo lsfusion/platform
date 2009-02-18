@@ -17,7 +17,13 @@ abstract class SourceExpr implements SourceJoin {
     }
 
     // возвращает Where на notNull
-    abstract Where getWhere();
+    Where where=null;
+    Where getWhere() {
+        if(where==null)
+            where = calculateWhere();
+        return where;
+    }
+    abstract Where calculateWhere();
 
     // получает список ExprCase'ов
     abstract ExprCaseList getCases();
@@ -35,14 +41,14 @@ abstract class SourceExpr implements SourceJoin {
     // для кэша
     abstract boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres);
 
-    boolean Hashed = false;
-    int Hash;
+    boolean hashed = false;
+    int hash;
     int hash() {
-        if(!Hashed) {
-            Hash = getHash();
-            Hashed = true;
+        if(!hashed) {
+            hash = DataWhereSet.hash(getHash());
+            hashed = true;
         }
-        return Hash;
+        return hash;
     }
     abstract int getHash();
 }

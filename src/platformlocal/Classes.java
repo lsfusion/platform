@@ -239,7 +239,7 @@ class BaseClass extends Class {
     }
 
     Type getType() {
-        return Type.Integer;
+        return Type.integer;
     }// получает рандомный объект
 
     Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
@@ -265,7 +265,7 @@ class IntegralClass extends Class {
     }
 
     Type getType() {
-        return Type.Integer;
+        return Type.integer;
     }
 }
 
@@ -278,7 +278,7 @@ class LongClass extends IntegralClass {
     LongClass(Integer iID, String caption) {super(iID, caption);}
 
     Type getType() {
-        return Type.Long;
+        return Type.longType;
     }
 }
 
@@ -286,7 +286,7 @@ class DoubleClass extends IntegralClass {
     DoubleClass(Integer iID, String caption) {super(iID, caption);}
 
     Type getType() {
-        return Type.Double;
+        return Type.doubleType;
     }
 }
 
@@ -298,7 +298,7 @@ class BitClass extends IntegralClass {
     BitClass(Integer iID, String caption) {super(iID, caption);}
 
     Type getType() {
-        return Type.Bit;
+        return Type.bit;
     }
 
     Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
@@ -315,7 +315,7 @@ class StringClass extends Class {
     StringClass(Integer iID, String caption) {super(iID, caption);}
 
     Type getType() {
-        return Type.String;
+        return Type.string;
     }
     
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
@@ -343,7 +343,7 @@ class ObjectClass extends Class {
     }
 
     Type getType() {
-        return Type.Object;
+        return Type.object;
     }
 
     void fillParents(Collection<ObjectClass> ParentSet) {
@@ -359,27 +359,27 @@ class ObjectClass extends Class {
 
 abstract class Type<T> {
 
-    static StringType String = new StringType();
-    static IntegerType Integer = new IntegerType();
-    static LongType Long = new LongType();
-    static DoubleType Double = new DoubleType();
-    static BitType Bit = new BitType();
-    static IntegerType Object;
-    static Type System;
+    static StringType string = new StringType();
+    static IntegerType integer = new IntegerType();
+    static LongType longType = new LongType();
+    static DoubleType doubleType = new DoubleType();
+    static BitType bit = new BitType();
+    static IntegerType object;
+    static Type system;
 
     static String NULL = "NULL";
 
     static List<Type> Enum = new ArrayList<Type>();
 
     static {
-        Object = Integer;
-        System = Integer;
+        object = integer;
+        system = integer;
 
-        Enum.add(Integer);
-        Enum.add(String);
-        Enum.add(Long);
-        Enum.add(Double);
-        Enum.add(Bit);
+        Enum.add(integer);
+        Enum.add(string);
+        Enum.add(longType);
+        Enum.add(doubleType);
+        Enum.add(bit);
     }
 
     abstract String getDB(SQLSyntax Syntax);
@@ -403,9 +403,9 @@ abstract class Type<T> {
             throw new RuntimeException();
 
         if(Value instanceof Integer)
-            return Integer;
+            return integer;
         else
-            return String;
+            return string;
     }
 
     ValueExpr getMinValueExpr() {

@@ -49,11 +49,15 @@ class LinearExpr extends AndExpr {
     // при translate'ы вырезает LinearExpr'ы
 
     Type getType() {
-        return operands.iterator().next().expr.getType();
+        Type type = operands.iterator().next().expr.getType();
+        if(type==Type.bit) // биты переведем в integer'ы если идут математические операции
+            return Type.integer;
+        else
+            return type;
     }
 
     // возвращает Where на notNull
-    Where getWhere() {
+    Where calculateWhere() {
         Where result = Where.FALSE;
         for(Operand operand : operands)
             result = result.or(operand.expr.getWhere());
@@ -124,7 +128,7 @@ class LinearExpr extends AndExpr {
     int getHash() {
         int result = 0;
         for(Operand operand : operands)
-            result += operand.coeff*31 + operand.expr.hash();
+            result += (operand.coeff)*31 + operand.expr.hash();
         return result;
     }
 
@@ -182,21 +186,30 @@ class LinearExpr extends AndExpr {
 
         Map<Operand,SourceExpr> mapOperands = new HashMap<Operand, SourceExpr>();
         for(Operand operand : operands)
+            mapOperands.put(operand,operand.expr.translate(translator));
+        return translateCase(mapOperands);
+
+/*        Map<Operand,SourceExpr> mapOperands = new HashMap<Operand, SourceExpr>();
+        for(Operand operand : operands)
             mapOperands.put(operand,operand.expr);
 
         ExprCaseList result = new ExprCaseList();
         for(MapCase<Operand> mapCase : CaseExpr.translateCase(mapOperands, translator, true, true))  // здесь напрямую потому как MapCaseList уже все проверил
             result.add(new ExprCase(mapCase.where,translateCase(mapCase.data))); // кстати могут быть и одинаковые case'ы
-        return result.getExpr(getType());
+        return result.getExpr(getType());*/
     }
 
     public int hashCode() {
-        return getHash();
+        int result = 0;
+        for(Operand operand : operands)
+            result += (operand.coeff)*31 + operand.expr.hashCode();
+        return result;
     }
 
     DataWhereSet getFollows() {
-        if(operands.size()==1)
-            return ((AndExpr)operands.iterator().next().expr).getFollows();
+        SourceExpr operand;
+        if(operands.size()==1 && ((operand = operands.iterator().next().expr) instanceof AndExpr))
+            return ((AndExpr)operand).getFollows();
         else
             return new DataWhereSet();
     }

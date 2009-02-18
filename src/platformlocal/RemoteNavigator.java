@@ -147,7 +147,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         remoteForm.properties = new ArrayList();
         for (PropertyView navigatorProperty : (List<PropertyView>)navigatorForm.propertyViews) {
-            if (securityPolicy.property.view.checkPermission(navigatorProperty.view.Property))
+            if (securityPolicy.property.view.checkPermission(navigatorProperty.view.property))
                 remoteForm.properties.add(propertyViewMapper.doMapping(navigatorProperty));
         }
 
@@ -176,9 +176,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.groups)
             for (ObjectImplement object : groupObject) {
-                int objectID = classCache.getObject(object.BaseClass);
+                int objectID = classCache.getObject(object.baseClass);
                 if (objectID != -1)
-                    remoteForm.UserObjectSeeks.put(object, objectID);
+                    remoteForm.userObjectSeeks.put(object, objectID);
             }
 
         return remoteForm;
@@ -192,7 +192,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
             if (mapper.containsKey(objKey)) return mapper.get(objKey);
 
-            ObjectImplement objValue = new ObjectImplement(objKey.ID, objKey.BaseClass);
+            ObjectImplement objValue = new ObjectImplement(objKey.ID, objKey.baseClass);
             objValue.sID = objKey.sID;
             objValue.caption = objKey.caption;
 
@@ -217,7 +217,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID);
 
             groupValue.Order = groupKey.Order;
-            groupValue.PageSize = groupKey.PageSize;
+            groupValue.pageSize = groupKey.pageSize;
             groupValue.gridClassView = groupKey.gridClassView;
             groupValue.singleViewType = groupKey.singleViewType;
             for (ObjectImplement object : groupKey) {
@@ -242,9 +242,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
             if (mapper.containsKey(propKey)) return mapper.get(propKey);
 
-            PropertyObjectImplement propValue = new PropertyObjectImplement(propKey.Property);
-            for (Map.Entry<? extends PropertyInterface,ObjectImplement> entry : propKey.Mapping.entrySet()) {
-                propValue.Mapping.put(entry.getKey(), objectMapper.doMapping(entry.getValue()));
+            PropertyObjectImplement propValue = new PropertyObjectImplement(propKey.property);
+            for (Map.Entry<? extends PropertyInterface,ObjectImplement> entry : propKey.mapping.entrySet()) {
+                propValue.mapping.put(entry.getKey(), objectMapper.doMapping(entry.getValue()));
             }
 
             mapper.put(propKey, propValue);
@@ -267,7 +267,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
             if (mapper.containsKey(propKey)) return mapper.get(propKey);
 
-            PropertyView propValue = new PropertyView(propKey.ID, propertyMapper.doMapping(propKey.view), groupMapper.doMapping(propKey.ToDraw));
+            PropertyView propValue = new PropertyView(propKey.ID, propertyMapper.doMapping(propKey.view), groupMapper.doMapping(propKey.toDraw));
             propValue.sID = propKey.sID;
 
             mapper.put(propKey, propValue);
@@ -502,14 +502,12 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, Boolean upClasses, GroupObjectImplement groupObject, ObjectImplement... objects) {
 
-        Collection<List<P>> permutations = MapBuilder.buildPermutations(property.interfaces);
-
-        for (List<P> mapping : permutations) {
+        for (List<P> mapping : new ListPermutations<P>(property.interfaces)) {
 
             InterfaceClass<P> propertyInterface = new InterfaceClass();
             int interfaceCount = 0;
             for (P iface : mapping) {
-                Class baseClass = objects[interfaceCount++].BaseClass;
+                Class baseClass = objects[interfaceCount++].baseClass;
                 propertyInterface.put(iface, (upClasses) ? ClassSet.getUp(baseClass)
                                                          : new ClassSet(baseClass));
             }
@@ -534,16 +532,16 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,(groupObject == null) ? propertyImplement.GetApplyObject() : groupObject);
 
-        if (propertyImplement.Property.sID != null) {
+        if (propertyImplement.property.sID != null) {
 
             // придется поискать есть ли еще такие sID, чтобы добиться уникальности sID
             boolean foundSID = false;
             for (PropertyView property : propertyViews)
-                if (BaseUtils.compareObjects(property.sID, propertyImplement.Property.sID)) {
+                if (BaseUtils.compareObjects(property.sID, propertyImplement.property.sID)) {
                     foundSID = true;
                     break;
                 }
-            propertyView.sID = propertyImplement.Property.sID + ((foundSID) ? propertyView.ID : "");
+            propertyView.sID = propertyImplement.property.sID + ((foundSID) ? propertyView.ID : "");
         }
         
         propertyViews.add(propertyView);
@@ -557,7 +555,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         ListIterator<PropertyInterface> i = property.ListInterfaces.listIterator();
         for(ObjectImplement object : objects) {
-            propertyImplement.Mapping.put(i.next(), object);
+            propertyImplement.mapping.put(i.next(), object);
         }
 
         return propertyImplement;
@@ -580,7 +578,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyView resultPropView = null;
         for (PropertyView propView : propertyViews) {
-            if (propView.view.Property == prop)
+            if (propView.view.property == prop)
                 resultPropView = propView;
         }
 
@@ -591,7 +589,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyView resultPropView = null;
         for (PropertyView propView : propertyViews) {
-            if (propView.view.Property == prop && propView.ToDraw == groupObject)
+            if (propView.view.property == prop && propView.toDraw == groupObject)
                 resultPropView = propView;
         }
 

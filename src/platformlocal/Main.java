@@ -26,9 +26,12 @@ public class Main {
 
     static boolean recreateDB = false;
     public static Integer ForceSeed = -1; //1199; //3581
+    public static int iterations = 7;
     public static boolean DebugFlag = false;
     static boolean ActivateCaches = true;
     static boolean AllowNulls = false;
+    
+    static boolean debugWatch = false;
 
     static DataAdapter getDefault() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         return new PostgreDataAdapter("testplat","localhost");
@@ -38,6 +41,18 @@ public class Main {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
+/*        int size = 1;
+        List<Integer> perm = new ArrayList<Integer>();
+        for(int i=0;i<size;i++)
+            perm.add(i);
+        for(Map<Integer,Integer> map : new Pairs<Integer,Integer>(perm,perm)) {
+            for(int i=0;i<size;i++)
+                System.out.print(map.get(i)+" ");
+            System.out.println();
+        }
+        if(1==1) return;*/
+  
+  
 /*        Where a = new TestDataWhere("a");
         Where b = new TestDataWhere("b");
         Where c = new TestDataWhere("c");
@@ -74,7 +89,7 @@ public class Main {
         if(ForceSeed==null || ForceSeed!=-1) {
             while(true) {
                 System.out.println("Opened");
-                new TmcBusinessLogics(2);
+                new TmcBusinessLogics(1);
 //            System.out.println("Closed");
 //            try {
 //                new TestBusinessLogics(0);
@@ -829,37 +844,37 @@ class SourceTest {
 
         // Table 1
         Table1 = new Table("table1");
-        Table1Key1 = new KeyField("key1",Type.Integer);
+        Table1Key1 = new KeyField("key1",Type.integer);
         Table1.keys.add(Table1Key1);
-        Table1Key2 = new KeyField("key2",Type.Integer);
+        Table1Key2 = new KeyField("key2",Type.integer);
         Table1.keys.add(Table1Key2);
-        Table1Prop1 = new PropertyField("prop1",Type.Integer);
+        Table1Prop1 = new PropertyField("prop1",Type.integer);
         Table1.Properties.add(Table1Prop1);
-        Table1Prop2 = new PropertyField("prop2",Type.Integer);
+        Table1Prop2 = new PropertyField("prop2",Type.integer);
         Table1.Properties.add(Table1Prop2);
-        Table1Prop3 = new PropertyField("prop3",Type.Integer);
+        Table1Prop3 = new PropertyField("prop3",Type.integer);
         Table1.Properties.add(Table1Prop3);
-        Table1Prop4 = new PropertyField("prop4",Type.Integer);
+        Table1Prop4 = new PropertyField("prop4",Type.integer);
         Table1.Properties.add(Table1Prop4);
 
         // Table 2
         Table2 = new Table("table2");
-        Table2Key1 = new KeyField("key1",Type.Integer);
+        Table2Key1 = new KeyField("key1",Type.integer);
         Table2.keys.add(Table2Key1);
-        Table2Prop1 = new PropertyField("prop1",Type.Integer);
+        Table2Prop1 = new PropertyField("prop1",Type.integer);
         Table2.Properties.add(Table2Prop1);
-        Table2Prop2 = new PropertyField("prop2",Type.Integer);
+        Table2Prop2 = new PropertyField("prop2",Type.integer);
         Table2.Properties.add(Table2Prop2);
 
         // Table 3
         Table3 = new Table("table3");
-        Table3Key1 = new KeyField("key1",Type.Integer);
+        Table3Key1 = new KeyField("key1",Type.integer);
         Table3.keys.add(Table3Key1);
-        Table3Key2 = new KeyField("key2",Type.Integer);
+        Table3Key2 = new KeyField("key2",Type.integer);
         Table3.keys.add(Table3Key2);
-        Table3Prop1 = new PropertyField("prop1",Type.Integer);
+        Table3Prop1 = new PropertyField("prop1",Type.integer);
         Table3.Properties.add(Table3Prop1);
-        Table3Prop2 = new PropertyField("prop2",Type.Integer);
+        Table3Prop2 = new PropertyField("prop2",Type.integer);
         Table3.Properties.add(Table3Prop2);
 
         Map3To1 = new HashMap<KeyField, KeyField>();
@@ -925,7 +940,7 @@ class SourceTest {
         TableJoin.joins.put(Table2Key1,JoinQuery.mapKeys.get(Table1Key1));
         JoinQuery.putKeyWhere(Collections.singletonMap(Table1Key2,5));
         JoinQuery.properties.put(Table2Prop1, TableJoin.exprs.get(Table2Prop1));
-        JoinQuery.and(new CompareWhere(TableJoin.exprs.get(Table2Prop2),Type.Integer.getExpr(1),CompareWhere.EQUALS));
+        JoinQuery.and(new CompareWhere(TableJoin.exprs.get(Table2Prop2),Type.integer.getExpr(1),CompareWhere.EQUALS));
         UnionQ.add(JoinQuery,1);
 
         UnionQ.add(Table1,1);

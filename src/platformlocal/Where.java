@@ -69,6 +69,7 @@ abstract class AbstractWhere<Not extends Where> implements Where<Not> {
     public Where or(Where where) {
         return OrWhere.op(this,where,false);
     }
+
     public Where followFalse(Where falseWhere) {
         return OrWhere.followFalse(this,falseWhere,false);
     }
@@ -116,11 +117,14 @@ abstract class AbstractWhere<Not extends Where> implements Where<Not> {
 
     abstract int getHash();
 
-    int Hash = 0;
+    boolean hashed = false;
+    int hash;
     public int hash() {
-        if(Hash==0)
-            Hash = getHash();
-        return Hash;
+        if(!hashed) {
+            hash = DataWhereSet.hash(getHash());
+            hashed = true;
+        }
+        return hash;
     }
 
     // системные
@@ -167,11 +171,6 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
     WhereType[] wheres;
     protected FormulaWhere(WhereType[] iWheres) {
         wheres = iWheres;
-//        for(int i=0;i<wheres.length;i++)
-//            if(wheres[i]==null)
-//                throw new RuntimeException("1");
-        if(wheres.length==1)
-            throw new RuntimeException("1");
     }
 
     abstract String getOp();
@@ -568,10 +567,14 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
             queue++;
             if(queue >= numWheres) { // в очереди никого нету
                 // проверяем or всей компоненты на checkTrue
-                Where toCheck = decomposedWheres[component[0]];
-                for(int i=1;i<numWheres;i++)
-                    toCheck = op(toCheck,decomposedWheres[component[i]],true);
-                if(toCheck.checkTrue()) // если не true - drop'аем
+                Where toCheck = Where.FALSE;
+                AndObjectWhere[] staticWheres = new AndObjectWhere[numWheres]; int stats = 0;
+                for(int i=0;i<numWheres;i++)
+                    if(decomposedWheres[component[i]]==wheres[component[i]])
+                        staticWheres[stats++] = wheres[component[i]];
+                    else
+                        toCheck = op(toCheck,decomposedWheres[component[i]],true);
+                if(stats < numWheres && op(toCheck,toWhere(staticWheres,stats),true).checkTrue()) // если не true - drop'аем
                     for(int i=0;i<numWheres;i++)
                         rawResult[resnum++] = wheres[component[i]];
 
@@ -715,11 +718,18 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
         if(transWheres.length==0)
             return this;
 
-        AndObjectWhere[] resultWheres = new AndObjectWhere[statics]; System.arraycopy(staticWheres,0,resultWheres,0,statics);
-        Where result = toWhere(resultWheres);
-        for(int i=0;i<trans;i++)
-            result = result.or(transWheres[i]);
-        return result;
+
+        if(translator.direct()) {
+            AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length];
+            System.arraycopy(staticWheres,0,resultWheres,0,statics);
+            System.arraycopy(transWheres,0,resultWheres,statics,trans); // должен быть тоже AndObjectWhere
+            return toWhere(resultWheres);
+        } else {
+            Where result = toWhere(staticWheres,statics);
+            for(int i=0;i<trans;i++)
+                result = result.or(transWheres[i]);
+            return result;
+        }
     }
 
     // разобъем чисто для оптимизации
@@ -1076,7 +1086,7 @@ abstract class DataWhere extends ObjectWhere<NotWhere> {
 
     public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
         if(decompose.followNot.contains(this))
-            return new AndWhere();
+            return Where.TRUE;
         else {
             objects.data.add(this);
             objects.followData.addAll(getFollows());
@@ -1145,7 +1155,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
 
     public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
         if(where.getFollows().intersect(decompose.data))
-            return new AndWhere();
+            return Where.TRUE;
         else {
             objects.not.add(where);
             objects.followNot.addAll(where.getFollows());
@@ -1258,9 +1268,9 @@ class DataWhereSet {
 
     float loadFactor;
     DataWhereSet() {
-        loadFactor = 0.3f;
+        loadFactor = 0.2f;
 
-        table = new DataWhere[4];
+        table = new DataWhere[8];
         htable = new int[table.length];
         
         wheres = new DataWhere[(int)(table.length * loadFactor)];
@@ -1404,7 +1414,7 @@ class DataWhereSet {
         threshold = (int)(length * loadFactor);
     }
 
-    int hash(int h) { // копися с hashSet'а
+    static int hash(int h) { // копися с hashSet'а
         h ^= (h >>> 20) ^ (h >>> 12);
         return (h ^ (h >>> 7) ^ (h >>> 4));
     }

@@ -124,17 +124,17 @@ class UpClassSet extends GraphNodeSet<Class,UpClassSet> {
 
 // по сути на Or
 class ClassSet {
-    UpClassSet Up;
-    Set<Class> Set;
+    UpClassSet up;
+    Set<Class> set;
 
     ClassSet(UpClassSet iUp, Set<Class> iSet) {
-        Up = iUp;
-        Set = iSet;
+        up = iUp;
+        set = iSet;
     }
 
     ClassSet() {
-        Up = new UpClassSet();
-        Set = new HashSet<Class>();
+        up = new UpClassSet();
+        set = new HashSet<Class>();
     }
 
     ClassSet(Class Node) {
@@ -147,26 +147,26 @@ class ClassSet {
 
     ClassSet and(ClassSet Node) {
         // Up*Node.Up OR (Up*Node.Set+Set*Node.Up+Set*Node.Set) (легко доказать что второе не пересек. с первым)
-        Set<Class> AndSet = CollectionExtend.intersect(Set,Node.Set);
-        AndSet.addAll(Up.andSet(Node.Set));
-        AndSet.addAll(Node.Up.andSet(Set));
-        return new ClassSet(Up.and(Node.Up),AndSet);
+        Set<Class> AndSet = CollectionExtend.intersect(set,Node.set);
+        AndSet.addAll(up.andSet(Node.set));
+        AndSet.addAll(Node.up.andSet(set));
+        return new ClassSet(up.and(Node.up),AndSet);
     }
 
     void or(ClassSet Node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
-        Up.or(Node.Up);
-        Set.addAll(Node.Set);
-        for(Iterator<Class> i = Set.iterator();i.hasNext();)
-            if(Up.has(i.next())) i.remove();                
+        up.or(Node.up);
+        set.addAll(Node.set);
+        for(Iterator<Class> i = set.iterator();i.hasNext();)
+            if(up.has(i.next())) i.remove();
     }
 
     // входит ли в дерево элемент
     boolean contains(Class Node) {
-        return Set.contains(Node) || Up.has(Node);
+        return set.contains(Node) || up.has(Node);
     }
     boolean isEmpty() {
-        return Set.isEmpty() && Up.isEmpty(); 
+        return set.isEmpty() && up.isEmpty();
     }
     
     boolean containsAll(ClassSet Node) {
@@ -180,27 +180,19 @@ class ClassSet {
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ClassSet classSet = (ClassSet) o;
-
-        return Set.equals(classSet.Set) && Up.equals(classSet.Up);  
+        return this == o || o instanceof ClassSet && set.equals(((ClassSet)o).set) && up.equals(((ClassSet)o).up);  
     }
 
     public int hashCode() {
-        int result;
-        result = Up.hashCode();
-        result = 31 * result + Set.hashCode();
-        return result;
+        return 31 * up.hashCode() + set.hashCode();
     }
 
     Class getCommonClass() {
         if(isEmpty())
             throw new RuntimeException("Empty Base Class");
 
-        Set<Class> CommonParents = new HashSet<Class>(Set);
-        CommonParents.addAll(Up);
+        Set<Class> CommonParents = new HashSet<Class>(set);
+        CommonParents.addAll(up);
         while(CommonParents.size()>1) {
             Iterator<Class> i = CommonParents.iterator();
             Class First = i.next(); i.remove();
@@ -212,7 +204,7 @@ class ClassSet {
 
     Class getRandom(Random Randomizer) {
         // пока чисто по Up'у
-        return CollectionExtend.getRandom(Up,Randomizer);
+        return CollectionExtend.getRandom(up,Randomizer);
     }
 
     static ClassSet universal;
@@ -221,11 +213,11 @@ class ClassSet {
     }
 
     public String toString() {
-        return (!Set.isEmpty()?Set.toString():"")+(!Up.isEmpty() && !Set.isEmpty()?" ":"")+(!Up.isEmpty()?"Up:"+Up.toString():"");
+        return (!set.isEmpty()? set.toString():"")+(!up.isEmpty() && !set.isEmpty()?" ":"")+(!up.isEmpty()?"Up:"+ up.toString():"");
     }
 
     public ClassSet copy() {
-        return new ClassSet(new UpClassSet(Up),new HashSet<Class>(Set));
+        return new ClassSet(new UpClassSet(up),new HashSet<Class>(set));
     }
 }
 
@@ -235,7 +227,7 @@ class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
 
     InterfaceClass(Map<P, ObjectValue> Keys) {
         for(Map.Entry<P,ObjectValue> Key : Keys.entrySet())
-            put(Key.getKey(),new ClassSet(Key.getValue().Class));
+            put(Key.getKey(),new ClassSet(Key.getValue().objectClass));
     }
 
     InterfaceClass() {

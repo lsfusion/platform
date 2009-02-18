@@ -9,6 +9,8 @@ interface Translator {
 
     Where translate(JoinWhere where);
     SourceExpr translate(ObjectExpr expr);
+
+    boolean direct();
 }
 
 class ExprTranslator implements Translator {
@@ -29,6 +31,22 @@ class ExprTranslator implements Translator {
         exprs.putAll(map);
     }
 
+    void putAll(ExprTranslator translator) {
+        exprs.putAll(translator.exprs);
+        wheres.putAll(translator.wheres);
+    }
+
+    boolean direct = false;
+    public boolean direct() {
+        return direct;
+    }
+    boolean hasCases() {
+        for(SourceExpr expr : exprs.values())
+            if(expr instanceof CaseExpr)
+                return true;
+        return false;
+    }
+
     public Where translate(JoinWhere where) {
         Where result = wheres.get(where);
         if(result==null) result = where;
@@ -39,6 +57,14 @@ class ExprTranslator implements Translator {
         SourceExpr result = exprs.get(expr);
         if(result==null) result = expr;
         return result;
+    }
+
+    public int hashCode() {
+        return exprs.hashCode()*31+wheres.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return obj==this || (obj instanceof ExprTranslator && exprs.equals(((ExprTranslator)obj).exprs) && wheres.equals(((ExprTranslator)obj).wheres));
     }
 }
 
@@ -147,7 +173,6 @@ class CompiledQuery<K,V> {
 
     CompiledQuery(CompiledJoinQuery<K,V> query, SQLSyntax syntax, LinkedHashMap<V,Boolean> orders, int top) {
 
-        query.packProperties();
 
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
@@ -176,6 +201,8 @@ class CompiledQuery<K,V> {
             params.put(MapValue.getKey(),Param);
         }
 
+        Map<V,SourceExpr> packedProperties = query.getPackedProperties();
+
         Collection<JoinWhereEntry> queryJoins = query.where.getInnerJoins().compileMeans(); //getJoinWhere()
         if(syntax.useFJ() || queryJoins.size()==0) {
             if(queryJoins.size()==0) {
@@ -187,7 +214,7 @@ class CompiledQuery<K,V> {
             } else
             if(queryJoins.size()==1) { // "простой" запрос
                 JoinWhereEntry innerJoin = queryJoins.iterator().next();
-                from = fillAndSelect(query.keys, innerJoin.join, innerJoin.where, query.properties, keySelect, propertySelect, whereSelect, queryParams, syntax);
+                from = fillAndSelect(query.keys, innerJoin.join, innerJoin.where, packedProperties, keySelect, propertySelect, whereSelect, queryParams, syntax);
             } else {
                 // создаем And подзапросыs
                 Collection<AndJoinQuery> andProps = new ArrayList<AndJoinQuery>();
@@ -202,7 +229,7 @@ class CompiledQuery<K,V> {
 
                 // бежим по всем property не в order'ах, определяем Join параметры с Where
                 MapWhere<JoinData> joinDataWheres = new MapWhere<JoinData>();
-                for(Map.Entry<V,SourceExpr> joinProp : query.properties.entrySet())
+                for(Map.Entry<V,SourceExpr> joinProp : packedProperties.entrySet())
                     if(!orders.containsKey(joinProp.getKey()))
                         joinProp.getValue().fillJoinWheres(joinDataWheres,Where.TRUE);
 
@@ -243,7 +270,7 @@ class CompiledQuery<K,V> {
                     String orderName = "order_" + (io++);
                     String orderFJ = "";
                     for(AndJoinQuery and : andProps) {
-                        and.properties.put(orderName,query.properties.get(order.getKey()));
+                        and.properties.put(orderName,packedProperties.get(order.getKey()));
                         orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
                     }
                     orderAnds.put(orderName,order.getValue());
@@ -287,7 +314,7 @@ class CompiledQuery<K,V> {
                 }
 
                 // закидываем PropertySelect'ы
-                for(Map.Entry<V,SourceExpr> mapProp : query.properties.entrySet())
+                for(Map.Entry<V,SourceExpr> mapProp : packedProperties.entrySet())
                     if(!orders.containsKey(mapProp.getKey())) { // orders'ы уже обработаны
                         String propertyValue = mapProp.getValue().getSource(sourceFJ, syntax);
                         if(propertyValue.equals(Type.NULL))
@@ -480,7 +507,7 @@ class CompiledQuery<K,V> {
                 while(result.next()) {
                     Map<K,Integer> rowKeys = new HashMap<K, Integer>();
                     for(Map.Entry<K,String> key : keyNames.entrySet())
-                        rowKeys.put(key.getKey(),Type.Object.read(result.getObject(key.getValue())));
+                        rowKeys.put(key.getKey(),Type.object.read(result.getObject(key.getValue())));
                     Map<V,Object> rowProperties = new HashMap<V, Object>();
                     for(Map.Entry<V,String> property : propertyNames.entrySet())
                         rowProperties.put(property.getKey(),
@@ -617,7 +644,7 @@ class JoinQuery<K,V> extends Source<K,V> {
 
     void putKeyWhere(Map<K,Integer> KeyValues) {
         for(Map.Entry<K,Integer> MapKey : KeyValues.entrySet())
-            and(new CompareWhere(mapKeys.get(MapKey.getKey()),Type.Object.getExpr(MapKey.getValue()),CompareWhere.EQUALS));
+            and(new CompareWhere(mapKeys.get(MapKey.getKey()),Type.object.getExpr(MapKey.getValue()),CompareWhere.EQUALS));
     }
 
     void fillJoinQueries(Set<JoinQuery> Queries) {
@@ -644,6 +671,12 @@ class JoinQuery<K,V> extends Source<K,V> {
         putCache(this,compile);
 
         return compile;
+    }
+
+    void removeProperty(V property) {
+        properties.remove(property);
+        if(compile!=null)
+            compile.removeProperty(property);
     }
 
     CompiledQuery<K,V> compile(SQLSyntax syntax) {
@@ -674,16 +707,14 @@ class JoinQuery<K,V> extends Source<K,V> {
         // закинем их на Or
         mergeQuery.and(join.inJoin.or(mergeJoin.inJoin));
 
-        CompiledJoinQuery<K, Object> parsedMerge = mergeQuery.parse();
-        parsedMerge.packProperties();
+        Map<Object, SourceExpr> parsedProps = mergeQuery.parse().getPackedProperties();
 
         // погнали сливать одинаковые (именно из раных)
         for(Map.Entry<MV,Object> mergeProperty : mergeProps.entrySet()) {
-            SourceExpr mergeExpr = parsedMerge.properties.get(mergeProperty.getValue());
+            SourceExpr mergeExpr = parsedProps.get(mergeProperty.getValue());
             for(V property : properties.keySet()) {
-                if(parsedMerge.properties.get(property).equals(mergeExpr)) {
-                    mergeQuery.properties.remove(mergeProperty.getValue());
-                    parsedMerge.properties.remove(mergeProperty.getValue());
+                if(parsedProps.get(property).equals(mergeExpr)) {
+                    mergeQuery.removeProperty(mergeProperty.getValue());
                     mergeProperty.setValue(property);
                     break;
                 }
@@ -717,11 +748,15 @@ class JoinQuery<K,V> extends Source<K,V> {
 
     String string = null;
     public String toString() {
-        if(string==null) {
-//            string = compile(Main.Adapter).getSelect(Main.Adapter);
+/*        if(string==null) {
+            try {
+                string = compile(Main.Adapter).getSelect(Main.Adapter);
+            } catch (Exception e) {
+                string = e.getMessage();
+            }
         }
         // временно
-//        return string;
+        return string;*/
 
         return "JQ";
     }
@@ -868,14 +903,8 @@ class JoinQuery<K,V> extends Source<K,V> {
     <EK,EV> boolean equalsMap(JoinQuery<EK,EV> query,Map<K,EK> equalKeys,Map<V,EV> equalProperties, Map<ValueExpr, ValueExpr> equalValues) {
 
         // переберем Values, Keys
-        Collection<Map<K,EK>> keyMaps = MapBuilder.buildPairs(keys, query.keys);
-        if(keyMaps==null) return false;
-
-        Collection<Map<ValueExpr,ValueExpr>> valueMaps = MapBuilder.buildPairs(getValues().keySet(), query.getValues().keySet());
-        if(valueMaps==null) return false;
-
-        for(Map<ValueExpr,ValueExpr> valueMap : valueMaps)
-            for(Map<K,EK> mapKeys : keyMaps)
+        for(Map<ValueExpr,ValueExpr> valueMap : new Pairs<ValueExpr,ValueExpr>(getValues().keySet(), query.getValues().keySet()))
+            for(Map<K,EK> mapKeys : new Pairs<K,EK>(keys, query.keys))
                 if(equals(query,mapKeys,equalProperties,valueMap)) {
                     equalKeys.putAll(mapKeys);
                     equalValues.putAll(valueMap);
@@ -952,19 +981,30 @@ class CompiledJoinQuery<K,V> {
         properties = new HashMap<V, SourceExpr>();
         for(Map.Entry<V,SourceExpr> mapProperty : query.properties.entrySet())
             properties.put(mapProperty.getKey(),mapProperty.getValue().translate(translated)); //.followFalse(where.not())
-//        packProperties();
         // Values
         values = query.getValues();
 
         compiler = new Compiler();
     }
 
-    boolean packed = false;
-    // собсно паковать их имеет смысл только при выполнении, с другой стороны при трансляции сложнее будет, пока с паком лучше
-    void packProperties() {
-        if(!packed)
-            for(Map.Entry<V,SourceExpr> mapProperty : properties.entrySet())
-                mapProperty.setValue(mapProperty.getValue().followFalse(where.not()));
+    Map<V,SourceExpr> andProperties = null;
+    Map<V,SourceExpr> getAndProperties() {
+        if(andProperties==null) andProperties = compiler.getAndProperties();
+        return andProperties;
+    }
+
+    Map<V,SourceExpr> packedProperties = null;
+    Map<V,SourceExpr> getPackedProperties() {
+        if(packedProperties==null) packedProperties = compiler.getPackedProperties();
+        return packedProperties;
+    }
+
+    void removeProperty(V property) {
+        properties.remove(property);
+        if(andProperties!=null)
+            andProperties.remove(property);
+        if(packedProperties!=null)
+            packedProperties.remove(property);
     }
 
     Compiler compiler;
@@ -1002,15 +1042,31 @@ class CompiledJoinQuery<K,V> {
         for(CompiledJoin compileJoin : joins) // здесь по сути надо перетранслировать ValueExpr'ы а также в GroupQuery перебить JoinQuery на новые Values
             compileJoin.translate(joinTranslated, translatedJoins, compileJoin.getDataSource().translateValues(values));
 
-        Where translatedWhere = where.translate(joinTranslated);
-        translated.put(join.inJoin, translatedWhere);
-        for(Map.Entry<V,SourceExpr> mapProperty : properties.entrySet())
-            translated.put(join.exprs.get(mapProperty.getKey()), mapProperty.getValue().translate(joinTranslated).and(translatedWhere));
+        // включать direct если нету case'ов, но почему-то не сильно помогает (процентов на 20) 
+        joinTranslated.direct = !joinTranslated.hasCases();
+        
+        translated.put(join.inJoin, where.translate(joinTranslated));
+        for(Map.Entry<V,SourceExpr> mapProperty : getAndProperties().entrySet())
+            translated.put(join.exprs.get(mapProperty.getKey()), mapProperty.getValue().translate(joinTranslated));
     }
 
     private class Compiler {
         CompiledQuery<K,V> compile(SQLSyntax syntax, LinkedHashMap<V, Boolean> orders, int top) {
             return new CompiledQuery<K,V>(CompiledJoinQuery.this, syntax, orders, top);
+        }
+
+        Map<V,SourceExpr> getAndProperties() {
+            Map<V,SourceExpr> result = new HashMap<V, SourceExpr>();
+            for(Map.Entry<V,SourceExpr> mapProperty : properties.entrySet())
+                result.put(mapProperty.getKey(),mapProperty.getValue().and(where));
+            return result;
+        }
+
+        Map<V,SourceExpr> getPackedProperties() {
+            Map<V,SourceExpr> result = new HashMap<V, SourceExpr>();
+            for(Map.Entry<V,SourceExpr> mapProperty : properties.entrySet())
+                result.put(mapProperty.getKey(),mapProperty.getValue().followFalse(where.not()));
+            return result;
         }
     }
 
@@ -1029,6 +1085,14 @@ class CompiledJoinQuery<K,V> {
 
         CompiledQuery<K, V> compile(SQLSyntax syntax, LinkedHashMap<V, Boolean> orders, int top) {
             return new CompiledQuery<K,V>(mapQuery.compileSelect(syntax,BaseUtils.linkedJoin(orders,mapProps),top), mapKeys, mapProps, mapValues);
+        }
+
+        Map<V, SourceExpr> getAndProperties() {
+            return BaseUtils.join(mapProps, mapQuery.getAndProperties());
+        }
+
+        Map<V, SourceExpr> getPackedProperties() {
+            return BaseUtils.join(mapProps, mapQuery.getPackedProperties());
         }
     }
     <MK,MV> CompiledJoinQuery(CompiledJoinQuery<MK,MV> query, Map<K, MK> mapKeys, Map<V, MV> mapProps, Map<ValueExpr,ValueExpr> mapValues) {
@@ -1052,6 +1116,14 @@ class CompiledJoinQuery<K,V> {
 
         CompiledQuery<K, V> compile(SQLSyntax syntax, LinkedHashMap<V, Boolean> orders, int top) {
             return new CompiledQuery<K,V>(mapQuery.compileSelect(syntax,orders,top), mapValues);
+        }
+
+        Map<V, SourceExpr> getAndProperties() {
+            return mapQuery.getAndProperties();
+        }
+
+        Map<V, SourceExpr> getPackedProperties() {
+            return mapQuery.getPackedProperties();
         }
     }
     CompiledJoinQuery(CompiledJoinQuery<K,V> Query, Map<ValueExpr,ValueExpr> MapValues) {

@@ -19,8 +19,6 @@ abstract class ObjectExpr extends AndExpr {
 
     // для кэша
     boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        if(mapExprs.get(this)==null)
-            throw new RuntimeException("null");
         return mapExprs.get(this).equals(expr);
     }
 
@@ -42,59 +40,59 @@ class KeyExpr extends ObjectExpr implements QueryData {
     }
 
     Type getType() {
-        return Type.Object;
+        return Type.object;
     }
 
     // возвращает Where без следствий
-    Where getWhere() {
+    Where calculateWhere() {
         return Where.TRUE;
     }
 }
 
 class NotNullWhere extends DataWhere {
 
-    JoinExpr Expr;
+    JoinExpr expr;
 
     NotNullWhere(JoinExpr iExpr) {
-        Expr = iExpr;
+        expr = iExpr;
     }
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return Expr.getSource(queryData, syntax) + " IS NOT NULL";
+        return expr.getSource(queryData, syntax) + " IS NOT NULL";
     }
 
     String getNotSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        return Expr.getSource(QueryData, Syntax) + " IS NULL";
+        return expr.getSource(QueryData, Syntax) + " IS NULL";
     }
 
     public String toString() {
-        return Expr.toString() + " NOT_NULL";
+        return expr.toString() + " NOT_NULL";
     }
 
-    public Where translate(Translator Translator) {
+    public Where translate(Translator translator) {
 
-        SourceExpr TransExpr = Expr.translate(Translator);
+        SourceExpr transExpr = expr.translate(translator);
 
-        if(TransExpr==Expr)
+        if(transExpr== expr)
             return this;
 
-        return TransExpr.getWhere();
+        return transExpr.getWhere();
     }
 
     public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
-        Expr.fillJoins(joins, values);
+        expr.fillJoins(joins, values);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
-        Expr.fillAndJoinWheres(Joins,AndWhere);
+        expr.fillAndJoinWheres(Joins,AndWhere);
     }
 
     DataWhereSet getExprFollows() {
-        return Expr.from.inJoin.getFollows();
+        return expr.from.inJoin.getFollows();
     }
 
     public Where getJoinWhere() {
-        return Expr.from.inJoin; // собсно ради этого все и делается
+        return expr.from.inJoin; // собсно ради этого все и делается
     }
 
     public Where getNotJoinWhere() {
@@ -107,28 +105,28 @@ class NotNullWhere extends DataWhere {
     }
 
     public JoinWheres getInnerJoins() {
-        return new JoinWheres(Expr.from.inJoin,this);
+        return new JoinWheres(expr.from.inJoin,this);
     }
 
     // для кэша
     public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
-        return Where instanceof NotNullWhere && Expr.equals(((NotNullWhere)Where).Expr,MapExprs, MapWheres);
+        return Where instanceof NotNullWhere && expr.equals(((NotNullWhere)Where).expr,MapExprs, MapWheres);
     }
 
     public int getHash() {
-        return Expr.hash();
+        return expr.hash();
     }
 }
 
 class JoinExpr<J,U> extends ObjectExpr implements JoinData {
-    U Property;
+    U property;
     Join<J,U> from;
-    NotNullWhere NotNull;
+    NotNullWhere notNull;
 
     JoinExpr(Join<J,U> iFrom,U iProperty) {
         from = iFrom;
-        Property = iProperty;
-        NotNull = new NotNullWhere(this);
+        property = iProperty;
+        notNull = new NotNullWhere(this);
     }
 
     public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
@@ -149,23 +147,23 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     }
 
     public String toString() {
-        return from.toString() + "." + Property;
+        return from.toString() + "." + property;
     }
 
     Type getType() {
-        return from.source.getType(Property);
+        return from.source.getType(property);
     }
 
     // возвращает Where без следствий
-    Where getWhere() {
-        return NotNull;
+    Where calculateWhere() {
+        return notNull;
     }
 
     boolean follow(DataWhere Where) {
-        return Where==NotNull || from.inJoin.follow(Where);
+        return Where== notNull || from.inJoin.follow(Where);
     }
     DataWhereSet getFollows() {
-        return NotNull.getFollows();
+        return notNull.getFollows();
     }
 
     public SourceExpr getFJExpr() {
@@ -177,7 +175,7 @@ class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     }
 
     int getHash() {
-        return from.hash()*31+ from.source.hashProperty(Property);
+        return from.hash()*31+ from.source.hashProperty(property);
     }
 }
 
@@ -207,7 +205,7 @@ class NullExpr extends ObjectExpr {
     }
 
     // возвращает Where на notNull
-    Where getWhere() {
+    Where calculateWhere() {
         return Where.FALSE;
     }
 
@@ -273,19 +271,12 @@ class ValueExpr extends ObjectExpr implements QueryData {
     }
 
     // возвращает Where без следствий
-    Where getWhere() {
+    Where calculateWhere() {
         return Where.TRUE;
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ValueExpr valueExpr = (ValueExpr) o;
-
-        if (!object.equals(valueExpr.object)) return false;
-
-        return true;
+        return this==o || o instanceof ValueExpr && object.equals(((ValueExpr)o).object);
     }
 
     public int hashCode() {

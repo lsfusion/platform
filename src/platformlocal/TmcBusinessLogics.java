@@ -361,7 +361,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         primDocDate = addUProp(paramsGroup, "Дата", 2, 1, 1, datePrimDocument, 1, 1, extIncDate, 1, 1, intraDate, 1, 1, revalDate, 1);
         secDocDate = addUProp("Дата", 2, 1, 1, extOutDate, 1, 1, exchDate, 1);
 
-        docDate = addUProp("Дата", 2, 1, 1, dateDocument, 1, 1, secDocDate, 1, 1, primDocDate, 1);
+        docDate = addUProp("docDate", "Дата", 2, 1, 1, dateDocument, 1, 1, secDocDate, 1, 1, primDocDate, 1);
     }
 
     // ------------------------------------ Свойства по документам ------------------------------------------- //
@@ -742,7 +742,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         extIncDetailAdd = addDProp(outPrmsGroup, "extIncDetailAdd", "Надбавка", Class.doubleClass, extIncomeDetail);
         extIncDetailVATOut = addDProp(outPrmsGroup, "extIncDetailVATOut", "НДС прод.", Class.doubleClass, extIncomeDetail);
-        setDefProp(extIncDetailVATOut, extIncDetailVATIn, true);
+//        setDefProp(extIncDetailVATOut, extIncDetailVATIn, true);
         extIncDetailLocTax = addDProp(outPrmsGroup, "extIncDetailLocTax", "Местн. нал.", Class.doubleClass, extIncomeDetail);
 
         extIncDetailCalcPriceOut = addJProp("Цена розн. (расч.)", roundm1, 1,
@@ -755,7 +755,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                            extIncDetailLocTax, 1), 1);
 
         extIncDetailPriceOut = addDProp(outPrmsGroup, "extIncDetailPriceOut", "Цена розн.", Class.doubleClass, extIncomeDetail);
-        setDefProp(extIncDetailPriceOut, extIncDetailCalcPriceOut, true);
+//        setDefProp(extIncDetailPriceOut, extIncDetailCalcPriceOut, true);
 
         // ------------------------- Последняя строка ------------------------------ //
         
@@ -881,12 +881,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                    addJProp("Сумма НДС (расч. - неокр.)", percent, 1, extIncDetailCalcSum, 1, extIncDetailVATIn, 1), 1);
 
         extIncDetailSumVATIn = addDProp(incSumsGroup, "extIncDetailSumVATIn", "Сумма НДС", Class.doubleClass, extIncomeDetail);
-        setDefProp(extIncDetailSumVATIn, extIncDetailCalcSumVATIn, true);
+//        setDefProp(extIncDetailSumVATIn, extIncDetailCalcSumVATIn, true);
 
         extIncDetailCalcSumPay = addUProp("Всего с НДС (расч.)", 1, 1, 1, extIncDetailCalcSum, 1, 1, extIncDetailSumVATIn, 1);
 
         extIncDetailSumPay = addDProp(incSumsGroup, "extIncDetailSumPay", "Всего с НДС", Class.doubleClass, extIncomeDetail);
-        setDefProp(extIncDetailSumPay, extIncDetailCalcSumPay, true);
+//        setDefProp(extIncDetailSumPay, extIncDetailCalcSumPay, true);
 
         extIncDetailSumInc = addUProp(incSumsGroup, "extIncDetailSumInc", "Сумма пост.", 1, 1, 1, extIncDetailSumPay, 1, -1, extIncDetailSumVATIn, 1);
         setPropOrder(extIncDetailSumInc.property, extIncDetailSumVATIn.property, true);
@@ -1236,6 +1236,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         persistents.add((AggregateProperty)docStore.property);
 
+       persistents.add((AggregateProperty)docDate.property);
+
         persistents.add((AggregateProperty)extIncQuantity.property);
 
         persistents.add((AggregateProperty)incStoreQuantity.property);
@@ -1404,7 +1406,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             for (PropertyObjectImplement extraProp : extraProps) {
                 filterGroup.addFilter(new RegularFilter(IDShift(1),
                                       new Filter(extraProp, Filter.NOT_EQUALS, new UserValueLink(0)),
-                                      extraProp.Property.caption,
+                                      extraProp.property.caption,
                                       KeyStroke.getKeyStroke(functionKey--, 0)));
             }
             addRegularFilterGroup(filterGroup);
@@ -1461,14 +1463,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         public ExtIncPrintNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, true);
 
-            objDoc.GroupTo.gridClassView = false;
-            objDoc.GroupTo.singleViewType = true;
+            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.singleViewType = true;
 
             addPropertyView(objDoc, Properties, outSumsGroup);
             addPropertyView(objDetail, Properties, outSumsGroup);
 
             objDoc.sID = "objDoc";
-            getPropertyView(name.property, objDoc.GroupTo).sID = "docName";
+            getPropertyView(name.property, objDoc.groupTo).sID = "docName";
 
             try {
                 reportDesign = JRXmlLoader.load(new FileInputStream(new File("d:/java/application/platform/src/platformlocal/reports/extIncLog.jrxml")));
@@ -1547,8 +1549,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             ObjectImplement objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", Properties,
                                                                         baseGroup, storeGroup, outSumsGroup, accountGroup);
-            objDoc.GroupTo.gridClassView = false;
-            objDoc.GroupTo.singleViewType = true;
+            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.singleViewType = true;
 
             ObjectImplement objReceipt = addSingleGroupObjectImplement(receipt, "Чек", Properties,
                                                                         baseGroup, outSumsGroup);
@@ -1598,8 +1600,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             if (groupStore) {
                 objStore = addSingleGroupObjectImplement(store, "Склад", Properties,
                                                                             baseGroup, accountGroup);
-                objStore.GroupTo.gridClassView = false;
-                objStore.GroupTo.singleViewType = true;
+                objStore.groupTo.gridClassView = false;
+                objStore.groupTo.singleViewType = true;
             }
 
             ObjectImplement objDoc = addSingleGroupObjectImplement(invDocument, "Документ", Properties,
@@ -1670,11 +1672,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtTo.GroupTo).view, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtTo.groupTo).view, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtTo.GroupTo).view, Filter.LESS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtTo.groupTo).view, Filter.LESS, new UserValueLink(0)),
                                   "Отр. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
             addRegularFilterGroup(filterGroup);
@@ -1689,15 +1691,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtFrom.GroupTo).view, Filter.NOT_EQUALS, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtFrom.groupTo).view, Filter.NOT_EQUALS, new UserValueLink(0)),
                                   "Остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtFrom.GroupTo).view, Filter.GREATER, new UserValueLink(0)),
+                                  new Filter(getPropertyView(docOutBalanceQuantity.property, objArtFrom.groupTo).view, Filter.GREATER, new UserValueLink(0)),
                                   "Пол. остаток",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilter(IDShift(1),
-                                  new Filter(getPropertyView(docOverPriceOut.property, objArtFrom.GroupTo).view, Filter.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.property, objArtTo.GroupTo).view)),
+                                  new Filter(getPropertyView(docOverPriceOut.property, objArtFrom.groupTo).view, Filter.EQUALS, new PropertyValueLink(getPropertyView(docOverPriceOut.property, objArtTo.groupTo).view)),
                                   "Одинаковая розн. цена",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, InputEvent.SHIFT_DOWN_MASK)));
             addRegularFilterGroup(filterGroup);
@@ -1737,8 +1739,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             if (groupStore) {
                 objStore = addSingleGroupObjectImplement(store, "Склад", Properties,
                                                                             baseGroup, accountGroup);
-                objStore.GroupTo.gridClassView = false;
-                objStore.GroupTo.singleViewType = true;
+                objStore.groupTo.gridClassView = false;
+                objStore.groupTo.singleViewType = true;
             }
 
             ObjectImplement objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", Properties,
@@ -1768,8 +1770,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
             objStore = addSingleGroupObjectImplement(store, "Склад", Properties,
                                                                         baseGroup, accountGroup);
-            objStore.GroupTo.gridClassView = false;
-            objStore.GroupTo.singleViewType = true;
+            objStore.groupTo.gridClassView = false;
+            objStore.groupTo.singleViewType = true;
 
             objArt = addSingleGroupObjectImplement(article, "Товар", Properties,
                                                                         baseGroup);
@@ -1833,10 +1835,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             addPropertyView(objStore, objArt, Properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
-            addPropertyView(Properties, baseGroup, false, objArt.GroupTo, objStore, objArt);
-            addPropertyView(Properties, balanceGroup, false, objArt.GroupTo, objStore, objArt);
-            addPropertyView(Properties, incPrmsGroup, false, objArt.GroupTo, objStore, objArt);
-            addPropertyView(Properties, outPrmsGroup, false, objArt.GroupTo, objStore, objArt);
+            addPropertyView(Properties, baseGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(Properties, balanceGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(Properties, incPrmsGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(Properties, outPrmsGroup, false, objArt.groupTo, objStore, objArt);
         }
 
     }
@@ -1875,13 +1877,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
             // создать блок "Поставщик"
             ObjectImplement objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", Properties,
                                                                                     baseGroup);
-            objSupplier.GroupTo.gridClassView = false;
-            objSupplier.GroupTo.singleViewType = true;
+            objSupplier.groupTo.gridClassView = false;
+            objSupplier.groupTo.singleViewType = true;
 
             // создать блок "Склад"
             ObjectImplement objStore = addSingleGroupObjectImplement(store, "Склад", Properties,
                                                                         baseGroup);
-            objStore.GroupTo.gridClassView = false;
+            objStore.groupTo.gridClassView = false;
 
             // создать блок "Товар"
             ObjectImplement objArt = addSingleGroupObjectImplement(article, "Товар", Properties,

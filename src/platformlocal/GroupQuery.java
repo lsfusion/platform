@@ -130,10 +130,7 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         // проверим вот что у этого и сливаемого возьмем from'ы с ключами на не null про pars'им 
 
         // попробуем смерджить со всеми мапами пока не получим нужный набор ключей
-        Collection<Map<F, MF>> mapSet = MapBuilder.buildPairs(from.keys, mergeGroup.from.keys);
-        if(mapSet==null) return null;
-
-        for(Map<F, MF> mapKeys : mapSet) {
+        for(Map<F, MF> mapKeys : new Pairs<F,MF>(from.keys, mergeGroup.from.keys)) {
             Map<MB,Object> fromMergeProps = new HashMap<MB, Object>();
             JoinQuery<F, Object> mergedFrom = from.or(mergeGroup.from, mapKeys, fromMergeProps);
             // проверим что ключи совпали
@@ -177,28 +174,25 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return source instanceof GroupQuery && equalsGroup((GroupQuery) source, mapKeys, mapProperties, mapValues);
     }
 
-    <EB,EK extends EB,EV extends EB,EF> boolean equalsGroup(GroupQuery<EB,EK,EV,EF> Query,Map<K,EK> MapKeys,Map<V,EV> MapProperties,Map<ValueExpr,ValueExpr> MapExprs) {
+    <EB,EK extends EB,EV extends EB,EF> boolean equalsGroup(GroupQuery<EB,EK,EV,EF> query,Map<K,EK> mapKeys,Map<V,EV> mapProperties,Map<ValueExpr,ValueExpr> mapExprs) {
 
-        Collection<Map<F,EF>> MapSet = MapBuilder.buildPairs(from.keys, Query.from.keys);
-        if(MapSet==null) return false;
-
-        for(Map<F, EF> MapGroupKeys : MapSet) {
-            Map<B,EB> MapGroupProperties = new HashMap<B, EB>();
-            if(from.equals(Query.from,MapGroupKeys,MapGroupProperties,MapExprs)) {
+        for(Map<F, EF> mapGroupKeys : new Pairs<F,EF>(from.keys, query.from.keys)) {
+            Map<B,EB> mapGroupProperties = new HashMap<B, EB>();
+            if(from.equals(query.from,mapGroupKeys,mapGroupProperties, mapExprs)) {
                 // проверим что ключи совпали
-                boolean Equal = true;
-                for(Map.Entry<K,EK> MapKey : MapKeys.entrySet())
-                    if(MapKey.getValue()!=MapGroupProperties.get(MapKey.getKey())) {Equal=false; break;}
-                if(!Equal) continue;
+                boolean equal = true;
+                for(Map.Entry<K,EK> mapKey : mapKeys.entrySet())
+                    if(mapKey.getValue()!=mapGroupProperties.get(mapKey.getKey())) {equal=false; break;}
+                if(!equal) continue;
 
                 // проверим что операторы св-в совпали
-                for(Map.Entry<V,Integer> Property : properties.entrySet())
-                    if(!Property.getValue().equals(Query.properties.get(MapGroupProperties.get(Property.getKey())))) {Equal=false; break;}
-                if(!Equal) continue;
+                for(Map.Entry<V,Integer> property : properties.entrySet())
+                    if(!property.getValue().equals(query.properties.get(mapGroupProperties.get(property.getKey())))) {equal=false; break;}
+                if(!equal) continue;
 
                 // уже точно true, заполним карту
-                for(V Property : properties.keySet())
-                    MapProperties.put(Property,(EV)MapGroupProperties.get(Property));
+                for(V property : properties.keySet())
+                    mapProperties.put(property,(EV)mapGroupProperties.get(property));
 
                 return true;
             }

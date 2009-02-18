@@ -161,19 +161,13 @@ class TypedObject {
 
     public Object multiply(int mult) {
         if(value instanceof Boolean)
-            value = value;    
-        return ((Integer)value)*mult;
+            return ((Boolean)value?1:0);
+        else
+            return ((Integer)value)*mult;
     }
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TypedObject that = (TypedObject) o;
-
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
-        return true;
+        return this==o || o instanceof TypedObject && ((value==null && ((TypedObject)o).value==null) || (value!=null && value.equals(((TypedObject)o).value)));
     }
 
     public int hashCode() {

@@ -309,15 +309,15 @@ public class ClientForm extends JPanel {
 
         // Сначала меняем виды объектов
 
-        for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
+        for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
             models.get(property.groupObject).addPanelProperty(property);
         }
 
-        for (ClientPropertyView property : formChanges.GridProperties.keySet()) {
+        for (ClientPropertyView property : formChanges.gridProperties.keySet()) {
             models.get(property.groupObject).addGridProperty(property);
         }
 
-        for (ClientPropertyView property : formChanges.DropProperties) {
+        for (ClientPropertyView property : formChanges.dropProperties) {
             models.get(property.groupObject).dropProperty(property);
         }
 
@@ -330,8 +330,8 @@ public class ClientForm extends JPanel {
             models.get(groupObject).grid.setGridObjects(formChanges.gridObjects.get(groupObject));
         }
 
-        for (ClientGroupObjectImplement groupObject : formChanges.Objects.keySet()) {
-            models.get(groupObject).setCurrentGroupObject(formChanges.Objects.get(groupObject),false);
+        for (ClientGroupObjectImplement groupObject : formChanges.objects.keySet()) {
+            models.get(groupObject).setCurrentGroupObject(formChanges.objects.get(groupObject),false);
         }
 
         for (ClientGroupObjectImplement groupObject : formChanges.ClassViews.keySet()) {
@@ -340,12 +340,12 @@ public class ClientForm extends JPanel {
 
         // Затем их свойства
 
-        for (ClientPropertyView property : formChanges.PanelProperties.keySet()) {
-            models.get(property.groupObject).setPanelPropertyValue(property, formChanges.PanelProperties.get(property));
+        for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
+            models.get(property.groupObject).setPanelPropertyValue(property, formChanges.panelProperties.get(property));
         }
 
-        for (ClientPropertyView property : formChanges.GridProperties.keySet()) {
-            models.get(property.groupObject).setGridPropertyValues(property, formChanges.GridProperties.get(property));
+        for (ClientPropertyView property : formChanges.gridProperties.keySet()) {
+            models.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
         }
 
         formLayout.getComponent().validate();

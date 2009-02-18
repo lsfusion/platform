@@ -14,7 +14,7 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     static final int LESS_EQUALS = 4;
     static final int NOT_EQUALS = 5;
 
-    int Compare;
+    int compare;
 
     CompareWhere(AndExpr iOperator1,AndExpr iOperator2,int iCompare) {
         this((SourceExpr)iOperator1,(SourceExpr)iOperator2,iCompare);
@@ -24,11 +24,11 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     CompareWhere(SourceExpr iOperator1,SourceExpr iOperator2,int iCompare) {
         operator1 = iOperator1;
         operator2 = iOperator2;
-        Compare = iCompare;
+        compare = iCompare;
     }
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return operator1.getSource(queryData, syntax) + getCompare(Compare) + operator2.getSource(queryData, syntax);
+        return operator1.getSource(queryData, syntax) + getCompare(compare) + operator2.getSource(queryData, syntax);
     }
 
     static String getCompare(int Compare) {
@@ -66,16 +66,16 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         String Op2Source = operator2.getSource(QueryData, Syntax);
         if(!(operator2 instanceof NullExpr))
             Result = Result + " OR " + Op2Source + " IS NULL";
-        return "(" + Result + " OR " + Op1Source + getCompare(reverse(Compare)) + Op2Source + ")";
+        return "(" + Result + " OR " + Op1Source + getCompare(reverse(compare)) + Op2Source + ")";
     }
 
     public String toString() {
-        return operator1.toString() + getCompare(Compare) + operator2.toString();
+        return operator1.toString() + getCompare(compare) + operator2.toString();
     }
 
-    public Where getCaseWhere(MapCase<Integer> Case) {
-        AndExpr CaseOp1 = Case.data.get(0);
-        AndExpr CaseOp2 = Case.data.get(1);
+    public Where getCaseWhere(MapCase<Integer> cCase) {
+        AndExpr CaseOp1 = cCase.data.get(0);
+        AndExpr CaseOp2 = cCase.data.get(1);
         if(CaseOp1.getWhere().means(CaseOp2.getWhere().not())) // проверим может значения изначально не равны
             return Where.FALSE;
         else {
@@ -88,15 +88,15 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
                 } else
                     return new CompareWhere(CaseOp1,CaseOp2, reverse(Compare));
             } else*/
-                return new CompareWhere(CaseOp1,CaseOp2,Compare);
+                return new CompareWhere(CaseOp1,CaseOp2, compare);
         }
     }
 
-    public Where translate(Translator Translator) {
-        Map<Integer,SourceExpr> MapExprs = new HashMap<Integer, SourceExpr>();
-        MapExprs.put(0, operator1);
-        MapExprs.put(1, operator2);
-        return CaseExpr.translateCase(MapExprs,Translator,true, false).getWhere(this);
+    public Where translate(Translator translator) {
+        Map<Integer,SourceExpr> mapExprs = new HashMap<Integer, SourceExpr>();
+        mapExprs.put(0, operator1);
+        mapExprs.put(1, operator2);
+        return CaseExpr.translateCase(mapExprs,translator,true,false).getWhere(this);
     }
 
     public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
@@ -116,7 +116,7 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     public JoinWheres getInnerJoins() {
-        if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr && Compare==EQUALS)
+        if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr && compare ==EQUALS)
             return new JoinWheres(this,Where.TRUE);
 
         Where InJoinWhere = Where.TRUE;
@@ -128,30 +128,26 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     public boolean equals(Object o) {
-        return this==o || (o instanceof CompareWhere && Compare==((CompareWhere)o).Compare && operator1.equals(((CompareWhere)o).operator1) && operator2.equals(((CompareWhere)o).operator2));
+        return this==o || (o instanceof CompareWhere && compare ==((CompareWhere)o).compare && operator1.equals(((CompareWhere)o).operator1) && operator2.equals(((CompareWhere)o).operator2));
     }
 
     public int hashCode() {
-        int result;
-        result = operator1.hashCode();
-        result = 31 * result + operator2.hashCode();
-        result = 31 * result + Compare;
-        return result;
+        return 31 * (31 * operator1.hashCode() + operator2.hashCode()) + 1 << compare;
     }
 
     public Where copy() {
-        return new CompareWhere(operator1, operator2,Compare);
+        return new CompareWhere(operator1, operator2, compare);
     }
 
     // для кэша
-    public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return Where instanceof CompareWhere && Compare == ((CompareWhere)Where).Compare &&
-                operator1.equals(((CompareWhere)Where).operator1,mapExprs,mapWheres) &&
-                operator2.equals(((CompareWhere)Where).operator2,mapExprs,mapWheres);
+    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+        return where instanceof CompareWhere && compare == ((CompareWhere)where).compare &&
+                operator1.equals(((CompareWhere)where).operator1,mapExprs,mapWheres) &&
+                operator2.equals(((CompareWhere)where).operator2,mapExprs,mapWheres);
     }
 
     public int getHash() {
-        return Compare + operator1.hash()*31 + operator2.hash()*31*31;
+        return 1 << compare + operator1.hash()*31 + operator2.hash()*31*31;
     }
 }
 
@@ -159,36 +155,40 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
     AndExpr expr;
-    String Values;
+    String values;
 
     InListWhere(AndExpr iExpr, Collection<Integer> SetValues) {
         expr = iExpr;
-        Values = "";
+        values = "";
         for(Integer Value : SetValues)
-            Values = (Values.length()==0?"":Values+',') + Value;
+            values = (values.length()==0?"": values +',') + Value;
     }
 
     InListWhere(AndExpr iExpr, String iValues) {
         expr = iExpr;
-        Values = iValues;
+        values = iValues;
     }
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return expr.getSource(queryData, syntax) + " IN (" + Values + ")";
+        return expr.getSource(queryData, syntax) + " IN (" + values + ")";
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы
-    public String getNotSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        String ExprSource = expr.getSource(QueryData, Syntax);
-        return "(" + ExprSource + " IS NULL OR NOT " + ExprSource + " IN (" + Values + "))";
+    public String getNotSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+        String exprSource = expr.getSource(queryData, syntax);
+        String notSource = "NOT " + exprSource + " IN (" + values + ")";
+        if(expr.getWhere().isTrue())
+            return notSource;
+        else
+            return "(" + exprSource + " IS NULL OR " + notSource + ")";
     }
 
     public String toString() {
-        return expr.toString() + " IN (" + Values + ")";
+        return expr.toString() + " IN (" + values + ")";
     }
 
-    public Where getCaseWhere(MapCase<Integer> Case) {
-        return new InListWhere(Case.data.get(0),Values);
+    public Where getCaseWhere(MapCase<Integer> cCase) {
+        return new InListWhere(cCase.data.get(0), values);
     }
 
     public Where translate(Translator Translator) {
@@ -210,7 +210,7 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     public Where copy() {
-        return new InListWhere(expr,Values);
+        return new InListWhere(expr, values);
     }
 
     public JoinWheres getInnerJoins() {
@@ -221,16 +221,20 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     // для кэша
-    public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return Where instanceof InListWhere && Values.equals(((InListWhere)Where).Values) &&
-                expr.equals(((InListWhere)Where).expr,mapExprs,mapWheres);
+    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+        return where instanceof InListWhere && values.equals(((InListWhere)where).values) &&
+                expr.equals(((InListWhere)where).expr,mapExprs,mapWheres);
     }
 
     public int getHash() {
-        return expr.hash() + Values.hashCode()*31;
+        return expr.hash() + values.hashCode()*31;
     }
 
-    int getHashCode() {
-        return expr.hashCode() + Values.hashCode()*31;
+    public int hashCode() {
+        return expr.hashCode() + values.hashCode()*31;
+    }
+
+    public boolean equals(Object obj) {
+        return this==obj || (obj instanceof InListWhere && expr.equals(((InListWhere)obj).expr) && values.equals(((InListWhere)obj).values));
     }
 }
