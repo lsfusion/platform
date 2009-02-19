@@ -333,8 +333,8 @@ class ObjectClass extends Class {
     ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
 
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.ObjectTable.getClassJoin(this).executeSelect(Session).keySet());
-        return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.ObjectTable.key);
+        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.objectTable.getClassJoin(this).executeSelect(Session).keySet());
+        return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.objectTable.key);
     }
 
     Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {

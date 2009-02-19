@@ -12,10 +12,10 @@ class Serializer {
     public static void serializeFormChanges(DataOutputStream outStream, FormChanges formChanges) throws IOException {
 
         //ClassViews
-        outStream.writeInt(formChanges.ClassViews.size());
-        for (GroupObjectImplement groupObject : formChanges.ClassViews.keySet()) {
+        outStream.writeInt(formChanges.classViews.size());
+        for (GroupObjectImplement groupObject : formChanges.classViews.keySet()) {
             serializeGroupObjectImplement(outStream, groupObject);
-            outStream.writeBoolean(formChanges.ClassViews.get(groupObject));
+            outStream.writeBoolean(formChanges.classViews.get(groupObject));
         }
 
         //Objects
@@ -86,13 +86,13 @@ class Serializer {
 //        System.out.println("Available : " + all);
 
         //ClassViews
-        clientFormChanges.ClassViews = new HashMap();
+        clientFormChanges.classViews = new HashMap();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
 
             ClientGroupObjectImplement clientGroupObject = deserializeClientGroupObjectImplement(inStream, clientFormView);
 
-            clientFormChanges.ClassViews.put(clientGroupObject,
+            clientFormChanges.classViews.put(clientGroupObject,
                                              inStream.readBoolean());
         }
 

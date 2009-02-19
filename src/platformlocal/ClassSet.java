@@ -299,27 +299,27 @@ interface PropertyClass<P extends PropertyInterface> {
 // по сути Entry для ValueClassSet'а
 class ChangeClass<P extends PropertyInterface> {
 
-    InterfaceClassSet<P> Interface;
-    ClassSet Value;
+    InterfaceClassSet<P> interfaceClasses;
+    ClassSet value;
 
     ChangeClass() {
-        Interface = new InterfaceClassSet<P>();
-        Value = new ClassSet();
+        interfaceClasses = new InterfaceClassSet<P>();
+        value = new ClassSet();
     }
 
     ChangeClass(InterfaceClassSet<P> iInterface, ClassSet iValue) {
-        Interface = iInterface;
-        Value = iValue;
+        interfaceClasses = iInterface;
+        value = iValue;
     }
 
     ChangeClass(InterfaceClass<P> iInterface, ClassSet iValue) {
-        Interface = new InterfaceClassSet<P>(iInterface);
-        Value = iValue;
+        interfaceClasses = new InterfaceClassSet<P>(iInterface);
+        value = iValue;
     }
 
     public ChangeClass(P iInterface, ClassSet iInterfaceValue) {
-        Interface = new InterfaceClassSet<P>(new InterfaceClass<P>(iInterface,iInterfaceValue));
-        Value = new ClassSet();
+        interfaceClasses = new InterfaceClassSet<P>(new InterfaceClass<P>(iInterface,iInterfaceValue));
+        value = new ClassSet();
     }
 
     /*    ChangeClass(InterfaceClassSet<P> iInterface) {
@@ -347,15 +347,15 @@ class ChangeClass<P extends PropertyInterface> {
       }
     */
     <V extends PropertyInterface> ChangeClass<V> map(Map<P,V> MapInterfaces) {
-        return new ChangeClass<V>(Interface.map(MapInterfaces),Value);
+        return new ChangeClass<V>(interfaceClasses.map(MapInterfaces), value);
     }
 
     <V extends PropertyInterface> ChangeClass<V> mapBack(Map<V,P> MapInterfaces) {
-        return new ChangeClass<V>(Interface.mapBack(MapInterfaces),Value);
+        return new ChangeClass<V>(interfaceClasses.mapBack(MapInterfaces), value);
     }
 
     public String toString() {
-        return Interface.toString() + " - " + Value.toString();
+        return interfaceClasses.toString() + " - " + value.toString();
     }
 }
 
@@ -373,31 +373,31 @@ class ValueClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<
         super(new ChangeClass<P>(Interface,Value));
     }
 
-    void or(ChangeClass<P> ToAdd) {
+    void or(ChangeClass<P> toAdd) {
 
         for(Iterator<ChangeClass<P>> i = iterator();i.hasNext();) {
-            ChangeClass<P> Class = i.next();
+            ChangeClass<P> changeClass = i.next();
             // также надо сделать что если совпадают классы то просто за or'ить
             // если мн-во классов включает другое мн-во, то уберем избыточные InterfaceClass
-            if(Class.Value.containsAll(ToAdd.Value))
-                ToAdd = new ChangeClass<P>(ToAdd.Interface.excludeAll(Class.Interface),ToAdd.Value);
+            if(changeClass.value.containsAll(toAdd.value))
+                toAdd = new ChangeClass<P>(toAdd.interfaceClasses.excludeAll(changeClass.interfaceClasses),toAdd.value);
             else
-            if(ToAdd.Value.containsAll(Class.Value))
-                Class.Interface.removeAll(ToAdd.Interface);
+            if(toAdd.value.containsAll(changeClass.value))
+                changeClass.interfaceClasses.removeAll(toAdd.interfaceClasses);
             else {
                 // также надо по хорошему если вижу одинаковые InterfaceClass сделать OR их ClassSet'ов и вырезать их в отдельный ChangeClass
             }
             // уберем старый класс если надо
-            if(Class.Interface.isEmpty()) i.remove();
+            if(changeClass.interfaceClasses.isEmpty()) i.remove();
         }
-        if(!ToAdd.Interface.isEmpty())
-            add(ToAdd);
+        if(!toAdd.interfaceClasses.isEmpty())
+            add(toAdd);
     }
 
-    Set<ChangeClass<P>> and(ChangeClass<P> AndNode, ChangeClass<P> Node) {
-        ClassSet AndValue = AndNode.Value.copy();
-        AndValue.or(Node.Value);
-        return Collections.singleton(new ChangeClass<P>(AndNode.Interface.and(Node.Interface),AndValue));
+    Set<ChangeClass<P>> and(ChangeClass<P> andNode, ChangeClass<P> node) {
+        ClassSet andValue = andNode.value.copy();
+        andValue.or(node.value);
+        return Collections.singleton(new ChangeClass<P>(andNode.interfaceClasses.and(node.interfaceClasses),andValue));
     }
 
     ValueClassSet<P> create(Set<ChangeClass<P>> iNodes) {
@@ -411,8 +411,8 @@ class ValueClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<
         if(Result==null) {
             Result = new ClassSet();
             for(ChangeClass<P> Class : this) // если пересекается хоть с одним, то на выходе может иметь что угодно
-                if(!Class.Interface.and(InterfaceImplement).isEmpty())
-                    Result.or(Class.Value);
+                if(!Class.interfaceClasses.and(InterfaceImplement).isEmpty())
+                    Result.or(Class.value);
             if(Main.ActivateCaches) CacheValueClass.put(InterfaceImplement,Result);
         }
         return Result;
@@ -425,8 +425,8 @@ class ValueClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<
         if(Result==null) {
             Result = new InterfaceClassSet<P>();
             for(ChangeClass<P> ChangeClass : this) // по сути надо если пересекается ReqValue
-                if(ReqValue==ClassSet.universal || ChangeClass.Value.intersect(ReqValue))
-                    Result.or(ChangeClass.Interface);
+                if(ReqValue==ClassSet.universal || ChangeClass.value.intersect(ReqValue))
+                    Result.or(ChangeClass.interfaceClasses);
             if(Main.ActivateCaches) CacheClassSet.put(ReqValue,Result);
         }
         return Result;

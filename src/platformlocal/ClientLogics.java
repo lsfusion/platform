@@ -454,7 +454,7 @@ class DefaultClientFormView extends ClientFormView {
             for (RegularFilter regFilter : filterGroup.filters) {
                 // Если просто кнопка - отменить фильтр
                 if (regFilter.filter == null) continue;
-                GroupObjectImplement propGroupObject = regFilter.filter.Property.GetApplyObject();
+                GroupObjectImplement propGroupObject = regFilter.filter.property.getApplyObject();
                 if (propGroupObject.Order > order) {
                     order = propGroupObject.Order;
                     groupObject = propGroupObject;

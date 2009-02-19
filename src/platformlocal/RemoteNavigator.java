@@ -291,7 +291,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
             ValueLink value = null;
 
-            ValueLink navigatorValue = filterKey.Value;
+            ValueLink navigatorValue = filterKey.value;
 
             if (navigatorValue instanceof UserValueLink) {
                 value = new UserValueLink(((UserValueLink)navigatorValue).Value);
@@ -305,7 +305,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
                 value = new PropertyValueLink(propertyMapper.doMapping(((PropertyValueLink)navigatorValue).Property));
             }
 
-            return new Filter(propertyMapper.doMapping(filterKey.Property), filterKey.Compare, value);
+            return new Filter(propertyMapper.doMapping(filterKey.property), filterKey.Compare, value);
         }
     }
 
@@ -530,7 +530,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
     PropertyView addPropertyView(GroupObjectImplement groupObject, PropertyObjectImplement propertyImplement) {
 
-        PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,(groupObject == null) ? propertyImplement.GetApplyObject() : groupObject);
+        PropertyView propertyView = new PropertyView(IDShift(1),propertyImplement,(groupObject == null) ? propertyImplement.getApplyObject() : groupObject);
 
         if (propertyImplement.property.sID != null) {
 
@@ -553,7 +553,7 @@ abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorEleme
 
         PropertyObjectImplement propertyImplement = new PropertyObjectImplement(property.property);
 
-        ListIterator<PropertyInterface> i = property.ListInterfaces.listIterator();
+        ListIterator<PropertyInterface> i = property.listInterfaces.listIterator();
         for(ObjectImplement object : objects) {
             propertyImplement.mapping.put(i.next(), object);
         }

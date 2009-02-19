@@ -442,22 +442,22 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         LCP IsGrmat = addCProp("признак товара",0,Class.integer,Article);
         groupArticleA.add(IsGrmat.property);
 
-        FilledProperty = addUProp("заполнение гр. тов.", 0,1,1,IsGrmat,1,1,ArtToGroup,1);
+        FilledProperty = addUProp("заполнение гр. тов.", Union.MAX,1,1,IsGrmat,1,1,ArtToGroup,1);
 
         // сделаем Quantity перегрузкой
-        Quantity = addUProp("кол-во",2,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
+        Quantity = addUProp("кол-во",Union.OVERRIDE,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
         LCP RashValue = addCProp("призн. расхода",-1,Class.integer,RashDocument);
 
         LCP PrihValue = addCProp("призн. прихода",1,Class.integer,PrihDocument);
 
-        OpValue = addUProp("общ. призн.", 2,1,1,RashValue,1,1,PrihValue,1);
+        OpValue = addUProp("общ. призн.",Union.OVERRIDE,1,1,RashValue,1,1,PrihValue,1);
 
         LGP RaznSValue = addGProp("разн. пр-рас.", OpValue,true,DocStore,1);
 
         LJP RGrAddV = addJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
 
-        LUP ArtActAddV = addUProp("наценка по товару",2,1,1,RGrAddV,1,1,ArtAddV,1);
+        LUP ArtActAddV = addUProp("наценка по товару",Union.OVERRIDE,1,1,RGrAddV,1,1,ArtAddV,1);
         groupArticleC.add(ArtActAddV.property);
 
 //        LJP Quantity = addUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
@@ -490,13 +490,13 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         PrihArtStore = addGProp("приход по складу", PrihQuantity,true,DocStore,1,2);
         RashArtStore = addGProp("расход по складу", RashQuantity,true,DocStore,1,2);
-        OstArtStore = addUProp("остаток по складу",1,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
+        OstArtStore = addUProp("остаток по складу",Union.MAX,2,1,PrihArtStore,1,2,-1,RashArtStore,1,2);
 
         OstArt = addGProp("остаток по товару", OstArtStore,true,2);
 
         MaxPrih = addGProp("макс. приход по гр. тов.", PrihQuantity,false,DocStore,1,ArtToGroup,2);
 
-        MaxOpStore = addUProp("макс. операция", 0,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
+        MaxOpStore = addUProp("макс. операция",Union.MAX,2,1,PrihArtStore,1,2,1,RashArtStore,1,2);
 
         SumMaxArt = addGProp("макс. операция (сумма)", MaxOpStore,true,2);
 
@@ -908,7 +908,7 @@ class SourceTest {
         Join3Q.properties.put(Table1Prop1, Table33Q.exprs.get(Table3Prop2));
         Join3Q.and(Table33Q.inJoin);
 
-        UnionQuery<KeyField,PropertyField> ResultQ = new UnionQuery<KeyField,PropertyField>(Table1.keys,1);
+        OperationQuery<KeyField,PropertyField> ResultQ = new OperationQuery<KeyField,PropertyField>(Table1.keys,Union.SUM);
         ResultQ.add(Join1Q,1);
         ResultQ.add(Join2Q,1);
         ResultQ.add(Join3Q,1);
@@ -932,7 +932,7 @@ class SourceTest {
     // 2 U(J(U(таблицы2 с prop2=1 и 2-м ключом таблицы1=5,таблица1),Table3),J(Table1,Table3))
     // последний Join должен уйти
     ModifyQuery test2() {
-        UnionQuery<KeyField,PropertyField> UnionQ = new UnionQuery<KeyField,PropertyField>(Table1.keys,2);
+        OperationQuery<KeyField,PropertyField> UnionQ = new OperationQuery<KeyField,PropertyField>(Table1.keys,Union.OVERRIDE);
 
         // 1-й запрос
         JoinQuery<KeyField,PropertyField> JoinQuery = new JoinQuery<KeyField,PropertyField>(Table1.keys);
@@ -987,7 +987,7 @@ class SourceTest {
         GroupQuery<PropertyField,PropertyField,PropertyField,KeyField> Group2Q = new GroupQuery<PropertyField, PropertyField, PropertyField, KeyField>(Collections.singleton(Table1Prop1),
             Join2Q,Table1Prop3,1);
 
-        UnionQuery<PropertyField,PropertyField> UnionQ = new UnionQuery<PropertyField,PropertyField>(Collections.singleton(Table1Prop1),2);
+        OperationQuery<PropertyField,PropertyField> UnionQ = new OperationQuery<PropertyField,PropertyField>(Collections.singleton(Table1Prop1),Union.OVERRIDE);
         UnionQ.add(Group1Q,1);
         UnionQ.add(Group2Q,1);
 

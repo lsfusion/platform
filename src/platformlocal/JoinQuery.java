@@ -1138,64 +1138,88 @@ class CompiledJoinQuery<K,V> {
 
 }
 
-// пока сделаем так что у UnionQuery одинаковые ключи
-class UnionQuery<K,V> extends JoinQuery<K,V> {
+enum Union {MAX,SUM,OVERRIDE}
 
-    UnionQuery(Collection<? extends K> iKeys, int iDefaultOperator) {
+abstract class UnionQuery<K,V> extends JoinQuery<K,V> {
+    
+    protected UnionQuery(Collection<? extends K> iKeys) {
         super(iKeys);
-        DefaultOperator = iDefaultOperator;
         where = Where.FALSE;
     }
 
-    // как в List 0 - MAX, 1 - SUM, 2 - NVL, плюс 3 - если есть в Source
-    int DefaultOperator;
+    abstract SourceExpr getUnionExpr(SourceExpr prevExpr, SourceExpr expr, JoinWhere inJoin);
 
-    static SourceExpr getExpr(List<SourceExpr> Operands,int Operator) {
-        SourceExpr Result = null;
-        for(SourceExpr Operand : Operands)
-            Result = getUnionExpr(Result,Operand,Operator);
-        return Result;
+    // добавляем на OR запрос
+    void add(Source<? extends K,V> source,Integer coeff) {
+
+        Join<K,V> join = new Join<K,V>((Source<K,V>) source,this);
+        for(Map.Entry<V,JoinExpr<K,V>> mapExpr : join.exprs.entrySet()) {
+            SourceExpr unionExpr = new LinearExpr(mapExpr.getValue(),coeff);
+            SourceExpr prevExpr = properties.get(mapExpr.getKey());
+            if(prevExpr!=null)
+                unionExpr = getUnionExpr(prevExpr,unionExpr,join.inJoin);
+            properties.put(mapExpr.getKey(), unionExpr);
+        }
+        where = where.or(join.inJoin);
     }
 
-    static SourceExpr getUnionExpr(SourceExpr PrevExpr, SourceExpr Expr, int Operator) {
-        if(PrevExpr==null) return Expr;
+    void add(Source<? extends K,V> source) {
+        add(source,1);
+    }
+}
 
-        SourceExpr Result;
-        switch(Operator) {
-            case 0: // MAX CE(New.notNull AND !(Prev>New),New,Prev)
-                Result = new CaseExpr(new CompareWhere(PrevExpr,Expr,CompareWhere.GREATER).or(Expr.getWhere().not()),PrevExpr,Expr);
+// пока сделаем так что у UnionQuery одинаковые ключи
+class OperationQuery<K,V> extends UnionQuery<K,V> {
+
+    OperationQuery(Collection<? extends K> iKeys, Union iDefaultOperator) {
+        super(iKeys);
+        defaultOperator = iDefaultOperator;
+    }
+
+    // как в List 0 - MAX, 1 - SUM, 2 - NVL, плюс 3 - если есть в Source
+    Union defaultOperator;
+
+    static SourceExpr getExpr(List<SourceExpr> operands,Union operator) {
+        SourceExpr result = operands.get(0);
+        for(int i=1;i<operands.size();i++)
+            result = getUnionExpr(result,operands.get(i),operator);
+        return result;
+    }
+
+    static SourceExpr getUnionExpr(SourceExpr prevExpr, SourceExpr expr, Union operator) {
+        if(prevExpr ==null) return expr;
+
+        SourceExpr result;
+        switch(operator) {
+            case MAX: // MAX CE(New.notNull AND !(Prev>New),New,Prev)
+                result = new CaseExpr(new CompareWhere(prevExpr,expr,CompareWhere.GREATER).or(expr.getWhere().not()), prevExpr, expr);
                 break;
-            case 1: // SUM CE(Prev.null,New,New.null,Prev,true,New+Prev)
+            case SUM: // SUM CE(Prev.null,New,New.null,Prev,true,New+Prev)
 //                Result = new CaseExpr(Expr.getWhere().not(),PrevExpr,new CaseExpr(PrevExpr.getWhere().not(),Expr,new FormulaExpr(PrevExpr,Expr,true)));
-                Result = new LinearExpr(Expr,PrevExpr,true);
+                result = new LinearExpr(expr, prevExpr,true);
                 break;
-            case 2: // NVL CE(New.notNull,New,Prev)
-                Result = new CaseExpr(Expr.getWhere(),Expr,PrevExpr);
+            case OVERRIDE: // NVL CE(New.notNull,New,Prev)
+                result = new CaseExpr(expr.getWhere(), expr, prevExpr);
                 break;
             default:
                 throw new RuntimeException("не может быть такого оператора");
         }
-        return Result;
+        return result;
     }
 
-    // по идее должно быть полиморфным
-    SourceExpr getUnionExpr(SourceExpr PrevExpr, SourceExpr Expr, Integer Coeff, JoinWhere InJoin) {
+    SourceExpr getUnionExpr(SourceExpr prevExpr, SourceExpr expr, JoinWhere inJoin) {
+        return getUnionExpr(prevExpr,expr,defaultOperator);
+    }
+}
 
-        if(!Coeff.equals(1)) Expr = new LinearExpr(Expr,Coeff);
-        if(PrevExpr==null) return Expr;
-        
-        if(DefaultOperator>2)
-            return new CaseExpr(InJoin,Expr,PrevExpr);
-        else
-            return getUnionExpr(PrevExpr,Expr,DefaultOperator);
+// выбирает по списку значение из первого Source'а
+class ChangeQuery<K,V> extends UnionQuery<K,V> {
+
+    ChangeQuery(Collection<? extends K> iKeys) {
+        super(iKeys);
     }
 
-    // добавляем на OR запрос
-    void add(Source<? extends K,V> Source,Integer Coeff) {
-
-        Join<K,V> Join = new Join<K,V>((Source<K,V>) Source,this);
-        for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.exprs.entrySet())
-            properties.put(MapExpr.getKey(), getUnionExpr(properties.get(MapExpr.getKey()),MapExpr.getValue(),Coeff, Join.inJoin));
-        where = where.or(Join.inJoin);
+    SourceExpr getUnionExpr(SourceExpr prevExpr, SourceExpr expr, JoinWhere inJoin) {
+        return new CaseExpr(inJoin,expr,prevExpr);
     }
 }

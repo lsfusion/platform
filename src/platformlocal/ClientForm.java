@@ -334,8 +334,8 @@ public class ClientForm extends JPanel {
             models.get(groupObject).setCurrentGroupObject(formChanges.objects.get(groupObject),false);
         }
 
-        for (ClientGroupObjectImplement groupObject : formChanges.ClassViews.keySet()) {
-            models.get(groupObject).setClassView(formChanges.ClassViews.get(groupObject));
+        for (ClientGroupObjectImplement groupObject : formChanges.classViews.keySet()) {
+            models.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
         }
 
         // Затем их свойства

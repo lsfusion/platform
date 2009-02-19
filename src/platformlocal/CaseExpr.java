@@ -222,11 +222,6 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
 
-        if(cases.size()==0)
-            return Type.NULL;
-        if(cases.size()==1 && cases.get(0).where.isTrue())
-            return cases.get(0).data.getSource(queryData, syntax);
-
         String Source = "CASE";
         boolean Else = false;
         for(int i=0;i< cases.size();i++) {
@@ -282,6 +277,8 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
 
     SourceExpr followFalse(Where where) {
+        if(where.isTrue()) return this;
+
         ExprCaseList followedCases = new ExprCaseList(where);
         for(ExprCase exprCase : cases)
             followedCases.add(exprCase.where,exprCase.data);
