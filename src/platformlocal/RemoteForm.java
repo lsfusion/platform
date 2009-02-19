@@ -445,12 +445,14 @@ abstract class ValueLink {
 
 class UserValueLink extends ValueLink {
 
-    Object Value;
+    Object value;
 
-    UserValueLink(Object iValue) {Value=iValue;}
+    UserValueLink(Object iValue) {
+        value =iValue;
+    }
 
     SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, ? extends SourceExpr> ClassSource, DataSession Session, Type DBType) {
-        return DBType.getExpr(Value);
+        return DBType.getExpr(value);
     }
 }
 

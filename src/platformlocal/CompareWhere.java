@@ -28,11 +28,17 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return operator1.getSource(queryData, syntax) + getCompare(compare) + operator2.getSource(queryData, syntax);
+        return operator1.getSource(queryData, syntax) + getCompare(operator2,compare) + operator2.getSource(queryData, syntax);
     }
 
-    static String getCompare(int Compare) {
-        return (Compare==EQUALS?"=":(Compare==GREATER?">":(Compare==LESS?"<":(Compare==GREATER_EQUALS?">=":(Compare==LESS_EQUALS?"<=":"<>")))));
+    static boolean containsMask(String string) {
+        return string.contains("%") || string.contains("_");  
+    }
+    static String getCompare(SourceExpr expr, int compare) {
+        if((compare==EQUALS || compare==NOT_EQUALS) && expr instanceof ValueExpr && ((ValueExpr)expr).object.type instanceof StringType && containsMask((String)((ValueExpr)expr).object.value))
+            return (compare==EQUALS?" LIKE ":" NOT LIKE ");
+        else
+            return (compare==EQUALS?"=":(compare==GREATER?">":(compare==LESS?"<":(compare==GREATER_EQUALS?">=":(compare==LESS_EQUALS?"<=":"<>")))));
     }
     static int reverse(int Compare) {
         switch(Compare) {
@@ -60,17 +66,17 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы 
-    public String getNotSource(Map<QueryData, String> QueryData, SQLSyntax Syntax) {
-        String Op1Source = operator1.getSource(QueryData, Syntax);
-        String Result = Op1Source + " IS NULL";
-        String Op2Source = operator2.getSource(QueryData, Syntax);
+    public String getNotSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+        String op1Source = operator1.getSource(queryData, syntax);
+        String result = op1Source + " IS NULL";
+        String op2Source = operator2.getSource(queryData, syntax);
         if(!(operator2 instanceof NullExpr))
-            Result = Result + " OR " + Op2Source + " IS NULL";
-        return "(" + Result + " OR " + Op1Source + getCompare(reverse(compare)) + Op2Source + ")";
+            result = result + " OR " + op2Source + " IS NULL";
+        return "(" + result + " OR " + op1Source + getCompare(operator2,reverse(compare)) + op2Source + ")";
     }
 
     public String toString() {
-        return operator1.toString() + getCompare(compare) + operator2.toString();
+        return operator1.toString() + getCompare(operator2,compare) + operator2.toString();
     }
 
     public Where getCaseWhere(MapCase<Integer> cCase) {

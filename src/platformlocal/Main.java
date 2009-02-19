@@ -168,12 +168,12 @@ public class Main {
                 Adapter.createDB();
 
                 DataSession Session = BL.createSession(Adapter);
-                BL.FillDB(Session, true);
+                BL.fillDB(Session, true);
                 Session.close();
 
                 BL.fillData(Adapter);
             } else
-                BL.FillDB(null, false);
+                BL.fillDB(null, false);
 
             // базовый навигатор
             RemoteNavigator<TestBusinessLogics> remoteNavigator =  new RemoteNavigator(Adapter,BL);
@@ -405,7 +405,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         AbstractGroup groupArticleC = new AbstractGroup("Ценовые параметры");
         AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
-        Name = addDProp("имя", Class.string, objectClass);
+        Name = addDProp("имя", Class.string(50), objectClass);
         groupArticleA.add(Name.property);
 
         DocStore = addDProp("склад", Store, Document);
@@ -471,7 +471,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LJP ArtGroupName = addJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
-        LDP ArtGName = addDProp("при доб. гр. тов.", Class.string, Article);
+        LDP ArtGName = addDProp("при доб. гр. тов.", Class.string(50), Article);
         setDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = addJProp("товар в док.", NotZero,2,Quantity,1,2);

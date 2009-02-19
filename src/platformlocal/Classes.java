@@ -18,21 +18,39 @@ abstract class Class extends AbstractNode {
     static BaseClass base;
     static BaseClass data;
     static IntegralClass integral;
-    static StringClass string;
     static IntegerClass integer;
     static LongClass longClass;
     static DoubleClass doubleClass;
     static DateClass date;
     static BitClass bit;
 
+    private static Collection<StringClass> strings = new ArrayList<StringClass>();
+    static StringClass string(int length) {
+        for(StringClass string : strings)
+            if(string.length==length)
+                return string;
+        StringClass string = new StringClass(1000300+strings.size(),"Строка "+length,length);
+        string.addParent(data);
+        strings.add(string);
+        return string;
+    }
+    private static Collection<NumericClass> numerics = new ArrayList<NumericClass>();
+    static NumericClass numeric(int length,int precision) {
+        for(NumericClass numeric : numerics)
+            if(numeric.length==length && numeric.precision==precision)
+                return numeric;
+        NumericClass numeric = new NumericClass(1000700+numerics.size(),"Число "+length+","+precision,length,precision);
+        numeric.addParent(data);
+        numerics.add(numeric);
+        return numeric;
+    }
+    
     static {
         base = new BaseClass(1000000, "Базовый класс");
         data = new BaseClass(1000001, "Данные");
         data.addParent(base);
         integral = new IntegralClass(1000002, "Число");
         integral.addParent(data);
-        string = new StringClass(1000003, "Строка");
-        string.addParent(data);
         integer = new IntegerClass(1000004, "Кол-во");
         integer.addParent(integral);
         longClass = new LongClass(1000005, "Кол-во");
@@ -310,12 +328,33 @@ class BitClass extends IntegralClass {
     }
 }
 
-class StringClass extends Class {
+class NumericClass extends DoubleClass {
 
-    StringClass(Integer iID, String caption) {super(iID, caption);}
+    int length;
+    int precision;
+
+    NumericClass(Integer iID, String caption, int iLength, int iPrecision) {
+        super(iID, caption);
+        length = iLength;
+        precision = iPrecision;
+    }
 
     Type getType() {
-        return Type.string;
+        return Type.numeric(length,precision);
+    }
+}
+
+class StringClass extends Class {
+
+    StringClass(Integer iID, String caption, int iLength) {
+        super(iID, caption);
+        length = iLength;
+    }
+
+    int length;
+
+    Type getType() {
+        return Type.string(length);
     }
     
     Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
@@ -359,7 +398,11 @@ class ObjectClass extends Class {
 
 abstract class Type<T> {
 
-    static StringType string = new StringType();
+    String ID;
+    Type(String iID) {
+        ID = iID;
+    }
+
     static IntegerType integer = new IntegerType();
     static LongType longType = new LongType();
     static DoubleType doubleType = new DoubleType();
@@ -369,20 +412,29 @@ abstract class Type<T> {
 
     static String NULL = "NULL";
 
-    static List<Type> Enum = new ArrayList<Type>();
+    static StringType string(int length) {
+        StringType result = new StringType(length);
+        types.add(result);
+        return result;
+    }
+    static NumericType numeric(int length,int precision) {
+        NumericType result = new NumericType(length,precision);
+        types.add(result);
+        return result;
+    }
+    static Set<Type> types = new HashSet<Type>();
 
     static {
         object = integer;
         system = integer;
 
-        Enum.add(integer);
-        Enum.add(string);
-        Enum.add(longType);
-        Enum.add(doubleType);
-        Enum.add(bit);
+        types.add(integer);
+        types.add(longType);
+        types.add(doubleType);
+        types.add(bit);
     }
 
-    abstract String getDB(SQLSyntax Syntax);
+    abstract String getDB(SQLSyntax syntax);
 
     abstract Object getMinValue();
     abstract String getEmptyString();
@@ -398,31 +450,35 @@ abstract class Type<T> {
             return new ValueExpr(Value,this);
     }
 
-    static Type getObjectType(Object Value) {
-        if(Value==null)
-            throw new RuntimeException();
-
-        if(Value instanceof Integer)
-            return integer;
-        else
-            return string;
-    }
-
     ValueExpr getMinValueExpr() {
         return new ValueExpr(getMinValue(),this);
     }
 
     abstract public String getString(Object Value, SQLSyntax Syntax);
 
-    abstract T read(Object Value);
+    abstract T read(Object value);
 
     abstract boolean greater(Object Value1,Object Value2);
 }
 
 class StringType extends Type<String> {
 
-    String getDB(SQLSyntax Syntax) {
-        return Syntax.getStringType();
+    int length;
+    StringType(int iLength) {
+        super("S"+iLength);
+        length = iLength;
+    }
+
+    public boolean equals(Object obj) {
+        return this==obj || obj instanceof StringType && length==((StringType)obj).length;
+    }
+
+    public int hashCode() {
+        return length;
+    }
+
+    String getDB(SQLSyntax syntax) {
+        return syntax.getStringType(length);
     }
 
     Object getMinValue() {
@@ -441,8 +497,8 @@ class StringType extends Type<String> {
         return "'" + Value + "'";
     }
 
-    String read(Object Value) {
-        return (String)Value;
+    String read(Object value) {
+        return (String) value;
     }
 
     boolean greater(Object Value1, Object Value2) {
@@ -451,6 +507,10 @@ class StringType extends Type<String> {
 }
 
 abstract class IntegralType<T> extends Type<T> {
+
+    protected IntegralType(String iID) {
+        super(iID);
+    }
 
     String getEmptyString() {
         return "0";
@@ -468,28 +528,32 @@ abstract class IntegralType<T> extends Type<T> {
 
 class IntegerType extends IntegralType<Integer> {
 
-    String getDB(SQLSyntax Syntax) {
-        return Syntax.getIntegerType();
+    IntegerType() {
+        super("I");
+    }
+
+    String getDB(SQLSyntax syntax) {
+        return syntax.getIntegerType();
     }
 
     Object getMinValue() {
         return java.lang.Integer.MIN_VALUE;
     }
 
-    Integer read(Object Value) {
-        if(Value instanceof BigDecimal)
-            return ((BigDecimal)Value).intValue();
+    Integer read(Object value) {
+        if(value instanceof BigDecimal)
+            return ((BigDecimal) value).intValue();
         else
-        if(Value instanceof Double)
-            return ((Double)Value).intValue();
+        if(value instanceof Double)
+            return ((Double) value).intValue();
         else
-        if(Value instanceof Float)
-            return ((Float)Value).intValue();
+        if(value instanceof Float)
+            return ((Float) value).intValue();
         else
-        if(Value instanceof Long)
-            return ((Long)Value).intValue();
+        if(value instanceof Long)
+            return ((Long) value).intValue();
         else
-            return (Integer)Value;
+            return (Integer) value;
     }
 
     boolean greater(Object Value1, Object Value2) {
@@ -499,28 +563,32 @@ class IntegerType extends IntegralType<Integer> {
 
 class LongType extends IntegralType<Long> {
 
-    String getDB(SQLSyntax Syntax) {
-        return Syntax.getLongType();
+    LongType() {
+        super("L");
+    }
+
+    String getDB(SQLSyntax syntax) {
+        return syntax.getLongType();
     }
 
     Object getMinValue() {
         return java.lang.Long.MIN_VALUE;
     }
 
-    Long read(Object Value) {
-        if(Value instanceof BigDecimal)
-            return ((BigDecimal)Value).longValue();
+    Long read(Object value) {
+        if(value instanceof BigDecimal)
+            return ((BigDecimal) value).longValue();
         else
-        if(Value instanceof Double)
-            return ((Double)Value).longValue();
+        if(value instanceof Double)
+            return ((Double) value).longValue();
         else
-        if(Value instanceof Float)
-            return ((Float)Value).longValue();
+        if(value instanceof Float)
+            return ((Float) value).longValue();
         else
-        if(Value instanceof Integer)
-            return ((Integer)Value).longValue();
+        if(value instanceof Integer)
+            return ((Integer) value).longValue();
         else
-            return (Long)Value;
+            return (Long) value;
     }
 
     boolean greater(Object Value1, Object Value2) {
@@ -530,27 +598,34 @@ class LongType extends IntegralType<Long> {
 
 class DoubleType extends IntegralType<Double> {
 
-    String getDB(SQLSyntax Syntax) {
-        return Syntax.getDoubleType();
+    DoubleType() {
+        super("D");
+    }
+    DoubleType(String iID) {
+        super(iID);
+    }
+
+    String getDB(SQLSyntax syntax) {
+        return syntax.getDoubleType();
     }
 
     Object getMinValue() {
         return java.lang.Double.MIN_VALUE;
     }
 
-    Double read(Object Value) {
-        if(Value instanceof BigDecimal)
-            return ((BigDecimal)Value).doubleValue();
+    Double read(Object value) {
+        if(value instanceof BigDecimal)
+            return ((BigDecimal) value).doubleValue();
         else
-        if(Value instanceof Float)
-            return ((Float)Value).doubleValue();
+        if(value instanceof Float)
+            return ((Float) value).doubleValue();
         else
-        if(Value instanceof Long)
-            return ((Long)Value).doubleValue();
-        if(Value instanceof Integer)
-            return ((Integer)Value).doubleValue();
+        if(value instanceof Long)
+            return ((Long) value).doubleValue();
+        if(value instanceof Integer)
+            return ((Integer) value).doubleValue();
         else
-            return (Double)Value;
+            return (Double) value;
     }
 
     boolean greater(Object Value1, Object Value2) {
@@ -558,10 +633,29 @@ class DoubleType extends IntegralType<Double> {
     }
 }
 
+class NumericType extends DoubleType {
+
+    int length;
+    int precision;
+    NumericType(int iLength,int iPrecision) {
+        super("N"+iLength+"P"+iPrecision);
+        length = iLength;
+        precision = iPrecision;
+    }
+
+    String getDB(SQLSyntax syntax) {
+        return syntax.getNumericType(length,precision);
+    }
+}
+
 class BitType extends IntegralType<Boolean> {
 
-    String getDB(SQLSyntax Syntax) {
-        return Syntax.getBitType();
+    BitType() {
+        super("B");
+    }
+
+    String getDB(SQLSyntax syntax) {
+        return syntax.getBitType();
     }
 
     Object getMinValue() {
@@ -572,20 +666,20 @@ class BitType extends IntegralType<Boolean> {
         return false;
     }
 
-    Boolean read(Object Value) {
-        if(Value instanceof BigDecimal)
-            return ((BigDecimal)Value).byteValue()!=0;
+    Boolean read(Object value) {
+        if(value instanceof BigDecimal)
+            return ((BigDecimal) value).byteValue()!=0;
         else
-        if(Value instanceof Double)
-            return ((Double)Value).byteValue()!=0;
-        if(Value instanceof Float)
-            return ((Float)Value).byteValue()!=0;
-        if(Value instanceof Long)
-            return ((Long)Value).byteValue()!=0;
-        if(Value instanceof Integer)
-            return ((Integer)Value).byteValue()!=0;
+        if(value instanceof Double)
+            return ((Double) value).byteValue()!=0;
+        if(value instanceof Float)
+            return ((Float) value).byteValue()!=0;
+        if(value instanceof Long)
+            return ((Long) value).byteValue()!=0;
+        if(value instanceof Integer)
+            return ((Integer) value).byteValue()!=0;
         else
-            return (Boolean)Value;
+            return (Boolean) value;
     }
 
     public String getString(Object Value, SQLSyntax Syntax) {

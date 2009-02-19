@@ -340,25 +340,25 @@ abstract class Property<T extends PropertyInterface> extends AbstractNode implem
     // раз уж ChangeTableMap закэшировали то и ChangeTable тоже
     IncrementChangeTable changeTable;
 
-    void FillChangeTable() {
-        changeTable = tableFactory.GetChangeTable(interfaces.size(), getType());
+    void fillChangeTable() {
+        changeTable = tableFactory.getChangeTable(interfaces.size(), getType());
         changeTableMap = new HashMap<T,KeyField>();
-        Iterator<KeyField> io = changeTable.Objects.iterator();
-        for(T Interface : interfaces)
-            changeTableMap.put(Interface,io.next());
+        Iterator<KeyField> io = changeTable.objects.iterator();
+        for(T anInterface : interfaces)
+            changeTableMap.put(anInterface,io.next());
     }
 
-    void OutChangesTable(DataSession Session) throws SQLException {
-        JoinQuery<T,PropertyField> Query = new JoinQuery<T,PropertyField>(interfaces);
+    void outChangesTable(DataSession session) throws SQLException {
+        JoinQuery<T,PropertyField> query = new JoinQuery<T,PropertyField>(interfaces);
 
-        Join<KeyField,PropertyField> ChangeJoin = new Join<KeyField,PropertyField>(changeTable,Query, changeTableMap);
-        ChangeJoin.joins.put(changeTable.property,changeTable.property.type.getExpr(ID));
-        Query.and(ChangeJoin.inJoin);
+        Join<KeyField,PropertyField> changeJoin = new Join<KeyField,PropertyField>(changeTable,query, changeTableMap);
+        changeJoin.joins.put(changeTable.property,changeTable.property.type.getExpr(ID));
+        query.and(changeJoin.inJoin);
 
-        Query.properties.put(changeTable.value, ChangeJoin.exprs.get(changeTable.value));
-        Query.properties.put(changeTable.prevValue, ChangeJoin.exprs.get(changeTable.prevValue));
+        query.properties.put(changeTable.value, changeJoin.exprs.get(changeTable.value));
+        query.properties.put(changeTable.prevValue, changeJoin.exprs.get(changeTable.prevValue));
 
-        Query.outSelect(Session);
+        query.outSelect(session);
     }
 
     PropertyField field;
@@ -571,10 +571,10 @@ class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInt
     Map<KeyField,DataPropertyInterface> dataTableMap = null;
 
     void FillDataTable() {
-        dataTable = tableFactory.GetDataChangeTable(interfaces.size(), getType());
+        dataTable = tableFactory.getDataChangeTable(interfaces.size(), getType());
         // если нету Map'a построим
         dataTableMap = new HashMap<KeyField,DataPropertyInterface>();
-        Iterator<KeyField> io = dataTable.Objects.iterator();
+        Iterator<KeyField> io = dataTable.objects.iterator();
         for(DataPropertyInterface Interface : interfaces)
             dataTableMap.put(io.next(),Interface);
     }
@@ -2092,8 +2092,8 @@ class DataSession  {
     Map<Class,ClassSet> removeChanges = new HashMap<Class, ClassSet>();
     Map<DataProperty, ValueClassSet<DataPropertyInterface>> dataChanges = new HashMap<DataProperty, ValueClassSet<DataPropertyInterface>>();
 
-    TableFactory TableFactory;
-    ObjectClass ObjectClass;
+    TableFactory tableFactory;
+    ObjectClass objectClass;
 
     int ID = 0;
 
@@ -2101,8 +2101,8 @@ class DataSession  {
 
         ID = iID;
         syntax = Adapter;
-        TableFactory = iTableFactory;
-        ObjectClass = iObjectClass;
+        tableFactory = iTableFactory;
+        objectClass = iObjectClass;
 
         try {
             connection = Adapter.startConnection();
@@ -2114,7 +2114,7 @@ class DataSession  {
             e.printStackTrace();
         }
 
-        TableFactory.fillSession(this);
+        tableFactory.fillSession(this);
     }
 
     void restart(boolean Cancel) throws SQLException {
@@ -2126,7 +2126,7 @@ class DataSession  {
                 ViewChanges.removeClasses.addAll(changes.removeClasses);
             }
 
-        TableFactory.clearSession(this);
+        tableFactory.clearSession(this);
         changes = new DataChanges();
         NewClasses = new HashMap<Integer,Class>();
         BaseClasses = new HashMap<Integer,Class>();
@@ -2159,12 +2159,12 @@ class DataSession  {
         ToClass.GetDiffSet(PrevClass,AddClasses,RemoveClasses);
 
         putClassChanges(AddClasses,PrevClass, addChanges);
-        TableFactory.addClassTable.changeClass(this,idObject,AddClasses,false);
-        TableFactory.removeClassTable.changeClass(this,idObject,AddClasses,true);
+        tableFactory.addClassTable.changeClass(this,idObject,AddClasses,false);
+        tableFactory.removeClassTable.changeClass(this,idObject,AddClasses,true);
 
         putClassChanges(RemoveClasses,PrevClass, removeChanges);
-        TableFactory.removeClassTable.changeClass(this,idObject,RemoveClasses,false);
-        TableFactory.addClassTable.changeClass(this,idObject,RemoveClasses,true);
+        tableFactory.removeClassTable.changeClass(this,idObject,RemoveClasses,false);
+        tableFactory.addClassTable.changeClass(this,idObject,RemoveClasses,true);
 
         if(!NewClasses.containsKey(idObject))
             BaseClasses.put(idObject,PrevClass);
@@ -2225,7 +2225,7 @@ class DataSession  {
         InsertValues.put(Property.dataTable.value,NewValue);
 
         ClassSet ValueClass = Property.getBaseClass();
-        if(ValueClass.intersect(ClassSet.getUp(ObjectClass)))
+        if(ValueClass.intersect(ClassSet.getUp(objectClass)))
             ValueClass = getBaseClassSet((Integer) NewValue);
 
         UpdateInsertRecord(Property.dataTable,InsertKeys,InsertValues);
@@ -2245,7 +2245,7 @@ class DataSession  {
     Class readClass(Integer idObject) throws SQLException {
         if(BusinessLogics.AutoFillDB) return null;
 
-        return ObjectClass.findClassID(TableFactory.objectTable.GetClassID(this,idObject));
+        return objectClass.findClassID(tableFactory.objectTable.GetClassID(this,idObject));
     }
 
     Class getObjectClass(Integer idObject) throws SQLException {
@@ -2376,13 +2376,13 @@ class DataSession  {
 
         for(Integer idObject : NewClasses.keySet()) {
             Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-            InsertKeys.put(TableFactory.objectTable.key, idObject);
+            InsertKeys.put(tableFactory.objectTable.key, idObject);
 
             Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
             Class ChangeClass = NewClasses.get(idObject);
-            InsertProps.put(TableFactory.objectTable.objectClass,ChangeClass!=null?ChangeClass.ID:null);
+            InsertProps.put(tableFactory.objectTable.objectClass,ChangeClass!=null?ChangeClass.ID:null);
 
-            UpdateInsertRecord(TableFactory.objectTable,InsertKeys,InsertProps);
+            UpdateInsertRecord(tableFactory.objectTable,InsertKeys,InsertProps);
         }
     }
 

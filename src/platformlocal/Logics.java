@@ -304,31 +304,31 @@ abstract class ChangeTable extends SessionTable {
 
 class ChangeObjectTable extends ChangeTable {
 
-    Collection<KeyField> Objects;
+    Collection<KeyField> objects;
     KeyField property;
     PropertyField value;
 
-    ChangeObjectTable(String TablePrefix,Integer iObjects,Integer iDBType) {
-        super(TablePrefix+"changetable"+iObjects+"t"+iDBType);
+    ChangeObjectTable(String TablePrefix,Integer iObjects,Type iDBType) {
+        super(TablePrefix+"changetable"+iObjects+"t"+iDBType.ID);
 
-        Objects = new ArrayList();
+        objects = new ArrayList();
         for(Integer i=0;i<iObjects;i++) {
             KeyField ObjKeyField = new KeyField("object"+i,Type.object);
-            Objects.add(ObjKeyField);
+            objects.add(ObjKeyField);
             keys.add(ObjKeyField);
         }
 
         property = new KeyField("property",Type.system);
         keys.add(property);
 
-        value = new PropertyField("value",Type.Enum.get(iDBType));
+        value = new PropertyField("value",iDBType);
         Properties.add(value);
     }
 }
 
 class DataChangeTable extends ChangeObjectTable {
 
-    DataChangeTable(Integer iObjects,Integer iDBType) {
+    DataChangeTable(Integer iObjects,Type iDBType) {
         super("data",iObjects,iDBType);
     }
 }
@@ -337,10 +337,10 @@ class IncrementChangeTable extends ChangeObjectTable {
 
     PropertyField prevValue;
 
-    IncrementChangeTable(Integer iObjects,Integer iDBType) {
+    IncrementChangeTable(Integer iObjects,Type iDBType) {
         super("inc",iObjects,iDBType);
 
-        prevValue = new PropertyField("prevvalue",Type.Enum.get(iDBType));
+        prevValue = new PropertyField("prevvalue",iDBType);
         Properties.add(prevValue);
     }
 }
@@ -423,53 +423,55 @@ class TableFactory extends TableImplement{
     ObjectTable objectTable;
     IDTable idTable;
     List<ViewTable> viewTables;
-    List<List<DataChangeTable>> DataChangeTables;
-    List<List<IncrementChangeTable>> ChangeTables;
+    List<Map<Type,DataChangeTable>> dataChangeTables = new ArrayList<Map<Type, DataChangeTable>>();
+    List<Map<Type,IncrementChangeTable>> changeTables = new ArrayList<Map<Type, IncrementChangeTable>>();
 
     AddClassTable addClassTable;
     RemoveClassTable removeClassTable;
 
     // для отладки
     boolean reCalculateAggr = false;
-    boolean Crash = false;
+    boolean crash = false;
 
-    IncrementChangeTable GetChangeTable(Integer Objects, Type DBType) {
-        return ChangeTables.get(Objects-1).get(Type.Enum.indexOf(DBType));
+    IncrementChangeTable getChangeTable(Integer objects, Type dbType) {
+        Map<Type,IncrementChangeTable> objChangeTables = changeTables.get(objects-1);
+        IncrementChangeTable table = objChangeTables.get(dbType);
+        if(table==null) {
+            table = new IncrementChangeTable(objects,dbType);
+            objChangeTables.put(dbType,table);
+        }
+        return table;
     }
 
-    DataChangeTable GetDataChangeTable(Integer Objects, Type DBType) {
-        return DataChangeTables.get(Objects-1).get(Type.Enum.indexOf(DBType));
+    DataChangeTable getDataChangeTable(Integer objects, Type dbType) {
+        Map<Type,DataChangeTable> objChangeTables = dataChangeTables.get(objects-1);
+        DataChangeTable table = objChangeTables.get(dbType);
+        if(table==null) {
+            table = new DataChangeTable(objects,dbType);
+            objChangeTables.put(dbType,table);
+        }
+        return table;
     }
 
-    int MaxBeanObjects = 3;
-    int MaxInterface = 5;
+    int maxBeanObjects = 3;
+    int maxInterface = 5;
 
     TableFactory() {
         objectTable = new ObjectTable();
         idTable = new IDTable();
         viewTables = new ArrayList();
-        ChangeTables = new ArrayList();
-        DataChangeTables = new ArrayList();
 
         addClassTable = new AddClassTable();
         removeClassTable = new RemoveClassTable();
 
-        for(int i=1;i<=MaxBeanObjects;i++)
+        for(int i=1;i<= maxBeanObjects;i++)
             viewTables.add(new ViewTable(i));
 
-        for(int i=1;i<=MaxInterface;i++) {
-            List<IncrementChangeTable> ObjChangeTables = new ArrayList();
-            ChangeTables.add(ObjChangeTables);
-            for(int j=0;j<Type.Enum.size();j++)
-                ObjChangeTables.add(new IncrementChangeTable(i,j));
-        }
+        for(int i=0;i<maxInterface;i++)
+            changeTables.add(new HashMap<Type, IncrementChangeTable>());
 
-        for(int i=1;i<=MaxInterface;i++) {
-            List<DataChangeTable> ObjChangeTables = new ArrayList();
-            DataChangeTables.add(ObjChangeTables);
-            for(int j=0;j<Type.Enum.size();j++)
-                ObjChangeTables.add(new DataChangeTable(i,j));
-        }
+        for(int i=0;i<maxInterface;i++)
+            dataChangeTables.add(new HashMap<Type, DataChangeTable>());
     }
 
     void includeIntoGraph(TableImplement IncludeItem) {
@@ -477,7 +479,7 @@ class TableFactory extends TableImplement{
         RecIncludeIntoGraph(IncludeItem,true,Checks);
     }
 
-    void FillDB(DataSession Session, boolean createTable) throws SQLException {
+    void fillDB(DataSession Session, boolean createTable) throws SQLException {
         Set<TableImplement> TableImplements = new HashSet<TableImplement>();
         FillSet(TableImplements);
 
@@ -511,31 +513,34 @@ class TableFactory extends TableImplement{
     }
 
     // заполняет временные таблицы
-    void fillSession(DataSession Session) throws SQLException {
+    void fillSession(DataSession session) throws SQLException {
 
-        Session.createTemporaryTable(addClassTable);
-        Session.createTemporaryTable(removeClassTable);
+        session.createTemporaryTable(addClassTable);
+        session.createTemporaryTable(removeClassTable);
 
-        for(List<IncrementChangeTable> ListTables : ChangeTables)
-            for(ChangeObjectTable ChangeTable : ListTables) Session.createTemporaryTable(ChangeTable);
-        for(List<DataChangeTable> ListTables : DataChangeTables)
-            for(ChangeObjectTable DataChangeTable : ListTables) Session.createTemporaryTable(DataChangeTable);
+        for(Map<Type, IncrementChangeTable> mapTables : changeTables)
+            for(ChangeObjectTable changeTable : mapTables.values())
+                session.createTemporaryTable(changeTable);
+        for(Map<Type, DataChangeTable> mapTables : dataChangeTables)
+            for(ChangeObjectTable dataChangeTable : mapTables.values())
+                session.createTemporaryTable(dataChangeTable);
 
-        for(ViewTable ViewTable : viewTables) Session.createTemporaryTable(ViewTable);
+        for(ViewTable ViewTable : viewTables)
+            session.createTemporaryTable(ViewTable);
     }
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
     void clearSession(DataSession Session) throws SQLException {
 
-        Session.deleteKeyRecords(addClassTable,new HashMap());
-        Session.deleteKeyRecords(removeClassTable,new HashMap());
+        Session.deleteKeyRecords(addClassTable,new HashMap<KeyField, Integer>());
+        Session.deleteKeyRecords(removeClassTable,new HashMap<KeyField, Integer>());
 
-        for(List<IncrementChangeTable> TypeTables : ChangeTables)
-            for(ChangeObjectTable Table : TypeTables)
-                Session.deleteKeyRecords(Table,new HashMap());
-        for(List<DataChangeTable> TypeTables : DataChangeTables)
-            for(ChangeObjectTable Table : TypeTables)
-                Session.deleteKeyRecords(Table,new HashMap());
+        for(Map<Type, IncrementChangeTable> mapTables : changeTables)
+            for(ChangeObjectTable changeTable : mapTables.values())
+                Session.deleteKeyRecords(changeTable,new HashMap<KeyField, Integer>());
+        for(Map<Type, DataChangeTable> mapTables : dataChangeTables)
+            for(ChangeObjectTable dataChangeTable : mapTables.values())
+                Session.deleteKeyRecords(dataChangeTable,new HashMap<KeyField, Integer>());
     }
 }
 
@@ -559,7 +564,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         objectClass = new ObjectClass(IDShift(1), "Объект");
         objectClass.addParent(Class.base);
 
-        for(int i=0;i< tableFactory.MaxInterface;i++) {
+        for(int i=0;i< tableFactory.maxInterface;i++) {
             TableImplement Include = new TableImplement();
             for(int j=0;j<=i;j++)
                 Include.add(new DataPropertyInterface(j,Class.base));
@@ -638,7 +643,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
 
         DataSession Session = createSession(Adapter);
-        FillDB(Session, true);
+        fillDB(Session, true);
         Session.close();
 
         // запустить ChangeDBTest
@@ -778,10 +783,10 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return null;
     }
 
-    void FillDB(DataSession Session, boolean createTable) throws SQLException {
+    void fillDB(DataSession Session, boolean createTable) throws SQLException {
 
         // инициализируем таблицы
-        tableFactory.FillDB(Session, createTable);
+        tableFactory.fillDB(Session, createTable);
 
         // запишем sID'ки
         int IDPropNum = 0;
@@ -795,7 +800,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         // закинем в таблицы(создав там все что надо) св-ва
         for(Property Property : properties) {
             // ChangeTable'ы заполним
-            Property.FillChangeTable();
+            Property.fillChangeTable();
 
             if(Property instanceof DataProperty) {
                 DataProperties.add((DataProperty)Property);
@@ -1122,7 +1127,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
                 if(Changes) {
                     DataSession Session = createSession(Adapter);
-                    FillDB(Session, true);
+                    fillDB(Session, true);
                     Session.close();
 
                     fillData(Adapter);
@@ -1169,7 +1174,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             DataProperty DataProp = new DataProperty(tableFactory,(i%4==0?Class.integer :Classes.get(Randomizer.nextInt(Classes.size()))));
             DataProp.caption = "Data Property " + i;
             // генерируем классы
-            int IntCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
+            int IntCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
             for(int j=0;j<IntCount;j++)
                 DataProp.interfaces.add(new DataPropertyInterface(j,Classes.get(Randomizer.nextInt(Classes.size()))));
 
@@ -1195,7 +1200,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
                 // генерируем случайно кол-во интерфейсов
                 List<PropertyInterface> RelPropInt = new ArrayList();
-                int IntCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
+                int IntCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
                 for(int j=0;j<IntCount;j++) {
                     JoinPropertyInterface Interface = new JoinPropertyInterface(j);
                     RelProp.interfaces.add(Interface);
@@ -1256,7 +1261,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
                 boolean Correct = true;
                 List<PropertyInterface> GroupInt = new ArrayList(GroupProp.interfaces);
-                int GroupCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
+                int GroupCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
                 for(int j=0;j<GroupCount;j++) {
                     PropertyInterfaceImplement Implement;
                     // генерируем случайно map'ы на эти интерфейсы
@@ -1303,7 +1308,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 }
                 }
 
-                int OpIntCount = Randomizer.nextInt(tableFactory.MaxInterface)+1;
+                int OpIntCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
                 for(int j=0;j<OpIntCount;j++)
                     Property.interfaces.add(new PropertyInterface(j));
 

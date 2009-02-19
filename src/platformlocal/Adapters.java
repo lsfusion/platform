@@ -43,7 +43,9 @@ interface SQLSyntax {
 
     boolean noAutoCommit();
 
-    abstract String getStringType();
+    abstract String getStringType(int length);
+
+    abstract String getNumericType(int length,int precision);
 
     abstract String getIntegerType();
 
@@ -71,8 +73,12 @@ abstract class DataAdapter implements SQLSyntax {
         Server = iServer; 
     }
 
-    public String getStringType() {
-        return "char(50)";
+    public String getStringType(int length) {
+        return "char("+length+")";
+    }
+
+    public String getNumericType(int length,int precision) {
+        return "numeric("+length+","+precision+")";
     }
 
     public String getIntegerType() {

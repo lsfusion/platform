@@ -294,7 +294,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
             ValueLink navigatorValue = filterKey.value;
 
             if (navigatorValue instanceof UserValueLink) {
-                value = new UserValueLink(((UserValueLink)navigatorValue).Value);
+                value = new UserValueLink(((UserValueLink)navigatorValue).value);
             }
 
             if (navigatorValue instanceof ObjectValueLink) {

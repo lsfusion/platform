@@ -220,7 +220,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     private void InitObjectProperties() {
 
-        name = addDProp(baseGroup, "name", "Имя", Class.string, objectClass);
+        name = addDProp(baseGroup, "name", "Имя", Class.string(50), objectClass);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -237,7 +237,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         artGroup = addDProp("Гр. тов.", articleGroup, article);
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
 
-        artBarCode = addDProp(baseGroup, "Штрих-код", Class.longClass,  article);
+        artBarCode = addDProp(baseGroup, "Штрих-код", Class.numeric(15,2),  article);
         article.externalID = (DataProperty)artBarCode.property;
     }
 
@@ -1173,7 +1173,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         // конкретные классы
         Class articleFood = addObjectClass("Продтовары", article);
-        addDProp(baseGroup, "Срок годности", Class.string, articleFood);
+        addDProp(baseGroup, "Срок годности", Class.string(10), articleFood);
 
         Class articleAlcohol = addObjectClass("Алкоголь", articleFood);
         addDProp(baseGroup, "Крепость", Class.integer, articleAlcohol);
@@ -1182,8 +1182,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         addDProp(baseGroup, "Прейск.", Class.bit, articleVodka);
 
         Class articleBeer = addObjectClass("Пиво", articleAlcohol);
-        addDProp(baseGroup, "Тип", Class.string, articleBeer);
-        addDProp(baseGroup, "Упак.", Class.string, articleBeer);
+        addDProp(baseGroup, "Тип", Class.string(10), articleBeer);
+        addDProp(baseGroup, "Упак.", Class.string(10), articleBeer);
 
         Class wineTaste = addObjectClass("Вкус вина", objectClass);
         Class articleWine = addObjectClass("Вино", articleAlcohol);
@@ -1193,7 +1193,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         addDProp(baseGroup, "Жирн.", Class.doubleClass, articleMilkGroup);
 
         Class articleMilk = addObjectClass("Молоко", articleMilkGroup);
-        addDProp(baseGroup, "Упак.", Class.string,  articleMilk);
+        addDProp(baseGroup, "Упак.", Class.string(10),  articleMilk);
 
         Class articleCheese = addObjectClass("Сыр", articleMilkGroup);
         addDProp(baseGroup, "Вес.", Class.bit, articleCheese);
@@ -1209,11 +1209,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         Class articleCookies = addObjectClass("Печенье", articleBreadGroup);
 
         Class articleJuice = addObjectClass("Соки", articleFood);
-        addDProp(baseGroup, "Вкус", Class.string, articleJuice);
+        addDProp(baseGroup, "Вкус", Class.string(10), articleJuice);
         addDProp(baseGroup, "Литраж", Class.integer, articleJuice);
 
         Class articleClothes = addObjectClass("Одежда", article);
-        addDProp(baseGroup, "Модель", Class.string, articleClothes);
+        addDProp(baseGroup, "Модель", Class.string(10), articleClothes);
 
         Class shirtSize = addObjectClass("Размер майки", objectClass);
         Class articleTShirt = addObjectClass("Майки", articleClothes);
@@ -1224,7 +1224,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         addDProp(baseGroup, "Длина", Class.integer, articleJeans);
 
         Class articleShooes = addObjectClass("Обувь", article);
-        addDProp(baseGroup, "Цвет", Class.string, articleShooes);
+        addDProp(baseGroup, "Цвет", Class.string(10), articleShooes);
     }
 
     void initConstraints() {
