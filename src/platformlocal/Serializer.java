@@ -337,7 +337,7 @@ class Serializer {
 
         outStream.writeInt(cls.ID);
         outStream.writeUTF(cls.caption);
-        outStream.writeBoolean(!cls.Childs.isEmpty());
+        outStream.writeBoolean(!cls.childs.isEmpty());
     }
 
     public static ClientClass deserializeClientClass(DataInputStream inStream) throws IOException {

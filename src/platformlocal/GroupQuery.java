@@ -4,8 +4,8 @@ import java.util.*;
 
 class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 
-    void fillJoinQueries(Set<JoinQuery> Queries) {
-        from.fillJoinQueries(Queries);
+    void fillJoinQueries(Set<JoinQuery> queries) {
+        from.fillJoinQueries(queries);
     }
 
     String getSource(SQLSyntax syntax, Map<ValueExpr, String> params) {
@@ -33,8 +33,8 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
                 stringWhere(whereSelect),"",groupBy,"") + ")";
     }
 
-    GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom,V Property,int iOperator) {
-        this(iKeys,iFrom, Collections.singletonMap(Property,iOperator));
+    GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom,V property,int iOperator) {
+        this(iKeys,iFrom, Collections.singletonMap(property,iOperator));
     }
 
     Map<K,String> keyNames = new HashMap<K, String>();
@@ -58,8 +58,8 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return "GQ";
     }
 
-    String getPropertyName(V Property) {
-        return propertyNames.get(Property);
+    String getPropertyName(V property) {
+        return propertyNames.get(property);
     }
 
     // с хоть одним property where
@@ -93,28 +93,28 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
     Map<V,Integer> properties;
 
     // заменяет параметры на другие
-    DataSource<K, V> translateValues(Map<ValueExpr, ValueExpr> MapValues) {
-        return new GroupQuery<B,K,V,F>(keys,new JoinQuery<F,B>(from, BaseUtils.filter(MapValues,getValues().keySet())), properties);
+    DataSource<K, V> translateValues(Map<ValueExpr, ValueExpr> mapValues) {
+        return new GroupQuery<B,K,V,F>(keys,new JoinQuery<F,B>(from, BaseUtils.filter(mapValues,getValues().keySet())), properties);
     }
     
-    void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins) {
+    void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins) {
         if(propertiesFrom.parse().isEmpty()) {
-            for(Map.Entry<V,JoinExpr<K,V>> MapExpr : Join.exprs.entrySet())
-                Translated.put(MapExpr.getValue(),MapExpr.getValue().getType().getExpr(null));
-            Translated.put(Join.inJoin,Where.FALSE);
+            for(Map.Entry<V,JoinExpr<K,V>> mapExpr : join.exprs.entrySet())
+                translated.put(mapExpr.getValue(),mapExpr.getValue().getType().getExpr(null));
+            translated.put(join.inJoin,Where.FALSE);
         } else
-            super.compileJoin(Join, Translated, TranslatedJoins);
+            super.compileJoin(join, translated, translatedJoins);
     }
 
-    <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> Merge, Map<K, MK> MergeKeys, Map<MV, Object> MergeProps) {
+    <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> merge, Map<K, MK> mergeKeys, Map<MV, Object> mergeProps) {
         // если Merge'ся From'ы
-        DataSource<K, Object> SuperMerge = super.merge(Merge, MergeKeys, MergeProps);
-        if(SuperMerge!=null) return SuperMerge;
+        DataSource<K, Object> superMerge = super.merge(merge, mergeKeys, mergeProps);
+        if(superMerge!=null) return superMerge;
 
-        if(!(Merge instanceof GroupQuery)) return null;
+        if(!(merge instanceof GroupQuery)) return null;
 
 //        return null;
-        return proceedGroupMerge((GroupQuery)Merge,MergeKeys,MergeProps);
+        return proceedGroupMerge((GroupQuery) merge, mergeKeys, mergeProps);
     }
 
     <MB,MK extends MB,MV extends MB,MF> DataSource<K, Object> proceedGroupMerge(GroupQuery<MB,MK,MV,MF> mergeGroup, Map<K,MK> mergeKeys, Map<MV, Object> mergeProps) {
@@ -157,12 +157,12 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return properties.keySet();
     }
 
-    Type getType(V Property) {
-        return from.properties.get(Property).getType();
+    Type getType(V property) {
+        return from.properties.get(property).getType();
     }
 
-    DataSource<K, V> mergeKeyValue(Map<K, ValueExpr> MergeKeys, Collection<K> CompileKeys) {
-        return new GroupQuery<B, K, V, F>(CompileKeys,new JoinQuery<F,B>(MergeKeys, from), properties);
+    DataSource<K, V> mergeKeyValue(Map<K, ValueExpr> mergeKeys, Collection<K> compileKeys) {
+        return new GroupQuery<B, K, V, F>(compileKeys,new JoinQuery<F,B>(mergeKeys, from), properties);
     }
 
     Map<ValueExpr,ValueExpr> getValues() {
@@ -206,7 +206,7 @@ class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return from.hash()+ properties.values().hashCode()*31+ keys.size()*31*31;
     }
 
-    int hashProperty(V Property) {
-        return from.hashProperty(Property)*31 + properties.get(Property).hashCode();
+    int hashProperty(V property) {
+        return from.hashProperty(property)*31 + properties.get(property).hashCode();
     }
 }

@@ -63,42 +63,42 @@ abstract class Class extends AbstractNode {
         bit.addParent(integral);
     }
 
-    Collection<Class> Parents;
-    List<Class> Childs;
+    Collection<Class> parents;
+    List<Class> childs;
     
     Integer ID;
     String caption;
-    Class(Integer iID, String icaption, Class... parents) {
+    Class(Integer iID, String icaption, Class... iParents) {
         ID=iID;
         caption = icaption;
-        Parents = new ArrayList<Class>();
-        Childs = new ArrayList<Class>();
+        parents = new ArrayList<Class>();
+        childs = new ArrayList<Class>();
 
-        for (Class parent : parents) addParent(parent);
+        for (Class parent : iParents) addParent(parent);
     }
 
     public String toString() {
         return ID + " " + caption;
     }
 
-    void addParent(Class ParentClass) {
+    void addParent(Class parentClass) {
         // проверим что в Parent'ах нету этого класса
-        for(Class Parent:Parents) 
-            if(Parent.isParent(ParentClass)) return;
+        for(Class parent : parents)
+            if(parent.isParent(parentClass)) return;
         
-        Iterator<Class> i = Parents.iterator();
+        Iterator<Class> i = parents.iterator();
         while(i.hasNext())
-            if(ParentClass.isParent(i.next())) i.remove();
+            if(parentClass.isParent(i.next())) i.remove();
             
-        Parents.add(ParentClass);
-        ParentClass.Childs.add(this);        
+        parents.add(parentClass);
+        parentClass.childs.add(this);
     }
 
-    boolean isParent(Class Class) {
-        if(Class==this) return true;
+    boolean isParent(Class parentClass) {
+        if(parentClass==this) return true;
 
-        for(Class Parent : Parents)
-            if (Parent.isParent(Class)) return true;
+        for(Class parent : parents)
+            if (parent.isParent(parentClass)) return true;
         
         return false;
     }
@@ -106,136 +106,136 @@ abstract class Class extends AbstractNode {
     Class findClassID(Integer idClass) {
         if(ID.equals(idClass)) return this;
 
-        for(Class Child : Childs) {
-            Class FindClass = Child.findClassID(idClass);
-            if(FindClass!=null) return FindClass;
+        for(Class child : childs) {
+            Class findClass = child.findClassID(idClass);
+            if(findClass!=null) return findClass;
         }
         
         return null;
     }
     
-    Set<Class> commonParents(Class ToCommon) {
-        CommonClassSet1(true);
-        ToCommon.CommonClassSet2(false,null,true);
+    Set<Class> commonParents(Class toCommon) {
+        commonClassSet1(true);
+        toCommon.commonClassSet2(false,null,true);
 
-        Set<Class> Result = new HashSet<Class>();
-        CommonClassSet3(Result,null,true);
-        return Result;
+        Set<Class> result = new HashSet<Class>();
+        commonClassSet3(result,null,true);
+        return result;
     }
     
-    void FillSetID(Collection<Integer> SetID) {
-        if (SetID.contains(ID))
+    void fillSetID(Collection<Integer> setID) {
+        if (setID.contains(ID))
             return;
         
-        SetID.add(ID);
+        setID.add(ID);
         
-        for(Class Child : Childs)
-            Child.FillSetID(SetID);
+        for(Class child : childs)
+            child.fillSetID(setID);
     }
 
     Collection<Class> getChildren(boolean recursive) {
 
-        if (!recursive) return new ArrayList(Childs);
+        if (!recursive) return new ArrayList<Class>(childs);
 
-        Collection<Class> result = new ArrayList();
+        Collection<Class> result = new ArrayList<Class>();
         fillChilds(result);
         return result;
     }
 
     // заполняет список классов
-    void fillChilds(Collection<Class> ClassSet) {
-        if (ClassSet.contains(this))
+    void fillChilds(Collection<Class> classSet) {
+        if (classSet.contains(this))
             return;
         
-        ClassSet.add(this);
+        classSet.add(this);
         
-        for(Class Child : Childs)
-            Child.fillChilds(ClassSet);
+        for(Class Child : childs)
+            Child.fillChilds(classSet);
     }
 
     // заполняет список классов
-    void fillParents(Collection<ObjectClass> ParentSet) {
+    void fillParents(Collection<ObjectClass> parentSet) {
     }
 
-    Map<Class,Set<Class>> CacheChilds = new HashMap<Class,Set<Class>>();
+    Map<Class,Set<Class>> cacheChilds = new HashMap<Class,Set<Class>>();
 
     // получает классы у которого есть оба интерфейса
-    Set<Class> commonChilds(Class ToCommon) {
-        Set<Class> Result = null;
-        if(Main.ActivateCaches) Result = CacheChilds.get(ToCommon);
-        if(Result!=null) return Result;
-        Result = new HashSet<Class>();
-        CommonClassSet1(false);
-        ToCommon.CommonClassSet2(false,null,false);
+    Set<Class> commonChilds(Class toCommon) {
+        Set<Class> result = null;
+        if(Main.activateCaches) result = cacheChilds.get(toCommon);
+        if(result!=null) return result;
+        result = new HashSet<Class>();
+        commonClassSet1(false);
+        toCommon.commonClassSet2(false,null,false);
 
-        CommonClassSet3(Result,null,false);
-        if(Main.ActivateCaches) CacheChilds.put(ToCommon,Result);
-        return Result;
+        commonClassSet3(result,null,false);
+        if(Main.activateCaches) cacheChilds.put(toCommon,result);
+        return result;
     }
 
-    int Check = 0;
+    int check = 0;
     // 1-й шаг расставляем пометки 1
-    private void CommonClassSet1(boolean Up) {
-        if(Check==1) return;
-        Check = 1;
-        for(Class Child : (Up?Parents:Childs))
-            Child.CommonClassSet1(Up);
+    private void commonClassSet1(boolean up) {
+        if(check ==1) return;
+        check = 1;
+        for(Class child : (up? parents : childs))
+            child.commonClassSet1(up);
     }
     
     // 2-й шаг пометки 
     // 2 - верхний общий класс
     // 3 - просто общий класс
-    private void CommonClassSet2(boolean Set,Collection<Class> Free,boolean Up) {
-        if(!Set) {
-            if(Check>0) {
-                if(Check!=1) return;
-                Check = 2;
-                Set = true;
+    private void commonClassSet2(boolean set,Collection<Class> free,boolean up) {
+        if(!set) {
+            if(check >0) {
+                if(check !=1) return;
+                check = 2;
+                set = true;
             } else
-                if(Free!=null) Free.add(this);
+                if(free!=null) free.add(this);
         } else {
-            if(Check==3 || Check==2) {
-                Check = 3;
+            if(check ==3 || check ==2) {
+                check = 3;
                 return;
             }
             
-            Check = 3;
+            check = 3;
         }
             
-        for(Class Child : (Up?Parents:Childs))
-            Child.CommonClassSet2(Set,Free,Up);
+        for(Class child : (up? parents : childs))
+            child.commonClassSet2(set,free,up);
     }
     
     // 3-й шаг выводит в Set, и сбрасывает пометки
-    private void CommonClassSet3(Collection<Class> Common,Collection<Class> Free,boolean Up) {
-        if(Check==0) return;
-        if(Common!=null && Check==2) Common.add(this);
-        if(Free!=null && Check==1) Free.add(this);
+    private void commonClassSet3(Collection<Class> common,Collection<Class> free,boolean up) {
+        if(check ==0) return;
+        if(common!=null && check ==2) common.add(this);
+        if(free!=null && check ==1) free.add(this);
                
-        Check = 0;
+        check = 0;
 
-        for(Class Child : (Up?Parents:Childs))
-            Child.CommonClassSet3(Common,Free,Up);
+        for(Class child : (up? parents : childs))
+            child.commonClassSet3(common,free,up);
     }
     
-    void GetDiffSet(Class DiffClass,Collection<Class> AddClasses,Collection<Class> RemoveClasses) {
-        CommonClassSet1(true);
-        if(DiffClass!=null) DiffClass.CommonClassSet2(false,RemoveClasses,true);
+    void getDiffSet(Class diffClass,Collection<Class> addClasses,Collection<Class> removeClasses) {
+        commonClassSet1(true);
+        if(diffClass!=null) diffClass.commonClassSet2(false,removeClasses,true);
 
-        CommonClassSet3(null,AddClasses,true);
+        commonClassSet3(null,addClasses,true);
     }
 
     abstract Type getType();
 
     // получает рандомный объект
-    abstract Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException;
-    abstract Object getRandomObject(Map<Class, List<Integer>> Objects,Random Randomizer,Integer Diap) throws SQLException;
+    abstract Object getRandomObject(DataSession session, TableFactory tableFactory, Integer diap, Random randomizer) throws SQLException;
+    abstract Object getRandomObject(Map<Class, List<Integer>> objects,Random randomizer,Integer diap) throws SQLException;
 
     DataProperty externalID;
     DataProperty getExternalID() {
 
         if (externalID != null) return externalID;
-        for (Class parent : Parents) {
+        for (Class parent : parents) {
             DataProperty parentID = parent.getExternalID();
             if (parentID != null) return parentID;
         }
@@ -260,11 +260,11 @@ class BaseClass extends Class {
         return Type.integer;
     }// получает рандомный объект
 
-    Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
+    Object getRandomObject(DataSession session, TableFactory tableFactory, Integer diap, Random randomizer) throws SQLException {
         return null;
     }
 
-    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
+    Object getRandomObject(Map<Class, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
         return null;
     }
 }
@@ -274,12 +274,12 @@ class IntegralClass extends Class {
     
     IntegralClass(Integer iID, String caption) {super(iID, caption);}
 
-    Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        return Randomizer.nextInt(Diap*Diap+1);
+    Object getRandomObject(DataSession session, TableFactory tableFactory, Integer diap, Random randomizer) throws SQLException {
+        return randomizer.nextInt(diap * diap +1);
     }
 
-    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
-        return Randomizer.nextInt(Diap);
+    Object getRandomObject(Map<Class, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+        return randomizer.nextInt(diap);
     }
 
     Type getType() {
@@ -319,12 +319,12 @@ class BitClass extends IntegralClass {
         return Type.bit;
     }
 
-    Object GetRandomObject(DataSession Session, TableFactory TableFactory, Random Randomizer, Integer Diap) throws SQLException {
-        return Randomizer.nextBoolean();
+    Object getRandomObject(DataSession session, TableFactory tableFactory, Integer diap, Random randomizer) throws SQLException {
+        return randomizer.nextBoolean();
     }
 
-    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
-        return Randomizer.nextBoolean();
+    Object getRandomObject(Map<Class, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+        return randomizer.nextBoolean();
     }
 }
 
@@ -357,12 +357,12 @@ class StringClass extends Class {
         return Type.string(length);
     }
     
-    Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        return "NAME "+Randomizer.nextInt(50);
+    Object getRandomObject(DataSession session, TableFactory tableFactory, Integer diap, Random randomizer) throws SQLException {
+        return "NAME "+ randomizer.nextInt(50);
     }
 
-    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
-        return "NAME "+Randomizer.nextInt(Diap);
+    Object getRandomObject(Map<Class, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+        return "NAME "+ randomizer.nextInt(diap);
     }
 
 }
@@ -371,28 +371,28 @@ class ObjectClass extends Class {
 
     ObjectClass(Integer iID, String caption, Class... parents) {super(iID, caption, parents); }
 
-    Object GetRandomObject(DataSession Session,TableFactory TableFactory,Random Randomizer,Integer Diap) throws SQLException {
-        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(TableFactory.objectTable.getClassJoin(this).executeSelect(Session).keySet());
-        return Result.get(Randomizer.nextInt(Result.size())).get(TableFactory.objectTable.key);
+    Object getRandomObject(DataSession session, TableFactory tableFactory, Integer diap, Random randomizer) throws SQLException {
+        ArrayList<Map<KeyField,Integer>> Result = new ArrayList<Map<KeyField,Integer>>(tableFactory.objectTable.getClassJoin(this).executeSelect(session).keySet());
+        return Result.get(randomizer.nextInt(Result.size())).get(tableFactory.objectTable.key);
     }
 
-    Object getRandomObject(Map<Class, List<Integer>> Objects, Random Randomizer, Integer Diap) throws SQLException {
-        List<Integer> ClassObjects = Objects.get(this);
-        return ClassObjects.get(Randomizer.nextInt(ClassObjects.size()));
+    Object getRandomObject(Map<Class, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+        List<Integer> classObjects = objects.get(this);
+        return classObjects.get(randomizer.nextInt(classObjects.size()));
     }
 
     Type getType() {
         return Type.object;
     }
 
-    void fillParents(Collection<ObjectClass> ParentSet) {
-        if (ParentSet.contains(this))
+    void fillParents(Collection<ObjectClass> parentSet) {
+        if (parentSet.contains(this))
             return;
 
-        ParentSet.add(this);
+        parentSet.add(this);
 
-        for(Class Parent : Parents)
-            Parent.fillParents(ParentSet);
+        for(Class parent : parents)
+            parent.fillParents(parentSet);
     }
 }
 
@@ -443,22 +443,22 @@ abstract class Type<T> {
         return new ValueExpr(0,this);
     }
 
-    AndExpr getExpr(Object Value) {
-        if(Value==null)
+    AndExpr getExpr(Object value) {
+        if(value==null)
             return new NullExpr(this);
         else
-            return new ValueExpr(Value,this);
+            return new ValueExpr(value,this);
     }
 
     ValueExpr getMinValueExpr() {
         return new ValueExpr(getMinValue(),this);
     }
 
-    abstract public String getString(Object Value, SQLSyntax Syntax);
+    abstract public String getString(Object value, SQLSyntax syntax);
 
     abstract T read(Object value);
 
-    abstract boolean greater(Object Value1,Object Value2);
+    abstract boolean greater(Object value1,Object value2);
 }
 
 class StringType extends Type<String> {
@@ -493,15 +493,15 @@ class StringType extends Type<String> {
         return "";
     }
 
-    public String getString(Object Value, SQLSyntax Syntax) {
-        return "'" + Value + "'";
+    public String getString(Object value, SQLSyntax syntax) {
+        return "'" + value + "'";
     }
 
     String read(Object value) {
         return (String) value;
     }
 
-    boolean greater(Object Value1, Object Value2) {
+    boolean greater(Object value1, Object value2) {
         throw new RuntimeException("Java не умеет сравнивать строки");
     }
 }
@@ -520,8 +520,8 @@ abstract class IntegralType<T> extends Type<T> {
         return 0;
     }
 
-    public String getString(Object Value, SQLSyntax Syntax) {
-        return Value.toString();
+    public String getString(Object value, SQLSyntax syntax) {
+        return value.toString();
     }
 
 }
@@ -556,8 +556,8 @@ class IntegerType extends IntegralType<Integer> {
             return (Integer) value;
     }
 
-    boolean greater(Object Value1, Object Value2) {
-        return read(Value1)>read(Value2);
+    boolean greater(Object value1, Object value2) {
+        return read(value1)>read(value2);
     }
 }
 
@@ -591,8 +591,8 @@ class LongType extends IntegralType<Long> {
             return (Long) value;
     }
 
-    boolean greater(Object Value1, Object Value2) {
-        return read(Value1)>read(Value2);
+    boolean greater(Object value1, Object value2) {
+        return read(value1)>read(value2);
     }
 }
 
@@ -628,8 +628,8 @@ class DoubleType extends IntegralType<Double> {
             return (Double) value;
     }
 
-    boolean greater(Object Value1, Object Value2) {
-        return read(Value1)>read(Value2);
+    boolean greater(Object value1, Object value2) {
+        return read(value1)>read(value2);
     }
 }
 
@@ -682,12 +682,12 @@ class BitType extends IntegralType<Boolean> {
             return (Boolean) value;
     }
 
-    public String getString(Object Value, SQLSyntax Syntax) {
-        return Syntax.getBitString((Boolean)Value);
+    public String getString(Object value, SQLSyntax syntax) {
+        return syntax.getBitString((Boolean) value);
     }
 
-    boolean greater(Object Value1, Object Value2) {
-        return read(Value1) && !read(Value2);
+    boolean greater(Object value1, Object value2) {
+        return read(value1) && !read(value2);
     }
 }
 

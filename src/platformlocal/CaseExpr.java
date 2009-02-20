@@ -20,17 +20,17 @@ abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
 
     CaseList() {
     }
-    CaseList(D Data) {
-        add(create(Where.TRUE,Data));
+    CaseList(D data) {
+        add(create(Where.TRUE,data));
     }
     CaseList(Where where,D data) {
         add(create(where, data));
         lastWhere = where;
     }
-    CaseList(Where where,D True,D False) {
+    CaseList(Where where,D dTrue,D dFalse) {
         super();
-        add(create(where,True));
-        add(create(Where.TRUE,False));
+        add(create(where,dTrue));
+        add(create(Where.TRUE,dFalse));
     }
     CaseList(Where falseWhere) {
         prevUpWhere = falseWhere;
@@ -59,26 +59,26 @@ abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
         if(!where.isFalse()) {
             data = followWhere(where,data,upWhere);
             
-            C LastCase = size()>0?get(size()-1):null;
-            if(LastCase!=null && LastCase.data.equals(data)) // заOr'им
-                LastCase.where = LastCase.where.or(where);
+            C lastCase = size()>0?get(size()-1):null;
+            if(lastCase!=null && lastCase.data.equals(data)) // заOr'им
+                lastCase.where = lastCase.where.or(where);
             else
                 add(create(where, data));
             lastWhere = where;
         }
     }
 
-    Where getWhere(CaseWhere<C> CaseInterface) {
+    Where getWhere(CaseWhere<C> caseInterface) {
 
-        Where Result = Where.FALSE;
-        Where Up = Where.FALSE;
-        for(C Case : this) {
-            Where CaseWhere = CaseInterface.getCaseWhere(Case);
-            Result = Result.or(Case.where.and(CaseWhere).and(Up.not()));
-            Up = Up.or(Case.where);
+        Where result = Where.FALSE;
+        Where up = Where.FALSE;
+        for(C cCase : this) {
+            Where CaseWhere = caseInterface.getCaseWhere(cCase);
+            result = result.or(cCase.where.and(CaseWhere).and(up.not()));
+            up = up.or(cCase.where);
         }
 
-        return Result;
+        return result;
     }
     
     abstract C create(Where Where,D Data);
@@ -121,21 +121,21 @@ class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
 
     ExprCaseList() {
     }
-    ExprCaseList(SourceExpr Data) {
-        super(Data);
+    ExprCaseList(SourceExpr data) {
+        super(data);
     }
-    ExprCaseList(Where Where, SourceExpr Data) {
-        super(Where, Data);
+    ExprCaseList(Where where, SourceExpr data) {
+        super(where, data);
     }
-    ExprCaseList(Where Where, SourceExpr True, SourceExpr False) {
-        super(Where, True, False);
+    ExprCaseList(Where where, SourceExpr exprTrue, SourceExpr exprFalse) {
+        super(where, exprTrue, exprFalse);
     }
     ExprCaseList(Where falseWhere) {
         super(falseWhere);
     }
 
-    ExprCase create(Where Where, SourceExpr Data) {
-        return new ExprCase(Where,Data);
+    ExprCase create(Where where, SourceExpr data) {
+        return new ExprCase(where,data);
     }
 
     SourceExpr followWhere(Where where, SourceExpr data, Where upWhere) {
@@ -184,12 +184,12 @@ class MapCaseList<K> extends CaseList<Map<K,AndExpr>,MapCase<K>> {
 
     MapCaseList() {
     }
-    MapCaseList(Where Where, Map<K, AndExpr> Data) {
-        super(Where, Data);
+    MapCaseList(Where where, Map<K, AndExpr> data) {
+        super(where, data);
     }
 
-    MapCase<K> create(Where Where, Map<K, AndExpr> Data) {
-        return new MapCase<K>(Where,Data);
+    MapCase<K> create(Where where, Map<K, AndExpr> data) {
+        return new MapCase<K>(where,data);
     }
 }
 
@@ -203,12 +203,12 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         cases = iCases;
     }
 
-    CaseExpr(Where Where,SourceExpr Expr) {
-        cases = new ExprCaseList(Where,Expr);
+    CaseExpr(Where where,SourceExpr expr) {
+        cases = new ExprCaseList(where,expr);
     }
 
-    CaseExpr(Where Where,SourceExpr True,SourceExpr False) {
-        cases = new ExprCaseList(Where,True,False);
+    CaseExpr(Where where,SourceExpr exprTrue,SourceExpr exprFalse) {
+        cases = new ExprCaseList(where,exprTrue,exprFalse);
     }
 
 /*    CaseExpr(SourceExpr Expr,SourceExpr OpExpr,boolean Sum) {
@@ -222,26 +222,26 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
 
-        String Source = "CASE";
-        boolean Else = false;
+        String source = "CASE";
+        boolean noElse = false;
         for(int i=0;i< cases.size();i++) {
-            ExprCase Case = cases.get(i);
-            String CaseSource = Case.data.getSource(queryData, syntax);
+            ExprCase exprCaseCase = cases.get(i);
+            String caseSource = exprCaseCase.data.getSource(queryData, syntax);
 
-            if(i== cases.size()-1 && Case.where.isTrue()) {
-                Source = Source + " ELSE " + CaseSource;
-                Else = true;
+            if(i== cases.size()-1 && exprCaseCase.where.isTrue()) {
+                source = source + " ELSE " + caseSource;
+                noElse = true;
             } else
-                Source = Source + " WHEN " + Case.where.getSource(queryData, syntax) + " THEN " + CaseSource;
+                source = source + " WHEN " + exprCaseCase.where.getSource(queryData, syntax) + " THEN " + caseSource;
         }
-        return Source + (Else?"":" ELSE "+Type.NULL)+" END";
+        return source + (noElse?"":" ELSE "+Type.NULL)+" END";
     }
 
     public String toString() {
-        String Result = "";
-        for(ExprCase Case : cases)
-            Result = (Result.length()==0?"":Result+",")+Case.toString();
-        return "CE(" + Result + ")";
+        String result = "";
+        for(ExprCase exprCase : cases)
+            result = (result.length()==0?"":result+",")+exprCase.toString();
+        return "CE(" + result + ")";
     }
 
     Type getType() {
@@ -285,45 +285,45 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         return followedCases.getExpr(getType());
     }
 
-    static private <K> void recTranslateCase(ListIterator<Map.Entry<K, ? extends SourceExpr>> ic, MapCase<K> Current, MapCaseList<K> Result, boolean elseCase) {
+    static private <K> void recTranslateCase(ListIterator<Map.Entry<K, ? extends SourceExpr>> ic, MapCase<K> current, MapCaseList<K> result, boolean elseCase) {
 
         if(!ic.hasNext()) {
-            Result.add(Current.where,new HashMap<K,AndExpr>(Current.data));
+            result.add(current.where,new HashMap<K,AndExpr>(current.data));
             return;
         }
 
-        Map.Entry<K,? extends SourceExpr> MapExpr = ic.next();
+        Map.Entry<K,? extends SourceExpr> mapExpr = ic.next();
 
-        for(ExprCase Case : MapExpr.getValue().getCases()) {
-            Where PrevWhere = Current.where;
-            Current.where = Current.where.and(Case.where);
-            Current.data.put(MapExpr.getKey(), (AndExpr) Case.data);
-            recTranslateCase(ic,Current,Result, elseCase);
-            Current.data.remove(MapExpr.getKey());
-            Current.where = PrevWhere;
+        for(ExprCase exprCase : mapExpr.getValue().getCases()) {
+            Where prevWhere = current.where;
+            current.where = current.where.and(exprCase.where);
+            current.data.put(mapExpr.getKey(), (AndExpr) exprCase.data);
+            recTranslateCase(ic,current,result, elseCase);
+            current.data.remove(mapExpr.getKey());
+            current.where = prevWhere;
         }
         if(elseCase)
-            recTranslateCase(ic,Current,Result,true);
+            recTranslateCase(ic,current,result,true);
 
         ic.previous();
     }
 
     // строит комбинации из ExprCase'ов
-    static <K> MapCaseList<K> translateCase(Map<K, ? extends SourceExpr> MapExprs, Translator Translator, boolean ForceTranslate, boolean elseCase) {
-        Map<K,SourceExpr> TranslateExprs = new HashMap<K,SourceExpr>();
-        boolean HasCases = false;
-        for(Map.Entry<K,? extends SourceExpr> MapExpr : MapExprs.entrySet()) {
-            SourceExpr TranslatedExpr = MapExpr.getValue().translate(Translator);
-            TranslateExprs.put(MapExpr.getKey(), TranslatedExpr);
-            HasCases = HasCases || TranslatedExpr instanceof CaseExpr;
+    static <K> MapCaseList<K> translateCase(Map<K, ? extends SourceExpr> mapExprs, Translator translator, boolean forceTranslate, boolean elseCase) {
+        Map<K,SourceExpr> translateExprs = new HashMap<K,SourceExpr>();
+        boolean hasCases = false;
+        for(Map.Entry<K,? extends SourceExpr> mapExpr : mapExprs.entrySet()) {
+            SourceExpr translatedExpr = mapExpr.getValue().translate(translator);
+            translateExprs.put(mapExpr.getKey(), translatedExpr);
+            hasCases = hasCases || translatedExpr instanceof CaseExpr;
         }
 
-        if(!ForceTranslate && !HasCases && TranslateExprs.equals(MapExprs))
+        if(!forceTranslate && !hasCases && translateExprs.equals(mapExprs))
             return null;
         else {
-            MapCaseList<K> Result = new MapCaseList<K>();
-            recTranslateCase(new ArrayList<Map.Entry<K,? extends SourceExpr>>(TranslateExprs.entrySet()).listIterator(),new MapCase<K>(),Result, elseCase);
-            return Result;
+            MapCaseList<K> result = new MapCaseList<K>();
+            recTranslateCase(new ArrayList<Map.Entry<K,? extends SourceExpr>>(translateExprs.entrySet()).listIterator(),new MapCase<K>(),result, elseCase);
+            return result;
         }
     }
 
@@ -363,12 +363,12 @@ class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
         if(!(expr instanceof CaseExpr)) return false;
 
-        CaseExpr CaseExpr = (CaseExpr) expr;
+        CaseExpr caseExpr = (CaseExpr) expr;
 
-        if(cases.size()!=CaseExpr.cases.size()) return false;
+        if(cases.size()!=caseExpr.cases.size()) return false;
 
         for(int i=0;i< cases.size();i++)
-            if(!cases.get(i).equals(CaseExpr.cases.get(i), mapExprs, mapWheres))
+            if(!cases.get(i).equals(caseExpr.cases.get(i), mapExprs, mapWheres))
                 return false;
 
         return true;

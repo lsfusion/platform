@@ -53,7 +53,7 @@ abstract class Source<K,V> {
     abstract Map<ValueExpr,ValueExpr> getValues();
 
     // записывается в Join'ы
-    abstract void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins);
+    abstract void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins);
 
     <EK, EV> boolean equals(Source<EK, EV> source, Map<K, EK> mapKeys, Map<V, EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
         if(this== source) {
@@ -111,25 +111,25 @@ abstract class DataSource<K,V> extends Source<K,V> {
     }
 
 //    abstract <MK,MV> DataSource<K, Object> merge(DataSource<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps);
-    <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> Merge, Map<K, MK> MergeKeys, Map<MV, Object> MergeProps) {
-        if(this==Merge) {
-            for(Map.Entry<K,MK> MapKey : MergeKeys.entrySet())
+    <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> merge, Map<K, MK> mergeKeys, Map<MV, Object> mergeProps) {
+        if(this== merge) {
+            for(Map.Entry<K,MK> MapKey : mergeKeys.entrySet())
                 if(!MapKey.getKey().equals(MapKey.getValue()))
                     return null;
 
-            for(MV Field : Merge.getProperties())
-                MergeProps.put(Field,Field);
+            for(MV Field : merge.getProperties())
+                mergeProps.put(Field,Field);
 
             return (DataSource<K, Object>)((DataSource<K,?>)this);
         }
         return null;
     }
 
-    void compileJoin(Join<K, V> Join, ExprTranslator Translated, Collection<CompiledJoin> TranslatedJoins) {
-        Join.translate(Translated, TranslatedJoins, this);
+    void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins) {
+        join.translate(translated, translatedJoins, this);
     }
 
-    abstract DataSource<K,V> translateValues(Map<ValueExpr, ValueExpr> Values);
+    abstract DataSource<K,V> translateValues(Map<ValueExpr, ValueExpr> values);
 }
 
 class TypedObject {
@@ -203,7 +203,7 @@ class PropertyField extends Field {
 
 class Table extends DataSource<KeyField,PropertyField> {
     String Name;
-    Collection<PropertyField> Properties = new ArrayList();
+    Collection<PropertyField> properties = new ArrayList();
 
     Table(String iName) {Name=iName;}
 
@@ -225,7 +225,7 @@ class Table extends DataSource<KeyField,PropertyField> {
     Set<List<PropertyField>> Indexes = new HashSet();
 
     Collection<PropertyField> getProperties() {
-        return Properties;
+        return properties;
     }
 
     Type getType(PropertyField Property) {
@@ -256,7 +256,7 @@ class Table extends DataSource<KeyField,PropertyField> {
         return Property.hashCode();
     }
 
-    DataSource<KeyField, PropertyField> translateValues(Map<ValueExpr, ValueExpr> Values) {
+    DataSource<KeyField, PropertyField> translateValues(Map<ValueExpr, ValueExpr> values) {
         return this;
     }
 }
@@ -297,7 +297,7 @@ class ModifyQuery {
 
     String getUpdate(SQLSyntax Syntax) {
 
-        int UpdateModel = Syntax.UpdateModel();
+        int UpdateModel = Syntax.updateModel();
         if(UpdateModel==2) {
             // Oracl'вская модель Update'а
             Map<KeyField,String> KeySelect = new HashMap<KeyField, String>();

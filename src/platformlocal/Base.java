@@ -7,7 +7,6 @@ package platformlocal;
 
 import sun.reflect.ReflectionFactory;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.*;
 import java.lang.*;
 import java.lang.Class;
@@ -21,30 +20,30 @@ import java.lang.reflect.InvocationTargetException;
 
 class SetBuilder<T> {
 
-    static <T> void RecFillSubSetList(List<T> BuildSet,int Current,List<List<T>> Result,ArrayList<T> CurrentSet) {
-        if(Current>=BuildSet.size()) {
-            Result.add((List<T>)CurrentSet.clone());
+    static <T> void recFillSubSetList(List<T> buildSet,int current,List<List<T>> result,ArrayList<T> currentSet) {
+        if(current>=buildSet.size()) {
+            result.add((List<T>)currentSet.clone());
             return;
         }
         
-        RecFillSubSetList(BuildSet,Current+1,Result,CurrentSet);
-        CurrentSet.add(BuildSet.get(Current));
-        RecFillSubSetList(BuildSet,Current+1,Result,CurrentSet);
-        CurrentSet.remove(BuildSet.get(Current));
+        recFillSubSetList(buildSet,current+1,result,currentSet);
+        currentSet.add(buildSet.get(current));
+        recFillSubSetList(buildSet,current+1,result,currentSet);
+        currentSet.remove(buildSet.get(current));
     }
     
     // строит список подмн-в в лексикографическом порядке
-    static <T> List<List<T>> buildSubSetList(Collection<T> BuildSet) {
+    static <T> List<List<T>> buildSubSetList(Collection<T> buildSet) {
 
-        List<T> BuildList;
-        if(BuildSet instanceof List)
-            BuildList = (List<T>)BuildSet;
+        List<T> buildList;
+        if(buildSet instanceof List)
+            buildList = (List<T>)buildSet;
         else
-            BuildList = new ArrayList<T>(BuildSet);
+            buildList = new ArrayList<T>(buildSet);
 
-        List<List<T>> Result = new ArrayList();
-        RecFillSubSetList(BuildList,0,Result,new ArrayList());
-        return Result;
+        List<List<T>> result = new ArrayList<List<T>>();
+        recFillSubSetList(buildList,0,result,new ArrayList<T>());
+        return result;
     }
 
     public static <T> void recBuildSetCombinations(int count, List<T> listElements, int current, ArrayList<T> currentList, Collection<List<T>> result) {
@@ -64,8 +63,8 @@ class SetBuilder<T> {
 
     public static <T> Collection<List<T>> buildSetCombinations(int count, List<T> listElements) {
 
-        Collection<List<T>> result = new ArrayList();
-        recBuildSetCombinations(count, listElements, 0, new ArrayList(), result);
+        Collection<List<T>> result = new ArrayList<List<T>>();
+        recBuildSetCombinations(count, listElements, 0, new ArrayList<T>(), result);
         return result;
     }
 }
@@ -74,7 +73,7 @@ class MapBuilder {
 
     private static <T> void recBuildPermutations(Collection<T> col, List<T> cur, Collection<List<T>> result) {
 
-        if (cur.size() == col.size()) { result.add(new ArrayList(cur)); return; }
+        if (cur.size() == col.size()) { result.add(new ArrayList<T>(cur)); return; }
 
         for (T element : col) {
             if (!cur.contains(element)) {
@@ -265,36 +264,31 @@ class MapUtils<T,V> {
 }
 
 class CollectionExtend {
-    static <K,V> void removeAll(Map<K,V> Map,Collection<? extends K> Keys) {
-        for(K Key : Keys)
-            Map.remove(Key);
+    static <K,V> void removeAll(Map<K,V> map,Collection<? extends K> ks) {
+        for(K Key : ks)
+            map.remove(Key);
     }
 
-    static void removeAll(Collection<?> From,Collection<?> Remove) {
-        for(Object Key : Remove)
-            From.remove(Key);
-    }
-
-    static <V> V getRandom(Set<V> ToRandom,Random Randomizer) {
-        int RandomNum = Randomizer.nextInt(ToRandom.size());
-        int CountNum = 0;
-        for(V Object : ToRandom)
-            if(CountNum==RandomNum) return Object;
+    static <V> V getRandom(Set<V> toRandom,Random randomizer) {
+        int randomNum = randomizer.nextInt(toRandom.size());
+        int countNum = 0;
+        for(V object : toRandom)
+            if(countNum==randomNum) return object;
         return null;
     }
 
-    static <T> Set<T> intersect(Set<T> Op1,Set<T> Op2) {
-        Set<T> Result = new HashSet<T>();
-        for(T Element : Op1)
-            if(Op2.contains(Element)) Result.add(Element);
-        return Result;
+    static <T> Set<T> intersect(Set<T> op1,Set<T> op2) {
+        Set<T> result = new HashSet<T>();
+        for(T element : op1)
+            if(op2.contains(element)) result.add(element);
+        return result;
     }
 
-    static <K,MK> Map<K,MK> reverse(Map<MK,K> Map) {
-        Map<K,MK> ReverseKeys = new HashMap<K,MK>();
-        for(Map.Entry<MK,K> MapKey : Map.entrySet())
-            ReverseKeys.put(MapKey.getValue(),MapKey.getKey());
-        return ReverseKeys;
+    static <K,MK> Map<K,MK> reverse(Map<MK,K> map) {
+        Map<K,MK> reverseKeys = new HashMap<K,MK>();
+        for(Map.Entry<MK,K> mapKey : map.entrySet())
+            reverseKeys.put(mapKey.getValue(),mapKey.getKey());
+        return reverseKeys;
     }
 
     static <K> Set<K> add(Set<K> set1,Set<K> set2) {

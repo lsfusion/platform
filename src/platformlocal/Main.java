@@ -24,11 +24,11 @@ public class Main {
     static DataAdapter Adapter;
     static DataSession Session = null;
 
-    static boolean recreateDB = false;
-    public static Integer ForceSeed = -1; //1199; //3581
+    static boolean recreateDB = true;
+    public static Integer forceSeed = -1; //1199; //3581
     public static int iterations = 7;
     public static boolean DebugFlag = false;
-    static boolean ActivateCaches = true;
+    static boolean activateCaches = true;
     static boolean AllowNulls = false;
     
     static boolean debugWatch = false;
@@ -86,7 +86,7 @@ public class Main {
 /*        new SourceTest();
         if(1==1) return;*/
 
-        if(ForceSeed==null || ForceSeed!=-1) {
+        if(forceSeed ==null || forceSeed !=-1) {
             while(true) {
                 System.out.println("Opened");
                 new TmcBusinessLogics(1);
@@ -261,25 +261,25 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         Integer i;
         Integer[] Articles = new Integer[6];
-        for(i=0;i<Articles.length;i++) Articles[i] = AddObject(Session, Article);
+        for(i=0;i<Articles.length;i++) Articles[i] = addObject(Session, Article);
 
         Integer[] Stores = new Integer[2];
-        for(i=0;i<Stores.length;i++) Stores[i] = AddObject(Session, Store);
+        for(i=0;i<Stores.length;i++) Stores[i] = addObject(Session, Store);
 
         Integer[] PrihDocuments = new Integer[6];
         for(i=0;i<PrihDocuments.length;i++) {
-            PrihDocuments[i] = AddObject(Session, PrihDocument);
+            PrihDocuments[i] = addObject(Session, PrihDocument);
             Name.ChangeProperty(Session, "ПР ДОК "+i.toString(), PrihDocuments[i]);
         }
 
         Integer[] RashDocuments = new Integer[6];
         for(i=0;i<RashDocuments.length;i++) {
-            RashDocuments[i] = AddObject(Session, RashDocument);
+            RashDocuments[i] = addObject(Session, RashDocument);
             Name.ChangeProperty(Session, "РАСХ ДОК "+i.toString(), RashDocuments[i]);
         }
 
         Integer[] ArticleGroups = new Integer[2];
-        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = AddObject(Session, ArticleGroup);
+        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = addObject(Session, ArticleGroup);
 
         Name.ChangeProperty(Session, "КОЛБАСА", Articles[0]);
         Name.ChangeProperty(Session, "ТВОРОГ", Articles[1]);
@@ -351,7 +351,7 @@ class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[5]);
 
-        Apply(Session);
+        apply(Session);
 
 //        ChangeDBTest(ad,30,new Random());
 
@@ -642,9 +642,9 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         Obj3Set.add("имя");
         Obj3Set.add("дата док.");
 
-        BL.FillSingleViews(obj1,this,null);
-        Map<String,PropertyObjectImplement> Obj2Props = BL.FillSingleViews(obj2,this,Obj2Set);
-        Map<String,PropertyObjectImplement> Obj3Props = BL.FillSingleViews(obj3,this,Obj3Set);
+        BL.fillSingleViews(obj1,this,null);
+        Map<String,PropertyObjectImplement> Obj2Props = BL.fillSingleViews(obj2,this,Obj2Set);
+        Map<String,PropertyObjectImplement> Obj3Props = BL.fillSingleViews(obj3,this,Obj3Set);
 
         PropertyObjectImplement QImpl = BL.addPropertyView(this,BL.Quantity,gv3,obj3,obj2);
         BL.addPropertyView(this,BL.GP,gv3,obj3,obj2);
@@ -691,7 +691,7 @@ class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         gv.addObject(obj1);
         addGroup(gv);
 
-        BL.FillSingleViews(obj1,this,null);
+        BL.fillSingleViews(obj1,this,null);
     }
 
 }
@@ -714,8 +714,8 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
         addGroup(gv);
         addGroup(gv2);
 
-        BL.FillSingleViews(obj1,this,null);
-        BL.FillSingleViews(obj2,this,null);
+        BL.fillSingleViews(obj1,this,null);
+        BL.fillSingleViews(obj2,this,null);
 
         PropertyObjectImplement QImpl = BL.addPropertyView(this,BL.Quantity,gv2,obj1,obj2);
         BL.addPropertyView(this,BL.GP,gv2,obj1,obj2);
@@ -765,7 +765,7 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         gv2.addObject(obj3);
         addGroup(gv2);
 
-        BL.FillSingleViews(obj3,this,null);
+        BL.fillSingleViews(obj3,this,null);
 
         BL.addPropertyView(this,BL.RashArtInt,gv2,obj3,obj1,obj2);
 
@@ -798,7 +798,7 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         gv2.addObject(obj2);
         addGroup(gv2);
 
-        BL.FillSingleViews(obj1,this,null);
+        BL.fillSingleViews(obj1,this,null);
 
         PropertyObjectImplement QImpl = BL.addPropertyView(this, BL.ArtDateRash, gv2, obj2, obj1);
 
@@ -849,22 +849,22 @@ class SourceTest {
         Table1Key2 = new KeyField("key2",Type.integer);
         Table1.keys.add(Table1Key2);
         Table1Prop1 = new PropertyField("prop1",Type.integer);
-        Table1.Properties.add(Table1Prop1);
+        Table1.properties.add(Table1Prop1);
         Table1Prop2 = new PropertyField("prop2",Type.integer);
-        Table1.Properties.add(Table1Prop2);
+        Table1.properties.add(Table1Prop2);
         Table1Prop3 = new PropertyField("prop3",Type.integer);
-        Table1.Properties.add(Table1Prop3);
+        Table1.properties.add(Table1Prop3);
         Table1Prop4 = new PropertyField("prop4",Type.integer);
-        Table1.Properties.add(Table1Prop4);
+        Table1.properties.add(Table1Prop4);
 
         // Table 2
         Table2 = new Table("table2");
         Table2Key1 = new KeyField("key1",Type.integer);
         Table2.keys.add(Table2Key1);
         Table2Prop1 = new PropertyField("prop1",Type.integer);
-        Table2.Properties.add(Table2Prop1);
+        Table2.properties.add(Table2Prop1);
         Table2Prop2 = new PropertyField("prop2",Type.integer);
-        Table2.Properties.add(Table2Prop2);
+        Table2.properties.add(Table2Prop2);
 
         // Table 3
         Table3 = new Table("table3");
@@ -873,9 +873,9 @@ class SourceTest {
         Table3Key2 = new KeyField("key2",Type.integer);
         Table3.keys.add(Table3Key2);
         Table3Prop1 = new PropertyField("prop1",Type.integer);
-        Table3.Properties.add(Table3Prop1);
+        Table3.properties.add(Table3Prop1);
         Table3Prop2 = new PropertyField("prop2",Type.integer);
-        Table3.Properties.add(Table3Prop2);
+        Table3.properties.add(Table3Prop2);
 
         Map3To1 = new HashMap<KeyField, KeyField>();
         Map3To1.put(Table3Key1,Table1Key1);

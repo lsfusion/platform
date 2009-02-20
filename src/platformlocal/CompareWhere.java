@@ -51,16 +51,16 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         }
     }
 
-    static boolean compare(TypedObject Object1,TypedObject Object2,int Compare) {
+    static boolean compare(TypedObject object1,TypedObject object2,int Compare) {
 
-        if(Object1.value.equals(Object2.value))
+        if(object1.value.equals(object2.value))
             return (Compare==EQUALS || Compare==GREATER_EQUALS || Compare==LESS_EQUALS);
 
         if(Compare==GREATER_EQUALS || Compare==GREATER)
-            return Object1.type.greater(Object1.value,Object2.value);
+            return object1.type.greater(object1.value,object2.value);
 
         if(Compare==LESS_EQUALS || Compare==LESS)
-            return Object1.type.greater(Object2.value,Object1.value);
+            return object1.type.greater(object2.value,object1.value);
 
         return false;
     }
@@ -110,9 +110,9 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         operator2.fillJoins(joins, values);
     }
 
-    public void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
-        operator1.fillJoinWheres(Joins,AndWhere);
-        operator2.fillJoinWheres(Joins,AndWhere);
+    public void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+        operator1.fillJoinWheres(joins,andWhere);
+        operator2.fillJoinWheres(joins,andWhere);
     }
 
     DataWhereSet getExprFollows() {
@@ -125,12 +125,12 @@ class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr && compare ==EQUALS)
             return new JoinWheres(this,Where.TRUE);
 
-        Where InJoinWhere = Where.TRUE;
+        Where inJoinWhere = Where.TRUE;
         if(operator1 instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr) operator1).from.inJoin);
+            inJoinWhere = inJoinWhere.and(((JoinExpr) operator1).from.inJoin);
         if(operator2 instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr) operator2).from.inJoin);
-        return new JoinWheres(InJoinWhere,this);
+            inJoinWhere = inJoinWhere.and(((JoinExpr) operator2).from.inJoin);
+        return new JoinWheres(inJoinWhere,this);
     }
 
     public boolean equals(Object o) {
@@ -163,11 +163,11 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     AndExpr expr;
     String values;
 
-    InListWhere(AndExpr iExpr, Collection<Integer> SetValues) {
+    InListWhere(AndExpr iExpr, Collection<Integer> setValues) {
         expr = iExpr;
         values = "";
-        for(Integer Value : SetValues)
-            values = (values.length()==0?"": values +',') + Value;
+        for(Integer value : setValues)
+            values = (values.length()==0?"": values +',') + value;
     }
 
     InListWhere(AndExpr iExpr, String iValues) {
@@ -197,10 +197,10 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
         return new InListWhere(cCase.data.get(0), values);
     }
 
-    public Where translate(Translator Translator) {
+    public Where translate(Translator translator) {
         Map<Integer,SourceExpr> MapExprs = new HashMap<Integer, SourceExpr>();
         MapExprs.put(0, expr);
-        return CaseExpr.translateCase(MapExprs,Translator,true, false).getWhere(this);
+        return CaseExpr.translateCase(MapExprs,translator,true, false).getWhere(this);
     }
 
     public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
@@ -220,10 +220,10 @@ class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
     }
 
     public JoinWheres getInnerJoins() {
-        Where InJoinWhere = Where.TRUE;
+        Where inJoinWhere = Where.TRUE;
         if(expr instanceof JoinExpr)
-            InJoinWhere = InJoinWhere.and(((JoinExpr) expr).from.inJoin);
-        return new JoinWheres(InJoinWhere,this);
+            inJoinWhere = inJoinWhere.and(((JoinExpr) expr).from.inJoin);
+        return new JoinWheres(inJoinWhere,this);
     }
 
     // для кэша

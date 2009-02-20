@@ -11,41 +11,32 @@ abstract class SubNodeSet<T,S extends SubNodeSet<T,S>> extends HashSet<T> {
         super(iNodes);
     }
 
-    protected SubNodeSet(T Node) {
-        add(Node);
+    protected SubNodeSet(T node) {
+        add(node);
     }
 
-    void or(S Set) {
-        for(T Node : Set)
-            or(Node);
+    void or(S set) {
+        for(T node : set)
+            or(node);
     }
-    abstract void or(T OrNode);
+    abstract void or(T orNode);
 
-    S and(S Set) {
-        S AndSet = create(new HashSet<T>());
-        for(T Node : this)
-            AndSet.or(Set.and(Node));
-        return AndSet;
+    S and(S set) {
+        S andSet = create(new HashSet<T>());
+        for(T node : this)
+            andSet.or(set.and(node));
+        return andSet;
     }
-    S and(T AndNode) {
-        S AndSet = create(new HashSet<T>());
-        for(T Node : this) AndSet.or(create(and(AndNode,Node)));
-        return AndSet;
+    S and(T andNode) {
+        S andSet = create(new HashSet<T>());
+        for(T Node : this) andSet.or(create(and(andNode,Node)));
+        return andSet;
     }
-    abstract Set<T> and(T AndNode,T Node);
+    abstract Set<T> and(T andNode,T node);
     abstract S create(Set<T> iNodes);
 
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        SubNodeSet that = (SubNodeSet) o;
-
-        return super.equals(that);
-    }
-
-    public int hashCode() {
-        return super.hashCode();
+        return this == o || o instanceof SubNodeSet && super.equals(o);
     }
 }
 
@@ -58,31 +49,31 @@ abstract class GraphNodeSet<T,S extends GraphNodeSet<T,S>> extends SubNodeSet<T,
         super(iNodes);
     }
 
-    boolean has(T CheckNode) {
-        for(T Node : this)
-            if(has(CheckNode,Node)) return true;
+    boolean has(T checkNode) {
+        for(T node : this)
+            if(has(checkNode,node)) return true;
         return false;
     }
-    abstract boolean has(T OrNode,T Node);
+    abstract boolean has(T orNode,T node);
 
-    void or(T OrNode) {
+    void or(T orNode) {
         for(T Node : this)
-            if(has(OrNode,Node)) return;
+            if(has(orNode,Node)) return;
         for(Iterator<T> i=iterator();i.hasNext();)
-            if(has(i.next(),OrNode)) i.remove();
-        add(OrNode);
+            if(has(i.next(), orNode)) i.remove();
+        add(orNode);
     }
 
-    void removeAll(GraphNodeSet<T,S> ToRemove) {
+    void removeAll(GraphNodeSet<T,S> toRemove) {
         for(Iterator<T> i = iterator();i.hasNext();)
-            if(ToRemove.has(i.next())) i.remove();
+            if(toRemove.has(i.next())) i.remove();
     }
 
-    S excludeAll(GraphNodeSet<T,S> ToRemove) {
-        S Result = create(new HashSet<T>());
-        for(T Node : this)
-            if(!ToRemove.has(Node)) Result.add(Node);
-        return Result;
+    S excludeAll(GraphNodeSet<T,S> toRemove) {
+        S result = create(new HashSet<T>());
+        for(T node : this)
+            if(!toRemove.has(node)) result.add(node);
+        return result;
     }
 
 }
@@ -97,27 +88,27 @@ class UpClassSet extends GraphNodeSet<Class,UpClassSet> {
         super(iNodes);
     }
 
-    boolean has(Class OrNode, Class Node) {
-        return OrNode.isParent(Node);
+    boolean has(Class orNode, Class node) {
+        return orNode.isParent(node);
     }
 
-    Set<Class> and(Class AndNode, Class Node) {
-        return AndNode.commonChilds(Node);
+    Set<Class> and(Class andNode, Class node) {
+        return andNode.commonChilds(node);
     }
 
     UpClassSet create(Set<Class> iNodes) {
         return new UpClassSet(iNodes);
     }
 
-    Set<Class> andSet(Set<Class> Set) {
-        Set<Class> Result = new HashSet<Class>();
-        for(Class Node : Set)
-            if(has(Node)) Result.add(Node);
-        return Result;
+    Set<Class> andSet(Set<Class> set) {
+        Set<Class> result = new HashSet<Class>();
+        for(Class node : set)
+            if(has(node)) result.add(node);
+        return result;
     }
 
-    void removeSet(Set<Class> Set) {
-        for(Iterator<Class> i = Set.iterator();i.hasNext();)
+    void removeSet(Set<Class> set) {
+        for(Iterator<Class> i = set.iterator();i.hasNext();)
             if(has(i.next())) i.remove();
     }
 }
@@ -137,43 +128,43 @@ class ClassSet {
         set = new HashSet<Class>();
     }
 
-    ClassSet(Class Node) {
-        this(new UpClassSet(),Collections.singleton(Node));
+    ClassSet(Class node) {
+        this(new UpClassSet(),Collections.singleton(node));
     }
 
-    static ClassSet getUp(Class Node) {
-        return new ClassSet(new UpClassSet(Collections.singleton(Node)),new HashSet<Class>());
+    static ClassSet getUp(Class node) {
+        return new ClassSet(new UpClassSet(Collections.singleton(node)),new HashSet<Class>());
     }
 
-    ClassSet and(ClassSet Node) {
+    ClassSet and(ClassSet node) {
         // Up*Node.Up OR (Up*Node.Set+Set*Node.Up+Set*Node.Set) (легко доказать что второе не пересек. с первым)
-        Set<Class> AndSet = CollectionExtend.intersect(set,Node.set);
-        AndSet.addAll(up.andSet(Node.set));
-        AndSet.addAll(Node.up.andSet(set));
-        return new ClassSet(up.and(Node.up),AndSet);
+        Set<Class> AndSet = CollectionExtend.intersect(set, node.set);
+        AndSet.addAll(up.andSet(node.set));
+        AndSet.addAll(node.up.andSet(set));
+        return new ClassSet(up.and(node.up),AndSet);
     }
 
-    void or(ClassSet Node) {
+    void or(ClassSet node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
-        up.or(Node.up);
-        set.addAll(Node.set);
+        up.or(node.up);
+        set.addAll(node.set);
         for(Iterator<Class> i = set.iterator();i.hasNext();)
             if(up.has(i.next())) i.remove();
     }
 
     // входит ли в дерево элемент
-    boolean contains(Class Node) {
-        return set.contains(Node) || up.has(Node);
+    boolean contains(Class node) {
+        return set.contains(node) || up.has(node);
     }
     boolean isEmpty() {
         return set.isEmpty() && up.isEmpty();
     }
     
-    boolean containsAll(ClassSet Node) {
-        return and(Node).equals(Node);            
+    boolean containsAll(ClassSet node) {
+        return and(node).equals(node);
     }
-    boolean intersect(ClassSet Node) {
-        return !and(Node).isEmpty();
+    boolean intersect(ClassSet node) {
+        return !and(node).isEmpty();
     }
     Type getType() {
         return getCommonClass().getType();
@@ -191,20 +182,20 @@ class ClassSet {
         if(isEmpty())
             throw new RuntimeException("Empty Base Class");
 
-        Set<Class> CommonParents = new HashSet<Class>(set);
-        CommonParents.addAll(up);
-        while(CommonParents.size()>1) {
-            Iterator<Class> i = CommonParents.iterator();
-            Class First = i.next(); i.remove();
-            Class Second = i.next(); i.remove();
-            CommonParents.addAll(First.commonParents(Second));
+        Set<Class> commonParents = new HashSet<Class>(set);
+        commonParents.addAll(up);
+        while(commonParents.size()>1) {
+            Iterator<Class> i = commonParents.iterator();
+            Class first = i.next(); i.remove();
+            Class second = i.next(); i.remove();
+            commonParents.addAll(first.commonParents(second));
         }
-        return CommonParents.iterator().next();
+        return commonParents.iterator().next();
     }
 
-    Class getRandom(Random Randomizer) {
+    Class getRandom(Random randomizer) {
         // пока чисто по Up'у
-        return CollectionExtend.getRandom(up,Randomizer);
+        return CollectionExtend.getRandom(up,randomizer);
     }
 
     static ClassSet universal;
@@ -225,60 +216,60 @@ class ClassSet {
 
 class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
 
-    InterfaceClass(Map<P, ObjectValue> Keys) {
-        for(Map.Entry<P,ObjectValue> Key : Keys.entrySet())
-            put(Key.getKey(),new ClassSet(Key.getValue().objectClass));
+    InterfaceClass(Map<P, ObjectValue> keys) {
+        for(Map.Entry<P,ObjectValue> key : keys.entrySet())
+            put(key.getKey(),new ClassSet(key.getValue().objectClass));
     }
 
     InterfaceClass() {
     }
 
-    InterfaceClass(P Interface, ClassSet InterfaceValue) {
-        put(Interface,InterfaceValue);
+    InterfaceClass(P propertyInterface, ClassSet interfaceValue) {
+        put(propertyInterface,interfaceValue);
     }
 
     // когда каждый ClassSet включает в себя все подмн-ва
-    public boolean isParent(InterfaceClass<P> Node) {
+    public boolean isParent(InterfaceClass<P> node) {
         // здесь строго говоря доджен keySet'ы должны совпадать
         // DEBUG проверка
-        if(!keySet().equals(Node.keySet()))
+        if(!keySet().equals(node.keySet()))
             throw new RuntimeException("different interfaces");
-        for(Map.Entry<P,ClassSet> Interface : entrySet())
-            if(!Interface.getValue().containsAll(Node.get(Interface.getKey()))) return false;
+        for(Map.Entry<P,ClassSet> propertyInterface : entrySet())
+            if(!propertyInterface.getValue().containsAll(node.get(propertyInterface.getKey()))) return false;
         return true;
     }
 
-    public InterfaceClass<P> and(InterfaceClass<P> Node) {
-        InterfaceClass<P> And = new InterfaceClass<P>();
-        And.putAll(Node);
-        for(Map.Entry<P,ClassSet> Interface : entrySet()) {
-            ClassSet AndClass = And.get(Interface.getKey());
-            if(AndClass==null)
-                AndClass = Interface.getValue();
+    public InterfaceClass<P> and(InterfaceClass<P> node) {
+        InterfaceClass<P> and = new InterfaceClass<P>();
+        and.putAll(node);
+        for(Map.Entry<P,ClassSet> propertyInterface : entrySet()) {
+            ClassSet andClass = and.get(propertyInterface.getKey());
+            if(andClass==null)
+                andClass = propertyInterface.getValue();
             else
-                AndClass = AndClass.and(Interface.getValue());
-            And.put(Interface.getKey(),AndClass);
+                andClass = andClass.and(propertyInterface.getValue());
+            and.put(propertyInterface.getKey(),andClass);
         }
-        return And;
+        return and;
     }
 
-    <V extends PropertyInterface> InterfaceClass<V> map(Map<P,V> MapInterfaces) {
-        InterfaceClass<V> Result = new InterfaceClass<V>();
-        for(Map.Entry<P,V> Interface : MapInterfaces.entrySet())
-            Result.put(Interface.getValue(),get(Interface.getKey()));
-        return Result;
+    <V extends PropertyInterface> InterfaceClass<V> map(Map<P,V> mapInterfaces) {
+        InterfaceClass<V> result = new InterfaceClass<V>();
+        for(Map.Entry<P,V> propertyInterface : mapInterfaces.entrySet())
+            result.put(propertyInterface.getValue(),get(propertyInterface.getKey()));
+        return result;
     }
 
-    <V extends PropertyInterface> InterfaceClass<V> mapBack(Map<V,P> MapInterfaces) {
-        InterfaceClass<V> Result = new InterfaceClass<V>();
-        for(Map.Entry<V,P> Interface : MapInterfaces.entrySet())
-            Result.put(Interface.getKey(),get(Interface.getValue()));
-        return Result;
+    <V extends PropertyInterface> InterfaceClass<V> mapBack(Map<V,P> mapInterfaces) {
+        InterfaceClass<V> result = new InterfaceClass<V>();
+        for(Map.Entry<V,P> propertyInterface : mapInterfaces.entrySet())
+            result.put(propertyInterface.getKey(),get(propertyInterface.getValue()));
+        return result;
     }
 
     public boolean hasEmpty() {
-        for(ClassSet Set : values())
-            if(Set.isEmpty()) return true;
+        for(ClassSet set : values())
+            if(set.isEmpty()) return true;
         return false;
     }
 }
@@ -288,9 +279,9 @@ class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
 
 interface PropertyClass<P extends PropertyInterface> {
     // каких классов могут быть объекты при таких классах на входе !!!! Можно дать больше но никак не меньше
-    ClassSet getValueClass(InterfaceClass<P> InterfaceImplement);
+    ClassSet getValueClass(InterfaceClass<P> interfaceImplement);
     // при каких классах мы можем получить хоть один такой класс (при других точно не можем) !!! опять таки лучше больше чем меньше
-    InterfaceClassSet<P> getClassSet(ClassSet ReqValue);
+    InterfaceClassSet<P> getClassSet(ClassSet reqValue);
 
     // на самом деле нам нужен iterator по <InterfaceClass,ClassSet>
     ValueClassSet<P> getValueClassSet();
@@ -346,12 +337,12 @@ class ChangeClass<P extends PropertyInterface> {
           Interface = new InterfaceClassSet<P>();
       }
     */
-    <V extends PropertyInterface> ChangeClass<V> map(Map<P,V> MapInterfaces) {
-        return new ChangeClass<V>(interfaceClasses.map(MapInterfaces), value);
+    <V extends PropertyInterface> ChangeClass<V> map(Map<P,V> mapInterfaces) {
+        return new ChangeClass<V>(interfaceClasses.map(mapInterfaces), value);
     }
 
-    <V extends PropertyInterface> ChangeClass<V> mapBack(Map<V,P> MapInterfaces) {
-        return new ChangeClass<V>(interfaceClasses.mapBack(MapInterfaces), value);
+    <V extends PropertyInterface> ChangeClass<V> mapBack(Map<V,P> mapInterfaces) {
+        return new ChangeClass<V>(interfaceClasses.mapBack(mapInterfaces), value);
     }
 
     public String toString() {
@@ -369,8 +360,8 @@ class ValueClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<
         super(iNodes);
     }
 
-    public ValueClassSet(ClassSet Value, InterfaceClassSet<P> Interface) {
-        super(new ChangeClass<P>(Interface,Value));
+    public ValueClassSet(ClassSet value, InterfaceClassSet<P> interfaceSet) {
+        super(new ChangeClass<P>(interfaceSet,value));
     }
 
     void or(ChangeClass<P> toAdd) {
@@ -404,50 +395,50 @@ class ValueClassSet<P extends PropertyInterface> extends SubNodeSet<ChangeClass<
         return new ValueClassSet<P>(iNodes);
     }
 
-    Map<InterfaceClass<P>,ClassSet> CacheValueClass = new HashMap<InterfaceClass<P>, ClassSet>();
-    public ClassSet getValueClass(InterfaceClass<P> InterfaceImplement) {
-        ClassSet Result = null;
-        if(Main.ActivateCaches) Result = CacheValueClass.get(InterfaceImplement);
-        if(Result==null) {
-            Result = new ClassSet();
-            for(ChangeClass<P> Class : this) // если пересекается хоть с одним, то на выходе может иметь что угодно
-                if(!Class.interfaceClasses.and(InterfaceImplement).isEmpty())
-                    Result.or(Class.value);
-            if(Main.ActivateCaches) CacheValueClass.put(InterfaceImplement,Result);
+    Map<InterfaceClass<P>,ClassSet> cacheValueClass = new HashMap<InterfaceClass<P>, ClassSet>();
+    public ClassSet getValueClass(InterfaceClass<P> interfaceImplement) {
+        ClassSet result = null;
+        if(Main.activateCaches) result = cacheValueClass.get(interfaceImplement);
+        if(result==null) {
+            result = new ClassSet();
+            for(ChangeClass<P> changeClass : this) // если пересекается хоть с одним, то на выходе может иметь что угодно
+                if(!changeClass.interfaceClasses.and(interfaceImplement).isEmpty())
+                    result.or(changeClass.value);
+            if(Main.activateCaches) cacheValueClass.put(interfaceImplement,result);
         }
-        return Result;
+        return result;
     }
 
-    Map<ClassSet,InterfaceClassSet<P>> CacheClassSet = new HashMap<ClassSet,InterfaceClassSet<P>>();
-    public InterfaceClassSet<P> getClassSet(ClassSet ReqValue) {
-        InterfaceClassSet<P> Result = null;
-        if(Main.ActivateCaches) Result = CacheClassSet.get(ReqValue);
-        if(Result==null) {
-            Result = new InterfaceClassSet<P>();
+    Map<ClassSet,InterfaceClassSet<P>> cacheClassSet = new HashMap<ClassSet,InterfaceClassSet<P>>();
+    public InterfaceClassSet<P> getClassSet(ClassSet reqValue) {
+        InterfaceClassSet<P> result = null;
+        if(Main.activateCaches) result = cacheClassSet.get(reqValue);
+        if(result==null) {
+            result = new InterfaceClassSet<P>();
             for(ChangeClass<P> ChangeClass : this) // по сути надо если пересекается ReqValue
-                if(ReqValue==ClassSet.universal || ChangeClass.value.intersect(ReqValue))
-                    Result.or(ChangeClass.interfaceClasses);
-            if(Main.ActivateCaches) CacheClassSet.put(ReqValue,Result);
+                if(reqValue ==ClassSet.universal || ChangeClass.value.intersect(reqValue))
+                    result.or(ChangeClass.interfaceClasses);
+            if(Main.activateCaches) cacheClassSet.put(reqValue,result);
         }
-        return Result;
+        return result;
     }
 
     public ValueClassSet<P> getValueClassSet() {
         return this;
     }
 
-    <V extends PropertyInterface> ValueClassSet<V> map(Map<P,V> MapInterfaces) {
-        ValueClassSet<V> Result = new ValueClassSet<V>();
-        for(ChangeClass<P> Change : this)
-            Result.add(Change.map(MapInterfaces));
-        return Result;
+    <V extends PropertyInterface> ValueClassSet<V> map(Map<P,V> mapInterfaces) {
+        ValueClassSet<V> result = new ValueClassSet<V>();
+        for(ChangeClass<P> change : this)
+            result.add(change.map(mapInterfaces));
+        return result;
     }
 
-    <V extends PropertyInterface> ValueClassSet<V> mapBack(Map<V,P> MapInterfaces) {
-        ValueClassSet<V> Result = new ValueClassSet<V>();
-        for(ChangeClass<P> Change : this)
-            Result.add(Change.mapBack(MapInterfaces));
-        return Result;
+    <V extends PropertyInterface> ValueClassSet<V> mapBack(Map<V,P> mapInterfaces) {
+        ValueClassSet<V> result = new ValueClassSet<V>();
+        for(ChangeClass<P> change : this)
+            result.add(change.mapBack(mapInterfaces));
+        return result;
     }
     
 }
@@ -461,20 +452,20 @@ class InterfaceClassSet<P extends PropertyInterface> extends GraphNodeSet<Interf
         super(iNodes);
     }
 
-    public InterfaceClassSet(InterfaceClass<P> Node) {
-        super(Collections.singleton(Node));
+    public InterfaceClassSet(InterfaceClass<P> node) {
+        super(Collections.singleton(node));
     }
 
-    boolean has(InterfaceClass<P> OrNode, InterfaceClass<P> Node) {
-        return OrNode.hasEmpty() || Node.isParent(OrNode);
+    boolean has(InterfaceClass<P> orNode, InterfaceClass<P> node) {
+        return orNode.hasEmpty() || node.isParent(orNode);
     }
 
     public boolean isEmpty() {
         return super.isEmpty() || (size()==1 && iterator().next().hasEmpty());
     }
 
-    Set<InterfaceClass<P>> and(InterfaceClass<P> AndNode, InterfaceClass<P> Node) {
-        return Collections.singleton(AndNode.and(Node));
+    Set<InterfaceClass<P>> and(InterfaceClass<P> andNode, InterfaceClass<P> node) {
+        return Collections.singleton(andNode.and(node));
     }
 
     InterfaceClassSet<P> create(Set<InterfaceClass<P>> iNodes) {
@@ -482,312 +473,27 @@ class InterfaceClassSet<P extends PropertyInterface> extends GraphNodeSet<Interf
     }
 
     public Map<P,Class> getCommonParent() {
-        Map<P,Class> Result = new HashMap<P,Class>();
-        for(P Interface : iterator().next().keySet()) {
-            ClassSet CommonClassSet = new ClassSet();
-            for(InterfaceClass<P> Node : this)
-                CommonClassSet.or(Node.get(Interface));
-            Result.put(Interface,CommonClassSet.getCommonClass());
+        Map<P,Class> result = new HashMap<P,Class>();
+        for(P propertyInterface : iterator().next().keySet()) {
+            ClassSet commonClassSet = new ClassSet();
+            for(InterfaceClass<P> node : this)
+                commonClassSet.or(node.get(propertyInterface));
+            result.put(propertyInterface,commonClassSet.getCommonClass());
         }
-        return Result;
+        return result;
     }
 
-    <V extends PropertyInterface> InterfaceClassSet<V> map(Map<P,V> MapInterfaces) {
-        InterfaceClassSet<V> Result = new InterfaceClassSet<V>();
-        for(InterfaceClass<P> Node : this)
-            Result.add(Node.map(MapInterfaces));
-        return Result;
+    <V extends PropertyInterface> InterfaceClassSet<V> map(Map<P,V> mapInterfaces) {
+        InterfaceClassSet<V> result = new InterfaceClassSet<V>();
+        for(InterfaceClass<P> node : this)
+            result.add(node.map(mapInterfaces));
+        return result;
     }
 
-    <V extends PropertyInterface> InterfaceClassSet<V> mapBack(Map<V,P> MapInterfaces) {
-        InterfaceClassSet<V> Result = new InterfaceClassSet<V>();
-        for(InterfaceClass<P> Node : this)
-            Result.add(Node.mapBack(MapInterfaces));
-        return Result;
+    <V extends PropertyInterface> InterfaceClassSet<V> mapBack(Map<V,P> mapInterfaces) {
+        InterfaceClassSet<V> result = new InterfaceClassSet<V>();
+        for(InterfaceClass<P> node : this)
+            result.add(node.mapBack(mapInterfaces));
+        return result;
     }
 }
-
-
-/*class ClassInterfaceSet extends ArrayList<ClassInterface> {
-
-    ClassInterface GetCommonParent() {
-        Iterator<ClassInterface> i = iterator();
-        ClassInterface Result = i.next();
-        while(i.hasNext()) Result.CommonParent(i.next());
-        return Result;
-    }
-
-    void Out(Collection<PropertyInterface> ToDraw) {
-        for(ClassInterface InClass : this) {
-            for(PropertyInterface Key : ToDraw)
-                System.out.print(InClass.get(Key).sID.toString()+" ");
-            System.out.println();
-       }
-   }
-
-    // нужен интерфейс слияния и пересечения с ClassInterface
-
-    ClassInterfaceSet AndSet(ClassInterfaceSet Op) {
-//        if(size()==0) return (ClassInterfaceSet)Op.clone();
-//        if(Op.size()==0) return (ClassInterfaceSet)clone();
-        ClassInterfaceSet Result = new ClassInterfaceSet();
-        for(ClassInterface IntClass : this)
-            Result.OrSet(Op.AndItem(IntClass));
-        return Result;
-    }
-
-    void OrSet(ClassInterfaceSet Op) {
-        for(ClassInterface IntClass : Op) OrItem(IntClass);
-    }
-
-    ClassInterfaceSet AndItem(ClassInterface Op) {
-        ClassInterfaceSet Result = new ClassInterfaceSet();
-//        if(size()>0) {
-            for(ClassInterface IntClass : this) Result.OrSet(Op.And(IntClass));
-//        } else
-//            Result.add(Op);
-
-        return Result;
-    }
-
-    boolean OrItem(ClassInterface Op) {
-        // бежим по всем, если выше какого-то класса, если ниже, то старый выкидываем
-        Iterator<ClassInterface> i = iterator();
-        while(i.hasNext()) {
-            ClassInterface OrInterface = i.next();
-            int OrResult = OrInterface.Or(Op);
-            if(OrResult==1) return true;
-            if(OrResult==2) i.remove();
-        }
-
-        add(Op);
-
-        return false;
-    }
-
-    @Override public Object clone() {
-        ClassInterfaceSet CloneObject = new ClassInterfaceSet();
-        for(ClassInterface IntClass : this) CloneObject.add(IntClass);
-        return CloneObject;
-    }
-}
-
-
-class ClassInterface extends HashMap<PropertyInterface,Class> {
-
-    @Override
-    public Class put(PropertyInterface key, Class value) {
-        if(value==null)
-            throw new RuntimeException();
-        return super.put(key, value);
-    }
-
-    ClassInterfaceSet And(ClassInterface AndOp) {
-        ClassInterfaceSet Result = new ClassInterfaceSet();
-
-        Map<Class[],PropertyInterface> JoinClasses = new HashMap<Class[],PropertyInterface>();
-
-        Class Class;
-        Class[] SingleArray;
-
-        for(PropertyInterface Key : keySet()) {
-            Class = get(Key);
-            Class AndClass = AndOp.get(Key);
-
-            if(AndClass!=null) {
-                Class[] CommonClasses = (Class[])Class.CommonClassSet(AndClass).toArray(new Class[0]);
-                // если не нашли ни одного общего класса, то выходим
-                if(CommonClasses.length==0) return Result;
-                JoinClasses.put(CommonClasses,Key);
-            }
-            else {
-                SingleArray = new Class[1];
-                SingleArray[0] = Class;
-                JoinClasses.put(SingleArray,Key);
-            }
-        }
-
-        for(PropertyInterface Key : AndOp.keySet()) {
-            if(!containsKey(Key)) {
-                SingleArray = new Class[1];
-                SingleArray[0] = AndOp.get(Key);
-                JoinClasses.put(SingleArray,Key);
-            }
-        }
-
-        int ia;
-        Class[][] ArrayClasses = (Class[][])JoinClasses.keySet().toArray(new Class[0][]);
-        PropertyInterface[] ArrayInterfaces = new PropertyInterface[ArrayClasses.length];
-        int[] IntIterators = new int[ArrayClasses.length];
-        for(ia=0;ia<ArrayClasses.length;ia++) {
-            ArrayInterfaces[ia] = JoinClasses.get(ArrayClasses[ia]);
-            IntIterators[ia] = 0;
-        }
-        boolean Exit = false;
-        while(!Exit) {
-            // закидываем новые комбинации
-            ClassInterface ResultInterface = new ClassInterface();
-            for(ia=0;ia<ArrayClasses.length;ia++) ResultInterface.put(ArrayInterfaces[ia],ArrayClasses[ia][IntIterators[ia]]);
-            Result.add(ResultInterface);
-
-            // следующую итерацию
-            while(ia<ArrayClasses.length && IntIterators[ia]==ArrayClasses[ia].length-1) {
-                IntIterators[ia] = 0;
-                ia++;
-            }
-
-            if(ia>=ArrayClasses.length) Exit=true;
-        }
-
-        return Result;
-    }
-
-    // 0 - не связаны, 1 - Op >= , 2 - Op <
-    // известно что одной размерности
-    int Or(ClassInterface OrOp) {
-
-        int ResultOr = -1;
-        for(PropertyInterface Key : keySet()) {
-            Class Class = get(Key);
-            Class OrClass = OrOp.get(Key);
-
-            if(Class!=OrClass) {
-                // отличающийся
-                if(ResultOr<2) {
-                    if(OrClass.IsParent(Class))
-                        ResultOr = 1;
-                    else
-                        if(ResultOr==1)
-                            return 0;
-                }
-
-                if(ResultOr!=1)
-                    if(Class.IsParent(OrClass))
-                        ResultOr = 2;
-                    else
-                        return 0;
-                }
-            }
-
-        if(ResultOr==-1) return 1;
-        return ResultOr;
-    }
-
-    // известно что одной размерности
-    void CommonParent(ClassInterface Op) {
-        for(PropertyInterface Key : keySet())
-            put(Key,get(Key).CommonParent(Op.get(Key)));
-    }
-
-    public boolean isRequired(InterfaceClassSet<?> InterfaceClasses) {
-        for(Map.Entry<PropertyInterface,Class> MapInterface : entrySet()) {
-            ClassSet ClassSet = InterfaceClasses.get(MapInterface.getKey());
-            if(ClassSet!=null)
-                for(Class ReqClass : ClassSet)
-                    if(MapInterface.getValue().IsParent(ReqClass))
-                        return true;
-        }
-        return false;
-    }
-}
-
-class ClassSet extends HashSet<Class> {
-
-    public ClassSet(Class iClass) {
-        add(iClass);
-    }
-
-    public ClassSet() {
-    }
-
-    public ClassSet(Collection<Class> Classes) {
-        for(Class AddClass : Classes) and(AddClass);
-    }
-
-    void and(ClassSet Op) {
-        // возвращает все классы операндов
-        for(Class OpClass : Op)
-            and(OpClass);
-    }
-
-    void and(Class AndClass) {
-        // если не parent ни одного, добавляем удаляя те кто isParent
-        for(Class Class : this)
-            if(AndClass.IsParent(Class)) return;
-        for(Iterator<Class> i=iterator();i.hasNext();)
-            if(i.next().IsParent(AndClass)) i.remove();
-        add(AndClass);
-    }
-
-    ClassSet contains(ClassSet Op) {
-        // возвращает конкретные классы
-        ClassSet Result = new ClassSet();
-        for(Class Class : Op)
-            Result.and(contains(Class));
-        return Result;
-    }
-
-    ClassSet contains(Class OrClass) {
-        ClassSet Result = new ClassSet();
-        for(Class Class : this)
-            Result.and(Class.CommonClassSet(OrClass));
-        return Result;
-    }
-}
-
-class InterfaceClassSet<T extends PropertyInterface> extends HashMap<T, ClassSet> {
-
-    public ClassSet put(T key, ClassSet value) {
-        if(value==null)
-            throw new RuntimeException();
-        return super.put(key, value);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    public InterfaceClassSet() {
-    }
-
-    public InterfaceClassSet(T Interface, Class Class) {
-        put(Interface,new ClassSet(Class));
-    }
-
-    <V extends PropertyInterface> InterfaceClassSet<V> mapChange(Map<T,V> MapInterfaces) {
-        InterfaceClassSet<V> Result = new InterfaceClassSet<V>();
-        for(Map.Entry<T,V> Interface : MapInterfaces.entrySet()) {
-            ClassSet MapChange = get(Interface.getKey());
-            if(MapChange!=null) Result.put(Interface.getValue(),MapChange);
-        }
-        return Result;
-    }
-
-    <V extends PropertyInterface> InterfaceClassSet<V> mapBackChange(Map<V,T> MapInterfaces) {
-        InterfaceClassSet<V> Result = new InterfaceClassSet<V>();
-        for(Map.Entry<V,T> Interface : MapInterfaces.entrySet()) {
-            ClassSet MapChange = get(Interface.getValue());
-            if(MapChange!=null) Result.put(Interface.getKey(),MapChange);
-        }
-        return Result;
-    }
-
-    void contains(InterfaceClassSet<T> ToAdd) {
-        for(Iterator<Map.Entry<T,ClassSet>> i=entrySet().iterator();i.hasNext();) {
-            Map.Entry<T,ClassSet> MapInterface = i.next();
-            ClassSet AddSet = ToAdd.get(MapInterface.getKey());
-            ClassSet OrSet = (AddSet!=null ? MapInterface.getValue().contains(AddSet) : new ClassSet());
-            if(OrSet.size()>0)
-                MapInterface.setValue(OrSet);
-            else
-                i.remove();
-        }
-    }
-
-    void and(InterfaceClassSet<T> ToAdd) {
-        for(Map.Entry<T,ClassSet> MapInterface : ToAdd.entrySet()) {
-            ClassSet ClassSet = get(MapInterface.getKey());
-            if(ClassSet!=null)
-                ClassSet.and(MapInterface.getValue());
-            else
-                put(MapInterface.getKey(),MapInterface.getValue());
-        }
-    }
-}
-  */

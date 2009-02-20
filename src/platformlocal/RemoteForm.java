@@ -583,7 +583,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         structUpdated = true;
 
-        GID = BL.tableFactory.idTable.GenerateID(session, IDTable.FORM);
+        GID = BL.tableFactory.idTable.generateID(session, IDTable.FORM);
     }
 
     List<GroupObjectImplement> groups = new ArrayList<GroupObjectImplement>();
@@ -623,7 +623,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
     }
 
     public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).baseClass.findClassID(classID).Childs);
+        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).baseClass.findClassID(classID).childs);
     }
 
     public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) {
@@ -734,7 +734,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
         DataProperty propertyID = changeValue.Class.getExternalID();
         if (propertyID == null) return null;
 
-        return new ChangeObjectValue(propertyID.Value, null);
+        return new ChangeObjectValue(propertyID.value, null);
     }
 
     private RegularFilterGroup getRegularFilterGroup(int groupID) {
@@ -911,7 +911,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
 
-        Integer addID = BL.AddObject(session, cls);
+        Integer addID = BL.addObject(session, cls);
 
         boolean foundConflict = false;
 
@@ -978,7 +978,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
             if (!(securityPolicy.cls.edit.add.checkPermission(cls) || securityPolicy.cls.edit.change.checkPermission(cls))) return;
         }
 
-        BL.ChangeClass(session, object.idObject,cls);
+        BL.changeClass(session, object.idObject,cls);
 
         // Если объект удалили, то сбрасываем текущий объект в null
         if (cls == null) {
@@ -1012,7 +1012,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // Применение изменений
     public String SaveChanges() throws SQLException {
-        return BL.Apply(session);
+        return BL.apply(session);
     }
 
     public void CancelChanges() throws SQLException {
@@ -1031,7 +1031,7 @@ class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     void Close() throws SQLException {
 
-        session.IncrementChanges.remove(this);
+        session.incrementChanges.remove(this);
         for(GroupObjectImplement Group : groups) {
             ViewTable DropTable = BL.tableFactory.viewTables.get(Group.size()-1);
             DropTable.dropViewID(session, getGroupObjectGID(Group));

@@ -12,8 +12,8 @@ import static java.lang.Thread.sleep;
 
 class TableImplement extends ArrayList<DataPropertyInterface> {
     // заполняются пока автоматически
-    Table Table;
-    Map<DataPropertyInterface,KeyField> MapFields;
+    Table table;
+    Map<DataPropertyInterface,KeyField> mapFields;
 
     TableImplement() {
         this(null);
@@ -21,8 +21,8 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
 
     TableImplement(String iID) {
         ID = iID;
-        Childs = new HashSet<TableImplement>();
-        Parents = new HashSet<TableImplement>();
+        childs = new HashSet<TableImplement>();
+        parents = new HashSet<TableImplement>();
     }
 
     String ID = null;
@@ -38,26 +38,26 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
     }
 
     // кэшированный граф
-    Set<TableImplement> Childs;
-    Set<TableImplement> Parents;
+    Set<TableImplement> childs;
+    Set<TableImplement> parents;
 
     // Operation на что сравниваем
     // 0 - не ToParent
     // 1 - ToParent
     // 2 - равно
     
-    boolean RecCompare(int Operation,Collection<DataPropertyInterface> ToCompare,ListIterator<DataPropertyInterface> iRec,Map<DataPropertyInterface,DataPropertyInterface> MapTo) {
+    boolean recCompare(int operation,Collection<DataPropertyInterface> toCompare,ListIterator<DataPropertyInterface> iRec,Map<DataPropertyInterface,DataPropertyInterface> mapTo) {
         if(!iRec.hasNext()) return true;
 
-        DataPropertyInterface ProceedItem = iRec.next();
-        for(DataPropertyInterface PairItem : ToCompare) {
-            if((Operation==1 && ProceedItem.interfaceClass.isParent(PairItem.interfaceClass) || (Operation==0 && PairItem.interfaceClass.isParent(ProceedItem.interfaceClass))) || (Operation==2 && PairItem.interfaceClass == ProceedItem.interfaceClass)) {
-                if(!MapTo.containsKey(PairItem)) {
+        DataPropertyInterface proceedItem = iRec.next();
+        for(DataPropertyInterface pairItem : toCompare) {
+            if((operation ==1 && proceedItem.interfaceClass.isParent(pairItem.interfaceClass) || (operation ==0 && pairItem.interfaceClass.isParent(proceedItem.interfaceClass))) || (operation ==2 && pairItem.interfaceClass == proceedItem.interfaceClass)) {
+                if(!mapTo.containsKey(pairItem)) {
                     // если parent - есть связь и нету ключа, гоним рекурсию дальше
-                    MapTo.put(PairItem, ProceedItem);
+                    mapTo.put(pairItem, proceedItem);
                     // если нашли карту выходим
-                    if(RecCompare(Operation,ToCompare,iRec,MapTo)) return true;
-                    MapTo.remove(PairItem);
+                    if(recCompare(operation, toCompare,iRec, mapTo)) return true;
+                    mapTo.remove(pairItem);
                 }
             }
         }
@@ -67,107 +67,107 @@ class TableImplement extends ArrayList<DataPropertyInterface> {
     }
     // 0 никак не связаны, 1 - параметр снизу в дереве, 2 - параметр сверху в дереве, 3 - равно
     // также возвращает карту если 2
-    int Compare(Collection<DataPropertyInterface> ToCompare,Map<KeyField,DataPropertyInterface> MapTo) {
+    int compare(Collection<DataPropertyInterface> toCompare,Map<KeyField,DataPropertyInterface> mapTo) {
         
-        if(ToCompare.size() != size()) return 0;
+        if(toCompare.size() != size()) return 0;
 
         // перебором и не будем страдать фигней
         // сначала что не 1 проверим
     
-        HashMap<DataPropertyInterface,DataPropertyInterface> MapProceed = new HashMap();
+        HashMap<DataPropertyInterface,DataPropertyInterface> mapProceed = new HashMap<DataPropertyInterface, DataPropertyInterface>();
         
         ListIterator<DataPropertyInterface> iRec = (new ArrayList<DataPropertyInterface>(this)).listIterator();
-        int Relation = 0;
-        if(RecCompare(2,ToCompare,iRec,MapProceed)) Relation = 3;
-        if(Relation==0 && RecCompare(0,ToCompare,iRec,MapProceed)) Relation = 2;
-        if(Relation>0) {
-            if(MapTo!=null) {
-                MapTo.clear();
-                for(DataPropertyInterface DataInterface : ToCompare)
-                    MapTo.put(MapFields.get(MapProceed.get(DataInterface)),DataInterface);
+        int relation = 0;
+        if(recCompare(2,toCompare,iRec, mapProceed)) relation = 3;
+        if(relation==0 && recCompare(0,toCompare,iRec, mapProceed)) relation = 2;
+        if(relation>0) {
+            if(mapTo !=null) {
+                mapTo.clear();
+                for(DataPropertyInterface dataInterface : toCompare)
+                    mapTo.put(mapFields.get(mapProceed.get(dataInterface)),dataInterface);
             }
             
-            return Relation;
+            return relation;
         }
 
         // MapProceed и так чистый и iRec также в начале
-        if(RecCompare(1,ToCompare,iRec,MapProceed)) Relation = 1;
+        if(recCompare(1,toCompare,iRec, mapProceed)) relation = 1;
         
         // !!!! должна заполнять MapTo только если уже нашла
-        return Relation;
+        return relation;
     }
 
-    void RecIncludeIntoGraph(TableImplement IncludeItem,boolean ToAdd,Set<TableImplement> Checks) {
+    void recIncludeIntoGraph(TableImplement includeItem,boolean toAdd,Set<TableImplement> checks) {
         
-        if(Checks.contains(this)) return;
-        Checks.add(this);
+        if(checks.contains(this)) return;
+        checks.add(this);
         
-        Iterator<TableImplement> i = Parents.iterator();
+        Iterator<TableImplement> i = parents.iterator();
         while(i.hasNext()) {
-            TableImplement Item = i.next();
-            Integer Relation = Item.Compare(IncludeItem,null);
-            if(Relation==1) {
+            TableImplement item = i.next();
+            Integer relation = item.compare(includeItem,null);
+            if(relation==1) {
                 // снизу в дереве
                 // добавляем ее как промежуточную
-                Item.Childs.add(IncludeItem);
-                IncludeItem.Parents.add(Item);
-                if(ToAdd) {
-                    Item.Childs.remove(this);
+                item.childs.add(includeItem);
+                includeItem.parents.add(item);
+                if(toAdd) {
+                    item.childs.remove(this);
                     i.remove();
                 }
             } else {
                 // сверху в дереве или никак не связаны
                 // передаем дальше
-                if(Relation!=3) Item.RecIncludeIntoGraph(IncludeItem,Relation==2,Checks);
-                if(Relation==2 || Relation==3) ToAdd = false;
+                if(relation!=3) item.recIncludeIntoGraph(includeItem,relation==2,checks);
+                if(relation==2 || relation==3) toAdd = false;
             }
         }
         
         // если снизу добавляем Childs
-        if(ToAdd) {
-            IncludeItem.Childs.add(this);
-            Parents.add(IncludeItem);
+        if(toAdd) {
+            includeItem.childs.add(this);
+            parents.add(includeItem);
         }
     }
 
-    Table getTable(Collection<DataPropertyInterface> FindItem,Map<KeyField,DataPropertyInterface> MapTo) {
-        for(TableImplement Item : Parents) {
-            int Relation = Item.Compare(FindItem,MapTo);
-            if(Relation==2 || Relation==3)
-                return Item.getTable(FindItem,MapTo);
+    Table getTable(Collection<DataPropertyInterface> findItem,Map<KeyField,DataPropertyInterface> mapTo) {
+        for(TableImplement item : parents) {
+            int relation = item.compare(findItem,mapTo);
+            if(relation==2 || relation==3)
+                return item.getTable(findItem,mapTo);
         }
         
-        return Table;
+        return table;
     }
     
-    void FillSet(Set<TableImplement> TableImplements) {
-        if(!TableImplements.add(this)) return;
-        for(TableImplement Parent : Parents) Parent.FillSet(TableImplements);
+    void fillSet(Set<TableImplement> tableImplements) {
+        if(!tableImplements.add(this)) return;
+        for(TableImplement parent : parents) parent.fillSet(tableImplements);
     }
 
-    void OutClasses() {
-        for(DataPropertyInterface Interface : this)
-            System.out.print(Interface.interfaceClass.ID.toString()+" ");
+    void outClasses() {
+        for(DataPropertyInterface propertyInterface : this)
+            System.out.print(propertyInterface.interfaceClass.ID.toString()+" ");
     }
-    void Out() {
+    void out() {
         //выводим себя
         System.out.print("NODE - ");
-        OutClasses();
+        outClasses();
         System.out.println("");
         
-        for(TableImplement Child : Childs) {
+        for(TableImplement child : childs) {
             System.out.print("children - ");
-            Child.OutClasses();
+            child.outClasses();
             System.out.println();
         }
 
-        for(TableImplement Parent : Parents) {
+        for(TableImplement parent : parents) {
             System.out.print("parents - ");
-            Parent.OutClasses();
+            parent.outClasses();
             System.out.println();
         }
         
-        for(TableImplement Parent : Parents) Parent.Out();
+        for(TableImplement parent : parents) parent.out();
     }
 }
 
@@ -182,20 +182,20 @@ class ObjectTable extends Table {
         key = new KeyField("object",Type.object);
         keys.add(key);
         objectClass = new PropertyField("class",Type.system);
-        Properties.add(objectClass);
-    };
+        properties.add(objectClass);
+    }
     
-    Integer GetClassID(DataSession Session,Integer idObject) throws SQLException {
+    Integer getClassID(DataSession session,Integer idObject) throws SQLException {
         if(idObject==null) return null;
 
-        JoinQuery<Object,String> Query = new JoinQuery<Object,String>(new ArrayList<Object>());
-        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
-        JoinTable.joins.put(key,key.type.getExpr(idObject));
-        Query.and(JoinTable.inJoin);
-        Query.properties.put("classid", JoinTable.exprs.get(objectClass));
-        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> Result = Query.executeSelect(Session);
-        if(Result.size()>0)
-            return (Integer)Result.values().iterator().next().get("classid");
+        JoinQuery<Object,String> query = new JoinQuery<Object,String>(new ArrayList<Object>());
+        Join<KeyField,PropertyField> joinTable = new Join<KeyField,PropertyField>(this);
+        joinTable.joins.put(key,key.type.getExpr(idObject));
+        query.and(joinTable.inJoin);
+        query.properties.put("classid", joinTable.exprs.get(objectClass));
+        LinkedHashMap<Map<Object,Integer>,Map<String,Object>> result = query.executeSelect(session);
+        if(result.size()>0)
+            return (Integer)result.values().iterator().next().get("classid");
         else
             return null;
     }
@@ -226,35 +226,36 @@ class IDTable extends Table {
         keys.add(key);
 
         value = new PropertyField("value",Type.system);
-        Properties.add(value);
+        properties.add(value);
     }
 
     public static int OBJECT = 1;
     public static int FORM = 2;
 
-    static List<Integer> Enum = new ArrayList();
-    static {
-        Enum.add(OBJECT);
-        Enum.add(FORM);
+    static List<Integer> getCounters() {
+        List<Integer> result = new ArrayList<Integer>();
+        result.add(OBJECT);
+        result.add(FORM);
+        return result;
     }
 
-    Integer GenerateID(DataSession dataSession, int idType) throws SQLException {
+    Integer generateID(DataSession dataSession, int idType) throws SQLException {
 
-        if(BusinessLogics.AutoFillDB) return BusinessLogics.AutoIDCounter++;
+        if(BusinessLogics.autoFillDB) return BusinessLogics.autoIDCounter++;
         // читаем
-        JoinQuery<KeyField,PropertyField> Query = new JoinQuery<KeyField,PropertyField>(keys);
-        Join<KeyField,PropertyField> JoinTable = new Join<KeyField,PropertyField>(this);
-        JoinTable.joins.put(key,Query.mapKeys.get(key));
-        Query.and(JoinTable.inJoin);
-        Query.properties.put(value, JoinTable.exprs.get(value));
+        JoinQuery<KeyField,PropertyField> query = new JoinQuery<KeyField,PropertyField>(keys);
+        Join<KeyField,PropertyField> joinTable = new Join<KeyField,PropertyField>(this);
+        joinTable.joins.put(key,query.mapKeys.get(key));
+        query.and(joinTable.inJoin);
+        query.properties.put(value, joinTable.exprs.get(value));
 
-        Query.and(new CompareWhere(Query.mapKeys.get(key),Type.object.getExpr(idType),CompareWhere.EQUALS));
+        query.and(new CompareWhere(query.mapKeys.get(key),Type.object.getExpr(idType),CompareWhere.EQUALS));
 
-        Integer FreeID = (Integer) Query.executeSelect(dataSession).values().iterator().next().get(value);
+        Integer freeID = (Integer) query.executeSelect(dataSession).values().iterator().next().get(value);
 
         // замещаем
-        reserveID(dataSession, idType, FreeID);
-        return FreeID+1;
+        reserveID(dataSession, idType, freeID);
+        return freeID+1;
     }
 
     void reserveID(DataSession session, int idType, Integer ID) throws SQLException {
@@ -269,11 +270,11 @@ class IDTable extends Table {
 class ViewTable extends SessionTable {
     ViewTable(Integer iObjects) {
         super("viewtable"+iObjects.toString());
-        objects = new ArrayList();
+        objects = new ArrayList<KeyField>();
         for(Integer i=0;i<iObjects;i++) {
-            KeyField ObjKeyField = new KeyField("object"+i,Type.object);
-            objects.add(ObjKeyField);
-            keys.add(ObjKeyField);
+            KeyField objKeyField = new KeyField("object"+i,Type.object);
+            objects.add(objKeyField);
+            keys.add(objKeyField);
         }
 
         view = new KeyField("viewid",Type.system);
@@ -283,10 +284,10 @@ class ViewTable extends SessionTable {
     List<KeyField> objects;
     KeyField view;
 
-    void dropViewID(DataSession Session,Integer ViewID) throws SQLException {
-        Map<KeyField,Integer> ValueKeys = new HashMap();
-        ValueKeys.put(view,ViewID);
-        Session.deleteKeyRecords(this,ValueKeys);
+    void dropViewID(DataSession session,Integer viewID) throws SQLException {
+        Map<KeyField,Integer> valueKeys = new HashMap<KeyField, Integer>();
+        valueKeys.put(view,viewID);
+        session.deleteKeyRecords(this,valueKeys);
     }
 }
 
@@ -308,21 +309,21 @@ class ChangeObjectTable extends ChangeTable {
     KeyField property;
     PropertyField value;
 
-    ChangeObjectTable(String TablePrefix,Integer iObjects,Type iDBType) {
-        super(TablePrefix+"changetable"+iObjects+"t"+iDBType.ID);
+    ChangeObjectTable(String tablePrefix,Integer iObjects,Type iDBType) {
+        super(tablePrefix+"changetable"+iObjects+"t"+iDBType.ID);
 
-        objects = new ArrayList();
+        objects = new ArrayList<KeyField>();
         for(Integer i=0;i<iObjects;i++) {
-            KeyField ObjKeyField = new KeyField("object"+i,Type.object);
-            objects.add(ObjKeyField);
-            keys.add(ObjKeyField);
+            KeyField objKeyField = new KeyField("object"+i,Type.object);
+            objects.add(objKeyField);
+            keys.add(objKeyField);
         }
 
         property = new KeyField("property",Type.system);
         keys.add(property);
 
         value = new PropertyField("value",iDBType);
-        Properties.add(value);
+        properties.add(value);
     }
 }
 
@@ -341,7 +342,7 @@ class IncrementChangeTable extends ChangeObjectTable {
         super("inc",iObjects,iDBType);
 
         prevValue = new PropertyField("prevvalue",iDBType);
-        Properties.add(prevValue);
+        properties.add(prevValue);
     }
 }
 
@@ -362,28 +363,28 @@ class ChangeClassTable extends ChangeTable {
         keys.add(objectClass);
     }
 
-    void changeClass(DataSession ChangeSession, Integer idObject, Collection<Class> Classes,boolean Drop) throws SQLException {
+    void changeClass(DataSession changeSession, Integer idObject, Collection<Class> Classes,boolean Drop) throws SQLException {
 
-        for(Class Change : Classes) {
-            Map<KeyField,Integer> ChangeKeys = new HashMap();
-            ChangeKeys.put(object,idObject);
-            ChangeKeys.put(objectClass,Change.ID);
+        for(Class change : Classes) {
+            Map<KeyField,Integer> changeKeys = new HashMap<KeyField, Integer>();
+            changeKeys.put(object,idObject);
+            changeKeys.put(objectClass,change.ID);
             if(Drop) {
-                if(!BusinessLogics.AutoFillDB)
-                    ChangeSession.deleteKeyRecords(this,ChangeKeys);
+                if(!BusinessLogics.autoFillDB)
+                    changeSession.deleteKeyRecords(this,changeKeys);
             } else
-                ChangeSession.insertRecord(this,ChangeKeys,new HashMap());
+                changeSession.insertRecord(this,changeKeys,new HashMap<PropertyField, Object>());
         }
     }
 
-    void DropSession(DataSession ChangeSession) throws SQLException {
-        Map<KeyField,Integer> ValueKeys = new HashMap();
-        ChangeSession.deleteKeyRecords(this,ValueKeys);
+    void dropSession(DataSession changeSession) throws SQLException {
+        Map<KeyField,Integer> ValueKeys = new HashMap<KeyField, Integer>();
+        changeSession.deleteKeyRecords(this,ValueKeys);
     }
 
     JoinQuery<KeyField,PropertyField> getClassJoin(DataSession changeSession,Class changeClass) {
 
-        Collection<KeyField> objectKeys = new ArrayList();
+        Collection<KeyField> objectKeys = new ArrayList<KeyField>();
         objectKeys.add(object);
         JoinQuery<KeyField,PropertyField> classQuery = new JoinQuery<KeyField,PropertyField>(objectKeys);
 
@@ -410,10 +411,10 @@ class RemoveClassTable extends ChangeClassTable {
         super("removechange");
     }
 
-    void excludeJoin(JoinQuery<?,?> Query, DataSession Session,Class ChangeClass,SourceExpr Join) {
-        Join<KeyField,PropertyField> ClassJoin = new Join<KeyField,PropertyField>(getClassJoin(Session,ChangeClass));
-        ClassJoin.joins.put(object,Join);
-        Query.and(ClassJoin.inJoin.not());
+    void excludeJoin(JoinQuery<?,?> query, DataSession session,Class changeClass,SourceExpr join) {
+        Join<KeyField,PropertyField> classJoin = new Join<KeyField,PropertyField>(getClassJoin(session,changeClass));
+        classJoin.joins.put(object,join);
+        query.and(classJoin.inJoin.not());
     }
 
 }
@@ -459,7 +460,7 @@ class TableFactory extends TableImplement{
     TableFactory() {
         objectTable = new ObjectTable();
         idTable = new IDTable();
-        viewTables = new ArrayList();
+        viewTables = new ArrayList<ViewTable>();
 
         addClassTable = new AddClassTable();
         removeClassTable = new RemoveClassTable();
@@ -475,38 +476,38 @@ class TableFactory extends TableImplement{
     }
 
     void includeIntoGraph(TableImplement IncludeItem) {
-        Set<TableImplement> Checks = new HashSet<TableImplement>();
-        RecIncludeIntoGraph(IncludeItem,true,Checks);
+        Set<TableImplement> checks = new HashSet<TableImplement>();
+        recIncludeIntoGraph(IncludeItem,true,checks);
     }
 
-    void fillDB(DataSession Session, boolean createTable) throws SQLException {
-        Set<TableImplement> TableImplements = new HashSet<TableImplement>();
-        FillSet(TableImplements);
+    void fillDB(DataSession session, boolean createTable) throws SQLException {
+        Set<TableImplement> tableImplements = new HashSet<TableImplement>();
+        fillSet(tableImplements);
 
-        for(TableImplement Node : TableImplements) {
-            Node.Table = new Table("table"+Node.getID());
-            Node.MapFields = new HashMap<DataPropertyInterface,KeyField>();
-            Integer FieldNum = 0;
-            for(DataPropertyInterface Interface : Node) {
-                FieldNum++;
-                KeyField Field = new KeyField("key"+FieldNum.toString(),Type.object);
-                Node.Table.keys.add(Field);
-                Node.MapFields.put(Interface,Field);
+        for(TableImplement node : tableImplements) {
+            node.table = new Table("table"+node.getID());
+            node.mapFields = new HashMap<DataPropertyInterface,KeyField>();
+            Integer fieldNum = 0;
+            for(DataPropertyInterface propertyInterface : node) {
+                fieldNum++;
+                KeyField field = new KeyField("key"+fieldNum.toString(),Type.object);
+                node.table.keys.add(field);
+                node.mapFields.put(propertyInterface,field);
             }
         }
 
         if (createTable) {
 
-            Session.CreateTable(objectTable);
-            Session.CreateTable(idTable);
+            session.createTable(objectTable);
+            session.createTable(idTable);
 
-            for (Integer idType : IDTable.Enum) {
+            for (Integer idType : IDTable.getCounters()) {
                 // закинем одну запись
-                Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
-                InsertKeys.put(idTable.key, idType);
-                Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
-                InsertProps.put(idTable.value,0);
-                Session.insertRecord(idTable,InsertKeys,InsertProps);
+                Map<KeyField,Integer> insertKeys = new HashMap<KeyField,Integer>();
+                insertKeys.put(idTable.key, idType);
+                Map<PropertyField,Object> insertProps = new HashMap<PropertyField,Object>();
+                insertProps.put(idTable.value,0);
+                session.insertRecord(idTable,insertKeys,insertProps);
             }
         }
 
@@ -547,28 +548,28 @@ class TableFactory extends TableImplement{
 abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // счетчик идентификаторов
-    int IDCount = 0;
+    int idCount = 0;
 
-    int IDGet(int offs) {
-        return IDCount + offs;
+    int idGet(int offs) {
+        return idCount + offs;
     }
 
-    int IDShift(int offs) {
-        IDCount += offs;
-        return IDCount;
+    int idShift(int offs) {
+        idCount += offs;
+        return idCount;
     }
 
     void initBase() {
         tableFactory = new TableFactory();
 
-        objectClass = new ObjectClass(IDShift(1), "Объект");
+        objectClass = new ObjectClass(idShift(1), "Объект");
         objectClass.addParent(Class.base);
 
         for(int i=0;i< tableFactory.maxInterface;i++) {
-            TableImplement Include = new TableImplement();
+            TableImplement include = new TableImplement();
             for(int j=0;j<=i;j++)
-                Include.add(new DataPropertyInterface(j,Class.base));
-            tableFactory.includeIntoGraph(Include);
+                include.add(new DataPropertyInterface(j,Class.base));
+            tableFactory.includeIntoGraph(include);
         }
 
         baseElement = new NavigatorElement<T>(0, "Base Group");
@@ -579,42 +580,42 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         initBase();
 
         initLogics();
-        InitImplements();
-        InitNavigators();
+        initImplements();
+        initNavigators();
 
-        InitAuthentication();
+        initAuthentication();
     }
 
-    public boolean toSave(Property Property) {
-        return Property.IsPersistent();
+    public boolean toSave(Property property) {
+        return property.isPersistent();
     }
 
     public Collection<Property> getNoUpdateProperties() {
         return new ArrayList<Property>();
     }
 
-    static Set<Integer> WereSuspicious = new HashSet();
+    static Set<Integer> wereSuspicious = new HashSet<Integer>();
 
     // тестирующий конструктор
-    BusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    BusinessLogics(int testType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         initBase();
 
-        if(TestType>=1) {
+        if(testType>=1) {
             initLogics();
-            if(TestType>=2)
-                InitImplements();
+            if(testType>=2)
+                initImplements();
         }
 
-        Integer Seed;
-        List<Integer> ProceedSeeds = new ArrayList();
-        int[] Suspicious = {888,1252,8773,9115,8700,9640,2940,4611,8038};
-        if(TestType>=0 || WereSuspicious.size()>=Suspicious.length)
-            Seed = (new Random()).nextInt(10000);
+        Integer seed;
+        List<Integer> proceedSeeds = new ArrayList<Integer>();
+        int[] suspicious = {888,1252,8773,9115,8700,9640,2940,4611,8038};
+        if(testType>=0 || wereSuspicious.size()>=suspicious.length)
+            seed = (new Random()).nextInt(10000);
         else {
             while(true) {
-                Seed = Suspicious[(new Random()).nextInt(Suspicious.length)];
-                if(!WereSuspicious.contains(Seed)) {
-                    WereSuspicious.add(Seed);
+                seed = suspicious[(new Random()).nextInt(suspicious.length)];
+                if(!wereSuspicious.contains(seed)) {
+                    wereSuspicious.add(seed);
                     break;
                 }
             }
@@ -624,31 +625,31 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 //        Seed = 3936;
 //        Seed = 8907;
 //        Seed = 6646;
-        if(Main.ForceSeed!=null) Seed = Main.ForceSeed;
-        System.out.println("Random seed - "+Seed);
+        if(Main.forceSeed !=null) seed = Main.forceSeed;
+        System.out.println("Random seed - "+ seed);
 
-        Random Randomizer = new Random(Seed);
+        Random randomizer = new Random(seed);
 
-        DataAdapter Adapter = Main.getDefault();
-        Adapter.createDB();
+        DataAdapter adapter = Main.getDefault();
+        adapter.createDB();
 
-        if(TestType<1) {
-            RandomClasses(Randomizer);
-            RandomProperties(Randomizer);
+        if(testType<1) {
+            randomClasses(randomizer);
+            randomProperties(randomizer);
         }
 
-        if(TestType<2) {
-            RandomImplement(Randomizer);
-            RandomPersistent(Randomizer);
+        if(testType<2) {
+            randomImplement(randomizer);
+            randomPersistent(randomizer);
         }
 
-        DataSession Session = createSession(Adapter);
-        fillDB(Session, true);
-        Session.close();
+        DataSession session = createSession(adapter);
+        fillDB(session, true);
+        session.close();
 
         // запустить ChangeDBTest
         try {
-            ChangeDBTest(Adapter,Main.iterations,Randomizer);
+            changeDBTest(adapter,Main.iterations,randomizer);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -672,20 +673,20 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     abstract void initTables();
     abstract void initIndexes();
 
-    void InitImplements() {
+    void initImplements() {
         initPersistents();
         initTables();
         initIndexes();
     }
 
     NavigatorElement<T> baseElement;
-    abstract void InitNavigators();
+    abstract void initNavigators();
 
     AuthPolicy authPolicy = new AuthPolicy();
-    abstract void InitAuthentication();
+    abstract void initAuthentication();
 
-    void addDataProperty(DataProperty Property) {
-        properties.add(Property);
+    void addDataProperty(DataProperty property) {
+        properties.add(property);
     }
 
     void setPropOrder(Property prop, Property propRel, boolean before) {
@@ -702,130 +703,130 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         }
     }
 
-    Integer AddObject(DataSession Session, Class Class) throws SQLException {
+    Integer addObject(DataSession session, Class objectClass) throws SQLException {
 
-        Integer FreeID = tableFactory.idTable.GenerateID(Session, IDTable.OBJECT);
+        Integer freeID = tableFactory.idTable.generateID(session, IDTable.OBJECT);
 
-        ChangeClass(Session,FreeID,Class);
+        changeClass(session,freeID,objectClass);
 
-        return FreeID;
+        return freeID;
     }
 
-    void ChangeClass(DataSession Session, Integer idObject, Class Class) throws SQLException {
+    void changeClass(DataSession session, Integer idObject, Class objectClass) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
-        Session.changeClass(idObject,Class);
+        session.changeClass(idObject,objectClass);
     }
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
-    int SessionCounter = 0;
-    DataSession createSession(DataAdapter Adapter) throws SQLException {
-        return new DataSession(Adapter,SessionCounter++, tableFactory,objectClass);
+    int sessionCounter = 0;
+    DataSession createSession(DataAdapter adapter) throws SQLException {
+        return new DataSession(adapter, sessionCounter++, tableFactory,objectClass);
     }
 
     ObjectClass objectClass;
 
     TableFactory tableFactory;
-    List<Property> properties = new ArrayList();
-    Set<AggregateProperty> persistents = new HashSet();
-    Map<Property,Constraint> constraints = new HashMap();
-    Set<List<Property>> indexes = new HashSet();
+    List<Property> properties = new ArrayList<Property>();
+    Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
+    Map<Property,Constraint> constraints = new HashMap<Property, Constraint>();
+    Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
     // проверяет Constraints
-    String CheckConstraints(DataSession Session) throws SQLException {
+    String checkConstraints(DataSession session) throws SQLException {
 
-        for(Property Property : constraints.keySet())
-            if(Session.propertyChanges.containsKey(Property)) {
-                String ConstraintResult = constraints.get(Property).Check(Session,Property);
-                if(ConstraintResult!=null) return ConstraintResult;
+        for(Property property : constraints.keySet())
+            if(session.propertyChanges.containsKey(property)) {
+                String constraintResult = constraints.get(property).check(session,property);
+                if(constraintResult!=null) return constraintResult;
             }
 
         return null;
     }
 
     public Collection<Property> getUpdateProperties() {
-        Collection<Property> UpdateList = new HashSet(persistents);
-        UpdateList.addAll(constraints.keySet());
-        for(Property Property : properties)
-            if(Property instanceof DataProperty) UpdateList.add(Property);
-        return UpdateList;
+        Collection<Property> updateList = new HashSet<Property>(persistents);
+        updateList.addAll(constraints.keySet());
+        for(Property property : properties)
+            if(property instanceof DataProperty) updateList.add(property);
+        return updateList;
     }
 
-    String Apply(DataSession Session) throws SQLException {
+    String apply(DataSession session) throws SQLException {
         // делается UpdateAggregations (для мн-ва persistent+constraints)
-        Session.startTransaction();
+        session.startTransaction();
 
-        List<Property> ChangedList = Session.update(this,new HashSet());
-        Session.IncrementChanges.remove(this);
+        List<Property> changedList = session.update(this,new HashSet<Class>());
+        session.incrementChanges.remove(this);
 
         // проверим Constraints
-        String Constraints = CheckConstraints(Session);
-        if(Constraints!=null) {
+        String constraints = checkConstraints(session);
+        if(constraints !=null) {
             // откатим транзакцию
-            Session.rollbackTransaction();
-            return Constraints;
+            session.rollbackTransaction();
+            return constraints;
         }
 
-        Session.saveClassChanges();
+        session.saveClassChanges();
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for(Property Property : ChangedList)
-            if(Property instanceof DataProperty || persistents.contains(Property))
-                Session.propertyChanges.get(Property).apply(Session);
+        for(Property property : changedList)
+            if(property instanceof DataProperty || persistents.contains(property))
+                session.propertyChanges.get(property).apply(session);
 /*
         System.out.println("All Changes");
         for(List<IncrementChangeTable> ListTables : TableFactory.ChangeTables)
            for(ChangeObjectTable ChangeTable : ListTables) ChangeTable.outSelect(Session);
   */
-        Session.commitTransaction();
-        Session.restart(false);
+        session.commitTransaction();
+        session.restart(false);
 
         return null;
     }
 
-    void fillDB(DataSession Session, boolean createTable) throws SQLException {
+    void fillDB(DataSession session, boolean createTable) throws SQLException {
 
         // инициализируем таблицы
-        tableFactory.fillDB(Session, createTable);
+        tableFactory.fillDB(session, createTable);
 
         // запишем sID'ки
-        int IDPropNum = 0;
-        for(Property Property : properties)
-            Property.ID = IDPropNum++;
+        int idPropNum = 0;
+        for(Property property : properties)
+            property.ID = idPropNum++;
 
-        Set<DataProperty> DataProperties = new HashSet();
-        Collection<AggregateProperty> AggrProperties = new ArrayList();
-        Map<Table,Integer> Tables = new HashMap<Table,Integer>();
+        Set<DataProperty> dataProperties = new HashSet<DataProperty>();
+        Collection<AggregateProperty> aggrProperties = new ArrayList<AggregateProperty>();
+        Map<Table,Integer> tables = new HashMap<Table,Integer>();
 
         // закинем в таблицы(создав там все что надо) св-ва
-        for(Property Property : properties) {
+        for(Property property : properties) {
             // ChangeTable'ы заполним
-            Property.fillChangeTable();
+            property.fillChangeTable();
 
-            if(Property instanceof DataProperty) {
-                DataProperties.add((DataProperty)Property);
-                ((DataProperty)Property).FillDataTable();
+            if(property instanceof DataProperty) {
+                dataProperties.add((DataProperty)property);
+                ((DataProperty)property).fillDataTable();
             }
 
-            if(Property instanceof AggregateProperty)
-                AggrProperties.add((AggregateProperty)Property);
+            if(property instanceof AggregateProperty)
+                aggrProperties.add((AggregateProperty)property);
 
-            if(Property instanceof DataProperty || (Property instanceof AggregateProperty && persistents.contains(Property))) {
-                Table Table = Property.getTable(null);
+            if(property instanceof DataProperty || (property instanceof AggregateProperty && persistents.contains(property))) {
+                Table table = property.getTable(null);
 
-                Integer PropNum = Tables.get(Table);
-                if(PropNum==null) PropNum = 1;
-                PropNum = PropNum + 1;
-                Tables.put(Table, PropNum);
+                Integer propNum = tables.get(table);
+                if(propNum==null) propNum = 1;
+                propNum = propNum + 1;
+                tables.put(table, propNum);
 
-                PropertyField PropField = new PropertyField(Property.getSID(),Property.getType());
-                Table.Properties.add(PropField);
-                Property.field = PropField;
+                PropertyField propField = new PropertyField(property.getSID(),property.getType());
+                table.properties.add(propField);
+                property.field = propField;
             }
         }
 
         //закинем индексы
-        for (List<Property> index : indexes) {
+        for (List<? extends Property> index : indexes) {
 
             Table table = index.get(0).getTable(null);
 
@@ -839,7 +840,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
 
         if (createTable) {
 
-            for(Table Table : Tables.keySet()) Session.CreateTable(Table);
+            for(Table table : tables.keySet()) session.createTable(table);
 
     /*        // построим в нужном порядке AggregateProperty и будем заполнять их
             List<Property> UpdateList = new ArrayList();
@@ -851,22 +852,22 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
             }
       */
             // создадим dumb
-            Table DumbTable = new Table("dumb");
-            DumbTable.keys.add(new KeyField("dumb",Type.system));
-            Session.CreateTable(DumbTable);
-            Session.execute("INSERT INTO dumb (dumb) VALUES (1)");
+            Table dumbTable = new Table("dumb");
+            dumbTable.keys.add(new KeyField("dumb",Type.system));
+            session.createTable(dumbTable);
+            session.execute("INSERT INTO dumb (dumb) VALUES (1)");
 
-            Table EmptyTable = new Table("empty");
-            EmptyTable.keys.add(new KeyField("dumb",Type.system));
-            Session.CreateTable(EmptyTable);
+            Table emptyTable = new Table("empty");
+            emptyTable.keys.add(new KeyField("dumb",Type.system));
+            session.createTable(emptyTable);
         }
     }
 
-    boolean CheckPersistent(DataSession Session) throws SQLException {
+    boolean checkPersistent(DataSession session) throws SQLException {
 //        System.out.println("checking persistent...");
-        for(AggregateProperty Property : persistents) {
+        for(AggregateProperty property : persistents) {
 //            System.out.println(Property.caption);
-            if(!Property.CheckAggregation(Session,Property.caption)) // Property.caption.equals("Расх. со скл.")
+            if(!property.checkAggregation(session, property.caption)) // Property.caption.equals("Расх. со скл.")
                 return false;
 //            Property.Out(Adapter);
         }
@@ -878,7 +879,7 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     // функционал по заполнению св-в по номерам, нужен для BL
 
     ObjectClass addObjectClass(String caption, Class... parents) {
-        return addObjectClass(baseGroup, IDShift(1), caption, parents);
+        return addObjectClass(baseGroup, idShift(1), caption, parents);
     }
 
     ObjectClass addObjectClass(Integer iID, String caption, Class... parents) {
@@ -891,173 +892,171 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return objectClass;
     }
 
-    LDP addDProp(String caption, Class Value, Class... Params) {
-        return addDProp((AbstractGroup)null, caption, Value, Params);
+    LDP addDProp(String caption, Class value, Class... params) {
+        return addDProp((AbstractGroup)null, caption, value, params);
     }
-    LDP addDProp(String sID, String caption, Class Value, Class... Params) {
-        return addDProp(null, sID, caption, Value, Params);
+    LDP addDProp(String sID, String caption, Class value, Class... params) {
+        return addDProp(null, sID, caption, value, params);
     }
-    LDP addDProp(AbstractGroup group, String caption, Class Value, Class... Params) {
-        return addDProp(group, null, caption, Value, Params);
+    LDP addDProp(AbstractGroup group, String caption, Class value, Class... params) {
+        return addDProp(group, null, caption, value, params);
     }
-    LDP addDProp(AbstractGroup group, String sID, String caption, Class Value, Class... Params) {
-        DataProperty Property = new DataProperty(tableFactory,Value);
-        Property.sID = sID;
-        Property.caption = caption;
-        LDP ListProperty = new LDP(Property);
-        for(Class Int : Params) {
-            ListProperty.AddInterface(Int);
-        }
-        addDataProperty(Property);
+    LDP addDProp(AbstractGroup group, String sID, String caption, Class value, Class... params) {
+        DataProperty property = new DataProperty(tableFactory,value);
+        property.sID = sID;
+        property.caption = caption;
+        LDP listProperty = new LDP(property);
+        for(Class interfaceClass : params)
+            listProperty.AddInterface(interfaceClass);
+        addDataProperty(property);
 
         if (group != null)
-            group.add(Property);
+            group.add(property);
 
-        return ListProperty;
+        return listProperty;
     }
 
-    void setDefProp(LDP Data,LP Default,boolean OnChange) {
-        DataProperty Property = ((DataProperty)Data.property);
-        Property.defaultProperty = Default.property;
-        for(int i=0;i<Data.listInterfaces.size();i++)
-            Property.defaultMap.put((DataPropertyInterface)Data.listInterfaces.get(i),Default.listInterfaces.get(i));
+    void setDefProp(LDP data,LP defaultProperty,boolean onChange) {
+        DataProperty property = ((DataProperty)data.property);
+        property.defaultProperty = defaultProperty.property;
+        for(int i=0;i<data.listInterfaces.size();i++)
+            property.defaultMap.put((DataPropertyInterface)data.listInterfaces.get(i),defaultProperty.listInterfaces.get(i));
 
-        Property.onDefaultChange = OnChange;
+        property.onDefaultChange = onChange;
     }
 
-    LCP addCProp(String caption, Object Value, Class ValueClass, Class... Params) {
-        ClassProperty Property = new ClassProperty(tableFactory,ValueClass,Value);
-        Property.caption = caption;
-        LCP ListProperty = new LCP(Property);
-        for(Class Int : Params) {
-            ListProperty.AddInterface(Int);
-        }
-        properties.add(Property);
-        return ListProperty;
+    LCP addCProp(String caption, Object value, Class valueClass, Class... params) {
+        ClassProperty property = new ClassProperty(tableFactory,valueClass,value);
+        property.caption = caption;
+        LCP listProperty = new LCP(property);
+        for(Class interfaceClass : params)
+            listProperty.addInterface(interfaceClass);
+        properties.add(property);
+        return listProperty;
     }
 
-    LSFP addSFProp(String Formula,Class Value,int ParamCount) {
+    LSFP addSFProp(String formula,Class value,int paramCount) {
 
-        StringFormulaProperty Property = new StringFormulaProperty(tableFactory,Value,Formula);
-        LSFP ListProperty = new LSFP(Property,ParamCount);
-        properties.add(Property);
-        return ListProperty;
+        StringFormulaProperty property = new StringFormulaProperty(tableFactory,value,formula);
+        LSFP listProperty = new LSFP(property,paramCount);
+        properties.add(property);
+        return listProperty;
     }
 
 
-    LCFP addCFProp(int Compare) {
-        CompareFormulaProperty Property = new CompareFormulaProperty(tableFactory,Compare);
-        LCFP ListProperty = new LCFP(Property);
-        properties.add(Property);
-        return ListProperty;
+    LCFP addCFProp(int compare) {
+        CompareFormulaProperty property = new CompareFormulaProperty(tableFactory,compare);
+        LCFP listProperty = new LCFP(property);
+        properties.add(property);
+        return listProperty;
     }
 
     LNFP addNFProp() {
-        NotNullFormulaProperty Property = new NotNullFormulaProperty(tableFactory);
-        LNFP ListProperty = new LNFP(Property);
-        properties.add(Property);
-        return ListProperty;
+        NotNullFormulaProperty property = new NotNullFormulaProperty(tableFactory);
+        LNFP listProperty = new LNFP(property);
+        properties.add(property);
+        return listProperty;
     }
 
-    LMFP addMFProp(Class Value,int ParamCount) {
-        MultiplyFormulaProperty Property = new MultiplyFormulaProperty(tableFactory,Value,ParamCount);
-        LMFP ListProperty = new LMFP(Property);
-        properties.add(Property);
-        return ListProperty;
+    LMFP addMFProp(Class value,int paramCount) {
+        MultiplyFormulaProperty property = new MultiplyFormulaProperty(tableFactory,value,paramCount);
+        LMFP listProperty = new LMFP(property);
+        properties.add(property);
+        return listProperty;
     }
 
-    LOFP addOFProp(int BitCount) {
-        ObjectFormulaProperty Property = new ObjectFormulaProperty(tableFactory,objectClass);
-        LOFP ListProperty = new LOFP(Property,BitCount);
-        properties.add(Property);
-        return ListProperty;
+    LOFP addOFProp(int bitCount) {
+        ObjectFormulaProperty property = new ObjectFormulaProperty(tableFactory,objectClass);
+        LOFP listProperty = new LOFP(property,bitCount);
+        properties.add(property);
+        return listProperty;
     }
 
-    <T extends PropertyInterface> List<PropertyInterfaceImplement> ReadPropImpl(LP<T,Property<T>> MainProp,Object ...Params) {
-        List<PropertyInterfaceImplement> Result = new ArrayList<PropertyInterfaceImplement>();
-        int WaitInterfaces = 0, MainInt = 0;
-        PropertyMapImplement MapRead = null;
-        LP PropRead = null;
-        for(Object P : Params) {
-            if(P instanceof Integer) {
+    <T extends PropertyInterface> List<PropertyInterfaceImplement> readPropImpl(LP<T,Property<T>> mainProp,Object... params) {
+        List<PropertyInterfaceImplement> result = new ArrayList<PropertyInterfaceImplement>();
+        int waitInterfaces = 0, mainInt = 0;
+        PropertyMapImplement mapRead = null;
+        LP propRead = null;
+        for(Object p : params) {
+            if(p instanceof Integer) {
                 // число может быть как ссылкой на родной интерфейс так и
-                PropertyInterface PropInt = MainProp.listInterfaces.get((Integer)P-1);
-                if(WaitInterfaces==0) {
+                PropertyInterface propInt = mainProp.listInterfaces.get((Integer)p-1);
+                if(waitInterfaces==0) {
                     // родную берем
-                    Result.add(PropInt);
+                    result.add(propInt);
                 } else {
                     // докидываем в маппинг
-                    MapRead.mapping.put(PropRead.listInterfaces.get(PropRead.listInterfaces.size()-WaitInterfaces), PropInt);
-                    WaitInterfaces--;
+                    mapRead.mapping.put(propRead.listInterfaces.get(propRead.listInterfaces.size()-waitInterfaces), propInt);
+                    waitInterfaces--;
                 }
             } else {
                // имплементация, типа LP
-               PropRead = (LP)P;
-               MapRead = new PropertyMapImplement(PropRead.property);
-               WaitInterfaces = PropRead.listInterfaces.size();
-               Result.add(MapRead);
+               propRead = (LP)p;
+               mapRead = new PropertyMapImplement(propRead.property);
+               waitInterfaces = propRead.listInterfaces.size();
+               result.add(mapRead);
             }
         }
 
-        return Result;
+        return result;
     }
 
-    LJP addJProp(String caption, LP MainProp, int IntNum, Object... Params) {
-        return addJProp(null, caption, MainProp, IntNum, Params);
+    LJP addJProp(String caption, LP mainProp, int intNum, Object... params) {
+        return addJProp(null, caption, mainProp, intNum, params);
     }
 
-    LJP addJProp(AbstractGroup group, String caption, LP MainProp, int IntNum, Object... Params) {
-        return addJProp(group, null, caption, MainProp, IntNum, Params);
+    LJP addJProp(AbstractGroup group, String caption, LP mainProp, int intNum, Object... params) {
+        return addJProp(group, null, caption, mainProp, intNum, params);
     }
 
-    LJP addJProp(AbstractGroup group, String sID, String caption, LP MainProp, int IntNum, Object... Params) {
-        JoinProperty Property = new JoinProperty(tableFactory,MainProp.property);
-        Property.sID = sID;
-        Property.caption = caption;
-        LJP ListProperty = new LJP(Property,IntNum);
-        int MainInt = 0;
-        List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(ListProperty,Params);
-        for(PropertyInterfaceImplement Implement : PropImpl) {
-            Property.implementations.mapping.put(MainProp.listInterfaces.get(MainInt),Implement);
-            MainInt++;
+    LJP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, int intNum, Object... params) {
+        JoinProperty property = new JoinProperty(tableFactory,mainProp.property);
+        property.sID = sID;
+        property.caption = caption;
+        LJP listProperty = new LJP(property,intNum);
+        int mainInt = 0;
+        List<PropertyInterfaceImplement> propImpl = readPropImpl(listProperty,params);
+        for(PropertyInterfaceImplement implement : propImpl) {
+            property.implementations.mapping.put(mainProp.listInterfaces.get(mainInt),implement);
+            mainInt++;
         }
-        properties.add(Property);
+        properties.add(property);
 
         if (group != null)
-            group.add(Property);
+            group.add(property);
 
-        return ListProperty;
+        return listProperty;
     }
 
-    LGP addGProp(String caption, LP GroupProp, boolean Sum, Object... Params) {
-        return addGProp(null, caption, GroupProp, Sum, Params);
+    LGP addGProp(String caption, LP groupProp, boolean sum, Object... params) {
+        return addGProp(null, caption, groupProp, sum, params);
     }
 
-    LGP addGProp(AbstractGroup group, String caption, LP GroupProp, boolean Sum, Object... Params) {
-        return addGProp(group, null, caption, GroupProp, Sum, Params);
+    LGP addGProp(AbstractGroup group, String caption, LP groupProp, boolean sum, Object... params) {
+        return addGProp(group, null, caption, groupProp, sum, params);
     }
 
-    LGP addGProp(AbstractGroup group, String sID, String caption, LP GroupProp, boolean Sum, Object... Params) {
+    LGP addGProp(AbstractGroup group, String sID, String caption, LP groupProp, boolean sum, Object... params) {
 
-        GroupProperty Property;
-        if(Sum)
-            Property = new SumGroupProperty(tableFactory,GroupProp.property);
+        GroupProperty property;
+        if(sum)
+            property = new SumGroupProperty(tableFactory,groupProp.property);
         else
-            Property = new MaxGroupProperty(tableFactory,GroupProp.property);
+            property = new MaxGroupProperty(tableFactory,groupProp.property);
 
-        Property.sID = sID;
-        Property.caption = caption;
+        property.sID = sID;
+        property.caption = caption;
 
-        LGP ListProperty = new LGP(Property,GroupProp);
-        List<PropertyInterfaceImplement> PropImpl = ReadPropImpl(GroupProp,Params);
-        for(PropertyInterfaceImplement Implement : PropImpl) ListProperty.AddInterface(Implement);
+        LGP listProperty = new LGP(property,groupProp);
+        List<PropertyInterfaceImplement> propImpl = readPropImpl(groupProp,params);
+        for(PropertyInterfaceImplement implement : propImpl) listProperty.AddInterface(implement);
 
-        properties.add(Property);
+        properties.add(property);
 
         if (group != null)
-            group.add(Property);
+            group.add(property);
 
-        return ListProperty;
+        return listProperty;
     }
 
     LUP addUProp(String caption, Union unionType, int intNum, Object... params) {
@@ -1107,30 +1106,30 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         return listProperty;
     }
 
-    void fillData(DataAdapter Adapter) throws SQLException {
+    void fillData(DataAdapter adapter) throws SQLException {
     }
 
     // генерирует белую БЛ
-    void OpenTest(DataAdapter Adapter,boolean Classes,boolean Properties,boolean Implements,boolean Persistent,boolean Changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
+    void openTest(DataAdapter adapter,boolean classes,boolean properties,boolean implement,boolean persistent,boolean changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
 
-        if(Classes) {
+        if(classes) {
             initClasses();
 
-            if(Implements)
-                InitImplements();
+            if(implement)
+                initImplements();
 
-            if(Properties) {
+            if(properties) {
                 initProperties();
 
-                if(Persistent)
+                if(persistent)
                     initPersistents();
 
-                if(Changes) {
-                    DataSession Session = createSession(Adapter);
-                    fillDB(Session, true);
-                    Session.close();
+                if(changes) {
+                    DataSession session = createSession(adapter);
+                    fillDB(session, true);
+                    session.close();
 
-                    fillData(Adapter);
+                    fillData(adapter);
                 }
             }
 
@@ -1138,315 +1137,314 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
     }
 
     // случайным образом генерирует классы
-    void RandomClasses(Random Randomizer) {
-        int CustomClasses = Randomizer.nextInt(20);//
-        List<Class> ObjClasses = new ArrayList();
-        ObjClasses.add(objectClass);
-        for(int i=0;i<CustomClasses;i++) {
-            Class Class = new ObjectClass(i+10000, "Случайный класс"+i);
-            int Parents = Randomizer.nextInt(2) + 1;
-            for(int j=0;j<Parents;j++) {
-                Class.addParent(ObjClasses.get(Randomizer.nextInt(ObjClasses.size())));
-            }
-            ObjClasses.add(Class);
+    void randomClasses(Random randomizer) {
+        int customClasses = randomizer.nextInt(20);//
+        List<Class> objClasses = new ArrayList<Class>();
+        objClasses.add(objectClass);
+        for(int i=0;i<customClasses;i++) {
+            Class objectClass = new ObjectClass(i+10000, "Случайный класс"+i);
+            int parents = randomizer.nextInt(2) + 1;
+            for(int j=0;j<parents;j++)
+                objectClass.addParent(objClasses.get(randomizer.nextInt(objClasses.size())));
+            objClasses.add(objectClass);
         }
     }
 
     // случайным образом генерирует св-ва
-    void RandomProperties(Random Randomizer) {
+    void randomProperties(Random randomizer) {
 
-        List<Class> Classes = new ArrayList();
-        objectClass.fillChilds(Classes);
+        List<Class> classes = new ArrayList<Class>();
+        objectClass.fillChilds(classes);
 
-        List<Property> RandProps = new ArrayList();
-        List<Property> RandObjProps = new ArrayList();
-        List<Property> RandIntegralProps = new ArrayList();
+        List<Property> randProps = new ArrayList<Property>();
+        List<Property> randObjProps = new ArrayList<Property>();
+        List<Property> randIntegralProps = new ArrayList<Property>();
 
-        CompareFormulaProperty Dirihle = new CompareFormulaProperty(tableFactory,CompareWhere.LESS);
-        RandProps.add(Dirihle);
+        CompareFormulaProperty dirihle = new CompareFormulaProperty(tableFactory,CompareWhere.LESS);
+        randProps.add(dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(tableFactory,Class.integer,2);
-        RandProps.add(Multiply);
+        randProps.add(Multiply);
 
-        int DataPropCount = Randomizer.nextInt(15)+1;
-        for(int i=0;i<DataPropCount;i++) {
+        int dataPropCount = randomizer.nextInt(15)+1;
+        for(int i=0;i<dataPropCount;i++) {
             // DataProperty
-            DataProperty DataProp = new DataProperty(tableFactory,(i%4==0?Class.integer :Classes.get(Randomizer.nextInt(Classes.size()))));
-            DataProp.caption = "Data Property " + i;
+            DataProperty dataProp = new DataProperty(tableFactory,(i%4==0?Class.integer :classes.get(randomizer.nextInt(classes.size()))));
+            dataProp.caption = "Data Property " + i;
             // генерируем классы
-            int IntCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
-            for(int j=0;j<IntCount;j++)
-                DataProp.interfaces.add(new DataPropertyInterface(j,Classes.get(Randomizer.nextInt(Classes.size()))));
+            int intCount = randomizer.nextInt(tableFactory.maxInterface)+1;
+            for(int j=0;j<intCount;j++)
+                dataProp.interfaces.add(new DataPropertyInterface(j,classes.get(randomizer.nextInt(classes.size()))));
 
-            RandProps.add(DataProp);
-            RandObjProps.add(DataProp);
-            if(DataProp.getBaseClass().contains(Class.integral))
-                RandIntegralProps.add(DataProp);
+            randProps.add(dataProp);
+            randObjProps.add(dataProp);
+            if(dataProp.getBaseClass().contains(Class.integral))
+                randIntegralProps.add(dataProp);
         }
 
         System.out.print("Создание аггрег. св-в ");
 
-        int PropCount = Randomizer.nextInt(1000)+1; //
-        for(int i=0;i<PropCount;i++) {
+        int propCount = randomizer.nextInt(1000)+1; //
+        for(int i=0;i<propCount;i++) {
 //            int RandClass = Randomizer.nextInt(10);
 //            int PropClass = (RandClass>7?0:(RandClass==8?1:2));
-            int PropClass = Randomizer.nextInt(6);
+            int propClass = randomizer.nextInt(6);
 //            int PropClass = 5;
-            Property GenProp = null;
-            String ResType = "";
-            if(PropClass==0) {
+            Property genProp = null;
+            String resType = "";
+            if(propClass ==0) {
                 // JoinProperty
-                JoinProperty RelProp = new JoinProperty(tableFactory,RandProps.get(Randomizer.nextInt(RandProps.size())));
+                JoinProperty relProp = new JoinProperty(tableFactory,randProps.get(randomizer.nextInt(randProps.size())));
 
                 // генерируем случайно кол-во интерфейсов
-                List<PropertyInterface> RelPropInt = new ArrayList();
-                int IntCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
-                for(int j=0;j<IntCount;j++) {
-                    JoinPropertyInterface Interface = new JoinPropertyInterface(j);
-                    RelProp.interfaces.add(Interface);
-                    RelPropInt.add(Interface);
+                List<PropertyInterface> relPropInt = new ArrayList<PropertyInterface>();
+                int intCount = randomizer.nextInt(tableFactory.maxInterface)+1;
+                for(int j=0;j<intCount;j++) {
+                    JoinPropertyInterface propertyInterface = new JoinPropertyInterface(j);
+                    relProp.interfaces.add(propertyInterface);
+                    relPropInt.add(propertyInterface);
                 }
 
                 // чтобы 2 раза на одну и ту же ветку не натыкаться
-                List<PropertyInterface> AvailRelInt = new ArrayList(RelPropInt);
-                boolean Correct = true;
+                List<PropertyInterface> availRelInt = new ArrayList(relPropInt);
+                boolean correct = true;
 
-                for(PropertyInterface Interface : (Collection<PropertyInterface>)RelProp.implementations.property.interfaces) {
+                for(PropertyInterface propertyInterface : (Collection<PropertyInterface>)relProp.implementations.property.interfaces) {
                     // генерируем случайно map'ы на эти интерфейсы
-                    if(!(RelProp.implementations.property instanceof FormulaProperty) && Randomizer.nextBoolean()) {
-                        if(AvailRelInt.size()==0) {
-                            Correct = false;
+                    if(!(relProp.implementations.property instanceof FormulaProperty) && randomizer.nextBoolean()) {
+                        if(availRelInt.size()==0) {
+                            correct = false;
                             break;
                         }
-                        PropertyInterface MapInterface = AvailRelInt.get(Randomizer.nextInt(AvailRelInt.size()));
-                        RelProp.implementations.mapping.put(Interface,MapInterface);
-                        AvailRelInt.remove(MapInterface);
+                        PropertyInterface mapInterface = availRelInt.get(randomizer.nextInt(availRelInt.size()));
+                        relProp.implementations.mapping.put(propertyInterface,mapInterface);
+                        availRelInt.remove(mapInterface);
                     } else {
                         // другое property пока сгенерим на 1
-                        PropertyMapImplement ImpProp = new PropertyMapImplement(RandObjProps.get(Randomizer.nextInt(RandObjProps.size())));
-                        if(ImpProp.property.interfaces.size()>RelPropInt.size()) {
-                            Correct = false;
+                        PropertyMapImplement impProp = new PropertyMapImplement(randObjProps.get(randomizer.nextInt(randObjProps.size())));
+                        if(impProp.property.interfaces.size()>relPropInt.size()) {
+                            correct = false;
                             break;
                         }
 
-                        List<PropertyInterface> MapRelInt = new ArrayList(RelPropInt);
-                        for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)ImpProp.property.interfaces) {
-                            PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
-                            ImpProp.mapping.put(ImpInterface,MapInterface);
-                            MapRelInt.remove(MapInterface);
+                        List<PropertyInterface> mapRelInt = new ArrayList(relPropInt);
+                        for(PropertyInterface impInterface : (Collection<PropertyInterface>)impProp.property.interfaces) {
+                            PropertyInterface mapInterface = mapRelInt.get(randomizer.nextInt(mapRelInt.size()));
+                            impProp.mapping.put(impInterface,mapInterface);
+                            mapRelInt.remove(mapInterface);
                         }
-                        RelProp.implementations.mapping.put(Interface,ImpProp);
+                        relProp.implementations.mapping.put(propertyInterface,impProp);
                     }
                 }
 
-                if(Correct) {
-                    GenProp = RelProp;
-                    ResType = "R";
+                if(correct) {
+                    genProp = relProp;
+                    resType = "R";
                 }
             }
 
-            if(PropClass==1 || PropClass==2) {
+            if(propClass ==1 || propClass ==2) {
                 // группировочное
-                Property GroupProp;
-                GroupProperty Property = null;
-                if(PropClass==1) {
-                    GroupProp = RandIntegralProps.get(Randomizer.nextInt(RandIntegralProps.size()));
-                    Property = new SumGroupProperty(tableFactory,GroupProp);
-                    ResType = "SG";
+                Property groupProp;
+                GroupProperty property = null;
+                if(propClass ==1) {
+                    groupProp = randIntegralProps.get(randomizer.nextInt(randIntegralProps.size()));
+                    property = new SumGroupProperty(tableFactory,groupProp);
+                    resType = "SG";
                 } else {
-                    GroupProp = RandObjProps.get(Randomizer.nextInt(RandObjProps.size()));
-                    Property = new MaxGroupProperty(tableFactory,GroupProp);
-                    ResType = "MG";
+                    groupProp = randObjProps.get(randomizer.nextInt(randObjProps.size()));
+                    property = new MaxGroupProperty(tableFactory,groupProp);
+                    resType = "MG";
                 }
 
-                boolean Correct = true;
-                List<PropertyInterface> GroupInt = new ArrayList(GroupProp.interfaces);
-                int GroupCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
-                for(int j=0;j<GroupCount;j++) {
-                    PropertyInterfaceImplement Implement;
+                boolean correct = true;
+                List<PropertyInterface> groupInt = new ArrayList(groupProp.interfaces);
+                int groupCount = randomizer.nextInt(tableFactory.maxInterface)+1;
+                for(int j=0;j<groupCount;j++) {
+                    PropertyInterfaceImplement implement;
                     // генерируем случайно map'ы на эти интерфейсы
-                    if(Randomizer.nextBoolean()) {
-                        Implement = GroupInt.get(Randomizer.nextInt(GroupInt.size()));
-                    } else {
+                    if(randomizer.nextBoolean())
+                        implement = groupInt.get(randomizer.nextInt(groupInt.size()));
+                    else {
                         // другое property пока сгенерим на 1
-                        PropertyMapImplement ImpProp = new PropertyMapImplement(RandObjProps.get(Randomizer.nextInt(RandObjProps.size())));
-                        if(ImpProp.property.interfaces.size()>GroupInt.size()) {
-                            Correct = false;
+                        PropertyMapImplement impProp = new PropertyMapImplement(randObjProps.get(randomizer.nextInt(randObjProps.size())));
+                        if(impProp.property.interfaces.size()>groupInt.size()) {
+                            correct = false;
                             break;
                         }
 
-                        List<PropertyInterface> MapRelInt = new ArrayList(GroupInt);
-                        for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)ImpProp.property.interfaces) {
-                            PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
-                            ImpProp.mapping.put(ImpInterface,MapInterface);
-                            MapRelInt.remove(MapInterface);
+                        List<PropertyInterface> mapRelInt = new ArrayList(groupInt);
+                        for(PropertyInterface impInterface : (Collection<PropertyInterface>)impProp.property.interfaces) {
+                            PropertyInterface mapInterface = mapRelInt.get(randomizer.nextInt(mapRelInt.size()));
+                            impProp.mapping.put(impInterface,mapInterface);
+                            mapRelInt.remove(mapInterface);
                         }
-                        Implement = ImpProp;
+                        implement = impProp;
                     }
 
-                    Property.interfaces.add(new GroupPropertyInterface(j,Implement));
+                    property.interfaces.add(new GroupPropertyInterface(j,implement));
                 }
 
-                if(Correct)
-                    GenProp = Property;
+                if(correct)
+                    genProp = property;
             }
 
-            if(PropClass==3 || PropClass==4 || PropClass==5) {
-                UnionProperty Property = null;
-                List<Property> RandValProps = RandObjProps;
-                if(PropClass==3) {
-                    RandValProps = RandIntegralProps;
-                    Property = new SumUnionProperty(tableFactory);
-                    ResType = "SL";
+            if(propClass ==3 || propClass ==4 || propClass ==5) {
+                UnionProperty property = null;
+                List<Property> randValProps = randObjProps;
+                if(propClass ==3) {
+                    randValProps = randIntegralProps;
+                    property = new SumUnionProperty(tableFactory);
+                    resType = "SL";
                 } else {
-                if(PropClass==4) {
-                    Property = new MaxUnionProperty(tableFactory);
-                    ResType = "ML";
+                if(propClass ==4) {
+                    property = new MaxUnionProperty(tableFactory);
+                    resType = "ML";
                 } else {
-                    Property = new OverrideUnionProperty(tableFactory);
-                    ResType = "OL";
+                    property = new OverrideUnionProperty(tableFactory);
+                    resType = "OL";
                 }
                 }
 
-                int OpIntCount = Randomizer.nextInt(tableFactory.maxInterface)+1;
-                for(int j=0;j<OpIntCount;j++)
-                    Property.interfaces.add(new PropertyInterface(j));
+                int opIntCount = randomizer.nextInt(tableFactory.maxInterface)+1;
+                for(int j=0;j<opIntCount;j++)
+                    property.interfaces.add(new PropertyInterface(j));
 
-                boolean Correct = true;
-                List<PropertyInterface> OpInt = new ArrayList(Property.interfaces);
-                int OpCount = Randomizer.nextInt(4)+1;
-                for(int j=0;j<OpCount;j++) {
-                    PropertyMapImplement Operand = new PropertyMapImplement(RandValProps.get(Randomizer.nextInt(RandValProps.size())));
-                    if(Operand.property.interfaces.size()!=OpInt.size()) {
-                        Correct = false;
+                boolean correct = true;
+                List<PropertyInterface> opInt = new ArrayList(property.interfaces);
+                int opCount = randomizer.nextInt(4)+1;
+                for(int j=0;j<opCount;j++) {
+                    PropertyMapImplement operand = new PropertyMapImplement(randValProps.get(randomizer.nextInt(randValProps.size())));
+                    if(operand.property.interfaces.size()!=opInt.size()) {
+                        correct = false;
                         break;
                     }
 
-                    List<PropertyInterface> MapRelInt = new ArrayList(OpInt);
-                    for(PropertyInterface ImpInterface : (Collection<PropertyInterface>)Operand.property.interfaces) {
-                        PropertyInterface MapInterface = MapRelInt.get(Randomizer.nextInt(MapRelInt.size()));
-                        Operand.mapping.put(ImpInterface,MapInterface);
-                        MapRelInt.remove(MapInterface);
+                    List<PropertyInterface> mapRelInt = new ArrayList(opInt);
+                    for(PropertyInterface impInterface : (Collection<PropertyInterface>)operand.property.interfaces) {
+                        PropertyInterface mapInterface = mapRelInt.get(randomizer.nextInt(mapRelInt.size()));
+                        operand.mapping.put(impInterface,mapInterface);
+                        mapRelInt.remove(mapInterface);
                     }
-                    Property.operands.add(Operand);
+                    property.operands.add(operand);
                 }
 
-                if(Correct)
-                    GenProp = Property;
+                if(correct)
+                    genProp = property;
             }
 
 
-            if(GenProp!=null && !GenProp.getBaseClass().isEmpty()) {
-                GenProp.caption = ResType + " " + i;
+            if(genProp!=null && !genProp.getBaseClass().isEmpty()) {
+                genProp.caption = resType + " " + i;
                 // проверим что есть в интерфейсе и покрыты все ключи
-                Iterator<InterfaceClass<?>> ic = GenProp.getClassSet(ClassSet.universal).iterator();
-                if(ic.hasNext() && ic.next().keySet().size()==GenProp.interfaces.size()) {
-                    System.out.print(ResType+"-");
-                    RandProps.add(GenProp);
-                    RandObjProps.add(GenProp);
-                    if(GenProp.getBaseClass().contains(Class.integral))
-                        RandIntegralProps.add(GenProp);
+                Iterator<InterfaceClass<?>> ic = genProp.getClassSet(ClassSet.universal).iterator();
+                if(ic.hasNext() && ic.next().keySet().size()==genProp.interfaces.size()) {
+                    System.out.print(resType+"-");
+                    randProps.add(genProp);
+                    randObjProps.add(genProp);
+                    if(genProp.getBaseClass().contains(Class.integral))
+                        randIntegralProps.add(genProp);
                 }
             }
         }
 
-        properties.addAll(RandProps);
+        properties.addAll(randProps);
 
         System.out.println();
     }
 
     // случайным образом генерирует имплементацию
-    void RandomImplement(Random Randomizer) {
-        List<Class> Classes = new ArrayList();
-        objectClass.fillChilds(Classes);
+    void randomImplement(Random randomizer) {
+        List<Class> classes = new ArrayList<Class>();
+        objectClass.fillChilds(classes);
 
         // заполнение физ модели
-        int ImplementCount = Randomizer.nextInt(8);
-        for(int i=0;i<ImplementCount;i++) {
-            TableImplement Include = new TableImplement();
-            int ObjCount = Randomizer.nextInt(3)+1;
-            for(int ioc=0;ioc<ObjCount;ioc++)
-                Include.add(new DataPropertyInterface(ioc,Classes.get(Randomizer.nextInt(Classes.size()))));
-            tableFactory.includeIntoGraph(Include);
+        int implementCount = randomizer.nextInt(8);
+        for(int i=0;i<implementCount;i++) {
+            TableImplement include = new TableImplement();
+            int objCount = randomizer.nextInt(3)+1;
+            for(int ioc=0;ioc<objCount;ioc++)
+                include.add(new DataPropertyInterface(ioc,classes.get(randomizer.nextInt(classes.size()))));
+            tableFactory.includeIntoGraph(include);
         }
     }
 
     // случайным образом генерирует постоянные аггрегации
-    void RandomPersistent(Random Randomizer) {
+    void randomPersistent(Random Randomizer) {
 
         persistents.clear();
 
         // сначала список получим
-        List<AggregateProperty> AggrProperties = new ArrayList();
-        for(Property Property : properties) {
-            if(Property instanceof AggregateProperty && Property.isObject())
-                AggrProperties.add((AggregateProperty)Property);
+        List<AggregateProperty> aggrProperties = new ArrayList<AggregateProperty>();
+        for(Property property : properties) {
+            if(property instanceof AggregateProperty && property.isObject())
+                aggrProperties.add((AggregateProperty)property);
         }
 
-        int PersistentNum = Randomizer.nextInt(AggrProperties.size())+1;
-        for(int i=0;i<PersistentNum;i++)
-            persistents.add(AggrProperties.get(Randomizer.nextInt(AggrProperties.size())));
+        int persistentNum = Randomizer.nextInt(aggrProperties.size())+1;
+        for(int i=0;i<persistentNum;i++)
+            persistents.add(aggrProperties.get(Randomizer.nextInt(aggrProperties.size())));
 
 //        for(AggregateProperty Property : AggrProperties)
 //            if(Property.caption.equals("R 1"))
 //            Persistents.add(Property);
      }
 
-    static int ChangeDBIteration = 0;
-    void ChangeDBTest(DataAdapter Adapter,Integer MaxIterations,Random Randomizer) throws SQLException {
+    static int changeDBIteration = 0;
+    void changeDBTest(DataAdapter adapter,Integer maxIterations,Random randomizer) throws SQLException {
 
         // сначала список получим
-        List<DataProperty> DataProperties = new ArrayList();
-        for(Property Property : properties) {
-            if(Property instanceof DataProperty)
-                DataProperties.add((DataProperty)Property);
+        List<DataProperty> dataProperties = new ArrayList<DataProperty>();
+        for(Property property : properties) {
+            if(property instanceof DataProperty)
+                dataProperties.add((DataProperty)property);
         }
 
-        DataSession Session = createSession(Adapter);
+        DataSession session = createSession(adapter);
 
-        List<Class> AddClasses = new ArrayList();
-        objectClass.fillChilds(AddClasses);
-        for(Class AddClass : AddClasses) {
-            if(AddClass instanceof ObjectClass) {
-                int ObjectAdd = Randomizer.nextInt(10)+1;
-                for(int ia=0;ia<ObjectAdd;ia++)
-                    AddObject(Session, AddClass);
+        List<Class> addClasses = new ArrayList<Class>();
+        objectClass.fillChilds(addClasses);
+        for(Class addClass : addClasses) {
+            if(addClass instanceof ObjectClass) {
+                int objectAdd = randomizer.nextInt(10)+1;
+                for(int ia=0;ia<objectAdd;ia++)
+                    addObject(session, addClass);
             }
         }
 
-        Apply(Session);
+        apply(session);
 
-        long PrevTime = System.currentTimeMillis();
+        long prevTime = System.currentTimeMillis();
 
 //        Randomizer.setSeed(1);
-        int Iterations = 1;
-        while(Iterations<MaxIterations) {
+        int iterations = 1;
+        while(iterations<maxIterations) {
 
-            long CurrentTime = System.currentTimeMillis();
-            if(CurrentTime-PrevTime>=40000)
+            long currentTime = System.currentTimeMillis();
+            if(currentTime-prevTime>=40000)
                 break;
 
-            PrevTime = CurrentTime;
+            prevTime = currentTime;
 
-            ChangeDBIteration = Iterations;
-            System.out.println("Iteration" + Iterations++);
+            changeDBIteration = iterations;
+            System.out.println("Iteration" + iterations++);
 
             // будем также рандомно создавать объекты
-            AddClasses = new ArrayList();
-            objectClass.fillChilds(AddClasses);
-            int ObjectAdd = Randomizer.nextInt(5);
-            for(int ia=0;ia<ObjectAdd;ia++) {
-                Class AddClass = AddClasses.get(Randomizer.nextInt(AddClasses.size()));
-                if(AddClass instanceof ObjectClass)
-                    AddObject(Session, AddClass);
+            addClasses = new ArrayList<Class>();
+            objectClass.fillChilds(addClasses);
+            int objectAdd = randomizer.nextInt(5);
+            for(int ia=0;ia<objectAdd;ia++) {
+                Class addClass = addClasses.get(randomizer.nextInt(addClasses.size()));
+                if(addClass instanceof ObjectClass)
+                    addObject(session, addClass);
             }
 
-            int PropertiesChanged = Randomizer.nextInt(8)+1;
-            for(int ip=0;ip<PropertiesChanged;ip++) {
+            int propertiesChanged = randomizer.nextInt(8)+1;
+            for(int ip=0;ip<propertiesChanged;ip++) {
                 // берем случайные n св-в
-                DataProperty<?> ChangeProp = DataProperties.get(Randomizer.nextInt(DataProperties.size()));
-                int NumChanges = Randomizer.nextInt(3)+1;
-                for(int in=0;in<NumChanges;in++) {
+                DataProperty<?> changeProp = dataProperties.get(randomizer.nextInt(dataProperties.size()));
+                int numChanges = randomizer.nextInt(3)+1;
+                for(int in=0;in<numChanges;in++) {
 /*                    // теперь определяем класс найденного объекта
                     Class valueClass = null;
                     if(ChangeProp.Value instanceof ObjectClass)
@@ -1455,19 +1453,19 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                         valueClass = ChangeProp.Value;*/
 
                     // определяем входные классы
-                    InterfaceClass<DataPropertyInterface> InterfaceClasses = CollectionExtend.getRandom(ChangeProp.getClassSet(ClassSet.universal),Randomizer);
+                    InterfaceClass<DataPropertyInterface> interfaceClasses = CollectionExtend.getRandom(changeProp.getClassSet(ClassSet.universal), randomizer);
                     // генерим рандомные объекты этих классов
-                    Map<DataPropertyInterface,ObjectValue> Keys = new HashMap();
-                    for(DataPropertyInterface Interface : ChangeProp.interfaces) {
-                        Class RandomClass = InterfaceClasses.get(Interface).getRandom(Randomizer);
-                        Keys.put(Interface,new ObjectValue((Integer) RandomClass.GetRandomObject(Session, tableFactory,Randomizer,0),RandomClass));
+                    Map<DataPropertyInterface,ObjectValue> keys = new HashMap<DataPropertyInterface, ObjectValue>();
+                    for(DataPropertyInterface propertyInterface : changeProp.interfaces) {
+                        Class randomClass = interfaceClasses.get(propertyInterface).getRandom(randomizer);
+                        keys.put(propertyInterface,new ObjectValue((Integer) randomClass.getRandomObject(session, tableFactory, 0, randomizer),randomClass));
                     }
 
-                    Object ValueObject = null;
-                    if(Randomizer.nextInt(10)<8)
-                        ValueObject = ChangeProp.Value.GetRandomObject(Session, tableFactory,Randomizer,Iterations);
+                    Object valueObject = null;
+                    if(randomizer.nextInt(10)<8)
+                        valueObject = changeProp.value.getRandomObject(session, tableFactory, iterations, randomizer);
 
-                    ChangeProp.changeProperty(Keys,ValueObject, false, Session, null);
+                    changeProp.changeProperty(keys, valueObject, false, session, null);
                 }
             }
 
@@ -1475,155 +1473,155 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
                 Property.OutChangesTable(Adapter, Session);
             }*/
 
-            Apply(Session);
-            CheckPersistent(Session);
+            apply(session);
+            checkPersistent(session);
         }
 
-        Session.close();
+        session.close();
     }
 
-    static List<Property> getChangedList(Collection<? extends Property> UpdateProps,DataChanges Changes,Collection<Property> NoUpdateProps) {
-        List<Property> ChangedList = new ArrayList();
-        for(Property Property : UpdateProps)
-            Property.fillChangedList(ChangedList,Changes,NoUpdateProps);
-        return ChangedList;
+    static List<Property> getChangedList(Collection<? extends Property> updateProps,DataChanges changes,Collection<Property> noUpdateProps) {
+        List<Property> changedList = new ArrayList<Property>();
+        for(Property property : updateProps)
+            property.fillChangedList(changedList,changes,noUpdateProps);
+        return changedList;
     }
 
     // флаг для оптимизации
-    Map<DataProperty,Integer> autoQuantity(Integer Quantity,LDP... Properties) {
-        Map<DataProperty,Integer> Result = new HashMap<DataProperty,Integer>();
-        for(LDP<?> Property : Properties)
-            Result.put(Property.property,Quantity);
-        return Result;
+    Map<DataProperty,Integer> autoQuantity(Integer quantity,LDP... properties) {
+        Map<DataProperty,Integer> result = new HashMap<DataProperty,Integer>();
+        for(LDP<?> property : properties)
+            result.put(property.property,quantity);
+        return result;
     }
 
-    static boolean AutoFillDB = false;
-    static int AutoIDCounter = 0;
+    static boolean autoFillDB = false;
+    static int autoIDCounter = 0;
     static int AutoSeed = 1400;
-    void autoFillDB(DataAdapter Adapter, Map<Class, Integer> ClassQuantity, Map<DataProperty, Integer> PropQuantity, Map<DataProperty, Set<DataPropertyInterface>> PropNotNull) throws SQLException {
+    void autoFillDB(DataAdapter adapter, Map<Class, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException {
 
-        AutoFillDB = true;
-        DataSession Session = createSession(Adapter);
+        autoFillDB = true;
+        DataSession session = createSession(adapter);
 
         // сначала вырубим все аггрегации в конце пересчитаем
-        Map<AggregateProperty,PropertyField> SavePersistents = new HashMap();
-        for(AggregateProperty Property : persistents) {
-            SavePersistents.put(Property,Property.field);
-            Property.field = null;
+        Map<AggregateProperty,PropertyField> savePersistents = new HashMap<AggregateProperty, PropertyField>();
+        for(AggregateProperty property : persistents) {
+            savePersistents.put(property,property.field);
+            property.field = null;
         }
         persistents.clear();
 
         // генерируем классы
-        Map<Integer,String> ObjectNames = new HashMap();
-        Map<Class,List<Integer>> Objects = new HashMap();
-        List<Class> Classes = new ArrayList();
-        objectClass.fillChilds(Classes);
+        Map<Integer,String> objectNames = new HashMap<Integer, String>();
+        Map<Class,List<Integer>> objects = new HashMap<Class, List<Integer>>();
+        List<Class> classes = new ArrayList<Class>();
+        objectClass.fillChilds(classes);
 
-        for(Class FillClass : Classes)
-            Objects.put(FillClass,new ArrayList());
+        for(Class fillClass : classes)
+            objects.put(fillClass,new ArrayList<Integer>());
 
-        for(Class FillClass : Classes)
-            if(FillClass.Childs.size()==0) {
-                System.out.println(FillClass.caption);
+        for(Class fillClass : classes)
+            if(fillClass.childs.size()==0) {
+                System.out.println(fillClass.caption);
 
-                Integer Quantity = ClassQuantity.get(FillClass);
-                if(Quantity==null) Quantity = 1;
+                Integer quantity = classQuantity.get(fillClass);
+                if(quantity==null) quantity = 1;
 
-                List<Integer> ListObjects = new ArrayList();
-                for(int i=0;i<Quantity;i++) {
-                    Integer idObject = AddObject(Session,FillClass);
-                    ListObjects.add(idObject);
-                    ObjectNames.put(idObject,FillClass.caption+" "+(i+1));
+                List<Integer> listObjects = new ArrayList<Integer>();
+                for(int i=0;i<quantity;i++) {
+                    Integer idObject = addObject(session,fillClass);
+                    listObjects.add(idObject);
+                    objectNames.put(idObject,fillClass.caption+" "+(i+1));
                 }
 
-                Set<ObjectClass> Parents = new HashSet();
-                FillClass.fillParents(Parents);
+                Set<ObjectClass> parents = new HashSet<ObjectClass>();
+                fillClass.fillParents(parents);
 
-                for(ObjectClass Class : Parents)
-                    Objects.get(Class).addAll(ListObjects);
+                for(ObjectClass objectClass : parents)
+                    objects.get(objectClass).addAll(listObjects);
             }
 
-        Random Randomizer = new Random(AutoSeed);
+        Random randomizer = new Random(AutoSeed);
 
         // бежим по св-вам
-        for(Property AbstractProperty : properties)
-            if(AbstractProperty instanceof DataProperty) {
-                DataProperty<?> Property = (DataProperty)AbstractProperty;
+        for(Property abstractProperty : properties)
+            if(abstractProperty instanceof DataProperty) {
+                DataProperty<?> property = (DataProperty)abstractProperty;
 
-                System.out.println(Property.caption);
+                System.out.println(property.caption);
 
-                Set<DataPropertyInterface> InterfaceNotNull = PropNotNull.get(Property);
-                if(InterfaceNotNull==null) InterfaceNotNull = new HashSet();
-                Integer Quantity = PropQuantity.get(Property);
-                if(Quantity==null) {
-                    Quantity = 1;
-                    for(DataPropertyInterface Interface : Property.interfaces)
-                        if(!InterfaceNotNull.contains(Interface))
-                            Quantity = Quantity * Objects.get(Interface.interfaceClass).size();
+                Set<DataPropertyInterface> interfaceNotNull = propNotNull.get(property);
+                if(interfaceNotNull==null) interfaceNotNull = new HashSet<DataPropertyInterface>();
+                Integer quantity = propQuantity.get(property);
+                if(quantity==null) {
+                    quantity = 1;
+                    for(DataPropertyInterface propertyInterface : property.interfaces)
+                        if(!interfaceNotNull.contains(propertyInterface))
+                            quantity = quantity * objects.get(propertyInterface.interfaceClass).size();
 
-                    if(Quantity > 1)
-                        Quantity = (int)(Quantity * 0.5);
+                    if(quantity > 1)
+                        quantity = (int)(quantity * 0.5);
                 }
 
-                Map<DataPropertyInterface,Collection<Integer>> MapInterfaces = new HashMap();
-                if(PropNotNull.containsKey(Property))
-                    for(DataPropertyInterface Interface : InterfaceNotNull)
-                        MapInterfaces.put(Interface,Objects.get(Interface.interfaceClass));
+                Map<DataPropertyInterface,Collection<Integer>> mapInterfaces = new HashMap<DataPropertyInterface, Collection<Integer>>();
+                if(propNotNull.containsKey(property))
+                    for(DataPropertyInterface propertyInterface : interfaceNotNull)
+                        mapInterfaces.put(propertyInterface,objects.get(propertyInterface.interfaceClass));
 
                 // сначала для всех PropNotNull генерируем все возможные Map<ы>
-                for(Map<DataPropertyInterface,Integer> NotNulls : new Combinations<DataPropertyInterface,Integer>(MapInterfaces)) { //
-                    int RandomInterfaces = 0;
-                    while(RandomInterfaces<Quantity) {
-                        Map<DataPropertyInterface,Integer> RandomIteration = new HashMap();
-                        for(DataPropertyInterface Interface : Property.interfaces)
-                            if(!NotNulls.containsKey(Interface)) {
-                                List<Integer> ListObjects = Objects.get(Interface.interfaceClass);
-                                RandomIteration.put(Interface,ListObjects.get(Randomizer.nextInt(ListObjects.size())));
+                for(Map<DataPropertyInterface,Integer> notNulls : new Combinations<DataPropertyInterface,Integer>(mapInterfaces)) { //
+                    int randomInterfaces = 0;
+                    while(randomInterfaces<quantity) {
+                        Map<DataPropertyInterface,Integer> randomIteration = new HashMap<DataPropertyInterface, Integer>();
+                        for(DataPropertyInterface propertyInterface : property.interfaces)
+                            if(!notNulls.containsKey(propertyInterface)) {
+                                List<Integer> listObjects = objects.get(propertyInterface.interfaceClass);
+                                randomIteration.put(propertyInterface,listObjects.get(randomizer.nextInt(listObjects.size())));
                             }
 
-                        Map<DataPropertyInterface,ObjectValue> Keys = new HashMap();
-                        RandomIteration.putAll(NotNulls);
-                        for(Map.Entry<DataPropertyInterface,Integer> InterfaceValue : RandomIteration.entrySet())
-                            Keys.put(InterfaceValue.getKey(),new ObjectValue(InterfaceValue.getValue(),InterfaceValue.getKey().interfaceClass));
+                        Map<DataPropertyInterface,ObjectValue> keys = new HashMap<DataPropertyInterface, ObjectValue>();
+                        randomIteration.putAll(notNulls);
+                        for(Map.Entry<DataPropertyInterface,Integer> interfaceValue : randomIteration.entrySet())
+                            keys.put(interfaceValue.getKey(),new ObjectValue(interfaceValue.getValue(),interfaceValue.getKey().interfaceClass));
 
-                        Object ValueObject = null;
-                        if(Property.Value instanceof StringClass) {
-                            String ObjectName = "";
-                            for(DataPropertyInterface Interface : Property.interfaces)
-                                ObjectName += ObjectNames.get(RandomIteration.get(Interface)) + " ";
-                            ValueObject = ObjectName;
+                        Object valueObject = null;
+                        if(property.value instanceof StringClass) {
+                            String objectName = "";
+                            for(DataPropertyInterface propertyInterface : property.interfaces)
+                                objectName += objectNames.get(randomIteration.get(propertyInterface)) + " ";
+                            valueObject = objectName;
                         } else
-                            ValueObject = Property.Value.getRandomObject(Objects,Randomizer,20);
-                        Property.changeProperty(Keys,ValueObject, false, Session, null);
-                        RandomInterfaces++;
+                            valueObject = property.value.getRandomObject(objects,randomizer,20);
+                        property.changeProperty(keys,valueObject, false, session, null);
+                        randomInterfaces++;
                     }
                 }
             }
 
         System.out.println("Apply");
-        Apply(Session);
+        apply(session);
 
-        Session.startTransaction();
+        session.startTransaction();
 
         // восстановим persistence, пересчитая их
-        for(Property DependProperty : getChangedList(SavePersistents.keySet(),null,new HashSet<Property>()))
-            if(DependProperty instanceof AggregateProperty && SavePersistents.containsKey(DependProperty)) {
-                AggregateProperty Property = (AggregateProperty)DependProperty;
+        for(Property dependProperty : getChangedList(savePersistents.keySet(),null,new HashSet<Property>()))
+            if(dependProperty instanceof AggregateProperty && savePersistents.containsKey(dependProperty)) {
+                AggregateProperty property = (AggregateProperty)dependProperty;
 
-                System.out.println("Recalculate - "+Property.caption);
+                System.out.println("Recalculate - "+property.caption);
 
-                Property.field = SavePersistents.get(Property);
-                persistents.add(Property);
-                Property.reCalculateAggregation(Session);
+                property.field = savePersistents.get(property);
+                persistents.add(property);
+                property.reCalculateAggregation(session);
             }
 
-        Session.commitTransaction();
+        session.commitTransaction();
 
-        tableFactory.idTable.reserveID(Session,IDTable.OBJECT,AutoIDCounter);
+        tableFactory.idTable.reserveID(session,IDTable.OBJECT, autoIDCounter);
 
-        Session.close();
+        session.close();
 
-        AutoFillDB = false;
+        autoFillDB = false;
     }
 
     public void createDefaultClassForms(Class cls, NavigatorElement parent) {
@@ -1638,45 +1636,44 @@ abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUp
         if (!found)
             cls.addRelevantElement(node);
 
-        for (Class child : cls.Childs) {
+        for (Class child : cls.childs) {
             createDefaultClassForms(child, node);
         }
     }
 
     // -------------------------------------- Старые интерфейсы --------------------------------------------------- //
 
-    Map<String,PropertyObjectImplement> FillSingleViews(ObjectImplement Object,NavigatorForm Form,Set<String> Names) {
+    Map<String,PropertyObjectImplement> fillSingleViews(ObjectImplement object,NavigatorForm form,Set<String> names) {
 
-        Map<String,PropertyObjectImplement> Result = new HashMap();
+        Map<String,PropertyObjectImplement> result = new HashMap<String, PropertyObjectImplement>();
 
-        for(Property DrawProp : properties) {
-            if(DrawProp.interfaces.size() == 1) {
+        for(Property drawProp : properties) {
+            if(drawProp.interfaces.size() == 1) {
                 // проверим что дает хоть одно значение
-                InterfaceClass InterfaceClass = new InterfaceClass();
-                InterfaceClass.put(((Collection<PropertyInterface>)DrawProp.interfaces).iterator().next(),ClassSet.getUp(Object.baseClass));
-                if(!DrawProp.getValueClass(InterfaceClass).isEmpty()) {
-                    PropertyObjectImplement PropertyImplement = new PropertyObjectImplement(DrawProp);
-                    PropertyImplement.mapping.put((PropertyInterface)DrawProp.interfaces.iterator().next(),Object);
-                    Form.propertyViews.add(new PropertyView(Form.IDShift(1),PropertyImplement,Object.groupTo));
+                InterfaceClass interfaceClass = new InterfaceClass();
+                interfaceClass.put(((Collection<PropertyInterface>)drawProp.interfaces).iterator().next(),ClassSet.getUp(object.baseClass));
+                if(!drawProp.getValueClass(interfaceClass).isEmpty()) {
+                    PropertyObjectImplement propertyImplement = new PropertyObjectImplement(drawProp);
+                    propertyImplement.mapping.put((PropertyInterface)drawProp.interfaces.iterator().next(),object);
+                    form.propertyViews.add(new PropertyView(form.IDShift(1),propertyImplement,object.groupTo));
 
-                    if(Names!=null && Names.contains(DrawProp.caption))
-                        Result.put(DrawProp.caption,PropertyImplement);
+                    if(names!=null && names.contains(drawProp.caption))
+                        result.put(drawProp.caption,propertyImplement);
                 }
             }
         }
 
-        return Result;
+        return result;
     }
 
-    PropertyObjectImplement addPropertyView(NavigatorForm fbv,LP ListProp,GroupObjectImplement gv,ObjectImplement... Params) {
-        PropertyObjectImplement PropImpl = new PropertyObjectImplement(ListProp.property);
+    PropertyObjectImplement addPropertyView(NavigatorForm fbv,LP listProp,GroupObjectImplement gv,ObjectImplement... params) {
+        PropertyObjectImplement propImpl = new PropertyObjectImplement(listProp.property);
 
-        ListIterator<PropertyInterface> i = ListProp.listInterfaces.listIterator();
-        for(ObjectImplement Object : Params) {
-            PropImpl.mapping.put(i.next(),Object);
-        }
-        fbv.propertyViews.add(new PropertyView(fbv.IDShift(1),PropImpl,gv));
-        return PropImpl;
+        ListIterator<PropertyInterface> i = listProp.listInterfaces.listIterator();
+        for(ObjectImplement object : params)
+            propImpl.mapping.put(i.next(),object);
+        fbv.propertyViews.add(new PropertyView(fbv.IDShift(1),propImpl,gv));
+        return propImpl;
     }
 
 }
@@ -1717,10 +1714,10 @@ class LCP extends LP<DataPropertyInterface,ClassProperty> {
 
     LCP(ClassProperty iProperty) {super(iProperty);}
 
-    void AddInterface(Class InClass) {
-        DataPropertyInterface Interface = new DataPropertyInterface(listInterfaces.size(),InClass);
-        listInterfaces.add(Interface);
-        property.interfaces.add(Interface);
+    void addInterface(Class inClass) {
+        DataPropertyInterface propertyInterface = new DataPropertyInterface(listInterfaces.size(),inClass);
+        listInterfaces.add(propertyInterface);
+        property.interfaces.add(propertyInterface);
     }
 }
 
@@ -1728,41 +1725,41 @@ class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface,DataProp
 
     LDP(DataProperty<D> iProperty) {super(iProperty);}
 
-    void AddInterface(Class InClass) {
-        DataPropertyInterface Interface = new DataPropertyInterface(listInterfaces.size(),InClass);
-        listInterfaces.add(Interface);
-        property.interfaces.add(Interface);
+    void AddInterface(Class inClass) {
+        DataPropertyInterface propertyInterface = new DataPropertyInterface(listInterfaces.size(),inClass);
+        listInterfaces.add(propertyInterface);
+        property.interfaces.add(propertyInterface);
     }
 
-    void ChangeProperty(DataSession Session, Object Value, Integer... iParams) throws SQLException {
-        Map<DataPropertyInterface,ObjectValue> Keys = new HashMap<DataPropertyInterface,ObjectValue>();
-        Integer IntNum = 0;
+    void ChangeProperty(DataSession session, Object value, Integer... iParams) throws SQLException {
+        Map<DataPropertyInterface,ObjectValue> keys = new HashMap<DataPropertyInterface,ObjectValue>();
+        Integer intNum = 0;
         for(int i : iParams) {
-            DataPropertyInterface Interface = listInterfaces.get(IntNum);
-            Keys.put(Interface,new ObjectValue(i,Interface.interfaceClass));
-            IntNum++;
+            DataPropertyInterface propertyInterface = listInterfaces.get(intNum);
+            keys.put(propertyInterface,new ObjectValue(i,propertyInterface.interfaceClass));
+            intNum++;
         }
 
-        property.changeProperty(Keys, Value, false, Session, null);
+        property.changeProperty(keys, value, false, session, null);
     }
 
-    void putNotNulls(Map<DataProperty,Set<DataPropertyInterface>> PropNotNulls,Integer... iParams) {
-        Set<DataPropertyInterface> InterfaceNotNulls = new HashSet<DataPropertyInterface>();
-        for(Integer Interface : iParams)
-            InterfaceNotNulls.add(listInterfaces.get(Interface));
+    void putNotNulls(Map<DataProperty,Set<DataPropertyInterface>> propNotNulls,Integer... iParams) {
+        Set<DataPropertyInterface> interfaceNotNulls = new HashSet<DataPropertyInterface>();
+        for(Integer iInterface : iParams)
+            interfaceNotNulls.add(listInterfaces.get(iInterface));
 
-        PropNotNulls.put(property,InterfaceNotNulls);
+        propNotNulls.put(property,interfaceNotNulls);
     }
 }
 
 class LSFP extends LP<StringFormulaPropertyInterface,StringFormulaProperty> {
 
-    LSFP(StringFormulaProperty iProperty,int ParamCount) {
+    LSFP(StringFormulaProperty iProperty,int paramCount) {
         super(iProperty);
-        for(int i=0;i<ParamCount;i++) {
-            StringFormulaPropertyInterface Interface = new StringFormulaPropertyInterface(listInterfaces.size());
-            listInterfaces.add(Interface);
-            property.interfaces.add(Interface);
+        for(int i=0;i<paramCount;i++) {
+            StringFormulaPropertyInterface propertyInterface = new StringFormulaPropertyInterface(listInterfaces.size());
+            listInterfaces.add(propertyInterface);
+            property.interfaces.add(propertyInterface);
         }
     }
 }
@@ -1771,8 +1768,8 @@ class LCFP extends LP<FormulaPropertyInterface,CompareFormulaProperty> {
 
     LCFP(CompareFormulaProperty iProperty) {
         super(iProperty);
-        listInterfaces.add(property.Operator1);
-        listInterfaces.add(property.Operator2);
+        listInterfaces.add(property.operator1);
+        listInterfaces.add(property.operator2);
     }
 }
 
@@ -1780,7 +1777,7 @@ class LNFP extends LP<FormulaPropertyInterface,NotNullFormulaProperty> {
 
     LNFP(NotNullFormulaProperty iProperty) {
         super(iProperty);
-        listInterfaces.add(property.Property);
+        listInterfaces.add(property.property);
     }
 }
 
@@ -1794,53 +1791,53 @@ class LMFP extends LP<StringFormulaPropertyInterface,MultiplyFormulaProperty> {
 
 class LOFP extends LP<FormulaPropertyInterface,ObjectFormulaProperty> {
 
-    LOFP(ObjectFormulaProperty iProperty,int BitCount) {
+    LOFP(ObjectFormulaProperty iProperty,int bitCount) {
         super(iProperty);
-        listInterfaces.add(property.ObjectInterface);
-        for(int i=0;i<BitCount;i++) {
-            FormulaPropertyInterface Interface = new FormulaPropertyInterface(listInterfaces.size());
-            listInterfaces.add(Interface);
-            property.interfaces.add(Interface);
+        listInterfaces.add(property.objectInterface);
+        for(int i=0;i<bitCount;i++) {
+            FormulaPropertyInterface propertyInterface = new FormulaPropertyInterface(listInterfaces.size());
+            listInterfaces.add(propertyInterface);
+            property.interfaces.add(propertyInterface);
         }
     }
 }
 
 class LJP<T extends PropertyInterface> extends LP<JoinPropertyInterface,JoinProperty<T>> {
 
-    LJP(JoinProperty<T> iProperty,int Objects) {
+    LJP(JoinProperty<T> iProperty,int objects) {
         super(iProperty);
-        for(int i=0;i<Objects;i++) {
-            JoinPropertyInterface Interface = new JoinPropertyInterface(i);
-            listInterfaces.add(Interface);
-            property.interfaces.add(Interface);
+        for(int i=0;i<objects;i++) {
+            JoinPropertyInterface propertyInterface = new JoinPropertyInterface(i);
+            listInterfaces.add(propertyInterface);
+            property.interfaces.add(propertyInterface);
         }
     }
 }
 
 class LUP extends LP<PropertyInterface,UnionProperty> {
 
-    LUP(UnionProperty iProperty,int Objects) {
+    LUP(UnionProperty iProperty,int objects) {
         super(iProperty);
-        for(int i=0;i<Objects;i++) {
-            JoinPropertyInterface Interface = new JoinPropertyInterface(i);
-            listInterfaces.add(Interface);
-            property.interfaces.add(Interface);
+        for(int i=0;i<objects;i++) {
+            JoinPropertyInterface propertyInterface = new JoinPropertyInterface(i);
+            listInterfaces.add(propertyInterface);
+            property.interfaces.add(propertyInterface);
         }
     }
 }
 
 class LGP<T extends PropertyInterface> extends LP<GroupPropertyInterface<T>,GroupProperty<T>> {
 
-    LP<T,?> GroupProperty;
+    LP<T,?> groupProperty;
     LGP(GroupProperty<T> iProperty,LP<T,?> iGroupProperty) {
         super(iProperty);
-        GroupProperty = iGroupProperty;
+        groupProperty = iGroupProperty;
     }
 
-    void AddInterface(PropertyInterfaceImplement<T> Implement) {
-        GroupPropertyInterface<T> Interface = new GroupPropertyInterface<T>(listInterfaces.size(),Implement);
-        listInterfaces.add(Interface);
-        property.interfaces.add(Interface);
+    void AddInterface(PropertyInterfaceImplement<T> implement) {
+        GroupPropertyInterface<T> propertyInterface = new GroupPropertyInterface<T>(listInterfaces.size(),implement);
+        listInterfaces.add(propertyInterface);
+        property.interfaces.add(propertyInterface);
     }
 }
 

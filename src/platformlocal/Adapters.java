@@ -13,7 +13,7 @@ interface SQLSyntax {
 
     boolean allowViews();
 
-    String getUpdate(String TableString,String SetString,String FromString,String WhereString);
+    String getUpdate(String tableString,String setString,String fromString,String whereString);
 
     String getClassName();
     void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
@@ -23,15 +23,15 @@ interface SQLSyntax {
     String commitTransaction();
     String rollbackTransaction();
 
-    String isNULL(String Expr1, String Expr2, boolean NotSafe);
+    String isNULL(String expr1, String expr2, boolean notSafe);
 
     String getClustered();
     String getCommandEnd();
 
-    String getNullValue(Type DBType);
+    String getNullValue(Type dbType);
 
-    String getSessionTableName(String TableName);
-    String getCreateSessionTable(String TableName,String DeclareString,String ConstraintString);
+    String getSessionTableName(String tableName);
+    String getCreateSessionTable(String tableName,String declareString,String constraintString);
 
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     boolean isNullSafe();
@@ -39,7 +39,7 @@ interface SQLSyntax {
 
     boolean useFJ();
 
-    int UpdateModel();
+    int updateModel();
 
     boolean noAutoCommit();
 
@@ -55,22 +55,22 @@ interface SQLSyntax {
 
     String getBitType();
 
-    String getBitString(Boolean Value);
+    String getBitString(Boolean value);
 
-    String getSelect(String From,String Exprs,String Where,String OrderBy,String GroupBy, String Top);
+    String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);
 
-    String getUnionOrder(String Union,String OrderBy, String Top);
+    String getUnionOrder(String union,String orderBy, String top);
 }
 
 abstract class DataAdapter implements SQLSyntax {
 
-    String Server;
-    String DataBase;
+    String server;
+    String dataBase;
 
     protected DataAdapter(String iDataBase,String iServer) throws ClassNotFoundException {
         java.lang.Class.forName(getClassName());
-        DataBase = iDataBase;
-        Server = iServer; 
+        dataBase = iDataBase;
+        server = iServer;
     }
 
     public String getStringType(int length) {
@@ -97,11 +97,11 @@ abstract class DataAdapter implements SQLSyntax {
         return "integer";
     }
 
-    public String getBitString(Boolean Value) {
-        return (Value?"1":"0");
+    public String getBitString(Boolean value) {
+        return (value ?"1":"0");
     }
 
-    public int UpdateModel() {
+    public int updateModel() {
         return 0;
     }
 
@@ -109,11 +109,8 @@ abstract class DataAdapter implements SQLSyntax {
         return false;
     }
 
-    public String getNullValue(Type DBType) {
+    public String getNullValue(Type dbType) {
         return "NULL";
-    }
-
-    void Disconnect() throws SQLException {
     }
 
     // по умолчанию
@@ -130,12 +127,12 @@ abstract class DataAdapter implements SQLSyntax {
         return "";
     }
 
-    public String getCreateSessionTable(String TableName, String DeclareString, String ConstraintString) {
-        return "CREATE TEMPORARY TABLE "+TableName+" ("+DeclareString+","+ConstraintString+")";
+    public String getCreateSessionTable(String tableName, String declareString, String constraintString) {
+        return "CREATE TEMPORARY TABLE "+ tableName +" ("+ declareString +","+ constraintString +")";
     }
 
-    public String getSessionTableName(String TableName) {
-        return TableName;
+    public String getSessionTableName(String tableName) {
+        return tableName;
     }
 
     public boolean isGreatest() {
@@ -146,11 +143,11 @@ abstract class DataAdapter implements SQLSyntax {
         return true;
     }
 
-    static String clause(String Clause,String Data) {
-        return (Data.length()==0?"":" "+Clause+" "+Data);
+    static String clause(String clause,String data) {
+        return (data.length()==0?"":" "+ clause +" "+ data);
     }
-    static String clause(String Clause,int Data) {
-        return (Data==0?"":" "+Clause+" "+Data);
+    static String clause(String clause,int data) {
+        return (data ==0?"":" "+ clause +" "+ data);
     }
 }
 
@@ -164,8 +161,8 @@ class MySQLDataAdapter extends DataAdapter {
         return false;
     }
 
-    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
-        return TableString + "," + FromString + SetString + WhereString;
+    public String getUpdate(String tableString, String setString, String fromString, String whereString) {
+        return tableString + "," + fromString + setString + whereString;
     }
 
     public String getClassName() {
@@ -174,17 +171,17 @@ class MySQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:mysql://"+Server+":3306/"+DataBase);
-        Connect.createStatement().execute("DROP DATABASE "+DataBase);
-        Connect.createStatement().execute("CREATE DATABASE "+DataBase);
-        Connect.close();
+        Connection connect = DriverManager.getConnection("jdbc:mysql://"+ server +":3306/"+ dataBase);
+        connect.createStatement().execute("DROP DATABASE "+ dataBase);
+        connect.createStatement().execute("CREATE DATABASE "+ dataBase);
+        connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:mysql://"+Server+":3306/"+DataBase);
-        Connect.createStatement().execute("USE "+DataBase);
+        Connection connect = DriverManager.getConnection("jdbc:mysql://"+ server +":3306/"+ dataBase);
+        connect.createStatement().execute("USE "+ dataBase);
 
-        return Connect;
+        return connect;
     }
 
     public String startTransaction() {
@@ -199,16 +196,16 @@ class MySQLDataAdapter extends DataAdapter {
         return "ROLLBACK";
     }
 
-    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
-        return "IFNULL(" + Expr1 + "," + "Expr2" + ")";
+    public String isNULL(String expr1, String expr2, boolean notSafe) {
+        return "IFNULL(" + expr1 + "," + "Expr2" + ")";
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
-        return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
+        return "SELECT " + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy) + clause("LIMIT", top);
     }
 
-    public String getUnionOrder(String Union, String OrderBy, String Top) {
-        return Union + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
+    public String getUnionOrder(String union, String orderBy, String top) {
+        return union + clause("ORDER BY", orderBy) + clause("LIMIT", top);
     }
 }
 
@@ -218,12 +215,11 @@ class MSSQLDataAdapter extends DataAdapter {
         super(iDataBase, iServer);
     }
 
-    @Override
     public String getLongType() {
         return "bigint";
     }
 
-    public int UpdateModel() {
+    public int updateModel() {
         return 1;
     }
 
@@ -231,8 +227,8 @@ class MSSQLDataAdapter extends DataAdapter {
         return true;
     }
 
-    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
-        return TableString + SetString + " FROM " + FromString + WhereString;
+    public String getUpdate(String tableString, String setString, String fromString, String whereString) {
+        return tableString + setString + " FROM " + fromString + whereString;
     }
 
     public String getClassName() {
@@ -241,22 +237,22 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=sa;Password=11111");
         try {
         try {
-            Connect.createStatement().execute("DROP DATABASE "+DataBase);
+            Connect.createStatement().execute("DROP DATABASE "+ dataBase);
         } catch (Exception e) {
 
         }
         } catch(Exception e) {
         }
-        Connect.createStatement().execute("CREATE DATABASE "+DataBase);
+        Connect.createStatement().execute("CREATE DATABASE "+ dataBase);
         Connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+Server+":1433;namedPipe=true;User=sa;Password=11111");
-        Connect.createStatement().execute("USE "+DataBase);
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=sa;Password=11111");
+        Connect.createStatement().execute("USE "+ dataBase);
 
         return Connect;
     }
@@ -273,19 +269,19 @@ class MSSQLDataAdapter extends DataAdapter {
         return "ROLLBACK";
     }
 
-    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
-        if(NotSafe)
-            return "CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END";
+    public String isNULL(String expr1, String expr2, boolean notSafe) {
+        if(notSafe)
+            return "CASE WHEN "+ expr1 +" IS NULL THEN "+ expr2 +" ELSE "+ expr1 +" END";
         else
-            return "ISNULL("+Expr1+","+Expr2+")";
+            return "ISNULL("+ expr1 +","+ expr2 +")";
     }
 
-    public String getCreateSessionTable(String TableName, String DeclareString, String ConstraintString) {
-        return "CREATE TABLE #"+TableName+" ("+DeclareString+","+ConstraintString+")";
+    public String getCreateSessionTable(String tableName, String declareString, String constraintString) {
+        return "CREATE TABLE #"+ tableName +" ("+ declareString +","+ constraintString +")";
     }
 
-    public String getSessionTableName(String TableName) {
-        return "#"+TableName;
+    public String getSessionTableName(String tableName) {
+        return "#"+ tableName;
     }
 
     public boolean isNullSafe() {
@@ -296,14 +292,14 @@ class MSSQLDataAdapter extends DataAdapter {
         return false;
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
-        return "SELECT " + clause("TOP",Top) + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
+        return "SELECT " + clause("TOP", top) + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy);
     }
 
-    public String getUnionOrder(String Union, String OrderBy, String Top) {
-        if(Top.length()==0)
-            return Union + clause("ORDER BY",OrderBy);
-        return "SELECT" + clause("TOP",Top) + " * FROM (" + Union + ")" + clause("ORDER BY",OrderBy);
+    public String getUnionOrder(String union, String orderBy, String top) {
+        if(top.length()==0)
+            return union + clause("ORDER BY", orderBy);
+        return "SELECT" + clause("TOP", top) + " * FROM (" + union + ")" + clause("ORDER BY", orderBy);
     }
 }
 
@@ -321,8 +317,8 @@ class PostgreDataAdapter extends DataAdapter {
         return true;
     }
 
-    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
-        return TableString + SetString + " FROM " + FromString + WhereString;
+    public String getUpdate(String tableString, String setString, String fromString, String whereString) {
+        return tableString + setString + " FROM " + fromString + whereString;
     }
 
     public String getClassName() {
@@ -331,20 +327,20 @@ class PostgreDataAdapter extends DataAdapter {
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:postgresql://"+Server+"/postgres?user=postgres&password=11111");
+        Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ server +"/postgres?user=postgres&password=11111");
         try {
-            Connect.createStatement().execute("DROP DATABASE "+DataBase);
+            connect.createStatement().execute("DROP DATABASE "+ dataBase);
         } catch (SQLException e) {
         }
         try {
-            Connect.createStatement().execute("CREATE DATABASE "+DataBase);
+            connect.createStatement().execute("CREATE DATABASE "+ dataBase);
         } catch (SQLException e) {
         }
-        Connect.close();
+        connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://"+Server+"/"+DataBase+"?user=postgres&password=11111");
+        return DriverManager.getConnection("jdbc:postgresql://"+ server +"/"+ dataBase +"?user=postgres&password=11111");
     }
 
     public String getCommandEnd() {
@@ -355,9 +351,9 @@ class PostgreDataAdapter extends DataAdapter {
         return "";
     }
 
-    public String getNullValue(Type DBType) {
-        String EmptyValue = DBType.getEmptyString();
-        return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
+    public String getNullValue(Type dbType) {
+        String emptyValue = dbType.getEmptyString();
+        return "NULLIF(" + emptyValue + "," + emptyValue + ")";
     }
 
     public String startTransaction() {
@@ -377,17 +373,17 @@ class PostgreDataAdapter extends DataAdapter {
         return false;
     }
 
-    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
+    public String isNULL(String expr1, String expr2, boolean notSafe) {
 //        return "(CASE WHEN "+Expr1+" IS NULL THEN "+Expr2+" ELSE "+Expr1+" END)";
-        return "COALESCE("+Expr1+","+Expr2+")";
+        return "COALESCE("+ expr1 +","+ expr2 +")";
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
-        return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
+        return "SELECT " + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy) + clause("LIMIT", top);
     }
 
-    public String getUnionOrder(String Union, String OrderBy, String Top) {
-        return Union + clause("ORDER BY",OrderBy) + clause("LIMIT",Top);
+    public String getUnionOrder(String union, String orderBy, String top) {
+        return union + clause("ORDER BY", orderBy) + clause("LIMIT", top);
     }
 }
 
@@ -414,7 +410,7 @@ class OracleDataAdapter extends DataAdapter {
         return true;
     }
 
-    public String getUpdate(String TableString, String SetString, String FromString, String WhereString) {
+    public String getUpdate(String tableString, String setString, String fromString, String whereString) {
         // идет как Select Update
         return null;
     }
@@ -423,13 +419,13 @@ class OracleDataAdapter extends DataAdapter {
         return "oracle.jdbc.driver.OracleDriver";
     }
 
-    public String getCreateSessionTable(String TableName, String DeclareString, String ConstraintString) {
-        return "CREATE GLOBAL TEMPORARY TABLE "+TableName+" ("+DeclareString+","+ConstraintString+") ON COMMIT PRESERVE ROWS";
+    public String getCreateSessionTable(String tableName, String declareString, String constraintString) {
+        return "CREATE GLOBAL TEMPORARY TABLE "+ tableName +" ("+ declareString +","+ constraintString +") ON COMMIT PRESERVE ROWS";
     }
 
     public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+DataBase+":1521:orcl");
+        Connection connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+ dataBase +":1521:orcl");
 //        try {
 //        Connect.createStatement().execute("ALTER DATABASE CLOSE");
 //        Connect.createStatement().execute("DROP DATABASE");
@@ -440,14 +436,12 @@ class OracleDataAdapter extends DataAdapter {
 //        } catch(Exception e) {
 //        }
 
-        Connect.close();
+        connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+DataBase+":1521:orcl");
-//        Connect.createStatement().execute("USE testplat");
-
-        return Connect;
+        //        Connect.createStatement().execute("USE testplat");
+        return DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+ dataBase +":1521:orcl");
     }
 
     public String getCommandEnd() {
@@ -470,8 +464,8 @@ class OracleDataAdapter extends DataAdapter {
         return "ROLLBACK";
     }
 
-    public String isNULL(String Expr1, String Expr2, boolean NotSafe) {
-        return "NVL("+Expr1+","+Expr2+")";
+    public String isNULL(String expr1, String expr2, boolean notSafe) {
+        return "NVL("+ expr1 +","+ expr2 +")";
     }
 
     public String getTop(int Top, String SelectString, String OrderString, String WhereString) {
@@ -480,20 +474,20 @@ class OracleDataAdapter extends DataAdapter {
         return SelectString + (WhereString.length()==0?"":" WHERE ") + WhereString + OrderString;
     }
 
-    public String getSelect(String From, String Exprs, String Where, String OrderBy, String GroupBy, String Top) {
-        if(Top.length()!=0)
-            Where = (Where.length()==0?"":Where+" AND ") + "rownum<=" + Top;
-        return "SELECT " + Exprs + " FROM " + From + clause("WHERE",Where) + clause("GROUP BY",GroupBy) + clause("ORDER BY",OrderBy);
+    public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
+        if(top.length()!=0)
+            where = (where.length()==0?"": where +" AND ") + "rownum<=" + top;
+        return "SELECT " + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy);
     }
 
-    public String getNullValue(Type DBType) {
-        String EmptyValue = DBType.getEmptyString();
+    public String getNullValue(Type dbType) {
+        String EmptyValue = dbType.getEmptyString();
         return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
     }
 
-    public String getUnionOrder(String Union, String OrderBy, String Top) {
-        if(Top.length()==0)
-            return Union + clause("ORDER BY",OrderBy);
-        return "SELECT * FROM (" + Union + ") WHERE rownum<=" + Top + clause("ORDER BY",OrderBy);
+    public String getUnionOrder(String union, String orderBy, String top) {
+        if(top.length()==0)
+            return union + clause("ORDER BY", orderBy);
+        return "SELECT * FROM (" + union + ") WHERE rownum<=" + top + clause("ORDER BY", orderBy);
     }
 }

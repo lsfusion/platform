@@ -18,8 +18,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
         super();
     }
 
-    public TmcBusinessLogics(int TestType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super(TestType);
+    public TmcBusinessLogics(int testType) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super(testType);
     }
 
     Class article;
@@ -122,10 +122,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void initProperties() {
 
-        InitAbstractProperties();
-        InitClassProperties();
-        InitPrimaryProperties();
-        InitAggregateProperties();
+        initAbstractProperties();
+        initClassProperties();
+        initPrimaryProperties();
+        initAggregateProperties();
     }
 
     // ======================================================================================================= //
@@ -143,7 +143,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LSFP round, roundm1;
     LMFP multiplyBit2, multiplyDouble2, multiplyDate2;
 
-    private void InitAbstractProperties() {
+    private void initAbstractProperties() {
 
         equals2 = addCFProp(CompareWhere.EQUALS);
         object1 = addOFProp(1);
@@ -178,7 +178,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LP bitPrimDocArticle, doublePrimDocArticle;
     LP doubleExtOutDocArticle;
 
-    private void InitClassProperties() {
+    private void initClassProperties() {
 
         dateDocument = addCProp("пустая дата", null, Class.date, document);
         datePrimDocument = addCProp("пустая дата", null, Class.date, primaryDocument);
@@ -200,16 +200,16 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ==================================== Инициализация первичных свойств ================================== //
     // ======================================================================================================= //
 
-    private void InitPrimaryProperties() {
+    private void initPrimaryProperties() {
 
-        InitObjectProperties();
-        InitArticleProperties();
+        initObjectProperties();
+        initArticleProperties();
         initCustomArticleLogics();
-        InitExtIncProperties();
-        InitClearingSaleProperties();
-        InitReceiptProperties();
-        InitReturnProperties();
-        InitRevalProperties();
+        initExtIncProperties();
+        initClearingSaleProperties();
+        initReceiptProperties();
+        initReturnProperties();
+        initRevalProperties();
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -218,7 +218,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LDP name;
 
-    private void InitObjectProperties() {
+    private void initObjectProperties() {
 
         name = addDProp(baseGroup, "name", "Имя", Class.string(50), objectClass);
     }
@@ -232,7 +232,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LDP artBarCode;
 
-    private void InitArticleProperties() {
+    private void initArticleProperties() {
 
         artGroup = addDProp("Гр. тов.", articleGroup, article);
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
@@ -252,7 +252,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP extIncDetailArticle;
     LJP extIncDetailArticleName;
 
-    private void InitExtIncProperties() {
+    private void initExtIncProperties() {
 
         extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument);
         extIncSupplierName = addJProp(supplierGroup, "extIncSupplierName", "Имя поставщика", name, 1, extIncSupplier, 1);
@@ -269,7 +269,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LDP receiptSaleDocument;
 
-    private void InitReceiptProperties() {
+    private void initReceiptProperties() {
 
         receiptSaleDocument = addDProp("receiptSaleDocument","Документ продажи", cashSaleDocument, receipt);
     }
@@ -281,7 +281,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP clearingSaleCustomer;
     LJP clearingSaleCustomerName;
 
-    private void InitClearingSaleProperties() {
+    private void initClearingSaleProperties() {
 
         clearingSaleCustomer = addDProp("clearingSaleCustomer","Покупатель", customer, clearingSaleDocument);
         clearingSaleCustomerName = addJProp(customerGroup, "Имя покупателя", name, 1, clearingSaleCustomer, 1);
@@ -294,7 +294,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP returnSupplier;
     LJP returnSupplierName;
 
-    private void InitReturnProperties() {
+    private void initReturnProperties() {
 
         returnSupplier = addDProp("returnSupplier","Поставщик", supplier, returnDocument);
         returnSupplierName = addJProp(supplierGroup, "Имя поставщика", name, 1, returnSupplier, 1);
@@ -304,34 +304,34 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ------------------------------------------------ Переоценка ------------------------------------------- //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitRevalProperties() {
+    private void initRevalProperties() {
     }
 
     // ======================================================================================================= //
     // ================================= Инициализация агрегированных свойств ================================ //
     // ======================================================================================================= //
 
-    private void InitAggregateProperties() {
+    private void initAggregateProperties() {
 
-        InitDateProperties();
-        InitStoreProperties();
-        InitQuantityProperties();
-        InitDocArtProperties();
-        InitMaxProperties();
-        InitParamsProperties();
-        InitSumProperties();
-        InitDocCurrentProperties();
+        initDateProperties();
+        initStoreProperties();
+        initQuantityProperties();
+        initDocArtProperties();
+        initMaxProperties();
+        initParamsProperties();
+        initSumProperties();
+        initDocCurrentProperties();
     }
 
     // ------------------------------------------------------------------------------------------------------- //
     // --------------------------------------------------- Даты ---------------------------------------------- //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitDateProperties() {
+    private void initDateProperties() {
 
-        InitDatePrimaryProperties();
-        InitDateOverrideProperties();
-        InitDateDocProperties();
+        initDatePrimaryProperties();
+        initDateOverrideProperties();
+        initDateDocProperties();
     }
 
     // ---------------------------------------- Первичные свойства ------------------------------------------- //
@@ -342,7 +342,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP exchDate;
     LDP revalDate;
 
-    private void InitDatePrimaryProperties() {
+    private void initDatePrimaryProperties() {
 
         extIncDate = addDProp(baseGroup, "extIncDate", "Дата", Class.date, extIncomeDocument);
         intraDate = addDProp(baseGroup, "intraDate", "Дата", Class.date, intraDocument);
@@ -356,7 +356,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP primDocDate, secDocDate;
     LUP docDate;
 
-    private void InitDateOverrideProperties() {
+    private void initDateOverrideProperties() {
 
         primDocDate = addUProp(paramsGroup, "Дата", Union.OVERRIDE, 1, 1, datePrimDocument, 1, 1, extIncDate, 1, 1, intraDate, 1, 1, revalDate, 1);
         secDocDate = addUProp("Дата", Union.OVERRIDE, 1, 1, extOutDate, 1, 1, exchDate, 1);
@@ -368,7 +368,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LJP groeqDocDate, greaterDocDate, betweenDocDate;
 
-    private void InitDateDocProperties() {
+    private void initDateDocProperties() {
 
         groeqDocDate = addJProp("Дата док.>=Дата", groeq2, 2, docDate, 1, 2);
         greaterDocDate = addJProp("Дата док.>Дата", greater2, 2, docDate, 1, 2);
@@ -379,11 +379,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // -------------------------------------------------- Склады --------------------------------------------- //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitStoreProperties() {
+    private void initStoreProperties() {
 
-        InitStorePrimaryProperties();
-        InitStoreOverrideProperties();
-        InitDocStoreProperties();
+        initStorePrimaryProperties();
+        initStoreOverrideProperties();
+        initDocStoreProperties();
     }
 
     // ---------------------------------------- Первичные свойства ------------------------------------------- //
@@ -397,7 +397,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LJP receiptStore;
 
-    private void InitStorePrimaryProperties() {
+    private void initStorePrimaryProperties() {
 
         extIncStore = addDProp("extIncStore", "Склад", store, extIncomeDocument);
 
@@ -424,7 +424,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LJP docStoreName;
     
-    private void InitStoreOverrideProperties() {
+    private void initStoreOverrideProperties() {
 
         incQStore = addUProp("Склад прих.", Union.OVERRIDE, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
         outQStore = addUProp("Склад расх.", Union.OVERRIDE, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
@@ -449,7 +449,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP isDocOutSStore;
     LUP isDocStore;
 
-    private void InitDocStoreProperties() {
+    private void initDocStoreProperties() {
 
         isDocIncQStore = addJProp("Склад=прих.кол-во", equals2, 2, incQStore, 1, 2);
         isDocOutQStore = addJProp("Склад=расх.кол-во", equals2, 2, outQStore, 1, 2);
@@ -465,14 +465,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ------------------------------------------------- Количество ------------------------------------------ //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitQuantityProperties() {
+    private void initQuantityProperties() {
 
-        InitQuantityPrimaryProperties();
-        InitQuantityOverrideProperties();
-        InitQuantityDocStoreProperties();
-        InitQuantityStoreProperties();
-        InitQuantityDateProperties();
-        InitQuantitySaleProperties();
+        initQuantityPrimaryProperties();
+        initQuantityOverrideProperties();
+        initQuantityDocStoreProperties();
+        initQuantityStoreProperties();
+        initQuantityDateProperties();
+        initQuantitySaleProperties();
     }
 
     // ---------------------------------------- Первичные свойства ------------------------------------------- //
@@ -498,7 +498,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LDP revalBalanceQuantity;
 
-    private void InitQuantityPrimaryProperties() {
+    private void initQuantityPrimaryProperties() {
 
         extIncDetailQuantity = addDProp(quantGroup, "extIncDetailQuantity", "Кол-во", Class.doubleClass, extIncomeDetail);
         extIncDocumentQuantity = addGProp(quantGroup, "extIncDocumentQuantity", "Кол-во (всего)", extIncDetailQuantity, true, extIncDetailDocument, 1);
@@ -538,7 +538,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP outQuantity;
     LUP quantity;
 
-    private void InitQuantityOverrideProperties() {
+    private void initQuantityOverrideProperties() {
 
         incQuantity = addUProp("Кол-во прих.", Union.SUM, 2, 1, doubleIncDocArticle, 1, 2, 1, extIncQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchIncQuantity, 1, 2);
         outQuantity = addUProp("Кол-во расх.", Union.SUM, 2, 1, doubleOutDocArticle, 1, 2, 1, extOutQuantity, 1, 2, 1, intraQuantity, 1, 2, 1, exchOutQuantity, 1, 2);
@@ -552,7 +552,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP incDocStoreQuantity, outDocStoreQuantity;
     LUP dltDocStoreQuantity;
 
-    private void InitQuantityDocStoreProperties() {
+    private void initQuantityDocStoreProperties() {
 
         incDocStoreQuantity = addJProp("Кол-во прих. по скл.", multiplyDouble2, 3, isDocIncQStore, 1, 2, incQuantity, 1, 3);
         outDocStoreQuantity = addJProp("Кол-во расх. по скл.", multiplyDouble2, 3, isDocOutQStore, 1, 2, outQuantity, 1, 3);
@@ -564,7 +564,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP incStoreQuantity, outStoreQuantity;
     LUP balanceStoreQuantity;
 
-    private void InitQuantityStoreProperties() {
+    private void initQuantityStoreProperties() {
 
         incStoreQuantity = addGProp("Прих. на скл.", incQuantity, true, incQStore, 1, 2);
         outStoreQuantity = addGProp("Расх. со скл.", outQuantity, true, outQStore, 1, 2);
@@ -589,7 +589,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP incBetweenDateQuantity, outBetweenDateQuantity;
     LGP incStoreArticleBetweenDateQuantity, outStoreArticleBetweenDateQuantity;
 
-    private void InitQuantityDateProperties() {
+    private void initQuantityDateProperties() {
 
         incGroeqDateQuantity = addJProp("Кол-во прих. с даты", multiplyDouble2, 3, groeqDocDate, 1, 3, incQuantity, 1, 2);
         outGroeqDateQuantity = addJProp("Кол-во расх. с даты", multiplyDouble2, 3, groeqDocDate, 1, 3, outQuantity, 1, 2);
@@ -621,7 +621,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP saleStoreArticleBetweenDateQuantity;
     LGP saleArticleBetweenDateQuantity;
 
-    private void InitQuantitySaleProperties() {
+    private void initQuantitySaleProperties() {
 
         saleBetweenDateQuantity = addJProp("Кол-во реал. за интервал", multiplyDouble2, 4, betweenDocDate, 1, 3, 4, saleQuantity, 1, 2);
         saleStoreArticleBetweenDateQuantity = addGProp(quantGroup, "Кол-во реал. на скл. за интервал", saleBetweenDateQuantity, true, extOutStore, 1, 2, 3, 4);
@@ -644,7 +644,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     LJP isDocStoreArtInclude;
 
-    private void InitDocArtProperties() {
+    private void initDocArtProperties() {
 
         notZeroExtIncQuantity = addJProp("Есть во вн. прих.", notZero, 2, extIncQuantity, 1, 2);
 
@@ -671,7 +671,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP maxChangesParamsDate;
     LGP maxChangesParamsDoc;
 
-    private void InitMaxProperties() {
+    private void initMaxProperties() {
 
         // -------------------------- Последний приходный документ по товару ---------------------------- //
 
@@ -703,20 +703,20 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ------------------------------------------- Ценовые параметры ----------------------------------------- //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitParamsProperties() {
+    private void initParamsProperties() {
 
-        InitParamsPrimaryProperties();
-        InitParamsOverrideProperties();
-        InitParamsCurrentProperties();
+        initParamsPrimaryProperties();
+        initParamsOverrideProperties();
+        initParamsCurrentProperties();
     }
 
     // ---------------------------------------- Первичные свойства ------------------------------------------- //
 
-    private void InitParamsPrimaryProperties() {
+    private void initParamsPrimaryProperties() {
 
-        InitParamsPrimaryExtIncProperties();
-        InitParamsPrimaryFixedProperties();
-        InitParamsPrimaryRevalProperties();
+        initParamsPrimaryExtIncProperties();
+        initParamsPrimaryFixedProperties();
+        initParamsPrimaryRevalProperties();
     }
 
     // Внешний приход
@@ -733,7 +733,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP extIncAdd, extIncVATOut, extIncLocTax;
     LJP extIncPriceOut;
 
-    private void InitParamsPrimaryExtIncProperties() {
+    private void initParamsPrimaryExtIncProperties() {
 
         extIncDetailPriceIn = addDProp(incPrmsGroup, "extIncDetailPriceIn", "Цена пост.", Class.doubleClass, extIncomeDetail);
         extIncDetailVATIn = addDProp(incPrmsGroup, "extIncDetailVATIn", "НДС пост.", Class.doubleClass, extIncomeDetail);
@@ -776,7 +776,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP fixedAdd, fixedVATOut, fixedLocTax;
     LDP fixedPriceOut;
 
-    private void InitParamsPrimaryFixedProperties() {
+    private void initParamsPrimaryFixedProperties() {
 
         fixedPriceIn = addDProp("fixedPriceIn", "Цена пост.", Class.doubleClass, fixedDocument, article);
         fixedVATIn = addDProp("fixedVATIn", "НДС пост.", Class.doubleClass, fixedDocument, article);
@@ -795,7 +795,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LDP revalAddAfter, revalVATOutAfter, revalLocTaxAfter;
     LDP revalPriceOutAfter;
     
-    private void InitParamsPrimaryRevalProperties() {
+    private void initParamsPrimaryRevalProperties() {
 
         revaluedBalanceQuantity = addJProp("Остаток (переоц.)", multiplyDouble2, 2, revalBalanceQuantity, 1, 2, isRevalued, 1, 2);
 
@@ -820,7 +820,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP primDocLocTax;
     LUP primDocPriceOut;
 
-    private void InitParamsOverrideProperties() {
+    private void initParamsOverrideProperties() {
 
         primDocPriceIn = addUProp(paramsGroup, "Цена пост. (изм.)", Union.OVERRIDE, 2, 1, doublePrimDocArticle, 1, 2, 1, fixedPriceIn, 1, 2, 1, extIncPriceIn, 1, 2, 1, revalPriceIn, 1, 2);
         primDocVATIn = addUProp(paramsGroup, "НДС пост. (изм.)", Union.OVERRIDE, 2, 1, doublePrimDocArticle, 1, 2, 1, fixedVATIn, 1, 2, 1, extIncVATIn, 1, 2, 1, revalVATIn, 1, 2);
@@ -838,7 +838,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP storeAdd, storeVATOut, storeLocTax;
     LJP storePriceOut;
 
-    private void InitParamsCurrentProperties() {
+    private void initParamsCurrentProperties() {
 
         storeSupplier = addJProp(supplierGroup, "Посл. пост.", extIncSupplier, 2, maxStoreExtIncDoc, 1, 2);
 
@@ -854,11 +854,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ------------------------------------------- Суммовые свойства ----------------------------------------- //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitSumProperties() {
+    private void initSumProperties() {
 
-        InitSumInProperties();
-        InitSumOutProperties();
-        InitSumAccountProperties();
+        initSumInProperties();
+        initSumOutProperties();
+        initSumAccountProperties();
     }
 
     // ---------------------------------------- Входные суммы --------------------------------------------- //
@@ -870,7 +870,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP extIncDetailSumInc;
     LGP extIncDocumentSumInc, extIncDocumentSumVATIn, extIncDocumentSumPay;
 
-    private void InitSumInProperties() {
+    private void initSumInProperties() {
 
         // -------------------------- Входные суммы ---------------------------- //
 
@@ -899,12 +899,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     // ---------------------------------------- Выходные суммы --------------------------------------------- //
 
-    private void InitSumOutProperties() {
+    private void initSumOutProperties() {
 
-        InitSumPriceOutProperties();
-        InitSumLocTaxProperties();
-        InitSumVATOutProperties();
-        InitSumAddProperties();
+        initSumPriceOutProperties();
+        initSumLocTaxProperties();
+        initSumVATOutProperties();
+        initSumAddProperties();
     }
 
     // Розничные суммы
@@ -926,7 +926,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LJP revalSumPriceOutBefore, revalSumPriceOutAfter;
     LUP revalSumPriceOut;
 
-    private void InitSumPriceOutProperties() {
+    private void initSumPriceOutProperties() {
 
         extIncDetailSumPriceOut = addJProp(outSumsGroup, "extIncDetailSumPriceOut", "Сумма розн.", round, 1,
                                   addJProp("Сумма розн. (неокр.)", multiplyDouble2, 1, extIncDetailQuantity, 1, extIncDetailPriceOut, 1), 1);
@@ -956,7 +956,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP extIncDocumentSumLocTax;
     LUP extIncDetailSumWVAT;
 
-    private void InitSumLocTaxProperties() {
+    private void initSumLocTaxProperties() {
 
         extIncDetailSumLocTax = addJProp(outSumsGroup, "extIncDetailSumLocTax", "Сумма местн. нал.", round, 1,
                                 addJProp("Сумма местн. нал. (неокр.)", revPercent, 1, extIncDetailSumPriceOut, 1, extIncDetailLocTax, 1), 1);
@@ -971,7 +971,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LGP extIncDocumentSumVATOut;
     LUP extIncDetailSumWAdd;
 
-    private void InitSumVATOutProperties() {
+    private void initSumVATOutProperties() {
 
         extIncDetailSumVATOut = addJProp(outSumsGroup, "extIncDetailSumVATOut", "Сумма НДС розн.", round, 1,
                                 addJProp("Сумма НДС (розн. неокр.)", revPercent, 1, extIncDetailSumWVAT, 1, extIncDetailVATOut, 1), 1);
@@ -985,7 +985,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP extIncDetailSumAdd;
     LGP extIncDocumentSumAdd;
 
-    private void InitSumAddProperties() {
+    private void initSumAddProperties() {
 
         extIncDetailSumAdd = addUProp(outSumsGroup, "extIncDetailSumAdd", "Сумма торг. надб.", Union.SUM, 1, 1, extIncDetailSumWAdd, 1, -1, extIncDetailSumInc, 1);
         setPropOrder(extIncDetailSumAdd.property, extIncDetailSumVATOut.property, true);
@@ -1026,7 +1026,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP balanceDocStoreDateMSumAccount;
     LUP balanceDocStoreDateESumAccount;
 
-    private void InitSumAccountProperties() {
+    private void initSumAccountProperties() {
 
         accExcl = addDProp(accountGroup, "accExcl", "Искл.", Class.bit, accountDocument, article);
 
@@ -1085,18 +1085,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     // ------------------------------- Текущие параметры по документам --------------------------------------- //
     // ------------------------------------------------------------------------------------------------------- //
 
-    private void InitDocCurrentProperties() {
+    private void initDocCurrentProperties() {
 
-        InitDocCurrentBalanceProperties();
-        InitDocCurrentFixedProperties();
-        InitDocCurrentRevalProperties();
+        initDocCurrentBalanceProperties();
+        initDocCurrentFixedProperties();
+        initDocCurrentRevalProperties();
     }
 
     // ------------------------------------------- Остатки -------------------------------------------------- //
 
     LJP docOutBalanceQuantity, docIncBalanceQuantity, docRevBalanceQuantity;
 
-    private void InitDocCurrentBalanceProperties() {
+    private void initDocCurrentBalanceProperties() {
 
         docOutBalanceQuantity = addJProp(balanceGroup, "Остаток (расх.)", balanceStoreQuantity, 2, outQStore, 1, 2);
         docIncBalanceQuantity = addJProp(balanceGroup, "Остаток (прих.)", balanceStoreQuantity, 2, incQStore, 1, 2);
@@ -1116,7 +1116,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP docOverLocTax;
     LUP docOverPriceOut;
 
-    private void InitDocCurrentFixedProperties() {
+    private void initDocCurrentFixedProperties() {
 
         docCurPriceIn = addJProp("Цена пост. (тек.)", storePriceIn, 2, fixedStore, 1, 2);
         docCurVATIn = addJProp("НДС пост. (тек.)", storeVATIn, 2, fixedStore, 1, 2);
@@ -1147,7 +1147,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
     LUP revalOverLocTaxBefore;
     LUP revalOverPriceOutBefore;
 
-    private void InitDocCurrentRevalProperties() {
+    private void initDocCurrentRevalProperties() {
 
         revalCurPriceIn = addJProp("Цена пост. (тек.)", storePriceIn, 2, revalStore, 1, 2);
         revalCurVATIn = addJProp("НДС пост. (тек.)", storeVATIn, 2, revalStore, 1, 2);
@@ -1236,7 +1236,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
         persistents.add((AggregateProperty)docStore.property);
 
-       persistents.add((AggregateProperty)docDate.property);
+        persistents.add((AggregateProperty)docDate.property);
 
         persistents.add((AggregateProperty)extIncQuantity.property);
 
@@ -1256,62 +1256,40 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     void initTables() {
 
-        TableImplement Include;
+        TableImplement include;
 
-        Include = new TableImplement();
-        Include.add(new DataPropertyInterface(0,article));
-        tableFactory.includeIntoGraph(Include);
+        include = new TableImplement();
+        include.add(new DataPropertyInterface(0,article));
+        tableFactory.includeIntoGraph(include);
 
-        Include = new TableImplement();
-        Include.add(new DataPropertyInterface(0,store));
-        tableFactory.includeIntoGraph(Include);
+        include = new TableImplement();
+        include.add(new DataPropertyInterface(0,store));
+        tableFactory.includeIntoGraph(include);
 
-        Include = new TableImplement();
-        Include.add(new DataPropertyInterface(0,articleGroup));
-        tableFactory.includeIntoGraph(Include);
+        include = new TableImplement();
+        include.add(new DataPropertyInterface(0,articleGroup));
+        tableFactory.includeIntoGraph(include);
 
-        Include = new TableImplement();
-        Include.add(new DataPropertyInterface(0,article));
-        Include.add(new DataPropertyInterface(0,document));
-        tableFactory.includeIntoGraph(Include);
+        include = new TableImplement();
+        include.add(new DataPropertyInterface(0,article));
+        include.add(new DataPropertyInterface(0,document));
+        tableFactory.includeIntoGraph(include);
 
-        Include = new TableImplement();
-        Include.add(new DataPropertyInterface(0,article));
-        Include.add(new DataPropertyInterface(0,store));
-        tableFactory.includeIntoGraph(Include);
+        include = new TableImplement();
+        include.add(new DataPropertyInterface(0,article));
+        include.add(new DataPropertyInterface(0,store));
+        tableFactory.includeIntoGraph(include);
 
     }
 
     void initIndexes() {
-        List<Property> index;
-
-        index = new ArrayList();
-        index.add(extIncDate.property);
-        indexes.add(index);
-
-        index = new ArrayList();
-        index.add(intraDate.property);
-        indexes.add(index);
-
-        index = new ArrayList();
-        index.add(extOutDate.property);
-        indexes.add(index);
-
-        index = new ArrayList();
-        index.add(exchDate.property);
-        indexes.add(index);
-
-        index = new ArrayList();
-        index.add(revalDate.property);
-        indexes.add(index);
-
-        index = new ArrayList();
-        index.add(maxChangesParamsDate.property);
-        indexes.add(index);
-
-        index = new ArrayList();
-        index.add(docStore.property);
-        indexes.add(index);
+        indexes.add(Collections.singletonList(extIncDate.property));
+        indexes.add(Collections.singletonList(intraDate.property));
+        indexes.add(Collections.singletonList(extOutDate.property));
+        indexes.add(Collections.singletonList(exchDate.property));
+        indexes.add(Collections.singletonList(revalDate.property));
+        indexes.add(Collections.singletonList(maxChangesParamsDate.property));
+        indexes.add(Collections.singletonList(docStore.property));
     }
 
     NavigatorElement primaryData;
@@ -2009,79 +1987,79 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics>{
 
     // ------------------------------------- Временные методы --------------------------- //
 
-    void fillData(DataAdapter Adapter) throws SQLException {
+    void fillData(DataAdapter adapter) throws SQLException {
 
-        int Modifier = 10;
-        int PropModifier = 1;
+        int modifier = 10;
+        int propModifier = 1;
 
-        Map<Class,Integer> ClassQuantity = new HashMap();
-        List<Class> articleChilds = new ArrayList();
+        Map<Class,Integer> classQuantity = new HashMap<Class, Integer>();
+        List<Class> articleChilds = new ArrayList<Class>();
         article.fillChilds(articleChilds);
         for (Class articleClass : articleChilds)
-            ClassQuantity.put(articleClass,Modifier*10/articleChilds.size());
+            classQuantity.put(articleClass, modifier *10/articleChilds.size());
 
-        ClassQuantity.put(articleGroup,((Double)(Modifier*0.3)).intValue());
+        classQuantity.put(articleGroup,((Double)(modifier *0.3)).intValue());
 //        ClassQuantity.put(store,((Double)(Modifier*0.3)).intValue());
-        ClassQuantity.put(store,3);
-        ClassQuantity.put(supplier,5);
-        ClassQuantity.put(customer,5);
-        ClassQuantity.put(extIncomeDocument,Modifier*2);
-        ClassQuantity.put(extIncomeDetail,Modifier*100*PropModifier);
-        ClassQuantity.put(intraDocument,Modifier);
-        ClassQuantity.put(cashSaleDocument,Modifier);
-        ClassQuantity.put(receipt,Modifier*8);
-        ClassQuantity.put(clearingSaleDocument,((Double)(Modifier*0.5)).intValue());
-        ClassQuantity.put(invDocument,((Double)(Modifier*0.2)).intValue());
-        ClassQuantity.put(returnDocument,((Double)(Modifier*0.3)).intValue());
-        ClassQuantity.put(exchangeDocument,Modifier);
-        ClassQuantity.put(revalDocument,((Double)(Modifier*0.5)).intValue());
+        classQuantity.put(store,3);
+        classQuantity.put(supplier,5);
+        classQuantity.put(customer,5);
+        classQuantity.put(extIncomeDocument, modifier *2);
+        classQuantity.put(extIncomeDetail, modifier *100*propModifier);
+        classQuantity.put(intraDocument, modifier);
+        classQuantity.put(cashSaleDocument, modifier);
+        classQuantity.put(receipt, modifier *8);
+        classQuantity.put(clearingSaleDocument,((Double)(modifier *0.5)).intValue());
+        classQuantity.put(invDocument,((Double)(modifier *0.2)).intValue());
+        classQuantity.put(returnDocument,((Double)(modifier *0.3)).intValue());
+        classQuantity.put(exchangeDocument, modifier);
+        classQuantity.put(revalDocument,((Double)(modifier *0.5)).intValue());
 
-        Map<DataProperty, Set<DataPropertyInterface>> PropNotNulls = new HashMap();
-        name.putNotNulls(PropNotNulls,0);
-        artGroup.putNotNulls(PropNotNulls,0);
-        extIncDate.putNotNulls(PropNotNulls,0);
-        intraDate.putNotNulls(PropNotNulls,0);
-        extOutDate.putNotNulls(PropNotNulls,0);
-        exchDate.putNotNulls(PropNotNulls,0);
-        revalDate.putNotNulls(PropNotNulls,0);
-        extIncStore.putNotNulls(PropNotNulls,0);
-        intraIncStore.putNotNulls(PropNotNulls,0);
-        intraOutStore.putNotNulls(PropNotNulls,0);
-        extOutStore.putNotNulls(PropNotNulls,0);
-        exchStore.putNotNulls(PropNotNulls,0);
-        revalStore.putNotNulls(PropNotNulls,0);
-        intraIncStore.putNotNulls(PropNotNulls,0);
-        extIncSupplier.putNotNulls(PropNotNulls,0);
-        extIncDetailDocument.putNotNulls(PropNotNulls,0);
-        extIncDetailArticle.putNotNulls(PropNotNulls,0);
-        extIncDetailQuantity.putNotNulls(PropNotNulls,0);
-        extIncDetailPriceIn.putNotNulls(PropNotNulls,0);
-        extIncDetailVATIn.putNotNulls(PropNotNulls,0);
-        receiptSaleDocument.putNotNulls(PropNotNulls,0);
-        clearingSaleCustomer.putNotNulls(PropNotNulls,0);
-        returnSupplier.putNotNulls(PropNotNulls,0);
+        Map<DataProperty, Set<DataPropertyInterface>> propNotNulls = new HashMap<DataProperty, Set<DataPropertyInterface>>();
+        name.putNotNulls(propNotNulls,0);
+        artGroup.putNotNulls(propNotNulls,0);
+        extIncDate.putNotNulls(propNotNulls,0);
+        intraDate.putNotNulls(propNotNulls,0);
+        extOutDate.putNotNulls(propNotNulls,0);
+        exchDate.putNotNulls(propNotNulls,0);
+        revalDate.putNotNulls(propNotNulls,0);
+        extIncStore.putNotNulls(propNotNulls,0);
+        intraIncStore.putNotNulls(propNotNulls,0);
+        intraOutStore.putNotNulls(propNotNulls,0);
+        extOutStore.putNotNulls(propNotNulls,0);
+        exchStore.putNotNulls(propNotNulls,0);
+        revalStore.putNotNulls(propNotNulls,0);
+        intraIncStore.putNotNulls(propNotNulls,0);
+        extIncSupplier.putNotNulls(propNotNulls,0);
+        extIncDetailDocument.putNotNulls(propNotNulls,0);
+        extIncDetailArticle.putNotNulls(propNotNulls,0);
+        extIncDetailQuantity.putNotNulls(propNotNulls,0);
+        extIncDetailPriceIn.putNotNulls(propNotNulls,0);
+        extIncDetailVATIn.putNotNulls(propNotNulls,0);
+        receiptSaleDocument.putNotNulls(propNotNulls,0);
+        clearingSaleCustomer.putNotNulls(propNotNulls,0);
+        returnSupplier.putNotNulls(propNotNulls,0);
 
 //        LDP extIncDetailSumVATIn, extIncDetailSumPay;
 //        LDP extIncDetailAdd, extIncDetailVATOut, extIncDetailLocTax;
 //        LDP extIncDetailPriceOut;
 
-        Map<DataProperty,Integer> PropQuantity = new HashMap();
+        Map<DataProperty,Integer> propQuantity = new HashMap<DataProperty, Integer>();
 
 //        PropQuantity.put((DataProperty)extIncQuantity.Property,10);
-        PropQuantity.put((DataProperty)intraQuantity.property,Modifier*PropModifier*2);
-        PropQuantity.put((DataProperty)receiptQuantity.property,Modifier*PropModifier*30);
-        PropQuantity.put((DataProperty)receiptSumPriceOut.property,Modifier*PropModifier*30);
-        PropQuantity.put((DataProperty)clearingSaleQuantity.property,Modifier*PropModifier*8);
-        PropQuantity.put((DataProperty)invQuantity.property,Modifier*PropModifier);
-        PropQuantity.put((DataProperty)exchangeQuantity.property,Modifier*PropModifier);
-        PropQuantity.put((DataProperty)returnQuantity.property,Modifier*PropModifier);
-        PropQuantity.put((DataProperty)isRevalued.property,Modifier*PropModifier);
+        propQuantity.put((DataProperty)intraQuantity.property, modifier *propModifier*2);
+        propQuantity.put((DataProperty)receiptQuantity.property, modifier *propModifier*30);
+        propQuantity.put((DataProperty)receiptSumPriceOut.property, modifier *propModifier*30);
+        propQuantity.put((DataProperty)clearingSaleQuantity.property, modifier *propModifier*8);
+        propQuantity.put((DataProperty)invQuantity.property, modifier *propModifier);
+        propQuantity.put((DataProperty)exchangeQuantity.property, modifier *propModifier);
+        propQuantity.put((DataProperty)returnQuantity.property, modifier *propModifier);
+        propQuantity.put((DataProperty)isRevalued.property, modifier *propModifier);
 
-        PropQuantity.putAll(autoQuantity(0, fixedPriceIn, fixedVATIn, fixedAdd, fixedVATOut, fixedLocTax,
+        propQuantity.putAll(autoQuantity(0, fixedPriceIn, fixedVATIn, fixedAdd, fixedVATOut, fixedLocTax,
             revalBalanceQuantity,revalPriceIn,revalVATIn,revalAddBefore,revalVATOutBefore,revalLocTaxBefore,
                 revalAddAfter,revalVATOutAfter,revalLocTaxAfter));
 
-        autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
+        autoFillDB(adapter, classQuantity, propQuantity,propNotNulls);
     }
 
 }
