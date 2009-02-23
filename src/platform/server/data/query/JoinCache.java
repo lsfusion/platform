@@ -1,0 +1,28 @@
+package platform.server.data.query;
+
+import java.util.Map;
+import java.util.HashMap;
+
+import platform.server.data.query.exprs.ValueExpr;
+
+// поиск в кэше
+class JoinCache<K,V> {
+    JoinQuery<K,V> in;
+
+    CompiledJoinQuery<K,V> out;
+
+    JoinCache(JoinQuery<K, V> iIn, CompiledJoinQuery<K, V> iOut) {
+        in = iIn;
+        out = iOut;
+    }
+
+    <CK,CV> CompiledJoinQuery<CK,CV> cache(JoinQuery<CK,CV> query) {
+        Map<CK,K> mapKeys = new HashMap<CK,K>();
+        Map<CV,V> mapProps = new HashMap<CV,V>();
+        Map<ValueExpr,ValueExpr> mapValues = new HashMap<ValueExpr, ValueExpr>();
+        if(query.equalsMap(in,mapKeys,mapProps,mapValues)) // нашли нужный кэш
+            return new CompiledJoinQuery<CK,CV>(out,mapKeys,mapProps,mapValues);
+
+        return null;
+    }
+}

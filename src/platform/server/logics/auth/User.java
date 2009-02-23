@@ -1,0 +1,32 @@
+package platform.server.logics.auth;
+
+import java.util.List;
+import java.util.ArrayList;
+
+public class User extends UserPolicy {
+
+    String login;
+    String password;
+
+    public UserInfo userInfo;
+
+    public User(String ilogin, String ipassword, UserInfo iuserInfo) {
+
+        login = ilogin;
+        password = ipassword;
+        userInfo = iuserInfo;
+    }
+
+    List<UserGroup> userGroups = new ArrayList();
+
+    public SecurityPolicy getSecurityPolicy() {
+
+        SecurityPolicy resultPolicy = new SecurityPolicy();
+
+        for (UserGroup userGroup : userGroups)
+            resultPolicy.override(userGroup.getSecurityPolicy());
+
+        resultPolicy.override(super.getSecurityPolicy());
+        return resultPolicy;
+    }
+}
