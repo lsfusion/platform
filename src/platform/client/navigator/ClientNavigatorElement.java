@@ -1,12 +1,8 @@
 package platform.client.navigator;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ME2
- * Date: 21.02.2009
- * Time: 8:51:30
- * To change this template use File | Settings | File Templates.
- */
+import java.io.DataInputStream;
+import java.io.IOException;
+
 public class ClientNavigatorElement {
 
     public int ID;
@@ -15,8 +11,20 @@ public class ClientNavigatorElement {
     public boolean hasChildren = false;
     boolean allowChildren() { return hasChildren; }
 
-    public boolean isPrintForm = false;
-
     public String toString() { return caption; }
 
+    public ClientNavigatorElement(DataInputStream inStream) throws IOException {
+        ID = inStream.readInt();
+        caption = inStream.readUTF();
+        hasChildren = inStream.readBoolean();
+    }
+
+    public static ClientNavigatorElement deserialize(DataInputStream inStream) throws IOException {
+        byte type = inStream.readByte();
+
+        if(type==0) return new ClientNavigatorForm(inStream);
+        if(type==1) return new ClientNavigatorElement(inStream);
+
+        throw new IOException();
+    }
 }

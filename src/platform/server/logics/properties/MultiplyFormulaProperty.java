@@ -1,11 +1,11 @@
 package platform.server.logics.properties;
 
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 
 public class MultiplyFormulaProperty extends StringFormulaProperty {
 
-    public MultiplyFormulaProperty(TableFactory iTableFactory, DataClass iValue,int Params) {
+    public MultiplyFormulaProperty(TableFactory iTableFactory, RemoteClass iValue,int Params) {
         super(iTableFactory,iValue,"");
         for(int i=0;i<Params;i++) {
             interfaces.add(new StringFormulaPropertyInterface(i));
@@ -13,7 +13,7 @@ public class MultiplyFormulaProperty extends StringFormulaProperty {
         }
     }
 
-    DataClass getOperandClass() {
-        return DataClass.integral;
+    RemoteClass getOperandClass() {
+        return RemoteClass.integral;
     }
 }

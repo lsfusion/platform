@@ -1,7 +1,7 @@
 package platform.server.logics.properties;
 
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.session.DataChanges;
 import platform.server.logics.session.DataSession;
@@ -17,10 +17,10 @@ import java.util.*;
 
 public class ClassProperty extends AggregateProperty<DataPropertyInterface> {
 
-    DataClass valueClass;
+    RemoteClass valueClass;
     Object value;
 
-    public ClassProperty(TableFactory iTableFactory, DataClass iValueClass, Object iValue) {
+    public ClassProperty(TableFactory iTableFactory, RemoteClass iValueClass, Object iValue) {
         super(iTableFactory);
         valueClass = iValueClass;
         value = iValue;

@@ -3,18 +3,18 @@ package test;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.DefaultClientFormView;
-import platform.server.logics.classes.DataClass;
+import platform.server.view.form.client.DefaultFormView;
+import platform.server.logics.classes.RemoteClass;
 
 class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
     IntegralNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1), DataClass.date);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1), RemoteClass.date);
         obj1.caption = "дата 1";
 
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1), DataClass.date);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1), RemoteClass.date);
         obj2.caption = "дата 2";
 
         ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Article);
@@ -35,7 +35,7 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
         BL.addPropertyView(this,BL.RashArtInt,gv2,obj3,obj1,obj2);
 
-        DefaultClientFormView formView = new DefaultClientFormView(this);
+        DefaultFormView formView = new DefaultFormView(this);
         formView.get(gv).singleViewType = true;
 
         richDesign = formView;

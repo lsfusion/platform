@@ -5,7 +5,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.session.DataSession;
 import platform.server.logics.session.ChangeValue;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.data.query.JoinQuery;
@@ -33,7 +33,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     public Table getTable(Map<KeyField,T> MapJoins) {
         if(aggregateMap ==null) {
             aggregateMap = new HashMap<DataPropertyInterface,T>();
-            Map<T, DataClass> parent = getClassSet(ClassSet.universal).getCommonParent();
+            Map<T, RemoteClass> parent = getClassSet(ClassSet.universal).getCommonParent();
             for(T anInterface : interfaces) {
                 aggregateMap.put(new DataPropertyInterface(0,parent.get(anInterface)),anInterface);
             }

@@ -1,7 +1,7 @@
 package platform.server.logics.properties;
 
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.FormulaExpr;
@@ -13,7 +13,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
 
     String Formula;
 
-    public StringFormulaProperty(TableFactory iTableFactory, DataClass iValue, String iFormula) {
+    public StringFormulaProperty(TableFactory iTableFactory, RemoteClass iValue, String iFormula) {
         super(iTableFactory,iValue);
         Formula = iFormula;
     }
@@ -27,7 +27,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         return new FormulaExpr(Formula,Value.getType(),Params);
     }
 
-    DataClass getOperandClass() {
-        return DataClass.data;
+    RemoteClass getOperandClass() {
+        return RemoteClass.data;
     }
 }

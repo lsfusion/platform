@@ -3,7 +3,7 @@ package platform.server.view.navigator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.PropertyInterface;
@@ -12,11 +12,13 @@ import platform.server.logics.properties.groups.AbstractGroup;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.server.view.form.*;
-import platform.interop.ClientFormView;
-import platform.server.view.form.DefaultClientFormView;
+import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.form.client.FormView;
 import platform.server.view.form.report.DefaultJasperDesign;
 
 import java.util.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 import net.sf.jasperreports.engine.design.JasperDesign;
 
@@ -39,7 +41,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return IDCount;
     }
 
-    protected ObjectImplement addSingleGroupObjectImplement(DataClass baseClass, String caption, List<Property> properties, Object... groups) {
+    protected ObjectImplement addSingleGroupObjectImplement(RemoteClass baseClass, String caption, List<Property> properties, Object... groups) {
 
         GroupObjectImplement groupObject = new GroupObjectImplement(IDShift(1));
         ObjectImplement object = new ObjectImplement(IDShift(1), baseClass, caption, groupObject);
@@ -114,7 +116,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
             InterfaceClass<P> propertyInterface = new InterfaceClass();
             int interfaceCount = 0;
             for (P iface : mapping) {
-                DataClass baseClass = objects[interfaceCount++].baseClass;
+                RemoteClass baseClass = objects[interfaceCount++].baseClass;
                 propertyInterface.put(iface, (upClasses) ? ClassSet.getUp(baseClass)
                                                          : new ClassSet(baseClass));
             }
@@ -229,8 +231,8 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     protected NavigatorForm(NavigatorElement parent, int iID, String caption) { this(parent, iID, caption, false); }
     protected NavigatorForm(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) { super(parent, iID, caption); isPrintForm = iisPrintForm; }
 
-    protected ClientFormView richDesign;
-    ClientFormView getRichDesign() { if (richDesign == null) return new DefaultClientFormView(this); else return richDesign; }
+    protected FormView richDesign;
+    FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
     protected JasperDesign reportDesign;
     JasperDesign getReportDesign() { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()); else return reportDesign; }
@@ -240,6 +242,12 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         relevantElements.add(relevantElement);
     }
 
+    public byte getTypeID() {
+        return 0;
+    }
 
-
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+        outStream.writeBoolean(isPrintForm);
+    }
 }

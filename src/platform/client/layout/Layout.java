@@ -19,9 +19,9 @@ import java.io.*;
 
 import net.sf.jasperreports.engine.*;
 import platform.server.view.navigator.RemoteNavigator;
-import platform.server.logics.auth.UserInfo;
-import platform.interop.ByteArraySerializer;
+import platform.interop.UserInfo;
 import platform.client.Log;
+import platform.client.interop.ByteDeSerializer;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.client.navigator.ClientNavigator;
 import platform.Main;
@@ -40,7 +40,7 @@ public class Layout extends JFrame implements ComponentCollector {
 
         setIconImage(new ImageIcon(getClass().getResource("lsfusion.gif")).getImage());
         
-        UserInfo userInfo = ByteArraySerializer.deserializeUserInfo(remoteNavigator.getCurrentUserInfoByteArray());
+        UserInfo userInfo = ByteDeSerializer.deserializeUserInfo(remoteNavigator.getCurrentUserInfoByteArray());
         setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

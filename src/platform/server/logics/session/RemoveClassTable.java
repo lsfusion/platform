@@ -5,7 +5,7 @@ import platform.server.data.query.Join;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.PropertyField;
 import platform.server.data.KeyField;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 
 public class RemoveClassTable extends ChangeClassTable {
 
@@ -13,7 +13,7 @@ public class RemoveClassTable extends ChangeClassTable {
         super("removechange");
     }
 
-    public void excludeJoin(JoinQuery<?,?> query, DataSession session, DataClass changeClass, SourceExpr join) {
+    public void excludeJoin(JoinQuery<?,?> query, DataSession session, RemoteClass changeClass, SourceExpr join) {
         Join<KeyField,PropertyField> classJoin = new Join<KeyField, PropertyField>(getClassJoin(session,changeClass));
         classJoin.joins.put(object,join);
         query.and(classJoin.inJoin.not());

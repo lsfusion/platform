@@ -8,4 +8,12 @@ public class LongClass extends IntegralClass {
     public Type getType() {
         return Type.longType;
     }
+
+    public Class getJavaClass() {
+        return Long.class;
+    }
+
+    public byte getTypeID() {
+        return 2;
+    }
 }

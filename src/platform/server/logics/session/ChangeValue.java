@@ -1,11 +1,20 @@
 package platform.server.logics.session;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public abstract class ChangeValue {
-    public DataClass Class;
+    public RemoteClass changeClass;
 
-    ChangeValue(DataClass iClass) {
-        Class = iClass;
+    ChangeValue(RemoteClass iClass) {
+        changeClass = iClass;
+    }
+
+    abstract byte getTypeID();
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(getTypeID());
+        changeClass.serialize(outStream);
     }
 }

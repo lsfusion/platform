@@ -5,7 +5,7 @@ import platform.server.logics.data.TableFactory;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.session.*;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.base.BaseUtils;
 import platform.server.data.types.Type;
@@ -142,7 +142,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         // нужно также проверить
         for(InterfaceClass<T> InterfaceClass : getClassSet(ClassSet.universal))
             for(ClassSet Interface : InterfaceClass.values())
-                if(Interface.intersect(ClassSet.getUp(DataClass.data)))
+                if(Interface.intersect(ClassSet.getUp(RemoteClass.data)))
                     return false;
 
         return true;

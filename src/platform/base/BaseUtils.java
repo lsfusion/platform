@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Constructor;
+import java.io.*;
 
 public class BaseUtils {
 
@@ -103,5 +104,127 @@ public class BaseUtils {
         for(K object : collection)
             result.put(object,object);
         return result;
+    }
+
+
+    public static Object deserializeObject(byte[] state) {
+
+        ByteArrayInputStream inStream = new ByteArrayInputStream(state);
+        DataInputStream dataStream = new DataInputStream(inStream);
+
+        try {
+            return deserializeObject(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+    public static Object deserializeObject(DataInputStream inStream) throws IOException {
+
+        try {
+            ObjectInputStream dataStream = new ObjectInputStream(inStream);
+            try {
+                return dataStream.readObject();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+/*        int objectType = inStream.readByte();
+
+        if (objectType == 0) {
+            return null;
+        }
+
+        if (objectType == 1) {
+            return inStream.readInt();
+        }
+
+        if (objectType == 2) {
+            return inStream.readUTF();
+        }
+
+        if (objectType == 3) {
+            return inStream.readDouble();
+        }
+
+        if (objectType == 4) {
+            return inStream.readLong();
+        }
+
+        if (objectType == 5) {
+            return inStream.readBoolean();
+        }
+
+        throw new IOException();*/
+    }
+
+    public static void serializeObject(DataOutputStream outStream, Object object) throws IOException {
+
+        try {
+            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
+            objectStream.writeObject(object);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+/*        if (object == null) {
+            outStream.writeByte(0);
+            return;
+        }
+
+        if (object instanceof Integer) {
+            outStream.writeByte(1);
+            outStream.writeInt((Integer)object);
+            return;
+        }
+
+        if (object instanceof String) {
+            outStream.writeByte(2);
+            outStream.writeUTF(((String)object).trim());
+            return;
+        }
+
+        if (object instanceof Double) {
+            outStream.writeByte(3);
+            outStream.writeDouble((Double)object);
+            return;
+        }
+
+        if (object instanceof Long) {
+            outStream.writeByte(4);
+            outStream.writeLong((Long)object);
+            return;
+        }
+
+        if (object instanceof Boolean) {
+            outStream.writeByte(5);
+            outStream.writeBoolean((Boolean)object);
+            return;
+        }
+
+        throw new IOException();*/
+    }// -------------------------------------- Сериализация классов -------------------------------------------- //
+
+    public static byte[] serializeObject(Object value) {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            serializeObject(dataStream, value);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
+
     }
 }

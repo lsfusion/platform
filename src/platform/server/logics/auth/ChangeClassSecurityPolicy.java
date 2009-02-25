@@ -1,7 +1,7 @@
 package platform.server.logics.auth;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 
-public class ChangeClassSecurityPolicy extends AbstractSecurityPolicy<DataClass> {
+public class ChangeClassSecurityPolicy extends AbstractSecurityPolicy<RemoteClass> {
 
 }

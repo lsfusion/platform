@@ -1,10 +1,10 @@
 package platform.server.logics;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 
 public class ObjectValue {
     public Integer object;
-    public DataClass objectClass;
+    public RemoteClass objectClass;
 
     public boolean equals(Object o) {
         return this==o || o instanceof ObjectValue && object.equals(((ObjectValue) o).object);
@@ -14,7 +14,7 @@ public class ObjectValue {
         return object.hashCode();
     }
 
-    public ObjectValue(Integer iObject, DataClass iClass) {
+    public ObjectValue(Integer iObject, RemoteClass iClass) {
         object =iObject;
         objectClass =iClass;}
 }

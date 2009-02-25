@@ -11,7 +11,7 @@ import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.*;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.ObjectClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.ObjectValue;
@@ -36,8 +36,8 @@ public class DataSession  {
         return propertyChanges.get(Property);
     }
 
-    public Map<DataClass,ClassSet> addChanges = new HashMap<DataClass, ClassSet>();
-    public Map<DataClass, ClassSet> removeChanges = new HashMap<DataClass, ClassSet>();
+    public Map<RemoteClass,ClassSet> addChanges = new HashMap<RemoteClass, ClassSet>();
+    public Map<RemoteClass, ClassSet> removeChanges = new HashMap<RemoteClass, ClassSet>();
     public Map<DataProperty, ValueClassSet<DataPropertyInterface>> dataChanges = new HashMap<DataProperty, ValueClassSet<DataPropertyInterface>>();
 
     TableFactory tableFactory;
@@ -76,21 +76,21 @@ public class DataSession  {
 
         tableFactory.clearSession(this);
         changes = new DataChanges();
-        NewClasses = new HashMap<Integer, DataClass>();
-        BaseClasses = new HashMap<Integer, DataClass>();
+        NewClasses = new HashMap<Integer, RemoteClass>();
+        BaseClasses = new HashMap<Integer, RemoteClass>();
 
         propertyChanges = new HashMap<Property, Property.Change>();
-        addChanges = new HashMap<DataClass, ClassSet>();
-        removeChanges = new HashMap<DataClass, ClassSet>();
+        addChanges = new HashMap<RemoteClass, ClassSet>();
+        removeChanges = new HashMap<RemoteClass, ClassSet>();
         dataChanges = new HashMap<DataProperty, ValueClassSet<DataPropertyInterface>>();
     }
 
-    Map<Integer, DataClass> NewClasses = new HashMap<Integer, DataClass>();
+    Map<Integer, RemoteClass> NewClasses = new HashMap<Integer, RemoteClass>();
     // классы на момент выполнения
-    public Map<Integer, DataClass> BaseClasses = new HashMap<Integer, DataClass>();
+    public Map<Integer, RemoteClass> BaseClasses = new HashMap<Integer, RemoteClass>();
 
-    private void putClassChanges(Set<DataClass> Changes, DataClass PrevClass,Map<DataClass,ClassSet> To) {
-        for(DataClass Change : Changes) {
+    private void putClassChanges(Set<RemoteClass> Changes, RemoteClass PrevClass,Map<RemoteClass,ClassSet> To) {
+        for(RemoteClass Change : Changes) {
             ClassSet PrevChange = To.get(Change);
             if(PrevChange==null) PrevChange = new ClassSet();
             PrevChange.or(new ClassSet(PrevClass));
@@ -98,12 +98,12 @@ public class DataSession  {
         }
     }
 
-    public void changeClass(Integer idObject, DataClass ToClass) throws SQLException {
-        if(ToClass==null) ToClass = DataClass.base;
+    public void changeClass(Integer idObject, RemoteClass ToClass) throws SQLException {
+        if(ToClass==null) ToClass = RemoteClass.base;
 
-        Set<DataClass> AddClasses = new HashSet<DataClass>();
-        Set<DataClass> RemoveClasses = new HashSet<DataClass>();
-        DataClass PrevClass = getObjectClass(idObject);
+        Set<RemoteClass> AddClasses = new HashSet<RemoteClass>();
+        Set<RemoteClass> RemoveClasses = new HashSet<RemoteClass>();
+        RemoteClass PrevClass = getObjectClass(idObject);
         ToClass.getDiffSet(PrevClass,AddClasses,RemoveClasses);
 
         putClassChanges(AddClasses,PrevClass, addChanges);
@@ -190,31 +190,31 @@ public class DataSession  {
             ViewChanges.properties.add(Property);
     }
 
-    DataClass readClass(Integer idObject) throws SQLException {
+    RemoteClass readClass(Integer idObject) throws SQLException {
         if(BusinessLogics.autoFillDB) return null;
 
         return objectClass.findClassID(tableFactory.objectTable.getClassID(this,idObject));
     }
 
-    public DataClass getObjectClass(Integer idObject) throws SQLException {
-        DataClass NewClass = NewClasses.get(idObject);
+    public RemoteClass getObjectClass(Integer idObject) throws SQLException {
+        RemoteClass NewClass = NewClasses.get(idObject);
         if(NewClass==null)
             NewClass = readClass(idObject);
         if(NewClass==null)
-            NewClass = DataClass.base;
+            NewClass = RemoteClass.base;
         return NewClass;
     }
 
     ClassSet getBaseClassSet(Integer idObject) throws SQLException {
         if(idObject==null) return new ClassSet();
-        DataClass BaseClass = BaseClasses.get(idObject);
+        RemoteClass BaseClass = BaseClasses.get(idObject);
         if(BaseClass==null)
             BaseClass = readClass(idObject);
         return new ClassSet(BaseClass);
     }
 
     // последний параметр
-    public List<Property> update(PropertyUpdateView ToUpdate,Collection<DataClass> UpdateClasses) throws SQLException {
+    public List<Property> update(PropertyUpdateView ToUpdate,Collection<RemoteClass> UpdateClasses) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         DataChanges ToUpdateChanges = incrementChanges.get(ToUpdate);
@@ -328,7 +328,7 @@ public class DataSession  {
             InsertKeys.put(tableFactory.objectTable.key, idObject);
 
             Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
-            DataClass ChangeClass = NewClasses.get(idObject);
+            RemoteClass ChangeClass = NewClasses.get(idObject);
             InsertProps.put(tableFactory.objectTable.objectClass,ChangeClass!=null?ChangeClass.ID:null);
 
             UpdateInsertRecord(tableFactory.objectTable,InsertKeys,InsertProps);

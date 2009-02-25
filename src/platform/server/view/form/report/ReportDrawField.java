@@ -1,6 +1,6 @@
 package platform.server.view.form.report;
 
-import platform.interop.ClientCellView;
+import platform.server.view.form.client.CellView;
 
 // поле для отрисовки отчета
 public class ReportDrawField implements AbstractRowLayoutElement {
@@ -15,7 +15,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public String pattern;
 
-    public ReportDrawField(ClientCellView cellView) {
+    public ReportDrawField(CellView cellView) {
         cellView.fillReportDrawField(this);
     }
 

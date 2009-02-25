@@ -9,7 +9,7 @@ public class PropertyView<P extends PropertyInterface> {
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     public GroupObjectImplement toDraw;
 
-    public PropertyView(int iID,PropertyObjectImplement<P> iView,GroupObjectImplement iToDraw) {
+    public PropertyView(int iID, PropertyObjectImplement<P> iView, GroupObjectImplement iToDraw) {
         view = iView;
         toDraw = iToDraw;
         ID = iID;

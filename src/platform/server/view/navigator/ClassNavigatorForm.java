@@ -1,13 +1,13 @@
 package platform.server.view.navigator;
 
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 
 public class ClassNavigatorForm extends NavigatorForm {
 
-    public ClassNavigatorForm(BusinessLogics BL, DataClass cls) {
+    public ClassNavigatorForm(BusinessLogics BL, RemoteClass cls) {
         super(cls.ID + 2134232, cls.caption);
 
         ObjectImplement object = new ObjectImplement(IDShift(1),cls);

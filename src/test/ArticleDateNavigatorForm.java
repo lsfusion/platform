@@ -2,8 +2,8 @@ package test;
 
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.form.*;
-import platform.server.logics.classes.DataClass;
-import platform.server.view.form.DefaultClientFormView;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.view.form.client.DefaultFormView;
 
 class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
@@ -13,7 +13,7 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
         obj1.caption = "товар";
 
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1), DataClass.date);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1), RemoteClass.date);
         obj2.caption = "дата";
 
         GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));
@@ -31,7 +31,7 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
         addFixedFilter(new Filter(QImpl, 5, new UserValueLink(0)));
 
-        DefaultClientFormView formView = new DefaultClientFormView(this);
+        DefaultFormView formView = new DefaultFormView(this);
 //        formView.get(gv).defaultViewType = false;
 //        formView.get(gv).singleViewType = true;
 

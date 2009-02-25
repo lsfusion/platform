@@ -3,7 +3,7 @@ package test;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.data.TableImplement;
 import platform.server.logics.session.DataSession;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.ObjectClass;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.DataPropertyInterface;
@@ -42,7 +42,7 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         PrihQuantity.putNotNulls(PropNotNulls,0);
         RashQuantity.putNotNulls(PropNotNulls,0);
 
-        Map<DataClass,Integer> ClassQuantity = new HashMap();
+        Map<RemoteClass,Integer> ClassQuantity = new HashMap();
 /*        ClassQuantity.put(Article,1000);
         ClassQuantity.put(ArticleGroup,50);
         ClassQuantity.put(Store,5);
@@ -179,12 +179,12 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
     }
 
-    DataClass ArticleGroup;
-    DataClass Document;
-    DataClass Article;
-    DataClass Store;
-    DataClass PrihDocument;
-    DataClass RashDocument;
+    RemoteClass ArticleGroup;
+    RemoteClass Document;
+    RemoteClass Article;
+    RemoteClass Store;
+    RemoteClass PrihDocument;
+    RemoteClass RashDocument;
 
     protected void initClasses() {
 
@@ -214,41 +214,41 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         AbstractGroup groupArticleC = new AbstractGroup("Ценовые параметры");
         AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
-        Name = addDProp("имя", DataClass.string(50), objectClass);
+        Name = addDProp("имя", RemoteClass.string(50), objectClass);
         groupArticleA.add(Name.property);
 
         DocStore = addDProp("склад", Store, Document);
 
-        PrihQuantity = addDProp("кол-во прих.", DataClass.integer, PrihDocument, Article);
+        PrihQuantity = addDProp("кол-во прих.", RemoteClass.integer, PrihDocument, Article);
         PrihQuantity.property.caption = "кол-во прих.";
 
-        RashQuantity = addDProp("кол-во расх.", DataClass.integer, RashDocument, Article);
+        RashQuantity = addDProp("кол-во расх.", RemoteClass.integer, RashDocument, Article);
 
         ArtToGroup = addDProp("гр. тов.", ArticleGroup, Article);
         groupArticleG.add(ArtToGroup.property);
 
-        DocDate = addDProp("дата док.", DataClass.date, Document);
+        DocDate = addDProp("дата док.", RemoteClass.date, Document);
 
-        GrAddV = addDProp("нац. по гр.", DataClass.integer, ArticleGroup);
+        GrAddV = addDProp("нац. по гр.", RemoteClass.integer, ArticleGroup);
 
-        ArtAddV = addDProp("нац. перегр.", DataClass.integer, Article);
+        ArtAddV = addDProp("нац. перегр.", RemoteClass.integer, Article);
         groupArticleC.add(ArtAddV.property);
 
-        BarCode = addDProp("штрих-код", DataClass.doubleClass, Article);
+        BarCode = addDProp("штрих-код", RemoteClass.doubleClass, Article);
         groupArticleA.add(BarCode.property);
 
-        Price = addDProp("цена", DataClass.longClass, Article);
+        Price = addDProp("цена", RemoteClass.longClass, Article);
         groupArticleA.add(Price.property);
 
-        ExpireDate = addDProp("срок годн.", DataClass.date, Article);
+        ExpireDate = addDProp("срок годн.", RemoteClass.date, Article);
         groupArticleA.add(ExpireDate.property);
 
-        Weight = addDProp("вес.", DataClass.bit, Article);
+        Weight = addDProp("вес.", RemoteClass.bit, Article);
         groupArticleA.add(Weight.property);
 
-        LCP AbsQuantity = addCProp("абст. кол-во",null, DataClass.integer,Document,Article);
+        LCP AbsQuantity = addCProp("абст. кол-во",null, RemoteClass.integer,Document,Article);
 
-        LCP IsGrmat = addCProp("признак товара",0, DataClass.integer,Article);
+        LCP IsGrmat = addCProp("признак товара",0, RemoteClass.integer,Article);
         groupArticleA.add(IsGrmat.property);
 
         FilledProperty = addUProp("заполнение гр. тов.", Union.MAX,1,1,IsGrmat,1,1,ArtToGroup,1);
@@ -256,9 +256,9 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         // сделаем Quantity перегрузкой
         Quantity = addUProp("кол-во",Union.OVERRIDE,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LCP RashValue = addCProp("призн. расхода",-1, DataClass.integer,RashDocument);
+        LCP RashValue = addCProp("призн. расхода",-1, RemoteClass.integer,RashDocument);
 
-        LCP PrihValue = addCProp("призн. прихода",1, DataClass.integer,PrihDocument);
+        LCP PrihValue = addCProp("призн. прихода",1, RemoteClass.integer,PrihDocument);
 
         OpValue = addUProp("общ. призн.",Union.OVERRIDE,1,1,RashValue,1,1,PrihValue,1);
 
@@ -273,14 +273,14 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 //
         LNFP NotZero = addNFProp();
         LCFP Less = addCFProp(CompareWhere.LESS);
-        LMFP Multiply = addMFProp(DataClass.integer,2);
-        LMFP Multiply3 = addMFProp(DataClass.integer,3);
+        LMFP Multiply = addMFProp(RemoteClass.integer,2);
+        LMFP Multiply3 = addMFProp(RemoteClass.integer,3);
 
         LJP StoreName = addJProp("имя склада", Name,1,DocStore,1);
 
         LJP ArtGroupName = addJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
-        LDP ArtGName = addDProp("при доб. гр. тов.", DataClass.string(50), Article);
+        LDP ArtGName = addDProp("при доб. гр. тов.", RemoteClass.string(50), Article);
         setDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = addJProp("товар в док.", NotZero,2,Quantity,1,2);

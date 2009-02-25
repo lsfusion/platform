@@ -1,6 +1,6 @@
 package platform.client.form;
 
-import platform.interop.ClientClass;
+import platform.client.interop.classes.ClientClass;
 import platform.client.form.ClientForm;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;

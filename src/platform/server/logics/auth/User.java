@@ -1,5 +1,7 @@
 package platform.server.logics.auth;
 
+import platform.interop.UserInfo;
+
 import java.util.List;
 import java.util.ArrayList;
 

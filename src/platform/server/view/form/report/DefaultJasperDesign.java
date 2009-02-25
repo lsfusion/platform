@@ -13,11 +13,11 @@ import java.util.List;
 import java.awt.*;
 
 import platform.server.view.form.report.ReportDrawField;
-import platform.interop.ClientPropertyView;
-import platform.interop.ClientFormView;
-import platform.interop.ClientGroupObjectImplement;
-import platform.interop.ClientObjectImplement;
 import platform.Main;
+import platform.server.view.form.client.FormView;
+import platform.server.view.form.client.GroupObjectImplementView;
+import platform.server.view.form.client.ObjectImplementView;
+import platform.server.view.form.client.PropertyCellView;
 import platform.server.view.form.report.AbstractRowLayout;
 
 public class DefaultJasperDesign extends JasperDesign {
@@ -86,7 +86,7 @@ public class DefaultJasperDesign extends JasperDesign {
         return groupCellStyle;
     }
 
-    private JRDesignGroup addDesignGroup(ClientGroupObjectImplement group, String groupName) {
+    private JRDesignGroup addDesignGroup(GroupObjectImplementView group, String groupName) {
 
         JRDesignGroup designGroup = new JRDesignGroup();
         designGroup.setName(groupName);
@@ -94,8 +94,8 @@ public class DefaultJasperDesign extends JasperDesign {
         JRDesignExpression groupExpr = new JRDesignExpression();
         groupExpr.setValueClass(java.lang.String.class);
         String groupString = "";
-        for(ClientObjectImplement object : group)
-            groupString = (groupString.length()==0?"":groupString+"+\" \"+")+"String.valueOf($F{"+object.objectIDView.sID+"})";
+        for(ObjectImplementView object : group)
+            groupString = (groupString.length()==0?"":groupString+"+\" \"+")+"String.valueOf($F{"+object.view.getSID()+"})";
         groupExpr.setText(groupString);
 
         designGroup.setExpression(groupExpr);
@@ -259,7 +259,7 @@ public class DefaultJasperDesign extends JasperDesign {
 
     }
 
-    public DefaultJasperDesign(ClientFormView formView) {
+    public DefaultJasperDesign(FormView formView) {
 
         int pageWidth = 842 - 40;
         int pageHeight = 595;
@@ -273,18 +273,18 @@ public class DefaultJasperDesign extends JasperDesign {
         addDefaultStyle();
         addCellStyle();
 
-        for(ClientGroupObjectImplement group : (List<ClientGroupObjectImplement>)formView.groupObjects) {
+        for(GroupObjectImplementView group : (List<GroupObjectImplementView>)formView.groupObjects) {
 
             Collection<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
             // сначала все коды
-            for(ClientObjectImplement object : group)
-                drawFields.add(new ReportDrawField(object.objectIDView));
+            for(ObjectImplementView object : group)
+                drawFields.add(new ReportDrawField(object));
 
             // бежим по всем свойствам входящим в объектам
-            for(ClientPropertyView property : (List<ClientPropertyView>)formView.properties) {
+            for(PropertyCellView property : (List<PropertyCellView>)formView.properties) {
 
-                if (group == property.groupObject)
+                if (group.view == property.view.toDraw)
                     drawFields.add(new ReportDrawField(property));
             }
 
@@ -304,12 +304,12 @@ public class DefaultJasperDesign extends JasperDesign {
             } else {
 
                 if (captionWidth + preferredWidth <= pageWidth) {
-                    JRDesignGroup designGroup = addDesignGroup(group, "designGroup" + group.ID);
+                    JRDesignGroup designGroup = addDesignGroup(group, "designGroup" + group.view.ID);
                     reportLayout = new ReportGroupRowLayout(designGroup);
                 }
                 else {
-                    JRDesignGroup captionGroup = addDesignGroup(group, "captionGroup" + group.ID);
-                    JRDesignGroup textGroup = addDesignGroup(group, "textGroup" + group.ID);
+                    JRDesignGroup captionGroup = addDesignGroup(group, "captionGroup" + group.view.ID);
+                    JRDesignGroup textGroup = addDesignGroup(group, "textGroup" + group.view.ID);
                     reportLayout = new ReportGroupColumnLayout(captionGroup, textGroup);
                 }
             }

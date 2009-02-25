@@ -2,6 +2,8 @@ package platform.server.view.form;
 
 import java.util.Set;
 import java.util.Map;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 import platform.server.logics.session.DataSession;
 import platform.server.logics.classes.sets.ClassSet;
@@ -10,26 +12,33 @@ import platform.server.data.query.exprs.SourceExpr;
 
 public class PropertyValueLink extends ValueLink {
 
-    public PropertyValueLink(PropertyObjectImplement iProperty) {Property=iProperty;}
+    public PropertyValueLink(PropertyObjectImplement iProperty) {
+        property = iProperty;
+    }
 
-    public PropertyObjectImplement Property;
+    public PropertyValueLink(DataInputStream inStream, RemoteForm form) throws IOException {
+        super(inStream, form);
+        property = form.getPropertyView(inStream.readInt()).view;
+    }
+
+    public PropertyObjectImplement property;
 
     @Override
     ClassSet getValueClass(GroupObjectImplement ClassGroup) {
-        return Property.getValueClass(ClassGroup);
+        return property.getValueClass(ClassGroup);
     }
 
     @Override
     boolean ClassUpdated(GroupObjectImplement ClassGroup) {
-        return Property.classUpdated(ClassGroup);
+        return property.classUpdated(ClassGroup);
     }
 
     @Override
     boolean ObjectUpdated(GroupObjectImplement ClassGroup) {
-        return Property.objectUpdated(ClassGroup);
+        return property.objectUpdated(ClassGroup);
     }
 
     public SourceExpr getValueExpr(Set<GroupObjectImplement> ClassGroup, Map<ObjectImplement, ? extends SourceExpr> ClassSource, DataSession Session, Type DBType) {
-        return Property.getSourceExpr(ClassGroup,ClassSource,Session);
+        return property.getSourceExpr(ClassGroup,ClassSource,Session);
     }
 }

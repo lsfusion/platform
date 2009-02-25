@@ -5,7 +5,7 @@ import platform.server.logics.data.TableImplement;
 import platform.server.logics.data.IDTable;
 import platform.server.logics.classes.ObjectClass;
 import platform.server.logics.classes.StringClass;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.constraints.Constraint;
@@ -55,12 +55,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         tableFactory = new TableFactory();
 
         objectClass = new ObjectClass(idShift(1), "Объект");
-        objectClass.addParent(DataClass.base);
+        objectClass.addParent(RemoteClass.base);
 
         for(int i=0;i< tableFactory.maxInterface;i++) {
             TableImplement include = new TableImplement();
             for(int j=0;j<=i;j++)
-                include.add(new DataPropertyInterface(j, DataClass.base));
+                include.add(new DataPropertyInterface(j, RemoteClass.base));
             tableFactory.includeIntoGraph(include);
         }
 
@@ -195,7 +195,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         }
     }
 
-    public Integer addObject(DataSession session, DataClass objectClass) throws SQLException {
+    public Integer addObject(DataSession session, RemoteClass objectClass) throws SQLException {
 
         Integer freeID = tableFactory.idTable.generateID(session, IDTable.OBJECT);
 
@@ -204,7 +204,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         return freeID;
     }
 
-    public void changeClass(DataSession session, Integer idObject, DataClass objectClass) throws SQLException {
+    public void changeClass(DataSession session, Integer idObject, RemoteClass objectClass) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
         session.changeClass(idObject,objectClass);
@@ -248,7 +248,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         // делается UpdateAggregations (для мн-ва persistent+constraints)
         session.startTransaction();
 
-        List<Property> changedList = session.update(this,new HashSet<DataClass>());
+        List<Property> changedList = session.update(this,new HashSet<RemoteClass>());
         session.incrementChanges.remove(this);
 
         // проверим Constraints
@@ -370,35 +370,35 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
 
     // функционал по заполнению св-в по номерам, нужен для BL
 
-    protected ObjectClass addObjectClass(String caption, DataClass... parents) {
+    protected ObjectClass addObjectClass(String caption, RemoteClass... parents) {
         return addObjectClass(baseGroup, idShift(1), caption, parents);
     }
 
-    ObjectClass addObjectClass(Integer iID, String caption, DataClass... parents) {
+    ObjectClass addObjectClass(Integer iID, String caption, RemoteClass... parents) {
         return addObjectClass(baseGroup, iID, caption, parents);
     }
 
-    ObjectClass addObjectClass(AbstractGroup group, Integer iID, String caption, DataClass... parents) {
+    ObjectClass addObjectClass(AbstractGroup group, Integer iID, String caption, RemoteClass... parents) {
         ObjectClass objectClass = new ObjectClass(iID, caption, parents);
         group.add(objectClass);
         return objectClass;
     }
 
-    protected LDP addDProp(String caption, DataClass value, DataClass... params) {
+    protected LDP addDProp(String caption, RemoteClass value, RemoteClass... params) {
         return addDProp((AbstractGroup)null, caption, value, params);
     }
-    protected LDP addDProp(String sID, String caption, DataClass value, DataClass... params) {
+    protected LDP addDProp(String sID, String caption, RemoteClass value, RemoteClass... params) {
         return addDProp(null, sID, caption, value, params);
     }
-    protected LDP addDProp(AbstractGroup group, String caption, DataClass value, DataClass... params) {
+    protected LDP addDProp(AbstractGroup group, String caption, RemoteClass value, RemoteClass... params) {
         return addDProp(group, null, caption, value, params);
     }
-    protected LDP addDProp(AbstractGroup group, String sID, String caption, DataClass value, DataClass... params) {
+    protected LDP addDProp(AbstractGroup group, String sID, String caption, RemoteClass value, RemoteClass... params) {
         DataProperty property = new DataProperty(tableFactory,value);
         property.sID = sID;
         property.caption = caption;
         LDP listProperty = new LDP(property);
-        for(DataClass interfaceClass : params)
+        for(RemoteClass interfaceClass : params)
             listProperty.AddInterface(interfaceClass);
         addDataProperty(property);
 
@@ -417,17 +417,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         property.onDefaultChange = onChange;
     }
 
-    protected LCP addCProp(String caption, Object value, DataClass valueClass, DataClass... params) {
+    protected LCP addCProp(String caption, Object value, RemoteClass valueClass, RemoteClass... params) {
         ClassProperty property = new ClassProperty(tableFactory,valueClass,value);
         property.caption = caption;
         LCP listProperty = new LCP(property);
-        for(DataClass interfaceClass : params)
+        for(RemoteClass interfaceClass : params)
             listProperty.addInterface(interfaceClass);
         properties.add(property);
         return listProperty;
     }
 
-    protected LSFP addSFProp(String formula, DataClass value,int paramCount) {
+    protected LSFP addSFProp(String formula, RemoteClass value,int paramCount) {
 
         StringFormulaProperty property = new StringFormulaProperty(tableFactory,value,formula);
         LSFP listProperty = new LSFP(property,paramCount);
@@ -450,7 +450,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         return listProperty;
     }
 
-    protected LMFP addMFProp(DataClass value,int paramCount) {
+    protected LMFP addMFProp(RemoteClass value,int paramCount) {
         MultiplyFormulaProperty property = new MultiplyFormulaProperty(tableFactory,value,paramCount);
         LMFP listProperty = new LMFP(property);
         properties.add(property);
@@ -631,10 +631,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
     // случайным образом генерирует классы
     void randomClasses(Random randomizer) {
         int customClasses = randomizer.nextInt(20);//
-        List<DataClass> objClasses = new ArrayList<DataClass>();
+        List<RemoteClass> objClasses = new ArrayList<RemoteClass>();
         objClasses.add(objectClass);
         for(int i=0;i<customClasses;i++) {
-            DataClass objectClass = new ObjectClass(i+10000, "Случайный класс"+i);
+            RemoteClass objectClass = new ObjectClass(i+10000, "Случайный класс"+i);
             int parents = randomizer.nextInt(2) + 1;
             for(int j=0;j<parents;j++)
                 objectClass.addParent(objClasses.get(randomizer.nextInt(objClasses.size())));
@@ -645,7 +645,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
     // случайным образом генерирует св-ва
     void randomProperties(Random randomizer) {
 
-        List<DataClass> classes = new ArrayList<DataClass>();
+        List<RemoteClass> classes = new ArrayList<RemoteClass>();
         objectClass.fillChilds(classes);
 
         List<Property> randProps = new ArrayList<Property>();
@@ -655,13 +655,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         CompareFormulaProperty dirihle = new CompareFormulaProperty(tableFactory, CompareWhere.LESS);
         randProps.add(dirihle);
 
-        MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(tableFactory, DataClass.integer,2);
+        MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(tableFactory, RemoteClass.integer,2);
         randProps.add(Multiply);
 
         int dataPropCount = randomizer.nextInt(15)+1;
         for(int i=0;i<dataPropCount;i++) {
             // DataProperty
-            DataProperty dataProp = new DataProperty(tableFactory,(i%4==0? DataClass.integer :classes.get(randomizer.nextInt(classes.size()))));
+            DataProperty dataProp = new DataProperty(tableFactory,(i%4==0? RemoteClass.integer :classes.get(randomizer.nextInt(classes.size()))));
             dataProp.caption = "Data Property " + i;
             // генерируем классы
             int intCount = randomizer.nextInt(tableFactory.maxInterface)+1;
@@ -670,7 +670,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
 
             randProps.add(dataProp);
             randObjProps.add(dataProp);
-            if(dataProp.getBaseClass().contains(DataClass.integral))
+            if(dataProp.getBaseClass().contains(RemoteClass.integral))
                 randIntegralProps.add(dataProp);
         }
 
@@ -834,7 +834,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
                     System.out.print(resType+"-");
                     randProps.add(genProp);
                     randObjProps.add(genProp);
-                    if(genProp.getBaseClass().contains(DataClass.integral))
+                    if(genProp.getBaseClass().contains(RemoteClass.integral))
                         randIntegralProps.add(genProp);
                 }
             }
@@ -847,7 +847,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
 
     // случайным образом генерирует имплементацию
     void randomImplement(Random randomizer) {
-        List<DataClass> classes = new ArrayList<DataClass>();
+        List<RemoteClass> classes = new ArrayList<RemoteClass>();
         objectClass.fillChilds(classes);
 
         // заполнение физ модели
@@ -894,9 +894,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
 
         DataSession session = createSession(adapter);
 
-        List<DataClass> addClasses = new ArrayList<DataClass>();
+        List<RemoteClass> addClasses = new ArrayList<RemoteClass>();
         objectClass.fillChilds(addClasses);
-        for(DataClass addClass : addClasses) {
+        for(RemoteClass addClass : addClasses) {
             if(addClass instanceof ObjectClass) {
                 int objectAdd = randomizer.nextInt(10)+1;
                 for(int ia=0;ia<objectAdd;ia++)
@@ -922,11 +922,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
             System.out.println("Iteration" + iterations++);
 
             // будем также рандомно создавать объекты
-            addClasses = new ArrayList<DataClass>();
+            addClasses = new ArrayList<RemoteClass>();
             objectClass.fillChilds(addClasses);
             int objectAdd = randomizer.nextInt(5);
             for(int ia=0;ia<objectAdd;ia++) {
-                DataClass addClass = addClasses.get(randomizer.nextInt(addClasses.size()));
+                RemoteClass addClass = addClasses.get(randomizer.nextInt(addClasses.size()));
                 if(addClass instanceof ObjectClass)
                     addObject(session, addClass);
             }
@@ -949,7 +949,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
                     // генерим рандомные объекты этих классов
                     Map<DataPropertyInterface, ObjectValue> keys = new HashMap<DataPropertyInterface, ObjectValue>();
                     for(DataPropertyInterface propertyInterface : changeProp.interfaces) {
-                        DataClass randomClass = interfaceClasses.get(propertyInterface).getRandom(randomizer);
+                        RemoteClass randomClass = interfaceClasses.get(propertyInterface).getRandom(randomizer);
                         keys.put(propertyInterface,new ObjectValue((Integer) randomClass.getRandomObject(session, tableFactory, 0, randomizer),randomClass));
                     }
 
@@ -990,7 +990,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
     public static boolean autoFillDB = false;
     public static int autoIDCounter = 0;
     static int AutoSeed = 1400;
-    public void autoFillDB(DataAdapter adapter, Map<DataClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException {
+    public void autoFillDB(DataAdapter adapter, Map<RemoteClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException {
 
         autoFillDB = true;
         DataSession session = createSession(adapter);
@@ -1005,14 +1005,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
 
         // генерируем классы
         Map<Integer,String> objectNames = new HashMap<Integer, String>();
-        Map<DataClass,List<Integer>> objects = new HashMap<DataClass, List<Integer>>();
-        List<DataClass> classes = new ArrayList<DataClass>();
+        Map<RemoteClass,List<Integer>> objects = new HashMap<RemoteClass, List<Integer>>();
+        List<RemoteClass> classes = new ArrayList<RemoteClass>();
         objectClass.fillChilds(classes);
 
-        for(DataClass fillClass : classes)
+        for(RemoteClass fillClass : classes)
             objects.put(fillClass,new ArrayList<Integer>());
 
-        for(DataClass fillClass : classes)
+        for(RemoteClass fillClass : classes)
             if(fillClass.childs.size()==0) {
                 System.out.println(fillClass.caption);
 
@@ -1116,7 +1116,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         autoFillDB = false;
     }
 
-    public void createDefaultClassForms(DataClass cls, NavigatorElement parent) {
+    public void createDefaultClassForms(RemoteClass cls, NavigatorElement parent) {
 
         NavigatorElement node = new ClassNavigatorForm(this, cls);
         parent.add(node);
@@ -1128,7 +1128,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         if (!found)
             cls.addRelevantElement(node);
 
-        for (DataClass child : cls.childs) {
+        for (RemoteClass child : cls.childs) {
             createDefaultClassForms(child, node);
         }
     }

@@ -6,7 +6,7 @@ import platform.server.logics.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.session.DataSession;
 import platform.server.logics.session.ChangeValue;
 import platform.server.logics.classes.BitClass;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.data.query.ChangeQuery;
 import platform.server.data.query.JoinQuery;
@@ -108,7 +108,7 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
         if(implementations.property instanceof ObjectFormulaProperty) {
             ObjectFormulaProperty ObjectProperty = (ObjectFormulaProperty) implementations.property;
             // сначала кидаем на baseClass, bit'ы
-            for(InterfaceClass<JoinPropertyInterface> ValueInterface : getMapClassSet(Read, (InterfaceClass<T>) ObjectProperty.getInterfaceClass(ClassSet.getUp(DataClass.base)))) {
+            for(InterfaceClass<JoinPropertyInterface> ValueInterface : getMapClassSet(Read, (InterfaceClass<T>) ObjectProperty.getInterfaceClass(ClassSet.getUp(RemoteClass.base)))) {
                 InterfaceClass<T> ImplementInterface = new InterfaceClass<T>();
                 for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : implementations.mapping.entrySet()) // если null то уже не подходит по интерфейсу
                     ImplementInterface.put(MapInterface.getKey(), MapInterface.getValue().mapValueClass(ValueInterface));
@@ -212,7 +212,7 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
                     Result.add(PropertyImplement);
                 else {
                     ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, 0, securityPolicy);
-                    if(ChangeValue!=null && ChangeValue.Class instanceof BitClass)
+                    if(ChangeValue!=null && ChangeValue.changeClass instanceof BitClass)
                         BitProps.add(PropertyImplement);
                     else // в начало
                         Result.add(0,PropertyImplement);

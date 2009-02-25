@@ -14,10 +14,11 @@ import platform.server.data.query.wheres.CompareWhere;
 import platform.client.*;
 import platform.client.layout.ReportDockable;
 import platform.client.navigator.ClientNavigator;
-import platform.client.form.layout.SimplexLayout;
-import platform.interop.ByteArraySerializer;
+import platform.interop.form.layout.SimplexLayout;
 import platform.Main;
-import platform.interop.*;
+import platform.client.interop.classes.ClientClass;
+import platform.client.interop.classes.ClientObjectClass;
+import platform.client.interop.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -55,7 +56,7 @@ public class ClientForm extends JPanel {
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
     private final int GID;
-    private int getGroupObjectGID(ClientGroupObjectImplement group) { return GID * RemoteForm.GID_SHIFT + group.ID; }
+    private int getGroupObjectGID(ClientGroupObjectImplementView group) { return GID * RemoteForm.GID_SHIFT + group.ID; }
 
     public ClientForm(RemoteForm iremoteForm, ClientNavigator iclientNavigator) {
 //        super(app);
@@ -73,7 +74,7 @@ public class ClientForm extends JPanel {
 
         byte[] state = remoteForm.getRichDesignByteArray();
         Log.incrementBytesReceived(state.length);
-        formView = ByteArraySerializer.deserializeClientFormView(state);
+        formView = ByteDeSerializer.deserializeClientFormView(state);
 
         initializeForm();
 
@@ -89,7 +90,7 @@ public class ClientForm extends JPanel {
 
     private FormLayout formLayout;
 
-    Map<ClientGroupObjectImplement, GroupObjectModel> models;
+    Map<ClientGroupObjectImplementView, GroupObjectModel> models;
 
     private JButton buttonPrint;
     private JButton buttonRefresh;
@@ -149,7 +150,7 @@ public class ClientForm extends JPanel {
 
         models = new HashMap();
 
-        for (ClientGroupObjectImplement groupObject : formView.groupObjects) {
+        for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
 
             GroupObjectModel model = new GroupObjectModel(groupObject);
             models.put(groupObject, model);
@@ -162,13 +163,11 @@ public class ClientForm extends JPanel {
 
         // Проинициализируем регулярные фильтры
 
-        for (ClientRegularFilterGroupView filterGroupView : formView.regularFilters) {
-
-            final RegularFilterGroup filterGroup = filterGroupView.filterGroup;
+        for (final ClientRegularFilterGroupView filterGroup : formView.regularFilters) {
 
             if (filterGroup.filters.size() == 1) {
 
-                final RegularFilter singleFilter = filterGroup.filters.get(0);
+                final ClientRegularFilterView singleFilter = filterGroup.filters.get(0);
 
                 final JCheckBox checkBox = new JCheckBox(singleFilter.name);
                 checkBox.addItemListener(new ItemListener() {
@@ -180,7 +179,7 @@ public class ClientForm extends JPanel {
                             setRegularFilter(filterGroup, null);
                     }
                 });
-                formLayout.add(filterGroupView, checkBox);
+                formLayout.add(filterGroup, checkBox);
 
                 String filterID = "regularFilter" + filterGroup.ID + singleFilter.ID;
                 im.put(singleFilter.key, filterID);
@@ -196,12 +195,12 @@ public class ClientForm extends JPanel {
                 comboBox.addItemListener(new ItemListener() {
 
                     public void itemStateChanged(ItemEvent e) {
-                        setRegularFilter(filterGroup, (RegularFilter)e.getItem());
+                        setRegularFilter(filterGroup, (ClientRegularFilterView)e.getItem());
                     }
                 });
-                formLayout.add(filterGroupView, comboBox);
+                formLayout.add(filterGroup, comboBox);
 
-                for (final RegularFilter singleFilter : filterGroup.filters) {
+                for (final ClientRegularFilterView singleFilter : filterGroup.filters) {
                     String filterID = "regularFilter" + filterGroup.ID + singleFilter.ID;
                     im.put(singleFilter.key, filterID);
                     am.put(filterID, new AbstractAction() {
@@ -306,7 +305,7 @@ public class ClientForm extends JPanel {
         try {
             byte[] state = remoteForm.getFormChangesByteArray();
             Log.incrementBytesReceived(state.length);
-            applyFormChanges(ByteArraySerializer.deserializeClientFormChanges(state, formView));
+            applyFormChanges(ByteDeSerializer.deserializeClientFormChanges(state, formView));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -334,15 +333,15 @@ public class ClientForm extends JPanel {
 
         // Сначала новые объекты
 
-        for (ClientGroupObjectImplement groupObject : formChanges.gridObjects.keySet()) {
+        for (ClientGroupObjectImplementView groupObject : formChanges.gridObjects.keySet()) {
             models.get(groupObject).grid.setGridObjects(formChanges.gridObjects.get(groupObject));
         }
 
-        for (ClientGroupObjectImplement groupObject : formChanges.objects.keySet()) {
+        for (ClientGroupObjectImplementView groupObject : formChanges.objects.keySet()) {
             models.get(groupObject).setCurrentGroupObject(formChanges.objects.get(groupObject),false);
         }
 
-        for (ClientGroupObjectImplement groupObject : formChanges.classViews.keySet()) {
+        for (ClientGroupObjectImplementView groupObject : formChanges.classViews.keySet()) {
             models.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
         }
 
@@ -360,14 +359,14 @@ public class ClientForm extends JPanel {
 
     }
 
-    void changeGroupObject(ClientGroupObjectImplement groupObject, ClientGroupObjectValue objectValue) {
+    void changeGroupObject(ClientGroupObjectImplementView groupObject, ClientGroupObjectValue objectValue) {
 
         ClientGroupObjectValue curObjectValue = models.get(groupObject).getCurrentObject();
 
         if (!objectValue.equals(curObjectValue)) {
 
             try {
-                remoteForm.ChangeGroupObject(groupObject.ID, ByteArraySerializer.serializeClientGroupObjectValue(objectValue));
+                remoteForm.ChangeGroupObject(groupObject.ID, ByteSerializer.serializeClientGroupObjectValue(objectValue));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -381,7 +380,7 @@ public class ClientForm extends JPanel {
 
     }
 
-    void changeGroupObject(ClientGroupObjectImplement groupObject, int changeType) {
+    void changeGroupObject(ClientGroupObjectImplementView groupObject, int changeType) {
 
         try {
             remoteForm.ChangeGroupObject(groupObject.ID, changeType);
@@ -396,13 +395,13 @@ public class ClientForm extends JPanel {
 
     void changeProperty(ClientCellView property, Object value, boolean externalID) {
 
-        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(property.groupObject), true);
+        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(property.getGroupObject()), true);
 
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
             try {
-                remoteForm.ChangePropertyView(property.ID, ByteArraySerializer.serializeObject(value), externalID);
+                remoteForm.ChangePropertyView(((ClientPropertyView)property).ID, BaseUtils.serializeObject(value), externalID);
                 dataChanged();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -410,7 +409,7 @@ public class ClientForm extends JPanel {
             applyFormChanges();
         } else {
 
-            ClientObjectImplement object = ((ClientObjectView)property).object;
+            ClientObjectImplementView object = ((ClientObjectView)property).object;
 
             try {
                 remoteForm.ChangeObject(object.ID, (Integer)value);
@@ -418,7 +417,7 @@ public class ClientForm extends JPanel {
                 e.printStackTrace();
             }
 
-            models.get(property.groupObject).setCurrentObject(object,(Integer)value,false);
+            models.get(property.getGroupObject()).setCurrentObject(object,(Integer)value,false);
 
             applyFormChanges();
 
@@ -427,7 +426,7 @@ public class ClientForm extends JPanel {
 
     }
 
-    void addObject(ClientObjectImplement object, ClientClass cls) {
+    void addObject(ClientObjectImplementView object, ClientClass cls) {
         try {
             remoteForm.AddObject(object.ID, cls.ID);
             dataChanged();
@@ -437,7 +436,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    void changeClass(ClientObjectImplement object, ClientClass cls) {
+    void changeClass(ClientObjectImplementView object, ClientClass cls) {
 
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(object.groupObject), true);
 
@@ -450,7 +449,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    void changeGridClass(ClientObjectImplement object, ClientClass cls) {
+    void changeGridClass(ClientObjectImplementView object, ClientClass cls) {
 
         try {
             remoteForm.ChangeGridClass(object.ID, cls.ID);
@@ -461,7 +460,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    public void switchClassView(ClientGroupObjectImplement groupObject) {
+    public void switchClassView(ClientGroupObjectImplementView groupObject) {
 
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), true);
 
@@ -484,9 +483,9 @@ public class ClientForm extends JPanel {
     private void changeFind(List<ClientFilter> conditions) {
     }
 
-    Map<ClientGroupObjectImplement, List<ClientFilter>> currentFilters = new HashMap();
+    Map<ClientGroupObjectImplementView, List<ClientFilter>> currentFilters = new HashMap();
     
-    private void changeFilter(ClientGroupObjectImplement groupObject, List<ClientFilter> conditions) {
+    private void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientFilter> conditions) {
 
         currentFilters.put(groupObject, conditions);
 
@@ -494,13 +493,13 @@ public class ClientForm extends JPanel {
 
         for (List<ClientFilter> listFilter : currentFilters.values())
             for (ClientFilter filter : listFilter) {
-                remoteForm.addFilter(ByteArraySerializer.serializeClientFilter(filter));
+                remoteForm.addFilter(ByteSerializer.serializeClientFilter(filter));
             }
 
         applyFormChanges();
     }
 
-    private void setRegularFilter(RegularFilterGroup filterGroup, RegularFilter filter) {
+    private void setRegularFilter(ClientRegularFilterGroupView filterGroup, ClientRegularFilterView filter) {
 
         remoteForm.setRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID);
 
@@ -599,11 +598,11 @@ public class ClientForm extends JPanel {
 
     class GroupObjectModel {
 
-        final ClientGroupObjectImplement groupObject;
+        final ClientGroupObjectImplementView groupObject;
 
         final PanelModel panel;
         final GridModel grid;
-        final Map<ClientObjectImplement, ObjectModel> objects = new HashMap();
+        final Map<ClientObjectImplementView, ObjectModel> objects = new HashMap();
 
         ClientGroupObjectValue currentObject;
 
@@ -611,7 +610,7 @@ public class ClientForm extends JPanel {
 
         Boolean classView;
 
-        public GroupObjectModel(ClientGroupObjectImplement igroupObject) {
+        public GroupObjectModel(ClientGroupObjectImplementView igroupObject) {
 
             groupObject = igroupObject;
 
@@ -619,7 +618,7 @@ public class ClientForm extends JPanel {
 
             panel = new PanelModel();
 
-            for (ClientObjectImplement object : groupObject) {
+            for (ClientObjectImplementView object : groupObject) {
 
                 objects.put(object, new ObjectModel(object));
             }
@@ -650,7 +649,7 @@ public class ClientForm extends JPanel {
 //                    panel.requestFocusInWindow();
                 }
 
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     objects.get(object).classViewChanged();
                 }
 
@@ -703,7 +702,7 @@ public class ClientForm extends JPanel {
             
         }
 
-        public void setCurrentObject(ClientObjectImplement object, Integer value, boolean userChange) {
+        public void setCurrentObject(ClientObjectImplementView object, Integer value, boolean userChange) {
 
             if (currentObject == null) return;
 
@@ -946,7 +945,7 @@ public class ClientForm extends JPanel {
 
                 public void keyChanged() {
 
-                    ID = key.ID;
+                    ID = key.getID();
 
                     label.setText(key.caption);
 
@@ -1030,7 +1029,7 @@ public class ClientForm extends JPanel {
 
             public void addGroupObjectID() {
                 
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     
                     PanelCellModel idmodel = new PanelCellModel(object.objectIDView);
                     formLayout.add(idmodel.key, idmodel.view);
@@ -1046,7 +1045,7 @@ public class ClientForm extends JPanel {
             
             public void removeGroupObjectID() {
                 
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     
                     PanelCellModel idmodel = models.get(object.objectIDView);
                     if (idmodel != null) {
@@ -1062,7 +1061,7 @@ public class ClientForm extends JPanel {
 
             private void setGroupObjectIDValue(ClientGroupObjectValue value) {
 
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     
                     PanelCellModel idmodel = models.get(object.objectIDView);
                     if (idmodel != null)
@@ -1196,7 +1195,7 @@ public class ClientForm extends JPanel {
 
             private void addGroupObjectID() {
 //                System.out.println("addGroupObjectID");
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     table.addColumn(object.objectIDView);
                 }
                 
@@ -1208,7 +1207,7 @@ public class ClientForm extends JPanel {
 
             private void removeGroupObjectID() {
 //                System.out.println("removeGroupObjectID");
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     table.removeColumn(object.objectIDView);
                 }
                 updateTable();
@@ -1242,7 +1241,7 @@ public class ClientForm extends JPanel {
             }
 
             private void fillTableObjectID() {
-                for (ClientObjectImplement object : groupObject) {
+                for (ClientObjectImplementView object : groupObject) {
                     Map<ClientGroupObjectValue, Object> values = new HashMap();
                     for (ClientGroupObjectValue value : table.gridRows)
                         values.put(value, value.get(object));
@@ -1838,18 +1837,19 @@ public class ClientForm extends JPanel {
 
                                 valueLink = ivalueLink;
 
-                                Vector<ClientObjectImplement> objects = new Vector();
-                                for (ClientObjectImplement object : formView.objects)
-                                    objects.add(object);
+                                Vector<ClientObjectImplementView> objects = new Vector();
+                                for (ClientGroupObjectImplementView groupObject : formView.groupObjects)
+                                    for (ClientObjectImplementView object : groupObject)
+                                        objects.add(object);
 
                                 objectView = new QueryConditionComboBox(objects);
 
-                                valueLink.object = (ClientObjectImplement) objectView.getSelectedItem();
+                                valueLink.object = (ClientObjectImplementView) objectView.getSelectedItem();
 
                                 objectView.addItemListener(new ItemListener() {
 
                                     public void itemStateChanged(ItemEvent e) {
-                                        valueLink.object = (ClientObjectImplement)e.getItem();
+                                        valueLink.object = (ClientObjectImplementView)e.getItem();
 
                                         hasChanged = true;
                                         queryView.dataChanged();
@@ -2237,7 +2237,7 @@ public class ClientForm extends JPanel {
 
         class ObjectModel {
 
-            ClientObjectImplement object;
+            ClientObjectImplementView object;
 
             JButton buttonAdd;
             JButton buttonChangeClass;
@@ -2245,7 +2245,7 @@ public class ClientForm extends JPanel {
 
             ClassModel classModel;
 
-            public ObjectModel(ClientObjectImplement iobject) {
+            public ObjectModel(ClientObjectImplementView iobject) {
 
                 object = iobject;
 
@@ -2253,7 +2253,7 @@ public class ClientForm extends JPanel {
 
                 if (classModel.rootClass instanceof ClientObjectClass) {
 
-                    String extraCaption = ((groupObject.size() > 1) ? ("(" + object.caption + ")") : "");
+                    String extraCaption = ((groupObject.size() > 1) ? ("(" + object.objectIDView.caption + ")") : "");
 
                     buttonAdd = new JButton("Добавить" + extraCaption);
                     buttonAdd.setFocusable(false);
@@ -2279,7 +2279,7 @@ public class ClientForm extends JPanel {
 
                     formLayout.add(groupObject.delView, buttonDel);
 
-                    if (classModel.rootClass.hasChilds) {
+                    if (classModel.rootClass.hasChilds()) {
                         buttonChangeClass = new JButton("Изменить класс" + extraCaption);
                         buttonChangeClass.setFocusable(false);
                         buttonChangeClass.addActionListener(new ActionListener() {
@@ -2330,7 +2330,7 @@ public class ClientForm extends JPanel {
 
                     key = ikey;
 
-                    rootClass = ByteArraySerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
+                    rootClass = ByteDeSerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
                     currentClass = rootClass;
 
                     rootNode = new DefaultMutableTreeNode(rootClass);
@@ -2341,7 +2341,7 @@ public class ClientForm extends JPanel {
                 }
 
                 public void addClassTree() {
-                    if (rootClass.hasChilds)
+                    if (rootClass.hasChilds())
                         formLayout.add(key, pane);
                 }
 
@@ -2443,7 +2443,7 @@ public class ClientForm extends JPanel {
                             }
                         });
 
-                        if (rootClass.hasChilds) {
+                        if (rootClass.hasChilds()) {
                             rootNode.add(new ExpandingTreeNode());
                             expandPath(new TreePath(rootNode));
                         }
@@ -2498,16 +2498,16 @@ public class ClientForm extends JPanel {
 
                         ClientClass parentClass = (ClientClass) nodeObject;
 
-                        List<ClientClass> classes = ByteArraySerializer.deserializeListClientClass(
+                        List<ClientClass> classes = ByteDeSerializer.deserializeListClientClass(
                                                                         remoteForm.getChildClassesByteArray(object.ID,parentClass.ID));
 
                         for (ClientClass cls : classes) {
 
                             DefaultMutableTreeNode node;
-                            node = new DefaultMutableTreeNode(cls, cls.hasChilds);
+                            node = new DefaultMutableTreeNode(cls, cls.hasChilds());
                             parent.add(node);
 
-                            if (cls.hasChilds)
+                            if (cls.hasChilds())
                                 node.add(new ExpandingTreeNode());
 
                         }

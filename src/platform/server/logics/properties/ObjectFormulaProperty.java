@@ -2,7 +2,7 @@ package platform.server.logics.properties;
 
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.classes.ObjectClass;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ClassSet;
@@ -49,7 +49,7 @@ public class ObjectFormulaProperty extends FormulaProperty<FormulaPropertyInterf
     InterfaceClass<FormulaPropertyInterface> getInterfaceClass(ClassSet ReqValue) {
         InterfaceClass<FormulaPropertyInterface> Result = new InterfaceClass<FormulaPropertyInterface>();
         for(FormulaPropertyInterface Interface : interfaces)
-            Result.put(Interface,Interface== objectInterface ?ReqValue:new ClassSet(DataClass.bit));
+            Result.put(Interface,Interface== objectInterface ?ReqValue:new ClassSet(RemoteClass.bit));
         return Result;
     }
 

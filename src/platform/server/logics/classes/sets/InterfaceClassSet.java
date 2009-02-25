@@ -1,7 +1,7 @@
 package platform.server.logics.classes.sets;
 
 import platform.base.GraphNodeSet;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.PropertyInterface;
 
 import java.util.Set;
@@ -38,8 +38,8 @@ public class InterfaceClassSet<P extends PropertyInterface> extends GraphNodeSet
         return new InterfaceClassSet<P>(iNodes);
     }
 
-    public Map<P, DataClass> getCommonParent() {
-        Map<P, DataClass> result = new HashMap<P, DataClass>();
+    public Map<P, RemoteClass> getCommonParent() {
+        Map<P, RemoteClass> result = new HashMap<P, RemoteClass>();
         for(P propertyInterface : iterator().next().keySet()) {
             ClassSet commonClassSet = new ClassSet();
             for(InterfaceClass<P> node : this)

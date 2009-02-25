@@ -1,6 +1,6 @@
 package platform.server.logics.session;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.DataProperty;
 
 import java.util.Set;
@@ -10,8 +10,8 @@ import java.util.HashSet;
 public class DataChanges {
     public Set<DataProperty> properties = new HashSet<DataProperty>();
 
-    public Set<DataClass> addClasses = new HashSet<DataClass>();
-    public Set<DataClass> removeClasses = new HashSet<DataClass>();
+    public Set<RemoteClass> addClasses = new HashSet<RemoteClass>();
+    public Set<RemoteClass> removeClasses = new HashSet<RemoteClass>();
 
     DataChanges copy() {
         DataChanges CopyChanges = new DataChanges();

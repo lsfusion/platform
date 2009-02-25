@@ -8,4 +8,12 @@ public class DoubleClass extends IntegralClass {
     public Type getType() {
         return Type.doubleType;
     }
+
+    public Class getJavaClass() {
+        return Double.class;
+    }
+
+    public byte getTypeID() {
+        return 3;
+    }
 }

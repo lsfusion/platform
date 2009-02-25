@@ -6,7 +6,7 @@ import platform.server.logics.properties.Property;
 import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.ChangeValue;
 import platform.server.logics.session.DataSession;
 import platform.server.logics.ObjectValue;
@@ -69,7 +69,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     // изменился хоть один из классов интерфейса (могло повлиять на вхождение в интерфейс)
     boolean classUpdated(GroupObjectImplement ClassGroup) {
         for(ObjectImplement IntObject : mapping.values())
-            if(((IntObject.updated & ((IntObject.groupTo ==ClassGroup)?ObjectImplement.UPDATED_CLASS:ObjectImplement.UPDATED_CLASS)))!=0) return true;
+            if(((IntObject.updated & ((IntObject.groupTo ==ClassGroup)? ObjectImplement.UPDATED_CLASS: ObjectImplement.UPDATED_CLASS)))!=0) return true;
 
         return false;
     }
@@ -92,13 +92,13 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         for(Map.Entry<P, ObjectImplement> Implement : mapping.entrySet()) {
             ClassSet Classes;
             if(ClassGroup!=null && ClassGroup.contains(Implement.getValue().groupTo)) {
-                DataClass ImplementClass = Implement.getValue().gridClass;
+                RemoteClass ImplementClass = Implement.getValue().gridClass;
                 Classes = ClassSet.getUp(ImplementClass);
                 ClassSet AddClasses = Session.addChanges.get(ImplementClass);
                 if(AddClasses!=null)
                     Classes.or(AddClasses);
             } else {
-                DataClass ImplementClass = Session.BaseClasses.get(Implement.getValue().idObject);
+                RemoteClass ImplementClass = Session.BaseClasses.get(Implement.getValue().idObject);
                 if(ImplementClass==null) ImplementClass = Implement.getValue().Class;
                 // чего не должно быть
                 if(ImplementClass==null)

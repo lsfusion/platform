@@ -4,12 +4,14 @@ import java.util.Random;
 import java.util.List;
 import java.util.Map;
 import java.sql.SQLException;
+import java.text.Format;
 
 import platform.server.data.types.Type;
 import platform.server.logics.session.DataSession;
 import platform.server.logics.data.TableFactory;
+import platform.client.interop.classes.ClientClass;
 
-class BaseClass extends DataClass {
+class BaseClass extends RemoteClass {
 
     BaseClass(Integer iID, String iCaption) {
         super(iID, iCaption);
@@ -23,7 +25,23 @@ class BaseClass extends DataClass {
         return null;
     }
 
-    public Object getRandomObject(Map<DataClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+    public Object getRandomObject(Map<RemoteClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
         return null;
+    }
+
+    public ClientClass getClientClass() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Class getJavaClass() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Format getDefaultFormat() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public byte getTypeID() {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

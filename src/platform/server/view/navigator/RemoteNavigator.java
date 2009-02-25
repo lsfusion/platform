@@ -14,11 +14,11 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.auth.User;
 import platform.server.logics.auth.SecurityPolicy;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.DataSession;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.view.form.*;
-import platform.interop.ByteArraySerializer;
+import platform.server.view.form.client.ByteSerializer;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -58,7 +58,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
 
         if (currentUser == null) return new byte[] {};
 
-        return ByteArraySerializer.serializeUserInfo(currentUser.userInfo);
+        return ByteSerializer.serializeUserInfo(currentUser.userInfo);
     }
 
     public final static int NAVIGATORGROUP_RELEVANTFORM = -2;
@@ -100,14 +100,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
     public byte[] getElementsByteArray(int groupID) {
-        return ByteArraySerializer.serializeListNavigatorElement(getElements(groupID));
+        return ByteSerializer.serializeListNavigatorElement(getElements(groupID));
     }
 
     //используется для RelevantFormNavigator
     RemoteForm<T> currentForm;
 
     //используется для RelevantClassNavigator
-    DataClass currentClass;
+    RemoteClass currentClass;
     public boolean changeCurrentClass(int classID) {
 
         if (currentClass != null && currentClass.ID == classID) return false;
@@ -131,7 +131,7 @@ public RemoteForm<T> createForm(int formID, boolean currentSession) throws SQLEx
 
         RemoteForm remoteForm = new RemoteForm(formID, BL, session, securityPolicy) {
 
-            protected void objectChanged(DataClass cls, Integer objectID) {
+            protected void objectChanged(RemoteClass cls, Integer objectID) {
                 super.objectChanged(cls, objectID);
                 addCacheObject(cls, objectID);
             }
@@ -306,14 +306,14 @@ public RemoteForm<T> createForm(int formID, boolean currentSession) throws SQLEx
             }
 
             if (navigatorValue instanceof ObjectValueLink) {
-                value = new ObjectValueLink(objectMapper.doMapping(((ObjectValueLink)navigatorValue).Object));
+                value = new ObjectValueLink(objectMapper.doMapping(((ObjectValueLink)navigatorValue).object));
             }
 
             if (navigatorValue instanceof PropertyValueLink) {
-                value = new PropertyValueLink(propertyMapper.doMapping(((PropertyValueLink)navigatorValue).Property));
+                value = new PropertyValueLink(propertyMapper.doMapping(((PropertyValueLink)navigatorValue).property));
             }
 
-            return new Filter(propertyMapper.doMapping(filterKey.property), filterKey.Compare, value);
+            return new Filter(propertyMapper.doMapping(filterKey.property), filterKey.compare, value);
         }
     }
 
@@ -323,7 +323,7 @@ public RemoteForm<T> createForm(int formID, boolean currentSession) throws SQLEx
         addCacheObject(BL.objectClass.findClassID(classID), value);
     }
 
-    public void addCacheObject(DataClass cls, Integer value) {
+    public void addCacheObject(RemoteClass cls, Integer value) {
         classCache.put(cls, value);
     }
 
@@ -331,7 +331,7 @@ public RemoteForm<T> createForm(int formID, boolean currentSession) throws SQLEx
         return getCacheObject(BL.objectClass.findClassID(classID));
     }
 
-    public int getCacheObject(DataClass cls) {
+    public int getCacheObject(RemoteClass cls) {
         return classCache.getObject(cls);
     }
 

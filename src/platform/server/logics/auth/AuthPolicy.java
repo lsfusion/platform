@@ -1,7 +1,7 @@
 package platform.server.logics.auth;
 
 import platform.server.logics.auth.SecurityPolicy;
-import platform.server.logics.auth.UserInfo;
+import platform.interop.UserInfo;
 import platform.server.logics.auth.User;
 
 import java.util.*;

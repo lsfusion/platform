@@ -1,6 +1,6 @@
 package platform.server.logics.classes.sets;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.base.CollectionExtend;
 import platform.server.data.types.Type;
 
@@ -9,29 +9,29 @@ import java.util.*;
 // по сути на Or
 public class ClassSet {
     UpClassSet up;
-    Set<DataClass> set;
+    Set<RemoteClass> set;
 
-    ClassSet(UpClassSet iUp, Set<DataClass> iSet) {
+    ClassSet(UpClassSet iUp, Set<RemoteClass> iSet) {
         up = iUp;
         set = iSet;
     }
 
     public ClassSet() {
         up = new UpClassSet();
-        set = new HashSet<DataClass>();
+        set = new HashSet<RemoteClass>();
     }
 
-    public ClassSet(DataClass node) {
+    public ClassSet(RemoteClass node) {
         this(new UpClassSet(), Collections.singleton(node));
     }
 
-    public static ClassSet getUp(DataClass node) {
-        return new ClassSet(new UpClassSet(Collections.singleton(node)),new HashSet<DataClass>());
+    public static ClassSet getUp(RemoteClass node) {
+        return new ClassSet(new UpClassSet(Collections.singleton(node)),new HashSet<RemoteClass>());
     }
 
     ClassSet and(ClassSet node) {
         // Up*Node.Up OR (Up*Node.Set+Set*Node.Up+Set*Node.Set) (легко доказать что второе не пересек. с первым)
-        Set<DataClass> AndSet = CollectionExtend.intersect(set, node.set);
+        Set<RemoteClass> AndSet = CollectionExtend.intersect(set, node.set);
         AndSet.addAll(up.andSet(node.set));
         AndSet.addAll(node.up.andSet(set));
         return new ClassSet(up.and(node.up),AndSet);
@@ -41,12 +41,12 @@ public class ClassSet {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
         up.or(node.up);
         set.addAll(node.set);
-        for(Iterator<DataClass> i = set.iterator();i.hasNext();)
+        for(Iterator<RemoteClass> i = set.iterator();i.hasNext();)
             if(up.has(i.next())) i.remove();
     }
 
     // входит ли в дерево элемент
-    public boolean contains(DataClass node) {
+    public boolean contains(RemoteClass node) {
         return set.contains(node) || up.has(node);
     }
     public boolean isEmpty() {
@@ -71,29 +71,29 @@ public class ClassSet {
         return 31 * up.hashCode() + set.hashCode();
     }
 
-    public DataClass getCommonClass() {
+    public RemoteClass getCommonClass() {
         if(isEmpty())
             throw new RuntimeException("Empty Base Class");
 
-        Set<DataClass> commonParents = new HashSet<DataClass>(set);
+        Set<RemoteClass> commonParents = new HashSet<RemoteClass>(set);
         commonParents.addAll(up);
         while(commonParents.size()>1) {
-            Iterator<DataClass> i = commonParents.iterator();
-            DataClass first = i.next(); i.remove();
-            DataClass second = i.next(); i.remove();
+            Iterator<RemoteClass> i = commonParents.iterator();
+            RemoteClass first = i.next(); i.remove();
+            RemoteClass second = i.next(); i.remove();
             commonParents.addAll(first.commonParents(second));
         }
         return commonParents.iterator().next();
     }
 
-    public DataClass getRandom(Random randomizer) {
+    public RemoteClass getRandom(Random randomizer) {
         // пока чисто по Up'у
         return CollectionExtend.getRandom(up,randomizer);
     }
 
     public static ClassSet universal;
     static {
-        universal = getUp(DataClass.base);
+        universal = getUp(RemoteClass.base);
     }
 
     public String toString() {
@@ -101,6 +101,6 @@ public class ClassSet {
     }
 
     public ClassSet copy() {
-        return new ClassSet(new UpClassSet(up),new HashSet<DataClass>(set));
+        return new ClassSet(new UpClassSet(up),new HashSet<RemoteClass>(set));
     }
 }

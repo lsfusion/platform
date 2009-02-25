@@ -1,7 +1,7 @@
 package platform.server.logics.properties;
 
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
@@ -10,9 +10,9 @@ import platform.server.logics.classes.sets.ValueClassSet;
 // вообще Collection
 abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends FormulaProperty<T> {
 
-    DataClass Value;
+    RemoteClass Value;
 
-    ValueFormulaProperty(TableFactory iTableFactory, DataClass iValue) {
+    ValueFormulaProperty(TableFactory iTableFactory, RemoteClass iValue) {
         super(iTableFactory);
         Value = iValue;
     }
@@ -34,7 +34,7 @@ abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends 
         return new ValueClassSet<T>(ClassSet.getUp(Value),getOperandInterface());
     }
 
-    abstract DataClass getOperandClass();
+    abstract RemoteClass getOperandClass();
 
     InterfaceClassSet<T> getOperandInterface() {
         InterfaceClass<T> Result = new InterfaceClass<T>();

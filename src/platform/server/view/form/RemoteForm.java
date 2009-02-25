@@ -15,7 +15,7 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 
 import platform.server.logics.classes.IntegralClass;
 import platform.server.logics.classes.ObjectClass;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.data.IDTable;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ObjectValue;
@@ -33,10 +33,12 @@ import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.view.form.report.ReportData;
+import platform.interop.report.ReportData;
 import platform.server.where.Where;
-import platform.interop.ClientFormView;
-import platform.interop.ByteArraySerializer;
+import platform.server.view.form.client.ByteSerializer;
+import platform.server.view.form.client.ByteDeSerializer;
+import platform.server.view.form.client.FormView;
+import platform.base.BaseUtils;
 
 // класс в котором лежит какие изменения произошли
 
@@ -89,15 +91,15 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // ----------------------------------- Инициализация ------------------------------------- //
 
     public byte[] getRichDesignByteArray() {
-        return ByteArraySerializer.serializeClientFormView(GetRichDesign());
+        return ByteSerializer.serializeFormView(GetRichDesign());
     }
 
     public byte[] getReportDesignByteArray() {
-        return ByteArraySerializer.serializeReportDesign(GetReportDesign());
+        return ByteSerializer.serializeReportDesign(GetReportDesign());
     }
 
     public byte[] getReportDataByteArray() throws SQLException {
-        return ByteArraySerializer.serializeReportData(getReportData());
+        return ByteSerializer.serializeReportData(getReportData());
     }
 
 
@@ -108,15 +110,15 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     public byte[] getBaseClassByteArray(int objectID) {
-        return ByteArraySerializer.serializeClass(getObjectImplement(objectID).baseClass);
+        return ByteSerializer.serializeClass(getObjectImplement(objectID).baseClass);
     }
 
     public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteArraySerializer.serializeListClass(getObjectImplement(objectID).baseClass.findClassID(classID).childs);
+        return ByteSerializer.serializeListClass(getObjectImplement(objectID).baseClass.findClassID(classID).childs);
     }
 
     public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) {
-        return ByteArraySerializer.serializeChangeValue(getPropertyEditorObjectValue(getPropertyView(propertyID), externalID));
+        return ByteSerializer.serializeChangeValue(getPropertyEditorObjectValue(getPropertyView(propertyID), externalID));
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -127,7 +129,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
         GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
-        changeGroupObject(groupObject, ByteArraySerializer.deserializeGroupObjectValue(value, groupObject));
+        changeGroupObject(groupObject, ByteDeSerializer.deserializeGroupObjectValue(value, groupObject));
     }
 
     public void ChangeObject(Integer objectID, Integer value) throws SQLException {
@@ -145,7 +147,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // Фильтры
 
     public void addFilter(byte[] state) {
-        addUserFilter(ByteArraySerializer.deserializeFilter(state, this));
+        addUserFilter(ByteDeSerializer.deserializeFilter(state, this));
     }
 
     public void setRegularFilter(int groupID, int filterID) {
@@ -174,7 +176,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     public void ChangePropertyView(Integer propertyID, byte[] object, boolean externalID) throws SQLException {
-        ChangePropertyView(getPropertyView(propertyID), ByteArraySerializer.deserializeObject(object), externalID);
+        ChangePropertyView(getPropertyView(propertyID), BaseUtils.deserializeObject(object), externalID);
     }
 
     // ----------------------- Применение изменений ------------------------------- //
@@ -183,7 +185,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     public byte[] getFormChangesByteArray() throws SQLException {
-        return ByteArraySerializer.serializeFormChanges(endApply());
+        return ByteSerializer.serializeFormChanges(endApply());
     }
 
     // --------------------------------------------------------------------------------------- //
@@ -220,7 +222,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         if (!externalID) return changeValue;
 
         if (changeValue == null) return null;
-        DataProperty propertyID = changeValue.Class.getExternalID();
+        DataProperty propertyID = changeValue.changeClass.getExternalID();
         if (propertyID == null) return null;
 
         return new ChangeObjectValue(propertyID.value, null);
@@ -235,9 +237,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     // ----------------------------------- Инициализация ------------------------------------- //
 
-    public ClientFormView richDesign;
+    public FormView richDesign;
     // возвращает клиентские настройки формы
-    private ClientFormView GetRichDesign() {
+    private FormView GetRichDesign() {
         return richDesign;
     }
 
@@ -275,7 +277,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         object.idObject = value;
 
         // запишем класс объекта
-        DataClass objectClass = null;
+        RemoteClass objectClass = null;
         if (value != null) {
             if(object.baseClass instanceof ObjectClass)
                 objectClass = session.getObjectClass(value);
@@ -301,7 +303,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     private void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
 
-        DataClass GridClass = BL.objectClass.findClassID(idClass);
+        RemoteClass GridClass = BL.objectClass.findClassID(idClass);
         if(Object.gridClass == GridClass) return;
 
         if(GridClass==null) throw new RuntimeException();
@@ -395,7 +397,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // пометка что изменились данные
     private boolean dataChanged = false;
 
-    private void AddObject(ObjectImplement object, DataClass cls) throws SQLException {
+    private void AddObject(ObjectImplement object, RemoteClass cls) throws SQLException {
         // пока тупо в базу
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
@@ -407,7 +409,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter<?> filter : object.groupTo.filters) {
-            if(filter.Compare==0) {
+            if(filter.compare ==0) {
                 JoinQuery<ObjectImplement,String> subQuery = new JoinQuery<ObjectImplement,String>(filter.property.mapping.values());
                 Map<ObjectImplement,Integer> fixedObjects = new HashMap<ObjectImplement, Integer>();
                 for(ObjectImplement SibObject : filter.property.mapping.values()) {
@@ -457,7 +459,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         dataChanged = true;
     }
 
-    public void changeClass(ObjectImplement object, DataClass cls) throws SQLException {
+    public void changeClass(ObjectImplement object, RemoteClass cls) throws SQLException {
 
         // проверка, что разрешено удалять объекты
         if (cls == null) {
@@ -513,7 +515,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- //
 
     // В дальнейшем наверное надо будет переделать на Listener'ы...
-    protected void objectChanged(DataClass cls, Integer objectID) {}
+    protected void objectChanged(RemoteClass cls, Integer objectID) {}
     public void gainedFocus() {
         dataChanged = true;
     }
@@ -612,7 +614,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
         // если изменились данные, применяем изменения
         Collection<Property> changedProps;
-        Collection<DataClass> changedClasses = new HashSet<DataClass>();
+        Collection<RemoteClass> changedClasses = new HashSet<RemoteClass>();
         if(dataChanged)
             changedProps = session.update(this,changedClasses);
         else
@@ -864,7 +866,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 } else {
                     // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
                     if(notEnoughOrders && objectSeeks.size()== group.size() && group.orders.size() > 0) {
-                        JoinQuery<ObjectImplement,PropertyObjectImplement> orderQuery = new JoinQuery<ObjectImplement,PropertyObjectImplement>(objectSeeks.keySet());
+                        JoinQuery<ObjectImplement, PropertyObjectImplement> orderQuery = new JoinQuery<ObjectImplement, PropertyObjectImplement>(objectSeeks.keySet());
                         orderQuery.putKeyWhere(objectSeeks);
 
                         for(PropertyObjectImplement order : group.orders.keySet())

@@ -4,7 +4,7 @@ import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.DefaultClientFormView;
+import platform.server.view.form.client.DefaultFormView;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -41,7 +41,7 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
         BL.fillSingleViews(obj1,this,null);
         Map<String, PropertyObjectImplement> Obj2Props = BL.fillSingleViews(obj2,this,Obj2Set);
-        Map<String,PropertyObjectImplement> Obj3Props = BL.fillSingleViews(obj3,this,Obj3Set);
+        Map<String, PropertyObjectImplement> Obj3Props = BL.fillSingleViews(obj3,this,Obj3Set);
 
         PropertyObjectImplement QImpl = BL.addPropertyView(this,BL.Quantity,gv3,obj3,obj2);
         BL.addPropertyView(this,BL.GP,gv3,obj3,obj2);
@@ -63,7 +63,7 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
 
 //        richDesign.getGroupObject()
 
-        DefaultClientFormView formView = new DefaultClientFormView(this);
+        DefaultFormView formView = new DefaultFormView(this);
 //        formView.get(gv).defaultViewType = true;
 //        formView.get(gv).singleViewType = true;
 //        formView.defaultOrders.put(formView.get(BL.getPropertyView(this,QImpl)), true);

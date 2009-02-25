@@ -5,6 +5,8 @@ import platform.server.logics.BusinessLogics;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class NavigatorElement<T extends BusinessLogics<T>> {
 
@@ -65,5 +67,16 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         }
 
         return null;
+    }
+
+    public byte getTypeID() {
+        return 1;
+    }
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(getTypeID());
+
+        outStream.writeInt(ID);
+        outStream.writeUTF(caption);
+        outStream.writeBoolean(hasChildren());
     }
 }

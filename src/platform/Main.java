@@ -7,7 +7,7 @@ package platform;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.session.DataSession;
 import platform.server.view.navigator.RemoteNavigator;
@@ -24,7 +24,7 @@ import test.TestBusinessLogics;
 
 public class Main {
 
-    DataClass[] ClassList;
+    RemoteClass[] ClassList;
 
     static RemoteNavigator Navigator;
 

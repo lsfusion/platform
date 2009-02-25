@@ -1,10 +1,10 @@
 package platform.client.navigator;
 
 import platform.server.view.navigator.RemoteNavigator;
-import platform.interop.ByteArraySerializer;
 import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.client.navigator.AbstractNavigator;
+import platform.client.interop.ByteDeSerializer;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
     }
 
     protected List<ClientNavigatorElement> getNodeElements(int elementID) {
-        return ByteArraySerializer.deserializeListClientNavigatorElement(
+        return ByteDeSerializer.deserializeListClientNavigatorElement(
                                                 remoteNavigator.getElementsByteArray(elementID));
     }
 
@@ -54,7 +54,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         }
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
-            return ByteArraySerializer.deserializeListClientNavigatorElement(
+            return ByteDeSerializer.deserializeListClientNavigatorElement(
                                                 remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : elementID));
         }
 
@@ -71,7 +71,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         }
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
-            return ByteArraySerializer.deserializeListClientNavigatorElement(
+            return ByteDeSerializer.deserializeListClientNavigatorElement(
                                                 remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : elementID));
         }
 

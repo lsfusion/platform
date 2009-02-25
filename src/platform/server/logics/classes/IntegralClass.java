@@ -4,13 +4,17 @@ import java.util.Random;
 import java.util.List;
 import java.util.Map;
 import java.sql.SQLException;
+import java.text.Format;
+import java.text.NumberFormat;
 
 import platform.server.logics.session.DataSession;
 import platform.server.logics.data.TableFactory;
 import platform.server.data.types.Type;
+import platform.server.view.form.report.ReportDrawField;
+import net.sf.jasperreports.engine.JRAlignment;
 
 // класс который можно сравнивать
-public class IntegralClass extends DataClass {
+public class IntegralClass extends RemoteClass {
 
     IntegralClass(Integer iID, String caption) {super(iID, caption);}
 
@@ -18,11 +22,32 @@ public class IntegralClass extends DataClass {
         return randomizer.nextInt(diap * diap +1);
     }
 
-    public Object getRandomObject(Map<DataClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+    public Object getRandomObject(Map<RemoteClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
         return randomizer.nextInt(diap);
     }
 
     public Type getType() {
         return Type.integer;
+    }
+
+    public int getMinimumWidth() { return 45; }
+    public int getPreferredWidth() { return 80; }
+
+    public Format getDefaultFormat() {
+        return NumberFormat.getInstance();
+    }
+
+    public void fillReportDrawField(ReportDrawField reportField) {
+        super.fillReportDrawField(reportField);
+
+        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+    }
+
+    public Class getJavaClass() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public byte getTypeID() {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

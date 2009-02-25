@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class SwingUtils {
 
-    static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
+    public static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
 
         Set keys = comp.getFocusTraversalKeys(id);
         Set newKeys = new HashSet(keys);

@@ -5,35 +5,35 @@ import java.util.Map;
 
 import platform.server.data.types.Type;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public class ObjectImplement {
 
-    public ObjectImplement(int iID, DataClass iBaseClass, String iCaption, GroupObjectImplement groupObject) {
+    public ObjectImplement(int iID, RemoteClass iBaseClass, String iCaption, GroupObjectImplement groupObject) {
         this(iID, iBaseClass, iCaption);
 
         groupObject.addObject(this);
     }
 
-    public ObjectImplement(int iID, DataClass iBaseClass, String iCaption) {
+    public ObjectImplement(int iID, RemoteClass iBaseClass, String iCaption) {
         ID = iID;
         baseClass = iBaseClass;
         gridClass = baseClass;
         caption = iCaption;
     }
 
-    public ObjectImplement(int iID, DataClass iBaseClass) {
+    public ObjectImplement(int iID, RemoteClass iBaseClass) {
         this(iID, iBaseClass, "");
     }
 
     // выбранный объект, класс выбранного объекта
     public Integer idObject = null;
-    public DataClass Class = null;
+    public RemoteClass Class = null;
 
-    public DataClass baseClass;
+    public RemoteClass baseClass;
     // выбранный класс
-    public DataClass gridClass;
+    public RemoteClass gridClass;
 
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
 

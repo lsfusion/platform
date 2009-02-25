@@ -29,18 +29,18 @@ public class AbstractGroup extends AbstractNode {
         return false;
     }
 
-    public List<DataClass> getClasses() {
-        List<DataClass> result = new ArrayList();
+    public List<RemoteClass> getClasses() {
+        List<RemoteClass> result = new ArrayList();
         fillClasses(result);
         return result;
     }
 
-    private void fillClasses(List<DataClass> classes) {
+    private void fillClasses(List<RemoteClass> classes) {
         for (AbstractNode child : children) {
             if (child instanceof AbstractGroup)
                 ((AbstractGroup)child).fillClasses(classes);
-            if (child instanceof DataClass)
-                classes.add((DataClass)child);
+            if (child instanceof RemoteClass)
+                classes.add((RemoteClass)child);
         }
     }
 

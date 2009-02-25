@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.properties.DataProperty;
@@ -17,7 +17,7 @@ public class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface, 
 
     public LDP(DataProperty<D> iProperty) {super(iProperty);}
 
-    public void AddInterface(DataClass inClass) {
+    public void AddInterface(RemoteClass inClass) {
         DataPropertyInterface propertyInterface = new DataPropertyInterface(listInterfaces.size(),inClass);
         listInterfaces.add(propertyInterface);
         property.interfaces.add(propertyInterface);

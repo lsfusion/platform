@@ -9,13 +9,6 @@ import java.awt.event.ActionEvent;
 import java.text.DateFormat;
 import java.util.Date;
 
-/**
- * Created by IntelliJ IDEA.
- * User: NewUser
- * Date: 28.08.2008
- * Time: 11:05:03
- * To change this template use File | Settings | File Templates.
- */
 public final class Log {
 
     private static String text = "";

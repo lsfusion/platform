@@ -1,12 +1,24 @@
 package platform.server.logics.session;
 
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class ChangeCoeffValue extends ChangeValue {
-    public Integer Coeff;
+    public Integer coeff;
 
-    public ChangeCoeffValue(DataClass iClass, Integer iCoeff) {
+    public ChangeCoeffValue(RemoteClass iClass, Integer iCoeff) {
         super(iClass);
-        Coeff = iCoeff;
+        coeff = iCoeff;
+    }
+
+    byte getTypeID() {
+        return 1;
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+        outStream.writeInt(coeff);
     }
 }

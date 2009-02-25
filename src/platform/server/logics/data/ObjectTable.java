@@ -7,7 +7,7 @@ import platform.server.data.query.wheres.InListWhere;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.Table;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.DataSession;
 
 import java.sql.SQLException;
@@ -45,12 +45,12 @@ public class ObjectTable extends Table {
             return null;
     }
 
-    public JoinQuery<KeyField,PropertyField> getClassJoin(DataClass changeClass) {
+    public JoinQuery<KeyField,PropertyField> getClassJoin(RemoteClass changeClass) {
 
         Collection<Integer> idSet = new ArrayList<Integer>();
-        Collection<DataClass> classSet = new ArrayList<DataClass>();
+        Collection<RemoteClass> classSet = new ArrayList<RemoteClass>();
         changeClass.fillChilds(classSet);
-        for(DataClass childClass : classSet)
+        for(RemoteClass childClass : classSet)
             idSet.add(childClass.ID);
 
         JoinQuery<KeyField,PropertyField> classQuery = new JoinQuery<KeyField,PropertyField>(keys);

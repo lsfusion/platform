@@ -30,9 +30,9 @@ public class ChangeClassTable extends ChangeTable {
         keys.add(objectClass);
     }
 
-    void changeClass(DataSession changeSession, Integer idObject, Collection<DataClass> Classes,boolean Drop) throws SQLException {
+    void changeClass(DataSession changeSession, Integer idObject, Collection<RemoteClass> Classes,boolean Drop) throws SQLException {
 
-        for(DataClass change : Classes) {
+        for(RemoteClass change : Classes) {
             Map<KeyField,Integer> changeKeys = new HashMap<KeyField, Integer>();
             changeKeys.put(object,idObject);
             changeKeys.put(objectClass,change.ID);
@@ -49,7 +49,7 @@ public class ChangeClassTable extends ChangeTable {
         changeSession.deleteKeyRecords(this,ValueKeys);
     }
 
-    public JoinQuery<KeyField,PropertyField> getClassJoin(DataSession changeSession, DataClass changeClass) {
+    public JoinQuery<KeyField,PropertyField> getClassJoin(DataSession changeSession, RemoteClass changeClass) {
 
         Collection<KeyField> objectKeys = new ArrayList<KeyField>();
         objectKeys.add(object);

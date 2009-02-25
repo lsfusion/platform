@@ -5,7 +5,7 @@ import platform.server.logics.classes.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class ClassCache extends LinkedHashMap<DataClass, Integer> {
+class ClassCache extends LinkedHashMap<RemoteClass, Integer> {
 
     public ClassCache() {
     }
@@ -14,7 +14,7 @@ class ClassCache extends LinkedHashMap<DataClass, Integer> {
         super(classCache);
     }
 
-    public Integer put(DataClass cls, Integer value) {
+    public Integer put(RemoteClass cls, Integer value) {
 
         if (cls == null) {
             throw new RuntimeException("Unable to put null key to cache");
@@ -28,10 +28,10 @@ class ClassCache extends LinkedHashMap<DataClass, Integer> {
             return null;
     }
 
-    public Integer getObject(DataClass cls) {
+    public Integer getObject(RemoteClass cls) {
 
         Integer objectID = -1;
-        for (Map.Entry<DataClass, Integer> entry : entrySet()) {
+        for (Map.Entry<RemoteClass, Integer> entry : entrySet()) {
             if (entry.getKey().isParent(cls)) objectID = entry.getValue();
         }
 

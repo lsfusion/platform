@@ -1,8 +1,8 @@
 package platform.client.layout;
 
 import platform.client.navigator.ClientNavigator;
+import platform.client.interop.ByteDeSerializer;
 import platform.server.view.form.RemoteForm;
-import platform.interop.ByteArraySerializer;
 
 import java.sql.SQLException;
 import java.awt.*;
@@ -35,7 +35,7 @@ public class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
 
-        JasperDesign design = ByteArraySerializer.deserializeReportDesign(remoteForm.getReportDesignByteArray());
+        JasperDesign design = ByteDeSerializer.deserializeReportDesign(remoteForm.getReportDesignByteArray());
         try {
 
             JasperReport report = JasperCompileManager.compileReport(design);
@@ -43,7 +43,7 @@ public class ReportDockable extends FormDockable {
             // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
             remoteForm.runEndApply();
 
-            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(), ByteArraySerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
+            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(), ByteDeSerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
             return prepareViewer(new JRViewer(print));
 
         } catch (JRException e) {

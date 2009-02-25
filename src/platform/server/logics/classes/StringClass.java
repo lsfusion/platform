@@ -4,12 +4,15 @@ import java.util.Random;
 import java.util.List;
 import java.util.Map;
 import java.sql.SQLException;
+import java.text.Format;
 
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataSession;
+import platform.client.interop.classes.ClientClass;
+import platform.client.interop.classes.ClientStringClass;
 
-public class StringClass extends DataClass {
+public class StringClass extends RemoteClass {
 
     StringClass(Integer iID, String caption, int iLength) {
         super(iID, caption);
@@ -26,8 +29,22 @@ public class StringClass extends DataClass {
         return "NAME "+ randomizer.nextInt(50);
     }
 
-    public Object getRandomObject(Map<DataClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
+    public Object getRandomObject(Map<RemoteClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
         return "NAME "+ randomizer.nextInt(diap);
     }
 
+    public int getMinimumWidth() { return 30; }
+    public int getPreferredWidth() { return 250; }
+
+    public Format getDefaultFormat() {
+        return null;
+    }
+
+    public Class getJavaClass() {
+        return String.class;
+    }
+
+    public byte getTypeID() {
+        return 6;
+    }
 }

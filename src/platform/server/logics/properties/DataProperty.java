@@ -3,7 +3,7 @@ package platform.server.logics.properties;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.classes.DataClass;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.session.*;
 import platform.server.data.query.ChangeQuery;
@@ -20,9 +20,9 @@ import java.util.*;
 import java.sql.SQLException;
 
 public class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInterface> {
-    public DataClass value;
+    public RemoteClass value;
 
-    public DataProperty(TableFactory iTableFactory, DataClass iValue) {
+    public DataProperty(TableFactory iTableFactory, RemoteClass iValue) {
         super(iTableFactory);
         value = iValue;
 

@@ -1,7 +1,6 @@
 package platform.server.view.form.report;
 
 import platform.base.SetBuilder;
-import platform.server.view.form.report.AbstractRowLayoutElement;
 
 import java.util.*;
 import java.util.List;
