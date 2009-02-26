@@ -2,6 +2,7 @@ package platform.server.view.form;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.DataOutputStream;
 import java.util.Map;
 
 public class GroupObjectValue extends GroupObjectMap<Integer> {
@@ -15,4 +16,5 @@ public class GroupObjectValue extends GroupObjectMap<Integer> {
         for (ObjectImplement object : groupObject)
             put(object, inStream.readInt());
     }
+
 }

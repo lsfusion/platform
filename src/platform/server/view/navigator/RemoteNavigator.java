@@ -17,11 +17,14 @@ import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.session.DataSession;
 import platform.server.view.form.*;
-import platform.server.view.form.client.ByteSerializer;
 import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -61,7 +64,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> implements RemoteNavig
 
         if (currentUser == null) return new byte[] {};
 
-        return ByteSerializer.serializeUserInfo(currentUser.userInfo);
+        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        try {
+            ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
+            objectStream.writeObject(currentUser.userInfo);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
     }
 
     List<NavigatorElement> getElements(int elementID) {
@@ -100,7 +113,21 @@ public class RemoteNavigator<T extends BusinessLogics<T>> implements RemoteNavig
     }
 
     public byte[] getElementsByteArray(int groupID) {
-        return ByteSerializer.serializeListNavigatorElement(getElements(groupID));
+        
+        List<NavigatorElement> listElements = getElements(groupID);
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            dataStream.writeInt(listElements.size());
+            for (NavigatorElement element : listElements)
+                element.serialize(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return outStream.toByteArray();
     }
 
     //используется для RelevantFormNavigator

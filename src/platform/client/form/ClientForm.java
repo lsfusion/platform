@@ -11,9 +11,9 @@ import platform.base.Pair;
 import platform.client.ExpandingTreeNode;
 import platform.client.Log;
 import platform.client.SwingUtils;
-import platform.client.interop.*;
-import platform.client.interop.classes.ClientClass;
-import platform.client.interop.classes.ClientObjectClass;
+import platform.client.logics.*;
+import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.client.layout.ReportDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.Compare;
@@ -80,7 +80,7 @@ public class ClientForm extends JPanel {
 
         byte[] state = remoteForm.getRichDesignByteArray();
         Log.incrementBytesReceived(state.length);
-        formView = ByteDeSerializer.deserializeClientFormView(state);
+        formView = DeSerializer.deserializeClientFormView(state);
 
         initializeForm();
 
@@ -311,7 +311,7 @@ public class ClientForm extends JPanel {
         try {
             byte[] state = remoteForm.getFormChangesByteArray();
             Log.incrementBytesReceived(state.length);
-            applyFormChanges(ByteDeSerializer.deserializeClientFormChanges(state, formView));
+            applyFormChanges(DeSerializer.deserializeClientFormChanges(state, formView));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -372,7 +372,7 @@ public class ClientForm extends JPanel {
         if (!objectValue.equals(curObjectValue)) {
 
             try {
-                remoteForm.changeGroupObject(groupObject.ID, ByteSerializer.serializeClientGroupObjectValue(objectValue));
+                remoteForm.changeGroupObject(groupObject.ID, Serializer.serializeClientGroupObjectValue(objectValue));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -499,7 +499,7 @@ public class ClientForm extends JPanel {
 
         for (List<ClientFilter> listFilter : currentFilters.values())
             for (ClientFilter filter : listFilter) {
-                remoteForm.addFilter(ByteSerializer.serializeClientFilter(filter));
+                remoteForm.addFilter(Serializer.serializeClientFilter(filter));
             }
 
         applyFormChanges();
@@ -2336,7 +2336,7 @@ public class ClientForm extends JPanel {
 
                     key = ikey;
 
-                    rootClass = ByteDeSerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
+                    rootClass = DeSerializer.deserializeClientClass(remoteForm.getBaseClassByteArray(object.ID));
                     currentClass = rootClass;
 
                     rootNode = new DefaultMutableTreeNode(rootClass);
@@ -2504,7 +2504,7 @@ public class ClientForm extends JPanel {
 
                         ClientClass parentClass = (ClientClass) nodeObject;
 
-                        List<ClientClass> classes = ByteDeSerializer.deserializeListClientClass(
+                        List<ClientClass> classes = DeSerializer.deserializeListClientClass(
                                                                         remoteForm.getChildClassesByteArray(object.ID,parentClass.ID));
 
                         for (ClientClass cls : classes) {

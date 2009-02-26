@@ -3,12 +3,13 @@ package platform.server.view.form.client;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.RegularFilterGroup;
-import platform.server.view.form.RemoteForm;
+import platform.server.view.form.*;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.session.ChangeValue;
 
 import java.sql.SQLException;
+import java.io.*;
+import java.util.List;
 
 // фасад для работы с клиентом
 public class RemoteFormView implements RemoteFormInterface {
@@ -24,11 +25,25 @@ public class RemoteFormView implements RemoteFormInterface {
     }
 
     public byte[] getReportDesignByteArray() {
-        return ByteSerializer.serializeReportDesign(reportDesign);
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        try {
+            new ObjectOutputStream(outStream).writeObject(reportDesign);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 
     public byte[] getReportDataByteArray() throws SQLException {
-        return ByteSerializer.serializeReportData(form.getReportData());
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        try {
+            form.getReportData().serialize(new DataOutputStream(outStream));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 
     public int getGID() {
@@ -36,7 +51,15 @@ public class RemoteFormView implements RemoteFormInterface {
     }
 
     public byte[] getRichDesignByteArray() {
-        return ByteSerializer.serializeFormView(richDesign);
+
+        //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        try {
+            richDesign.serialize(new DataOutputStream(outStream));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 
     public void gainedFocus() {
@@ -44,12 +67,24 @@ public class RemoteFormView implements RemoteFormInterface {
     }
 
     public byte[] getFormChangesByteArray() throws SQLException {
-        return ByteSerializer.serializeFormChanges(form.endApply());
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        try {
+            form.endApply().serialize(new DataOutputStream(outStream));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 
     public void changeGroupObject(int groupID, byte[] value) throws SQLException {
+        
         GroupObjectImplement groupObject = form.getGroupObjectImplement(groupID);
-        form.changeGroupObject(groupObject, ByteDeSerializer.deserializeGroupObjectValue(value, groupObject));
+        try {
+            form.changeGroupObject(groupObject, new GroupObjectValue(new DataInputStream(new ByteArrayInputStream(value)), groupObject));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getObjectClassID(int objectID) {
@@ -95,7 +130,11 @@ public class RemoteFormView implements RemoteFormInterface {
     }
 
     public void addFilter(byte[] state) {
-        form.addUserFilter(ByteDeSerializer.deserializeFilter(state, form));
+        try {
+            form.addUserFilter(new Filter(new DataInputStream(new ByteArrayInputStream(state)), form));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setRegularFilter(int groupID, int filterID) {
@@ -124,14 +163,44 @@ public class RemoteFormView implements RemoteFormInterface {
     }
 
     public byte[] getBaseClassByteArray(int objectID) {
-        return ByteSerializer.serializeClass(form.getObjectImplement(objectID).baseClass);
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        try {
+            form.getObjectImplement(objectID).baseClass.serialize(new DataOutputStream(outStream));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 
     public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteSerializer.serializeListClass(form.getObjectImplement(objectID).baseClass.findClassID(classID).childs);
+
+        List<RemoteClass> childClasses = form.getObjectImplement(objectID).baseClass.findClassID(classID).childs;
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+        try {
+            dataStream.writeInt(childClasses.size());
+            for (RemoteClass cls : childClasses)
+                cls.serialize(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 
     public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) {
-        return ByteSerializer.serializeChangeValue(form.getPropertyEditorObjectValue(form.getPropertyView(propertyID), externalID));
+        
+        ChangeValue changeValue = form.getPropertyEditorObjectValue(form.getPropertyView(propertyID), externalID);
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+        try {
+            dataStream.writeBoolean(changeValue==null);
+            if(changeValue!=null)
+                changeValue.serialize(dataStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return outStream.toByteArray();
     }
 }

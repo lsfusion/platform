@@ -1,6 +1,6 @@
 package platform.client.form;
 
-import platform.client.interop.ClientCellView;
+import platform.client.logics.ClientCellView;
 
 interface ClientCellViewTable {
 

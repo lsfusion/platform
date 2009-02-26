@@ -1,7 +1,7 @@
 package platform.client.form;
 
 import platform.client.SwingUtils;
-import platform.client.interop.classes.ClientClass;
+import platform.client.logics.classes.ClientClass;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 

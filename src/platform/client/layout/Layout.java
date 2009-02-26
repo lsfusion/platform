@@ -18,7 +18,7 @@ import bibliothek.notes.view.menu.ThemeMenu;
 import net.sf.jasperreports.engine.JRException;
 import platform.Main;
 import platform.client.Log;
-import platform.client.interop.ByteDeSerializer;
+import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.UserInfo;
@@ -48,7 +48,7 @@ public class Layout extends JFrame implements ComponentCollector {
 
         setIconImage(new ImageIcon(getClass().getResource("lsfusion.gif")).getImage());
         
-        UserInfo userInfo = ByteDeSerializer.deserializeUserInfo(remoteNavigator.getCurrentUserInfoByteArray());
+        UserInfo userInfo = DeSerializer.deserializeUserInfo(remoteNavigator.getCurrentUserInfoByteArray());
         setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

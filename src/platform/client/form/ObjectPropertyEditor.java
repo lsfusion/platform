@@ -1,7 +1,7 @@
 package platform.client.form;
 
-import platform.client.interop.ClientCellView;
-import platform.client.interop.classes.ClientClass;
+import platform.client.logics.ClientCellView;
+import platform.client.logics.classes.ClientClass;
 
 import java.awt.*;
 

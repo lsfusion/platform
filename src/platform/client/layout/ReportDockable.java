@@ -4,7 +4,7 @@ import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
-import platform.client.interop.ByteDeSerializer;
+import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -33,12 +33,12 @@ public class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) {
 
-        JasperDesign design = ByteDeSerializer.deserializeReportDesign(remoteForm.getReportDesignByteArray());
+        JasperDesign design = DeSerializer.deserializeReportDesign(remoteForm.getReportDesignByteArray());
         try {
 
             JasperReport report = JasperCompileManager.compileReport(design);
 
-            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(), ByteDeSerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
+            JasperPrint print = JasperFillManager.fillReport(report,new HashMap(), DeSerializer.deserializeReportData(remoteForm.getReportDataByteArray()));
             return prepareViewer(new JRViewer(print));
 
         } catch (JRException e) {

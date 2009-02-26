@@ -7,7 +7,7 @@ package platform.server.view.form;
 
 import platform.interop.Compare;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.report.ReportData;
+import platform.server.view.form.ReportData;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.query.Join;
@@ -1103,33 +1103,25 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
         ReportData result = new ReportData();
 
-        for (GroupObjectImplement group : groups)
-            for (ObjectImplement object : group)
-                result.objectsID.put(object.getSID(), object.ID);
-
-        for(PropertyView Property : properties) {
-            query.properties.put(Property, Property.view.getSourceExpr(reportObjects, query.mapKeys, session));
-
-            result.propertiesID.put(Property.getSID(), Property.ID);
-            result.properties.put(Property.ID,new HashMap<Map<Integer, Integer>, Object>());
-        }
+        for(PropertyView property : properties)
+            query.properties.put(property, property.view.getSourceExpr(reportObjects, query.mapKeys, session));
 
         LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultSelect = query.executeSelect(session,queryOrders,0);
-
         for(Entry<Map<ObjectImplement,Integer>,Map<Object,Object>> row : resultSelect.entrySet()) {
-            Map<Integer,Integer> groupValue = new HashMap<Integer, Integer>();
+            Map<ObjectImplement,Integer> groupValue = new HashMap<ObjectImplement, Integer>();
             for(GroupObjectImplement group : groups)
                 for(ObjectImplement object : group) {
                     if (readObjects.contains(object))
-                        groupValue.put(object.ID,row.getKey().get(object));
+                        groupValue.put(object,row.getKey().get(object));
                     else
-                        groupValue.put(object.ID,object.idObject);
+                        groupValue.put(object,object.idObject);
                 }
 
-            result.readOrder.add(groupValue);
-
+            Map<PropertyView,Object> propertyValues = new HashMap<PropertyView, Object>();
             for(PropertyView property : properties)
-                result.properties.get(property.ID).put(groupValue,row.getValue().get(property));
+                propertyValues.put(property,row.getValue().get(property));
+
+            result.add(groupValue,propertyValues);
         }
 
 //        Result.Out();

@@ -1,15 +1,20 @@
 package platform.server.view.form;
 
 import platform.base.BaseUtils;
-import platform.interop.form.client.AbstractFormChanges;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
-public class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue, PropertyView> {
+public class FormChanges {
+
+    public Map<GroupObjectImplement,Boolean> classViews = new HashMap<GroupObjectImplement, Boolean>();
+    public Map<GroupObjectImplement,GroupObjectValue> objects = new HashMap<GroupObjectImplement, GroupObjectValue>();
+    public Map<GroupObjectImplement, List<GroupObjectValue>> gridObjects = new HashMap<GroupObjectImplement, List<GroupObjectValue>>();
+    public Map<PropertyView,Map<GroupObjectValue,Object>> gridProperties = new HashMap<PropertyView, Map<GroupObjectValue, Object>>();
+    public Map<PropertyView,Object> panelProperties = new HashMap<PropertyView, Object>();
+    public Set<PropertyView> dropProperties = new HashSet<PropertyView>();
 
     void out(RemoteForm<?> bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");

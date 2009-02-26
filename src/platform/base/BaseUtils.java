@@ -124,7 +124,7 @@ public class BaseUtils {
 
     public static Object deserializeObject(DataInputStream inStream) throws IOException {
 
-        try {
+/*        try {
             ObjectInputStream dataStream = new ObjectInputStream(inStream);
             try {
                 return dataStream.readObject();
@@ -135,9 +135,9 @@ public class BaseUtils {
             e.printStackTrace();
         }
 
-        return null;
+        return null;*/
 
-/*        int objectType = inStream.readByte();
+        int objectType = inStream.readByte();
 
         if (objectType == 0) {
             return null;
@@ -163,19 +163,19 @@ public class BaseUtils {
             return inStream.readBoolean();
         }
 
-        throw new IOException();*/
+        throw new IOException();
     }
 
     public static void serializeObject(DataOutputStream outStream, Object object) throws IOException {
 
-        try {
+/*        try {
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             objectStream.writeObject(object);
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
-/*        if (object == null) {
+        if (object == null) {
             outStream.writeByte(0);
             return;
         }
@@ -210,7 +210,7 @@ public class BaseUtils {
             return;
         }
 
-        throw new IOException();*/
+        throw new IOException();
     }// -------------------------------------- Сериализация классов -------------------------------------------- //
 
     public static byte[] serializeObject(Object value) {
