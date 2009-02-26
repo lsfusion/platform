@@ -1,8 +1,8 @@
 package platform.server.logics.classes.sets;
 
-import java.util.Map;
-
 import platform.server.logics.properties.PropertyInterface;
+
+import java.util.Map;
 
 // по сути Entry для ValueClassSet'а
 public class ChangeClass<P extends PropertyInterface> {

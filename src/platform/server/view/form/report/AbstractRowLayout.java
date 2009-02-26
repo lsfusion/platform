@@ -2,7 +2,8 @@ package platform.server.view.form.report;
 
 import platform.base.SetBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class AbstractRowLayout {

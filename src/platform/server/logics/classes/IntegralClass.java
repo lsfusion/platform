@@ -1,17 +1,17 @@
 package platform.server.logics.classes;
 
-import java.util.Random;
-import java.util.List;
-import java.util.Map;
+import net.sf.jasperreports.engine.JRAlignment;
+import platform.server.data.types.Type;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.DataSession;
+import platform.server.view.form.report.ReportDrawField;
+
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
-
-import platform.server.logics.session.DataSession;
-import platform.server.logics.data.TableFactory;
-import platform.server.data.types.Type;
-import platform.server.view.form.report.ReportDrawField;
-import net.sf.jasperreports.engine.JRAlignment;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 // класс который можно сравнивать
 public class IntegralClass extends RemoteClass {

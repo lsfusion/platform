@@ -1,8 +1,8 @@
 package platform.server.logics.constraints;
 
-import platform.server.data.query.wheres.CompareWhere;
+import platform.interop.Compare;
 
 // != 0 или !="      "
 class EmptyConstraint extends ValueConstraint {
-    EmptyConstraint() {super(CompareWhere.NOT_EQUALS);}
+    EmptyConstraint() {super(Compare.NOT_EQUALS);}
 }

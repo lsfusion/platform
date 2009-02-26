@@ -2,8 +2,8 @@ package platform.server.data.query.exprs;
 
 import platform.server.data.query.JoinData;
 import platform.server.data.query.wheres.MapWhere;
-import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
 public abstract class AndExpr extends SourceExpr {
 

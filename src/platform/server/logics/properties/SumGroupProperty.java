@@ -1,14 +1,14 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.sets.ValueClassSet;
-import platform.server.logics.session.DataSession;
 import platform.server.data.PropertyField;
-import platform.server.data.query.Union;
 import platform.server.data.query.OperationQuery;
+import platform.server.data.query.Union;
+import platform.server.logics.classes.sets.ValueClassSet;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.DataSession;
 
-import java.util.Map;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {

@@ -1,30 +1,24 @@
 package platform.server.data.query.wheres;
 
-import platform.server.data.query.exprs.*;
+import platform.interop.Compare;
+import platform.server.data.TypedObject;
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.*;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.StringType;
-import platform.server.data.TypedObject;
 import platform.server.where.DataWhere;
-import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
     public SourceExpr operator1;
     public SourceExpr operator2;
-
-    public static final int EQUALS = 0;
-    public static final int GREATER = 1;
-    public static final int LESS = 2;
-    public static final int GREATER_EQUALS = 3;
-    public static final int LESS_EQUALS = 4;
-    public static final int NOT_EQUALS = 5;
 
     int compare;
 
@@ -47,31 +41,31 @@ public class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer
         return string.contains("%") || string.contains("_");
     }
     static String getCompare(SourceExpr expr, int compare) {
-        if((compare==EQUALS || compare==NOT_EQUALS) && expr instanceof ValueExpr && ((ValueExpr)expr).object.type instanceof StringType && containsMask((String)((ValueExpr)expr).object.value))
-            return (compare==EQUALS?" LIKE ":" NOT LIKE ");
+        if((compare== Compare.EQUALS || compare== Compare.NOT_EQUALS) && expr instanceof ValueExpr && ((ValueExpr)expr).object.type instanceof StringType && containsMask((String)((ValueExpr)expr).object.value))
+            return (compare== Compare.EQUALS ?" LIKE ":" NOT LIKE ");
         else
-            return (compare==EQUALS?"=":(compare==GREATER?">":(compare==LESS?"<":(compare==GREATER_EQUALS?">=":(compare==LESS_EQUALS?"<=":"<>")))));
+            return (compare== Compare.EQUALS ?"=":(compare== Compare.GREATER ?">":(compare== Compare.LESS ?"<":(compare== Compare.GREATER_EQUALS ?">=":(compare== Compare.LESS_EQUALS ?"<=":"<>")))));
     }
-    static int reverse(int Compare) {
-        switch(Compare) {
-            case EQUALS: return NOT_EQUALS;
-            case GREATER: return LESS_EQUALS;
-            case LESS: return GREATER_EQUALS;
-            case GREATER_EQUALS: return LESS;
-            case LESS_EQUALS: return GREATER;
+    static int reverse(int compare) {
+        switch(compare) {
+            case Compare.EQUALS: return Compare.NOT_EQUALS;
+            case Compare.GREATER: return Compare.LESS_EQUALS;
+            case Compare.LESS: return Compare.GREATER_EQUALS;
+            case Compare.GREATER_EQUALS: return Compare.LESS;
+            case Compare.LESS_EQUALS: return Compare.GREATER;
             default: throw new RuntimeException("Не должно быть");
         }
     }
 
-    static boolean compare(TypedObject object1, TypedObject object2,int Compare) {
+    static boolean compare(TypedObject object1, TypedObject object2,int compare) {
 
         if(object1.value.equals(object2.value))
-            return (Compare==EQUALS || Compare==GREATER_EQUALS || Compare==LESS_EQUALS);
+            return (compare== Compare.EQUALS || compare== Compare.GREATER_EQUALS || compare== Compare.LESS_EQUALS);
 
-        if(Compare==GREATER_EQUALS || Compare==GREATER)
+        if(compare== Compare.GREATER_EQUALS || compare== Compare.GREATER)
             return object1.type.greater(object1.value,object2.value);
 
-        if(Compare==LESS_EQUALS || Compare==LESS)
+        if(compare== Compare.LESS_EQUALS || compare== Compare.LESS)
             return object1.type.greater(object2.value,object1.value);
 
         return false;
@@ -134,7 +128,7 @@ public class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer
     }
 
     public JoinWheres getInnerJoins() {
-        if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr && compare ==EQUALS)
+        if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr && compare == Compare.EQUALS)
             return new JoinWheres(this, Where.TRUE);
 
         Where inJoinWhere = Where.TRUE;

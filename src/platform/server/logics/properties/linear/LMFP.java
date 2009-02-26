@@ -1,7 +1,7 @@
 package platform.server.logics.properties.linear;
 
-import platform.server.logics.properties.StringFormulaPropertyInterface;
 import platform.server.logics.properties.MultiplyFormulaProperty;
+import platform.server.logics.properties.StringFormulaPropertyInterface;
 
 public class LMFP extends LP<StringFormulaPropertyInterface, MultiplyFormulaProperty> {
 

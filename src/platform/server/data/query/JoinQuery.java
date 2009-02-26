@@ -1,18 +1,19 @@
 package platform.server.data.query;
 
-import platform.server.data.query.wheres.JoinWhere;
-import platform.server.data.query.wheres.CompareWhere;
+import platform.base.BaseUtils;
+import platform.base.Pairs;
+import platform.interop.Compare;
+import platform.server.data.Source;
 import platform.server.data.query.exprs.*;
+import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.wheres.JoinWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.data.Source;
-import platform.base.Pairs;
-import platform.base.BaseUtils;
-import platform.server.where.Where;
 import platform.server.logics.session.DataSession;
+import platform.server.where.Where;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 // запрос Join
 public class JoinQuery<K,V> extends Source<K,V> {
@@ -92,7 +93,7 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
     public void putKeyWhere(Map<K,Integer> keyValues) {
         for(Map.Entry<K,Integer> mapKey : keyValues.entrySet())
-            and(new CompareWhere(mapKeys.get(mapKey.getKey()),Type.object.getExpr(mapKey.getValue()), CompareWhere.EQUALS));
+            and(new CompareWhere(mapKeys.get(mapKey.getKey()),Type.object.getExpr(mapKey.getValue()), Compare.EQUALS));
     }
 
     public void fillJoinQueries(Set<JoinQuery> queries) {
@@ -382,7 +383,7 @@ public class JoinQuery<K,V> extends Source<K,V> {
             if(propertyValue==null)
                 properties.put(property.getKey(), property.getValue());
             else
-                where = where.and(new CompareWhere(property.getValue(),propertyValue, CompareWhere.EQUALS));
+                where = where.and(new CompareWhere(property.getValue(),propertyValue, Compare.EQUALS));
         }
     }
 

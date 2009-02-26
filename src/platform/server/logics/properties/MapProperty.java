@@ -1,12 +1,12 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.session.DataChanges;
-import platform.server.logics.classes.sets.ValueClassSet;
-import platform.server.data.types.Type;
-import platform.server.data.query.*;
 import platform.base.SetBuilder;
+import platform.server.data.query.*;
+import platform.server.data.types.Type;
+import platform.server.logics.classes.sets.ValueClassSet;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.DataChanges;
+import platform.server.logics.session.DataSession;
 
 import java.util.*;
 

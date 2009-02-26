@@ -1,11 +1,11 @@
 package platform.server.logics.classes.sets;
 
-import platform.server.logics.classes.RemoteClass;
 import platform.base.GraphNodeSet;
+import platform.server.logics.classes.RemoteClass;
 
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 // выше вершин
 class UpClassSet extends GraphNodeSet<RemoteClass,UpClassSet> {

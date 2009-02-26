@@ -1,8 +1,8 @@
 package platform.server.data.query.exprs;
 
-import java.util.Map;
-
 import platform.server.where.Where;
+
+import java.util.Map;
 
 public class MapCaseList<K> extends CaseList<Map<K,AndExpr>,MapCase<K>> {
 

@@ -1,13 +1,13 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.session.DataSession;
-import platform.server.logics.classes.sets.ValueClassSet;
-import platform.server.logics.classes.sets.InterfaceClassSet;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.JoinExpr;
+import platform.server.logics.classes.sets.InterfaceClassSet;
+import platform.server.logics.classes.sets.ValueClassSet;
+import platform.server.logics.session.DataSession;
 
 import java.util.Collection;
 import java.util.Collections;

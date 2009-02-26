@@ -1,17 +1,17 @@
 package platform.server.logics.properties.linear;
 
-import java.sql.SQLException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-
-import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.properties.DataPropertyInterface;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.session.DataSession;
+
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface, DataProperty<D>> {
 

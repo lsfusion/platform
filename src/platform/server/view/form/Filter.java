@@ -1,26 +1,27 @@
 package platform.server.view.form;
 
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.properties.Property;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.classes.sets.ClassSet;
+import platform.interop.Compare;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.wheres.CompareWhere;
+import platform.server.logics.classes.sets.ClassSet;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.session.DataSession;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.Collections;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 public class Filter<P extends PropertyInterface> {
 
-    public static int EQUALS = CompareWhere.EQUALS;
-    public static int GREATER = CompareWhere.GREATER;
-    public static int LESS = CompareWhere.LESS;
-    public static int GREATER_EQUALS = CompareWhere.GREATER_EQUALS;
-    public static int LESS_EQUALS = CompareWhere.LESS_EQUALS;
-    public static int NOT_EQUALS = CompareWhere.NOT_EQUALS;
+    public static int EQUALS = Compare.EQUALS;
+    public static int GREATER = Compare.GREATER;
+    public static int LESS = Compare.LESS;
+    public static int GREATER_EQUALS = Compare.GREATER_EQUALS;
+    public static int LESS_EQUALS = Compare.LESS_EQUALS;
+    public static int NOT_EQUALS = Compare.NOT_EQUALS;
 
     public PropertyObjectImplement<P> property;
     public ValueLink value;

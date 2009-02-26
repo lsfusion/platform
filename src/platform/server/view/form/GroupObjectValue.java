@@ -1,8 +1,8 @@
 package platform.server.view.form;
 
-import java.util.Map;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class GroupObjectValue extends GroupObjectMap<Integer> {
 

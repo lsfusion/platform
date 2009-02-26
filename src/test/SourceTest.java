@@ -9,6 +9,7 @@ import platform.server.data.query.*;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.types.Type;
 import platform.Main;
+import platform.interop.Compare;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -143,7 +144,7 @@ class SourceTest {
         TableJoin.joins.put(Table2Key1,JoinQuery.mapKeys.get(Table1Key1));
         JoinQuery.putKeyWhere(Collections.singletonMap(Table1Key2,5));
         JoinQuery.properties.put(Table2Prop1, TableJoin.exprs.get(Table2Prop1));
-        JoinQuery.and(new CompareWhere(TableJoin.exprs.get(Table2Prop2),Type.integer.getExpr(1),CompareWhere.EQUALS));
+        JoinQuery.and(new CompareWhere(TableJoin.exprs.get(Table2Prop2),Type.integer.getExpr(1), Compare.EQUALS));
         UnionQ.add(JoinQuery,1);
 
         UnionQ.add(Table1,1);

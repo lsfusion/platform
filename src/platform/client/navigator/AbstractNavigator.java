@@ -1,20 +1,20 @@
 package platform.client.navigator;
 
-import platform.server.view.navigator.RemoteNavigator;
 import platform.client.ExpandingTreeNode;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public abstract class AbstractNavigator extends JPanel {
 
@@ -22,11 +22,11 @@ public abstract class AbstractNavigator extends JPanel {
     private final ImageIcon formIcon = new ImageIcon(getClass().getResource("/platform/client/navigator/images/form.gif"));
     private final ImageIcon reportIcon = new ImageIcon(getClass().getResource("/platform/client/navigator/images/report.gif"));
 
-    public RemoteNavigator remoteNavigator;
+    public RemoteNavigatorInterface remoteNavigator;
 
     AbstractNavigator.NavigatorTree tree;
 
-    public AbstractNavigator(RemoteNavigator iremoteNavigator) {
+    public AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
 
         remoteNavigator = iremoteNavigator;
 

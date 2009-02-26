@@ -2,8 +2,8 @@ package platform.client.form;
 
 import com.toedter.calendar.JTextFieldDateEditor;
 
-import javax.swing.border.EmptyBorder;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.event.KeyEvent;
 
 class DatePropertyEditorComponent extends JTextFieldDateEditor {

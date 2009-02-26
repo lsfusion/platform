@@ -1,13 +1,13 @@
 package platform.server.where;
 
-import java.util.Collection;
-import java.util.Map;
-
 import platform.server.data.query.JoinWheres;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.Translator;
-import platform.server.data.query.wheres.JoinWhere;
 import platform.server.data.query.exprs.ObjectExpr;
+import platform.server.data.query.wheres.JoinWhere;
+
+import java.util.Collection;
+import java.util.Map;
 
 public interface Where<Not extends Where> extends SourceJoin {
 

@@ -7,22 +7,24 @@ package platform.server.view.navigator;
 
 // навигатор работает с абстрактной BL
 
-import java.sql.SQLException;
-import java.util.*;
-
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.auth.User;
 import platform.server.logics.auth.SecurityPolicy;
+import platform.server.logics.auth.User;
 import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.session.DataSession;
 import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.ByteSerializer;
 
+import java.sql.SQLException;
+import java.util.*;
+
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> {
+public class RemoteNavigator<T extends BusinessLogics<T>> implements RemoteNavigatorInterface {
 
     DataAdapter Adapter;
     T BL;
@@ -61,20 +63,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
         return ByteSerializer.serializeUserInfo(currentUser.userInfo);
     }
 
-    public final static int NAVIGATORGROUP_RELEVANTFORM = -2;
-    public final static int NAVIGATORGROUP_RELEVANTCLASS = -3;
-
     List<NavigatorElement> getElements(int elementID) {
 
         List<NavigatorElement> navigatorElements;
         switch (elementID) {
-            case (NAVIGATORGROUP_RELEVANTFORM) :
+            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM) :
                 if (currentForm == null)
                     navigatorElements = new ArrayList();
                 else
                     navigatorElements = new ArrayList(((NavigatorForm)BL.baseElement.getNavigatorElement(currentForm.getID())).relevantElements);
                 break;
-            case (NAVIGATORGROUP_RELEVANTCLASS) :
+            case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS) :
                 if (currentClass == null)
                     navigatorElements = new ArrayList();
                 else
@@ -117,7 +116,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> {
     }
 
 //    RemoteForm<T> lastOpenedForm;
-public RemoteForm<T> createForm(int formID, boolean currentSession) throws SQLException {
+public RemoteFormInterface createForm(int formID, boolean currentSession) throws SQLException {
 
         NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
 

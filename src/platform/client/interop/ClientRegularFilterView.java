@@ -2,8 +2,8 @@ package platform.client.interop;
 
 import javax.swing.*;
 import java.io.DataInputStream;
-import java.io.ObjectInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 
 public class ClientRegularFilterView {
     public int ID;

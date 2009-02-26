@@ -1,9 +1,9 @@
 package platform.server.where;
 
-import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.query.JoinWheres;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.JoinWheres;
 import platform.server.data.query.Translator;
+import platform.server.data.query.wheres.MapWhere;
 
 import java.util.Collection;
 

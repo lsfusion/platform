@@ -4,9 +4,9 @@ import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataChanges;
 import platform.server.logics.session.DataSession;
 
-import java.util.Map;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 abstract public class FormulaProperty<T extends FormulaPropertyInterface> extends AggregateProperty<T> {

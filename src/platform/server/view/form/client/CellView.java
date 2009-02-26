@@ -7,8 +7,8 @@ import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.text.Format;
 import java.text.DecimalFormat;
+import java.text.Format;
 import java.text.SimpleDateFormat;
 
 abstract public class CellView extends ComponentView {

@@ -1,7 +1,7 @@
 package platform.server.where;
 
-import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.wheres.MapWhere;
 
 abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> implements OrObjectWhere<Not>,AndObjectWhere<Not> {
 

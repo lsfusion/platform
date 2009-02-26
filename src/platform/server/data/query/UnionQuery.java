@@ -1,14 +1,14 @@
 package platform.server.data.query;
 
-import java.util.Collection;
-import java.util.Map;
-
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.Source;
+import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.query.exprs.LinearExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.JoinExpr;
-import platform.server.data.Source;
+import platform.server.data.query.wheres.JoinWhere;
 import platform.server.where.Where;
+
+import java.util.Collection;
+import java.util.Map;
 
 public abstract class UnionQuery<K,V> extends JoinQuery<K,V> {
 

@@ -1,26 +1,25 @@
 package platform.server.view.navigator;
 
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.classes.sets.InterfaceClass;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.properties.linear.LP;
-import platform.server.logics.properties.groups.AbstractGroup;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.classes.sets.ClassSet;
+import platform.server.logics.classes.sets.InterfaceClass;
+import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.properties.groups.AbstractGroup;
+import platform.server.logics.properties.linear.LP;
 import platform.server.view.form.*;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
 import platform.server.view.form.report.DefaultJasperDesign;
 
-import java.util.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import net.sf.jasperreports.engine.design.JasperDesign;
+import java.util.*;
 
 public abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 

@@ -1,20 +1,20 @@
 package platform.server.view.form;
 
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.properties.PropertyImplement;
-import platform.server.logics.properties.Property;
-import platform.server.logics.classes.sets.InterfaceClass;
-import platform.server.logics.classes.sets.InterfaceClassSet;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.session.ChangeValue;
-import platform.server.logics.session.DataSession;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.data.query.exprs.SourceExpr;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.classes.sets.ClassSet;
+import platform.server.logics.classes.sets.InterfaceClass;
+import platform.server.logics.classes.sets.InterfaceClassSet;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyImplement;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.session.ChangeValue;
+import platform.server.logics.session.DataSession;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<ObjectImplement,P> {

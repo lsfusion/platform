@@ -1,16 +1,16 @@
 package platform.server.where;
 
+import platform.server.data.query.*;
+import platform.server.data.query.exprs.ObjectExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.wheres.MapWhere;
+import platform.server.data.sql.SQLSyntax;
+
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
-
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.ObjectExpr;
-import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.query.wheres.JoinWhere;
-import platform.server.data.query.*;
-import platform.server.data.sql.SQLSyntax;
+import java.util.Set;
 
 class NotWhere extends ObjectWhere<DataWhere> {
 

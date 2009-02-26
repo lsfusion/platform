@@ -1,20 +1,21 @@
 package platform.server.logics.data;
 
-import platform.server.data.types.Type;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.wheres.CompareWhere;
+import platform.interop.Compare;
 import platform.server.data.KeyField;
+import platform.server.data.ModifyQuery;
 import platform.server.data.PropertyField;
 import platform.server.data.Table;
-import platform.server.data.ModifyQuery;
-import platform.server.logics.session.DataSession;
+import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.types.Type;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.session.DataSession;
 
-import java.util.List;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.sql.SQLException;
+import java.util.List;
 
 // таблица счетчика sID
 public class IDTable extends Table {
@@ -50,7 +51,7 @@ public class IDTable extends Table {
         query.and(joinTable.inJoin);
         query.properties.put(value, joinTable.exprs.get(value));
 
-        query.and(new CompareWhere(query.mapKeys.get(key),Type.object.getExpr(idType), CompareWhere.EQUALS));
+        query.and(new CompareWhere(query.mapKeys.get(key),Type.object.getExpr(idType), Compare.EQUALS));
 
         Integer freeID = (Integer) query.executeSelect(dataSession).values().iterator().next().get(value);
 

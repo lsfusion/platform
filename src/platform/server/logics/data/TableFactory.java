@@ -1,15 +1,15 @@
 package platform.server.logics.data;
 
-import platform.server.data.types.Type;
 import platform.server.data.KeyField;
-import platform.server.data.Table;
 import platform.server.data.PropertyField;
-import platform.server.view.form.ViewTable;
-import platform.server.logics.session.*;
+import platform.server.data.Table;
+import platform.server.data.types.Type;
 import platform.server.logics.properties.DataPropertyInterface;
+import platform.server.logics.session.*;
+import platform.server.view.form.ViewTable;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class TableFactory extends TableImplement{
 

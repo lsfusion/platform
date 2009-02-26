@@ -1,7 +1,7 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
 import platform.server.data.query.Union;
+import platform.server.logics.data.TableFactory;
 
 public class OverrideUnionProperty extends UnionProperty {
 

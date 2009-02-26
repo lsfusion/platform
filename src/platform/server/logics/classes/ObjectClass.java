@@ -1,18 +1,18 @@
 package platform.server.logics.classes;
 
-import java.util.*;
-import java.sql.SQLException;
-import java.text.NumberFormat;
-import java.text.Format;
+import net.sf.jasperreports.engine.JRAlignment;
+import platform.server.data.KeyField;
+import platform.server.data.types.Type;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.DataSession;
+import platform.server.view.form.report.ReportDrawField;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import platform.server.logics.session.DataSession;
-import platform.server.logics.data.TableFactory;
-import platform.server.data.types.Type;
-import platform.server.data.KeyField;
-import platform.server.view.form.report.ReportDrawField;
-import net.sf.jasperreports.engine.JRAlignment;
+import java.sql.SQLException;
+import java.text.Format;
+import java.text.NumberFormat;
+import java.util.*;
 
 public class ObjectClass extends RemoteClass {
 

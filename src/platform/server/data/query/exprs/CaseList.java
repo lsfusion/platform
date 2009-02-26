@@ -1,8 +1,8 @@
 package platform.server.data.query.exprs;
 
-import java.util.ArrayList;
-
 import platform.server.where.Where;
+
+import java.util.ArrayList;
 
 abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
 

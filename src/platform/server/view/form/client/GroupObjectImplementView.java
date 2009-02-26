@@ -3,9 +3,9 @@ package platform.server.view.form.client;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 
-import java.util.ArrayList;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class GroupObjectImplementView extends ArrayList<ObjectImplementView> implements ClientSerialize {
     public GroupObjectImplement view;

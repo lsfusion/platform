@@ -1,19 +1,17 @@
 package platform.client.layout;
 
-import platform.client.navigator.ClientNavigator;
-import platform.client.interop.ByteDeSerializer;
-import platform.server.view.form.RemoteForm;
-
-import java.sql.SQLException;
-import java.awt.*;
-import java.util.HashMap;
-
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
+import platform.client.interop.ByteDeSerializer;
+import platform.client.navigator.ClientNavigator;
+import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
+import java.awt.*;
+import java.sql.SQLException;
+import java.util.HashMap;
 
 public class ReportDockable extends FormDockable {
 
@@ -21,7 +19,7 @@ public class ReportDockable extends FormDockable {
         super(iformID, navigator, currentSession);
     }
 
-    public ReportDockable(int iformID, ClientNavigator navigator, RemoteForm remoteForm) throws SQLException {
+    public ReportDockable(int iformID, ClientNavigator navigator, RemoteFormInterface remoteForm) throws SQLException {
         super(iformID, navigator, remoteForm);
     }
 
@@ -33,7 +31,7 @@ public class ReportDockable extends FormDockable {
     }
 
     @Override
-    Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
+    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) {
 
         JasperDesign design = ByteDeSerializer.deserializeReportDesign(remoteForm.getReportDesignByteArray());
         try {

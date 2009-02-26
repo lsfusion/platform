@@ -1,8 +1,6 @@
 package platform.server.logics.classes;
 
 import platform.server.data.types.Type;
-import platform.client.interop.classes.ClientClass;
-import platform.client.interop.classes.ClientDoubleClass;
 
 class NumericClass extends DoubleClass {
 

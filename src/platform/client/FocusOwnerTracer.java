@@ -1,8 +1,8 @@
 package platform.client;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 class FocusOwnerTracer implements PropertyChangeListener {
 

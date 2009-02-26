@@ -1,6 +1,5 @@
 package platform.client.form;
 
-import platform.client.form.PropertyEditorComponent;
 import platform.client.interop.ClientCellView;
 import platform.client.interop.classes.ClientClass;
 

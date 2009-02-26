@@ -1,7 +1,7 @@
 package platform.server.logics.session;
 
-import platform.server.logics.classes.RemoteClass;
 import platform.base.BaseUtils;
+import platform.server.logics.classes.RemoteClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

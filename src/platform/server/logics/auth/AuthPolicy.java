@@ -1,10 +1,9 @@
 package platform.server.logics.auth;
 
-import platform.server.logics.auth.SecurityPolicy;
 import platform.interop.UserInfo;
-import platform.server.logics.auth.User;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthPolicy {
 

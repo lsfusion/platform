@@ -1,7 +1,5 @@
 package platform.client.form;
 
-import platform.client.form.PropertyRendererComponent;
-
 import javax.swing.*;
 import java.awt.*;
 

@@ -1,20 +1,20 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
+import platform.server.data.PropertyField;
+import platform.server.data.query.ChangeQuery;
+import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.UnionQuery;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.types.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.session.ChangeValue;
 import platform.server.logics.classes.BitClass;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
-import platform.server.data.query.ChangeQuery;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.UnionQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.types.Type;
-import platform.server.data.PropertyField;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.ChangeValue;
+import platform.server.logics.session.DataSession;
 
 import java.util.*;
 

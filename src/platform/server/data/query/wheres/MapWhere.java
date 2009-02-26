@@ -1,8 +1,8 @@
 package platform.server.data.query.wheres;
 
-import java.util.HashMap;
-
 import platform.server.where.Where;
+
+import java.util.HashMap;
 
 public class MapWhere<T> extends HashMap<T,Where> {
 

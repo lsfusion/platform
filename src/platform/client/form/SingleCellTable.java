@@ -3,11 +3,11 @@ package platform.client.form;
 import platform.client.SwingUtils;
 
 import javax.swing.*;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 public class SingleCellTable extends ClientFormTable {
 

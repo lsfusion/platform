@@ -1,18 +1,15 @@
 package platform.server.view.form.client;
 
-import platform.server.view.navigator.NavigatorForm;
-import platform.server.view.form.client.*;
-import platform.server.view.form.*;
+import platform.interop.form.layout.SimplexComponentDirections;
+import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.server.logics.properties.groups.AbstractGroup;
+import platform.server.view.form.*;
+import platform.server.view.navigator.NavigatorForm;
 
-import java.util.Map;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
-import java.awt.*;
-
-import platform.interop.form.client.*;
-import platform.interop.form.layout.SingleSimplexConstraint;
-import platform.interop.form.layout.SimplexComponentDirections;
+import java.util.Map;
 
 public class DefaultFormView extends FormView {
 

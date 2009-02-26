@@ -1,13 +1,13 @@
 package platform.client.interop.classes;
 
-import platform.client.form.PropertyRendererComponent;
-import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyRendererComponent;
 import platform.client.interop.ClientCellView;
 
-import java.io.Serializable;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.text.Format;
 
 abstract public class ClientClass implements Serializable {

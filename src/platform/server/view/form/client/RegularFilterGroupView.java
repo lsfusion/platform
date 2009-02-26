@@ -1,7 +1,7 @@
 package platform.server.view.form.client;
 
-import platform.server.view.form.RegularFilterGroup;
 import platform.server.view.form.RegularFilter;
+import platform.server.view.form.RegularFilterGroup;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

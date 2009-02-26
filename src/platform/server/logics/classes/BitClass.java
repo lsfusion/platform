@@ -1,16 +1,16 @@
 package platform.server.logics.classes;
 
-import java.util.Random;
-import java.util.List;
-import java.util.Map;
-import java.sql.SQLException;
-import java.text.Format;
-
+import net.sf.jasperreports.engine.JRAlignment;
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataSession;
 import platform.server.view.form.report.ReportDrawField;
-import net.sf.jasperreports.engine.JRAlignment;
+
+import java.sql.SQLException;
+import java.text.Format;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class BitClass extends IntegralClass {
     BitClass(Integer iID, String caption) {super(iID, caption);}

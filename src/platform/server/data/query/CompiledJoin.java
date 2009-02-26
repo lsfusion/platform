@@ -1,17 +1,17 @@
 package platform.server.data.query;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
-
-import platform.base.Pairs;
+import platform.Main;
 import platform.base.BaseUtils;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.*;
+import platform.base.Pairs;
 import platform.server.data.DataSource;
 import platform.server.data.Source;
+import platform.server.data.query.exprs.*;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.where.Where;
-import platform.Main;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CompiledJoin<J> extends Join<J,Object> {
 

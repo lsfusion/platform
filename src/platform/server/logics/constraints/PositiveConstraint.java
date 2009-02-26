@@ -1,8 +1,8 @@
 package platform.server.logics.constraints;
 
-import platform.server.data.query.wheres.CompareWhere;
+import platform.interop.Compare;
 
 // < 0
 class PositiveConstraint extends ValueConstraint {
-    PositiveConstraint() {super(CompareWhere.LESS);}
+    PositiveConstraint() {super(Compare.LESS);}
 }

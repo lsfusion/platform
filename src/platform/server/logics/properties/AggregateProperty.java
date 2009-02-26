@@ -1,24 +1,24 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
+import platform.base.BaseUtils;
+import platform.server.data.KeyField;
+import platform.server.data.ModifyQuery;
+import platform.server.data.PropertyField;
+import platform.server.data.Table;
+import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.session.ChangeValue;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClassSet;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.KeyField;
-import platform.server.data.Table;
-import platform.server.data.PropertyField;
-import platform.server.data.ModifyQuery;
-import platform.base.BaseUtils;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.ChangeValue;
+import platform.server.logics.session.DataSession;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 

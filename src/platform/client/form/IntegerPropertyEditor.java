@@ -1,12 +1,12 @@
 package platform.client.form;
 
-import javax.swing.text.NumberFormatter;
-import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.*;
-import java.text.NumberFormat;
-import java.text.DecimalFormat;
-import java.text.ParseException;
+import javax.swing.text.DefaultFormatterFactory;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 public class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {

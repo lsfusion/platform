@@ -1,7 +1,7 @@
 package platform.server.data;
 
-import platform.server.data.types.Type;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.types.Type;
 
 public class Field {
     public String Name;

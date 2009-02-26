@@ -2,8 +2,8 @@ package platform.client.form;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
-import java.awt.event.KeyEvent;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class ClientFormTable extends JTable {
 

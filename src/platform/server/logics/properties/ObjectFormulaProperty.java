@@ -1,14 +1,14 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.ObjectClass;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.classes.sets.InterfaceClass;
-import platform.server.logics.classes.sets.InterfaceClassSet;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.data.query.exprs.CaseExpr;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.logics.classes.ObjectClass;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.classes.sets.ClassSet;
+import platform.server.logics.classes.sets.InterfaceClass;
+import platform.server.logics.classes.sets.InterfaceClassSet;
+import platform.server.logics.classes.sets.ValueClassSet;
+import platform.server.logics.data.TableFactory;
 import platform.server.where.Where;
 
 import java.util.Map;

@@ -1,8 +1,8 @@
 package platform.server.logics.auth;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class AbstractSecurityPolicy<T> {
 

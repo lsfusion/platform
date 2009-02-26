@@ -1,12 +1,12 @@
 package platform.client.interop.classes;
 
-import java.text.Format;
-import java.text.NumberFormat;
+import platform.client.form.*;
+import platform.client.interop.ClientCellView;
+
 import java.io.DataInputStream;
 import java.io.IOException;
-
-import platform.client.interop.ClientCellView;
-import platform.client.form.*;
+import java.text.Format;
+import java.text.NumberFormat;
 
 abstract public class ClientIntegralClass extends ClientClass {
 

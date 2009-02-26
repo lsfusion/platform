@@ -1,28 +1,27 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.properties.groups.AbstractNode;
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.session.*;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.classes.sets.*;
+import platform.Main;
 import platform.base.BaseUtils;
-import platform.server.data.types.Type;
-import platform.server.data.query.JoinQuery;
+import platform.server.data.KeyField;
+import platform.server.data.ModifyQuery;
+import platform.server.data.PropertyField;
+import platform.server.data.Table;
 import platform.server.data.query.Join;
-import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.query.exprs.LinearExpr;
-import platform.server.data.PropertyField;
-import platform.server.data.KeyField;
-import platform.server.data.Table;
-import platform.server.data.ModifyQuery;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.types.Type;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.auth.ChangePropertySecurityPolicy;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.classes.sets.*;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.properties.groups.AbstractNode;
+import platform.server.logics.session.*;
 
-import java.util.*;
 import java.sql.SQLException;
-
-import platform.Main;
+import java.util.*;
 
 abstract public class Property<T extends PropertyInterface> extends AbstractNode implements PropertyClass<T> {
 

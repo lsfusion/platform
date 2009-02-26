@@ -1,11 +1,10 @@
 package platform.server.logics.classes;
 
+import net.sf.jasperreports.engine.JRAlignment;
 import platform.server.view.form.report.ReportDrawField;
 
 import java.text.DateFormat;
 import java.text.Format;
-
-import net.sf.jasperreports.engine.JRAlignment;
 
 public class DateClass extends IntegralClass {
     DateClass(Integer iID, String caption) {super(iID, caption);}

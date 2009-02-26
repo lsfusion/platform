@@ -1,13 +1,14 @@
 package platform.server.data.query;
 
-import java.util.Collection;
-import java.util.List;
-
+import platform.interop.Compare;
 import platform.server.data.query.exprs.CaseExpr;
 import platform.server.data.query.exprs.LinearExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.wheres.JoinWhere;
 import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.wheres.JoinWhere;
+
+import java.util.Collection;
+import java.util.List;
 
 // пока сделаем так что у UnionQuery одинаковые ключи
 public class OperationQuery<K,V> extends UnionQuery<K,V> {
@@ -33,7 +34,7 @@ public class OperationQuery<K,V> extends UnionQuery<K,V> {
         SourceExpr result;
         switch(operator) {
             case MAX: // MAX CE(New.notNull AND !(Prev>New),New,Prev)
-                result = new CaseExpr(new CompareWhere(prevExpr,expr,CompareWhere.GREATER).or(expr.getWhere().not()), prevExpr, expr);
+                result = new CaseExpr(new CompareWhere(prevExpr,expr, Compare.GREATER).or(expr.getWhere().not()), prevExpr, expr);
                 break;
             case SUM: // SUM CE(Prev.null,New,New.null,Prev,true,New+Prev)
 //                Result = new CaseExpr(Expr.getWhere().not(),PrevExpr,new CaseExpr(PrevExpr.getWhere().not(),Expr,new FormulaExpr(PrevExpr,Expr,true)));

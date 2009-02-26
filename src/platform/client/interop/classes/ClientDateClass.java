@@ -1,13 +1,13 @@
 package platform.client.interop.classes;
 
-import java.text.Format;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import platform.client.form.*;
+import platform.client.interop.ClientCellView;
+
 import java.io.DataInputStream;
 import java.io.IOException;
-
-import platform.client.interop.ClientCellView;
-import platform.client.form.*;
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 
 public class ClientDateClass extends ClientClass {
 

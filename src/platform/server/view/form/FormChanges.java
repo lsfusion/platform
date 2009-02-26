@@ -1,12 +1,12 @@
 package platform.server.view.form;
 
-import platform.interop.form.client.AbstractFormChanges;
 import platform.base.BaseUtils;
+import platform.interop.form.client.AbstractFormChanges;
 
-import java.util.List;
-import java.util.Map;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges extends AbstractFormChanges<GroupObjectImplement,GroupObjectValue, PropertyView> {

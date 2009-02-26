@@ -1,20 +1,20 @@
 package platform.server.logics.classes;
 
-import java.util.*;
-import java.sql.SQLException;
-import java.text.Format;
+import net.sf.jasperreports.engine.JRAlignment;
+import platform.Main;
+import platform.server.data.types.Type;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.groups.AbstractNode;
+import platform.server.logics.session.DataSession;
+import platform.server.view.form.report.ReportDrawField;
+import platform.server.view.navigator.NavigatorElement;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import platform.server.view.navigator.NavigatorElement;
-import platform.server.view.form.report.ReportDrawField;
-import platform.server.logics.properties.groups.AbstractNode;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
-import platform.server.data.types.Type;
-import platform.Main;
-import net.sf.jasperreports.engine.JRAlignment;
+import java.sql.SQLException;
+import java.text.Format;
+import java.util.*;
 
 /**
  *

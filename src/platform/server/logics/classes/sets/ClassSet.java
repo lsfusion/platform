@@ -1,8 +1,8 @@
 package platform.server.logics.classes.sets;
 
-import platform.server.logics.classes.RemoteClass;
 import platform.base.CollectionExtend;
 import platform.server.data.types.Type;
+import platform.server.logics.classes.RemoteClass;
 
 import java.util.*;
 

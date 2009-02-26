@@ -1,18 +1,15 @@
 package platform.client.form;
 
 import com.toedter.calendar.JDateChooser;
-import platform.client.form.PropertyEditorComponent;
+import platform.base.DateConverter;
 import platform.client.SwingUtils;
 
-import java.text.SimpleDateFormat;
-import java.awt.event.KeyEvent;
-import java.awt.*;
-
-import platform.base.DateConverter;
-
 import javax.swing.*;
-import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.text.SimpleDateFormat;
 
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {

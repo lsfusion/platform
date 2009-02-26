@@ -1,12 +1,12 @@
 package platform.server.data.types;
 
-import java.util.Set;
-import java.util.HashSet;
-
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.NullExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.sql.SQLSyntax;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public abstract class Type<T> {
 

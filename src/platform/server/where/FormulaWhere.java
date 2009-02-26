@@ -1,14 +1,14 @@
 package platform.server.where;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.ObjectExpr;
-import platform.server.data.query.wheres.JoinWhere;
-import platform.server.data.query.QueryData;
 import platform.server.data.query.Join;
+import platform.server.data.query.QueryData;
+import platform.server.data.query.exprs.ObjectExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.sql.SQLSyntax;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {

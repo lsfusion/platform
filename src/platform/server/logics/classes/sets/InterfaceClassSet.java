@@ -4,10 +4,10 @@ import platform.base.GraphNodeSet;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.PropertyInterface;
 
-import java.util.Set;
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class InterfaceClassSet<P extends PropertyInterface> extends GraphNodeSet<InterfaceClass<P>,InterfaceClassSet<P>> {
 

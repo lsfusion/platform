@@ -1,8 +1,8 @@
 package platform.server.view.form.client;
 
-import platform.server.view.form.GroupObjectValue;
-import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.Filter;
+import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.GroupObjectValue;
 import platform.server.view.form.RemoteForm;
 
 import java.io.ByteArrayInputStream;

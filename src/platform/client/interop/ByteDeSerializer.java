@@ -1,15 +1,17 @@
 package platform.client.interop;
 
-import platform.interop.UserInfo;
-import platform.interop.report.ReportData;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.client.interop.classes.ClientClass;
 import platform.client.navigator.ClientNavigatorElement;
+import platform.interop.UserInfo;
+import platform.interop.report.ReportData;
 
-import java.io.*;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
-
-import net.sf.jasperreports.engine.design.JasperDesign;
+import java.util.List;
 
 public class ByteDeSerializer {
     

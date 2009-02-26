@@ -1,17 +1,17 @@
 package platform.server.data.query.wheres;
 
-import platform.server.data.query.exprs.JoinExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ObjectExpr;
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.ObjectExpr;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.where.DataWhere;
-import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class NotNullWhere extends DataWhere {

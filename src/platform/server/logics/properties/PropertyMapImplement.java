@@ -1,22 +1,22 @@
 package platform.server.logics.properties;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Collection;
-import java.sql.SQLException;
-
+import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
+import platform.server.logics.classes.sets.InterfaceClassSet;
+import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.logics.session.ChangeValue;
 import platform.server.logics.session.DataChanges;
 import platform.server.logics.session.DataSession;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.JoinExpr;
+
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterface> extends PropertyImplement<P,T> implements PropertyInterfaceImplement<P> {
 

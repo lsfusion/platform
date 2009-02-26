@@ -1,10 +1,10 @@
 package platform.server.data.query;
 
-import java.util.Map;
-import java.util.HashMap;
-
-import platform.server.where.Where;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.where.Where;
+
+import java.util.HashMap;
+import java.util.Map;
 
 class AndJoinQuery {
 

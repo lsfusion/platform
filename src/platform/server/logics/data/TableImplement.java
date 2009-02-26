@@ -1,10 +1,10 @@
 package platform.server.logics.data;
 
-import java.util.*;
-
-import platform.server.logics.properties.DataPropertyInterface;
-import platform.server.data.Table;
 import platform.server.data.KeyField;
+import platform.server.data.Table;
+import platform.server.logics.properties.DataPropertyInterface;
+
+import java.util.*;
 
 public class TableImplement extends ArrayList<DataPropertyInterface> {
     // заполняются пока автоматически

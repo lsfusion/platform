@@ -1,11 +1,11 @@
 package platform.server.logics.session;
 
-import java.util.Collection;
-import java.util.ArrayList;
-
-import platform.server.data.types.Type;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
+import platform.server.data.types.Type;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ChangeObjectTable extends ChangeTable {
 

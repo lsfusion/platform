@@ -2,8 +2,8 @@ package platform.client.form;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.text.Format;
 import java.awt.*;
+import java.text.Format;
 
 class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 

@@ -1,11 +1,11 @@
 package platform.client.layout;
 
-import platform.client.navigator.ClientNavigator;
 import platform.client.form.ClientForm;
-import platform.server.view.form.RemoteForm;
+import platform.client.navigator.ClientNavigator;
+import platform.interop.form.RemoteFormInterface;
 
-import java.sql.SQLException;
 import java.awt.*;
+import java.sql.SQLException;
 
 class ClientFormDockable extends FormDockable {
 
@@ -14,7 +14,7 @@ class ClientFormDockable extends FormDockable {
     }
 
     @Override
-    Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
+    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) {
         return new ClientForm(remoteForm, navigator);
     }
 

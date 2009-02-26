@@ -1,7 +1,7 @@
 package platform.server.logics.session;
 
-import platform.server.data.types.Type;
 import platform.server.data.PropertyField;
+import platform.server.data.types.Type;
 
 public class IncrementChangeTable extends ChangeObjectTable {
 

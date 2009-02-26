@@ -2,13 +2,13 @@ package platform.base;
 
 import sun.reflect.ReflectionFactory;
 
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Constructor;
-import java.io.*;
+import java.util.Map;
 
 public class BaseUtils {
 

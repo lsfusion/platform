@@ -1,10 +1,10 @@
 package platform.server.data;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.Join;
-import platform.server.data.query.ExprTranslator;
 import platform.server.data.query.CompiledJoin;
+import platform.server.data.query.ExprTranslator;
+import platform.server.data.query.Join;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.sql.SQLSyntax;
 
 import java.util.Collection;
 import java.util.Map;

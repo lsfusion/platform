@@ -12,9 +12,9 @@ import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.logics.properties.linear.*;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.query.Union;
-import platform.server.data.query.wheres.CompareWhere;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
+import platform.interop.Compare;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -272,7 +272,7 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 //        LJP Quantity = addUProp(2,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 //
         LNFP NotZero = addNFProp();
-        LCFP Less = addCFProp(CompareWhere.LESS);
+        LCFP Less = addCFProp(Compare.LESS);
         LMFP Multiply = addMFProp(RemoteClass.integer,2);
         LMFP Multiply3 = addMFProp(RemoteClass.integer,3);
 

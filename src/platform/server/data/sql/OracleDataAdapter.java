@@ -1,10 +1,10 @@
 package platform.server.data.sql;
 
-import java.sql.SQLException;
+import platform.server.data.types.Type;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
-
-import platform.server.data.types.Type;
+import java.sql.SQLException;
 
 class OracleDataAdapter extends DataAdapter {
 

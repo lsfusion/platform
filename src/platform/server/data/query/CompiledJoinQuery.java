@@ -1,13 +1,13 @@
 package platform.server.data.query;
 
-import java.util.*;
-
-import platform.server.data.sql.SQLSyntax;
+import platform.base.BaseUtils;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.where.Where;
-import platform.base.BaseUtils;
+
+import java.util.*;
 
 class CompiledJoinQuery<K,V> {
 

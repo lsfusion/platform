@@ -1,7 +1,7 @@
 package platform.client.form;
 
+import platform.client.SwingUtils;
 import platform.client.interop.classes.ClientClass;
-import platform.client.form.ClientForm;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 
@@ -10,8 +10,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.SQLException;
-
-import platform.client.SwingUtils;
 
 public class ClientDialog extends JDialog {
 

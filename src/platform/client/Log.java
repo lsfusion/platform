@@ -1,11 +1,9 @@
 package platform.client;
 
-import platform.client.SwingUtils;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.util.Date;
 

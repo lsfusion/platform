@@ -1,10 +1,8 @@
 package platform.client.form;
 
-import platform.client.form.PropertyEditorComponent;
-
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

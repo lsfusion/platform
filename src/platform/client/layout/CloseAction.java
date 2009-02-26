@@ -1,9 +1,9 @@
 package platform.client.layout;
 
-import bibliothek.gui.dock.action.actions.SimpleButtonAction;
 import bibliothek.gui.DockController;
-import bibliothek.gui.Dockable;
 import bibliothek.gui.DockStation;
+import bibliothek.gui.Dockable;
+import bibliothek.gui.dock.action.actions.SimpleButtonAction;
 
 class CloseAction extends SimpleButtonAction {
 

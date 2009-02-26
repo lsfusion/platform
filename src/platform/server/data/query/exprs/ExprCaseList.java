@@ -1,7 +1,7 @@
 package platform.server.data.query.exprs;
 
-import platform.server.where.Where;
 import platform.server.data.types.Type;
+import platform.server.where.Where;
 
 public class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
 

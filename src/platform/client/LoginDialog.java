@@ -1,13 +1,13 @@
 package platform.client;
 
-import platform.server.view.navigator.RemoteNavigator;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.event.*;
 
 public class LoginDialog extends JDialog {
 
-    RemoteNavigator remoteNavigator;
+    RemoteNavigatorInterface remoteNavigator;
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -15,7 +15,7 @@ public class LoginDialog extends JDialog {
     private JTextField loginField;
     private JPasswordField passwordField;
 
-    public LoginDialog(RemoteNavigator iremoteNavigator) {
+    public LoginDialog(RemoteNavigatorInterface iremoteNavigator) {
 
         remoteNavigator = iremoteNavigator;
 

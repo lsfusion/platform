@@ -1,16 +1,16 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.types.Type;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.query.QueryData;
+import platform.server.data.TypedObject;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinData;
-import platform.server.data.TypedObject;
+import platform.server.data.query.QueryData;
+import platform.server.data.query.wheres.MapWhere;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.types.Type;
 import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ValueExpr extends ObjectExpr implements QueryData {

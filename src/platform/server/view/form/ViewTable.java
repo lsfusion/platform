@@ -1,15 +1,15 @@
 package platform.server.view.form;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.sql.SQLException;
-
-import platform.server.data.types.Type;
 import platform.server.data.KeyField;
 import platform.server.data.SessionTable;
+import platform.server.data.types.Type;
 import platform.server.logics.session.DataSession;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // таблица куда виды складывают свои объекты
 public class ViewTable extends SessionTable {

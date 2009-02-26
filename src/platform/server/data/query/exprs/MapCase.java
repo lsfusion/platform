@@ -1,9 +1,9 @@
 package platform.server.data.query.exprs;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import platform.server.where.Where;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapCase<K> extends Case<Map<K,AndExpr>> {
 

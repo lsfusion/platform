@@ -1,7 +1,7 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
 import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.data.TableFactory;
 
 public class MultiplyFormulaProperty extends StringFormulaProperty {
 

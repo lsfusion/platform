@@ -1,41 +1,41 @@
 package platform.server.logics;
 
+import platform.Main;
+import platform.base.CollectionExtend;
+import platform.base.Combinations;
+import platform.interop.Compare;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.Table;
+import platform.server.data.query.Union;
+import platform.server.data.sql.DataAdapter;
+import platform.server.data.types.Type;
+import platform.server.logics.auth.AuthPolicy;
+import platform.server.logics.classes.ObjectClass;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.classes.StringClass;
+import platform.server.logics.classes.sets.ClassSet;
+import platform.server.logics.classes.sets.InterfaceClass;
+import platform.server.logics.constraints.Constraint;
+import platform.server.logics.data.IDTable;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.data.TableImplement;
-import platform.server.logics.data.IDTable;
-import platform.server.logics.classes.ObjectClass;
-import platform.server.logics.classes.StringClass;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.classes.sets.InterfaceClass;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.constraints.Constraint;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.session.DataChanges;
-import platform.server.logics.session.PropertyUpdateView;
 import platform.server.logics.properties.*;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.logics.properties.linear.*;
-import platform.server.logics.auth.AuthPolicy;
-import platform.server.data.sql.DataAdapter;
-import platform.server.data.types.Type;
-import platform.server.data.query.Union;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.Table;
-import platform.server.data.PropertyField;
-import platform.server.data.KeyField;
-import platform.base.CollectionExtend;
-import platform.base.Combinations;
+import platform.server.logics.session.DataChanges;
+import platform.server.logics.session.DataSession;
+import platform.server.logics.session.PropertyUpdateView;
+import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.PropertyView;
+import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
-import platform.server.view.navigator.ClassNavigatorForm;
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.PropertyView;
-import platform.server.view.form.GroupObjectImplement;
-import platform.Main;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
@@ -652,7 +652,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> implements Pro
         List<Property> randObjProps = new ArrayList<Property>();
         List<Property> randIntegralProps = new ArrayList<Property>();
 
-        CompareFormulaProperty dirihle = new CompareFormulaProperty(tableFactory, CompareWhere.LESS);
+        CompareFormulaProperty dirihle = new CompareFormulaProperty(tableFactory, Compare.LESS);
         randProps.add(dirihle);
 
         MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(tableFactory, RemoteClass.integer,2);

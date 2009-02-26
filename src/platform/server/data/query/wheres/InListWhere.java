@@ -1,11 +1,11 @@
 package platform.server.data.query.wheres;
 
-import platform.server.data.query.exprs.*;
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.*;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.where.DataWhere;
-import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
 import java.util.*;
 

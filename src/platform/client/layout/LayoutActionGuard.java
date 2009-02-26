@@ -1,11 +1,11 @@
 package platform.client.layout;
 
-import bibliothek.gui.dock.action.ActionGuard;
-import bibliothek.gui.dock.action.DefaultDockActionSource;
-import bibliothek.gui.dock.action.LocationHint;
-import bibliothek.gui.dock.action.DockActionSource;
 import bibliothek.gui.DockController;
 import bibliothek.gui.Dockable;
+import bibliothek.gui.dock.action.ActionGuard;
+import bibliothek.gui.dock.action.DefaultDockActionSource;
+import bibliothek.gui.dock.action.DockActionSource;
+import bibliothek.gui.dock.action.LocationHint;
 
 // подкидывает действия стандартные типа закрытия
 class LayoutActionGuard implements ActionGuard {

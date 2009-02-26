@@ -5,22 +5,20 @@
 
 package platform;
 
+import custom.TmcBusinessLogics;
+import platform.client.layout.Layout;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
-import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.DataSession;
 import platform.server.view.navigator.RemoteNavigator;
-import platform.client.layout.Layout;
+import test.TestBusinessLogics;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.*;
-
-import custom.TmcBusinessLogics;
-import test.TestBusinessLogics;
 
 public class Main {
 

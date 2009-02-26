@@ -1,24 +1,21 @@
 package platform.server.view.form.report;
 
-import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRAlignment;
-import net.sf.jasperreports.engine.JRPen;
 import net.sf.jasperreports.engine.JRElement;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.*;
-import java.util.List;
-import java.awt.*;
-
-import platform.server.view.form.report.ReportDrawField;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRPen;
+import net.sf.jasperreports.engine.design.*;
 import platform.Main;
 import platform.server.view.form.client.FormView;
 import platform.server.view.form.client.GroupObjectImplementView;
 import platform.server.view.form.client.ObjectImplementView;
 import platform.server.view.form.client.PropertyCellView;
-import platform.server.view.form.report.AbstractRowLayout;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DefaultJasperDesign extends JasperDesign {
 

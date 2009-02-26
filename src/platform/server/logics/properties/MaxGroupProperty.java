@@ -1,22 +1,23 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.classes.sets.ValueClassSet;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.data.types.Type;
+import platform.interop.Compare;
+import platform.server.data.KeyField;
+import platform.server.data.ModifyQuery;
+import platform.server.data.PropertyField;
 import platform.server.data.query.ChangeQuery;
-import platform.server.data.query.JoinQuery;
 import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.PropertyField;
-import platform.server.data.KeyField;
-import platform.server.data.ModifyQuery;
+import platform.server.data.types.Type;
+import platform.server.logics.classes.sets.ClassSet;
+import platform.server.logics.classes.sets.ValueClassSet;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.DataSession;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
@@ -58,7 +59,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
         suspiciousQuery.properties.put(changeTable.prevValue, prevValue);
 
         suspiciousQuery.and(newValue.getWhere().and(prevValue.getWhere().not()).or(
-                new CompareWhere(prevValue,newValue, CompareWhere.LESS)).or(new CompareWhere(prevValue,OldValue, CompareWhere.EQUALS)));
+                new CompareWhere(prevValue,newValue, Compare.LESS)).or(new CompareWhere(prevValue,OldValue, Compare.EQUALS)));
 
 
         // сохраняем
@@ -70,7 +71,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
 
         newValue = sourceJoin.exprs.get(changeTable.value);
         // новое null и InJoin или ноаое меньше старого
-        reReadQuery.and(sourceJoin.inJoin.and(newValue.getWhere().not()).or(new CompareWhere(newValue,sourceJoin.exprs.get(changeTable.prevValue), CompareWhere.LESS)));
+        reReadQuery.and(sourceJoin.inJoin.and(newValue.getWhere().not()).or(new CompareWhere(newValue,sourceJoin.exprs.get(changeTable.prevValue), Compare.LESS)));
 
         if(!(reReadQuery.executeSelect(session,new LinkedHashMap<PropertyField,Boolean>(),1).size() == 0)) {
             // если кол-во > 0 перечитываем, делаем LJ GQ с протолкнутым ReReadQuery

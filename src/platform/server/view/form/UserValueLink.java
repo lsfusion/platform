@@ -1,14 +1,14 @@
 package platform.server.view.form;
 
-import java.util.Set;
-import java.util.Map;
+import platform.base.BaseUtils;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.types.Type;
+import platform.server.logics.session.DataSession;
+
 import java.io.DataInputStream;
 import java.io.IOException;
-
-import platform.server.logics.session.DataSession;
-import platform.server.data.types.Type;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.base.BaseUtils;
+import java.util.Map;
+import java.util.Set;
 
 public class UserValueLink extends ValueLink {
 

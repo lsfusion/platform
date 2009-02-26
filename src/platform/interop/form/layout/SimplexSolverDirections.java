@@ -3,8 +3,8 @@ package platform.interop.form.layout;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 class SimplexSolverDirections {
 

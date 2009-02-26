@@ -1,14 +1,14 @@
 package platform.server.data;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.JoinQuery;
 import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.logics.session.DataSession;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class Table extends DataSource<KeyField, PropertyField> {
     public String Name;

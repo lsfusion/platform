@@ -1,18 +1,18 @@
 package platform.server.logics.session;
 
-import platform.server.data.types.Type;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.Join;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.logics.classes.*;
+import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.types.Type;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.classes.RemoteClass;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 // хранит добавляение\удаление классов
 public class ChangeClassTable extends ChangeTable {

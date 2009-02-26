@@ -15,6 +15,7 @@ import java.io.FileNotFoundException;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.auth.SecurityPolicy;
 import platform.interop.UserInfo;
+import platform.interop.Compare;
 import platform.server.logics.auth.User;
 import platform.server.logics.data.TableImplement;
 import platform.server.logics.properties.groups.AbstractGroup;
@@ -23,7 +24,6 @@ import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.AggregateProperty;
 import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.classes.RemoteClass;
-import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.Union;
 import platform.server.data.sql.DataAdapter;
 import platform.server.view.navigator.NavigatorForm;
@@ -164,12 +164,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initAbstractProperties() {
 
-        equals2 = addCFProp(CompareWhere.EQUALS);
+        equals2 = addCFProp(Compare.EQUALS);
         object1 = addOFProp(1);
         multiplyBit2 = addMFProp(RemoteClass.bit,2);
         equals22 = addJProp("И",multiplyBit2,4,equals2,1,2,equals2,3,4);
-        groeq2 = addCFProp(CompareWhere.GREATER_EQUALS);
-        greater2 = addCFProp(CompareWhere.GREATER);
+        groeq2 = addCFProp(Compare.GREATER_EQUALS);
+        greater2 = addCFProp(Compare.GREATER);
         between = addJProp("Между",multiplyBit2,3,groeq2,1,2,groeq2,3,1);
         notZero = addNFProp();
         percent = addSFProp("((prm1*prm2)/100)", RemoteClass.doubleClass, 2);

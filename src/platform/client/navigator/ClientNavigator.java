@@ -1,10 +1,7 @@
 package platform.client.navigator;
 
-import platform.server.view.navigator.RemoteNavigator;
-import platform.client.navigator.ClientNavigatorElement;
-import platform.client.navigator.ClientNavigatorForm;
-import platform.client.navigator.AbstractNavigator;
 import platform.client.interop.ByteDeSerializer;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.util.List;
 
@@ -13,7 +10,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
     public RelevantFormNavigator relevantFormNavigator;
     public RelevantClassNavigator relevantClassNavigator;
 
-    public ClientNavigator(RemoteNavigator iremoteNavigator) {
+    public ClientNavigator(RemoteNavigatorInterface iremoteNavigator) {
         super(iremoteNavigator);
 
         relevantFormNavigator = new RelevantFormNavigator(iremoteNavigator);
@@ -45,7 +42,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
     class RelevantFormNavigator extends AbstractNavigator {
 
-        public RelevantFormNavigator(RemoteNavigator iremoteNavigator) {
+        public RelevantFormNavigator(RemoteNavigatorInterface iremoteNavigator) {
             super(iremoteNavigator);
         }
 
@@ -55,14 +52,14 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
             return ByteDeSerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTFORM : elementID));
+                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTFORM : elementID));
         }
 
     }
 
     class RelevantClassNavigator extends AbstractNavigator {
 
-        public RelevantClassNavigator(RemoteNavigator iremoteNavigator) {
+        public RelevantClassNavigator(RemoteNavigatorInterface iremoteNavigator) {
             super(iremoteNavigator);
         }
 
@@ -72,7 +69,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
         protected List<ClientNavigatorElement> getNodeElements(int elementID) {
             return ByteDeSerializer.deserializeListClientNavigatorElement(
-                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigator.NAVIGATORGROUP_RELEVANTCLASS : elementID));
+                                                remoteNavigator.getElementsByteArray((elementID == -1) ? RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS : elementID));
         }
 
     }

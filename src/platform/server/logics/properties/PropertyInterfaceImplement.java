@@ -1,16 +1,16 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.classes.sets.InterfaceClassSet;
+import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
-import platform.server.logics.session.DataSession;
+import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.session.DataChanges;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.JoinExpr;
+import platform.server.logics.session.DataSession;
 
-import java.util.Map;
-import java.util.List;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 

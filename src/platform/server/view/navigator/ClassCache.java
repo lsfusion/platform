@@ -1,6 +1,6 @@
 package platform.server.view.navigator;
 
-import platform.server.logics.classes.*;
+import platform.server.logics.classes.RemoteClass;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

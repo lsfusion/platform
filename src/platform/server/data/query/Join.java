@@ -1,10 +1,10 @@
 package platform.server.data.query;
 
-import platform.server.data.query.wheres.JoinWhere;
-import platform.server.data.query.exprs.*;
-import platform.server.data.Source;
-import platform.server.data.DataSource;
 import platform.base.Pairs;
+import platform.server.data.DataSource;
+import platform.server.data.Source;
+import platform.server.data.query.exprs.*;
+import platform.server.data.query.wheres.JoinWhere;
 
 import java.util.*;
 

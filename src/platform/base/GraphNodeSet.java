@@ -1,8 +1,8 @@
 package platform.base;
 
-import java.util.Set;
-import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public abstract class GraphNodeSet<T,S extends GraphNodeSet<T,S>> extends SubNodeSet<T,S> {
 

@@ -1,30 +1,38 @@
 package platform.client.layout;
 
-import bibliothek.gui.*;
-import bibliothek.gui.dock.*;
-import bibliothek.gui.dock.event.DockFrontendAdapter;
-import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
-import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
-import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
-import bibliothek.gui.dock.control.SingleParentRemover;
-import bibliothek.notes.view.menu.ThemeMenu;
 import bibliothek.demonstration.util.LookAndFeelMenu;
+import bibliothek.gui.DockController;
+import bibliothek.gui.DockFrontend;
+import bibliothek.gui.DockStation;
+import bibliothek.gui.Dockable;
+import bibliothek.gui.dock.DefaultDockable;
+import bibliothek.gui.dock.FlapDockStation;
+import bibliothek.gui.dock.SplitDockStation;
+import bibliothek.gui.dock.StackDockStation;
+import bibliothek.gui.dock.control.SingleParentRemover;
+import bibliothek.gui.dock.event.DockFrontendAdapter;
+import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
+import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
+import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
+import bibliothek.notes.view.menu.ThemeMenu;
+import net.sf.jasperreports.engine.JRException;
+import platform.Main;
+import platform.client.Log;
+import platform.client.interop.ByteDeSerializer;
+import platform.client.navigator.ClientNavigator;
+import platform.client.navigator.ClientNavigatorForm;
+import platform.interop.UserInfo;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.io.*;
-
-import net.sf.jasperreports.engine.*;
-import platform.server.view.navigator.RemoteNavigator;
-import platform.interop.UserInfo;
-import platform.client.Log;
-import platform.client.interop.ByteDeSerializer;
-import platform.client.navigator.ClientNavigatorForm;
-import platform.client.navigator.ClientNavigator;
-import platform.Main;
 
 public class Layout extends JFrame implements ComponentCollector {
 
@@ -36,7 +44,7 @@ public class Layout extends JFrame implements ComponentCollector {
     LookAndFeelList LookAndFeels;
     ThemeMenu Themes;
 
-    public Layout(RemoteNavigator remoteNavigator) {
+    public Layout(RemoteNavigatorInterface remoteNavigator) {
 
         setIconImage(new ImageIcon(getClass().getResource("lsfusion.gif")).getImage());
         

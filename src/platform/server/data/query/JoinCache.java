@@ -1,9 +1,9 @@
 package platform.server.data.query;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import platform.server.data.query.exprs.ValueExpr;
+
+import java.util.HashMap;
+import java.util.Map;
 
 // поиск в кэше
 class JoinCache<K,V> {

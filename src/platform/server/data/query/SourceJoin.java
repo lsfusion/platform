@@ -1,12 +1,12 @@
 package platform.server.data.query;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.wheres.MapWhere;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface SourceJoin {

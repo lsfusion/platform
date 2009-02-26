@@ -1,8 +1,8 @@
 package platform.interop.form.layout;
 
 import java.awt.*;
-import java.util.HashMap;
 import java.io.Serializable;
+import java.util.HashMap;
 
 public class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstraint>
                          implements Serializable {

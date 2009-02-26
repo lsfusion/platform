@@ -1,7 +1,7 @@
 package platform.server.view.form.client;
 
-import platform.server.view.form.ObjectImplement;
 import platform.server.logics.classes.RemoteClass;
+import platform.server.view.form.ObjectImplement;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -1,16 +1,16 @@
 package platform.server.data.query.wheres;
 
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
-
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.*;
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.*;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.where.Where;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class JoinWhere extends DataWhere implements JoinData {
     Join<?,?> from;

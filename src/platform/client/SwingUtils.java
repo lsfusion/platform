@@ -3,10 +3,10 @@ package platform.client;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.Set;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Set;
 
 public class SwingUtils {
 

@@ -5,40 +5,39 @@
 
 package platform.server.view.form;
 
-import java.sql.SQLException;
-import java.util.Map.Entry;
-import java.util.*;
-
-// здесь многие подходы для оптимизации неструктурные, то есть можно было структурно все обновлять но это очень медленно
-
 import net.sf.jasperreports.engine.design.JasperDesign;
-
+import platform.base.BaseUtils;
+import platform.interop.Compare;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.report.ReportData;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.wheres.CompareWhere;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.auth.SecurityPolicy;
 import platform.server.logics.classes.IntegralClass;
 import platform.server.logics.classes.ObjectClass;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.data.IDTable;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.SecurityPolicy;
-import platform.server.logics.session.ChangeValue;
-import platform.server.logics.session.ChangeObjectValue;
-import platform.server.logics.session.PropertyUpdateView;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.properties.Property;
 import platform.server.logics.properties.DataProperty;
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.interop.report.ReportData;
-import platform.server.where.Where;
-import platform.server.view.form.client.ByteSerializer;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.session.ChangeObjectValue;
+import platform.server.logics.session.ChangeValue;
+import platform.server.logics.session.DataSession;
+import platform.server.logics.session.PropertyUpdateView;
 import platform.server.view.form.client.ByteDeSerializer;
+import platform.server.view.form.client.ByteSerializer;
 import platform.server.view.form.client.FormView;
-import platform.base.BaseUtils;
+import platform.server.where.Where;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.Map.Entry;
 
 // класс в котором лежит какие изменения произошли
 
@@ -46,15 +45,13 @@ import platform.base.BaseUtils;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
-
-    public static int GID_SHIFT = 1000;
+public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView, RemoteFormInterface {
 
     // используется для записи в сессии изменений в базу - требуется глобально уникальный идентификатор
     private final int GID;
     public int getGID() { return GID; }
 
-    private int getGroupObjectGID(GroupObjectImplement group) { return GID * GID_SHIFT + group.ID; }
+    private int getGroupObjectGID(GroupObjectImplement group) { return GID * RemoteFormInterface.GID_SHIFT + group.ID; }
 
     private final int ID;
     public int getID() { return ID; }
@@ -123,24 +120,24 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     // ----------------------------------- Навигация ----------------------------------------- //
 
-    public void ChangeGroupObject(Integer groupID, int changeType) throws SQLException {
+    public void changeGroupObject(Integer groupID, int changeType) throws SQLException {
         ChangeGroupObject(getGroupObjectImplement(groupID), changeType);
     }
 
-    public void ChangeGroupObject(Integer groupID, byte[] value) throws SQLException {
+    public void changeGroupObject(Integer groupID, byte[] value) throws SQLException {
         GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
         changeGroupObject(groupObject, ByteDeSerializer.deserializeGroupObjectValue(value, groupObject));
     }
 
-    public void ChangeObject(Integer objectID, Integer value) throws SQLException {
+    public void changeObject(Integer objectID, Integer value) throws SQLException {
         changeObject(getObjectImplement(objectID), value);
     }
 
-    public void ChangeGridClass(int objectID,int idClass) throws SQLException {
+    public void changeGridClass(int objectID,int idClass) throws SQLException {
         ChangeGridClass(getObjectImplement(objectID), idClass);
     }
 
-    public void SwitchClassView(Integer groupID) throws SQLException {
+    public void switchClassView(int groupID) throws SQLException {
         switchClassView(getGroupObjectImplement(groupID));
     }
 
@@ -158,24 +155,24 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     // Порядки
 
-    public void ChangeOrder(int propertyID, int modiType) {
+    public void changeOrder(int propertyID, int modiType) {
         ChangeOrder(getPropertyView(propertyID), modiType);
     }
 
     // -------------------------------------- Изменение данных ----------------------------------- //
 
-    public void AddObject(int objectID, int classID) throws SQLException {
+    public void addObject(int objectID, int classID) throws SQLException {
         ObjectImplement object = getObjectImplement(objectID);
         AddObject(object, (classID == -1) ? null : object.baseClass.findClassID(classID));
     }
 
-    public void ChangeClass(int objectID, int classID) throws SQLException {
+    public void changeClass(int objectID, int classID) throws SQLException {
 
         ObjectImplement object = getObjectImplement(objectID);
         changeClass(object, (classID == -1) ? null : object.baseClass.findClassID(classID));
     }
 
-    public void ChangePropertyView(Integer propertyID, byte[] object, boolean externalID) throws SQLException {
+    public void changePropertyView(Integer propertyID, byte[] object, boolean externalID) throws SQLException {
         ChangePropertyView(getPropertyView(propertyID), BaseUtils.deserializeObject(object), externalID);
     }
 
@@ -254,9 +251,6 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // поиски по свойствам\объектам
     public Map<PropertyObjectImplement,Object> userPropertySeeks = new HashMap<PropertyObjectImplement, Object>();
     public Map<ObjectImplement,Integer> userObjectSeeks = new HashMap<ObjectImplement, Integer>();
-
-    public static int CHANGEGROUPOBJECT_FIRSTROW = 0;
-    public static int CHANGEGROUPOBJECT_LASTROW = 1;
 
     private Map<GroupObjectImplement, Integer> pendingGroupChanges = new HashMap<GroupObjectImplement, Integer>();
 
@@ -366,22 +360,17 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     // Порядки
 
-    public static int ORDER_REPLACE = 1;
-    public static int ORDER_ADD = 2;
-    public static int ORDER_REMOVE = 3;
-    public static int ORDER_DIR = 4;
-
     private LinkedHashMap<PropertyView,Boolean> orders = new LinkedHashMap<PropertyView, Boolean>();
 
     private void ChangeOrder(PropertyView propertyView, int modiType) {
 
-        if (modiType == ORDER_REMOVE)
+        if (modiType == RemoteFormInterface.ORDER_REMOVE)
             orders.remove(propertyView);
         else
-        if (modiType == ORDER_DIR)
+        if (modiType == RemoteFormInterface.ORDER_DIR)
             orders.put(propertyView,!orders.get(propertyView));
         else {
-            if (modiType == ORDER_REPLACE) {
+            if (modiType == RemoteFormInterface.ORDER_REPLACE) {
                 for (PropertyView propView : orders.keySet())
                     if (propView.toDraw == propertyView.toDraw)
                         orders.remove(propView);
@@ -502,11 +491,11 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     // Применение изменений
-    public String SaveChanges() throws SQLException {
+    public String saveChanges() throws SQLException {
         return BL.apply(session);
     }
 
-    public void CancelChanges() throws SQLException {
+    public void cancelChanges() throws SQLException {
         session.restart(true);
 
         dataChanged = true;
@@ -557,24 +546,24 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         if (orderDirs.get(index)) {
             if (down) {
                 if (last)
-                    compareIndex = CompareWhere.LESS_EQUALS;
+                    compareIndex = Compare.LESS_EQUALS;
                 else
-                    compareIndex = CompareWhere.LESS;
+                    compareIndex = Compare.LESS;
             } else
-                compareIndex = CompareWhere.GREATER;
+                compareIndex = Compare.GREATER;
         } else {
             if (down) {
                 if (last)
-                    compareIndex = CompareWhere.GREATER_EQUALS;
+                    compareIndex = Compare.GREATER_EQUALS;
                 else
-                    compareIndex = CompareWhere.GREATER;
+                    compareIndex = Compare.GREATER;
             } else
-                compareIndex = CompareWhere.LESS;
+                compareIndex = Compare.LESS;
         }
         Where orderWhere = new CompareWhere(orderExpr,orderExpr.getType().getExpr(orderValue),compareIndex);
 
         if(!last) // >A OR (=A AND >B)
-            return new CompareWhere(orderExpr,orderExpr.getType().getExpr(orderValue),CompareWhere.EQUALS).
+            return new CompareWhere(orderExpr,orderExpr.getType().getExpr(orderValue), Compare.EQUALS).
                     and(generateOrderWheres(orderSources, orderWheres, orderDirs, down, index +1)).or(orderWhere);
         else
             return orderWhere;
@@ -733,7 +722,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             Integer pendingChanges = pendingGroupChanges.get(group);
             if (pendingChanges == null) pendingChanges = -1;
 
-            if (pendingChanges == CHANGEGROUPOBJECT_FIRSTROW) {
+            if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_FIRSTROW) {
                 objectSeeks = new GroupObjectValue();
                 currentObject = null;
                 updateKeys = true;
@@ -741,7 +730,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 direction = DIRECTION_DOWN;
             }
 
-            if (pendingChanges == CHANGEGROUPOBJECT_LASTROW) {
+            if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW) {
                 objectSeeks = new GroupObjectValue();
                 currentObject = null;
                 updateKeys = true;
@@ -835,7 +824,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                     group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
                     for(Entry<PropertyObjectImplement,Object> property : propertySeeks.entrySet())
                         selectKeys.and(new CompareWhere(property.getKey().getSourceExpr(group.getClassGroup(),selectKeys.mapKeys, session),
-                                property.getKey().property.getType().getExpr(property.getValue()),CompareWhere.EQUALS));
+                                property.getKey().property.getType().getExpr(property.getValue()), Compare.EQUALS));
 
                     // докидываем найденные ключи
                     LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultKeys = selectKeys.executeSelect(session);

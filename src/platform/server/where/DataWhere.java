@@ -1,10 +1,10 @@
 package platform.server.where;
 
+import platform.server.data.query.QueryData;
+import platform.server.data.sql.SQLSyntax;
+
 import java.util.Collection;
 import java.util.Map;
-
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.QueryData;
 
 abstract public class DataWhere extends ObjectWhere<NotWhere> {
 

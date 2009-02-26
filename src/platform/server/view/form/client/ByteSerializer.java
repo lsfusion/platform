@@ -1,22 +1,20 @@
 package platform.server.view.form.client;
 
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.session.ChangeValue;
-import platform.server.view.navigator.NavigatorElement;
-import platform.server.view.form.FormChanges;
-import platform.server.view.form.client.FormView;
+import net.sf.jasperreports.engine.design.JasperDesign;
+import platform.base.BaseUtils;
 import platform.interop.UserInfo;
 import platform.interop.report.ReportData;
-import platform.base.BaseUtils;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.session.ChangeValue;
+import platform.server.view.form.FormChanges;
+import platform.server.view.navigator.NavigatorElement;
 
-import java.util.List;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-
-import net.sf.jasperreports.engine.design.JasperDesign;
+import java.util.List;
 
 public class ByteSerializer {
     // -------------------------------------- Сериализация классов -------------------------------------------- //

@@ -1,11 +1,11 @@
 package platform.server.view.form;
 
-import java.util.Set;
-import java.util.Map;
-
-import platform.server.data.types.Type;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.types.Type;
 import platform.server.logics.classes.RemoteClass;
+
+import java.util.Map;
+import java.util.Set;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public class ObjectImplement {

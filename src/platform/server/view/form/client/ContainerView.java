@@ -4,7 +4,6 @@ import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.*;
 import java.util.List;
 
 public class ContainerView extends ComponentView {

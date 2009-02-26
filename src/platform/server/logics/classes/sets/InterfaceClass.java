@@ -1,10 +1,10 @@
 package platform.server.logics.classes.sets;
 
+import platform.server.logics.ObjectValue;
+import platform.server.logics.properties.PropertyInterface;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.ObjectValue;
 
 public class InterfaceClass<P extends PropertyInterface> extends HashMap<P,ClassSet> {
 

@@ -1,16 +1,16 @@
 package platform.server.logics.constraints;
 
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.JoinQuery;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.wheres.CompareWhere;
 import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 abstract class ValueConstraint extends Constraint {
 

@@ -1,10 +1,10 @@
 package platform.server.logics.properties.groups;
 
-import platform.server.logics.classes.*;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.Property;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class AbstractGroup extends AbstractNode {

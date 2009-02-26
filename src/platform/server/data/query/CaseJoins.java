@@ -1,12 +1,12 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.*;
 import platform.server.data.DataSource;
+import platform.server.data.query.exprs.*;
 import platform.server.where.Where;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implements CaseWhere<MapCase<J>> {
 

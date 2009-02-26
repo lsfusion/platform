@@ -2,10 +2,10 @@ package platform.client.layout;
 
 import bibliothek.gui.dock.DefaultDockable;
 import platform.client.navigator.ClientNavigator;
-import platform.server.view.form.RemoteForm;
+import platform.interop.form.RemoteFormInterface;
 
-import java.sql.SQLException;
 import java.awt.*;
+import java.sql.SQLException;
 
 // уничтожаемые формы
 abstract class FormDockable extends DefaultDockable {
@@ -18,7 +18,7 @@ abstract class FormDockable extends DefaultDockable {
         createActiveComponent(navigator, currentSession);
     }
 
-    FormDockable(int iformID, ClientNavigator navigator, RemoteForm remoteForm) throws SQLException {
+    FormDockable(int iformID, ClientNavigator navigator, RemoteFormInterface remoteForm) throws SQLException {
         this(iformID);
 
         createActiveComponent(navigator, remoteForm);
@@ -33,7 +33,7 @@ abstract class FormDockable extends DefaultDockable {
         createActiveComponent(navigator, navigator.remoteNavigator.createForm(formID, currentSession));
     }
 
-    void createActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) {
+    void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) {
         setActiveComponent(getActiveComponent(navigator, remoteForm), navigator.remoteNavigator.getCaption(formID));
     }
 
@@ -43,7 +43,7 @@ abstract class FormDockable extends DefaultDockable {
         add(comp);
     }
 
-    Component getActiveComponent(ClientNavigator navigator, RemoteForm remoteForm) { return null; }
+    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) { return null; }
 
 //    FormDockable(String caption) {super(caption);}
 //    FormDockable(Component Component,String caption) {super(Component,caption);}

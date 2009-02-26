@@ -1,12 +1,13 @@
 package platform.server.logics.constraints;
 
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.JoinExpr;
-import platform.server.data.query.exprs.SourceExpr;
+import platform.interop.Compare;
 import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;
-import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.session.DataSession;
 import platform.server.where.Where;
 
@@ -41,7 +42,7 @@ class UniqueConstraint extends Constraint {
         SourceExpr prevExpr = session.getSourceExpr(property,mapPrev, property.getUniversalInterface());
 
         // равны значения
-        changed.and(new CompareWhere(prevExpr,changedExpr, CompareWhere.EQUALS));
+        changed.and(new CompareWhere(prevExpr,changedExpr, Compare.EQUALS));
         // значения не NULL
         changed.and(changedExpr.getWhere());
 
@@ -51,7 +52,7 @@ class UniqueConstraint extends Constraint {
         Map<PropertyInterface,String> keyFields = new HashMap<PropertyInterface, String>();
         Integer keyNum = 0;
         for(PropertyInterface propertyInterface : (Collection<PropertyInterface>) property.interfaces)
-            orDiffKeys = orDiffKeys.or(new CompareWhere(mapChange.get(propertyInterface),mapPrev.get(propertyInterface), CompareWhere.NOT_EQUALS));
+            orDiffKeys = orDiffKeys.or(new CompareWhere(mapChange.get(propertyInterface),mapPrev.get(propertyInterface), Compare.NOT_EQUALS));
         changed.and(orDiffKeys);
         changed.properties.put("value", changedExpr);
 

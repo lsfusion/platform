@@ -1,23 +1,24 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
+import platform.interop.Compare;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.Table;
+import platform.server.data.query.ChangeQuery;
+import platform.server.data.query.Join;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.wheres.CompareWhere;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
+import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.*;
-import platform.server.data.query.ChangeQuery;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.JoinExpr;
-import platform.server.data.KeyField;
-import platform.server.data.Table;
-import platform.server.data.PropertyField;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInterface> {
     public RemoteClass value;
@@ -193,7 +194,7 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
                     query.properties.put(changeTable.value, newExpr);
                     // new, не равно prev
                     query.and(newExpr.from.inJoin);
-                    query.and(new CompareWhere(newExpr,defaultChange.getExpr(joinImplement,2), CompareWhere.EQUALS).not());
+                    query.and(new CompareWhere(newExpr,defaultChange.getExpr(joinImplement,2), Compare.EQUALS).not());
 
                     resultQuery.add(query);
                     resultClass.or(defaultChange.classes.mapBack(defaultMap));

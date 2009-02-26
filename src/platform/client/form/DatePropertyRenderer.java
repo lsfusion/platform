@@ -1,9 +1,9 @@
 package platform.client.form;
 
+import platform.base.DateConverter;
+
 import javax.swing.*;
 import java.text.Format;
-
-import platform.base.DateConverter;
 
 public class DatePropertyRenderer extends LabelPropertyRenderer
                            implements PropertyRendererComponent {

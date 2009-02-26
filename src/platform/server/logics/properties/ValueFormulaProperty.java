@@ -1,11 +1,11 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
+import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ValueClassSet;
+import platform.server.logics.data.TableFactory;
 
 // вообще Collection
 abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends FormulaProperty<T> {

@@ -1,15 +1,15 @@
 package platform.server.logics.classes;
 
-import java.util.Random;
-import java.util.List;
-import java.util.Map;
+import platform.client.interop.classes.ClientClass;
+import platform.server.data.types.Type;
+import platform.server.logics.data.TableFactory;
+import platform.server.logics.session.DataSession;
+
 import java.sql.SQLException;
 import java.text.Format;
-
-import platform.server.data.types.Type;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.data.TableFactory;
-import platform.client.interop.classes.ClientClass;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 class BaseClass extends RemoteClass {
 
@@ -27,10 +27,6 @@ class BaseClass extends RemoteClass {
 
     public Object getRandomObject(Map<RemoteClass, List<Integer>> objects, Random randomizer, Integer diap) throws SQLException {
         return null;
-    }
-
-    public ClientClass getClientClass() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public Class getJavaClass() {

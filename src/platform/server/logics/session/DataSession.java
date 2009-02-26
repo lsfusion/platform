@@ -1,21 +1,22 @@
 package platform.server.logics.session;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.sql.DataAdapter;
-import platform.server.data.query.JoinQuery;
+import platform.interop.Compare;
+import platform.server.data.*;
 import platform.server.data.query.ChangeQuery;
 import platform.server.data.query.Join;
-import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.JoinExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.*;
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.classes.ObjectClass;
-import platform.server.logics.classes.sets.*;
-import platform.server.logics.ObjectValue;
+import platform.server.data.sql.DataAdapter;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.classes.ObjectClass;
+import platform.server.logics.classes.RemoteClass;
+import platform.server.logics.classes.sets.*;
+import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.*;
 
 import java.sql.Connection;
@@ -148,7 +149,7 @@ public class DataSession  {
             DataProperty<?> extPropID = Property.value.getExternalID();
 
             JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID.interfaces);
-            query.where = query.where.and(new CompareWhere(extPropID.getSourceExpr(query.mapKeys,extPropID.getClassSet(ClassSet.universal)),Property.getType().getExpr(NewValue), CompareWhere.EQUALS));
+            query.where = query.where.and(new CompareWhere(extPropID.getSourceExpr(query.mapKeys,extPropID.getClassSet(ClassSet.universal)),Property.getType().getExpr(NewValue), Compare.EQUALS));
 
             LinkedHashMap<Map<DataPropertyInterface,Integer>,Map<String,Object>> result = query.executeSelect(this);
 

@@ -1,15 +1,16 @@
 package platform.server.view.form;
 
-import java.util.*;
-
-import platform.server.data.query.JoinQuery;
+import platform.interop.form.RemoteFormInterface;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
 import platform.server.data.query.ChangeQuery;
 import platform.server.data.query.Join;
-import platform.server.data.PropertyField;
-import platform.server.data.KeyField;
+import platform.server.data.query.JoinQuery;
+import platform.server.logics.classes.IntegralClass;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataSession;
-import platform.server.logics.classes.IntegralClass;
+
+import java.util.*;
 
 public class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
@@ -17,8 +18,8 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
     public final int ID;
     public GroupObjectImplement(int iID) {
 
-        if (iID >= RemoteForm.GID_SHIFT)
-            throw new RuntimeException("sID must be less than " + RemoteForm.GID_SHIFT);
+        if (iID >= RemoteFormInterface.GID_SHIFT)
+            throw new RuntimeException("sID must be less than " + RemoteFormInterface.GID_SHIFT);
 
         ID = iID;
     }

@@ -1,10 +1,10 @@
 package platform.server.logics.properties.linear;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LP<T extends PropertyInterface,P extends Property<T>> {
 

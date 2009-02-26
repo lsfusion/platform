@@ -3,8 +3,8 @@ package platform.server.logics.session;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.DataProperty;
 
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 // изменения данных
 public class DataChanges {

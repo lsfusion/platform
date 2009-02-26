@@ -1,16 +1,14 @@
 package platform.server.logics.classes;
 
-import java.util.Random;
-import java.util.List;
-import java.util.Map;
-import java.sql.SQLException;
-import java.text.Format;
-
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataSession;
-import platform.client.interop.classes.ClientClass;
-import platform.client.interop.classes.ClientStringClass;
+
+import java.sql.SQLException;
+import java.text.Format;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class StringClass extends RemoteClass {
 

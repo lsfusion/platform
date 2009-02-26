@@ -1,10 +1,10 @@
 package platform.server.data.query;
 
-import java.util.Collection;
-
-import platform.server.data.query.wheres.JoinWhere;
 import platform.server.data.query.exprs.CaseExpr;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.wheres.JoinWhere;
+
+import java.util.Collection;
 
 // выбирает по списку значение из первого Source'а
 public class ChangeQuery<K,V> extends UnionQuery<K,V> {

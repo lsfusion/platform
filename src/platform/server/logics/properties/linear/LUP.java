@@ -1,8 +1,8 @@
 package platform.server.logics.properties.linear;
 
+import platform.server.logics.properties.JoinPropertyInterface;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.properties.UnionProperty;
-import platform.server.logics.properties.JoinPropertyInterface;
 
 public class LUP extends LP<PropertyInterface, UnionProperty> {
 

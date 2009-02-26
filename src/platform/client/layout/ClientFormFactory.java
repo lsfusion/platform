@@ -1,15 +1,15 @@
 package platform.client.layout;
 
-import bibliothek.gui.dock.DockFactory;
 import bibliothek.gui.Dockable;
+import bibliothek.gui.dock.DockFactory;
 import bibliothek.util.xml.XElement;
 import platform.client.navigator.ClientNavigator;
 
-import java.util.Map;
-import java.sql.SQLException;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.DataInputStream;
+import java.sql.SQLException;
+import java.util.Map;
 
 class ClientFormFactory implements DockFactory<FormDockable,Integer> {
 

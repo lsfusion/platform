@@ -1,7 +1,7 @@
 package platform.server.data.query.exprs;
 
-import platform.server.where.Where;
 import platform.server.data.query.wheres.JoinWhere;
+import platform.server.where.Where;
 
 import java.util.Map;
 

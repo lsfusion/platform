@@ -2,11 +2,11 @@ package platform.server.view.navigator;
 
 import platform.server.logics.BusinessLogics;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> {
 

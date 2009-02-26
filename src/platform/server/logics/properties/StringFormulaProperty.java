@@ -1,13 +1,13 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.data.TableFactory;
+import platform.server.data.query.exprs.FormulaExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.InterfaceClassSet;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.FormulaExpr;
+import platform.server.logics.data.TableFactory;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPropertyInterface> {
 

@@ -5,41 +5,47 @@
 
 package platform.client.form;
 
-import platform.base.Pair;
-import platform.base.BaseUtils;
-import platform.server.view.form.RegularFilter;
-import platform.server.view.form.RegularFilterGroup;
-import platform.server.view.form.RemoteForm;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.client.*;
-import platform.client.layout.ReportDockable;
-import platform.client.navigator.ClientNavigator;
-import platform.interop.form.layout.SimplexLayout;
 import platform.Main;
+import platform.base.BaseUtils;
+import platform.base.Pair;
+import platform.client.ExpandingTreeNode;
+import platform.client.Log;
+import platform.client.SwingUtils;
+import platform.client.interop.*;
 import platform.client.interop.classes.ClientClass;
 import platform.client.interop.classes.ClientObjectClass;
-import platform.client.interop.*;
+import platform.client.layout.ReportDockable;
+import platform.client.navigator.ClientNavigator;
+import platform.interop.Compare;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.layout.SimplexLayout;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.List;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import javax.swing.*;
-import javax.swing.tree.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.List;
 
 public class ClientForm extends JPanel {
 
     private final ClientFormView formView;
 
-    public final RemoteForm remoteForm;
+    public final RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;
 
     // Icons - загружаем один раз, для экономии
@@ -56,9 +62,9 @@ public class ClientForm extends JPanel {
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
     private final int GID;
-    private int getGroupObjectGID(ClientGroupObjectImplementView group) { return GID * RemoteForm.GID_SHIFT + group.ID; }
+    private int getGroupObjectGID(ClientGroupObjectImplementView group) { return GID * RemoteFormInterface.GID_SHIFT + group.ID; }
 
-    public ClientForm(RemoteForm iremoteForm, ClientNavigator iclientNavigator) {
+    public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) {
 //        super(app);
 
 //        FocusOwnerTracer.installFocusTracer();
@@ -293,9 +299,9 @@ public class ClientForm extends JPanel {
     private void initializeOrders() {
         // Применяем порядки по умолчанию
         for (Map.Entry<ClientPropertyView, Boolean> entry : formView.defaultOrders.entrySet()) {
-            models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteForm.ORDER_ADD);
+            models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteFormInterface.ORDER_ADD);
             if (!entry.getValue()) {
-                models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteForm.ORDER_DIR);
+                models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteFormInterface.ORDER_DIR);
             }
         }
     }
@@ -366,7 +372,7 @@ public class ClientForm extends JPanel {
         if (!objectValue.equals(curObjectValue)) {
 
             try {
-                remoteForm.ChangeGroupObject(groupObject.ID, ByteSerializer.serializeClientGroupObjectValue(objectValue));
+                remoteForm.changeGroupObject(groupObject.ID, ByteSerializer.serializeClientGroupObjectValue(objectValue));
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -383,7 +389,7 @@ public class ClientForm extends JPanel {
     void changeGroupObject(ClientGroupObjectImplementView groupObject, int changeType) {
 
         try {
-            remoteForm.ChangeGroupObject(groupObject.ID, changeType);
+            remoteForm.changeGroupObject(groupObject.ID, changeType);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -401,7 +407,7 @@ public class ClientForm extends JPanel {
 
             // типа только если меняется свойство
             try {
-                remoteForm.ChangePropertyView(((ClientPropertyView)property).ID, BaseUtils.serializeObject(value), externalID);
+                remoteForm.changePropertyView(((ClientPropertyView)property).ID, BaseUtils.serializeObject(value), externalID);
                 dataChanged();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -412,7 +418,7 @@ public class ClientForm extends JPanel {
             ClientObjectImplementView object = ((ClientObjectView)property).object;
 
             try {
-                remoteForm.ChangeObject(object.ID, (Integer)value);
+                remoteForm.changeObject(object.ID, (Integer)value);
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -428,7 +434,7 @@ public class ClientForm extends JPanel {
 
     void addObject(ClientObjectImplementView object, ClientClass cls) {
         try {
-            remoteForm.AddObject(object.ID, cls.ID);
+            remoteForm.addObject(object.ID, cls.ID);
             dataChanged();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -441,7 +447,7 @@ public class ClientForm extends JPanel {
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(object.groupObject), true);
 
         try {
-            remoteForm.ChangeClass(object.ID, (cls == null) ? -1 : cls.ID);
+            remoteForm.changeClass(object.ID, (cls == null) ? -1 : cls.ID);
             dataChanged();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -452,7 +458,7 @@ public class ClientForm extends JPanel {
     void changeGridClass(ClientObjectImplementView object, ClientClass cls) {
 
         try {
-            remoteForm.ChangeGridClass(object.ID, cls.ID);
+            remoteForm.changeGridClass(object.ID, cls.ID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -465,7 +471,7 @@ public class ClientForm extends JPanel {
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), true);
 
         try {
-            remoteForm.SwitchClassView(groupObject.ID);
+            remoteForm.switchClassView(groupObject.ID);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -475,7 +481,7 @@ public class ClientForm extends JPanel {
 
     void changeOrder(ClientPropertyView property, int modiType) {
 
-        remoteForm.ChangeOrder(property.ID, modiType);
+        remoteForm.changeOrder(property.ID, modiType);
         
         applyFormChanges();
     }
@@ -528,7 +534,7 @@ public class ClientForm extends JPanel {
         if (remoteForm.hasSessionChanges()) {
 
             try {
-                String message = remoteForm.SaveChanges();
+                String message = remoteForm.saveChanges();
                 if (message==null) {
                     Log.printSuccessMessage("Изменения были удачно записаны...");
                     dataChanged();
@@ -553,7 +559,7 @@ public class ClientForm extends JPanel {
         if (remoteForm.hasSessionChanges()) {
 
             try {
-                remoteForm.CancelChanges();
+                remoteForm.cancelChanges();
             } catch (SQLException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -1276,7 +1282,7 @@ public class ClientForm extends JPanel {
 
                 changeOrder(property, modiType);
 
-                if (modiType == RemoteForm.ORDER_REPLACE) {
+                if (modiType == RemoteFormInterface.ORDER_REPLACE) {
 
                     orders.clear();
                     orderDirections.clear();
@@ -1285,19 +1291,19 @@ public class ClientForm extends JPanel {
                     orderDirections.add(true);
                 }
 
-                if (modiType == RemoteForm.ORDER_ADD) {
+                if (modiType == RemoteFormInterface.ORDER_ADD) {
 
                     orders.add(property);
                     orderDirections.add(true);
                 }
 
-                if (modiType == RemoteForm.ORDER_DIR) {
+                if (modiType == RemoteFormInterface.ORDER_DIR) {
 
                     int ordNum = orders.indexOf(property);
                     orderDirections.set(ordNum, !orderDirections.get(ordNum));
                 }
 
-                if (modiType == RemoteForm.ORDER_REMOVE) {
+                if (modiType == RemoteFormInterface.ORDER_REMOVE) {
 
                     int ordNum = orders.indexOf(property);
                     orders.remove(ordNum);
@@ -1370,12 +1376,12 @@ public class ClientForm extends JPanel {
 
                     // Отдельно обработаем CTRL + HOME и CTRL + END
                     if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_DOWN_MASK))) {
-                        changeGroupObject(groupObject, RemoteForm.CHANGEGROUPOBJECT_FIRSTROW);
+                        changeGroupObject(groupObject, RemoteFormInterface.CHANGEGROUPOBJECT_FIRSTROW);
                         return true;
                     }
 
                     if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK))) {
-                        changeGroupObject(groupObject, RemoteForm.CHANGEGROUPOBJECT_LASTROW);
+                        changeGroupObject(groupObject, RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW);
                         return true;
                     }
 
@@ -1655,8 +1661,8 @@ public class ClientForm extends JPanel {
 
 //                            add(Box.createHorizontalStrut(4));
 
-                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=", CompareWhere.EQUALS), new Pair(">", CompareWhere.GREATER), new Pair("<",CompareWhere.LESS),
-                                                                             new Pair(">=",CompareWhere.GREATER_EQUALS), new Pair("<=",CompareWhere.LESS_EQUALS), new Pair("<>",CompareWhere.NOT_EQUALS)};
+                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=", Compare.EQUALS), new Pair(">", Compare.GREATER), new Pair("<", Compare.LESS),
+                                                                             new Pair(">=", Compare.GREATER_EQUALS), new Pair("<=", Compare.LESS_EQUALS), new Pair("<>", Compare.NOT_EQUALS)};
                             compareView = new QueryConditionComboBox(comparisons);
                             add(compareView);
 
@@ -2136,14 +2142,14 @@ public class ClientForm extends JPanel {
                                 int ordNum = orders.indexOf(property);
                                 if (ordNum == -1) {
                                     if (e.getButton() == MouseEvent.BUTTON1)
-                                        changeGridOrder(property, RemoteForm.ORDER_REPLACE);
+                                        changeGridOrder(property, RemoteFormInterface.ORDER_REPLACE);
                                      else
-                                        changeGridOrder(property, RemoteForm.ORDER_ADD);
+                                        changeGridOrder(property, RemoteFormInterface.ORDER_ADD);
                                 } else {
                                     if (e.getButton() == MouseEvent.BUTTON1) {
-                                        changeGridOrder(property, RemoteForm.ORDER_DIR);
+                                        changeGridOrder(property, RemoteFormInterface.ORDER_DIR);
                                     } else {
-                                        changeGridOrder(property, RemoteForm.ORDER_REMOVE);
+                                        changeGridOrder(property, RemoteFormInterface.ORDER_REMOVE);
                                     }
                                 }
 

@@ -1,7 +1,5 @@
 package platform.server.logics.classes.sets;
 
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.properties.PropertyInterface;
 
 public interface PropertyClass<P extends PropertyInterface> {
