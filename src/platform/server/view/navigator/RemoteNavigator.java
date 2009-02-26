@@ -18,6 +18,7 @@ import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.ByteSerializer;
+import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -177,10 +178,6 @@ public RemoteFormInterface createForm(int formID, boolean currentSession) throws
         remoteForm.hintsNoUpdate = navigatorForm.hintsNoUpdate;
         remoteForm.hintsSave = navigatorForm.hintsSave;
 
-        remoteForm.richDesign = navigatorForm.getRichDesign();
-
-        remoteForm.reportDesign = navigatorForm.getReportDesign();
-
         for (GroupObjectImplement groupObject : (List<GroupObjectImplement>)remoteForm.groups)
             for (ObjectImplement object : groupObject) {
                 int objectID = classCache.getObject(object.baseClass);
@@ -188,7 +185,7 @@ public RemoteFormInterface createForm(int formID, boolean currentSession) throws
                     remoteForm.userObjectSeeks.put(object, objectID);
             }
 
-        return remoteForm;
+        return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign());
     }
 
     private class ObjectImplementMapper {

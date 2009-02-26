@@ -5,8 +5,6 @@
 
 package platform.server.view.form;
 
-import net.sf.jasperreports.engine.design.JasperDesign;
-import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.report.ReportData;
@@ -30,9 +28,6 @@ import platform.server.logics.session.ChangeObjectValue;
 import platform.server.logics.session.ChangeValue;
 import platform.server.logics.session.DataSession;
 import platform.server.logics.session.PropertyUpdateView;
-import platform.server.view.form.client.ByteDeSerializer;
-import platform.server.view.form.client.ByteSerializer;
-import platform.server.view.form.client.FormView;
 import platform.server.where.Where;
 
 import java.sql.SQLException;
@@ -45,7 +40,7 @@ import java.util.Map.Entry;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView, RemoteFormInterface {
+public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // используется для записи в сессии изменений в базу - требуется глобально уникальный идентификатор
     private final int GID;
@@ -81,117 +76,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // карта что сейчас в интерфейсе + карта в классовый\объектный вид
     Map<PropertyView,Boolean> interfacePool = new HashMap<PropertyView, Boolean>();
 
-    // --------------------------------------------------------------------------------------- //
-    // --------------------- Фасад для работы с примитивными данными ------------------------- //
-    // --------------------------------------------------------------------------------------- //
+    // ----------------------------------- Поиск объектов по ID ------------------------------ //
 
-    // ----------------------------------- Инициализация ------------------------------------- //
-
-    public byte[] getRichDesignByteArray() {
-        return ByteSerializer.serializeFormView(GetRichDesign());
-    }
-
-    public byte[] getReportDesignByteArray() {
-        return ByteSerializer.serializeReportDesign(GetReportDesign());
-    }
-
-    public byte[] getReportDataByteArray() throws SQLException {
-        return ByteSerializer.serializeReportData(getReportData());
-    }
-
-
-    // ----------------------------------- Получение информации ------------------------------ //
-
-    public int getObjectClassID(Integer objectID) {
-        return getObjectImplement(objectID).Class.ID;
-    }
-
-    public byte[] getBaseClassByteArray(int objectID) {
-        return ByteSerializer.serializeClass(getObjectImplement(objectID).baseClass);
-    }
-
-    public byte[] getChildClassesByteArray(int objectID, int classID) {
-        return ByteSerializer.serializeListClass(getObjectImplement(objectID).baseClass.findClassID(classID).childs);
-    }
-
-    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) {
-        return ByteSerializer.serializeChangeValue(getPropertyEditorObjectValue(getPropertyView(propertyID), externalID));
-    }
-
-    // ----------------------------------- Навигация ----------------------------------------- //
-
-    public void changeGroupObject(Integer groupID, int changeType) throws SQLException {
-        ChangeGroupObject(getGroupObjectImplement(groupID), changeType);
-    }
-
-    public void changeGroupObject(Integer groupID, byte[] value) throws SQLException {
-        GroupObjectImplement groupObject = getGroupObjectImplement(groupID);
-        changeGroupObject(groupObject, ByteDeSerializer.deserializeGroupObjectValue(value, groupObject));
-    }
-
-    public void changeObject(Integer objectID, Integer value) throws SQLException {
-        changeObject(getObjectImplement(objectID), value);
-    }
-
-    public void changeGridClass(int objectID,int idClass) throws SQLException {
-        ChangeGridClass(getObjectImplement(objectID), idClass);
-    }
-
-    public void switchClassView(int groupID) throws SQLException {
-        switchClassView(getGroupObjectImplement(groupID));
-    }
-
-    // Фильтры
-
-    public void addFilter(byte[] state) {
-        addUserFilter(ByteDeSerializer.deserializeFilter(state, this));
-    }
-
-    public void setRegularFilter(int groupID, int filterID) {
-
-        RegularFilterGroup filterGroup = getRegularFilterGroup(groupID);
-        setRegularFilter(filterGroup, filterGroup.getFilter(filterID));
-    }
-
-    // Порядки
-
-    public void changeOrder(int propertyID, int modiType) {
-        ChangeOrder(getPropertyView(propertyID), modiType);
-    }
-
-    // -------------------------------------- Изменение данных ----------------------------------- //
-
-    public void addObject(int objectID, int classID) throws SQLException {
-        ObjectImplement object = getObjectImplement(objectID);
-        AddObject(object, (classID == -1) ? null : object.baseClass.findClassID(classID));
-    }
-
-    public void changeClass(int objectID, int classID) throws SQLException {
-
-        ObjectImplement object = getObjectImplement(objectID);
-        changeClass(object, (classID == -1) ? null : object.baseClass.findClassID(classID));
-    }
-
-    public void changePropertyView(Integer propertyID, byte[] object, boolean externalID) throws SQLException {
-        ChangePropertyView(getPropertyView(propertyID), BaseUtils.deserializeObject(object), externalID);
-    }
-
-    // ----------------------- Применение изменений ------------------------------- //
-    public void runEndApply() throws SQLException {
-        endApply();
-    }
-
-    public byte[] getFormChangesByteArray() throws SQLException {
-        return ByteSerializer.serializeFormChanges(endApply());
-    }
-
-    // --------------------------------------------------------------------------------------- //
-    // ----------------------------------- Управляющий интерфейс ----------------------------- //
-    // --------------------------------------------------------------------------------------- //
-
-    // ----------------------------------- Поиск объектов по sID ------------------------------ //
-
-    GroupObjectImplement getGroupObjectImplement(int groupID) {
+    public GroupObjectImplement getGroupObjectImplement(int groupID) {
         for (GroupObjectImplement groupObject : groups)
             if (groupObject.ID == groupID)
                 return groupObject;
@@ -213,7 +100,14 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         return null;
     }
 
-    private ChangeValue getPropertyEditorObjectValue(PropertyView propertyView, boolean externalID) {
+    public RegularFilterGroup getRegularFilterGroup(int groupID) {
+        for (RegularFilterGroup filterGroup : regularFilterGroups)
+            if (filterGroup.ID == groupID)
+                return filterGroup;
+        return null;
+    }
+
+    public ChangeValue getPropertyEditorObjectValue(PropertyView propertyView, boolean externalID) {
 
         ChangeValue changeValue = propertyView.view.getChangeProperty(session, securityPolicy.property.change);
         if (!externalID) return changeValue;
@@ -225,27 +119,6 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         return new ChangeObjectValue(propertyID.value, null);
     }
 
-    private RegularFilterGroup getRegularFilterGroup(int groupID) {
-        for (RegularFilterGroup filterGroup : regularFilterGroups)
-            if (filterGroup.ID == groupID)
-                return filterGroup;
-        return null;
-    }
-
-    // ----------------------------------- Инициализация ------------------------------------- //
-
-    public FormView richDesign;
-    // возвращает клиентские настройки формы
-    private FormView GetRichDesign() {
-        return richDesign;
-    }
-
-    public JasperDesign reportDesign;
-    // возвращает структуру печатной формы
-    public JasperDesign GetReportDesign() {
-        return reportDesign;
-    }
-
     // ----------------------------------- Навигация ----------------------------------------- //
 
     // поиски по свойствам\объектам
@@ -254,17 +127,17 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     private Map<GroupObjectImplement, Integer> pendingGroupChanges = new HashMap<GroupObjectImplement, Integer>();
 
-    public void ChangeGroupObject(GroupObjectImplement group, int changeType) throws SQLException {
+    public void changeGroupObject(GroupObjectImplement group, int changeType) throws SQLException {
         pendingGroupChanges.put(group, changeType);
     }
 
-    private void changeGroupObject(GroupObjectImplement group, GroupObjectValue value) throws SQLException {
+    public void changeGroupObject(GroupObjectImplement group, GroupObjectValue value) throws SQLException {
         // проставим все объектам метки изменений
         for(ObjectImplement object : group)
             changeObject(object, value.get(object));
     }
 
-    void changeObject(ObjectImplement object, Integer value) throws SQLException {
+    public void changeObject(ObjectImplement object, Integer value) throws SQLException {
 
         if ((object.idObject==null && value==null) || (object.idObject!=null && object.idObject.equals(value))) return;
 
@@ -279,9 +152,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 objectClass = object.baseClass;
         }
 
-        if(object.Class != objectClass) {
+        if(object.objectClass != objectClass) {
 
-            object.Class = objectClass;
+            object.objectClass = objectClass;
 
             object.updated = object.updated | ObjectImplement.UPDATED_CLASS;
         }
@@ -291,11 +164,11 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
         // сообщаем всем, кто следит
         // если object.Class == null, то значит объект удалили
-        if (object.Class != null)
-            objectChanged(object.Class, value);
+        if (object.objectClass != null)
+            objectChanged(object.objectClass, value);
     }
 
-    private void ChangeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
+    public void changeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
 
         RemoteClass GridClass = BL.objectClass.findClassID(idClass);
         if(Object.gridClass == GridClass) return;
@@ -309,7 +182,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     }
 
-    private void switchClassView(GroupObjectImplement Group) {
+    public void switchClassView(GroupObjectImplement Group) {
         changeClassView(Group, !Group.gridClassView);
     }
 
@@ -341,14 +214,14 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         structUpdated = true;
     }
 
-    private void addUserFilter(Filter addFilter) {
+    public void addUserFilter(Filter addFilter) {
 
         userFilters.add(addFilter);
         structUpdated = true;
     }
 
     private Map<RegularFilterGroup, RegularFilter> regularFilterValues = new HashMap<RegularFilterGroup, RegularFilter>();
-    private void setRegularFilter(RegularFilterGroup filterGroup, RegularFilter filter) {
+    public void setRegularFilter(RegularFilterGroup filterGroup, RegularFilter filter) {
 
         if (filter == null || filter.filter == null)
             regularFilterValues.remove(filterGroup);
@@ -362,7 +235,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     private LinkedHashMap<PropertyView,Boolean> orders = new LinkedHashMap<PropertyView, Boolean>();
 
-    private void ChangeOrder(PropertyView propertyView, int modiType) {
+    public void changeOrder(PropertyView propertyView, int modiType) {
 
         if (modiType == RemoteFormInterface.ORDER_REMOVE)
             orders.remove(propertyView);
@@ -386,7 +259,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // пометка что изменились данные
     private boolean dataChanged = false;
 
-    private void AddObject(ObjectImplement object, RemoteClass cls) throws SQLException {
+    public void addObject(ObjectImplement object, RemoteClass cls) throws SQLException {
         // пока тупо в базу
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
@@ -452,9 +325,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
         // проверка, что разрешено удалять объекты
         if (cls == null) {
-            if (!securityPolicy.cls.edit.remove.checkPermission(object.Class)) return;
+            if (!securityPolicy.cls.edit.remove.checkPermission(object.objectClass)) return;
         } else {
-            if (!(securityPolicy.cls.edit.remove.checkPermission(object.Class) || securityPolicy.cls.edit.change.checkPermission(object.Class))) return;
+            if (!(securityPolicy.cls.edit.remove.checkPermission(object.objectClass) || securityPolicy.cls.edit.change.checkPermission(object.objectClass))) return;
             if (!(securityPolicy.cls.edit.add.checkPermission(cls) || securityPolicy.cls.edit.change.checkPermission(cls))) return;
         }
 
@@ -470,11 +343,11 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         dataChanged = true;
     }
 
-    private void ChangePropertyView(PropertyView property, Object value, boolean externalID) throws SQLException {
-        ChangeProperty(property.view, value, externalID);
+    public void changePropertyView(PropertyView property, Object value, boolean externalID) throws SQLException {
+        changeProperty(property.view, value, externalID);
     }
 
-    private void ChangeProperty(PropertyObjectImplement property, Object value, boolean externalID) throws SQLException {
+    private void changeProperty(PropertyObjectImplement property, Object value, boolean externalID) throws SQLException {
 
         // изменяем св-во
         property.property.changeProperty(fillPropertyInterface(property), value, externalID, session, securityPolicy.property.change);
@@ -509,7 +382,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         dataChanged = true;
     }
 
-    void Close() throws SQLException {
+    void close() throws SQLException {
 
         session.incrementChanges.remove(this);
         for(GroupObjectImplement Group : groups) {
@@ -528,7 +401,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         Map<PropertyInterface,ObjectValue> keys = new HashMap<PropertyInterface, ObjectValue>();
         for(PropertyInterface propertyInterface : (Collection<PropertyInterface>)changeProperty.interfaces) {
             ObjectImplement object = property.mapping.get(propertyInterface);
-            keys.put(propertyInterface,new ObjectValue(object.idObject,object.Class));
+            keys.put(propertyInterface,new ObjectValue(object.idObject,object.objectClass));
         }
 
         return keys;
@@ -597,7 +470,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     private static int DIRECTION_UP = 1;
     private static int DIRECTION_CENTER = 2;
 
-    private FormChanges endApply() throws SQLException {
+    public FormChanges endApply() throws SQLException {
 
         FormChanges result = new FormChanges();
 
@@ -1192,7 +1065,10 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     // считывает все данные (для отчета)
-    private ReportData getReportData() throws SQLException {
+    public ReportData getReportData() throws SQLException {
+
+        // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
+        endApply();
 
         Set<GroupObjectImplement> reportObjects = getReportObjects();
 

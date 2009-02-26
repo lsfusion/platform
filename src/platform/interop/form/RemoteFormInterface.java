@@ -5,9 +5,6 @@ import java.sql.SQLException;
 public interface RemoteFormInterface {
 
     byte[] getReportDesignByteArray();
-
-    void runEndApply() throws SQLException;
-
     byte[] getReportDataByteArray() throws SQLException;
 
     int getGID();
@@ -18,15 +15,15 @@ public interface RemoteFormInterface {
 
     byte[] getFormChangesByteArray() throws SQLException;
 
-    void changeGroupObject(Integer groupID, byte[] value) throws SQLException;
+    void changeGroupObject(int groupID, byte[] value) throws SQLException;
 
-    int getObjectClassID(Integer objectID);
+    int getObjectClassID(int objectID);
 
-    void changeGroupObject(Integer groupID, int changeType) throws SQLException;
+    void changeGroupObject(int groupID, int changeType) throws SQLException;
 
-    void changePropertyView(Integer propertyID, byte[] object, boolean externalID) throws SQLException;
+    void changePropertyView(int propertyID, byte[] object, boolean externalID) throws SQLException;
 
-    void changeObject(Integer objectID, Integer value) throws SQLException;
+    void changeObject(int objectID, Integer value) throws SQLException;
 
     void addObject(int objectID, int classID) throws SQLException;
 

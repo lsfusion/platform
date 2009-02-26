@@ -15,7 +15,7 @@ import platform.server.logics.properties.linear.LP;
 import platform.server.view.form.*;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
-import platform.server.view.form.report.DefaultJasperDesign;
+import platform.server.view.form.client.report.DefaultJasperDesign;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

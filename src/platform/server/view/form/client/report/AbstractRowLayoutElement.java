@@ -1,4 +1,4 @@
-package platform.server.view.form.report;
+package platform.server.view.form.client.report;
 
 interface AbstractRowLayoutElement {
 

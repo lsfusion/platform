@@ -1,7 +1,7 @@
 package platform.server.view.form.client;
 
 import platform.server.logics.classes.RemoteClass;
-import platform.server.view.form.report.ReportDrawField;
+import platform.server.view.form.client.report.ReportDrawField;
 
 import java.awt.*;
 import java.io.DataOutputStream;

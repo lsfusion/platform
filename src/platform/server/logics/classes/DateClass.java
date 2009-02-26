@@ -1,7 +1,7 @@
 package platform.server.logics.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
-import platform.server.view.form.report.ReportDrawField;
+import platform.server.view.form.client.report.ReportDrawField;
 
 import java.text.DateFormat;
 import java.text.Format;

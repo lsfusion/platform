@@ -1,4 +1,4 @@
-package platform.server.view.form.report;
+package platform.server.view.form.client.report;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import net.sf.jasperreports.engine.JRElement;

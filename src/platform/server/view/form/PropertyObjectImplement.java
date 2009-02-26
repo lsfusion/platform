@@ -43,10 +43,10 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
                 else
                     ImpClass = new ClassSet(IntObject.gridClass);//ClassSet.getUp(IntObject.GridClass);
             else
-                if(IntObject.Class==null)
+                if(IntObject.objectClass ==null)
                     return new ClassSet();
                 else
-                    ImpClass = new ClassSet(IntObject.Class);
+                    ImpClass = new ClassSet(IntObject.objectClass);
             ClassImplement.put(Interface,ImpClass);
         }
 
@@ -77,7 +77,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     public ChangeValue getChangeProperty(DataSession Session, ChangePropertySecurityPolicy securityPolicy) {
         Map<P,ObjectValue> Interface = new HashMap<P,ObjectValue>();
         for(Map.Entry<P, ObjectImplement> Implement : mapping.entrySet())
-            Interface.put(Implement.getKey(),new ObjectValue(Implement.getValue().idObject,Implement.getValue().Class));
+            Interface.put(Implement.getKey(),new ObjectValue(Implement.getValue().idObject,Implement.getValue().objectClass));
 
         return property.getChangeProperty(Session,Interface,1,securityPolicy);
     }
@@ -99,7 +99,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
                     Classes.or(AddClasses);
             } else {
                 RemoteClass ImplementClass = Session.BaseClasses.get(Implement.getValue().idObject);
-                if(ImplementClass==null) ImplementClass = Implement.getValue().Class;
+                if(ImplementClass==null) ImplementClass = Implement.getValue().objectClass;
                 // чего не должно быть
                 if(ImplementClass==null)
                     Classes = new ClassSet();

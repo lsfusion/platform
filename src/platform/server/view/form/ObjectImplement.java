@@ -29,7 +29,7 @@ public class ObjectImplement {
 
     // выбранный объект, класс выбранного объекта
     public Integer idObject = null;
-    public RemoteClass Class = null;
+    public RemoteClass objectClass = null;
 
     public RemoteClass baseClass;
     // выбранный класс

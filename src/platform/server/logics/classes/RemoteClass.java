@@ -7,7 +7,7 @@ import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractNode;
 import platform.server.logics.session.DataSession;
-import platform.server.view.form.report.ReportDrawField;
+import platform.server.view.form.client.report.ReportDrawField;
 import platform.server.view.navigator.NavigatorElement;
 
 import java.io.DataOutputStream;

@@ -25,10 +25,10 @@ public class ObjectValueLink extends ValueLink {
 
     @Override
     ClassSet getValueClass(GroupObjectImplement ClassGroup) {
-        if(object.Class==null)
+        if(object.objectClass ==null)
             return new ClassSet();
         else
-            return new ClassSet(object.Class);
+            return new ClassSet(object.objectClass);
     }
 
     @Override

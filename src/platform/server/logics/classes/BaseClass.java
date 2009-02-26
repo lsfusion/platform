@@ -1,6 +1,5 @@
 package platform.server.logics.classes;
 
-import platform.client.interop.classes.ClientClass;
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataSession;

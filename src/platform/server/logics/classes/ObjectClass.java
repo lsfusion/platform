@@ -5,7 +5,7 @@ import platform.server.data.KeyField;
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.session.DataSession;
-import platform.server.view.form.report.ReportDrawField;
+import platform.server.view.form.client.report.ReportDrawField;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
