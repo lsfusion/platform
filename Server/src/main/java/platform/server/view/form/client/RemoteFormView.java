@@ -3,6 +3,7 @@ package platform.server.view.form.client;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.RemoteFormImplement;
 import platform.server.view.form.*;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.ChangeValue;
@@ -14,7 +15,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 
 // фасад для работы с клиентом
-public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInterface {
+public class RemoteFormView extends RemoteFormImplement implements RemoteFormInterface {
 
     RemoteForm form;
     public FormView richDesign;

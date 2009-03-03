@@ -22,18 +22,9 @@ public class Main {
 
         UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
 
-        try {
-            Class blcl = Class.forName("platform.server.logics.BusinessLogics_Stub");
-            System.out.println(blcl.toString());
-        } catch (ClassNotFoundException e) {
-            System.out.println("cls"+e.getMessage());
-        }
-
-        Registry remoteRegistry = LocateRegistry.getRegistry();
 //        RemoteLogicsInterface BL = (RemoteLogicsInterface) Naming.lookup(args[0]);
-        RemoteLogicsInterface BL = (RemoteLogicsInterface) remoteRegistry.lookup("TmcBusinessLogics");
-        System.out.println(BL.result());
-        
+        RemoteLogicsInterface BL = (RemoteLogicsInterface) Naming.lookup("rmi://127.0.0.1:1099/TmcBusinessLogics");
+
 /*        RemoteLogicsInterface BL = null;
         try {
             BL = new TmcBusinessLogics();

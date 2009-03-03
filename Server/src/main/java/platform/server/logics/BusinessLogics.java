@@ -4,6 +4,7 @@ import platform.base.CollectionExtend;
 import platform.base.Combinations;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.RemoteLogicsImplement;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
@@ -45,7 +46,7 @@ import java.io.FileNotFoundException;
 
 import net.sf.jasperreports.engine.JRException;
 
-public abstract class BusinessLogics<T extends BusinessLogics<T>> extends UnicastRemoteObject implements PropertyUpdateView, RemoteLogicsInterface {
+public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteLogicsImplement implements PropertyUpdateView, RemoteLogicsInterface {
 
     protected DataAdapter adapter;
     public static boolean activateCaches = true;
@@ -57,10 +58,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         if (user == null) throw new RemoteException("login failed");
 
         return new RemoteNavigator(adapter,this,user);
-    }
-
-    public String result() {
-        return "HI";
     }
 
     // счетчик идентификаторов

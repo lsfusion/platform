@@ -9,6 +9,7 @@ package platform.server.view.navigator;
 
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.navigator.RemoteNavigatorImplement;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.auth.SecurityPolicy;
@@ -25,12 +26,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
+
+import net.sf.jasperreports.engine.JRException;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteObject implements RemoteNavigatorInterface {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteNavigatorImplement implements RemoteNavigatorInterface {
 
     DataAdapter Adapter;
     T BL;
@@ -134,33 +136,33 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
     }
 
 //    RemoteForm<T> lastOpenedForm;
-public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException {
+    public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException {
 
-    try {
-        NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
+        try {
+            NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
 
-        if (!securityPolicy.navigator.checkPermission(navigatorForm)) return null;
+            if (!securityPolicy.navigator.checkPermission(navigatorForm)) return null;
 
-        DataSession session;
-        if (currentSession && currentForm != null)
-            session = currentForm.session;
-        else
-            session = BL.createSession(Adapter);
+            DataSession session;
+            if (currentSession && currentForm != null)
+                session = currentForm.session;
+            else
+                session = BL.createSession(Adapter);
 
-        RemoteForm remoteForm = new RemoteForm(formID, BL, session, securityPolicy) {
+            RemoteForm remoteForm = new RemoteForm(formID, BL, session, securityPolicy) {
 
-            protected void objectChanged(RemoteClass cls, Integer objectID) {
-                super.objectChanged(cls, objectID);
-                addCacheObject(cls, objectID);
-            }
+                    protected void objectChanged(RemoteClass cls, Integer objectID) {
+                        super.objectChanged(cls, objectID);
+                        addCacheObject(cls, objectID);
+                    }
 
-            public void gainedFocus() {
-                super.gainedFocus();
-                currentForm = this;
-            }
-        };
+                    public void gainedFocus() {
+                        super.gainedFocus();
+                        currentForm = this;
+                    }
+            };
 
-        ObjectImplementMapper objectMapper = new ObjectImplementMapper();
+            ObjectImplementMapper objectMapper = new ObjectImplementMapper();
             GroupObjectImplementMapper groupObjectMapper = new GroupObjectImplementMapper(objectMapper);
             PropertyObjectImplementMapper propertyMapper = new PropertyObjectImplementMapper(objectMapper);
             PropertyViewMapper propertyViewMapper = new PropertyViewMapper(propertyMapper, groupObjectMapper);

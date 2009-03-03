@@ -9,6 +9,4 @@ import java.rmi.RemoteException;
 public interface RemoteLogicsInterface extends Remote {
 
     RemoteNavigatorInterface createNavigator(String login,String password) throws RemoteException;
-
-    String result() throws RemoteException;
 }

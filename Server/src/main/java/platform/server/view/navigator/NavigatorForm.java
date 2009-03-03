@@ -235,7 +235,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
     protected JasperDesign reportDesign;
-    JasperDesign getReportDesign() throws JRException { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()); else return reportDesign; }
+    JasperDesign getReportDesign() throws JRException { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()).design; else return reportDesign; }
 
     ArrayList<NavigatorElement> relevantElements = new ArrayList();
     public void addRelevantElement(NavigatorElement relevantElement) {

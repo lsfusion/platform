@@ -14,9 +14,10 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-public class DefaultJasperDesign extends JasperDesign {
+public class DefaultJasperDesign {
 
     private JRDesignStyle defaultStyle;
+    final public JasperDesign design = new JasperDesign();
 
     private void addDefaultStyle() throws JRException {
 
@@ -33,7 +34,7 @@ public class DefaultJasperDesign extends JasperDesign {
         defaultStyle.setPdfEncoding("Cp1251");
         defaultStyle.setPdfEmbedded(false);
 
-        addStyle(defaultStyle);
+        design.addStyle(defaultStyle);
     }
 
     private JRDesignStyle cellStyle;
@@ -50,7 +51,7 @@ public class DefaultJasperDesign extends JasperDesign {
         cellStyle.getLineBox().getPen().setLineStyle(JRPen.LINE_STYLE_SOLID);
         cellStyle.getLineBox().getPen().setLineWidth((float) 0.5);
 
-        addStyle(cellStyle);
+        design.addStyle(cellStyle);
     }
 
     private JRDesignStyle addGroupCellStyle(int groupIndex, int groupCount) throws JRException {
@@ -63,7 +64,7 @@ public class DefaultJasperDesign extends JasperDesign {
         groupCellStyle.setMode(JRElement.MODE_OPAQUE);
         groupCellStyle.setBackcolor(new Color(color, color, color));
 
-        addStyle(groupCellStyle);
+        design.addStyle(groupCellStyle);
 
         return groupCellStyle;
     }
@@ -82,7 +83,7 @@ public class DefaultJasperDesign extends JasperDesign {
 
         designGroup.setExpression(groupExpr);
 
-        addGroup(designGroup);
+        design.addGroup(designGroup);
 
         return designGroup;
     }
@@ -94,7 +95,7 @@ public class DefaultJasperDesign extends JasperDesign {
         designField.setName(reportField.sID);
         designField.setValueClassName(reportField.valueClass.getName());
 
-        addField(designField);
+        design.addField(designField);
 
         return designField;
     }
@@ -143,11 +144,11 @@ public class DefaultJasperDesign extends JasperDesign {
 
             pageHeadBand = new JRDesignBand();
             pageHeadBand.setHeight(ROW_HEIGHT);
-            setPageHeader(pageHeadBand);
+            design.setPageHeader(pageHeadBand);
 
             detailBand = new JRDesignBand();
             detailBand.setHeight(ROW_HEIGHT);
-            setDetail(detailBand);
+            design.setDetail(detailBand);
         }
 
         void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
@@ -238,11 +239,11 @@ public class DefaultJasperDesign extends JasperDesign {
         int pageWidth = 842 - 40;
         int pageHeight = 595;
 
-        setName("Report");
-        setPageWidth(pageWidth + 40);
+        design.setName("Report");
+        design.setPageWidth(pageWidth + 40);
         
-        setPageHeight(pageHeight);
-        setOrientation(JasperDesign.ORIENTATION_LANDSCAPE);
+        design.setPageHeight(pageHeight);
+        design.setOrientation(JasperDesign.ORIENTATION_LANDSCAPE);
 
         addDefaultStyle();
         addCellStyle();
