@@ -8,4 +8,5 @@
   </parent>
   <artifactId>API</artifactId>
   <packaging>jar</packaging>
+  <name>API</name>
 </project>

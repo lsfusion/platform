@@ -5,6 +5,7 @@
   <artifactId>Platform</artifactId>
   <packaging>pom</packaging>
   <version>1.0</version>
+    <name>LS Fusion</name>
 
     <modules>
         <module>API</module>
