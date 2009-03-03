@@ -7,6 +7,13 @@
   <version>1.0</version>
     <name>LS Fusion</name>
 
+    <repositories>
+        <repository>
+            <id>internal</id>
+            <url>http://169.254.1.6:8080/archiva/repositary/internal</url>
+        </repository>
+    </repositories>
+
     <modules>
         <module>API</module>
         <module>Client</module>
