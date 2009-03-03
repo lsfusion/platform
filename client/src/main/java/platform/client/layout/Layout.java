@@ -45,7 +45,7 @@ public class Layout extends JFrame implements ComponentCollector {
     public Layout(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super();
 
-        setIconImage(new ImageIcon(getClass().getResource("lsfusion.gif")).getImage());
+        setIconImage(new ImageIcon(getClass().getResource("/platform/images/lsfusion.jpg")).getImage());
 
         UserInfo userInfo = (UserInfo) new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray())).readObject();
         setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);

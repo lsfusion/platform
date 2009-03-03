@@ -22,8 +22,8 @@ import net.sf.jasperreports.engine.JRException;
 public abstract class AbstractNavigator extends JPanel {
 
     // Icons - загружаем один раз, для экономии
-    private final ImageIcon formIcon = new ImageIcon(getClass().getResource("/platform/client/navigator/images/form.gif"));
-    private final ImageIcon reportIcon = new ImageIcon(getClass().getResource("/platform/client/navigator/images/report.gif"));
+    private final ImageIcon formIcon = new ImageIcon(getClass().getResource("/platform/navigator/images/form.gif"));
+    private final ImageIcon reportIcon = new ImageIcon(getClass().getResource("/platform/navigator/images/report.gif"));
 
     public RemoteNavigatorInterface remoteNavigator;
 

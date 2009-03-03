@@ -54,15 +54,15 @@ public class ClientForm extends JPanel {
     public final ClientNavigator clientNavigator;
 
     // Icons - загружаем один раз, для экономии
-    private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("images/arrowup.gif"));
-    private final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("images/arrowdown.gif"));
-    private final ImageIcon filtIcon = new ImageIcon(getClass().getResource("images/filt.gif"));
-    private final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("images/filtadd.gif"));
-    private final ImageIcon findIcon = new ImageIcon(getClass().getResource("images/find.gif"));
-    private final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("images/findadd.gif"));
-    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("images/delete.gif"));
-    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("images/collapse.gif"));
-    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("images/expand.gif"));
+    private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/arrowup.gif"));
+    private final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("/platform/client/form/platform.images/arrowdown.gif"));
+    private final ImageIcon filtIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/filt.gif"));
+    private final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/filtadd.gif"));
+    private final ImageIcon findIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/find.gif"));
+    private final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/findadd.gif"));
+    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/delete.gif"));
+    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/collapse.gif"));
+    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/expand.gif"));
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
