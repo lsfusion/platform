@@ -22,21 +22,11 @@ public class Main {
 
         UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
 
-//        RemoteLogicsInterface BL = (RemoteLogicsInterface) Naming.lookup(args[0]);
-        RemoteLogicsInterface BL = (RemoteLogicsInterface) Naming.lookup("rmi://127.0.0.1:1099/TmcBusinessLogics");
-
-/*        RemoteLogicsInterface BL = null;
-        try {
-            BL = new TmcBusinessLogics();
-        } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }*/
-
-        RemoteNavigatorInterface remoteNavigator = BL.createNavigator("user1","user1");
-
-//        RemoteNavigatorInterface remoteNavigator = new LoginDialog(BL).login();
-//        if(remoteNavigator==null) return;
-
+//        RemoteNavigatorInterface remoteNavigator = new LoginDialog((RemoteLogicsInterface) Naming.lookup("rmi://127.0.0.1:1099/TmcBusinessLogics")).login();
+        RemoteNavigatorInterface remoteNavigator = ((RemoteLogicsInterface) Naming.lookup("rmi://127.0.0.1:1099/TmcBusinessLogics"))
+                .createNavigator("user1", "user1");
+        if(remoteNavigator==null) return;
+        
         layout = new Layout(remoteNavigator);
         layout.setVisible(true);
     }
