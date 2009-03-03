@@ -55,7 +55,7 @@ public class ClientForm extends JPanel {
 
     // Icons - загружаем один раз, для экономии
     private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/arrowup.gif"));
-    private final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("/platform/client/form/platform.images/arrowdown.gif"));
+    private final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/arrowdown.gif"));
     private final ImageIcon filtIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/filt.gif"));
     private final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/filtadd.gif"));
     private final ImageIcon findIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/find.gif"));
