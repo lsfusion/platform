@@ -6,7 +6,7 @@
       <artifactId>Platform</artifactId>
       <version>1.0</version>
   </parent>
-  <artifactId>Tmc</artifactId>
+  <artifactId>tmc</artifactId>
   <packaging>jar</packaging>
   <name>Tmc</name>
 

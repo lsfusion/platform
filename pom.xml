@@ -7,40 +7,54 @@
   <version>1.0</version>
     <name>LS Fusion</name>
 
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>6</source>
+                    <target>6</target>
+                </configuration>
+             </plugin>
+         </plugins>
+    </build>
+
     <repositories>
         <repository>
             <id>internal</id>
-            <url>http://169.254.1.6:8080/archiva/repositary/internal</url>
+            <url>http://169.254.1.6:8080/archiva/repository/internal</url>
         </repository>
     </repositories>
 
     <modules>
-        <module>API</module>
-        <module>Client</module>
-        <module>Server</module>
-        <module>Tmc</module>
+        <module>api</module>
+        <module>client</module>
+        <module>server</module>
+        <module>tmc</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>API</artifactId>
+                <artifactId>api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>Client</artifactId>
+                <artifactId>client</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>Server</artifactId>
+                <artifactId>server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>Tmc</artifactId>
+                <artifactId>tmc</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

@@ -26,15 +26,6 @@ public class BaseUtils {
         return false;
     }
 
-    private static ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
-
-    public static Object getDefaultValue(Class cls) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-
-        Constructor javaLangObjectConstructor = Object.class.getDeclaredConstructor(new Class[0]);
-        Constructor customConstructor = reflectionFactory.newConstructorForSerialization(cls, javaLangObjectConstructor);
-        return customConstructor.newInstance(new Object[0]);
-    }
-
     public static Object multiply(Object obj, Integer coeff) {
 
         if (obj instanceof Integer) return ((Integer)obj) * coeff;

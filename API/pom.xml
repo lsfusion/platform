@@ -6,15 +6,16 @@
       <artifactId>Platform</artifactId>
       <version>1.0</version>
   </parent>
-  <artifactId>API</artifactId>
+  <artifactId>api</artifactId>
   <packaging>jar</packaging>
   <name>API</name>
 
   <dependencies>
       <dependency>
-          <groupId>jasperreports</groupId>
-          <artifactId>jasperreports</artifactId>
-          <version>3.0.0</version>
+          <groupId>lpsolve</groupId>
+          <artifactId>lpsolve</artifactId>
+          <version>5.5</version>
       </dependency>
   </dependencies>
+
 </project>
