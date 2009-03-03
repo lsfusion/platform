@@ -1,0 +1,41 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>by.luxsoft.platform</groupId>
+  <artifactId>Platform</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0</version>
+
+    <modules>
+        <module>API</module>
+        <module>Client</module>
+        <module>Server</module>
+        <module>Tmc</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>API</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>Client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>Server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>Tmc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
