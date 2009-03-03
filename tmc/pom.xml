@@ -10,6 +10,22 @@
   <packaging>jar</packaging>
   <name>Tmc</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>tmc.TmcBusinessLogics</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+             </plugin>
+         </plugins>
+    </build>
+
     <dependencies>
       <dependency>
           <groupId>by.luxsoft.platform</groupId>
