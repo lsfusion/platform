@@ -49,7 +49,6 @@ public class Layout extends JFrame implements ComponentCollector {
 
         UserInfo userInfo = (UserInfo) new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray())).readObject();
         setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setSize(800, 600);

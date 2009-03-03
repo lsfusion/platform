@@ -9,7 +9,6 @@ package platform.server.view.navigator;
 
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.navigator.RemoteNavigatorImplement;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.auth.SecurityPolicy;
@@ -20,19 +19,17 @@ import platform.server.logics.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.rmi.RemoteException;
-
-import net.sf.jasperreports.engine.JRException;
+import java.rmi.server.UnicastRemoteObject;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteNavigatorImplement implements RemoteNavigatorInterface {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteObject implements RemoteNavigatorInterface {
 
     DataAdapter Adapter;
     T BL;
