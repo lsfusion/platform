@@ -22,8 +22,10 @@ public class Main {
 
         UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
 
+        String serverName = args.length>0?args[0]:"127.0.0.1";
+
 //        RemoteNavigatorInterface remoteNavigator = new LoginDialog((RemoteLogicsInterface) Naming.lookup("rmi://127.0.0.1:1099/TmcBusinessLogics")).login();
-        RemoteNavigatorInterface remoteNavigator = ((RemoteLogicsInterface) Naming.lookup("rmi://127.0.0.1:1099/TmcBusinessLogics"))
+        RemoteNavigatorInterface remoteNavigator = ((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":7653/TmcBusinessLogics"))
                 .createNavigator("user1", "user1");
         if(remoteNavigator==null) return;
         

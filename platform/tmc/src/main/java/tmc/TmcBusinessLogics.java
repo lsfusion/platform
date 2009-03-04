@@ -57,7 +57,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 //    static Registry registry;
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, RemoteException, FileNotFoundException, JRException, MalformedURLException {
 
-        LocateRegistry.createRegistry(1099).rebind("TmcBusinessLogics", new TmcBusinessLogics());
+        LocateRegistry.createRegistry(7653).rebind("TmcBusinessLogics", new TmcBusinessLogics());
 //        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
     }
 
