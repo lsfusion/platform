@@ -24,5 +24,5 @@ abstract class WhereFormulaProperty extends ValueFormulaProperty<FormulaProperty
         return new CaseExpr(getWhere(joinImplement), Type.bit.getExpr(true));
     }
 
-    abstract Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement);
+    abstract Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement);
 }

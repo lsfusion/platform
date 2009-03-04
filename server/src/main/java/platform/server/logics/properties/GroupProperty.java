@@ -18,12 +18,12 @@ abstract public class GroupProperty<T extends PropertyInterface> extends MapProp
     // каждый интерфейс должен имплементировать именно GetInterface GroupProperty
 
     // оператор
-    int Operator;
+    int operator;
 
     GroupProperty(TableFactory iTableFactory, Property<T> iProperty,int iOperator) {
         super(iTableFactory);
         groupProperty = iProperty;
-        Operator = iOperator;
+        operator = iOperator;
     }
 
     // группировочное св-во собсно должно быть не формулой
@@ -135,7 +135,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends MapProp
             Query.properties.put(Interface, Interface.implement.mapSourceExpr(Query.mapKeys,ImplementClasses));
         Query.properties.put(GroupValue, groupProperty.getSourceExpr(Query.mapKeys, ImplementClasses));
 
-        return (new Join<GroupPropertyInterface<T>,Object>(new GroupQuery<Object,GroupPropertyInterface<T>,Object,T>(interfaces,Query,GroupValue,Operator), joinImplement)).exprs.get(GroupValue);
+        return (new Join<GroupPropertyInterface<T>,Object>(new GroupQuery<Object,GroupPropertyInterface<T>,Object,T>(interfaces,Query,GroupValue, operator), joinImplement)).exprs.get(GroupValue);
     }
 
     Map<Object, Type> getMapNullProps(Object Value) {
@@ -148,6 +148,6 @@ abstract public class GroupProperty<T extends PropertyInterface> extends MapProp
     }
 
     Source<GroupPropertyInterface<T>, PropertyField> getGroupQuery(List<MapChangedRead<T>> ReadList, PropertyField Value, ValueClassSet<GroupPropertyInterface<T>> ResultClass) {
-        return new GroupQuery<Object,GroupPropertyInterface<T>, PropertyField,T>(interfaces,getMapQuery(ReadList,Value,ResultClass,false),Value,Operator);
+        return new GroupQuery<Object,GroupPropertyInterface<T>, PropertyField,T>(interfaces,getMapQuery(ReadList,Value,ResultClass,false),Value, operator);
     }
 }

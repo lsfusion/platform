@@ -49,63 +49,63 @@ abstract public class UnionProperty extends AggregateProperty<PropertyInterface>
         return (new Join<PropertyInterface,String>(resultQuery, joinImplement)).exprs.get(valueString);
     }
 
-    public ClassSet calculateValueClass(InterfaceClass<PropertyInterface> ClassImplement) {
+    public ClassSet calculateValueClass(InterfaceClass<PropertyInterface> classImplement) {
         // в отличии от Relation только когда есть хоть одно св-во
-        ClassSet ResultClass = new ClassSet();
-        for(PropertyMapImplement<PropertyInterface,PropertyInterface> Operand : operands)
-            ResultClass.or(Operand.mapValueClass(ClassImplement));
-        return ResultClass;
+        ClassSet resultClass = new ClassSet();
+        for(PropertyMapImplement<PropertyInterface,PropertyInterface> operand : operands)
+            resultClass.or(operand.mapValueClass(classImplement));
+        return resultClass;
     }
 
     public InterfaceClassSet<PropertyInterface> calculateClassSet(ClassSet reqValue) {
         // в отличии от Relation игнорируем null
         InterfaceClassSet<PropertyInterface> Result = new InterfaceClassSet<PropertyInterface>();
-        for(PropertyMapImplement<PropertyInterface,PropertyInterface> Operand : operands)
-            Result.or(Operand.mapClassSet(reqValue));
+        for(PropertyMapImplement<PropertyInterface,PropertyInterface> operand : operands)
+            Result.or(operand.mapClassSet(reqValue));
         return Result;
     }
 
     public ValueClassSet<PropertyInterface> calculateValueClassSet() {
-        ValueClassSet<PropertyInterface> Result = new ValueClassSet<PropertyInterface>();
-        for(PropertyMapImplement<PropertyInterface,PropertyInterface> Operand : operands)
-            Result.or(Operand.mapValueClassSet());
-        return Result;
+        ValueClassSet<PropertyInterface> result = new ValueClassSet<PropertyInterface>();
+        for(PropertyMapImplement<PropertyInterface,PropertyInterface> operand : operands)
+            result.or(operand.mapValueClassSet());
+        return result;
     }
 
-    public boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
-        if(ChangedProperties.contains(this)) return true;
-        if(NoUpdate.contains(this)) return false;
+    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+        if(changedProperties.contains(this)) return true;
+        if(noUpdate.contains(this)) return false;
 
-        boolean Changed = false;
+        boolean changed = false;
 
-        for(PropertyMapImplement Operand : operands)
-            Changed = Operand.mapFillChangedList(ChangedProperties, Changes, NoUpdate) || Changed;
+        for(PropertyMapImplement operand : operands)
+            changed = operand.mapFillChangedList(changedProperties, changes, noUpdate) || changed;
 
-        if(Changed)
-            ChangedProperties.add(this);
+        if(changed)
+            changedProperties.add(this);
 
-        return Changed;
+        return changed;
     }
 
-    List<PropertyMapImplement<PropertyInterface,PropertyInterface>> getChangedProperties(DataSession Session) {
+    List<PropertyMapImplement<PropertyInterface,PropertyInterface>> getChangedProperties(DataSession session) {
 
         List<PropertyMapImplement<PropertyInterface,PropertyInterface>> ChangedProperties = new ArrayList<PropertyMapImplement<PropertyInterface,PropertyInterface>>();
         for(PropertyMapImplement<PropertyInterface,PropertyInterface> Operand : operands)
-            if(Operand.mapHasChanges(Session)) ChangedProperties.add(Operand);
+            if(Operand.mapHasChanges(session)) ChangedProperties.add(Operand);
 
         return ChangedProperties;
     }
 
     // определяет ClassSet подмн-ва и что все операнды пересекаются
-    ValueClassSet<PropertyInterface> getChangeClassSet(DataSession Session,List<PropertyMapImplement<PropertyInterface,PropertyInterface>> ChangedProps) {
+    ValueClassSet<PropertyInterface> getChangeClassSet(DataSession session,List<PropertyMapImplement<PropertyInterface,PropertyInterface>> changedProps) {
 
-        ValueClassSet<PropertyInterface> Result = new ValueClassSet<PropertyInterface>(new ClassSet(),getUniversalInterface());
-        for(PropertyMapImplement<PropertyInterface,PropertyInterface> Operand : ChangedProps)// {
+        ValueClassSet<PropertyInterface> result = new ValueClassSet<PropertyInterface>(new ClassSet(),getUniversalInterface());
+        for(PropertyMapImplement<PropertyInterface,PropertyInterface> operand : changedProps)// {
 //            if(!intersect(Session, Operand,ChangedProps)) return null;
-            Result = Result.and(Operand.mapValueClassSet(Session));
+            result = result.and(operand.mapValueClassSet(session));
 //        }
 
-        return Result;
+        return result;
     }
 
 
@@ -186,22 +186,22 @@ abstract public class UnionProperty extends AggregateProperty<PropertyInterface>
         return resultQuery;
     }
 
-    boolean intersect(DataSession Session, PropertyMapImplement<PropertyInterface,PropertyInterface> Operand, Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> Operands) {
-        for(PropertyMapImplement<PropertyInterface,PropertyInterface> IntersectOperand : Operands) {
-            if(Operand==IntersectOperand) return true;
-            if(!intersect(Session, Operand,IntersectOperand)) return false;
+    boolean intersect(DataSession session, PropertyMapImplement<PropertyInterface,PropertyInterface> operand, Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> operands) {
+        for(PropertyMapImplement<PropertyInterface,PropertyInterface> intersectOperand : operands) {
+            if(operand ==intersectOperand) return true;
+            if(!intersect(session, operand,intersectOperand)) return false;
         }
         return true;
     }
 
     // проверяет пересекаются по классам операнды или нет
-    boolean intersect(DataSession Session, PropertyMapImplement<PropertyInterface,PropertyInterface> Operand, PropertyMapImplement<PropertyInterface,PropertyInterface> IntersectOperand) {
-        return (Session.changes.addClasses.size() > 0 && Session.changes.removeClasses.size() > 0) ||
-               !Operand.mapClassSet(ClassSet.universal).and(IntersectOperand.mapClassSet(ClassSet.universal)).isEmpty();
+    boolean intersect(DataSession session, PropertyMapImplement<PropertyInterface,PropertyInterface> operand, PropertyMapImplement<PropertyInterface,PropertyInterface> intersectOperand) {
+        return (session.changes.addClasses.size() > 0 && session.changes.removeClasses.size() > 0) ||
+               !operand.mapClassSet(ClassSet.universal).and(intersectOperand.mapClassSet(ClassSet.universal)).isEmpty();
 //        return true;
     }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
         return getUnionType();
     }
 
@@ -209,18 +209,18 @@ abstract public class UnionProperty extends AggregateProperty<PropertyInterface>
         return 0;
     }
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
-        if(getUnionType()==0 && IncrementType.equals(1)) IncrementType = 2;
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
+        if(getUnionType()==0 && incrementType.equals(1)) incrementType = 2;
 
-        for(PropertyMapImplement Operand : operands)
-            Operand.property.setChangeType(RequiredTypes,IncrementType);
+        for(PropertyMapImplement operand : operands)
+            operand.property.setChangeType(requiredTypes, incrementType);
     }
 
-    List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) {
+    List<PropertyMapImplement<PropertyInterface, PropertyInterface>> getImplements(Map<PropertyInterface, ObjectValue> keys, ChangePropertySecurityPolicy securityPolicy) {
         return operands;
     }
 
-    int getCoeff(PropertyMapImplement<?, PropertyInterface> Implement) {
-        return coeffs.get(Implement);
+    int getCoeff(PropertyMapImplement<?, PropertyInterface> implement) {
+        return coeffs.get(implement);
     }
 }

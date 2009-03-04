@@ -16,7 +16,7 @@ public class NotNullFormulaProperty extends WhereFormulaProperty {
         interfaces.add(property);
     }
 
-    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
-        return JoinImplement.get(property).getWhere();
+    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement) {
+        return joinImplement.get(property).getWhere();
     }
 }

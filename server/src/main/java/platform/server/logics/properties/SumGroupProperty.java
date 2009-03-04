@@ -15,13 +15,13 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
 
     public SumGroupProperty(TableFactory iTableFactory, Property<T> iProperty) {super(iTableFactory,iProperty,1);}
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
         // Group на ->1, Interface на ->2 - как было - возвр. 1 (на подчищение если (0 или 2) LEFT JOIN'им старые)
-        groupProperty.setChangeType(RequiredTypes,1);
+        groupProperty.setChangeType(requiredTypes,1);
 
-        for(GroupPropertyInterface<T> Interface : interfaces)
-            if(Interface.implement instanceof PropertyMapImplement)
-                (((PropertyMapImplement)Interface.implement).property).setChangeType(RequiredTypes,2);
+        for(GroupPropertyInterface<T> propertyInterface : interfaces)
+            if(propertyInterface.implement instanceof PropertyMapImplement)
+                (((PropertyMapImplement)propertyInterface.implement).property).setChangeType(requiredTypes,2);
     }
 
     public Change incrementChanges(DataSession session, int changeType) {
@@ -37,7 +37,7 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
         return new Change(1,resultQuery,resultClass);
      }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
         return 1;
     }
 }

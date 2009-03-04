@@ -23,64 +23,64 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     public PropertyMapImplement(Property<T> iProperty) {super(iProperty);}
 
     // NotNull только если сессии нету
-    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> JoinImplement, InterfaceClassSet<P> JoinClasses) {
-        return property.getSourceExpr(getMapImplement(JoinImplement),JoinClasses.mapBack(mapping));
+    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, InterfaceClassSet<P> joinClasses) {
+        return property.getSourceExpr(getMapImplement(joinImplement), joinClasses.mapBack(mapping));
     }
 
-    public JoinExpr mapChangeExpr(DataSession Session, Map<P, ? extends SourceExpr> JoinImplement, int Value) {
-        return Session.getChange(property).getExpr(getMapImplement(JoinImplement),Value);
+    public JoinExpr mapChangeExpr(DataSession session, Map<P, ? extends SourceExpr> joinImplement, int value) {
+        return session.getChange(property).getExpr(getMapImplement(joinImplement), value);
     }
 
-    private <V> Map<T, V> getMapImplement(Map<P, V> JoinImplement) {
-        Map<T,V> MapImplement = new HashMap<T,V>();
-        for(T ImplementInterface : property.interfaces)
-            MapImplement.put(ImplementInterface,JoinImplement.get(mapping.get(ImplementInterface)));
-        return MapImplement;
+    private <V> Map<T, V> getMapImplement(Map<P, V> joinImplement) {
+        Map<T,V> mapImplement = new HashMap<T,V>();
+        for(T implementInterface : property.interfaces)
+            mapImplement.put(implementInterface, joinImplement.get(mapping.get(implementInterface)));
+        return mapImplement;
     }
 
-    public ClassSet mapValueClass(InterfaceClass<P> ClassImplement) {
-        return property.getValueClass(ClassImplement.mapBack(mapping));
+    public ClassSet mapValueClass(InterfaceClass<P> classImplement) {
+        return property.getValueClass(classImplement.mapBack(mapping));
     }
 
-    public boolean mapIsInInterface(InterfaceClassSet<P> ClassImplement) {
-        return property.isInInterface(ClassImplement.mapBack(mapping));
+    public boolean mapIsInInterface(InterfaceClassSet<P> classImplement) {
+        return property.isInInterface(classImplement.mapBack(mapping));
     }
 
-    public InterfaceClassSet<P> mapClassSet(ClassSet ReqValue) {
-        return property.getClassSet(ReqValue).map(mapping);
+    public InterfaceClassSet<P> mapClassSet(ClassSet reqValue) {
+        return property.getClassSet(reqValue).map(mapping);
     }
 
     public ValueClassSet<P> mapValueClassSet() {
         return property.getValueClassSet().map(mapping);
     }
 
-    public boolean mapHasChanges(DataSession Session) {
-        return Session.getChange(property)!=null;
+    public boolean mapHasChanges(DataSession session) {
+        return session.getChange(property)!=null;
     }
 
     // заполняет список, возвращает есть ли изменения
-    public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
-        return property.fillChangedList(ChangedProperties, Changes, NoUpdate);
+    public boolean mapFillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+        return property.fillChangedList(changedProperties, changes, noUpdate);
     }
 
-    ChangeValue mapGetChangeProperty(DataSession Session, Map<P, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        return property.getChangeProperty(Session,getMapImplement(Keys), Coeff, securityPolicy);
+    ChangeValue mapGetChangeProperty(DataSession session, Map<P, ObjectValue> keys, int coeff, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+        return property.getChangeProperty(session,getMapImplement(keys), coeff, securityPolicy);
     }
 
     // для OverrideList'а по сути
-    void mapChangeProperty(Map<P, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        property.changeProperty(getMapImplement(Keys), NewValue, externalID, Session, securityPolicy);
+    void mapChangeProperty(Map<P, ObjectValue> keys, Object newValue, boolean externalID, DataSession session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+        property.changeProperty(getMapImplement(keys), newValue, externalID, session, securityPolicy);
     }
 
-    public ClassSet mapChangeValueClass(DataSession Session, InterfaceClass<P> ClassImplement) {
-        return Session.getChange(property).classes.getValueClass(ClassImplement.mapBack(mapping));
+    public ClassSet mapChangeValueClass(DataSession session, InterfaceClass<P> classImplement) {
+        return session.getChange(property).classes.getValueClass(classImplement.mapBack(mapping));
     }
 
-    public InterfaceClassSet<P> mapChangeClassSet(DataSession Session, ClassSet ReqValue) {
-        return Session.getChange(property).classes.getClassSet(ReqValue).map(mapping);
+    public InterfaceClassSet<P> mapChangeClassSet(DataSession session, ClassSet reqValue) {
+        return session.getChange(property).classes.getClassSet(reqValue).map(mapping);
     }
 
-    public ValueClassSet<P> mapValueClassSet(DataSession Session) {
-        return Session.getChange(property).classes.getValueClassSet().map(mapping);
+    public ValueClassSet<P> mapValueClassSet(DataSession session) {
+        return session.getChange(property).classes.getValueClassSet().map(mapping);
     }
 }

@@ -15,11 +15,11 @@ abstract public class FormulaProperty<T extends FormulaPropertyInterface> extend
         super(iTableFactory);
     }
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
     }
 
     // не может быть изменений в принципе
-    public boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
+    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         return false;
     }
 
@@ -27,7 +27,7 @@ abstract public class FormulaProperty<T extends FormulaPropertyInterface> extend
         return null;
     }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
         return null;
     }
 

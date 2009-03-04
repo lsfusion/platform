@@ -34,21 +34,21 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
         return Result;
     }
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
 
         // если только основное - Property ->I - как было (если изменилось только 2 то его и вкинем), возвр. I
         // иначе (не (основное MultiplyProperty и 1)) - Property, Implements ->0 - как было, возвр. 0 - (на подчищение - если (1 или 2) то Left Join'им старые значения)
         // иначе (основное MultiplyProperty и 1) - Implements ->1 - как было (но с другим оператором), возвр. 1
 
-        if(!containsImplement(RequiredTypes.keySet())) {
-            implementations.property.setChangeType(RequiredTypes,IncrementType);
+        if(!containsImplement(requiredTypes.keySet())) {
+            implementations.property.setChangeType(requiredTypes, incrementType);
         } else {
-            int ReqType = (implementAllInterfaces() && IncrementType.equals(0)?0:2);
+            int ReqType = (implementAllInterfaces() && incrementType.equals(0)?0:2);
 
-            implementations.property.setChangeType(RequiredTypes,ReqType);
+            implementations.property.setChangeType(requiredTypes,ReqType);
             for(PropertyInterfaceImplement Interface : implementations.mapping.values())
                 if(Interface instanceof PropertyMapImplement)
-                    (((PropertyMapImplement)Interface).property).setChangeType(RequiredTypes,(implementations.property instanceof MultiplyFormulaProperty && IncrementType.equals(1)?1:ReqType));
+                    (((PropertyMapImplement)Interface).property).setChangeType(requiredTypes,(implementations.property instanceof MultiplyFormulaProperty && incrementType.equals(1)?1:ReqType));
         }
     }
 
@@ -79,9 +79,9 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
         return new Change(QueryIncrementType,resultQuery,resultClass);
     }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
-        if(!containsImplement(ChangedProps)) {
-            ToWait.add(implementations.property);
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
+        if(!containsImplement(changedProps)) {
+            toWait.add(implementations.property);
             return null;
         } else
         if(implementations.property instanceof MultiplyFormulaProperty)
@@ -202,7 +202,7 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
         return changeTable.value;
     }
 
-    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
         List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> Result = new ArrayList<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>>();
         List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> BitProps = new ArrayList<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>>();
         for(PropertyInterfaceImplement<JoinPropertyInterface> Implement : implementations.mapping.values())
@@ -212,7 +212,7 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
                 if(PropertyImplement.property instanceof DataProperty)
                     Result.add(PropertyImplement);
                 else {
-                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, Keys, 0, securityPolicy);
+                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, keys, 0, securityPolicy);
                     if(ChangeValue!=null && ChangeValue.changeClass instanceof BitClass)
                         BitProps.add(PropertyImplement);
                     else // в начало

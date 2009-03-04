@@ -132,11 +132,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         field = writeField;
     }
 
-    List<PropertyMapImplement<PropertyInterface, T>> getImplements(Map<T, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
+    List<PropertyMapImplement<PropertyInterface, T>> getImplements(Map<T, ObjectValue> keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
         return new ArrayList<PropertyMapImplement<PropertyInterface, T>>();
     }
 
-    int getCoeff(PropertyMapImplement<?, T> Implement) { return 0; }
+    int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
 
     PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
         List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys, securityPolicy);

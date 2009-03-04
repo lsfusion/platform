@@ -23,38 +23,38 @@ public class PropertyInterface<P extends PropertyInterface<P>> implements Proper
         return "I/"+ID;
     }
 
-    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> JoinImplement, InterfaceClassSet<P> JoinClasses) {
-        return JoinImplement.get(this);
+    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, InterfaceClassSet<P> joinClasses) {
+        return joinImplement.get(this);
     }
 
-    public JoinExpr mapChangeExpr(DataSession Session, Map<P, ? extends SourceExpr> JoinImplement, int Value) {
+    public JoinExpr mapChangeExpr(DataSession session, Map<P, ? extends SourceExpr> joinImplement, int value) {
         return null;
     }
 
-    public ClassSet mapValueClass(InterfaceClass<P> ClassImplement) {
-        return ClassImplement.get(this);
+    public ClassSet mapValueClass(InterfaceClass<P> classImplement) {
+        return classImplement.get(this);
     }
 
-    public InterfaceClassSet<P> mapClassSet(ClassSet ReqValue) {
+    public InterfaceClassSet<P> mapClassSet(ClassSet reqValue) {
         InterfaceClass<P> ResultClass = new InterfaceClass<P>();
-        ResultClass.put((P) this,ReqValue);
+        ResultClass.put((P) this, reqValue);
         return new InterfaceClassSet<P>(ResultClass);
     }
 
-    public boolean mapHasChanges(DataSession Session) {
+    public boolean mapHasChanges(DataSession session) {
         return false;
     }
 
     // заполняет список, возвращает есть ли изменения
-    public boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
+    public boolean mapFillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         return false;
     }
 
-    public ClassSet mapChangeValueClass(DataSession Session, InterfaceClass<P> ClassImplement) {
-        return mapValueClass(ClassImplement);
+    public ClassSet mapChangeValueClass(DataSession session, InterfaceClass<P> classImplement) {
+        return mapValueClass(classImplement);
     }
 
-    public InterfaceClassSet<P> mapChangeClassSet(DataSession Session, ClassSet ReqValue) {
-        return mapClassSet(ReqValue);
+    public InterfaceClassSet<P> mapChangeClassSet(DataSession session, ClassSet reqValue) {
+        return mapClassSet(reqValue);
     }
 }

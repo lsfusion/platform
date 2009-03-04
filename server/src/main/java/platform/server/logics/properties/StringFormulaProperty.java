@@ -11,20 +11,20 @@ import java.util.Map;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPropertyInterface> {
 
-    String Formula;
+    String formula;
 
     public StringFormulaProperty(TableFactory iTableFactory, RemoteClass iValue, String iFormula) {
         super(iTableFactory,iValue);
-        Formula = iFormula;
+        formula = iFormula;
     }
 
     SourceExpr calculateSourceExpr(Map<StringFormulaPropertyInterface,? extends SourceExpr> joinImplement, InterfaceClassSet<StringFormulaPropertyInterface> joinClasses) {
 
-        Map<String, SourceExpr> Params = new HashMap<String, SourceExpr>();
-        for(StringFormulaPropertyInterface Interface : interfaces)
-            Params.put("prm"+(Interface.ID+1), joinImplement.get(Interface));
+        Map<String, SourceExpr> params = new HashMap<String, SourceExpr>();
+        for(StringFormulaPropertyInterface propertyInterface : interfaces)
+            params.put("prm"+(propertyInterface.ID+1), joinImplement.get(propertyInterface));
 
-        return new FormulaExpr(Formula,Value.getType(),Params);
+        return new FormulaExpr(formula, value.getType(),params);
     }
 
     RemoteClass getOperandClass() {

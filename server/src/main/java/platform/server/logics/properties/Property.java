@@ -122,7 +122,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // заполняет список, возвращает есть ли изменения
-    public abstract boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate);
+    public abstract boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate);
 
     JoinQuery<T,String> getOutSelect(String Value) {
         JoinQuery<T,String> Query = new JoinQuery<T,String>(interfaces);
@@ -199,7 +199,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     public void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {}
 
     // заполняет требования к изменениям
-    public abstract void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes);
+    public abstract void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes);
 
     // для каскадного выполнения (запрос)
     public boolean XL = false;
@@ -221,7 +221,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // тип по умолчанию, если null заполнить кого ждем
-    public abstract Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait);
+    public abstract Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait);
 
     public class Change {
         int Type; // && 0 - =, 1 - +, 2 - и новое и предыдущее

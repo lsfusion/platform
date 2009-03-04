@@ -101,45 +101,45 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
     public boolean onDefaultChange;
 
     // заполняет список, возвращает есть ли изменения, последний параметр для рекурсий
-    public boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
-        if(ChangedProperties.contains(this)) return true;
-        if(NoUpdate.contains(this)) return false;
+    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+        if(changedProperties.contains(this)) return true;
+        if(noUpdate.contains(this)) return false;
         // если null то значит полный список запрашивают
-        if(Changes==null) return true;
+        if(changes ==null) return true;
 
-        boolean Changed = Changes.properties.contains(this);
+        boolean Changed = changes.properties.contains(this);
 
         if(!Changed)
             for(DataPropertyInterface Interface : interfaces)
-                if(Changes.removeClasses.contains(Interface.interfaceClass)) Changed = true;
+                if(changes.removeClasses.contains(Interface.interfaceClass)) Changed = true;
 
         if(!Changed)
-            if(Changes.removeClasses.contains(value)) Changed = true;
+            if(changes.removeClasses.contains(value)) Changed = true;
 
         if(defaultProperty !=null) {
-            boolean DefaultChanged = defaultProperty.fillChangedList(ChangedProperties, Changes, NoUpdate);
+            boolean DefaultChanged = defaultProperty.fillChangedList(changedProperties, changes, noUpdate);
             if(!Changed) {
                 if(onDefaultChange)
                     Changed = DefaultChanged;
                 else
                     for(DataPropertyInterface Interface : interfaces)
-                        if(Changes.addClasses.contains(Interface.interfaceClass)) Changed = true;
+                        if(changes.addClasses.contains(Interface.interfaceClass)) Changed = true;
             }
         }
 
         if(Changed) {
-            ChangedProperties.add(this);
+            changedProperties.add(this);
             return true;
         } else
             return false;
     }
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
 
         // если на изм. надо предыдущее изменение иначе просто на =
         // пока неясно после реализации QueryIncrementChanged станет яснее
-        if(defaultProperty !=null && RequiredTypes.containsKey(defaultProperty))
-            defaultProperty.setChangeType(RequiredTypes, onDefaultChange ?2:0);
+        if(defaultProperty !=null && requiredTypes.containsKey(defaultProperty))
+            defaultProperty.setChangeType(requiredTypes, onDefaultChange ?2:0);
     }
 
     // заполним старыми значениями (LEFT JOIN'ом)
@@ -253,7 +253,7 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
         return new Change(0,resultQuery,resultClass);
     }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
         return 0;
     }
 }

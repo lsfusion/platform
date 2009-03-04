@@ -26,19 +26,19 @@ public class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         value = iValue;
     }
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
         // этому св-ву чужого не надо
     }
 
-    public boolean fillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate) {
+    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         // если Value null то ничего не интересует
         if(value ==null) return false;
-        if(ChangedProperties.contains(this)) return true;
-        if(NoUpdate.contains(this)) return false;
+        if(changedProperties.contains(this)) return true;
+        if(noUpdate.contains(this)) return false;
 
         for(DataPropertyInterface ValueInterface : interfaces)
-            if(Changes ==null || Changes.addClasses.contains(ValueInterface.interfaceClass) || Changes.removeClasses.contains(ValueInterface.interfaceClass)) {
-                ChangedProperties.add(this);
+            if(changes ==null || changes.addClasses.contains(ValueInterface.interfaceClass) || changes.removeClasses.contains(ValueInterface.interfaceClass)) {
+                changedProperties.add(this);
                 return true;
             }
 
@@ -121,7 +121,7 @@ public class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         return new Change(2,resultQuery,resultClass);
     }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
         return 0;
     }
 

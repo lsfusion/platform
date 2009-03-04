@@ -14,16 +14,16 @@ import java.util.Map;
 
 public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
-    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> JoinImplement, InterfaceClassSet<P> JoinClasses);
-    public ClassSet mapValueClass(InterfaceClass<P> ClassImplement);
-    public InterfaceClassSet<P> mapClassSet(ClassSet ReqValue);
+    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, InterfaceClassSet<P> joinClasses);
+    public ClassSet mapValueClass(InterfaceClass<P> classImplement);
+    public InterfaceClassSet<P> mapClassSet(ClassSet reqValue);
 
 
-    abstract boolean mapFillChangedList(List<Property> ChangedProperties, DataChanges Changes, Collection<Property> NoUpdate);
+    abstract boolean mapFillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate);
 
     // для increment'ного обновления
-    public boolean mapHasChanges(DataSession Session);
-    public JoinExpr mapChangeExpr(DataSession Session, Map<P, ? extends SourceExpr> JoinImplement, int Value);
-    ClassSet mapChangeValueClass(DataSession Session, InterfaceClass<P> ClassImplement);
-    InterfaceClassSet<P> mapChangeClassSet(DataSession Session, ClassSet ReqValue);
+    public boolean mapHasChanges(DataSession session);
+    public JoinExpr mapChangeExpr(DataSession session, Map<P, ? extends SourceExpr> joinImplement, int value);
+    ClassSet mapChangeValueClass(DataSession session, InterfaceClass<P> classImplement);
+    InterfaceClassSet<P> mapChangeClassSet(DataSession session, ClassSet reqValue);
 }

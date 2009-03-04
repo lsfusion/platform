@@ -9,7 +9,7 @@ public class MultiplyFormulaProperty extends StringFormulaProperty {
         super(iTableFactory,iValue,"");
         for(int i=0;i<Params;i++) {
             interfaces.add(new StringFormulaPropertyInterface(i));
-            Formula = (Formula.length()==0?"":Formula+"*") + "prm"+(i+1);
+            formula = (formula.length()==0?"": formula +"*") + "prm"+(i+1);
         }
     }
 

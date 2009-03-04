@@ -23,13 +23,13 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
 
     public MaxGroupProperty(TableFactory iTableFactory, Property<T> iProperty) {super(iTableFactory,iProperty,0);}
 
-    public void fillRequiredChanges(Integer IncrementType, Map<Property, Integer> RequiredTypes) {
+    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
         // Group на ->2, Interface на ->2 - как было - возвр. 2
-        groupProperty.setChangeType(RequiredTypes,2);
+        groupProperty.setChangeType(requiredTypes,2);
 
         for(GroupPropertyInterface<T> Interface : interfaces)
             if(Interface.implement instanceof PropertyMapImplement)
-                ((PropertyMapImplement)Interface.implement).property.setChangeType(RequiredTypes,2);
+                ((PropertyMapImplement)Interface.implement).property.setChangeType(requiredTypes,2);
     }
 
     public Change incrementChanges(DataSession session, int changeType) throws SQLException {
@@ -93,7 +93,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
         return incrementChange;
     }
 
-    public Integer getIncrementType(Collection<Property> ChangedProps, Set<Property> ToWait) {
+    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
         return 2;
     }
 }

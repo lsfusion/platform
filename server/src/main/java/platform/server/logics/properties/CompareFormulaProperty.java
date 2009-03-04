@@ -22,7 +22,7 @@ public class CompareFormulaProperty extends WhereFormulaProperty {
         interfaces.add(operator2);
     }
 
-    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> JoinImplement) {
-        return new CompareWhere(JoinImplement.get(operator1),JoinImplement.get(operator2),Compare);
+    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement) {
+        return new CompareWhere(joinImplement.get(operator1), joinImplement.get(operator2),Compare);
     }
 }

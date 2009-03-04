@@ -24,9 +24,21 @@
     <repositories>
         <repository>
             <id>internal</id>
-            <url>http://169.254.1.6:8080/archiva/repository/internal</url>
+            <url>http://81.25.47.234:8080/archiva/repository/internal</url>
         </repository>
     </repositories>
+
+    <distributionManagement>
+      <repository>
+        <id>internal</id>
+        <url>http://81.25.47.234:8080/archiva/repository/internal</url>
+      </repository>
+      <snapshotRepository>
+        <id>snapshot</id>
+        <url>http://81.25.47.234:8080/archiva/repository/snapshot</url>
+      </snapshotRepository>
+    </distributionManagement>
+
 
     <modules>
         <module>api</module>
