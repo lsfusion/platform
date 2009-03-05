@@ -2,9 +2,9 @@ package platform.server.where;
 
 import platform.server.data.query.Join;
 import platform.server.data.query.QueryData;
-import platform.server.data.query.exprs.ObjectExpr;
+import platform.server.data.query.MapJoinEquals;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 
 import java.util.List;
@@ -42,7 +42,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
             where.fillJoins(joins, values);
     }
 
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         if(where.getClass()!=getClass()) return false;
 
         FormulaWhere thisWhere = (FormulaWhere)where;
@@ -53,7 +53,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         for(Where andWhere : wheres) {
             boolean found = false;
             for(int i=0;i<checkWheres.length;i++)
-                if(checkWheres[i]!=null && andWhere.equals(checkWheres[i],mapExprs, mapWheres)) {
+                if(checkWheres[i]!=null && andWhere.equals(checkWheres[i], mapValues, mapKeys, mapJoins)) {
                     checkWheres[i] = null;
                     found = true;
                     break;

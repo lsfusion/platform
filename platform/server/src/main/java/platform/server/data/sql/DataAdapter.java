@@ -7,6 +7,10 @@ public abstract class DataAdapter implements SQLSyntax {
     String server;
     String dataBase;
 
+    // для debuga
+    protected DataAdapter() {
+    }
+
     protected DataAdapter(String iDataBase,String iServer) throws ClassNotFoundException {
         Class.forName(getClassName());
         dataBase = iDataBase;

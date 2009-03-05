@@ -6,6 +6,8 @@ import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.types.Type;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.sql.PostgreDataAdapter;
 
 import java.util.*;
 
@@ -14,6 +16,7 @@ public abstract class Source<K,V> {
 
     public Collection<K> keys;
     public static boolean debugWatch = false;
+    public static final SQLSyntax debugSyntax = new PostgreDataAdapter();
 
     protected Source(Collection<? extends K> iKeys) {
         keys =(Collection<K>)iKeys;

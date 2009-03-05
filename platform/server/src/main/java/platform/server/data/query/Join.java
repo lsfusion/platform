@@ -89,13 +89,13 @@ public class Join<J,U>  {
     }
 
     // для кэша
-    public <EJ,EU> boolean equals(Join<EJ, EU> join, Map<ValueExpr, ValueExpr> mapValues, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public <EJ,EU> boolean equals(Join<EJ, EU> join, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
 
         // проверить что кол-во Keys в Source совпадает
-        for(Map<J,EJ> mapKeys : new Pairs<J,EJ>(source.keys, join.source.keys)) {
+        for(Map<J,EJ> mapSourceKeys : new Pairs<J,EJ>(source.keys, join.source.keys)) {
             boolean equal = true;
-            for(Map.Entry<J,EJ> mapKey : mapKeys.entrySet()) {
-                if(!joins.get(mapKey.getKey()).equals(join.joins.get(mapKey.getValue()), mapExprs, mapWheres)) {
+            for(Map.Entry<J,EJ> mapKey : mapSourceKeys.entrySet()) {
+                if(!joins.get(mapKey.getKey()).equals(join.joins.get(mapKey.getValue()), mapValues, mapKeys, mapJoins)) {
                     equal = false;
                     break;
                 }
@@ -103,10 +103,10 @@ public class Join<J,U>  {
             if(!equal) continue;
 
             Map<U,EU> mapProperties = new HashMap<U, EU>();
-            if(source.equals(join.source,mapKeys,mapProperties, mapValues)) {
+            if(source.equals(join.source,mapSourceKeys,mapProperties, mapValues)) {
                 for(Map.Entry<U,EU> mapProp : mapProperties.entrySet())
-                    mapExprs.put(exprs.get(mapProp.getKey()), join.exprs.get(mapProp.getValue()));
-                mapWheres.put(inJoin, join.inJoin);
+                    mapJoins.put(exprs.get(mapProp.getKey()), join.exprs.get(mapProp.getValue()));
+                mapJoins.put(inJoin, join.inJoin);
                 return true;
             }
         }

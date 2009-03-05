@@ -96,8 +96,10 @@ public class CompiledJoin<J> extends Join<J,Object> {
             String keySourceString = alias + "." + fromSource.getKeyName(keyJoin.getKey());
             // KeyExpr'а есди не было закинем
             String keyJoinString = keyJoin.getValue().getSource(queryData, syntax);
-            if(Source.debugWatch && keyJoinString==null) // кинем висячий ключ на выход
+            if(Source.debugWatch && keyJoinString==null && !inner) { // кинем висячий ключ на выход
                 keyJoinString = keyJoin.getValue().toString();
+                queryData.put((KeyExpr)keyJoin.getValue(),keyJoinString);
+            }
 
             if(keyJoinString==null) {// значит KeyExpr которого еще не было
                 if(!inner)

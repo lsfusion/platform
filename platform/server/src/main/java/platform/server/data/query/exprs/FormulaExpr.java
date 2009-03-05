@@ -1,10 +1,6 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinData;
-import platform.server.data.query.QueryData;
-import platform.server.data.query.Translator;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.*;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -114,7 +110,7 @@ public class FormulaExpr extends AndExpr {
     }
 
     // для кэша
-    public boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         if(!(expr instanceof FormulaExpr)) return false;
 
         FormulaExpr formulaExpr = (FormulaExpr) expr;
@@ -122,7 +118,7 @@ public class FormulaExpr extends AndExpr {
         if(!formula.equals(formulaExpr.formula) || params.size()!=formulaExpr.params.size()) return false;
 
         for(Map.Entry<String, SourceExpr> param : params.entrySet())
-            if(!param.getValue().equals(formulaExpr.params.get(param.getKey()), mapExprs, mapWheres))
+            if(!param.getValue().equals(formulaExpr.params.get(param.getKey()), mapValues, mapKeys, mapJoins))
                 return false;
         return true;
     }

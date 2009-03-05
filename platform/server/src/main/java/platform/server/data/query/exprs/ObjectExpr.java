@@ -1,7 +1,7 @@
 package platform.server.data.query.exprs;
 
 import platform.server.data.query.Translator;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.MapJoinEquals;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 
@@ -18,11 +18,6 @@ public abstract class ObjectExpr extends AndExpr {
     }
     public DataWhereSet getFollows() {
         return new DataWhereSet();
-    }
-
-    // для кэша
-    public boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return mapExprs.get(this).equals(expr);
     }
 
     int getHash() {

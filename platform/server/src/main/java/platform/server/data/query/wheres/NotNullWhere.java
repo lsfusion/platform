@@ -2,9 +2,9 @@ package platform.server.data.query.wheres;
 
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.JoinExpr;
-import platform.server.data.query.exprs.ObjectExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
@@ -74,8 +74,8 @@ public class NotNullWhere extends DataWhere {
     }
 
     // для кэша
-    public boolean equals(Where Where, Map<ObjectExpr, ObjectExpr> MapExprs, Map<JoinWhere, JoinWhere> MapWheres) {
-        return Where instanceof NotNullWhere && expr.equals(((NotNullWhere)Where).expr,MapExprs, MapWheres);
+    public boolean equals(Where Where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+        return Where instanceof NotNullWhere && expr.equals(((NotNullWhere)Where).expr, mapValues, mapKeys, mapJoins);
     }
 
     protected int getHash() {

@@ -3,8 +3,9 @@ package platform.server.where;
 import platform.server.data.query.JoinWheres;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.Translator;
-import platform.server.data.query.exprs.ObjectExpr;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.MapJoinEquals;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 
 import java.util.Collection;
 import java.util.Map;
@@ -50,7 +51,7 @@ public interface Where<Not extends Where> extends SourceJoin {
 
     abstract JoinWheres getInnerJoins();
 
-    abstract boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres);
+    abstract boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins);
 
     int hash();
 

@@ -152,10 +152,10 @@ public class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         return where instanceof CompareWhere && compare == ((CompareWhere)where).compare &&
-                operator1.equals(((CompareWhere)where).operator1,mapExprs,mapWheres) &&
-                operator2.equals(((CompareWhere)where).operator2,mapExprs,mapWheres);
+                operator1.equals(((CompareWhere)where).operator1, mapValues, mapKeys, mapJoins) &&
+                operator2.equals(((CompareWhere)where).operator2, mapValues, mapKeys, mapJoins);
     }
 
     protected int getHash() {

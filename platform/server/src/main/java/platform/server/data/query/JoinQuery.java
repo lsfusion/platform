@@ -6,7 +6,6 @@ import platform.interop.Compare;
 import platform.server.data.Source;
 import platform.server.data.query.exprs.*;
 import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.wheres.JoinWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.logics.session.DataSession;
@@ -110,14 +109,17 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
         compile = getCache(this);
         if(compile !=null) {
-//            System.out.println("cached");
+//            System.out.println("cached "+JoinQuery.cacheCompile.size());
             return compile;
         }
 
-//      System.out.println("not cached");
-
         compile = new CompiledJoinQuery<K,V>(this);
         putCache(this,compile);
+
+//        System.out.println("not cached "+JoinQuery.cacheCompile.size());
+//        debugWatch = true;
+//        System.out.println(compile.compileSelect(debugSyntax).getSelect(debugSyntax));
+//        debugWatch = false;
 
         return compile;
     }
@@ -223,11 +225,10 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
         if(properties.size()!= query.properties.size()) return false;
 
-        mapValues = BaseUtils.crossJoin(getValues(), query.getValues(), mapValues);
-        if(mapValues.values().contains(null)) return false;
+        Map<ValueExpr,ValueExpr> mapJoinValues = BaseUtils.crossJoin(getValues(), query.getValues(), mapValues);
+        if(mapJoinValues.values().contains(null)) return false;
 
-        Map<ObjectExpr, ObjectExpr> mapExprs = new HashMap<ObjectExpr, ObjectExpr>(mapValues);
-        mapExprs.putAll(BaseUtils.crossJoin(mapKeys, query.mapKeys, equalKeys));
+        Map<KeyExpr,KeyExpr> mapJoinKeys = BaseUtils.crossJoin(mapKeys, query.mapKeys, equalKeys);
 
         // бежим по всем Join'ам, пытаемся промаппить их друг на друга
         List<Join> joins = getJoins();
@@ -248,19 +249,18 @@ public class JoinQuery<K,V> extends Source<K,V> {
             hashJoins.add(join);
         }
 
-        Map<JoinWhere,JoinWhere> mapWheres = new HashMap<JoinWhere,JoinWhere>();
         // бежим
+        MapJoinEquals mapJoinEquals = new MapJoinEquals();
         for(Join join : joins) {
             Collection<Join> hashJoins = hashQueryJoins.get(join.hash());
             if(hashJoins==null) return false;
-            boolean found = false;
-            Iterator<Join> i = hashJoins.iterator();
-            while(i.hasNext())
-                if(join.equals(i.next(), mapValues, mapExprs, mapWheres)) {i.remove(); found = true; break;}
-            if(!found) return false;
+            boolean atLeastOneEquals = false;
+            for(Join hashJoin : hashJoins)
+                atLeastOneEquals = join.equals(hashJoin, mapJoinValues, mapJoinKeys, mapJoinEquals) || atLeastOneEquals;
+            if(!atLeastOneEquals) return false;
         }
 
-        if(!where.equals(query.where,mapExprs,mapWheres)) return false;
+        if(!where.equals(query.where, mapJoinValues, mapJoinKeys, mapJoinEquals)) return false;
 
         // свойства проверим
         Map<EV,V> queryMap = new HashMap<EV, V>();
@@ -268,7 +268,7 @@ public class JoinQuery<K,V> extends Source<K,V> {
             EV mapQuery = null;
             for(Map.Entry<EV, SourceExpr> mapQueryProperty : query.properties.entrySet())
                 if(!queryMap.containsKey(mapQueryProperty.getKey()) &&
-                    mapProperty.getValue().equals(mapQueryProperty.getValue(),mapExprs, mapWheres)) {
+                    mapProperty.getValue().equals(mapQueryProperty.getValue(), mapJoinValues, mapJoinKeys, mapJoinEquals)) {
                     mapQuery = mapQueryProperty.getKey();
                     break;
                 }
@@ -330,9 +330,9 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return where.hash()*31+hash;
     }
 
-    static Map<Integer,Collection<JoinCache>> сacheCompile = new HashMap<Integer, Collection<JoinCache>>();
+    static Map<Integer,Collection<JoinCache>> cacheCompile = new HashMap<Integer, Collection<JoinCache>>();
     static <K,V> CompiledJoinQuery<K,V> getCache(JoinQuery<K,V> query) {
-        Collection<JoinCache> hashCaches = сacheCompile.get(query.hash());
+        Collection<JoinCache> hashCaches = cacheCompile.get(query.hash());
         if(hashCaches==null) return null;
         for(JoinCache<?,?> cache : hashCaches) {
             CompiledJoinQuery<K,V> result = cache.cache(query);
@@ -341,10 +341,10 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return null;
     }
     static <K,V> void putCache(JoinQuery<K,V> query,CompiledJoinQuery<K,V> compiled) {
-        Collection<JoinCache> hashCaches = сacheCompile.get(query.hash());
+        Collection<JoinCache> hashCaches = cacheCompile.get(query.hash());
         if(hashCaches==null) {
             hashCaches = new ArrayList<JoinCache>();
-            сacheCompile.put(query.hash(),hashCaches);
+            cacheCompile.put(query.hash(),hashCaches);
         }
         hashCaches.add(new JoinCache<K,V>(query,compiled));
     }

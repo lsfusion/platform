@@ -1,9 +1,8 @@
 package platform.server.where;
 
 import platform.server.data.query.*;
-import platform.server.data.query.exprs.ObjectExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 
@@ -84,8 +83,8 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return new JoinWheres(TRUE,this);
     }
 
-    public boolean equals(Where equalWhere, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapExprs, mapWheres) ;
+    public boolean equals(Where equalWhere, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+        return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapValues, mapKeys, mapJoins) ;
     }
 
     public int getHash() {

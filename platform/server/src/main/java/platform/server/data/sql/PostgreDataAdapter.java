@@ -8,6 +8,10 @@ import java.sql.SQLException;
 
 public class PostgreDataAdapter extends DataAdapter {
 
+    // Для debuga конструктор
+    public PostgreDataAdapter() {
+    }
+
     public PostgreDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
         super(iDataBase, iServer);
     }

@@ -2,7 +2,7 @@ package platform.server.data.query.exprs;
 
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.Translator;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.MapJoinEquals;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
@@ -46,7 +46,7 @@ abstract public class SourceExpr implements SourceJoin {
     public abstract SourceExpr followFalse(Where where);
 
     // для кэша
-    public abstract boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres);
+    public abstract boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins);
 
     boolean hashed = false;
     int hash;

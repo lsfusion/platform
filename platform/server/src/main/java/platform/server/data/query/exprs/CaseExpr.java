@@ -1,10 +1,6 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinData;
-import platform.server.data.query.QueryData;
-import platform.server.data.query.Translator;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.*;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -179,7 +175,7 @@ public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
 
     // для кэша
-    public boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         if(!(expr instanceof CaseExpr)) return false;
 
         CaseExpr caseExpr = (CaseExpr) expr;
@@ -187,7 +183,7 @@ public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         if(cases.size()!=caseExpr.cases.size()) return false;
 
         for(int i=0;i< cases.size();i++)
-            if(!cases.get(i).equals(caseExpr.cases.get(i), mapExprs, mapWheres))
+            if(!cases.get(i).equals(caseExpr.cases.get(i), mapValues, mapKeys, mapJoins))
                 return false;
 
         return true;

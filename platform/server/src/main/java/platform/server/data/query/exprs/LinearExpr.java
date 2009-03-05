@@ -1,10 +1,6 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinData;
-import platform.server.data.query.QueryData;
-import platform.server.data.query.Translator;
-import platform.server.data.query.wheres.JoinWhere;
+import platform.server.data.query.*;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -116,7 +112,7 @@ public class LinearExpr extends AndExpr {
     }
 
     // для кэша
-    public boolean equals(SourceExpr expr, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         if(!(expr instanceof LinearExpr)) return false;
 
         LinearExpr linearExpr = (LinearExpr) expr;
@@ -126,7 +122,7 @@ public class LinearExpr extends AndExpr {
             boolean found = false;
             for(Operand operand : operands)
                 if(operand.coeff==exprOperand.coeff && operand.expr.hash() == exprOperand.expr.hash() &&
-                        operand.expr.equals(exprOperand.expr, mapExprs, mapWheres)) {
+                        operand.expr.equals(exprOperand.expr, mapValues, mapKeys, mapJoins)) {
                     found = true;
                     break;
                 }

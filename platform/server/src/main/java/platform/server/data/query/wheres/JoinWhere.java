@@ -67,8 +67,8 @@ public class JoinWhere extends DataWhere implements JoinData {
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
-        return mapWheres.get(this)==where;
+    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+        return where instanceof JoinWhere && mapJoins.equals(this, (JoinWhere) where);
     }
 
     protected int getHash() {

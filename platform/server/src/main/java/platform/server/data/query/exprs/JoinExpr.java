@@ -3,6 +3,7 @@ package platform.server.data.query.exprs;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.QueryData;
+import platform.server.data.query.MapJoinEquals;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.query.wheres.NotNullWhere;
 import platform.server.data.sql.SQLSyntax;
@@ -73,5 +74,10 @@ public class JoinExpr<J,U> extends ObjectExpr implements JoinData {
 
     int getHash() {
         return from.hash()*31+ from.source.hashProperty(property);
+    }
+
+    // для кэша
+    public boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+        return expr instanceof JoinExpr && mapJoins.equals(this, (JoinExpr) expr);
     }
 }

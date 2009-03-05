@@ -78,9 +78,9 @@ public class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         return where instanceof InListWhere && values.equals(((InListWhere)where).values) &&
-                expr.equals(((InListWhere)where).expr,mapExprs,mapWheres);
+                expr.equals(((InListWhere)where).expr, mapValues, mapKeys, mapJoins);
     }
 
     protected int getHash() {

@@ -3,6 +3,7 @@ package platform.server.data.query.exprs;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.QueryData;
+import platform.server.data.query.MapJoinEquals;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -31,5 +32,10 @@ public class KeyExpr extends ObjectExpr implements QueryData {
     // возвращает Where без следствий
     Where calculateWhere() {
         return Where.TRUE;
+    }
+
+    // для кэша
+    public boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+        return mapKeys.get(this).equals(expr);
     }
 }

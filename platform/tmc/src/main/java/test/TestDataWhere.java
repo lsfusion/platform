@@ -4,10 +4,9 @@ import platform.server.where.DataWhere;
 import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
 import platform.server.data.query.*;
-import platform.server.data.query.exprs.ObjectExpr;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.query.wheres.JoinWhere;
 import platform.server.data.sql.SQLSyntax;
 
 import java.util.Set;
@@ -39,7 +38,7 @@ class TestDataWhere extends DataWhere {
         return new JoinWheres(Where.TRUE,this);
     }
 
-    public boolean equals(Where where, Map<ObjectExpr, ObjectExpr> mapExprs, Map<JoinWhere, JoinWhere> mapWheres) {
+    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
