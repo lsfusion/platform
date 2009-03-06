@@ -1,6 +1,6 @@
 package platform.server.data;
 
-import platform.server.data.query.CompiledJoin;
+import platform.server.data.query.ParsedJoin;
 import platform.server.data.query.ExprTranslator;
 import platform.server.data.query.Join;
 import platform.server.data.query.exprs.ValueExpr;
@@ -42,7 +42,7 @@ public <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> merge, Map<K, MK>
         return null;
     }
 
-    public void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins) {
+    public void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins) {
         join.translate(translated, translatedJoins, this);
     }
 

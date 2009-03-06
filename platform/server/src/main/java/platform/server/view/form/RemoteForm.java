@@ -7,7 +7,7 @@ package platform.server.view.form;
 
 import platform.interop.Compare;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.view.form.ReportData;
+import platform.server.view.form.FormData;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.query.Join;
@@ -1053,7 +1053,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     // возвращает какие объекты отчета фиксируются
-    private Set<GroupObjectImplement> getReportObjects() {
+    private Set<GroupObjectImplement> getClassGroups() {
 
         Set<GroupObjectImplement> reportObjects = new HashSet<GroupObjectImplement>();
         for (GroupObjectImplement group : groups) {
@@ -1065,15 +1065,15 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     // считывает все данные (для отчета)
-    public ReportData getReportData() throws SQLException {
+    public FormData getFormData() throws SQLException {
 
         // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
         endApply();
 
-        Set<GroupObjectImplement> reportObjects = getReportObjects();
+        Set<GroupObjectImplement> classGroups = getClassGroups();
 
         Collection<ObjectImplement> readObjects = new ArrayList<ObjectImplement>();
-        for(GroupObjectImplement group : reportObjects)
+        for(GroupObjectImplement group : classGroups)
             readObjects.addAll(group);
 
         // пока сделаем тупо получаем один большой запрос
@@ -1083,28 +1083,28 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
         for (GroupObjectImplement group : groups) {
 
-            if (reportObjects.contains(group)) {
+            if (classGroups.contains(group)) {
 
                 // не фиксированные ключи
-                group.fillSourceSelect(query,reportObjects,BL.tableFactory, session);
+                group.fillSourceSelect(query,classGroups,BL.tableFactory, session);
 
                 // закинем Order'ы
                 for(Map.Entry<PropertyObjectImplement,Boolean> order : group.orders.entrySet()) {
-                    query.properties.put(order.getKey(),order.getKey().getSourceExpr(reportObjects, query.mapKeys, session));
+                    query.properties.put(order.getKey(),order.getKey().getSourceExpr(classGroups, query.mapKeys, session));
                     queryOrders.put(order.getKey(),order.getValue());
                 }
 
                 for(ObjectImplement object : group) {
-                    query.properties.put(object,object.getSourceExpr(reportObjects,query.mapKeys));
+                    query.properties.put(object,object.getSourceExpr(classGroups,query.mapKeys));
                     queryOrders.put(object,false);
                 }
             }
         }
 
-        ReportData result = new ReportData();
+        FormData result = new FormData();
 
         for(PropertyView property : properties)
-            query.properties.put(property, property.view.getSourceExpr(reportObjects, query.mapKeys, session));
+            query.properties.put(property, property.view.getSourceExpr(classGroups, query.mapKeys, session));
 
         LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultSelect = query.executeSelect(session,queryOrders,0);
         for(Entry<Map<ObjectImplement,Integer>,Map<Object,Object>> row : resultSelect.entrySet()) {
@@ -1123,8 +1123,6 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
             result.add(groupValue,propertyValues);
         }
-
-//        Result.Out();
 
         return result;
     }

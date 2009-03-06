@@ -10,11 +10,11 @@ import java.util.Map;
 
 class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implements CaseWhere<MapCase<J>> {
 
-    Collection<CompiledJoin> translatedJoins;
+    Collection<ParsedJoin> translatedJoins;
     DataSource<J,U> joinSource;
     boolean noAlias;
 
-    CaseJoins(Collection<CompiledJoin> iTranslatedJoins, DataSource<J,U> iJoinSource,boolean iNoAlias) {
+    CaseJoins(Collection<ParsedJoin> iTranslatedJoins, DataSource<J,U> iJoinSource,boolean iNoAlias) {
         translatedJoins = iTranslatedJoins;
         joinSource = iJoinSource;
         noAlias = iNoAlias;
@@ -29,7 +29,7 @@ class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implem
             return Where.FALSE;
         }
 
-        for(CompiledJoin<?> join : translatedJoins) {
+        for(ParsedJoin<?> join : translatedJoins) {
             Map<U, JoinExpr> mergeExprs = join.merge(joinSource, cCase.data);
             if(mergeExprs!=null) {
                 put(cCase,mergeExprs);
@@ -38,7 +38,7 @@ class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implem
         }
 
         // создаем новый
-        CompiledJoin<J> addJoin = new CompiledJoin<J>((DataSource<J,Object>) joinSource, cCase.data, noAlias);
+        ParsedJoin<J> addJoin = new ParsedJoin<J>((DataSource<J,Object>) joinSource, cCase.data, noAlias);
         translatedJoins.add(addJoin);
         put(cCase, (Map<U,? extends AndExpr>) addJoin.exprs);
         return addJoin.inJoin;

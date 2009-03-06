@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CompiledJoin<J> extends Join<J,Object> {
+public class ParsedJoin<J> extends Join<J,Object> {
 
-    CompiledJoin(DataSource<J, Object> iSource, Map<J, ? extends SourceExpr> iJoins, boolean iNoAlias) {
+    ParsedJoin(DataSource<J, Object> iSource, Map<J, ? extends SourceExpr> iJoins, boolean iNoAlias) {
         super(iSource, iJoins, iNoAlias);
     }
 
@@ -125,13 +125,13 @@ public class CompiledJoin<J> extends Join<J,Object> {
             return from + (inner ?"":" LEFT")+" JOIN " + sourceString + " ON "+(joinString.length()==0? Where.TRUE_STRING :joinString);
     }
 
-    CompiledJoin<J> translate(ExprTranslator translated,Map<ValueExpr, ValueExpr> mapValues) {
+    ParsedJoin<J> translate(ExprTranslator translated,Map<ValueExpr, ValueExpr> mapValues) {
 
         Map<J, SourceExpr> transJoins = new HashMap<J, SourceExpr>();
         for(Map.Entry<J, SourceExpr> mapJoin : joins.entrySet())
             transJoins.put(mapJoin.getKey(),mapJoin.getValue().translate(translated));
 
-        CompiledJoin<J> transJoin = new CompiledJoin<J>(getDataSource().translateValues(mapValues),transJoins,false);
+        ParsedJoin<J> transJoin = new ParsedJoin<J>(getDataSource().translateValues(mapValues),transJoins,false);
         translated.put(inJoin,transJoin.inJoin);
         for(Map.Entry<Object, JoinExpr<J,Object>> expr : exprs.entrySet())
             translated.put(expr.getValue(),transJoin.exprs.get(expr.getKey()));

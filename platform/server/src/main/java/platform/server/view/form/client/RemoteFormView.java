@@ -42,7 +42,7 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            form.getReportData().serialize(new DataOutputStream(outStream));
+            form.getFormData().serialize(new DataOutputStream(outStream));
         } catch (Exception e) {
             throw new RemoteException("Exception : " + e.getMessage());
         }

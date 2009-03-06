@@ -10,11 +10,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 // считанные данные (должен быть интерфейс Serialize)
-public class ReportData {
+public class FormData {
 
-    private List<ReportRow> rows = new ArrayList<ReportRow>();
+    private List<FormRow> rows = new ArrayList<FormRow>();
     public void add(Map<ObjectImplement,Integer> keys,Map<PropertyView,Object> properties) {
-        rows.add(new ReportRow(keys,properties));
+        rows.add(new FormRow(keys,properties));
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -22,7 +22,7 @@ public class ReportData {
         outStream.writeBoolean(rows.size()==0);
         if(rows.size()==0) return;
 
-        ReportRow firstRow = rows.iterator().next();
+        FormRow firstRow = rows.iterator().next();
 
         Set<ObjectImplement> objects = firstRow.keys.keySet();
         outStream.writeInt(objects.size());
@@ -39,16 +39,16 @@ public class ReportData {
         }
 
         outStream.writeInt(rows.size());
-        for(ReportRow row : rows)
+        for(FormRow row : rows)
             row.serialize(outStream);
     }
 }
 
-class ReportRow {
+class FormRow {
     Map<ObjectImplement,Integer> keys;
     Map<PropertyView,Object> values;
 
-    ReportRow(Map<ObjectImplement, Integer> iKeys, Map<PropertyView, Object> iProperties) {
+    FormRow(Map<ObjectImplement, Integer> iKeys, Map<PropertyView, Object> iProperties) {
         keys = iKeys;
         values = iProperties;
     }

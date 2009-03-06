@@ -71,8 +71,8 @@ public class JoinQuery<K,V> extends Source<K,V> {
     }
 
     // перетранслирует
-    public void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins) {
-        parse().compileJoin(join, translated, translatedJoins);
+    public void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins) {
+        parse().parseJoin(join, translated, translatedJoins);
     }
 
     static <K> String stringOrder(List<K> sources, int offset, LinkedHashMap<K,Boolean> orders) {
@@ -101,33 +101,33 @@ public class JoinQuery<K,V> extends Source<K,V> {
             join.source.fillJoinQueries(queries);
     }
 
-    CompiledJoinQuery<K,V> compile = null;
-    CompiledJoinQuery<K,V> parse() {
+    ParsedQuery<K,V> parse = null;
+    ParsedQuery<K,V> parse() {
 //        System.out.println("compile..." + this);
 //        if(1==1) return new CompiledJoinQuery<K,V>(this,Orders,SelectTop,Params);
-        if(compile!=null) return compile;
+        if(parse !=null) return parse;
 
-        compile = getCache(this);
-        if(compile !=null) {
-//            System.out.println("cached "+JoinQuery.cacheCompile.size());
-            return compile;
+        parse = getCache(this);
+        if(parse !=null) {
+            System.out.println("cached "+JoinQuery.cacheParse.size());
+            return parse;
         }
 
-        compile = new CompiledJoinQuery<K,V>(this);
-        putCache(this,compile);
+        parse = new ParsedQuery<K,V>(this);
+        putCache(this, parse);
 
-//        System.out.println("not cached "+JoinQuery.cacheCompile.size());
+        System.out.println("not cached "+JoinQuery.cacheParse.size());
 //        debugWatch = true;
 //        System.out.println(compile.compileSelect(debugSyntax).getSelect(debugSyntax));
 //        debugWatch = false;
 
-        return compile;
+        return parse;
     }
 
     void removeProperty(V property) {
         properties.remove(property);
-        if(compile!=null)
-            compile.removeProperty(property);
+        if(parse !=null)
+            parse.removeProperty(property);
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
@@ -330,23 +330,23 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return where.hash()*31+hash;
     }
 
-    static Map<Integer,Collection<JoinCache>> cacheCompile = new HashMap<Integer, Collection<JoinCache>>();
-    static <K,V> CompiledJoinQuery<K,V> getCache(JoinQuery<K,V> query) {
-        Collection<JoinCache> hashCaches = cacheCompile.get(query.hash());
+    static Map<Integer,Collection<JoinCache>> cacheParse = new HashMap<Integer, Collection<JoinCache>>();
+    static <K,V> ParsedQuery<K,V> getCache(JoinQuery<K,V> query) {
+        Collection<JoinCache> hashCaches = cacheParse.get(query.hash());
         if(hashCaches==null) return null;
         for(JoinCache<?,?> cache : hashCaches) {
-            CompiledJoinQuery<K,V> result = cache.cache(query);
+            ParsedQuery<K,V> result = cache.cache(query);
             if(result!=null) return result;
         }
         return null;
     }
-    static <K,V> void putCache(JoinQuery<K,V> query,CompiledJoinQuery<K,V> compiled) {
-        Collection<JoinCache> hashCaches = cacheCompile.get(query.hash());
+    static <K,V> void putCache(JoinQuery<K,V> query, ParsedQuery<K,V> parsed) {
+        Collection<JoinCache> hashCaches = cacheParse.get(query.hash());
         if(hashCaches==null) {
             hashCaches = new ArrayList<JoinCache>();
-            cacheCompile.put(query.hash(),hashCaches);
+            cacheParse.put(query.hash(),hashCaches);
         }
-        hashCaches.add(new JoinCache<K,V>(query,compiled));
+        hashCaches.add(new JoinCache<K,V>(query,parsed));
     }
 
     <EK,EV> boolean equalsMap(JoinQuery<EK,EV> query,Map<K,EK> equalKeys,Map<V,EV> equalProperties, Map<ValueExpr, ValueExpr> equalValues) {
@@ -395,8 +395,8 @@ public class JoinQuery<K,V> extends Source<K,V> {
         where = query.where;
         values = BaseUtils.join(mapValues, query.getValues());
 
-        if(query.compile !=null)
-            compile = new CompiledJoinQuery<K,V>(query.compile, mapValues);
+        if(query.parse !=null)
+            parse = new ParsedQuery<K,V>(query.parse, mapValues);
     }
 }
 

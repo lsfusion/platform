@@ -69,7 +69,7 @@ public class Join<J,U>  {
         addJoin((List<Join>) fillJoins);
     }
 
-    public void translate(ExprTranslator translated, Collection<CompiledJoin> translatedJoins, DataSource<J,U> joinSource) {
+    public void translate(ExprTranslator translated, Collection<ParsedJoin> translatedJoins, DataSource<J,U> joinSource) {
         MapCaseList<J> caseList = CaseExpr.translateCase(joins, translated, true, false);
 
         // перетранслируем InJoin'ы в OR (And Where And NotWhere And InJoin)

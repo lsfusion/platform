@@ -74,7 +74,7 @@ public class CompiledQuery<K,V> {
         params = BaseUtils.join(mapValues,compile.params);
     }
 
-    CompiledQuery(CompiledJoinQuery<K,V> query, SQLSyntax syntax, LinkedHashMap<V,Boolean> orders, int top) {
+    CompiledQuery(ParsedQuery<K,V> query, SQLSyntax syntax, LinkedHashMap<V,Boolean> orders, int top) {
 
 
         keySelect = new HashMap<K, String>();
@@ -322,7 +322,7 @@ public class CompiledQuery<K,V> {
         }
 
         // заполняем все необходимые Join'ы
-        List<CompiledJoin> allJoins = new ArrayList<CompiledJoin>();
+        List<ParsedJoin> allJoins = new ArrayList<ParsedJoin>();
         // сначала fillJoins по JoinWhere чтобы Inner'ы вперед пошли
         joinWhere.fillJoins(allJoins,new HashSet<ValueExpr>());
         // по where запроса
@@ -332,7 +332,7 @@ public class CompiledQuery<K,V> {
             property.fillJoins(allJoins, new HashSet<ValueExpr>());
 
         String from = "";
-        for(CompiledJoin join : allJoins)
+        for(ParsedJoin join : allJoins)
             from = join.getFrom(from, queryData, joinWhere.means(join.inJoin), whereSelect, exprValues, params, syntax);
         if(from.length()==0) from = "dumb";
 

@@ -1,6 +1,6 @@
 package platform.server.data;
 
-import platform.server.data.query.CompiledJoin;
+import platform.server.data.query.ParsedJoin;
 import platform.server.data.query.ExprTranslator;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
@@ -58,7 +58,7 @@ public abstract class Source<K,V> {
     public abstract Map<ValueExpr,ValueExpr> getValues();
 
     // записывается в Join'ы
-    public abstract void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins);
+    public abstract void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins);
 
     public <EK, EV> boolean equals(Source<EK, EV> source, Map<K, EK> mapKeys, Map<V, EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
         if(this== source) {

@@ -5,33 +5,32 @@ import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.Source;
 import platform.server.where.Where;
 
 import java.util.*;
 
-class CompiledJoinQuery<K,V> {
+class ParsedQuery<K,V> {
 
     Map<V,SourceExpr> properties;
     Where where;
 
     Map<K, KeyExpr> keys;
 
-    List<CompiledJoin> joins;
+    List<ParsedJoin> joins;
     Map<ValueExpr, ValueExpr> values;
 
-    private CompiledJoinQuery(Map<K, KeyExpr> iKeys) {
+    private ParsedQuery(Map<K, KeyExpr> iKeys) {
         keys = iKeys;
     }
 
-    CompiledJoinQuery(JoinQuery<K,V> query) {
+    ParsedQuery(JoinQuery<K,V> query) {
         this(query.mapKeys);
 
         ExprTranslator translated = new ExprTranslator();
 
-        joins = new ArrayList<CompiledJoin>();
+        joins = new ArrayList<ParsedJoin>();
         for(Join join : query.getJoins())
-            join.source.compileJoin(join, translated, joins);
+            join.source.parseJoin(join, translated, joins);
 
         // Where
         where = query.where.translate(translated);
@@ -88,7 +87,7 @@ class CompiledJoinQuery<K,V> {
         return where.isFalse();
     }
 
-    void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins) {
+    void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins) {
 
         ExprTranslator joinTranslated = new ExprTranslator();
         // закинем перекодирование ключей
@@ -98,7 +97,7 @@ class CompiledJoinQuery<K,V> {
         joinTranslated.putAll(BaseUtils.reverse(values));
 
         // рекурсивно погнали остальные JoinQuery, здесь уже DataSource'ы причем без CaseExpr'ов
-        for(CompiledJoin compileJoin : joins) // здесь по сути надо перетранслировать ValueExpr'ы а также в GroupQuery перебить JoinQuery на новые Values
+        for(ParsedJoin compileJoin : joins) // здесь по сути надо перетранслировать ValueExpr'ы а также в GroupQuery перебить JoinQuery на новые Values
             compileJoin.translate(joinTranslated, translatedJoins, compileJoin.getDataSource().translateValues(values));
 
         // включать direct если нету case'ов, но почему-то не сильно помогает (процентов на 20)
@@ -111,7 +110,7 @@ class CompiledJoinQuery<K,V> {
 
     private class Compiler {
         CompiledQuery<K,V> compile(SQLSyntax syntax, LinkedHashMap<V, Boolean> orders, int top) {
-            return new CompiledQuery<K,V>(CompiledJoinQuery.this, syntax, orders, top);
+            return new CompiledQuery<K,V>(ParsedQuery.this, syntax, orders, top);
         }
 
         Map<V, SourceExpr> getAndProperties() {
@@ -130,12 +129,12 @@ class CompiledJoinQuery<K,V> {
     }
 
     private class MapCompiler<MK,MV> extends Compiler {
-        CompiledJoinQuery<MK,MV> mapQuery;
+        ParsedQuery<MK,MV> mapQuery;
         Map<K,MK> mapKeys;
         Map<V,MV> mapProps;
         Map<ValueExpr, ValueExpr> mapValues;
 
-        private MapCompiler(CompiledJoinQuery<MK, MV> iMapQuery, Map<K, MK> iMapKeys, Map<V, MV> iMapProps, Map<ValueExpr, ValueExpr> iMapValues) {
+        private MapCompiler(ParsedQuery<MK, MV> iMapQuery, Map<K, MK> iMapKeys, Map<V, MV> iMapProps, Map<ValueExpr, ValueExpr> iMapValues) {
             mapQuery = iMapQuery;
             mapKeys = iMapKeys;
             mapProps = iMapProps;
@@ -154,7 +153,7 @@ class CompiledJoinQuery<K,V> {
             return BaseUtils.join(mapProps, mapQuery.getPackedProperties());
         }
     }
-    <MK,MV> CompiledJoinQuery(CompiledJoinQuery<MK,MV> query, Map<K, MK> mapKeys, Map<V, MV> mapProps, Map<ValueExpr, ValueExpr> mapValues) {
+    <MK,MV> ParsedQuery(ParsedQuery<MK,MV> query, Map<K, MK> mapKeys, Map<V, MV> mapProps, Map<ValueExpr, ValueExpr> mapValues) {
         this(BaseUtils.join(mapKeys, query.keys));
         properties = BaseUtils.join(mapProps, query.properties);
         where = query.where;
@@ -165,10 +164,10 @@ class CompiledJoinQuery<K,V> {
     }
 
     private class ValueCompiler extends Compiler {
-        CompiledJoinQuery<K,V> mapQuery;
+        ParsedQuery<K,V> mapQuery;
         Map<ValueExpr, ValueExpr> mapValues;
 
-        private ValueCompiler(CompiledJoinQuery<K, V> iMapQuery, Map<ValueExpr, ValueExpr> iMapValues) {
+        private ValueCompiler(ParsedQuery<K, V> iMapQuery, Map<ValueExpr, ValueExpr> iMapValues) {
             mapQuery = iMapQuery;
             mapValues = iMapValues;
         }
@@ -185,7 +184,7 @@ class CompiledJoinQuery<K,V> {
             return mapQuery.getPackedProperties();
         }
     }
-    CompiledJoinQuery(CompiledJoinQuery<K,V> query, Map<ValueExpr, ValueExpr> mapValues) {
+    ParsedQuery(ParsedQuery<K,V> query, Map<ValueExpr, ValueExpr> mapValues) {
         this(query.keys);
         properties = query.properties;
         where = query.where;

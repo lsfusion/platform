@@ -107,13 +107,13 @@ public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return new GroupQuery<B,K,V,F>(keys,new JoinQuery<F,B>(from, BaseUtils.filter(mapValues,getValues().keySet())), properties);
     }
     
-    public void compileJoin(Join<K, V> join, ExprTranslator translated, Collection<CompiledJoin> translatedJoins) {
+    public void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins) {
         if(propertiesFrom.parse().isEmpty()) {
             for(Map.Entry<V, JoinExpr<K,V>> mapExpr : join.exprs.entrySet())
                 translated.put(mapExpr.getValue(),mapExpr.getValue().getType().getExpr(null));
             translated.put(join.inJoin, Where.FALSE);
         } else
-            super.compileJoin(join, translated, translatedJoins);
+            super.parseJoin(join, translated, translatedJoins);
     }
 
     public <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> merge, Map<K, MK> mergeKeys, Map<MV, Object> mergeProps) {
@@ -171,8 +171,8 @@ public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         return from.properties.get(property).getType();
     }
 
-    DataSource<K, V> mergeKeyValue(Map<K, ValueExpr> mergeKeys, Collection<K> compileKeys) {
-        return new GroupQuery<B, K, V, F>(compileKeys,new JoinQuery<F,B>(mergeKeys, from), properties);
+    DataSource<K, V> mergeKeyValue(Map<K, ValueExpr> mergeKeys, Collection<K> parseKeys) {
+        return new GroupQuery<B, K, V, F>(parseKeys,new JoinQuery<F,B>(mergeKeys, from), properties);
     }
 
     public Map<ValueExpr, ValueExpr> getValues() {
