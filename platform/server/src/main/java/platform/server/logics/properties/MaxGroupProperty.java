@@ -88,7 +88,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
 //            new ModifyQuery(ChangeTable,UpdateQuery).outSelect(Session);
 //            Main.Session = null;
             resultClass.or(resultClass.and(newClass));
-            session.UpdateRecords(new ModifyQuery(changeTable, updateQuery));
+            session.updateRecords(new ModifyQuery(changeTable, updateQuery));
         }
         return incrementChange;
     }

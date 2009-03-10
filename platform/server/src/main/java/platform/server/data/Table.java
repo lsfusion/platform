@@ -31,7 +31,7 @@ public class Table extends DataSource<KeyField, PropertyField> {
         return Name;
     }
 
-    public Set<List<PropertyField>> Indexes = new HashSet();
+    public Set<List<PropertyField>> indexes = new HashSet();
 
     public Collection<PropertyField> getProperties() {
         return properties;

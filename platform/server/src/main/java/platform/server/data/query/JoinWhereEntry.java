@@ -2,7 +2,7 @@ package platform.server.data.query;
 
 import platform.server.where.Where;
 
-class JoinWhereEntry {
+public class JoinWhereEntry {
     Where join;
     Where where;
 

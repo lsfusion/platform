@@ -361,7 +361,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
                 tableIndex.add(property.field);
             }
 
-            table.Indexes.add(tableIndex);
+            table.indexes.add(tableIndex);
         }
 
         if (createTable) {

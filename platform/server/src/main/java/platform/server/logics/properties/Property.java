@@ -297,13 +297,13 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
 //            if(caption.equals("Цена розн. (до)"))
 //                System.out.println(caption);
-            Session.InsertSelect(new ModifyQuery(changeTable,WriteQuery));
+            Session.insertSelect(new ModifyQuery(changeTable,WriteQuery));
 
             source = ReadQuery;
         }
 
         // сохраняет в базу
-        public void apply(DataSession Session) throws SQLException {
+        public void apply(DataSession session) throws SQLException {
 
             Map<KeyField,T> mapKeys = new HashMap<KeyField,T>();
             Table sourceTable = getTable(mapKeys);
@@ -313,7 +313,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
             Join<T, PropertyField> update = new Join<T, PropertyField>(source,modifyQuery,mapKeys);
             modifyQuery.and(update.inJoin);
             modifyQuery.properties.put(field, update.exprs.get(changeTable.value));
-            Session.modifyRecords(new ModifyQuery(sourceTable,modifyQuery));
+            session.modifyRecords(new ModifyQuery(sourceTable,modifyQuery));
         }
 
         // для отладки, проверяет что у объектов заданные классы

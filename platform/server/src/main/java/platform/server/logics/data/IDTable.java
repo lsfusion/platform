@@ -64,6 +64,6 @@ public class IDTable extends Table {
         JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(keys);
         updateQuery.putKeyWhere(Collections.singletonMap(key,idType));
         updateQuery.properties.put(value,value.type.getExpr(ID+1));
-        session.UpdateRecords(new ModifyQuery(this,updateQuery));
+        session.updateRecords(new ModifyQuery(this,updateQuery));
     }
 }

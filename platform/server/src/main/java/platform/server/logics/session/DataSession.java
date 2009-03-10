@@ -168,7 +168,7 @@ public class DataSession  {
         if(ValueClass.intersect(ClassSet.getUp(objectClass)))
             ValueClass = getBaseClassSet((Integer) NewValue);
 
-        UpdateInsertRecord(Property.dataTable,InsertKeys,InsertValues);
+        updateInsertRecord(Property.dataTable,InsertKeys,InsertValues);
 
         // пометим изменения
         changes.properties.add(Property);
@@ -323,7 +323,7 @@ public class DataSession  {
             RemoteClass ChangeClass = NewClasses.get(idObject);
             InsertProps.put(tableFactory.objectTable.objectClass,ChangeClass!=null?ChangeClass.ID:null);
 
-            UpdateInsertRecord(tableFactory.objectTable,InsertKeys,InsertProps);
+            updateInsertRecord(tableFactory.objectTable,InsertKeys,InsertProps);
         }
     }
 
@@ -411,7 +411,7 @@ public class DataSession  {
         execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
 
         int IndexNum = 1;
-        for(List<PropertyField> Index : Table.Indexes) {
+        for(List<PropertyField> Index : Table.indexes) {
             String Columns = "";
             for(PropertyField IndexField : Index)
                 Columns = (Columns.length()==0?"":Columns+",") + IndexField.Name;
@@ -482,7 +482,7 @@ public class DataSession  {
         execute("INSERT INTO "+Table.getName(syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
     }
 
-    void UpdateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
+    void updateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
 
         // по сути пустое кол-во ключей
         JoinQuery<Object,String> IsRecQuery = new JoinQuery<Object,String>(new ArrayList<Object>());
@@ -501,7 +501,7 @@ public class DataSession  {
                 UpdateQuery.properties.put(MapProp.getKey(), MapProp.getKey().type.getExpr(MapProp.getValue()));
 
             // есть запись нужно Update лупить
-            UpdateRecords(new ModifyQuery(Table,UpdateQuery));
+            updateRecords(new ModifyQuery(Table,UpdateQuery));
         } else
             // делаем Insert
             insertRecord(Table,KeyFields,PropFields);
@@ -516,7 +516,7 @@ public class DataSession  {
         execute("DELETE FROM "+Table.getName(syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
     }
 
-    public void UpdateRecords(ModifyQuery Modify) throws SQLException {
+    public void updateRecords(ModifyQuery Modify) throws SQLException {
 //        try {
             execute(Modify.getUpdate(syntax));
 //        } catch(SQLException e) {
@@ -524,7 +524,7 @@ public class DataSession  {
 //        }
     }
 
-    public void InsertSelect(ModifyQuery Modify) throws SQLException {
+    public void insertSelect(ModifyQuery Modify) throws SQLException {
         execute(Modify.getInsertSelect(syntax));
     }
 

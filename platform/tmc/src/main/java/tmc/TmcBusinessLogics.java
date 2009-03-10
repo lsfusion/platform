@@ -1489,7 +1489,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objDoc.sID = "objDoc";
             getPropertyView(name.property, objDoc.groupTo).sID = "docName";
 
-//            reportDesign = JRXmlLoader.load(new FileInputStream(new File("reports/extIncLog.jrxml")));
+            //
+            reportDesign = JRXmlLoader.load(getClass().getResourceAsStream("/tmc/reports/extIncLog.jrxml"));
         }
     }
 

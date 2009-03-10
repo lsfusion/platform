@@ -109,14 +109,14 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
         parse = getCache(this);
         if(parse !=null) {
-            System.out.println("cached "+JoinQuery.cacheParse.size());
+//            System.out.println("cached "+JoinQuery.cacheParse.size());
             return parse;
         }
 
         parse = new ParsedQuery<K,V>(this);
         putCache(this, parse);
 
-        System.out.println("not cached "+JoinQuery.cacheParse.size());
+//        System.out.println("not cached "+JoinQuery.cacheParse.size());
 //        debugWatch = true;
 //        System.out.println(compile.compileSelect(debugSyntax).getSelect(debugSyntax));
 //        debugWatch = false;
