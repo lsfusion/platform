@@ -170,8 +170,8 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         changeTable = tableFactory.getChangeTable(interfaces.size(), getType());
         changeTableMap = new HashMap<T, KeyField>();
         Iterator<KeyField> io = changeTable.objects.iterator();
-        for(T anInterface : interfaces)
-            changeTableMap.put(anInterface,io.next());
+        for(T propertyInterface : interfaces)
+            changeTableMap.put(propertyInterface,io.next());
     }
 
     void outChangesTable(DataSession session) throws SQLException {
@@ -188,7 +188,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public PropertyField field;
-    public abstract Table getTable(Map<KeyField,T> MapJoins);
+    public abstract Table getTable(Map<KeyField,T> mapJoins);
 
     public boolean isPersistent() {
         return field !=null && !(this instanceof AggregateProperty && tableFactory.reCalculateAggr); // для тестирования 2-е условие

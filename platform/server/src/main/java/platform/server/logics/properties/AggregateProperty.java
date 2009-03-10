@@ -30,21 +30,21 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     abstract SourceExpr calculateSourceExpr(Map<T,? extends SourceExpr> joinImplement, InterfaceClassSet<T> joinClasses);
 
     // сначала проверяет на persistence
-    public Table getTable(Map<KeyField,T> MapJoins) {
+    public Table getTable(Map<KeyField,T> mapJoins) {
         if(aggregateMap ==null) {
             aggregateMap = new HashMap<DataPropertyInterface,T>();
             Map<T, RemoteClass> parent = getClassSet(ClassSet.universal).getCommonParent();
-            for(T anInterface : interfaces) {
-                aggregateMap.put(new DataPropertyInterface(0,parent.get(anInterface)),anInterface);
+            for(T propertyInterface : interfaces) {
+                aggregateMap.put(new DataPropertyInterface(0,parent.get(propertyInterface)),propertyInterface);
             }
         }
 
         Map<KeyField,DataPropertyInterface> mapData = new HashMap<KeyField,DataPropertyInterface>();
         Table sourceTable = tableFactory.getTable(aggregateMap.keySet(),mapData);
         // перекодирукм на MapJoins
-        if(MapJoins!=null) {
+        if(mapJoins !=null) {
             for(KeyField MapField : mapData.keySet())
-                MapJoins.put(MapField, aggregateMap.get(mapData.get(MapField)));
+                mapJoins.put(MapField, aggregateMap.get(mapData.get(MapField)));
         }
 
         return sourceTable;

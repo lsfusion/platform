@@ -320,22 +320,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         for(Property property : properties)
             property.ID = idPropNum++;
 
-        Set<DataProperty> dataProperties = new HashSet<DataProperty>();
-        Collection<AggregateProperty> aggrProperties = new ArrayList<AggregateProperty>();
         Map<Table,Integer> tables = new HashMap<Table,Integer>();
-
         // закинем в таблицы(создав там все что надо) св-ва
         for(Property property : properties) {
             // ChangeTable'ы заполним
             property.fillChangeTable();
 
-            if(property instanceof DataProperty) {
-                dataProperties.add((DataProperty)property);
-                ((DataProperty)property).fillDataTable();
-            }
-
-            if(property instanceof AggregateProperty)
-                aggrProperties.add((AggregateProperty)property);
+            if(property instanceof DataProperty)
+                ((DataProperty)property).fillDataChange();
 
             if(property instanceof DataProperty || (property instanceof AggregateProperty && persistents.contains(property))) {
                 Table table = property.getTable(null);

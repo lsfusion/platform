@@ -31,8 +31,8 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
     }
 
     // при текущей реализации проше предполагать что не имплементнутые Interface имеют null Select !!!!!
-    public Table getTable(Map<KeyField,DataPropertyInterface> MapJoins) {
-        return tableFactory.getTable(interfaces,MapJoins);
+    public Table getTable(Map<KeyField,DataPropertyInterface> mapJoins) {
+        return tableFactory.getTable(interfaces, mapJoins);
     }
 
     public ClassSet calculateValueClass(InterfaceClass<DataPropertyInterface> ClassImplement) {
@@ -60,20 +60,20 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
     }
 
     // свойства для "ручных" изменений пользователем
-    public DataChangeTable dataTable;
-    public Map<KeyField,DataPropertyInterface> dataTableMap = null;
+    public DataChangeTable dataChange;
+    public Map<KeyField,DataPropertyInterface> dataChangeMap = null;
 
-    public void fillDataTable() {
-        dataTable = tableFactory.getDataChangeTable(interfaces.size(), getType());
+    public void fillDataChange() {
+        dataChange = tableFactory.getDataChangeTable(interfaces.size(), getType());
         // если нету Map'a построим
-        dataTableMap = new HashMap<KeyField,DataPropertyInterface>();
-        Iterator<KeyField> io = dataTable.objects.iterator();
+        dataChangeMap = new HashMap<KeyField,DataPropertyInterface>();
+        Iterator<KeyField> io = dataChange.objects.iterator();
         for(DataPropertyInterface Interface : interfaces)
-            dataTableMap.put(io.next(),Interface);
+            dataChangeMap.put(io.next(),Interface);
     }
 
     void outDataChangesTable(DataSession Session) throws SQLException {
-        dataTable.outSelect(Session);
+        dataChange.outSelect(Session);
     }
 
     public ChangeValue getChangeProperty(DataSession Session, Map<DataPropertyInterface, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
@@ -202,11 +202,11 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
         if(dataChanged) {
             dataQuery = new JoinQuery<DataPropertyInterface, PropertyField>(interfaces);
             // GetChangedFrom
-            Join<KeyField, PropertyField> dataJoin = new Join<KeyField, PropertyField>(dataTable, dataTableMap,dataQuery);
-            dataJoin.joins.put(dataTable.property,dataTable.property.type.getExpr(ID));
+            Join<KeyField, PropertyField> dataJoin = new Join<KeyField, PropertyField>(dataChange, dataChangeMap,dataQuery);
+            dataJoin.joins.put(dataChange.property, dataChange.property.type.getExpr(ID));
             dataQuery.and(dataJoin.inJoin);
 
-            dataExpr = dataJoin.exprs.get(dataTable.value);
+            dataExpr = dataJoin.exprs.get(dataChange.value);
             dataQuery.properties.put(changeTable.value, dataExpr);
             resultClass.or(session.dataChanges.get(this));
         }

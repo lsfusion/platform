@@ -153,22 +153,22 @@ public class DataSession  {
         // также заодно новые классы считаем
         Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
         InterfaceClass<DataPropertyInterface> InterfaceClass = new InterfaceClass<DataPropertyInterface>();
-        for(Map.Entry<KeyField,DataPropertyInterface> Field : (Set<Map.Entry<KeyField,DataPropertyInterface>>)Property.dataTableMap.entrySet()) {
+        for(Map.Entry<KeyField,DataPropertyInterface> Field : (Set<Map.Entry<KeyField,DataPropertyInterface>>)Property.dataChangeMap.entrySet()) {
             Integer idObject = (Integer) Keys.get(Field.getValue()).object;
             InsertKeys.put(Field.getKey(), idObject);
             InterfaceClass.put(Field.getValue(),getBaseClassSet(idObject));
         }
 
-        InsertKeys.put(Property.dataTable.property,Property.ID);
+        InsertKeys.put(Property.dataChange.property,Property.ID);
 
         Map<PropertyField,Object> InsertValues = new HashMap<PropertyField,Object>();
-        InsertValues.put(Property.dataTable.value,NewValue);
+        InsertValues.put(Property.dataChange.value,NewValue);
 
         ClassSet ValueClass = Property.getBaseClass();
         if(ValueClass.intersect(ClassSet.getUp(objectClass)))
             ValueClass = getBaseClassSet((Integer) NewValue);
 
-        updateInsertRecord(Property.dataTable,InsertKeys,InsertValues);
+        updateInsertRecord(Property.dataChange,InsertKeys,InsertValues);
 
         // пометим изменения
         changes.properties.add(Property);
