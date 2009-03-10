@@ -26,6 +26,6 @@ public class DateClass extends IntegralClass {
     }
 
     public byte getTypeID() {
-        return 5;
+        return 6;
     }
 }

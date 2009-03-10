@@ -44,6 +44,6 @@ public class BitClass extends IntegralClass {
     }
 
     public byte getTypeID() {
-        return 4;
+        return 5;
     }
 }

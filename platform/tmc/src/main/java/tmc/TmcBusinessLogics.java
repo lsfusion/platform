@@ -270,13 +270,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LJP artGroupName;
 
     LDP artBarCode;
+    LDP artWeight;
+    LDP artPackCount;
 
     private void initArticleProperties() {
 
         artGroup = addDProp("Гр. тов.", articleGroup, article);
         artGroupName = addJProp(artgrGroup, "Имя гр. тов.", name, 1, artGroup, 1);
 
-        artBarCode = addDProp(baseGroup, "Штрих-код", RemoteClass.numeric(15,2),  article);
+        artBarCode = addDProp(baseGroup, "Штрих-код", RemoteClass.numeric(13,0), article);
+        artWeight = addDProp(baseGroup, "Вес (кг.)", RemoteClass.numeric(6,3), article);
+        artPackCount = addDProp(baseGroup, "Кол-во в уп.", RemoteClass.integer, article);
+
         article.externalID = (DataProperty)artBarCode.property;
     }
 

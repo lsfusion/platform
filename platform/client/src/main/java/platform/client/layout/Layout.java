@@ -9,6 +9,8 @@ import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.FlapDockStation;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.StackDockStation;
+import bibliothek.gui.dock.station.split.SplitDockProperty;
+import bibliothek.gui.dock.station.split.SplitDockTree;
 import bibliothek.gui.dock.control.SingleParentRemover;
 import bibliothek.gui.dock.event.DockFrontendAdapter;
 import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
@@ -34,14 +36,6 @@ import java.util.*;
 
 public class Layout extends JFrame implements ComponentCollector {
 
-    public StackDockStation defaultStation;
-
-    Map<String,DockStation> rootStations = new HashMap<String, DockStation>();
-
-    DockFrontend frontend;
-    LookAndFeelList lookAndFeels;
-    ThemeMenu themes;
-
     public Layout(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super();
 
@@ -51,54 +45,8 @@ public class Layout extends JFrame implements ComponentCollector {
         setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setSize(800, 600);
-        frontend = new DockFrontend();
-        DockController Controller = frontend.getController();
-
-        // дизайн
-        // Look&Feel'ы
-        lookAndFeels = LookAndFeelList.getDefaultList();
-        // пометим что мы сами будем следить за изменение Layout'а
-        lookAndFeels.addComponentCollector(this);
-        // темы
-        themes = new ThemeMenu(frontend);
-
-        // делает чтобы не удалялась основная StackForm'а
-        Controller.setSingleParentRemover(new SingleParentRemover() {
-            protected boolean shouldTest(DockStation dockStation) {
-                return (dockStation!= defaultStation);
-            }
-        });
-
-        // можно удалять ненужные контейнеры (кроме DefaultStation)
-        Controller.addActionGuard(new ReplaceActionGuard(Controller) {
-            public boolean react(Dockable dockable) {
-                return dockable== defaultStation && super.react(dockable);
-            }
-        });
-        // добавим закрытие форм
-        Controller.addActionGuard(new LayoutActionGuard(Controller));
-
-        SplitDockStation SplitStation = new SplitDockStation();
-
-        Map<FlapDockStation,String> Flaps = new HashMap<FlapDockStation, String>();
-        Flaps.put(new FlapDockStation(),BorderLayout.NORTH);
-        Flaps.put(new FlapDockStation(),BorderLayout.EAST);
-        Flaps.put(new FlapDockStation(),BorderLayout.SOUTH);
-        Flaps.put(new FlapDockStation(),BorderLayout.WEST);
-
-        StackDockStation StackStation = new StackDockStation();
-        // the station has to be registered
-        add(SplitStation, BorderLayout.CENTER);
-
-        for(Map.Entry<FlapDockStation,String> Flap : Flaps.entrySet()) {
-            add(Flap.getKey().getComponent(),Flap.getValue());
-            frontend.addRoot(Flap.getKey(),Flap.getValue()+"Flap");
-        }
-
-        frontend.addRoot(SplitStation,"Split");
-
-        defaultStation = StackStation;
+        setSize(1024, 768);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
 
@@ -114,42 +62,7 @@ public class Layout extends JFrame implements ComponentCollector {
             }
         };
 
-        NavigatorDockable mainNavigatorForm = new NavigatorDockable(mainNavigator, "Навигатор");
-        // нужно обязательно до Drop чтобы появились крестики
-        frontend.add(mainNavigatorForm,"remoteNavigator");
-
-        NavigatorDockable relevantFormNavigatorForm = new NavigatorDockable(mainNavigator.relevantFormNavigator, "Связанные формы");
-        frontend.add(relevantFormNavigatorForm,"relevantFormNavigator");
-
-        NavigatorDockable relevantClassNavigatorForm = new NavigatorDockable(mainNavigator.relevantClassNavigator, "Классовые формы");
-        frontend.add(relevantClassNavigatorForm,"relevantClassNavigator");
-
-        DefaultDockable logPanel = new DefaultDockable(Log.getPanel(), "Log");
-        frontend.add(logPanel, "Log");
-
-        // нужно включить в FrontEnd чтобы была predefined и новые формы могли бы туда же попадать
-        frontend.add(StackStation,"Stack");
-        frontend.setHideable(StackStation,false);
-
-/*        // сделаем чтобы Page'и шли без title'ов
-        DockTitleFactory Factory = new NoStackTitleFactory(Controller.getTheme().getTitleFactory(Controller));
-        Controller.getDockTitleManager().registerClient(StackDockStation.TITLE_ID,Factory);
-        Controller.getDockTitleManager().registerClient(SplitDockStation.TITLE_ID,Factory);
-        Controller.getDockTitleManager().registerClient(FlapDockStation.WINDOW_TITLE_ID,Factory);
-*/
-        // здесь чтобы сама потом подцепила галочки панелей
-        setupMenu();
-
-        frontend.registerFactory(new ClientFormFactory(mainNavigator));
-        try {
-            read();
-        } catch (IOException e) {
-            SplitStation.drop(mainNavigatorForm);
-            SplitStation.drop(relevantFormNavigatorForm);
-            SplitStation.drop(relevantClassNavigatorForm);
-            SplitStation.drop(logPanel);
-            SplitStation.drop(StackStation);
-        }
+        initDockStations(mainNavigator);
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e)
@@ -163,74 +76,111 @@ public class Layout extends JFrame implements ComponentCollector {
             }
         });
 
-/*        String[] columnNames = {"First Name",
-                                "Last Name",
-                                "Sport",
-                                "# of Years",
-                                "Vegetarian"};
+    }
 
-        Object[][] data = {
-            {"Mary", "Campione",
-             "Snowboarding", new Integer(5), new Boolean(false)},
-            {"Alison", "Huml",
-             "Rowing", new Integer(3), new Boolean(true)},
-            {"Kathy", "Walrath",
-             "Knitting", new Integer(2), new Boolean(false)},
-            {"Sharon", "Zakhour",
-             "Speed reading", new Integer(20), new Boolean(true)},
-            {"Philip", "Milne",
-             "Pool", new Integer(10), new Boolean(false)}
-        };
+    DockFrontend frontend;
+    LookAndFeelList lookAndFeels;
+    ThemeMenu themes;
 
-        final JTable table = new JTable(data, columnNames);
-        table.setPreferredScrollableViewportSize(new Dimension(500, 70));
-        table.setFillsViewportHeight(true);
+    public StackDockStation defaultStation;
 
-        final JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    private void initDockStations(ClientNavigator mainNavigator) {
 
-        final JButton button = new JButton("Test");
-        button.addActionListener(new ActionListener() {
+        frontend = new DockFrontend();
+        DockController controller = frontend.getController();
 
-            public void actionPerformed(ActionEvent e) {
+        // дизайн
+        // Look&Feel'ы
+        lookAndFeels = LookAndFeelList.getDefaultList();
+        // пометим что мы сами будем следить за изменение Layout'а
+        lookAndFeels.addComponentCollector(this);
+        // темы
+        themes = new ThemeMenu(frontend);
 
-                JButton butt1 = new JButton();
-                JButton butt2 = new JButton();
-                panel.add(butt1);
-                butt1.setNextFocusableComponent(table);
-                table.setNextFocusableComponent(button);
-//                butt1.setNextFocusableComponent(null);
-                panel.remove(butt1);
-//                table.setNextFocusableComponent(table);
+        // делает чтобы не удалялась основная StackForm'а
+        controller.setSingleParentRemover(new SingleParentRemover() {
+            protected boolean shouldTest(DockStation dockStation) {
+                return (dockStation!= defaultStation);
             }
         });
-        
-        panel.add(table);
-        panel.add(button);
 
-        DefaultDockable dock = new DefaultDockable(panel, "Table");
-
-        setVisible(true);
-
-        SplitStation.drop(dock);
-
-        for (DockableDisplayer displayer : SplitStation.getDisplayers()) {
-            if (displayer instanceof BasicDockableDisplayer) {
-                ((BasicDockableDisplayer)displayer).setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
+        // можно удалять ненужные контейнеры (кроме DefaultStation)
+        controller.addActionGuard(new ReplaceActionGuard(controller) {
+            public boolean react(Dockable dockable) {
+                return dockable== defaultStation && super.react(dockable);
             }
+        });
+        // добавим закрытие форм
+        controller.addActionGuard(new LayoutActionGuard(controller));
+
+        // добавляем основную SplitDockStation
+
+        SplitDockStation mainSplitStation = new SplitDockStation();
+        add(mainSplitStation.getComponent(), BorderLayout.CENTER);
+        frontend.addRoot(mainSplitStation, "Main");
+
+        // добавляем со всех краев по FlapDockStation'у
+
+        Map<FlapDockStation,String> flaps = new HashMap<FlapDockStation, String>();
+        flaps.put(new FlapDockStation(),BorderLayout.NORTH);
+        flaps.put(new FlapDockStation(),BorderLayout.EAST);
+        flaps.put(new FlapDockStation(),BorderLayout.SOUTH);
+        flaps.put(new FlapDockStation(),BorderLayout.WEST);
+
+        for(Map.Entry<FlapDockStation,String> Flap : flaps.entrySet()) {
+            add(Flap.getKey().getComponent(), Flap.getValue());
+            frontend.addRoot(Flap.getKey(), "Flap" + Flap.getValue());
         }
-        Container cont = table.getFocusCycleRootAncestor();
-        cont.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
 
-        panel.setFocusCycleRoot(true);
-//        panel.setFocusTraversalPolicyProvider(true);
-        panel.setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
+        // Station куда будут кидаться все открываемые формы
+        StackDockStation stackStation = new StackDockStation();
+        frontend.add(stackStation, "Forms");
+        frontend.setHideable(stackStation, false);
 
-//        Container cont = table.getFocusCycleRootAncestor();
-        System.out.println(cont);
-        System.out.println(cont.getFocusTraversalPolicy());
-        table.setNextFocusableComponent(button);
-        System.out.println(cont.getFocusTraversalPolicy()); */
+        defaultStation = stackStation;
+
+        // Создаем все служебные Station
+        NavigatorDockable mainNavigatorForm = new NavigatorDockable(mainNavigator, "Навигатор");
+        frontend.add(mainNavigatorForm,"remoteNavigator");
+
+        NavigatorDockable relevantFormNavigatorForm = new NavigatorDockable(mainNavigator.relevantFormNavigator, "Связанные формы");
+        frontend.add(relevantFormNavigatorForm,"relevantFormNavigator");
+
+        NavigatorDockable relevantClassNavigatorForm = new NavigatorDockable(mainNavigator.relevantClassNavigator, "Классовые формы");
+        frontend.add(relevantClassNavigatorForm,"relevantClassNavigator");
+
+        DefaultDockable logPanel = new DefaultDockable(Log.getPanel(), "Лог");
+        frontend.add(logPanel, "Log");
+
+/*        // сделаем чтобы Page'и шли без title'ов
+        DockTitleFactory Factory = new NoStackTitleFactory(controller.getTheme().getTitleFactory(controller));
+        controller.getDockTitleManager().registerClient(StackDockStation.TITLE_ID,Factory);
+        controller.getDockTitleManager().registerClient(SplitDockStation.TITLE_ID,Factory);
+        controller.getDockTitleManager().registerClient(FlapDockStation.WINDOW_TITLE_ID,Factory);
+*/
+        // здесь чтобы сама потом подцепила галочки панелей
+        setupMenu();
+
+        frontend.registerFactory(new ClientFormFactory(mainNavigator));
+        try {
+            read();
+        } catch (IOException e) {
+
+            // расположение по умолчанию
+            SplitDockTree dockTree = new SplitDockTree();
+
+            SplitDockTree.Key services = dockTree.vertical(dockTree.put(mainNavigatorForm),
+                                         dockTree.vertical(dockTree.put(relevantFormNavigatorForm),
+                                         dockTree.vertical(dockTree.put(relevantClassNavigatorForm),
+                                                           dockTree.put(logPanel), 0.5), 0.3), 0.4);
+
+            SplitDockTree.Key forms = dockTree.put(stackStation);
+
+            dockTree.root(dockTree.horizontal(services, forms, 0.2));
+
+            mainSplitStation.dropTree(dockTree);
+        }
+
     }
 
     void write() throws IOException {

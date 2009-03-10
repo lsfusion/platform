@@ -42,7 +42,13 @@ abstract public class RemoteClass extends AbstractNode {
         return string;
     }
     private static Collection<NumericClass> numerics = new ArrayList<NumericClass>();
-    public static NumericClass numeric(int length,int precision) {
+
+    public static NumericClass numeric(int length, int precision) {
+        return numeric((byte)length, (byte)precision);
+    }
+    
+    public static NumericClass numeric(byte length, byte precision) {
+
         for(NumericClass numeric : numerics)
             if(numeric.length==length && numeric.precision==precision)
                 return numeric;
@@ -50,6 +56,7 @@ abstract public class RemoteClass extends AbstractNode {
         numeric.addParent(data);
         numerics.add(numeric);
         return numeric;
+
     }
 
     static {

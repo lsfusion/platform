@@ -9,15 +9,17 @@ import java.text.Format;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class StringClass extends RemoteClass {
+
+    int length;
 
     StringClass(Integer iID, String caption, int iLength) {
         super(iID, caption);
         length = iLength;
     }
-
-    int length;
 
     public Type getType() {
         return Type.string(length);
@@ -43,6 +45,12 @@ public class StringClass extends RemoteClass {
     }
 
     public byte getTypeID() {
-        return 6;
+        return 7;
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
+
+        outStream.writeInt(length);
     }
 }

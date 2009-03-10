@@ -9,8 +9,12 @@ import java.text.Format;
 
 public class ClientStringClass extends ClientClass {
 
+    int length;
+
     public ClientStringClass(DataInputStream inStream) throws IOException {
         super(inStream);
+
+        length = inStream.readInt();
     }
 
     public int getMinimumWidth() { return 30; }
@@ -21,7 +25,7 @@ public class ClientStringClass extends ClientClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new StringPropertyEditor(value); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new StringPropertyEditor(length, value); }
 
     public Class getJavaClass() {
         return String.class;

@@ -17,13 +17,9 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor
 //        if (format == null)
 //            format = NumberFormat.getInstance();
 
-        if (Double.class.equals(valueClass) && format instanceof DecimalFormat) {
+        if (Double.class.equals(valueClass) && format instanceof DecimalFormat && format.getMaximumFractionDigits() > 0) {
             ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
         }
-
-/*        if (format instanceof DecimalFormat) {
-            ((DecimalFormat) format).setDecimalSeparatorAlwaysShown(true);
-        }*/
 
         NumberFormatter formatter = new NumberFormatter(format) {
 
@@ -58,16 +54,7 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor
             return null;
         }
 
-        Object value = this.getValue();
-
-        return value;
-/*        if (value instanceof Integer)
-            return value;
-
-        if (value instanceof Long)
-            return ((Long) value).intValue();
-
-        return null; */
+        return this.getValue();
     }
 
     public boolean valueChanged() {

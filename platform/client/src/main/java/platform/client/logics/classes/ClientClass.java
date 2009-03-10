@@ -51,9 +51,10 @@ abstract public class ClientClass implements Serializable {
         if(type==1) return new ClientIntegerClass(inStream);
         if(type==2) return new ClientLongClass(inStream);
         if(type==3) return new ClientDoubleClass(inStream);
-        if(type==4) return new ClientBitClass(inStream);
-        if(type==5) return new ClientDateClass(inStream);
-        if(type==6) return new ClientStringClass(inStream);
+        if(type==4) return new ClientNumericClass(inStream);
+        if(type==5) return new ClientBitClass(inStream);
+        if(type==6) return new ClientDateClass(inStream);
+        if(type==7) return new ClientStringClass(inStream);
 
         throw new IOException();
     }
