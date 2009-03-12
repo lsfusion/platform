@@ -37,7 +37,6 @@ import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.RemoteNavigator;
-import platform.server.exceptions.RemoteExceptionManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -1126,11 +1125,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     // полностью очищает базу
     protected void clean(DataSession session) throws SQLException {
         // удаляем все объекты
-        session.deleteAll(tableFactory.objectTable);
+        session.deleteKeyRecords(tableFactory.objectTable, new HashMap<KeyField, Integer>());
 
         // удаляем все св-ва
         for(ImplementTable table : tableFactory.getImplementTables().values())
-            session.deleteAll(table);
+            session.deleteKeyRecords(table, new HashMap<KeyField, Integer>());
     }
 
     public static boolean autoFillDB = false;

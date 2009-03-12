@@ -268,42 +268,42 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
             }
         }
 
-        public void out(DataSession Session) throws SQLException {
+        public void out(DataSession session) throws SQLException {
             System.out.println(caption);
-            source.outSelect(Session);
+            source.outSelect(session);
             System.out.println(classes);
         }
 
         // сохраняет в инкрементную таблицу
-        public void save(DataSession Session) throws SQLException {
+        public void save(DataSession session) throws SQLException {
 
-            Map<KeyField,Integer> ValueKeys = new HashMap<KeyField,Integer>();
-            ValueKeys.put(changeTable.property,ID);
-            Session.deleteKeyRecords(changeTable,ValueKeys);
+            Map<KeyField,Integer> valueKeys = new HashMap<KeyField,Integer>();
+            valueKeys.put(changeTable.property,ID);
+            session.deleteKeyRecords(changeTable,valueKeys);
 
             // откуда читать
-            JoinQuery<T, PropertyField> ReadQuery = new JoinQuery<T, PropertyField>(interfaces);
-            Join<KeyField, PropertyField> ReadJoin = new Join<KeyField, PropertyField>(changeTable,ReadQuery, changeTableMap);
-            ReadJoin.joins.put(changeTable.property,changeTable.property.type.getExpr(ID));
-            ReadQuery.and(ReadJoin.inJoin);
+            JoinQuery<T, PropertyField> readQuery = new JoinQuery<T, PropertyField>(interfaces);
+            Join<KeyField, PropertyField> readJoin = new Join<KeyField, PropertyField>(changeTable,readQuery, changeTableMap);
+            readJoin.joins.put(changeTable.property,changeTable.property.type.getExpr(ID));
+            readQuery.and(readJoin.inJoin);
 
-            JoinQuery<KeyField, PropertyField> WriteQuery = new JoinQuery<KeyField, PropertyField>(changeTable.keys);
-            Join<T, PropertyField> WriteJoin = new Join<T, PropertyField>(source, changeTableMap,WriteQuery);
-            WriteQuery.putKeyWhere(ValueKeys);
-            WriteQuery.and(WriteJoin.inJoin);
+            JoinQuery<KeyField, PropertyField> writeQuery = new JoinQuery<KeyField, PropertyField>(changeTable.keys);
+            Join<T, PropertyField> writeJoin = new Join<T, PropertyField>(source, changeTableMap,writeQuery);
+            writeQuery.putKeyWhere(valueKeys);
+            writeQuery.and(writeJoin.inJoin);
 
-            WriteQuery.properties.put(changeTable.value, WriteJoin.exprs.get(changeTable.value));
-            ReadQuery.properties.put(changeTable.value, ReadJoin.exprs.get(changeTable.value));
+            writeQuery.properties.put(changeTable.value, writeJoin.exprs.get(changeTable.value));
+            readQuery.properties.put(changeTable.value, readJoin.exprs.get(changeTable.value));
             if(Type==2) {
-                WriteQuery.properties.put(changeTable.prevValue, WriteJoin.exprs.get(changeTable.prevValue));
-                ReadQuery.properties.put(changeTable.prevValue, ReadJoin.exprs.get(changeTable.prevValue));
+                writeQuery.properties.put(changeTable.prevValue, writeJoin.exprs.get(changeTable.prevValue));
+                readQuery.properties.put(changeTable.prevValue, readJoin.exprs.get(changeTable.prevValue));
             }
 
 //            if(caption.equals("Цена розн. (до)"))
 //                System.out.println(caption);
-            Session.insertSelect(new ModifyQuery(changeTable,WriteQuery));
+            session.insertSelect(new ModifyQuery(changeTable,writeQuery));
 
-            source = ReadQuery;
+            source = readQuery;
         }
 
         // сохраняет в базу

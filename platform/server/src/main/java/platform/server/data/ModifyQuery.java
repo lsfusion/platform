@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ModifyQuery {
-    Table table;
+    public Table table;
     JoinQuery<KeyField, PropertyField> change;
 
     public ModifyQuery(Table iTable, JoinQuery<KeyField, PropertyField> iChange) {

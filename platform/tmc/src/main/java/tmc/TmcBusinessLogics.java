@@ -48,7 +48,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         System.out.println("Server is starting...");
         DataAdapter adapter = new PostgreDataAdapter("testplat","localhost");
         TmcBusinessLogics BL = new TmcBusinessLogics(adapter);
-        BL.fillData();
+//        BL.fillData();
         LocateRegistry.createRegistry(7653).rebind("TmcBusinessLogics", BL);
 //        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
         System.out.println("Server successfully started");

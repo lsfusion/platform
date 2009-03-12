@@ -127,34 +127,17 @@ public class TableFactory {
         session.ensureTable(emptyTable);
     }
 
-    // заполняет временные таблицы
-    public void fillSession(DataSession session) throws SQLException {
-
-        session.createTemporaryTable(addClassTable);
-        session.createTemporaryTable(removeClassTable);
-
-        for(Map<Type, IncrementChangeTable> mapTables : changeTables)
-            for(ChangeObjectTable changeTable : mapTables.values())
-                session.createTemporaryTable(changeTable);
-        for(Map<Type, DataChangeTable> mapTables : dataChangeTables)
-            for(ChangeObjectTable dataChangeTable : mapTables.values())
-                session.createTemporaryTable(dataChangeTable);
-
-        for(ViewTable ViewTable : viewTables)
-            session.createTemporaryTable(ViewTable);
-    }
-
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
-    public void clearSession(DataSession Session) throws SQLException {
+    public void clearSession(DataSession session) throws SQLException {
 
-        Session.deleteKeyRecords(addClassTable,new HashMap<KeyField, Integer>());
-        Session.deleteKeyRecords(removeClassTable,new HashMap<KeyField, Integer>());
+        session.deleteKeyRecords(addClassTable,new HashMap<KeyField, Integer>());
+        session.deleteKeyRecords(removeClassTable,new HashMap<KeyField, Integer>());
 
         for(Map<Type, IncrementChangeTable> mapTables : changeTables)
             for(ChangeObjectTable changeTable : mapTables.values())
-                Session.deleteKeyRecords(changeTable,new HashMap<KeyField, Integer>());
+                session.deleteKeyRecords(changeTable,new HashMap<KeyField, Integer>());
         for(Map<Type, DataChangeTable> mapTables : dataChangeTables)
             for(ChangeObjectTable dataChangeTable : mapTables.values())
-                Session.deleteKeyRecords(dataChangeTable,new HashMap<KeyField, Integer>());
+                session.deleteKeyRecords(dataChangeTable,new HashMap<KeyField, Integer>());
     }
 }

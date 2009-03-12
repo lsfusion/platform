@@ -18,7 +18,6 @@ import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.*;
-import platform.server.where.Where;
 
 import java.sql.*;
 import java.util.*;
@@ -53,22 +52,21 @@ public class DataSession  {
         objectClass = iObjectClass;
 
         connection = Adapter.startConnection();
-        tableFactory.fillSession(this);
     }
 
-    public void restart(boolean Cancel) throws SQLException {
+    public void restart(boolean cancel) throws SQLException {
 
-        if(Cancel)
-            for(DataChanges ViewChanges : incrementChanges.values()) {
-                ViewChanges.properties.addAll(changes.properties);
-                ViewChanges.addClasses.addAll(changes.addClasses);
-                ViewChanges.removeClasses.addAll(changes.removeClasses);
+        if(cancel)
+            for(DataChanges viewChanges : incrementChanges.values()) {
+                viewChanges.properties.addAll(changes.properties);
+                viewChanges.addClasses.addAll(changes.addClasses);
+                viewChanges.removeClasses.addAll(changes.removeClasses);
             }
 
         tableFactory.clearSession(this);
         changes = new DataChanges();
-        NewClasses = new HashMap<Integer, RemoteClass>();
-        BaseClasses = new HashMap<Integer, RemoteClass>();
+        newClasses = new HashMap<Integer, RemoteClass>();
+        baseClasses = new HashMap<Integer, RemoteClass>();
 
         propertyChanges = new HashMap<Property, Property.Change>();
         addChanges = new HashMap<RemoteClass, ClassSet>();
@@ -76,9 +74,9 @@ public class DataSession  {
         dataChanges = new HashMap<DataProperty, ValueClassSet<DataPropertyInterface>>();
     }
 
-    Map<Integer, RemoteClass> NewClasses = new HashMap<Integer, RemoteClass>();
+    Map<Integer, RemoteClass> newClasses = new HashMap<Integer, RemoteClass>();
     // классы на момент выполнения
-    public Map<Integer, RemoteClass> BaseClasses = new HashMap<Integer, RemoteClass>();
+    public Map<Integer, RemoteClass> baseClasses = new HashMap<Integer, RemoteClass>();
 
     private void putClassChanges(Set<RemoteClass> Changes, RemoteClass PrevClass,Map<RemoteClass,ClassSet> To) {
         for(RemoteClass Change : Changes) {
@@ -105,9 +103,9 @@ public class DataSession  {
         tableFactory.removeClassTable.changeClass(this,idObject,RemoveClasses,false);
         tableFactory.addClassTable.changeClass(this,idObject,RemoveClasses,true);
 
-        if(!NewClasses.containsKey(idObject))
-            BaseClasses.put(idObject,PrevClass);
-        NewClasses.put(idObject,ToClass);
+        if(!newClasses.containsKey(idObject))
+            baseClasses.put(idObject,PrevClass);
+        newClasses.put(idObject,ToClass);
 
         changes.addClasses.addAll(AddClasses);
         changes.removeClasses.addAll(RemoveClasses);
@@ -188,7 +186,7 @@ public class DataSession  {
     }
 
     public RemoteClass getObjectClass(Integer idObject) throws SQLException {
-        RemoteClass NewClass = NewClasses.get(idObject);
+        RemoteClass NewClass = newClasses.get(idObject);
         if(NewClass==null)
             NewClass = readClass(idObject);
         if(NewClass==null)
@@ -198,7 +196,7 @@ public class DataSession  {
 
     ClassSet getBaseClassSet(Integer idObject) throws SQLException {
         if(idObject==null) return new ClassSet();
-        RemoteClass BaseClass = BaseClasses.get(idObject);
+        RemoteClass BaseClass = baseClasses.get(idObject);
         if(BaseClass==null)
             BaseClass = readClass(idObject);
         return new ClassSet(BaseClass);
@@ -208,48 +206,33 @@ public class DataSession  {
     public List<Property> update(PropertyUpdateView ToUpdate,Collection<RemoteClass> UpdateClasses) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
-        DataChanges ToUpdateChanges = incrementChanges.get(ToUpdate);
-        if(ToUpdateChanges==null) ToUpdateChanges = changes;
+        DataChanges toUpdateChanges = incrementChanges.get(ToUpdate);
+        if(toUpdateChanges==null) toUpdateChanges = changes;
 
         Collection<Property> ToUpdateProperties = ToUpdate.getUpdateProperties();
         Collection<Property> NoUpdateProperties = ToUpdate.getNoUpdateProperties();
         // сначала читаем инкрементные св-ва которые изменились
-        List<Property> IncrementUpdateList = BusinessLogics.getChangedList(ToUpdateProperties,ToUpdateChanges,NoUpdateProperties);
-        List<Property> UpdateList = BusinessLogics.getChangedList(IncrementUpdateList, changes,NoUpdateProperties);
+        List<Property> IncrementUpdateList = BusinessLogics.getChangedList(ToUpdateProperties,toUpdateChanges,NoUpdateProperties);
+        List<Property> updateList = BusinessLogics.getChangedList(IncrementUpdateList, changes,NoUpdateProperties);
 
         Map<Property,Integer> RequiredTypes = new HashMap<Property,Integer>();
         // пробежим вперед пометим свойства которые изменились, но неясно на что
-        for(Property Property : UpdateList)
+        for(Property Property : updateList)
             RequiredTypes.put(Property,ToUpdateProperties.contains(Property)?0:null);
-        Map<Property, Integer> IncrementTypes = getIncrementTypes(UpdateList, RequiredTypes);
+        Map<Property, Integer> IncrementTypes = getIncrementTypes(updateList, RequiredTypes);
 
         // запускаем IncrementChanges для этого списка
-        for(Property Property : UpdateList) {
-//            System.out.println(Property.caption);
-//            if(Property.caption.equals("Всего с НДС"))
-//                Property = Property;
-            Property.Change Change = Property.incrementChanges(this,IncrementTypes.get(Property));
+        for(Property Property : updateList) {
+            Property.Change change = Property.incrementChanges(this,IncrementTypes.get(Property));
             // подгоняем тип
-            Change.correct(RequiredTypes.get(Property));
-//            System.out.println("inctype"+Property.caption+" "+IncrementTypes.get(Property));
-//            Main.Session = this;
-//            Change.out(this);
-//            Main.Session = null;
+            change.correct(RequiredTypes.get(Property));
             if(!(Property instanceof MaxGroupProperty) && ToUpdate.toSave(Property))
-                Change.save(this);
-//            Property.Out(this);            
-//            System.out.println(Property.caption + " incComplexity : " + Change.Source.getComplexity());
-//            Change.out(this);
-/*            System.out.println(Property.caption+" - CHANGES");
-            Property.OutChangesTable(this);
-            System.out.println(Property.caption+" - CURRENT");
-            Property.Out(this);
-            Change.checkClasses(this);*/
-            propertyChanges.put(Property,Change);
+                change.save(this);
+            propertyChanges.put(Property, change);
         }
 
-        UpdateClasses.addAll(ToUpdateChanges.addClasses);
-        UpdateClasses.addAll(ToUpdateChanges.removeClasses);
+        UpdateClasses.addAll(toUpdateChanges.addClasses);
+        UpdateClasses.addAll(toUpdateChanges.removeClasses);
 
         // сбрасываем лог
         incrementChanges.put(ToUpdate,new DataChanges());
@@ -314,12 +297,12 @@ public class DataSession  {
 
     public void saveClassChanges() throws SQLException {
 
-        for(Integer idObject : NewClasses.keySet()) {
+        for(Integer idObject : newClasses.keySet()) {
             Map<KeyField,Integer> InsertKeys = new HashMap<KeyField,Integer>();
             InsertKeys.put(tableFactory.objectTable.key, idObject);
 
             Map<PropertyField,Object> InsertProps = new HashMap<PropertyField,Object>();
-            RemoteClass ChangeClass = NewClasses.get(idObject);
+            RemoteClass ChangeClass = newClasses.get(idObject);
             InsertProps.put(tableFactory.objectTable.objectClass,ChangeClass!=null?ChangeClass.ID:null);
 
             updateInsertRecord(tableFactory.objectTable,InsertKeys,InsertProps);
@@ -467,27 +450,25 @@ public class DataSession  {
         execute("DELETE FROM "+ table.getName(syntax) + (dropWhere.length()==0?"":" WHERE "+dropWhere));
         System.out.println(" Done");
     }
-    public void deleteAll(Table table) throws SQLException {
-        execute("DELETE FROM "+ table.getName(syntax));
+
+    private Set<SessionTable> temporaryTables = new HashSet<SessionTable>();
+    private void ensureTemporaryTable(Table table) throws SQLException {
+        if(table instanceof SessionTable && temporaryTables.add((SessionTable) table))
+            createTemporaryTable((SessionTable) table);
     }
-
-    public void createTemporaryTable(SessionTable Table) throws SQLException {
-        String CreateString = "";
-        String KeyString = "";
-        for(KeyField Key : Table.keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.getDeclare(syntax);
-            KeyString = (KeyString.length()==0?"":KeyString+',') + Key.name;
+    private void createTemporaryTable(SessionTable table) throws SQLException {
+        String createString = "";
+        String keyString = "";
+        for(KeyField key : table.keys) {
+            createString = (createString.length()==0?"":createString+',') + key.getDeclare(syntax);
+            keyString = (keyString.length()==0?"":keyString+',') + key.name;
         }
-        for(PropertyField Prop : Table.properties)
-            CreateString = CreateString+',' + Prop.getDeclare(syntax);
+        for(PropertyField prop : table.properties)
+            createString = createString+',' + prop.getDeclare(syntax);
 
-/*        try {
-            execute("DROP TABLE "+Table.name +" CASCADE CONSTRAINTS");
-        } catch (SQLException e) {
-            e.getErrorCode();
-        }*/
+//        try { execute("DROP TABLE "+table.name +" CASCADE CONSTRAINTS"); } catch (SQLException e) {  e.getErrorCode(); }
 
-        execute(syntax.getCreateSessionTable(Table.name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.name + " PRIMARY KEY " + syntax.getClustered() + " (" + KeyString + ")"));
+        execute(syntax.getCreateSessionTable(table.name,createString,"CONSTRAINT PK_S_" + ID +"_T_" + table.name + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")"));
     }
 
     public void execute(String executeString) throws SQLException {
@@ -539,6 +520,7 @@ public class DataSession  {
     }
 
     public void insertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
+        ensureTemporaryTable(table);
 
         for(PropertyField prop : propFields.keySet())
             if(!prop.type.isString(propFields.get(prop))) {
@@ -585,6 +567,8 @@ public class DataSession  {
     }
 
     public void updateInsertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
+        ensureTemporaryTable(table);
+
         if(isRecord(table, keyFields)) {
             JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(table.keys);
             updateQuery.putKeyWhere(keyFields);
@@ -617,8 +601,9 @@ public class DataSession  {
             return null;
     }
 
-
     public void deleteKeyRecords(Table table,Map<KeyField,Integer> keys) throws SQLException {
+        if(table instanceof SessionTable && !temporaryTables.contains((SessionTable)table)) return;
+
         String deleteWhere = "";
         for(Map.Entry<KeyField,Integer> deleteKey : keys.entrySet())
             deleteWhere = (deleteWhere.length()==0?"":deleteWhere+" AND ") + deleteKey.getKey().name + "=" + deleteKey.getValue();
@@ -631,11 +616,13 @@ public class DataSession  {
     }
 
     public void insertSelect(ModifyQuery modify) throws SQLException {
+        ensureTemporaryTable(modify.table);
         executeStatement(getStatement(modify.getInsertSelect(syntax).command, modify.getInsertSelect(syntax).params));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
     public void modifyRecords(ModifyQuery modify) throws SQLException {
+        ensureTemporaryTable(modify.table);
         executeStatement(getStatement(modify.getInsertLeftKeys(syntax).command, modify.getInsertLeftKeys(syntax).params));
         updateRecords(modify);
     }

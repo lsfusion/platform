@@ -99,7 +99,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
                 if(AddClasses!=null)
                     Classes.or(AddClasses);
             } else {
-                RemoteClass ImplementClass = Session.BaseClasses.get(Implement.getValue().idObject);
+                RemoteClass ImplementClass = Session.baseClasses.get(Implement.getValue().idObject);
                 if(ImplementClass==null) ImplementClass = Implement.getValue().objectClass;
                 // чего не должно быть
                 if(ImplementClass==null)
