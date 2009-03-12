@@ -31,7 +31,7 @@ public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }*/
 
     // получает список ExprCase'ов
-    ExprCaseList getCases() {
+    public ExprCaseList getCases() {
         return cases;
     }
 

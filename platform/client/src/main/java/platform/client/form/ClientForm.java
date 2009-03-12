@@ -454,6 +454,7 @@ public class ClientForm extends JPanel {
     }
 
     void addObject(ClientObjectImplementView object, ClientClass cls) throws IOException {
+        
         remoteForm.addObject(object.ID, cls.ID);
         dataChanged();
 

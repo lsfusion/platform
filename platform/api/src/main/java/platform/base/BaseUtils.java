@@ -101,19 +101,6 @@ public class BaseUtils {
 
     public static Object deserializeObject(DataInputStream inStream) throws IOException {
 
-/*        try {
-            ObjectInputStream dataStream = new ObjectInputStream(inStream);
-            try {
-                return dataStream.readObject();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;*/
-
         int objectType = inStream.readByte();
 
         if (objectType == 0) {

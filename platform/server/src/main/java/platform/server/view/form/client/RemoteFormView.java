@@ -22,29 +22,30 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
 
     public RemoteFormView(RemoteForm iForm, FormView iRichDesign, JasperDesign iReportDesign) throws RemoteException {
         super();
+        
         form = iForm;
         richDesign = iRichDesign;
         reportDesign = iReportDesign;
     }
 
-    public byte[] getReportDesignByteArray() throws RemoteException {
+    public byte[] getReportDesignByteArray() {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             new ObjectOutputStream(outStream).writeObject(reportDesign);
         } catch (IOException e) {
-            throw new RemoteException("IO exception : "+e.getMessage());
+            throw new RuntimeException(e);
         }
         return outStream.toByteArray();
     }
 
-    public byte[] getReportDataByteArray() throws RemoteException {
+    public byte[] getReportDataByteArray() {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             form.getFormData().serialize(new DataOutputStream(outStream));
         } catch (Exception e) {
-            throw new RemoteException("Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
         return outStream.toByteArray();
     }
@@ -58,9 +59,9 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            richDesign.serialize(new DataOutputStream(outStream));
+            richDesign.serialize(new DataOutputStream(outStream)); 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return outStream.toByteArray();
     }
@@ -69,24 +70,24 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         form.gainedFocus();
     }
 
-    public byte[] getFormChangesByteArray() throws RemoteException {
+    public byte[] getFormChangesByteArray() {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             form.endApply().serialize(new DataOutputStream(outStream));
         } catch (Exception e) {
-            throw new RemoteException("Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
         return outStream.toByteArray();
     }
 
-    public void changeGroupObject(int groupID, byte[] value) throws RemoteException {
+    public void changeGroupObject(int groupID, byte[] value) {
         
         GroupObjectImplement groupObject = form.getGroupObjectImplement(groupID);
         try {
             form.changeGroupObject(groupObject, new GroupObjectValue(new DataInputStream(new ByteArrayInputStream(value)), groupObject));
         } catch (Exception e) {
-            throw new RemoteException("Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -94,53 +95,53 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         return form.getObjectImplement(objectID).objectClass.ID;
     }
 
-    public void changeGroupObject(int groupID, int changeType) throws RemoteException {
+    public void changeGroupObject(int groupID, int changeType) {
         try {
             form.changeGroupObject(form.getGroupObjectImplement(groupID), changeType);
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public void changePropertyView(int propertyID, byte[] object, boolean externalID) throws RemoteException {
+    public void changePropertyView(int propertyID, byte[] object, boolean externalID) {
         try {
             form.changePropertyView(form.getPropertyView(propertyID), BaseUtils.deserializeObject(object), externalID);
         } catch (Exception e) {
-            throw new RemoteException("Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public void changeObject(int objectID, Integer value) throws RemoteException {
+    public void changeObject(int objectID, Integer value) {
         try {
             form.changeObject(form.getObjectImplement(objectID), value);
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public void addObject(int objectID, int classID) throws RemoteException {
+    public void addObject(int objectID, int classID) {
         ObjectImplement object = form.getObjectImplement(objectID);
         try {
             form.addObject(object, (classID == -1) ? null : object.baseClass.findClassID(classID));
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public void changeClass(int objectID, int classID) throws RemoteException {
+    public void changeClass(int objectID, int classID) {
         ObjectImplement object = form.getObjectImplement(objectID);
         try {
             form.changeClass(object, (classID == -1) ? null : object.baseClass.findClassID(classID));
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public void changeGridClass(int objectID,int idClass) throws RemoteException {
+    public void changeGridClass(int objectID,int idClass) {
         try {
             form.changeGridClass(form.getObjectImplement(objectID), idClass);
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -160,7 +161,7 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         try {
             form.addUserFilter(new Filter(new DataInputStream(new ByteArrayInputStream(state)), form));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -181,28 +182,28 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         return form.hasSessionChanges();
     }
 
-    public String saveChanges() throws RemoteException {
+    public String saveChanges() {
         try {
             return form.saveChanges();
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public void cancelChanges() throws RemoteException {
+    public void cancelChanges() {
         try {
             form.cancelChanges();
         } catch (SQLException e) {
-            throw new RemoteException("SQL Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
-    public byte[] getBaseClassByteArray(int objectID) throws RemoteException {
+    public byte[] getBaseClassByteArray(int objectID) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             form.getObjectImplement(objectID).baseClass.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
-            throw new RemoteException("IO Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
         return outStream.toByteArray();
     }
@@ -218,12 +219,12 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
             for (RemoteClass cls : childClasses)
                 cls.serialize(dataStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return outStream.toByteArray();
     }
 
-    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) throws RemoteException {
+    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) {
 
         try {
             ChangeValue changeValue = form.getPropertyEditorObjectValue(form.getPropertyView(propertyID), externalID);
@@ -236,7 +237,7 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
 
             return outStream.toByteArray();
         } catch (Exception e) {
-            throw new RemoteException("Exception : " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

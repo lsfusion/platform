@@ -57,16 +57,16 @@ public interface RemoteFormInterface extends Remote {
 
     byte[] getChildClassesByteArray(int objectID, int classID) throws RemoteException;
 
-    public byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) throws RemoteException;
+    byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) throws RemoteException;
 
-    public static int GID_SHIFT = 1000;
+    final static int GID_SHIFT = 1000;
 
-    final public static int CHANGEGROUPOBJECT_FIRSTROW = 0;
-    final public static int CHANGEGROUPOBJECT_LASTROW = 1;
+    final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
+    final static int CHANGEGROUPOBJECT_LASTROW = 1;
     
-    final public static int ORDER_REPLACE = 1;
-    final public static int ORDER_ADD = 2;
-    final public static int ORDER_REMOVE = 3;
-    final public static int ORDER_DIR = 4;
+    final static int ORDER_REPLACE = 1;
+    final static int ORDER_ADD = 2;
+    final static int ORDER_REMOVE = 3;
+    final static int ORDER_DIR = 4;
 
 }

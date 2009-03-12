@@ -33,7 +33,7 @@ abstract public class SourceExpr implements SourceJoin {
     abstract Where calculateWhere();
 
     // получает список ExprCase'ов
-    abstract ExprCaseList getCases();
+    public abstract ExprCaseList getCases();
 
     // проталкивает условие внутрь
     public SourceExpr and(Where where) {

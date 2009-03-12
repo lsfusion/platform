@@ -61,7 +61,7 @@ public class NullExpr extends ObjectExpr {
     }
 
     // получает список ExprCase'ов
-    ExprCaseList getCases() {
+    public ExprCaseList getCases() {
         return new ExprCaseList();
     }
 }

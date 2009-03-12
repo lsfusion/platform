@@ -72,7 +72,7 @@ public class LinearExpr extends AndExpr {
     }
 
     // получает список ExprCase'ов
-    ExprCaseList getCases() {
+    public ExprCaseList getCases() {
         return new ExprCaseList(this);
     }
 

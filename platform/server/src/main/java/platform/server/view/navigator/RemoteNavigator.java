@@ -18,6 +18,7 @@ import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
+import platform.server.exceptions.RemoteExceptionManager;
 
 import java.util.*;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +27,9 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.SQLException;
+
+import net.sf.jasperreports.engine.JRException;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -37,6 +41,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
     public RemoteNavigator(DataAdapter iAdapter,T iBL,User iCurrentUser) throws RemoteException {
+        super();
+
         Adapter = iAdapter;
         BL = iBL;
         classCache = new ClassCache();
@@ -60,7 +66,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             objectStream.writeObject(currentUser.userInfo);
         } catch (IOException e) {
-            throw new RuntimeException("IO Exception : "+e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return outStream.toByteArray();
@@ -113,7 +119,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
             for (NavigatorElement element : listElements)
                 element.serialize(dataStream);
         } catch (IOException e) {
-            throw new RuntimeException("IO Exception : "+e.getMessage());
+            throw new RuntimeException(e);
         }
 
         return outStream.toByteArray();
@@ -133,9 +139,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
     }
 
 //    RemoteForm<T> lastOpenedForm;
-    public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException {
+    public RemoteFormInterface createForm(int formID, boolean currentSession) {
 
-        try {
+       try {
+
             NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
 
             if (!securityPolicy.navigator.checkPermission(navigatorForm)) return null;
@@ -203,8 +210,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
                 }
 
             return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign());
+
         } catch (Exception e) {
-            throw new RemoteException("Exception : "+e.getMessage());
+           throw new RuntimeException(e);
         }
     }
 

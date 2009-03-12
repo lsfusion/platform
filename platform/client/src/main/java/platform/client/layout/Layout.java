@@ -20,6 +20,7 @@ import bibliothek.notes.view.menu.ThemeMenu;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Main;
 import platform.client.Log;
+import platform.client.exceptions.ClientExceptionManager;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.UserInfo;
@@ -50,15 +51,25 @@ public class Layout extends JFrame implements ComponentCollector {
 
         ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
 
-            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
-                Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, false));
+            public void openForm(ClientNavigatorForm element){
+
+                try {
+                    Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, false));
+                } catch (Throwable e) {
+                    ClientExceptionManager.handleException("Ошибка при открытии формы", e);
+                }
             }
 
-            public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
-                if (element.isPrintForm)
-                    Main.layout.defaultStation.drop(new ReportDockable(element.ID, this, true));
-                else
-                    Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, true));
+            public void openRelevantForm(ClientNavigatorForm element) {
+
+                try {
+                    if (element.isPrintForm)
+                        Main.layout.defaultStation.drop(new ReportDockable(element.ID, this, true));
+                    else
+                        Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, true));
+                } catch (Throwable e) {
+                    ClientExceptionManager.handleException("Ошибка при открытии релевантной формы", e);
+                }
             }
         };
 

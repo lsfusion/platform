@@ -8,7 +8,7 @@ import platform.server.where.Where;
 public abstract class AndExpr extends SourceExpr {
 
     // получает список ExprCase'ов
-    ExprCaseList getCases() {
+    public ExprCaseList getCases() {
         return new ExprCaseList(this);
     }
 

@@ -147,7 +147,7 @@ public class SimplexLayout implements LayoutManager2 {
             }
 
         } catch (LpSolveException ex) {
-            Logger.getLogger(SimplexLayout.class.getName()).log(Level.SEVERE, null, ex);
+//            Logger.getLogger(SimplexLayout.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             // delete the problem and free memory
             if (solver != null)

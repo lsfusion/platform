@@ -4,6 +4,7 @@ import platform.base.CollectionExtend;
 import platform.base.Combinations;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
@@ -36,6 +37,7 @@ import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.RemoteNavigator;
+import platform.server.exceptions.RemoteExceptionManager;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -52,11 +54,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
     abstract protected DataAdapter newAdapter() throws ClassNotFoundException;
 
-    public RemoteNavigatorInterface createNavigator(String login,String password) throws RemoteException {
-        User user = authPolicy.getUser(login, password);
-        if (user == null) throw new RemoteException("login failed");
+    public RemoteNavigatorInterface createNavigator(String login, String password) {
 
-        return new RemoteNavigator(adapter,this,user);
+        User user = authPolicy.getUser(login, password);
+        if (user == null) throw new LoginException();
+
+        try {
+            return new RemoteNavigator(adapter, this, user);
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // счетчик идентификаторов
@@ -177,7 +184,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         try {
             changeDBTest(adapter,iterations,randomizer);
         } catch(Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
