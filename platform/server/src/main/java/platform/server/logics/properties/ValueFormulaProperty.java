@@ -7,13 +7,16 @@ import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.logics.data.TableFactory;
 
+import java.util.Collection;
+
 // вообще Collection
 abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends FormulaProperty<T> {
 
     RemoteClass value;
 
-    ValueFormulaProperty(TableFactory iTableFactory, RemoteClass iValue) {
-        super(iTableFactory);
+    protected ValueFormulaProperty(String iSID, Collection<T> iInterfaces, TableFactory iTableFactory, RemoteClass iValue) {
+        super(iSID, iInterfaces, iTableFactory);
+
         value = iValue;
     }
 

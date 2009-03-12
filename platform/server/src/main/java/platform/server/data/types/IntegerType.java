@@ -3,6 +3,8 @@ package platform.server.data.types;
 import platform.server.data.sql.SQLSyntax;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class IntegerType extends IntegralType<Integer> {
 
@@ -36,5 +38,13 @@ public class IntegerType extends IntegralType<Integer> {
 
     public boolean greater(Object value1, Object value2) {
         return read(value1)>read(value2);
+    }
+
+    byte getType() {
+        return 0;
+    }
+
+    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+        statement.setInt(num, (Integer)value);
     }
 }

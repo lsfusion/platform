@@ -12,18 +12,27 @@ import platform.server.logics.data.TableFactory;
 import platform.server.where.Where;
 
 import java.util.Map;
+import java.util.Collections;
+import java.util.Collection;
+import java.util.ArrayList;
 
 // выбирает объект по битам
 public class ObjectFormulaProperty extends FormulaProperty<FormulaPropertyInterface> {
 
     public FormulaPropertyInterface objectInterface;
-    ClassSet ObjectClass;
+    ClassSet objectClass;
 
-    public ObjectFormulaProperty(TableFactory iTableFactory, ObjectClass iObjectClass) {
-        super(iTableFactory);
-        ObjectClass = ClassSet.getUp(iObjectClass);
-        objectInterface = new FormulaPropertyInterface(0);
-        interfaces.add(objectInterface);
+    static Collection<FormulaPropertyInterface> getInterfaces(int bitCount) {
+        Collection<FormulaPropertyInterface> result = new ArrayList<FormulaPropertyInterface>();
+        for(int i=0;i<bitCount+1;i++)
+            result.add(new FormulaPropertyInterface(i));
+        return result;
+    }
+
+    public ObjectFormulaProperty(String iSID, int bitCount, TableFactory iTableFactory, ObjectClass iObjectClass) {
+        super(iSID, getInterfaces(bitCount),iTableFactory);
+        objectInterface = interfaces.iterator().next();
+        objectClass = ClassSet.getUp(iObjectClass);
     }
 
     SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface,? extends SourceExpr> joinImplement, InterfaceClassSet<FormulaPropertyInterface> joinClasses) {

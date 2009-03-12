@@ -12,7 +12,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public PostgreDataAdapter() {
     }
 
-    public PostgreDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+    public PostgreDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer);
     }
 
@@ -32,15 +32,15 @@ public class PostgreDataAdapter extends DataAdapter {
         return "org.postgresql.Driver";
     }
 
-    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ server +"/postgres?user=postgres&password=11111");
-        try {
+/*        try {
             connect.createStatement().execute("DROP DATABASE "+ dataBase);
         } catch (SQLException e) {
-        }
+        }*/
         try {
-            connect.createStatement().execute("CREATE DATABASE "+ dataBase);
+            connect.createStatement().execute("CREATE DATABASE "+ dataBase + " WITH ENCODING='UTF8' ");
         } catch (SQLException e) {
         }
         connect.close();
@@ -91,5 +91,9 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public String getUnionOrder(String union, String orderBy, String top) {
         return union + clause("ORDER BY", orderBy) + clause("LIMIT", top);
+    }
+
+    public String getByteArrayType() {
+        return "bytea";
     }
 }

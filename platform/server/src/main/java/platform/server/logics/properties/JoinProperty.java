@@ -22,8 +22,15 @@ import java.sql.SQLException;
 public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinPropertyInterface,T, JoinPropertyInterface,T, PropertyField> {
     public PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T> implementations;
 
-    public JoinProperty(TableFactory iTableFactory, Property<T> iProperty) {
-        super(iTableFactory);
+    static Collection<JoinPropertyInterface> getInterfaces(int intNum) {
+        Collection<JoinPropertyInterface> interfaces = new ArrayList<JoinPropertyInterface>();
+        for(int i=0;i<intNum;i++)
+            interfaces.add(new JoinPropertyInterface(i));
+        return interfaces;
+    }
+
+    public JoinProperty(String iSID, int intNum, TableFactory iTableFactory, Property<T> iProperty) {
+        super(iSID, getInterfaces(intNum), iTableFactory);
         implementations = new PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T>(iProperty);
     }
 

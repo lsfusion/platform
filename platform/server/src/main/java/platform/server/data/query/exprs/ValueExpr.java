@@ -18,17 +18,17 @@ public class ValueExpr extends ObjectExpr implements QueryData {
 
     public TypedObject object;
 
-    public ValueExpr(Object Value, Type Type) {
-        if(Value==null)
+    public ValueExpr(Object value, Type type) {
+        if(value==null)
             throw new RuntimeException("use NullExpr");
-        object = new TypedObject(Value,Type);
+        object = new TypedObject(value,type);
     }
 
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        String Source = queryData.get(this);
-        if(Source==null) Source = getString(syntax);
-        return Source;
+        String source = queryData.get(this);
+        if(source==null) source = getString(syntax);
+        return source;
 //        return getString(Syntax);
     }
 

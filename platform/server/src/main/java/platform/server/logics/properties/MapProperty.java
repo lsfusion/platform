@@ -14,8 +14,8 @@ import java.util.*;
 // ObjectMapClass = PropertyField - Join, Object - Group
 abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterface,IN extends PropertyInterface,IM extends PropertyInterface,OM> extends AggregateProperty<T> {
 
-    MapProperty(TableFactory iTableFactory) {
-        super(iTableFactory);
+    protected MapProperty(String iSID, Collection<T> iInterfaces, TableFactory iTableFactory) {
+        super(iSID, iInterfaces, iTableFactory);
         DBRead = new MapRead<IN>();
     }
 

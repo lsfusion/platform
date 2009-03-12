@@ -11,8 +11,8 @@ import java.util.Set;
 
 abstract public class FormulaProperty<T extends FormulaPropertyInterface> extends AggregateProperty<T> {
 
-    protected FormulaProperty(TableFactory iTableFactory) {
-        super(iTableFactory);
+    protected FormulaProperty(String iSID, Collection<T> iInterfaces, TableFactory iTableFactory) {
+        super(iSID, iInterfaces, iTableFactory);
     }
 
     public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {

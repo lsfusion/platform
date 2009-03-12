@@ -10,7 +10,7 @@ class ArticleDateNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     ArticleDateNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.article);
         obj1.caption = "товар";
 
         ObjectImplement obj2 = new ObjectImplement(IDShift(1), RemoteClass.date);

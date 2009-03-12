@@ -3,6 +3,8 @@ package platform.server.data.types;
 import platform.server.data.sql.SQLSyntax;
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class BitType extends IntegralType<Boolean> {
 
@@ -38,11 +40,22 @@ public class BitType extends IntegralType<Boolean> {
             return (Boolean) value;
     }
 
+    public boolean isString(Object value) {
+        return true;
+    }
     public String getString(Object value, SQLSyntax syntax) {
         return syntax.getBitString((Boolean) value);
     }
 
     public boolean greater(Object value1, Object value2) {
         return read(value1) && !read(value2);
+    }
+
+    byte getType() {
+        return 3;
+    }
+
+    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+        statement.setByte(num, (byte) ((Boolean)value?1:0));
     }
 }

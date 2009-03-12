@@ -9,7 +9,7 @@ class SimpleNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     SimpleNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Article);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.article);
         obj1.caption = "товар";
 
         GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));

@@ -18,10 +18,9 @@ import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.*;
+import platform.server.where.Where;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 public class DataSession  {
@@ -270,12 +269,12 @@ public class DataSession  {
         for(Property Property : UpdateList) {
             Integer IncType = RequiredTypes.get(Property);
             // сначала проверим на Persistent и на "альтруистические" св-ва
-            if(IncType==null || Property.isPersistent()) {
+            if(IncType==null || Property.isStored()) {
                 ToWait = new HashSet<Property>();
                 IncType = Property.getIncrementType(UpdateList, ToWait);
             }
             // если определившееся (точно 0 или 1) запустим Waiter'ов, соответственно вычистим
-            if(IncType==null || (!Property.isPersistent() && !IncType.equals(2))) {
+            if(IncType==null || (!Property.isStored() && !IncType.equals(2))) {
                 for(Iterator<Map.Entry<Property,Set<Property>>> ie = Waiters.entrySet().iterator();ie.hasNext();) {
                     Map.Entry<Property,Set<Property>> Wait = ie.next();
                     if(Wait.getValue().contains(Property))
@@ -369,10 +368,10 @@ public class DataSession  {
             return property.getType().getExpr(null);
     }
 
-    boolean InTransaction = false;
+    boolean inTransaction = false;
 
     public void startTransaction() throws SQLException {
-        InTransaction = true;
+        inTransaction = true;
 
         if(!syntax.noAutoCommit())
             execute(syntax.startTransaction());
@@ -381,157 +380,264 @@ public class DataSession  {
     public void rollbackTransaction() throws SQLException {
         execute(syntax.rollbackTransaction());
 
-        InTransaction = false;
+        inTransaction = false;
     }
 
     public void commitTransaction() throws SQLException {
         execute(syntax.commitTransaction());
 
-        InTransaction = false;
+        inTransaction = false;
     }
 
-    public void createTable(Table Table) throws SQLException {
-        String CreateString = "";
-        String KeyString = "";
-        for(KeyField Key : Table.keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(syntax);
-            KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
-        }
-        for(PropertyField Prop : Table.properties)
-            CreateString = CreateString+',' + Prop.GetDeclare(syntax);
-        CreateString = CreateString + ",CONSTRAINT PK_" + Table.Name + " PRIMARY KEY " + syntax.getClustered() + " (" + KeyString + ")";
+    // удостоверивается что таблица есть
+    public void ensureTable(Table table) throws SQLException {
 
-        try {
-            execute("DROP TABLE "+Table.Name+" CASCADE CONSTRAINTS");
-        } catch (SQLException e) {
-            e.getErrorCode();
+        DatabaseMetaData metaData = connection.getMetaData();
+        ResultSet tables = metaData.getTables(null, null, table.name, new String[]{"TABLE"});
+        if(!tables.next()) {
+            createTable(table.name,table.keys);
+            for(PropertyField property : table.properties)
+                addColumn(table.name,property);
         }
+    }
+
+    public void createTable(String table,Collection<KeyField> keys) throws SQLException {
+        System.out.print("Идет создание таблицы "+table+"... ");
+        String createString = "";
+        String keyString = "";
+        for(KeyField key : keys) {
+            createString = (createString.length()==0?"": createString +',') + key.getDeclare(syntax);
+            keyString = (keyString.length()==0?"":keyString+',') + key.name;
+        }
+        if(createString.length()==0)
+            createString = "dumb bit";
+        else
+            createString = createString + ",CONSTRAINT PK_" + table + " PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        execute("CREATE TABLE "+Table.Name+" ("+CreateString+")");
+        execute("CREATE TABLE "+ table +" ("+ createString +")");
+        System.out.println(" Done");
+    }
+    public void dropTable(String table) throws SQLException {
+        System.out.print("Идет удаление таблицы "+table+"... ");
+        execute("DROP TABLE "+ table);
+        System.out.println(" Done");
+    }
+    static String getIndexName(String table,Collection<String> fields) {
+        String name = table + "_idx";
+        for(String indexField : fields)
+            name = name + "_" + indexField;
+        return name;
+    }
+    public void addIndex(String table,Collection<String> fields) throws SQLException {
+        System.out.print("Идет создание индекса "+getIndexName(table, fields)+"... ");
+        String columns = "";
+        for(String indexField : fields)
+            columns = (columns.length()==0?"":columns+",") + indexField;
 
-        int IndexNum = 1;
-        for(List<PropertyField> Index : Table.indexes) {
-            String Columns = "";
-            for(PropertyField IndexField : Index)
-                Columns = (Columns.length()==0?"":Columns+",") + IndexField.Name;
+        execute("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
+        System.out.println(" Done");
+    }
+    public void dropIndex(String table,Collection<String> fields) throws SQLException {
+        System.out.print("Идет удаление индекса "+getIndexName(table, fields)+"... ");
+        execute("DROP INDEX " + getIndexName(table, fields));
+        System.out.println(" Done");
+    }
+    public void addColumn(String table,PropertyField field) throws SQLException {
+        System.out.print("Идет добавление колонки "+table+"."+field.name+"... ");
+        execute("ALTER TABLE " + table + " ADD COLUMN " + field.getDeclare(syntax));
+        System.out.println(" Done");
+    }
+    public void dropColumn(String table,String field) throws SQLException {
+        System.out.print("Идет удаление колонки "+table+"."+field+"... ");
+        execute("ALTER TABLE " + table + " DROP COLUMN " + field);
+        System.out.println(" Done");
+    }
+    public void modifyColumn(String table,PropertyField field) throws SQLException {
+        System.out.print("Идет изменение типа колонки "+table+"."+field.name+"... ");
+        execute("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " + field.type.getDB(syntax));
+        System.out.println(" Done");
+    }
 
-            execute("CREATE INDEX "+Table.Name+"_idx_"+(IndexNum++)+" ON "+Table.Name+" ("+Columns+")");
-        }
+    public void packTable(Table table) throws SQLException {
+        System.out.print("Идет упаковка таблицы "+table+"... ");
+        String dropWhere = "";
+        for(PropertyField property : table.properties)
+            dropWhere = (dropWhere.length()==0?"":dropWhere+" AND ") + property.name + " IS NULL";
+        execute("DELETE FROM "+ table.getName(syntax) + (dropWhere.length()==0?"":" WHERE "+dropWhere));
+        System.out.println(" Done");
+    }
+    public void deleteAll(Table table) throws SQLException {
+        execute("DELETE FROM "+ table.getName(syntax));
     }
 
     public void createTemporaryTable(SessionTable Table) throws SQLException {
         String CreateString = "";
         String KeyString = "";
         for(KeyField Key : Table.keys) {
-            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.GetDeclare(syntax);
-            KeyString = (KeyString.length()==0?"":KeyString+',') + Key.Name;
+            CreateString = (CreateString.length()==0?"":CreateString+',') + Key.getDeclare(syntax);
+            KeyString = (KeyString.length()==0?"":KeyString+',') + Key.name;
         }
         for(PropertyField Prop : Table.properties)
-            CreateString = CreateString+',' + Prop.GetDeclare(syntax);
+            CreateString = CreateString+',' + Prop.getDeclare(syntax);
 
-        try {
-            execute("DROP TABLE "+Table.Name+" CASCADE CONSTRAINTS");
+/*        try {
+            execute("DROP TABLE "+Table.name +" CASCADE CONSTRAINTS");
         } catch (SQLException e) {
             e.getErrorCode();
-        }
+        }*/
 
-        execute(syntax.getCreateSessionTable(Table.Name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.Name + " PRIMARY KEY " + syntax.getClustered() + " (" + KeyString + ")"));
+        execute(syntax.getCreateSessionTable(Table.name,CreateString,"CONSTRAINT PK_S_" + ID +"_T_" + Table.name + " PRIMARY KEY " + syntax.getClustered() + " (" + KeyString + ")"));
     }
 
     public void execute(String executeString) throws SQLException {
-        Statement statement = connection.createStatement();
-//        System.out.println(ExecuteString+syntax.getCommandEnd());
+        executeStatement(connection.prepareStatement(executeString));
+    }
+
+    public void executeStatement(PreparedStatement statement) throws SQLException {
+//        System.out.println(statement);
         try {
-            statement.execute(executeString + syntax.getCommandEnd());
-//        } catch(SQLException e) {
-//            if(!ExecuteString.startsWith("DROP") && !ExecuteString.startsWith("CREATE")) {
-//            System.out.println(ExecuteString+Syntax.getCommandEnd());
-//            e = e;
-//           }
+            statement.execute();
+        } catch(SQLException e) {
+            System.out.println(statement.toString());
+            throw e;
         } finally {
             statement.close();
         }
-        if(!InTransaction && syntax.noAutoCommit())
-            statement.execute(syntax.commitTransaction()+ syntax.getCommandEnd());
 
-        try {
+        ensureTransaction();
+    }
+
+    private void ensureTransaction() throws SQLException {
+        if(!inTransaction && syntax.noAutoCommit()) {
+            Statement statement = connection.createStatement();
+            statement.execute(syntax.commitTransaction()+ syntax.getCommandEnd());
             statement.close();
-        } catch (SQLException e) {
-            e.getErrorCode();
         }
     }
 
-    public void insertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
-
-        String InsertString = "";
-        String ValueString = "";
+    void insertParamRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
+        String insertString = "";
+        String valueString = "";
 
         // пробежим по KeyFields'ам
-        for(KeyField Key : Table.keys) {
-            InsertString = (InsertString.length()==0?"":InsertString+',') + Key.Name;
-            ValueString = (ValueString.length()==0?"":ValueString+',') + KeyFields.get(Key);
+        for(KeyField key : table.keys) {
+            insertString = (insertString.length()==0?"":insertString+',') + key.name;
+            valueString = (valueString.length()==0?"":valueString+',') + keyFields.get(key);
+        }
+
+        int paramNum = 0;
+        Map<String,TypedObject> params = new HashMap<String, TypedObject>();
+        for(PropertyField prop : propFields.keySet()) {
+            String prm = "qxprm" + (paramNum++) + "nx"; 
+            insertString = (insertString.length()==0?"":insertString+',') + prop.name;
+            valueString = (valueString.length()==0?"":valueString+',') + prm;
+            params.put(prm,new TypedObject(propFields.get(prop),prop.type));
+        }
+
+        executeStatement(getStatement("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")", params));
+    }
+
+    public void insertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
+
+        for(PropertyField prop : propFields.keySet())
+            if(!prop.type.isString(propFields.get(prop))) {
+                insertParamRecord(table, keyFields, propFields);
+                return;
+            }
+
+        String insertString = "";
+        String valueString = "";
+
+        // пробежим по KeyFields'ам
+        for(KeyField key : table.keys) {
+            insertString = (insertString.length()==0?"":insertString+',') + key.name;
+            valueString = (valueString.length()==0?"":valueString+',') + keyFields.get(key);
         }
 
         // пробежим по Fields'ам
-        for(PropertyField Prop : PropFields.keySet()) {
-            InsertString = InsertString+","+Prop.Name;
-            ValueString = ValueString+","+ TypedObject.getString(PropFields.get(Prop),Prop.type, syntax);
+        for(PropertyField prop : propFields.keySet()) {
+            insertString = (insertString.length()==0?"":insertString+',') + prop.name;
+            valueString = (valueString.length()==0?"":valueString+',') + TypedObject.getString(propFields.get(prop),prop.type, syntax);
         }
 
-        execute("INSERT INTO "+Table.getName(syntax)+" ("+InsertString+") VALUES ("+ValueString+")");
+        execute("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")");
     }
 
-    void updateInsertRecord(Table Table,Map<KeyField,Integer> KeyFields,Map<PropertyField,Object> PropFields) throws SQLException {
+    public boolean isRecord(Table table,Map<KeyField,Integer> keyFields) throws SQLException {
 
         // по сути пустое кол-во ключей
-        JoinQuery<Object,String> IsRecQuery = new JoinQuery<Object,String>(new ArrayList<Object>());
+        JoinQuery<Object,String> isRecQuery = new JoinQuery<Object,String>(new ArrayList<Object>());
 
-        Map<KeyField,ValueExpr> KeyExprs = new HashMap<KeyField, ValueExpr>();
-        for(KeyField Key : Table.keys)
-            KeyExprs.put(Key,new ValueExpr(KeyFields.get(Key),Key.type));
+        Map<KeyField,ValueExpr> keyExprs = new HashMap<KeyField, ValueExpr>();
+        for(KeyField Key : table.keys)
+            keyExprs.put(Key,new ValueExpr(keyFields.get(Key),Key.type));
 
         // сначала закинем KeyField'ы и прогоним Select
-        IsRecQuery.and(new Join<KeyField, PropertyField>(Table,KeyExprs).inJoin);
+        isRecQuery.and(new Join<KeyField, PropertyField>(table,keyExprs).inJoin);
 
-        if(IsRecQuery.executeSelect(this).size()>0) {
-            JoinQuery<KeyField, PropertyField> UpdateQuery = new JoinQuery<KeyField, PropertyField>(Table.keys);
-            UpdateQuery.putKeyWhere(KeyFields);
-            for(Map.Entry<PropertyField,Object> MapProp : PropFields.entrySet())
-                UpdateQuery.properties.put(MapProp.getKey(), MapProp.getKey().type.getExpr(MapProp.getValue()));
+        return isRecQuery.executeSelect(this).size()>0;
+    }
+
+    public void ensureRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
+        if(!isRecord(table, keyFields))
+            insertRecord(table,keyFields,propFields);
+    }
+
+    public void updateInsertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
+        if(isRecord(table, keyFields)) {
+            JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(table.keys);
+            updateQuery.putKeyWhere(keyFields);
+            for(Map.Entry<PropertyField,Object> MapProp : propFields.entrySet())
+                updateQuery.properties.put(MapProp.getKey(), MapProp.getKey().type.getExpr(MapProp.getValue()));
 
             // есть запись нужно Update лупить
-            updateRecords(new ModifyQuery(Table,UpdateQuery));
+            updateRecords(new ModifyQuery(table,updateQuery));
         } else
             // делаем Insert
-            insertRecord(Table,KeyFields,PropFields);
+            insertRecord(table,keyFields,propFields);
     }
 
-    public void deleteKeyRecords(Table Table,Map<KeyField,Integer> Keys) throws SQLException {
- //       Execute(Table.GetDelete());
-        String DeleteWhere = "";
-        for(Map.Entry<KeyField,Integer> DeleteKey : Keys.entrySet())
-            DeleteWhere = (DeleteWhere.length()==0?"":DeleteWhere+" AND ") + DeleteKey.getKey().Name + "=" + DeleteKey.getValue();
+    public Object readRecord(Table table,Map<KeyField,Integer> keyFields,PropertyField field) throws SQLException {
+        // по сути пустое кол-во ключей
+        JoinQuery<Object,String> getQuery = new JoinQuery<Object,String>(new ArrayList<Object>());
 
-        execute("DELETE FROM "+Table.getName(syntax)+(DeleteWhere.length()==0?"":" WHERE "+DeleteWhere));
+        Map<KeyField,ValueExpr> keyExprs = new HashMap<KeyField, ValueExpr>();
+        for(KeyField Key : table.keys)
+            keyExprs.put(Key,new ValueExpr(keyFields.get(Key),Key.type));
+
+        // сначала закинем KeyField'ы и прогоним Select
+        SourceExpr fieldExpr = new Join<KeyField, PropertyField>(table,keyExprs).exprs.get(field);
+        getQuery.properties.put("result",fieldExpr);
+        getQuery.and(fieldExpr.getWhere());
+        LinkedHashMap<Map<Object, Integer>, Map<String, Object>> result = getQuery.executeSelect(this);
+        if(result.size()>0)
+            return result.values().iterator().next().get("result");
+        else
+            return null;
     }
 
-    public void updateRecords(ModifyQuery Modify) throws SQLException {
-//        try {
-            execute(Modify.getUpdate(syntax));
-//        } catch(SQLException e) {
-//            Execute(Modify.getUpdate(Syntax));
-//        }
+
+    public void deleteKeyRecords(Table table,Map<KeyField,Integer> keys) throws SQLException {
+        String deleteWhere = "";
+        for(Map.Entry<KeyField,Integer> deleteKey : keys.entrySet())
+            deleteWhere = (deleteWhere.length()==0?"":deleteWhere+" AND ") + deleteKey.getKey().name + "=" + deleteKey.getValue();
+
+        execute("DELETE FROM "+ table.getName(syntax)+(deleteWhere.length()==0?"":" WHERE "+deleteWhere));
     }
 
-    public void insertSelect(ModifyQuery Modify) throws SQLException {
-        execute(Modify.getInsertSelect(syntax));
+    public void updateRecords(ModifyQuery modify) throws SQLException {
+        executeStatement(getStatement(modify.getUpdate(syntax).command, modify.getUpdate(syntax).params));
+    }
+
+    public void insertSelect(ModifyQuery modify) throws SQLException {
+        executeStatement(getStatement(modify.getInsertSelect(syntax).command, modify.getInsertSelect(syntax).params));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
     public void modifyRecords(ModifyQuery modify) throws SQLException {
-        execute(modify.getInsertLeftKeys(syntax));
-        execute(modify.getUpdate(syntax));
+        executeStatement(getStatement(modify.getInsertLeftKeys(syntax).command, modify.getInsertLeftKeys(syntax).params));
+        updateRecords(modify);
     }
 
     public void close() throws SQLException {
@@ -542,8 +648,43 @@ public class DataSession  {
         return changes.hasChanges();
     }
 
-    int CursorCounter = 0;
-    public String getCursorName() {
-        return "cursor"+(CursorCounter++);
+    public PreparedStatement getStatement(String command, Map<String, TypedObject> params) throws SQLException {
+
+        // те которые isString сразу транслируем
+        List<TypedObject> preparedParams = new ArrayList<TypedObject>();
+        char[] toparse = command.toCharArray();
+        String parsedString = "";
+        char[] parsed = new char[toparse.length]; int num=0;
+        for(int i=0;i<toparse.length;) {
+            int charParsed = 0;
+            for(Map.Entry<String,TypedObject> param : params.entrySet()) {
+                String paramName = param.getKey();
+                if(i+paramName.length()<=toparse.length && paramName.equals(new String(toparse,i,paramName.length()))) { // нашли
+                    TypedObject paramValue = param.getValue();
+                    if(paramValue.isString()) { // если можно вручную пропарсить парсим
+                        parsedString = parsedString + new String(parsed,0,num) + paramValue.getString(syntax);
+                        parsed = new char[toparse.length-i]; num = 0;
+                    } else {
+                        parsed[num++] = '?';
+                        preparedParams.add(param.getValue());
+                    }
+                    charParsed = paramName.length();
+                    break;
+                }
+            }
+            if(charParsed==0) {
+                parsed[num++] = toparse[i];
+                charParsed = 1;
+            }
+            i = i + charParsed;
+        }
+        parsedString = parsedString + new String(parsed,0,num);
+
+        PreparedStatement statement = connection.prepareStatement(parsedString);
+        int paramNum = 1;
+        for(TypedObject param : preparedParams)
+            param.writeParam(statement,paramNum++);
+
+        return statement;
     }
 }

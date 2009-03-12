@@ -1,10 +1,7 @@
 package platform.base;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class BaseUtils {
 
@@ -38,9 +35,9 @@ public class BaseUtils {
         return true;
     }
 
-    public static <K,E,V> Map<K,V> join(Map<K,E> map, Map<E,V> joinMap) {
+    public static <K,E,V> Map<K,V> join(Map<K,? extends E> map, Map<? extends E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
-        for(Map.Entry<K,E> entry : map.entrySet())
+        for(Map.Entry<K,? extends E> entry : map.entrySet())
             result.put(entry.getKey(),joinMap.get(entry.getValue()));
         return result;
     }
@@ -78,6 +75,12 @@ public class BaseUtils {
 
     public static <KA,VA,KB,VB> Map<VA,VB> crossJoin(Map<KA,VA> map,Map<KB,VB> mapTo,Map<KA,KB> mapJoin) {
         return join(join(reverse(map),mapJoin),mapTo);
+    }
+
+    public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
+        Set<K> result = new HashSet<K>(col1);
+        result.addAll(col2);
+        return result;
     }
 
     public static <K,V> boolean identity(Map<K,V> map) {

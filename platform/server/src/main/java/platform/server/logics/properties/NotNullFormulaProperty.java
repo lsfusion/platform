@@ -10,10 +10,9 @@ public class NotNullFormulaProperty extends WhereFormulaProperty {
 
     public FormulaPropertyInterface property;
 
-    public NotNullFormulaProperty(TableFactory iTableFactory) {
-        super(iTableFactory);
-        property = new FormulaPropertyInterface(0);
-        interfaces.add(property);
+    public NotNullFormulaProperty(String sID, TableFactory iTableFactory) {
+        super(sID,1,iTableFactory);
+        property = interfaces.iterator().next();
     }
 
     Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement) {

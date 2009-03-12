@@ -15,11 +15,11 @@ class TestNavigatorForm extends NavigatorForm<TestBusinessLogics> {
     TestNavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.ArticleGroup);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.articleGroup);
         obj1.caption = "группа товаров";
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.article);
         obj2.caption = "товар";
-        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Document);
+        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.document);
         obj3.caption = "документ";
 
         GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));

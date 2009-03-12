@@ -12,7 +12,6 @@ public interface SQLSyntax {
     String getUpdate(String tableString,String setString,String fromString,String whereString);
 
     String getClassName();
-    void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
     Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
     String startTransaction();
@@ -52,6 +51,10 @@ public interface SQLSyntax {
     String getBitType();
 
     String getBitString(Boolean value);
+
+    String getTextType();
+
+    String getByteArrayType();
 
     String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);
 

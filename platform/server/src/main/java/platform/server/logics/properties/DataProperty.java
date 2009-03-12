@@ -3,7 +3,6 @@ package platform.server.logics.properties;
 import platform.interop.Compare;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.Table;
 import platform.server.data.query.ChangeQuery;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
@@ -23,16 +22,25 @@ import java.util.*;
 public class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInterface> {
     public RemoteClass value;
 
-    public DataProperty(TableFactory iTableFactory, RemoteClass iValue) {
-        super(iTableFactory);
+    static Collection<DataPropertyInterface> getInterfaces(RemoteClass[] classes) {
+        Collection<DataPropertyInterface> interfaces = new ArrayList<DataPropertyInterface>();
+        for(RemoteClass interfaceClass : classes)
+            interfaces.add(new DataPropertyInterface(interfaces.size(),interfaceClass));
+        return interfaces;
+    }
+
+    public DataProperty(String iSID, RemoteClass[] classes, TableFactory iTableFactory, RemoteClass iValue) {
+        super(iSID, getInterfaces(classes), iTableFactory);
         value = iValue;
 
         defaultMap = new HashMap<DataPropertyInterface,D>();
-    }
 
-    // при текущей реализации проше предполагать что не имплементнутые Interface имеют null Select !!!!!
-    public Table getTable(Map<KeyField,DataPropertyInterface> mapJoins) {
-        return tableFactory.getTable(interfaces, mapJoins);
+        dataChange = tableFactory.getDataChangeTable(interfaces.size(), getType());
+        // если нету Map'a построим
+        dataChangeMap = new HashMap<KeyField,DataPropertyInterface>();
+        Iterator<KeyField> io = dataChange.objects.iterator();
+        for(DataPropertyInterface Interface : interfaces)
+            dataChangeMap.put(io.next(),Interface);
     }
 
     public ClassSet calculateValueClass(InterfaceClass<DataPropertyInterface> ClassImplement) {
@@ -62,15 +70,6 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
     // свойства для "ручных" изменений пользователем
     public DataChangeTable dataChange;
     public Map<KeyField,DataPropertyInterface> dataChangeMap = null;
-
-    public void fillDataChange() {
-        dataChange = tableFactory.getDataChangeTable(interfaces.size(), getType());
-        // если нету Map'a построим
-        dataChangeMap = new HashMap<KeyField,DataPropertyInterface>();
-        Iterator<KeyField> io = dataChange.objects.iterator();
-        for(DataPropertyInterface Interface : interfaces)
-            dataChangeMap.put(io.next(),Interface);
-    }
 
     void outDataChangesTable(DataSession Session) throws SQLException {
         dataChange.outSelect(Session);

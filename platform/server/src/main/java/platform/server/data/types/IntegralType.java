@@ -16,6 +16,9 @@ abstract class IntegralType<T> extends Type<T> {
         return 0;
     }
 
+    public boolean isString(Object value) {
+        return true;
+    }
     public String getString(Object value, SQLSyntax syntax) {
         return value.toString();
     }

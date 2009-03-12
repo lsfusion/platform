@@ -13,7 +13,9 @@ import java.util.Set;
 
 public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
-    public SumGroupProperty(TableFactory iTableFactory, Property<T> iProperty) {super(iTableFactory,iProperty,1);}
+    public SumGroupProperty(String iSID, Collection<GroupPropertyInterface<T>> iInterfaces, TableFactory iTableFactory, Property<T> iProperty) {
+        super(iSID, iInterfaces, iTableFactory, iProperty, 1);
+    }
 
     public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
         // Group на ->1, Interface на ->2 - как было - возвр. 1 (на подчищение если (0 или 2) LEFT JOIN'им старые)

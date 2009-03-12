@@ -10,7 +10,7 @@ public class SessionTable extends Table {
     }
 
     public String getName(SQLSyntax Syntax) {
-        return Syntax.getSessionTableName(Name);
+        return Syntax.getSessionTableName(name);
     }
 
 }

@@ -8,8 +8,9 @@ import java.util.List;
 
 public class LP<T extends PropertyInterface,P extends Property<T>> {
 
-    LP(P iProperty) {
-        this(iProperty, new ArrayList<T>());
+    public LP(P iProperty) {
+        property =iProperty;
+        listInterfaces = new ArrayList<T>(property.interfaces);
     }
 
     public LP(P iProperty, List<T> iListInterfaces) {

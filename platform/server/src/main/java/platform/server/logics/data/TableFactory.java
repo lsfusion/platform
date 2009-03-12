@@ -3,18 +3,23 @@ package platform.server.logics.data;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.Table;
+import platform.server.data.GlobalTable;
 import platform.server.data.types.Type;
-import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.session.*;
+import platform.server.logics.classes.RemoteClass;
 import platform.server.view.form.ViewTable;
 
 import java.sql.SQLException;
 import java.util.*;
 
-public class TableFactory extends TableImplement{
+public class TableFactory {
+
+    public static final int MAX_INTERFACE = 5;
+    ImplementTable[] baseTables = new ImplementTable[MAX_INTERFACE];
 
     public ObjectTable objectTable;
     public IDTable idTable;
+    public GlobalTable globalTable;
     public List<ViewTable> viewTables;
     List<Map<Type,DataChangeTable>> dataChangeTables = new ArrayList<Map<Type, DataChangeTable>>();
     List<Map<Type,IncrementChangeTable>> changeTables = new ArrayList<Map<Type, IncrementChangeTable>>();
@@ -46,63 +51,80 @@ public class TableFactory extends TableImplement{
         return table;
     }
 
-    int maxBeanObjects = 3;
-    public int maxInterface = 5;
+    private final static int MAX_BEAN_OBJECTS = 3;
 
     public TableFactory() {
         objectTable = new ObjectTable();
         idTable = new IDTable();
+        globalTable = new GlobalTable();
         viewTables = new ArrayList<ViewTable>();
 
         addClassTable = new AddClassTable();
         removeClassTable = new RemoveClassTable();
 
-        for(int i=1;i<= maxBeanObjects;i++)
+        for(int i=1;i<= MAX_BEAN_OBJECTS;i++)
             viewTables.add(new ViewTable(i));
 
-        for(int i=0;i<maxInterface;i++)
+        for(int i=0;i< MAX_INTERFACE;i++)
             changeTables.add(new HashMap<Type, IncrementChangeTable>());
 
-        for(int i=0;i<maxInterface;i++)
+        for(int i=0;i< MAX_INTERFACE;i++)
             dataChangeTables.add(new HashMap<Type, DataChangeTable>());
+
+        for(int i=0;i< MAX_INTERFACE;i++) {
+            RemoteClass[] baseClasses = new RemoteClass[i];
+            for(int j=0;j<i;j++)
+                baseClasses[j] = RemoteClass.base;
+            baseTables[i] = new ImplementTable("base_"+i,baseClasses);
+        }
     }
 
-    public void includeIntoGraph(TableImplement IncludeItem) {
-        Set<TableImplement> checks = new HashSet<TableImplement>();
-        recIncludeIntoGraph(IncludeItem,true,checks);
+    public void include(RemoteClass... classes) {
+        String name = "table";
+        for (RemoteClass fieldClass : classes)
+            name += "_" + fieldClass.ID.toString();
+        include(name,classes);
     }
 
-    public void fillDB(DataSession session, boolean createTable) throws SQLException {
-        Set<TableImplement> tableImplements = new HashSet<TableImplement>();
-        fillSet(tableImplements);
+    public void include(String name,RemoteClass... classes) {
+        baseTables[classes.length].includeIntoGraph(new ImplementTable(name,classes),true,new HashSet<ImplementTable>());
+    }
 
-        for(TableImplement node : tableImplements) {
-            node.table = new Table("table"+node.getID());
-            node.mapFields = new HashMap<DataPropertyInterface, KeyField>();
-            Integer fieldNum = 0;
-            for(DataPropertyInterface propertyInterface : node) {
-                fieldNum++;
-                KeyField field = new KeyField("key"+fieldNum.toString(),Type.object);
-                node.table.keys.add(field);
-                node.mapFields.put(propertyInterface,field);
-            }
+    // получает постоянные таблицы
+    public Map<String,ImplementTable> getImplementTables() {
+        Map<String,ImplementTable> result = new HashMap<String, ImplementTable>();
+        for(int i=0;i<MAX_INTERFACE;i++) {
+            Set<ImplementTable> intTables = new HashSet<ImplementTable>();
+            baseTables[i].fillSet(intTables);
+            for(ImplementTable intTable : intTables)
+                result.put(intTable.name,intTable);
         }
+        return result;
+    }
 
-        if (createTable) {
+    public <T> MapKeysTable<T> getMapTable(Map<T,RemoteClass> findItem) {
+        return baseTables[findItem.size()].getMapTable(findItem);
+    }
 
-            session.createTable(objectTable);
-            session.createTable(idTable);
+    public void fillDB(DataSession session) throws SQLException {
 
-            for (Integer idType : IDTable.getCounters()) {
-                // закинем одну запись
-                Map<KeyField,Integer> insertKeys = new HashMap<KeyField,Integer>();
-                insertKeys.put(idTable.key, idType);
-                Map<PropertyField,Object> insertProps = new HashMap<PropertyField,Object>();
-                insertProps.put(idTable.value,0);
-                session.insertRecord(idTable,insertKeys,insertProps);
-            }
-        }
+        session.ensureTable(objectTable);
+        session.ensureTable(idTable);
+        session.ensureTable(globalTable);
 
+        for (Integer idType : IDTable.getCounters())
+            session.ensureRecord(idTable,Collections.singletonMap(idTable.key,idType), Collections.singletonMap(idTable.value,(Object)0));
+
+        // создадим dumb
+        Table dumbTable = new Table("dumb");
+        KeyField dumbKey = new KeyField("dumb", Type.system);
+        dumbTable.keys.add(dumbKey);
+        session.ensureTable(dumbTable);
+        session.ensureRecord(dumbTable,Collections.singletonMap(dumbKey,1), new HashMap<PropertyField, Object>());
+
+        Table emptyTable = new Table("empty");
+        emptyTable.keys.add(new KeyField("dumb",Type.system));
+        session.ensureTable(emptyTable);
     }
 
     // заполняет временные таблицы

@@ -17,7 +17,7 @@ class IntegralNavigatorForm extends NavigatorForm<TestBusinessLogics> {
         ObjectImplement obj2 = new ObjectImplement(IDShift(1), RemoteClass.date);
         obj2.caption = "дата 2";
 
-        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.Article);
+        ObjectImplement obj3 = new ObjectImplement(IDShift(1),BL.article);
         obj3.caption = "товар";
 
         GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));

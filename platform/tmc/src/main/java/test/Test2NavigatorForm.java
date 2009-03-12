@@ -8,9 +8,9 @@ class Test2NavigatorForm extends NavigatorForm<TestBusinessLogics> {
     Test2NavigatorForm(int iID, String caption, TestBusinessLogics BL) {
         super(iID, caption);
 
-        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.Document);
+        ObjectImplement obj1 = new ObjectImplement(IDShift(1),BL.document);
         obj1.caption = "документ";
-        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.Article);
+        ObjectImplement obj2 = new ObjectImplement(IDShift(1),BL.article);
         obj2.caption = "товар";
 
         GroupObjectImplement gv = new GroupObjectImplement(IDShift(1));

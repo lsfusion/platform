@@ -20,7 +20,7 @@ class OracleDataAdapter extends DataAdapter {
         return true;
     }
 
-    OracleDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+    OracleDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer);
     }
 
@@ -41,7 +41,7 @@ class OracleDataAdapter extends DataAdapter {
         return "CREATE GLOBAL TEMPORARY TABLE "+ tableName +" ("+ declareString +","+ constraintString +") ON COMMIT PRESERVE ROWS";
     }
 
-    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Connection connect = DriverManager.getConnection("jdbc:oracle:thin:system/a11111@"+ dataBase +":1521:orcl");
 //        try {

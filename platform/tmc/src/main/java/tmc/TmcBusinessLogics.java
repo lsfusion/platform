@@ -8,24 +8,16 @@ import java.sql.SQLException;
 import java.util.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
-import java.io.FileInputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.rmi.RemoteException;
-import java.rmi.Naming;
-import java.rmi.server.RMIClassLoader;
-import java.rmi.server.UnicastRemoteObject;
-import java.rmi.registry.Registry;
+import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.net.MalformedURLException;
 
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.session.DataSession;
 import platform.server.logics.auth.SecurityPolicy;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
 import platform.server.logics.auth.User;
-import platform.server.logics.data.TableImplement;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.AggregateProperty;
@@ -42,23 +34,24 @@ import platform.server.view.form.*;
 
 public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
-    protected DataAdapter newAdapter() throws ClassNotFoundException {
-        return new PostgreDataAdapter("testplat","localhost");
+    public TmcBusinessLogics(DataAdapter iAdapter) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
+        super(iAdapter);
     }
 
-    public TmcBusinessLogics() throws RemoteException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
-        super();
-    }
-
-    public TmcBusinessLogics(int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, RemoteException {
-        super(testType,seed,iterations);
+    public TmcBusinessLogics(DataAdapter iAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
+        super(iAdapter,testType,seed,iterations);
     }
 
 //    static Registry registry;
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, RemoteException, FileNotFoundException, JRException, MalformedURLException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
-        LocateRegistry.createRegistry(7653).rebind("TmcBusinessLogics", new TmcBusinessLogics());
+        System.out.println("Server is starting...");
+        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost");
+        TmcBusinessLogics BL = new TmcBusinessLogics(adapter);
+        BL.fillData();
+        LocateRegistry.createRegistry(7653).rebind("TmcBusinessLogics", BL);
 //        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
+        System.out.println("Server successfully started");
     }
 
     RemoteClass article;
@@ -219,19 +212,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initClassProperties() {
 
-        dateDocument = addCProp("пустая дата", null, RemoteClass.date, document);
-        datePrimDocument = addCProp("пустая дата", null, RemoteClass.date, primaryDocument);
-        storePrimDoc = addCProp("пустой склад", null, store, primaryDocument);
-        bitExtInc = addCProp("пустой бит", true, RemoteClass.bit, extIncomeDetail);
-        bitDocStore = addCProp("пустой бит", null, RemoteClass.bit, document, store);
-        doubleDocStore = addCProp("пустое число", null, RemoteClass.doubleClass, document, store);
-        doubleDocArticle = addCProp("пустое кол-во", null, RemoteClass.doubleClass, document, article);
-        doubleDocStoreArticle = addCProp("пустое число", null, RemoteClass.doubleClass, document, store, article);
-        doubleIncDocArticle = addCProp("пустое кол-во", null, RemoteClass.doubleClass, incomeDocument, article);
-        doubleOutDocArticle = addCProp("пустое кол-во", null, RemoteClass.doubleClass, outcomeDocument, article);
-        bitPrimDocArticle = addCProp("пустой бит", null, RemoteClass.bit, primaryDocument, article);
-        doublePrimDocArticle = addCProp("пустое число", null, RemoteClass.doubleClass, primaryDocument, article);
-        doubleExtOutDocArticle = addCProp("пустое число", null, RemoteClass.doubleClass, extOutcomeDocument, article);
+        dateDocument = addCProp("пустая дата", RemoteClass.date, null, document);
+        datePrimDocument = addCProp("пустая дата", RemoteClass.date, null, primaryDocument);
+        storePrimDoc = addCProp("пустой склад", store, null, primaryDocument);
+        bitExtInc = addCProp("пустой бит", RemoteClass.bit, true, extIncomeDetail);
+        bitDocStore = addCProp("пустой бит", RemoteClass.bit, null, document, store);
+        doubleDocStore = addCProp("пустое число", RemoteClass.doubleClass, null, document, store);
+        doubleDocArticle = addCProp("пустое кол-во", RemoteClass.doubleClass, null, document, article);
+        doubleDocStoreArticle = addCProp("пустое число", RemoteClass.doubleClass, null, document, store, article);
+        doubleIncDocArticle = addCProp("пустое кол-во", RemoteClass.doubleClass, null, incomeDocument, article);
+        doubleOutDocArticle = addCProp("пустое кол-во", RemoteClass.doubleClass, null, outcomeDocument, article);
+        bitPrimDocArticle = addCProp("пустой бит", RemoteClass.bit, null, primaryDocument, article);
+        doublePrimDocArticle = addCProp("пустое число", RemoteClass.doubleClass, null, primaryDocument, article);
+        doubleExtOutDocArticle = addCProp("пустое число", RemoteClass.doubleClass, null, extOutcomeDocument, article);
 
     }
 
@@ -470,8 +463,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     
     private void initStoreOverrideProperties() {
 
-        incQStore = addUProp("Склад прих.", Union.OVERRIDE, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
-        outQStore = addUProp("Склад расх.", Union.OVERRIDE, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
+        incQStore = addUProp("incQStore", "Склад прих.", Union.OVERRIDE, 1, 1, extIncStore, 1, 1, intraIncStore, 1, 1, exchStore, 1);
+        outQStore = addUProp("outQStore", "Склад расх.", Union.OVERRIDE, 1, 1, intraOutStore, 1, 1, extOutStore, 1, 1, exchStore, 1);
 
         incSStore = addUProp("Склад прих. (сум)", Union.OVERRIDE, 1, 1, incQStore, 1, 1, revalStore, 1);
         outSStore = outQStore;
@@ -547,7 +540,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         extIncDetailQuantity = addDProp(quantGroup, "extIncDetailQuantity", "Кол-во", RemoteClass.doubleClass, extIncomeDetail);
         extIncDocumentQuantity = addGProp(quantGroup, "extIncDocumentQuantity", "Кол-во (всего)", extIncDetailQuantity, true, extIncDetailDocument, 1);
 
-        extIncQuantity = addGProp(quantGroup, "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
+        extIncQuantity = addGProp(quantGroup, "extIncQuantity" , "Кол-во прих.", extIncDetailQuantity, true, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         intraQuantity = addDProp(quantGroup, "Кол-во внутр.", RemoteClass.doubleClass, intraDocument, article);
 
@@ -610,8 +603,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initQuantityStoreProperties() {
 
-        incStoreQuantity = addGProp("Прих. на скл.", incQuantity, true, incQStore, 1, 2);
-        outStoreQuantity = addGProp("Расх. со скл.", outQuantity, true, outQStore, 1, 2);
+        incStoreQuantity = addGProp("incStoreQuantity", "Прих. на скл.", incQuantity, true, incQStore, 1, 2);
+        outStoreQuantity = addGProp("outStoreQuantity", "Расх. со скл.", outQuantity, true, outQStore, 1, 2);
 
         balanceStoreQuantity = addUProp(balanceGroup, "Ост. на скл.", Union.SUM, 2, 1, incStoreQuantity, 1, 2, -1, outStoreQuantity, 1, 2);
     }
@@ -733,14 +726,14 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         // -------------------------- Последний документ изм. цену ---------------------------- //
 
         LJP changesParamsDate = addJProp("Дата изм. пар.", multiplyDate2, 2, isDocArtChangesParams, 1, 2, primDocDate, 1);
-        maxChangesParamsDate = addGProp(baseGroup, "Посл. дата изм. парам.", changesParamsDate, false, primDocStore, 1, 2);
+        maxChangesParamsDate = addGProp(baseGroup, "maxChangesParamsDate", "Посл. дата изм. парам.", changesParamsDate, false, primDocStore, 1, 2);
 
         LJP primDocIsCor = addJProp("Док. макс.", equals22, 3, primDocDate, 1, maxChangesParamsDate, 2, 3, primDocStore, 1, 2);
 
         LJP primDocIsLast = addJProp("Посл.", multiplyBit2, 3, primDocIsCor, 1, 2, 3, isDocArtChangesParams, 1, 3);
 
         LJP primDocSelfLast = addJProp("Тов. док. макс.", object1, 3, 1, primDocIsLast, 1, 2, 3);
-        maxChangesParamsDoc = addGProp("Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
+        maxChangesParamsDoc = addGProp("maxChangesParamsDoc", "Посл. док. изм. парам.", primDocSelfLast, false, 2, 3);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -804,7 +797,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         // ------------------------- Последняя строка ------------------------------ //
         
         LJP propDetail = addJProp("Зн. строки", object1, 1, 1, bitExtInc, 1);
-        extIncLastDetail = addGProp("Посл. строка", propDetail, false, extIncDetailDocument, 1, extIncDetailArticle, 1);
+        extIncLastDetail = addGProp("extIncLastDetail", "Посл. строка", propDetail, false, extIncDetailDocument, 1, extIncDetailArticle, 1);
 
         extIncPriceIn = addJProp(incPrmsGroup, "Цена пост. (прих.)", extIncDetailPriceIn, 2, extIncLastDetail, 1, 2);
         extIncVATIn = addJProp(incPrmsGroup, "НДС пост. (прих.)", extIncDetailVATIn, 2, extIncLastDetail, 1, 2);
@@ -1291,39 +1284,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         persistents.add((AggregateProperty)extIncLastDetail.property);
 
-//        persistents.add((AggregateProperty)docOutBalanceQuantity.property);
-//        persistents.add((AggregateProperty)docIncBalanceQuantity.property);
-
         persistents.add((AggregateProperty)outQStore.property);
         persistents.add((AggregateProperty)incQStore.property);
     }
 
     protected void initTables() {
 
-        TableImplement include;
-
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,article));
-        tableFactory.includeIntoGraph(include);
-
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,store));
-        tableFactory.includeIntoGraph(include);
-
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,articleGroup));
-        tableFactory.includeIntoGraph(include);
-
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,article));
-        include.add(new DataPropertyInterface(0,document));
-        tableFactory.includeIntoGraph(include);
-
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,article));
-        include.add(new DataPropertyInterface(0,store));
-        tableFactory.includeIntoGraph(include);
-
+        tableFactory.include("article",article);
+        tableFactory.include("document",document);
+        tableFactory.include("store",store);
+        tableFactory.include("articlegroup",articleGroup);
+        tableFactory.include("articledocument",article,document);
+        tableFactory.include("articlestore",article,store);
     }
 
     protected void initIndexes() {
@@ -2025,7 +1997,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     // ------------------------------------- Временные методы --------------------------- //
 
-    public void fillData(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         int modifier = 10;
         int propModifier = 1;
@@ -2097,7 +2069,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             revalBalanceQuantity,revalPriceIn,revalVATIn,revalAddBefore,revalVATOutBefore,revalLocTaxBefore,
                 revalAddAfter,revalVATOutAfter,revalLocTaxAfter));
 
-        autoFillDB(adapter, classQuantity, propQuantity,propNotNulls);
+        autoFillDB(classQuantity, propQuantity,propNotNulls);
     }
 
 }

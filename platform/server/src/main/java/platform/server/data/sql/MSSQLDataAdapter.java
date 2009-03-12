@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 class MSSQLDataAdapter extends DataAdapter {
 
-    MSSQLDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException {
+    MSSQLDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer);
     }
 
@@ -30,7 +30,7 @@ class MSSQLDataAdapter extends DataAdapter {
         return "net.sourceforge.jtds.jdbc.Driver";
     }
 
-    public void createDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=sa;Password=11111");
         try {

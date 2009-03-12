@@ -2,6 +2,8 @@ package platform.server.data.sql;
 
 import platform.server.data.types.Type;
 
+import java.sql.SQLException;
+
 public abstract class DataAdapter implements SQLSyntax {
 
     String server;
@@ -11,10 +13,14 @@ public abstract class DataAdapter implements SQLSyntax {
     protected DataAdapter() {
     }
 
-    protected DataAdapter(String iDataBase,String iServer) throws ClassNotFoundException {
+    abstract void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+
+    protected DataAdapter(String iDataBase,String iServer) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         Class.forName(getClassName());
         dataBase = iDataBase;
         server = iServer;
+
+        ensureDB();
     }
 
     public String getStringType(int length) {
@@ -39,6 +45,14 @@ public abstract class DataAdapter implements SQLSyntax {
 
     public String getBitType() {
         return "integer";
+    }
+
+    public String getTextType() {
+        return "text";
+    }
+
+    public String getByteArrayType() {
+        return "longvarbinary";
     }
 
     public String getBitString(Boolean value) {

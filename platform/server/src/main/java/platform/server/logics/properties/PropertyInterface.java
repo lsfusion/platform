@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInterfaceImplement<P> {
 
-    int ID = 0;
+    public int ID = 0;
     public PropertyInterface(int iID) {
         ID = iID;
     }

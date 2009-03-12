@@ -22,8 +22,15 @@ import java.util.*;
 
 abstract public class UnionProperty extends AggregateProperty<PropertyInterface> {
 
-    UnionProperty(TableFactory iTableFactory,Union iOperator) {
-        super(iTableFactory);
+    static Collection<PropertyInterface> getInterfaces(int intNum) {
+        Collection<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
+        for(int i=0;i<intNum;i++)
+            interfaces.add(new PropertyInterface(i));
+        return interfaces;
+    }
+
+    protected UnionProperty(String iSID, int intNum, TableFactory iTableFactory, Union iOperator) {
+        super(iSID, getInterfaces(intNum), iTableFactory);
         operator = iOperator;
     }
 

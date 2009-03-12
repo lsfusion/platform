@@ -17,13 +17,7 @@ public class LDP<D extends PropertyInterface> extends LP<DataPropertyInterface, 
 
     public LDP(DataProperty<D> iProperty) {super(iProperty);}
 
-    public void AddInterface(RemoteClass inClass) {
-        DataPropertyInterface propertyInterface = new DataPropertyInterface(listInterfaces.size(),inClass);
-        listInterfaces.add(propertyInterface);
-        property.interfaces.add(propertyInterface);
-    }
-
-    public void ChangeProperty(DataSession session, Object value, Integer... iParams) throws SQLException {
+    public void changeProperty(DataSession session, Object value, Integer... iParams) throws SQLException {
         Map<DataPropertyInterface,ObjectValue> keys = new HashMap<DataPropertyInterface, ObjectValue>();
         Integer intNum = 0;
         for(int i : iParams) {

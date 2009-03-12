@@ -4,16 +4,15 @@ import platform.base.BaseUtils;
 import platform.server.data.KeyField;
 import platform.server.data.ModifyQuery;
 import platform.server.data.PropertyField;
-import platform.server.data.Table;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.data.TableFactory;
+import platform.server.logics.data.MapKeysTable;
 import platform.server.logics.session.ChangeValue;
 import platform.server.logics.session.DataSession;
 
@@ -22,33 +21,12 @@ import java.util.*;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    AggregateProperty(TableFactory iTableFactory) {super(iTableFactory);}
-
-    Map<DataPropertyInterface,T> aggregateMap;
+    protected AggregateProperty(String iSID,Collection<T> iInterfaces, TableFactory iTableFactory) {
+        super(iSID,iInterfaces,iTableFactory);
+    }
 
     // расчитывает выражение
     abstract SourceExpr calculateSourceExpr(Map<T,? extends SourceExpr> joinImplement, InterfaceClassSet<T> joinClasses);
-
-    // сначала проверяет на persistence
-    public Table getTable(Map<KeyField,T> mapJoins) {
-        if(aggregateMap ==null) {
-            aggregateMap = new HashMap<DataPropertyInterface,T>();
-            Map<T, RemoteClass> parent = getClassSet(ClassSet.universal).getCommonParent();
-            for(T propertyInterface : interfaces) {
-                aggregateMap.put(new DataPropertyInterface(0,parent.get(propertyInterface)),propertyInterface);
-            }
-        }
-
-        Map<KeyField,DataPropertyInterface> mapData = new HashMap<KeyField,DataPropertyInterface>();
-        Table sourceTable = tableFactory.getTable(aggregateMap.keySet(),mapData);
-        // перекодирукм на MapJoins
-        if(mapJoins !=null) {
-            for(KeyField MapField : mapData.keySet())
-                mapJoins.put(MapField, aggregateMap.get(mapData.get(MapField)));
-        }
-
-        return sourceTable;
-    }
 
     Object dropZero(Object Value) {
         if(Value instanceof Integer && Value.equals(0)) return null;
@@ -116,18 +94,15 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return true;
     }
 
-    public void reCalculateAggregation(DataSession session) throws SQLException {
+    public void recalculateAggregation(DataSession session) throws SQLException {
         PropertyField writeField = field;
         field = null;
 
-        Map<KeyField,T> mapTable = new HashMap<KeyField,T>();
-        Table aggrTable = getTable(mapTable);
-
-        JoinQuery<KeyField, PropertyField> writeQuery = new JoinQuery<KeyField, PropertyField>(aggrTable.keys);
-        SourceExpr recalculateExpr = getSourceExpr(BaseUtils.join(BaseUtils.reverse(mapTable), writeQuery.mapKeys), getClassSet(ClassSet.universal));
+        JoinQuery<KeyField, PropertyField> writeQuery = new JoinQuery<KeyField, PropertyField>(mapTable.table.keys);
+        SourceExpr recalculateExpr = getSourceExpr(BaseUtils.join(BaseUtils.reverse(mapTable.mapKeys), writeQuery.mapKeys), getClassSet(ClassSet.universal));
         writeQuery.properties.put(writeField, recalculateExpr);
-        writeQuery.and(new Join<KeyField, PropertyField>(aggrTable, writeQuery).inJoin.or(recalculateExpr.getWhere()));
-        session.modifyRecords(new ModifyQuery(aggrTable,writeQuery));
+        writeQuery.and(new Join<KeyField, PropertyField>(mapTable.table, writeQuery).inJoin.or(recalculateExpr.getWhere()));
+        session.modifyRecords(new ModifyQuery(mapTable.table,writeQuery));
 
         field = writeField;
     }

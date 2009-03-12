@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.server.data.Source;
+import platform.server.data.TypedObject;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
@@ -15,18 +16,18 @@ import platform.server.where.Where;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 import java.util.*;
 
 // нужен для Map'а ключей / значений
 public class CompiledQuery<K,V> {
 
-    String from;
-    Map<K,String> keySelect;
-    Map<V,String> propertySelect;
-    Collection<String> whereSelect;
+    public String from;
+    public Map<K,String> keySelect;
+    public Map<V,String> propertySelect;
+    public Collection<String> whereSelect;
 
-    String select;
+    public String select;
     public List<K> keyOrder = new ArrayList<K>();
     public List<V> propertyOrder = new ArrayList<V>();
     public Map<K,String> keyNames;
@@ -364,14 +365,13 @@ public class CompiledQuery<K,V> {
             query = query.replaceAll(translateValue.getKey(),translateValue.getValue());
         return query;
     }
-    Map<String,String> getMapValues(SQLSyntax syntax) {
-        Map<String,String> result = new HashMap<String, String>();
+    public Map<String, TypedObject> getQueryParams() {
+        Map<String, TypedObject> mapValues = new HashMap<String, TypedObject>();
         for(Map.Entry<ValueExpr,String> param : params.entrySet())
-            result.put(param.getValue(),param.getKey().getString(syntax));
-        return result;
+            mapValues.put(param.getValue(),param.getKey().object);
+        return mapValues;
     }
 
-    // нужны для транслирования параметров
     private String fillSelect(Map<String,String> params, Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect) {
         for(Map.Entry<K,String> mapKey : keySelect.entrySet())
             fillKeySelect.put(mapKey.getKey(),translateParam(mapKey.getValue(), params));
@@ -387,25 +387,16 @@ public class CompiledQuery<K,V> {
         return fillSelect(BaseUtils.join(BaseUtils.reverse(params), mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
     }
 
-    // для update
-    public String fillSelect(Map<K, String> fillKeySelect, Map<V, String> fillPropertySelect, Collection<String> fillWhereSelect, SQLSyntax syntax) {
-        return fillSelect(getMapValues(syntax), fillKeySelect, fillPropertySelect, fillWhereSelect);
-    }
-
-    // для выполнения в InsertSelect
-    public String getSelect(SQLSyntax syntax) {
-        return translateParam(select,getMapValues(syntax));
-    }
-
     public LinkedHashMap<Map<K, Integer>, Map<V, Object>> executeSelect(DataSession session,boolean outSelect) throws SQLException {
-        LinkedHashMap<Map<K,Integer>,Map<V,Object>> execResult = new LinkedHashMap<Map<K, Integer>, Map<V, Object>>();
-        Statement statement = session.connection.createStatement();
 
+        LinkedHashMap<Map<K,Integer>,Map<V,Object>> execResult = new LinkedHashMap<Map<K, Integer>, Map<V, Object>>();
+
+        if(outSelect)
+            System.out.println(select);
+
+        PreparedStatement statement = session.getStatement(select,getQueryParams());
         try {
-            String execute = getSelect(session.syntax);
-            if(outSelect)
-                System.out.println(execute);
-            ResultSet result = statement.executeQuery(execute);
+            ResultSet result = statement.executeQuery();
             try {
                 while(result.next()) {
                     Map<K,Integer> rowKeys = new HashMap<K, Integer>();

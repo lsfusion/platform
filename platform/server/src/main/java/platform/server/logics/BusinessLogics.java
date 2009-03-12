@@ -2,16 +2,16 @@ package platform.server.logics;
 
 import platform.base.CollectionExtend;
 import platform.base.Combinations;
+import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.Table;
-import platform.server.data.Union;
+import platform.server.data.*;
+import platform.server.data.query.JoinQuery;
+import platform.server.data.query.Join;
+import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.types.Type;
 import platform.server.logics.auth.AuthPolicy;
 import platform.server.logics.auth.User;
 import platform.server.logics.classes.ObjectClass;
@@ -22,7 +22,7 @@ import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.constraints.Constraint;
 import platform.server.logics.data.IDTable;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.data.TableImplement;
+import platform.server.logics.data.ImplementTable;
 import platform.server.logics.properties.*;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.logics.properties.linear.*;
@@ -43,7 +43,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
-import java.io.FileNotFoundException;
+import java.io.*;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -51,8 +51,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
     protected DataAdapter adapter;
     public static boolean activateCaches = true;
-
-    abstract protected DataAdapter newAdapter() throws ClassNotFoundException;
 
     public RemoteNavigatorInterface createNavigator(String login, String password) {
 
@@ -84,23 +82,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         objectClass = new ObjectClass(idShift(1), "Объект");
         objectClass.addParent(RemoteClass.base);
 
-        for(int i=0;i< tableFactory.maxInterface;i++) {
-            TableImplement include = new TableImplement();
-            for(int j=0;j<=i;j++)
-                include.add(new DataPropertyInterface(j, RemoteClass.base));
-            tableFactory.includeIntoGraph(include);
-        }
-
         baseElement = new NavigatorElement<T>(0, "Base Group");
     }
 
-    protected boolean recreateDB = false;
-
     // по умолчанию с полным стартом
-    public BusinessLogics() throws RemoteException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+    public BusinessLogics(DataAdapter iAdapter) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super();
 
-        adapter = newAdapter();
+        adapter = iAdapter;
 
         initBase();
 
@@ -110,20 +99,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
         initAuthentication();
 
-        if (recreateDB) {
-            adapter.createDB();
-
-            DataSession session = createSession(adapter);
-            fillDB(session, true);
-            session.close();
-
-            fillData(adapter);
-        } else
-            fillDB(null, false);
+        synchronizeDB();
     }
 
     public boolean toSave(Property property) {
-        return property.isPersistent();
+        return property.isStored();
     }
 
     public Collection<Property> getNoUpdateProperties() {
@@ -133,8 +113,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     static Set<Integer> wereSuspicious = new HashSet<Integer>();
 
     // тестирующий конструктор
-    public BusinessLogics(int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, RemoteException {
+    public BusinessLogics(DataAdapter iAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
         super();
+
+        adapter = iAdapter;
 
         initBase();
 
@@ -164,8 +146,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
         Random randomizer = new Random(seed);
 
-        adapter.createDB();
-
         if(testType<1) {
             randomClasses(randomizer);
             randomProperties(randomizer);
@@ -176,13 +156,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
             randomPersistent(randomizer);
         }
 
-        DataSession session = createSession(adapter);
-        fillDB(session, true);
-        session.close();
-
         // запустить ChangeDBTest
         try {
-            changeDBTest(adapter,iterations,randomizer);
+            changeDBTest(iterations,randomizer);
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
@@ -218,8 +194,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     public AuthPolicy authPolicy = new AuthPolicy();
     protected abstract void initAuthentication();
 
-    void addDataProperty(DataProperty property) {
-        properties.add(property);
+    String genSID() {
+        return "prop" + properties.size();
     }
 
     protected void setPropOrder(Property prop, Property propRel, boolean before) {
@@ -277,12 +253,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         return null;
     }
 
-    public Collection<Property> getUpdateProperties() {
-        Collection<Property> updateList = new HashSet<Property>(persistents);
-        updateList.addAll(constraints.keySet());
+    public Collection<Property> getStoredProperties() {
+        Collection<Property> result = new ArrayList<Property>(persistents);
         for(Property property : properties)
-            if(property instanceof DataProperty) updateList.add(property);
-        return updateList;
+            if(property instanceof DataProperty) result.add(property);
+        return result;
+    }
+
+    public Collection<Property> getUpdateProperties() {
+        return BaseUtils.join(getStoredProperties(),constraints.keySet());
     }
 
     public String apply(DataSession session) throws SQLException {
@@ -304,7 +283,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property property : changedList)
-            if(property instanceof DataProperty || persistents.contains(property))
+            if(property.isStored())
                 session.propertyChanges.get(property).apply(session);
 /*
         System.out.println("All Changes");
@@ -317,75 +296,198 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         return null;
     }
 
-    public void fillDB(DataSession session, boolean createTable) throws SQLException {
+    public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
-        // инициализируем таблицы
-        tableFactory.fillDB(session, createTable);
+        DataSession session = createSession(adapter);
+
+        session.startTransaction();
 
         // запишем sID'ки
         int idPropNum = 0;
-        for(Property property : properties)
-            property.ID = idPropNum++;
-
-        Map<Table,Integer> tables = new HashMap<Table,Integer>();
-        // закинем в таблицы(создав там все что надо) св-ва
         for(Property property : properties) {
-            // ChangeTable'ы заполним
+            property.ID = idPropNum++;
             property.fillChangeTable();
-
-            if(property instanceof DataProperty)
-                ((DataProperty)property).fillDataChange();
-
-            if(property instanceof DataProperty || (property instanceof AggregateProperty && persistents.contains(property))) {
-                Table table = property.getTable(null);
-
-                Integer propNum = tables.get(table);
-                if(propNum==null) propNum = 1;
-                propNum = propNum + 1;
-                tables.put(table, propNum);
-
-                PropertyField propField = new PropertyField(property.getSID(),property.getType());
-                table.properties.add(propField);
-                property.field = propField;
-            }
         }
 
-        //закинем индексы
+        // инициализируем таблицы
+        tableFactory.fillDB(session);
+        
+        // "старое" состояние базы
+        DataInputStream inputDB = null;
+        byte[] struct = (byte[]) session.readRecord(tableFactory.globalTable,new HashMap<KeyField, Integer>(),tableFactory.globalTable.struct);
+        if(struct!=null) inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+/*        try {
+            FileInputStream inputDBFile = new FileInputStream("prevstruct.str");
+            byte[] readInput = new byte[inputDBFile.read()*255+inputDBFile.read()];
+            inputDBFile.read(readInput);
+            inputDB = new DataInputStream(new ByteArrayInputStream(readInput));
+        } catch (FileNotFoundException e) { 
+        }*/
+
+        // новое состояние базы
+        ByteArrayOutputStream outDBStruct = new ByteArrayOutputStream();
+        DataOutputStream outDB = new DataOutputStream(outDBStruct);
+
+        Collection<Property> storedProperties = new ArrayList<Property>(getStoredProperties());
+        // привяжем к таблицам все свойства
+        for(Property property : storedProperties)
+            property.markStored();
+
+        Map<String, ImplementTable> implementTables = tableFactory.getImplementTables();
+
+        Map<ImplementTable,Set<List<String>>> mapIndexes = new HashMap<ImplementTable, Set<List<String>>>();
+        for(ImplementTable table : implementTables.values())
+            mapIndexes.put(table,new HashSet<List<String>>());
+
+        // привяжем индексы
         for (List<? extends Property> index : indexes) {
+            Iterator<? extends Property> i = index.iterator();
+            if(!i.hasNext())
+                throw new RuntimeException("Запрещено создавать пустые индексы");
+            Property baseProperty = i.next();
+            if(!baseProperty.isStored())
+                throw new RuntimeException("Запрещено создавать индексы по не постоянным св-вам ("+baseProperty+")");
+            ImplementTable indexTable = baseProperty.mapTable.table;
+            
+            List<String> tableIndex = new ArrayList<String>();
+            tableIndex.add(baseProperty.field.name); 
 
-            Table table = index.get(0).getTable(null);
-
-            List<PropertyField> tableIndex = new ArrayList();
-            for (Property property : index) {
-                tableIndex.add(property.field);
+            while (i.hasNext()) {
+                Property property = i.next();
+                if(!property.isStored())
+                    throw new RuntimeException("Запрещено создавать индексы по не постоянным св-вам ("+baseProperty+")");
+                if(indexTable.findProperty(property.field.name)==null)
+                    throw new RuntimeException("Запрещено создавать индексы по св-вам ("+baseProperty+","+property+") в разных таблицах");
+                tableIndex.add(property.field.name);
             }
-
-            table.indexes.add(tableIndex);
+            mapIndexes.get(indexTable).add(tableIndex);
         }
 
-        if (createTable) {
-
-            for(Table table : tables.keySet()) session.createTable(table);
-
-    /*        // построим в нужном порядке AggregateProperty и будем заполнять их
-            List<Property> UpdateList = new ArrayList();
-            for(AggregateProperty Property : AggrProperties) Property.fillChangedList(UpdateList,null,new HashSet());
-            Integer ViewNum = 0;
-            for(Property Property : UpdateList) {
-    //            if(Property instanceof GroupProperty)
-    //                ((GroupProperty)Property).FillDB(Session,ViewNum++);
+        // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
+        outDB.writeInt(mapIndexes.size());
+        for(Map.Entry<ImplementTable,Set<List<String>>> mapIndex : mapIndexes.entrySet()) {
+            mapIndex.getKey().serialize(outDB);
+            outDB.writeInt(mapIndex.getValue().size());
+            for(List<String> index : mapIndex.getValue()) {
+                outDB.writeInt(index.size());
+                for(String indexField : index)
+                    outDB.writeUTF(indexField);
             }
-      */
-            // создадим dumb
-            Table dumbTable = new Table("dumb");
-            dumbTable.keys.add(new KeyField("dumb", Type.system));
-            session.createTable(dumbTable);
-            session.execute("INSERT INTO dumb (dumb) VALUES (1)");
-
-            Table emptyTable = new Table("empty");
-            emptyTable.keys.add(new KeyField("dumb",Type.system));
-            session.createTable(emptyTable);
         }
+
+        // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
+        outDB.writeInt(storedProperties.size());
+        for(Property<?> property : storedProperties) {
+            outDB.writeUTF(property.sID);
+            outDB.writeUTF(property.mapTable.table.name);
+            for(Map.Entry<KeyField,? extends PropertyInterface> mapKey : property.mapTable.mapKeys.entrySet()) {
+                outDB.writeInt(mapKey.getValue().ID);
+                outDB.writeUTF(mapKey.getKey().name);
+            }
+        }
+
+        // если не совпали sID или идентификаторы из базы удаляем сразу
+        Map<String,Table> prevTables = new HashMap<String, Table>();
+        for(int i=inputDB==null?0:inputDB.readInt();i>0;i--) {
+            Table prevTable = new Table(inputDB);
+            prevTables.put(prevTable.name,prevTable);
+
+            for(int j=inputDB.readInt();j>0;j--) {
+                List<String> index = new ArrayList<String>();
+                for(int k=inputDB.readInt();k>0;k--)
+                    index.add(inputDB.readUTF());
+                ImplementTable implementTable = implementTables.get(prevTable.name);
+                if(implementTable==null || !mapIndexes.get(implementTable).remove(index))
+                    session.dropIndex(prevTable.name,index);
+            }
+        }
+
+        // добавим таблицы которых не было
+        for(ImplementTable table : implementTables.values())
+            if(!prevTables.containsKey(table.name))
+                session.createTable(table.name,table.keys);
+
+        Set<ImplementTable> packTables = new HashSet<ImplementTable>();
+
+        // бежим по свойствам
+        int prevStoredNum = inputDB==null?0:inputDB.readInt();
+        for(int i=0;i<prevStoredNum;i++) {
+            String sID = inputDB.readUTF();
+            Table prevTable = prevTables.get(inputDB.readUTF());
+            Map<Integer,KeyField> mapKeys = new HashMap<Integer, KeyField>();
+            for(int j=0;j<prevTable.keys.size();j++)
+                mapKeys.put(inputDB.readInt(),prevTable.findKey(inputDB.readUTF()));
+
+            boolean keep = false;
+            for(Iterator<Property> is = storedProperties.iterator();is.hasNext();) {
+                Property<?> property = is.next();
+                if(property.sID.equals(sID)) {
+                    Map<PropertyInterface, KeyField> foundInterfaces = new HashMap<PropertyInterface, KeyField>();
+                    for(PropertyInterface propertyInterface : property.interfaces) {
+                        KeyField mapKeyField = mapKeys.get(propertyInterface.ID);
+                        if(mapKeyField!=null) foundInterfaces.put(propertyInterface, mapKeyField);
+                    }
+                    if(foundInterfaces.size()==mapKeys.size()) { // если все нашли
+                        if(!(keep=property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
+                            session.addColumn(property.mapTable.table.name,property.field);
+                            // делаем запрос на перенос
+                            System.out.print("Идет перенос колонки "+property.field+" из таблицы "+prevTable.name+" в таблицу "+property.mapTable.table.name+"... ");
+                            JoinQuery<KeyField,PropertyField> moveColumn = new JoinQuery<KeyField, PropertyField>(property.mapTable.table.keys);
+                            JoinExpr<KeyField,PropertyField> moveExpr = new Join<KeyField,PropertyField>(prevTable,moveColumn,BaseUtils.join(property.mapTable.mapKeys,foundInterfaces)).exprs.get(prevTable.findProperty(sID));
+                            moveColumn.properties.put(property.field, moveExpr);
+                            moveColumn.and(moveExpr.getWhere());
+                            session.modifyRecords(new ModifyQuery(property.mapTable.table,moveColumn));
+                            System.out.println("Done");
+                        } else // надо проверить что тип не изменился
+                            if(!prevTable.findProperty(sID).type.equals(property.field.type))
+                                session.modifyColumn(property.mapTable.table.name,property.field);
+                        is.remove();
+                    }
+                    break;
+                }
+            }
+            if(!keep) {
+                session.dropColumn(prevTable.name,sID);
+                ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку 
+                if(table!=null) packTables.add(table);
+            }
+        }
+
+        Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
+        for(Property property : storedProperties) { // добавляем оставшиеся
+            session.addColumn(property.mapTable.table.name,property.field);
+            if(property instanceof AggregateProperty)
+                recalculateProperties.add((AggregateProperty)property);    
+        }
+
+        // удаляем таблицы старые
+        for(String table : prevTables.keySet())
+            if(!implementTables.containsKey(table))
+                session.dropTable(table);
+
+        // упакуем таблицы
+        for(ImplementTable table : packTables)
+            session.packTable(table);
+        
+        recalculateAggregations(session, recalculateProperties);
+
+        // создадим индексы в базе
+        for(Map.Entry<ImplementTable,Set<List<String>>> mapIndex : mapIndexes.entrySet())
+            for(List<String> index : mapIndex.getValue())
+                session.addIndex(mapIndex.getKey().name,index);
+
+        session.updateInsertRecord(tableFactory.globalTable,new HashMap<KeyField, Integer>(),
+                Collections.singletonMap(tableFactory.globalTable.struct,(Object)outDBStruct.toByteArray()));
+
+        session.commitTransaction();
+        
+/*        byte[] outBytes = outDBStruct.toByteArray();
+        FileOutputStream outFileStruct = new FileOutputStream("prevstruct.str");
+        outFileStruct.write(outBytes.length/255);
+        outFileStruct.write(outBytes.length%255);
+        outFileStruct.write(outBytes);*/
+
+        session.close();
     }
 
     boolean checkPersistent(DataSession session) throws SQLException {
@@ -417,28 +519,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         return objectClass;
     }
 
+    // без ID
     protected LDP addDProp(String caption, RemoteClass value, RemoteClass... params) {
         return addDProp((AbstractGroup)null, caption, value, params);
     }
+    protected LDP addDProp(AbstractGroup group, String caption, RemoteClass value, RemoteClass... params) {
+        return addDProp(group, genSID(), caption, value, params);
+    }
+
     protected LDP addDProp(String sID, String caption, RemoteClass value, RemoteClass... params) {
         return addDProp(null, sID, caption, value, params);
     }
-    protected LDP addDProp(AbstractGroup group, String caption, RemoteClass value, RemoteClass... params) {
-        return addDProp(group, null, caption, value, params);
-    }
     protected LDP addDProp(AbstractGroup group, String sID, String caption, RemoteClass value, RemoteClass... params) {
-        DataProperty property = new DataProperty(tableFactory,value);
+
+        DataProperty property = new DataProperty(sID,params,tableFactory,value);
         property.sID = sID;
         property.caption = caption;
-        LDP listProperty = new LDP(property);
-        for(RemoteClass interfaceClass : params)
-            listProperty.AddInterface(interfaceClass);
-        addDataProperty(property);
+        properties.add(property);
 
         if (group != null)
             group.add(property);
 
-        return listProperty;
+        return new LDP(property);
     }
 
     protected void setDefProp(LDP data, LP defaultProperty,boolean onChange) {
@@ -450,51 +552,55 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         property.onDefaultChange = onChange;
     }
 
-    protected LCP addCProp(String caption, Object value, RemoteClass valueClass, RemoteClass... params) {
-        ClassProperty property = new ClassProperty(tableFactory,valueClass,value);
+    protected LCP addCProp(String caption, RemoteClass valueClass, Object value, RemoteClass... params) {
+        return addCProp(genSID(), caption, valueClass, value, params);
+    }
+    protected LCP addCProp(String sID, String caption, RemoteClass valueClass, Object value, RemoteClass... params) {
+        
+        ClassProperty property = new ClassProperty(sID,params,tableFactory,valueClass,value);
         property.caption = caption;
-        LCP listProperty = new LCP(property);
-        for(RemoteClass interfaceClass : params)
-            listProperty.addInterface(interfaceClass);
+
         properties.add(property);
-        return listProperty;
+        
+        return new LCP(property);
     }
 
     protected LSFP addSFProp(String formula, RemoteClass value,int paramCount) {
 
-        StringFormulaProperty property = new StringFormulaProperty(tableFactory,value,formula);
-        LSFP listProperty = new LSFP(property,paramCount);
+        StringFormulaProperty property = new StringFormulaProperty(genSID(),paramCount,tableFactory,value,formula);
         properties.add(property);
-        return listProperty;
+        return new LSFP(property,paramCount);
     }
 
 
     protected LCFP addCFProp(int compare) {
-        CompareFormulaProperty property = new CompareFormulaProperty(tableFactory,compare);
+        CompareFormulaProperty property = new CompareFormulaProperty(genSID(),tableFactory,compare);
         LCFP listProperty = new LCFP(property);
         properties.add(property);
         return listProperty;
     }
 
     protected LNFP addNFProp() {
-        NotNullFormulaProperty property = new NotNullFormulaProperty(tableFactory);
+        NotNullFormulaProperty property = new NotNullFormulaProperty(genSID(),tableFactory);
         LNFP listProperty = new LNFP(property);
         properties.add(property);
         return listProperty;
     }
 
     protected LMFP addMFProp(RemoteClass value,int paramCount) {
-        MultiplyFormulaProperty property = new MultiplyFormulaProperty(tableFactory,value,paramCount);
+        MultiplyFormulaProperty property = new MultiplyFormulaProperty(genSID(),tableFactory,value,paramCount);
         LMFP listProperty = new LMFP(property);
         properties.add(property);
         return listProperty;
     }
 
     protected LOFP addOFProp(int bitCount) {
-        ObjectFormulaProperty property = new ObjectFormulaProperty(tableFactory,objectClass);
-        LOFP listProperty = new LOFP(property,bitCount);
+        return addOFProp(genSID(),bitCount);
+    }    
+    protected LOFP addOFProp(String sID,int bitCount) {
+        ObjectFormulaProperty property = new ObjectFormulaProperty(sID,bitCount,tableFactory,objectClass);
         properties.add(property);
-        return listProperty;
+        return new LOFP(property);
     }
 
     <T extends PropertyInterface> List<PropertyInterfaceImplement> readPropImpl(LP<T,Property<T>> mainProp,Object... params) {
@@ -531,14 +637,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     }
 
     protected LJP addJProp(AbstractGroup group, String caption, LP mainProp, int intNum, Object... params) {
-        return addJProp(group, null, caption, mainProp, intNum, params);
+        return addJProp(group, genSID(), caption, mainProp, intNum, params);
     }
 
     protected LJP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, int intNum, Object... params) {
-        JoinProperty property = new JoinProperty(tableFactory,mainProp.property);
+
+        JoinProperty property = new JoinProperty(sID,intNum,tableFactory,mainProp.property);
         property.sID = sID;
         property.caption = caption;
-        LJP listProperty = new LJP(property,intNum);
+
+        if (group != null)
+            group.add(property);
+        
+        LJP listProperty = new LJP(property);
         int mainInt = 0;
         List<PropertyInterfaceImplement> propImpl = readPropImpl(listProperty,params);
         for(PropertyInterfaceImplement implement : propImpl) {
@@ -547,72 +658,69 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         }
         properties.add(property);
 
-        if (group != null)
-            group.add(property);
-
         return listProperty;
     }
 
     protected LGP addGProp(String caption, LP groupProp, boolean sum, Object... params) {
-        return addGProp(null, caption, groupProp, sum, params);
+        return addGProp((AbstractGroup)null, caption, groupProp, sum, params);
     }
-
     protected LGP addGProp(AbstractGroup group, String caption, LP groupProp, boolean sum, Object... params) {
-        return addGProp(group, null, caption, groupProp, sum, params);
+        return addGProp(group, genSID(), caption, groupProp, sum, params);
     }
-
+    protected LGP addGProp(String sID, String caption, LP groupProp, boolean sum, Object... params) {
+        return addGProp(null, sID, caption, groupProp, sum, params);
+    }
     protected LGP addGProp(AbstractGroup group, String sID, String caption, LP groupProp, boolean sum, Object... params) {
+
+        List<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
+        List<PropertyInterfaceImplement> propImpl = readPropImpl(groupProp,params);
+        for(PropertyInterfaceImplement implement : propImpl)
+            interfaces.add(new GroupPropertyInterface(interfaces.size(),implement));
 
         GroupProperty property;
         if(sum)
-            property = new SumGroupProperty(tableFactory,groupProp.property);
+            property = new SumGroupProperty(sID,interfaces,tableFactory,groupProp.property);
         else
-            property = new MaxGroupProperty(tableFactory,groupProp.property);
+            property = new MaxGroupProperty(sID,interfaces,tableFactory,groupProp.property);
 
         property.sID = sID;
         property.caption = caption;
-
-        LGP listProperty = new LGP(property,groupProp);
-        List<PropertyInterfaceImplement> propImpl = readPropImpl(groupProp,params);
-        for(PropertyInterfaceImplement implement : propImpl) listProperty.AddInterface(implement);
-
         properties.add(property);
 
         if (group != null)
             group.add(property);
 
-        return listProperty;
+        return new LGP(property,interfaces);
     }
 
     protected LUP addUProp(String caption, Union unionType, int intNum, Object... params) {
         return addUProp((AbstractGroup)null, caption, unionType, intNum, params);
     }
+    protected LUP addUProp(AbstractGroup group, String caption, Union unionType, int intNum, Object... params) {
+        return addUProp(group, genSID(), caption, unionType, intNum, params);
+    }
 
     protected LUP addUProp(String sID, String caption, Union unionType, int intNum, Object... params) {
         return addUProp(null, sID, caption, unionType, intNum, params);
     }
-
-    protected LUP addUProp(AbstractGroup group, String caption, Union unionType, int intNum, Object... params) {
-        return addUProp(group, null, caption, unionType, intNum, params);
-    }
-
     protected LUP addUProp(AbstractGroup group, String sID, String caption, Union unionType, int intNum, Object... params) {
+
         UnionProperty property = null;
         switch(unionType) {
             case MAX:
-                property = new MaxUnionProperty(tableFactory);
+                property = new MaxUnionProperty(sID,intNum,tableFactory);
                 break;
             case SUM:
-                property = new SumUnionProperty(tableFactory);
+                property = new SumUnionProperty(sID,intNum,tableFactory);
                 break;
             case OVERRIDE:
-                property = new OverrideUnionProperty(tableFactory);
+                property = new OverrideUnionProperty(sID,intNum,tableFactory);
                 break;
         }
         property.sID = sID;
         property.caption = caption;
 
-        LUP listProperty = new LUP(property,intNum);
+        LUP listProperty = new LUP(property);
 
         for(int i=0;i<params.length/(intNum+2);i++) {
             Integer offs = i*(intNum+2);
@@ -631,11 +739,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         return listProperty;
     }
 
-    public void fillData(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
     }
 
     // генерирует белую БЛ
-    void openTest(DataAdapter adapter,boolean classes,boolean properties,boolean implement,boolean persistent,boolean changes)  throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException  {
+    void openTest(DataAdapter adapter,boolean classes,boolean properties,boolean implement,boolean persistent,boolean changes) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
 
         if(classes) {
             initClasses();
@@ -650,11 +758,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
                     initPersistents();
 
                 if(changes) {
-                    DataSession session = createSession(adapter);
-                    fillDB(session, true);
-                    session.close();
-
-                    fillData(adapter);
+                    synchronizeDB();
+                    
+                    fillData();
                 }
             }
 
@@ -685,21 +791,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         List<Property> randObjProps = new ArrayList<Property>();
         List<Property> randIntegralProps = new ArrayList<Property>();
 
-        CompareFormulaProperty dirihle = new CompareFormulaProperty(tableFactory, Compare.LESS);
+        CompareFormulaProperty dirihle = new CompareFormulaProperty(genSID(), tableFactory, Compare.LESS);
         randProps.add(dirihle);
 
-        MultiplyFormulaProperty Multiply = new MultiplyFormulaProperty(tableFactory, RemoteClass.integer,2);
-        randProps.add(Multiply);
+        MultiplyFormulaProperty multiply = new MultiplyFormulaProperty(genSID(), tableFactory, RemoteClass.integer,2);
+        randProps.add(multiply);
 
         int dataPropCount = randomizer.nextInt(15)+1;
         for(int i=0;i<dataPropCount;i++) {
+            int intCount = randomizer.nextInt(tableFactory.MAX_INTERFACE)+1;
+            RemoteClass[] interfaceClasses = new RemoteClass[intCount];
+            for(int j=0;j<intCount;j++)
+                interfaceClasses[j] = classes.get(randomizer.nextInt(classes.size()));
+
             // DataProperty
-            DataProperty dataProp = new DataProperty(tableFactory,(i%4==0? RemoteClass.integer :classes.get(randomizer.nextInt(classes.size()))));
+            DataProperty dataProp = new DataProperty("prop"+i,interfaceClasses,tableFactory,(i%4==0? RemoteClass.integer :classes.get(randomizer.nextInt(classes.size()))));
             dataProp.caption = "Data Property " + i;
             // генерируем классы
-            int intCount = randomizer.nextInt(tableFactory.maxInterface)+1;
-            for(int j=0;j<intCount;j++)
-                dataProp.interfaces.add(new DataPropertyInterface(j,classes.get(randomizer.nextInt(classes.size()))));
 
             randProps.add(dataProp);
             randObjProps.add(dataProp);
@@ -718,17 +826,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
             Property genProp = null;
             String resType = "";
             if(propClass ==0) {
-                // JoinProperty
-                JoinProperty relProp = new JoinProperty(tableFactory,randProps.get(randomizer.nextInt(randProps.size())));
-
                 // генерируем случайно кол-во интерфейсов
-                List<PropertyInterface> relPropInt = new ArrayList<PropertyInterface>();
-                int intCount = randomizer.nextInt(tableFactory.maxInterface)+1;
-                for(int j=0;j<intCount;j++) {
-                    JoinPropertyInterface propertyInterface = new JoinPropertyInterface(j);
-                    relProp.interfaces.add(propertyInterface);
-                    relPropInt.add(propertyInterface);
-                }
+
+                int intCount = randomizer.nextInt(tableFactory.MAX_INTERFACE)+1;
+                // JoinProperty
+                JoinProperty relProp = new JoinProperty(genSID(),intCount,tableFactory,randProps.get(randomizer.nextInt(randProps.size())));
+                List<PropertyInterface> relPropInt = new ArrayList<PropertyInterface>(relProp.interfaces);
 
                 // чтобы 2 раза на одну и ту же ветку не натыкаться
                 List<PropertyInterface> availRelInt = new ArrayList(relPropInt);
@@ -771,20 +874,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
             if(propClass ==1 || propClass ==2) {
                 // группировочное
                 Property groupProp;
-                GroupProperty property = null;
-                if(propClass ==1) {
+                if(propClass ==1)
                     groupProp = randIntegralProps.get(randomizer.nextInt(randIntegralProps.size()));
-                    property = new SumGroupProperty(tableFactory,groupProp);
-                    resType = "SG";
-                } else {
+                else
                     groupProp = randObjProps.get(randomizer.nextInt(randObjProps.size()));
-                    property = new MaxGroupProperty(tableFactory,groupProp);
-                    resType = "MG";
-                }
+
+                Collection<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
 
                 boolean correct = true;
                 List<PropertyInterface> groupInt = new ArrayList(groupProp.interfaces);
-                int groupCount = randomizer.nextInt(tableFactory.maxInterface)+1;
+                int groupCount = randomizer.nextInt(tableFactory.MAX_INTERFACE)+1;
                 for(int j=0;j<groupCount;j++) {
                     PropertyInterfaceImplement implement;
                     // генерируем случайно map'ы на эти интерфейсы
@@ -807,33 +906,37 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
                         implement = impProp;
                     }
 
-                    property.interfaces.add(new GroupPropertyInterface(j,implement));
+                    interfaces.add(new GroupPropertyInterface(j,implement));
                 }
 
-                if(correct)
-                    genProp = property;
+                if(correct) {
+                    if(propClass ==1) {
+                        genProp = new SumGroupProperty(genSID(),interfaces,tableFactory,groupProp);
+                        resType = "SG";
+                    } else {
+                        genProp = new MaxGroupProperty(genSID(),interfaces,tableFactory,groupProp);
+                        resType = "MG";
+                    }
+                }
             }
 
             if(propClass ==3 || propClass ==4 || propClass ==5) {
                 UnionProperty property = null;
                 List<Property> randValProps = randObjProps;
+                int opIntCount = randomizer.nextInt(tableFactory.MAX_INTERFACE)+1;
                 if(propClass ==3) {
                     randValProps = randIntegralProps;
-                    property = new SumUnionProperty(tableFactory);
+                    property = new SumUnionProperty(genSID(),opIntCount,tableFactory);
                     resType = "SL";
                 } else {
                 if(propClass ==4) {
-                    property = new MaxUnionProperty(tableFactory);
+                    property = new MaxUnionProperty(genSID(),opIntCount,tableFactory);
                     resType = "ML";
                 } else {
-                    property = new OverrideUnionProperty(tableFactory);
+                    property = new OverrideUnionProperty(genSID(),opIntCount,tableFactory);
                     resType = "OL";
                 }
                 }
-
-                int opIntCount = randomizer.nextInt(tableFactory.maxInterface)+1;
-                for(int j=0;j<opIntCount;j++)
-                    property.interfaces.add(new PropertyInterface(j));
 
                 boolean correct = true;
                 List<PropertyInterface> opInt = new ArrayList(property.interfaces);
@@ -886,11 +989,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         // заполнение физ модели
         int implementCount = randomizer.nextInt(8);
         for(int i=0;i<implementCount;i++) {
-            TableImplement include = new TableImplement();
             int objCount = randomizer.nextInt(3)+1;
+            RemoteClass[] randomClasses = new RemoteClass[objCount]; 
             for(int ioc=0;ioc<objCount;ioc++)
-                include.add(new DataPropertyInterface(ioc,classes.get(randomizer.nextInt(classes.size()))));
-            tableFactory.includeIntoGraph(include);
+                randomClasses[ioc] = classes.get(randomizer.nextInt(classes.size()));
+            tableFactory.include(randomClasses);
         }
     }
 
@@ -916,7 +1019,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
      }
 
     static int changeDBIteration = 0;
-    void changeDBTest(DataAdapter adapter,Integer maxIterations,Random randomizer) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    void changeDBTest(Integer maxIterations,Random randomizer) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         // сначала список получим
         List<DataProperty> dataProperties = new ArrayList<DataProperty>();
@@ -1020,13 +1123,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         return result;
     }
 
+    // полностью очищает базу
+    protected void clean(DataSession session) throws SQLException {
+        // удаляем все объекты
+        session.deleteAll(tableFactory.objectTable);
+
+        // удаляем все св-ва
+        for(ImplementTable table : tableFactory.getImplementTables().values())
+            session.deleteAll(table);
+    }
+
     public static boolean autoFillDB = false;
     public static int autoIDCounter = 0;
     static int AutoSeed = 1400;
-    public void autoFillDB(DataAdapter adapter, Map<RemoteClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void autoFillDB(Map<RemoteClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         autoFillDB = true;
         DataSession session = createSession(adapter);
+
+        clean(session);
 
         // сначала вырубим все аггрегации в конце пересчитаем
         Map<AggregateProperty, PropertyField> savePersistents = new HashMap<AggregateProperty, PropertyField>();
@@ -1128,17 +1243,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
         session.startTransaction();
 
-        // восстановим persistence, пересчитая их
-        for(Property dependProperty : getChangedList(savePersistents.keySet(),null,new HashSet<Property>()))
-            if(dependProperty instanceof AggregateProperty && savePersistents.containsKey(dependProperty)) {
-                AggregateProperty property = (AggregateProperty)dependProperty;
+        for(Map.Entry<AggregateProperty,PropertyField> save : savePersistents.entrySet()) {
+            save.getKey().field = save.getValue();
+            persistents.add(save.getKey());
+        }
 
-                System.out.println("Recalculate - "+property.caption);
-
-                property.field = savePersistents.get(property);
-                persistents.add(property);
-                property.reCalculateAggregation(session);
-            }
+        recalculateAggregations(session,savePersistents.keySet());
 
         session.commitTransaction();
 
@@ -1147,6 +1257,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         session.close();
 
         autoFillDB = false;
+    }
+
+    private void recalculateAggregations(DataSession session,Collection<AggregateProperty> recalculateProperties) throws SQLException {
+        for(Property dependProperty : getChangedList(recalculateProperties,null,new HashSet<Property>()))
+            if(dependProperty instanceof AggregateProperty) {
+                AggregateProperty property = (AggregateProperty)dependProperty;
+                if(recalculateProperties.contains(property)) {
+                    System.out.print("Идет перерасчет аггрегированного св-ва ("+property+")... ");
+                    property.recalculateAggregation(session);
+                    System.out.println("Done");
+                }
+            }
     }
 
     public void createDefaultClassForms(RemoteClass cls, NavigatorElement parent) {

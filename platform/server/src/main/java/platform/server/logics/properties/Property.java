@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.server.data.KeyField;
 import platform.server.data.ModifyQuery;
 import platform.server.data.PropertyField;
-import platform.server.data.Table;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.JoinExpr;
@@ -17,6 +16,7 @@ import platform.server.logics.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
+import platform.server.logics.data.MapKeysTable;
 import platform.server.logics.properties.groups.AbstractNode;
 import platform.server.logics.session.*;
 
@@ -28,31 +28,42 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     public int ID=0;
     // символьный идентификатор, с таким именем создаются поля в базе и передаются в PropertyView
     public String sID;
-    public String getSID() {
-        if (sID != null) return sID; else return "prop" + ID;
-    }
 
     TableFactory tableFactory;
 
-    Property(TableFactory iTableFactory) {
-        tableFactory = iTableFactory;
+    // строится по сути "временный" Map PropertyInterface'ов на Objects'ы
+    Map<T, KeyField> changeTableMap = null;
+    // раз уж ChangeTableMap закэшировали то и ChangeTable тоже
+    public IncrementChangeTable changeTable;
+
+    // пока так из-за getType - объект может быть еще не проинициализирован
+    public void fillChangeTable() {
+        // заполняем привязку к таблицам изменений
+        changeTable = tableFactory.getChangeTable(interfaces.size(), getType());
+        changeTableMap = new HashMap<T, KeyField>();
+        Iterator<KeyField> io = changeTable.objects.iterator();
+        for(T propertyInterface : interfaces)
+            changeTableMap.put(propertyInterface,io.next());
     }
 
-    // чтобы подчеркнуть что не направленный
-    public Collection<T> interfaces = new ArrayList<T>();
+    Property(String iSID,Collection<T> iInterfaces,TableFactory iTableFactory) {
+        tableFactory = iTableFactory;
+        sID = iSID;
+        interfaces = iInterfaces;
+    }
+
+
+    public Collection<T> interfaces;
 
     // закэшируем чтобы быстрее работать
     // здесь как и в произвольных Left значит что могут быть null, не Left соответственно только не null
     // (пока в нашем случае просто можно убирать записи где точно null)
     public SourceExpr getSourceExpr(Map<T,? extends SourceExpr> joinImplement, InterfaceClassSet<T> joinClasses) {
 
-        if(isPersistent()) {
+        if(isStored()) {
             // если persistent читаем из таблицы
-            Map<KeyField,T> mapJoins = new HashMap<KeyField,T>();
-            Table sourceTable = getTable(mapJoins);
-
             // прогоним проверим все ли Implement'ировано
-            return new Join<KeyField, PropertyField>(sourceTable, BaseUtils.join(mapJoins,joinImplement)).exprs.get(field);
+            return new Join<KeyField, PropertyField>(mapTable.table, BaseUtils.join(mapTable.mapKeys,joinImplement)).exprs.get(field);
         } else
             return ((AggregateProperty<T>)this).calculateSourceExpr(joinImplement, joinClasses);
     }
@@ -89,36 +100,36 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         return caption;
     }
 
-    Map<InterfaceClass<T>,ClassSet> CacheValueClass = new HashMap<InterfaceClass<T>, ClassSet>();
+    Map<InterfaceClass<T>,ClassSet> cacheValueClass = new HashMap<InterfaceClass<T>, ClassSet>();
     abstract ClassSet calculateValueClass(InterfaceClass<T> interfaceImplement);
     public ClassSet getValueClass(InterfaceClass<T> interfaceImplement) {
         if(!BusinessLogics.activateCaches) return calculateValueClass(interfaceImplement);
-        ClassSet Result = CacheValueClass.get(interfaceImplement);
+        ClassSet Result = cacheValueClass.get(interfaceImplement);
         if(Result==null) {
             Result = calculateValueClass(interfaceImplement);
-            CacheValueClass.put(interfaceImplement,Result);
+            cacheValueClass.put(interfaceImplement,Result);
         }
         return Result;
     }
 
-    Map<ClassSet, InterfaceClassSet<T>> CacheClassSet = new HashMap<ClassSet, InterfaceClassSet<T>>();
+    Map<ClassSet, InterfaceClassSet<T>> cacheClassSet = new HashMap<ClassSet, InterfaceClassSet<T>>();
     abstract InterfaceClassSet<T> calculateClassSet(ClassSet reqValue);
     public InterfaceClassSet<T> getClassSet(ClassSet reqValue) {
         if(!BusinessLogics.activateCaches) return calculateClassSet(reqValue);
-        InterfaceClassSet<T> Result = CacheClassSet.get(reqValue);
+        InterfaceClassSet<T> Result = cacheClassSet.get(reqValue);
         if(Result==null) {
             Result = calculateClassSet(reqValue);
-            CacheClassSet.put(reqValue,Result);
+            cacheClassSet.put(reqValue,Result);
         }
         return Result;
     }
 
-    ValueClassSet<T> CacheValueClassSet = null;
+    ValueClassSet<T> cacheValueClassSet = null;
     abstract ValueClassSet<T> calculateValueClassSet();
     public ValueClassSet<T> getValueClassSet() {
         if(!BusinessLogics.activateCaches) return calculateValueClassSet();
-        if(CacheValueClassSet ==null) CacheValueClassSet = calculateValueClassSet();
-        return CacheValueClassSet;
+        if(cacheValueClassSet ==null) cacheValueClassSet = calculateValueClassSet();
+        return cacheValueClassSet;
     }
 
     // заполняет список, возвращает есть ли изменения
@@ -147,31 +158,18 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         return true;
     }
 
-    void setChangeType(Map<Property, Integer> RequiredTypes,int ChangeType) {
+    void setChangeType(Map<Property, Integer> requiredTypes,int changeType) {
         // 0 и 0 = 0
         // 0 и 1 = 2
         // 1 и 1 = 1
         // 2 и x = 2
 
         // значит не изменилось (тогда не надо)
-        if(!RequiredTypes.containsKey(this)) return;
+        if(!requiredTypes.containsKey(this)) return;
 
-        Integer PrevType = RequiredTypes.get(this);
-        if(PrevType!=null && !PrevType.equals(ChangeType)) ChangeType = 2;
-        RequiredTypes.put(this,ChangeType);
-    }
-
-    // строится по сути "временный" Map PropertyInterface'ов на Objects'ы
-    Map<T, KeyField> changeTableMap = null;
-    // раз уж ChangeTableMap закэшировали то и ChangeTable тоже
-    public IncrementChangeTable changeTable;
-
-    public void fillChangeTable() {
-        changeTable = tableFactory.getChangeTable(interfaces.size(), getType());
-        changeTableMap = new HashMap<T, KeyField>();
-        Iterator<KeyField> io = changeTable.objects.iterator();
-        for(T propertyInterface : interfaces)
-            changeTableMap.put(propertyInterface,io.next());
+        Integer prevType = requiredTypes.get(this);
+        if(prevType!=null && !prevType.equals(changeType)) changeType = 2;
+        requiredTypes.put(this,changeType);
     }
 
     void outChangesTable(DataSession session) throws SQLException {
@@ -188,9 +186,15 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public PropertyField field;
-    public abstract Table getTable(Map<KeyField,T> mapJoins);
 
-    public boolean isPersistent() {
+    public MapKeysTable<T> mapTable; // именно здесь потому как не обязательно persistent
+    public void markStored() {
+        mapTable = tableFactory.getMapTable(getClassSet(ClassSet.universal).getCommonParent());
+
+        field = new PropertyField(sID,getType());
+        mapTable.table.properties.add(field);
+    }
+    public boolean isStored() {
         return field !=null && !(this instanceof AggregateProperty && tableFactory.reCalculateAggr); // для тестирования 2-е условие
     }
 
@@ -305,15 +309,12 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         // сохраняет в базу
         public void apply(DataSession session) throws SQLException {
 
-            Map<KeyField,T> mapKeys = new HashMap<KeyField,T>();
-            Table sourceTable = getTable(mapKeys);
+            JoinQuery<KeyField, PropertyField> modifyQuery = new JoinQuery<KeyField, PropertyField>(mapTable.table.keys);
 
-            JoinQuery<KeyField, PropertyField> modifyQuery = new JoinQuery<KeyField, PropertyField>(sourceTable.keys);
-
-            Join<T, PropertyField> update = new Join<T, PropertyField>(source,modifyQuery,mapKeys);
+            Join<T, PropertyField> update = new Join<T, PropertyField>(source,modifyQuery,mapTable.mapKeys);
             modifyQuery.and(update.inJoin);
             modifyQuery.properties.put(field, update.exprs.get(changeTable.value));
-            session.modifyRecords(new ModifyQuery(sourceTable,modifyQuery));
+            session.modifyRecords(new ModifyQuery(mapTable.table,modifyQuery));
         }
 
         // для отладки, проверяет что у объектов заданные классы

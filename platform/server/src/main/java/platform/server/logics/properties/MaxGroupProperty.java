@@ -21,7 +21,9 @@ import java.util.*;
 
 public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
-    public MaxGroupProperty(TableFactory iTableFactory, Property<T> iProperty) {super(iTableFactory,iProperty,0);}
+    public MaxGroupProperty(String iSID, Collection<GroupPropertyInterface<T>> iInterfaces, TableFactory iTableFactory, Property<T> iProperty) {
+        super(iSID, iInterfaces, iTableFactory, iProperty, 0);
+    }
 
     public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
         // Group на ->2, Interface на ->2 - как было - возвр. 2

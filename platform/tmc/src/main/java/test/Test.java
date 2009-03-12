@@ -8,6 +8,7 @@ package test;
 import tmc.TmcBusinessLogics;
 
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.DataSession;
@@ -16,10 +17,11 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.sql.SQLException;
 import java.rmi.RemoteException;
+import java.io.IOException;
 
 public class Test {
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, RemoteException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
 
         Integer forceSeed = -1; //1199; //3581
         int iterations = 7;
@@ -69,10 +71,12 @@ public class Test {
 /*        new SourceTest();
         if(1==1) return;*/
 
+        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost");
+
         if(forceSeed ==null || forceSeed !=-1) {
             while(true) {
                 System.out.println("Opened");
-                new TmcBusinessLogics(1,forceSeed,iterations);
+                new TmcBusinessLogics(adapter,1,forceSeed,iterations);
 //            System.out.println("Closed");
 //            try {
 //                new TestBusinessLogics(0);

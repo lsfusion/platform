@@ -20,8 +20,8 @@ abstract public class GroupProperty<T extends PropertyInterface> extends MapProp
     // оператор
     int operator;
 
-    GroupProperty(TableFactory iTableFactory, Property<T> iProperty,int iOperator) {
-        super(iTableFactory);
+    protected GroupProperty(String iSID, Collection<GroupPropertyInterface<T>> iInterfaces, TableFactory iTableFactory, Property<T> iProperty,int iOperator) {
+        super(iSID, iInterfaces, iTableFactory);
         groupProperty = iProperty;
         operator = iOperator;
     }

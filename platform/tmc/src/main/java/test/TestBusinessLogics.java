@@ -1,8 +1,6 @@
 package test;
 
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.data.TableImplement;
-import platform.server.logics.session.DataSession;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.ObjectClass;
 import platform.server.logics.properties.DataProperty;
@@ -10,36 +8,31 @@ import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.properties.AggregateProperty;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.logics.properties.linear.*;
-import platform.server.data.sql.DataAdapter;
-import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.Union;
+import platform.server.data.sql.DataAdapter;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
 import platform.interop.Compare;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.rmi.RemoteException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import net.sf.jasperreports.engine.JRException;
 
 public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
-    protected DataAdapter newAdapter() throws ClassNotFoundException {
-        return new PostgreDataAdapter("testplat","localhost");
-    }
-    
-    TestBusinessLogics() throws ClassNotFoundException, RemoteException, SQLException, InstantiationException, IllegalAccessException, JRException, FileNotFoundException {
-        super();
+    TestBusinessLogics(DataAdapter iDataAdapter) throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException, FileNotFoundException {
+        super(iDataAdapter);
     }
 
-    TestBusinessLogics(int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, RemoteException {
-        super(testType,seed,iterations);
+    TestBusinessLogics(DataAdapter iDataAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
+        super(iDataAdapter,testType,seed,iterations);
     }
 
     // заполняет тестовую базу
-    public void fillData(DataAdapter Adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         Map<DataProperty,Integer> PropQuantity = new HashMap();
         Map<DataProperty, Set<DataPropertyInterface>> PropNotNulls = new HashMap();
@@ -62,147 +55,37 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         ClassQuantity.put(Store,4);
         ClassQuantity.put(PrihDocument,50);
         ClassQuantity.put(RashDocument,200);*/
-        ClassQuantity.put(Article,20);
-        ClassQuantity.put(ArticleGroup,3);
-        ClassQuantity.put(Store,3);
+        ClassQuantity.put(article,20);
+        ClassQuantity.put(articleGroup,3);
+        ClassQuantity.put(store,3);
         ClassQuantity.put(PrihDocument,30);
         ClassQuantity.put(RashDocument,50);
 
         PropQuantity.put((DataProperty)PrihQuantity.property,10);
         PropQuantity.put((DataProperty)RashQuantity.property,3);
 
-        autoFillDB(Adapter,ClassQuantity,PropQuantity,PropNotNulls);
-
-        if(1==1) return;
-
-        DataSession Session = createSession(Adapter);
-
-        Integer i;
-        Integer[] Articles = new Integer[6];
-        for(i=0;i<Articles.length;i++) Articles[i] = addObject(Session, Article);
-
-        Integer[] Stores = new Integer[2];
-        for(i=0;i<Stores.length;i++) Stores[i] = addObject(Session, Store);
-
-        Integer[] PrihDocuments = new Integer[6];
-        for(i=0;i<PrihDocuments.length;i++) {
-            PrihDocuments[i] = addObject(Session, PrihDocument);
-            Name.ChangeProperty(Session, "ПР ДОК "+i.toString(), PrihDocuments[i]);
-        }
-
-        Integer[] RashDocuments = new Integer[6];
-        for(i=0;i<RashDocuments.length;i++) {
-            RashDocuments[i] = addObject(Session, RashDocument);
-            Name.ChangeProperty(Session, "РАСХ ДОК "+i.toString(), RashDocuments[i]);
-        }
-
-        Integer[] ArticleGroups = new Integer[2];
-        for(i=0;i<ArticleGroups.length;i++) ArticleGroups[i] = addObject(Session, ArticleGroup);
-
-        Name.ChangeProperty(Session, "КОЛБАСА", Articles[0]);
-        Name.ChangeProperty(Session, "ТВОРОГ", Articles[1]);
-        Name.ChangeProperty(Session, "МОЛОКО", Articles[2]);
-        Name.ChangeProperty(Session, "ОБУВЬ", Articles[3]);
-        Name.ChangeProperty(Session, "ДЖЕМПЕР", Articles[4]);
-        Name.ChangeProperty(Session, "МАЙКА", Articles[5]);
-
-        Name.ChangeProperty(Session, "СКЛАД", Stores[0]);
-        Name.ChangeProperty(Session, "ТЗАЛ", Stores[1]);
-
-        Name.ChangeProperty(Session, "ПРОДУКТЫ", ArticleGroups[0]);
-        Name.ChangeProperty(Session, "ОДЕЖДА", ArticleGroups[1]);
-
-        DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[0]);
-        DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[1]);
-        DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[2]);
-        DocStore.ChangeProperty(Session, Stores[0],PrihDocuments[3]);
-        DocStore.ChangeProperty(Session, Stores[1],PrihDocuments[4]);
-
-        DocStore.ChangeProperty(Session, Stores[1],RashDocuments[0]);
-        DocStore.ChangeProperty(Session, Stores[1],RashDocuments[1]);
-        DocStore.ChangeProperty(Session, Stores[0],RashDocuments[2]);
-        DocStore.ChangeProperty(Session, Stores[0],RashDocuments[3]);
-        DocStore.ChangeProperty(Session, Stores[1],RashDocuments[4]);
-
-//        DocStore.ChangeProperty(ad,Stores[1],Documents[5]);
-
-        DocDate.ChangeProperty(Session, 1001,PrihDocuments[0]);
-        DocDate.ChangeProperty(Session, 1001,RashDocuments[0]);
-        DocDate.ChangeProperty(Session, 1008,PrihDocuments[1]);
-        DocDate.ChangeProperty(Session, 1009,RashDocuments[1]);
-        DocDate.ChangeProperty(Session, 1010,RashDocuments[2]);
-        DocDate.ChangeProperty(Session, 1011,RashDocuments[3]);
-        DocDate.ChangeProperty(Session, 1012,PrihDocuments[2]);
-        DocDate.ChangeProperty(Session, 1014,PrihDocuments[3]);
-        DocDate.ChangeProperty(Session, 1016,RashDocuments[4]);
-        DocDate.ChangeProperty(Session, 1018,PrihDocuments[4]);
-
-        ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[0]);
-        ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[1]);
-        ArtToGroup.ChangeProperty(Session, ArticleGroups[0],Articles[2]);
-        ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[3]);
-        ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[4]);
-        ArtToGroup.ChangeProperty(Session, ArticleGroups[1],Articles[5]);
-
-        // Quantity
-        PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[0],Articles[0]);
-        PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[2],Articles[0]);
-        RashQuantity.ChangeProperty(Session, 5,RashDocuments[0],Articles[0]);
-        RashQuantity.ChangeProperty(Session, 3,RashDocuments[1],Articles[0]);
-
-        PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[1]);
-        PrihQuantity.ChangeProperty(Session, 2,PrihDocuments[1],Articles[1]);
-        PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[1]);
-        RashQuantity.ChangeProperty(Session, 14,RashDocuments[2],Articles[1]);
-
-        PrihQuantity.ChangeProperty(Session, 32,PrihDocuments[2],Articles[2]);
-        PrihQuantity.ChangeProperty(Session, 18,PrihDocuments[3],Articles[2]);
-        RashQuantity.ChangeProperty(Session, 2,RashDocuments[1],Articles[2]);
-        RashQuantity.ChangeProperty(Session, 10,RashDocuments[3],Articles[2]);
-        PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[4],Articles[2]);
-
-        PrihQuantity.ChangeProperty(Session, 4,PrihDocuments[3],Articles[3]);
-
-        PrihQuantity.ChangeProperty(Session, 8,PrihDocuments[0],Articles[4]);
-        RashQuantity.ChangeProperty(Session, 4,RashDocuments[2],Articles[4]);
-        RashQuantity.ChangeProperty(Session, 4,RashDocuments[3],Articles[4]);
-
-        PrihQuantity.ChangeProperty(Session, 10,PrihDocuments[3],Articles[5]);
-
-        apply(Session);
-
-//        ChangeDBTest(ad,30,new Random());
-
-        Session.close();
-
-/*        PrihArtStore.Property.Out(ad);
-        RashArtStore.Property.Out(ad);
-        OstArtStore.Property.Out(ad);
-        OstArt.Property.Out(ad);
-
-        throw new RuntimeException();
-  */
+        autoFillDB(ClassQuantity,PropQuantity,PropNotNulls);
     }
 
     protected void initGroups() {
 
     }
 
-    RemoteClass ArticleGroup;
-    RemoteClass Document;
-    RemoteClass Article;
-    RemoteClass Store;
+    RemoteClass articleGroup;
+    RemoteClass document;
+    RemoteClass article;
+    RemoteClass store;
     RemoteClass PrihDocument;
     RemoteClass RashDocument;
 
     protected void initClasses() {
 
-        Article = new ObjectClass(4, "Товар", objectClass);
-        Store = new ObjectClass(5, "Склад", objectClass);
-        Document = new ObjectClass(6, "Документ", objectClass);
-        PrihDocument = new ObjectClass(7, "Приходный документ", Document);
-        RashDocument = new ObjectClass(8, "Расходный документ", Document);
-        ArticleGroup = new ObjectClass(9, "Группа товаров", objectClass);
+        article = new ObjectClass(4, "Товар", objectClass);
+        store = new ObjectClass(5, "Склад", objectClass);
+        document = new ObjectClass(6, "Документ", objectClass);
+        PrihDocument = new ObjectClass(7, "Приходный документ", document);
+        RashDocument = new ObjectClass(8, "Расходный документ", document);
+        articleGroup = new ObjectClass(9, "Группа товаров", objectClass);
     }
 
     LDP Name,DocStore,PrihQuantity,RashQuantity,ArtToGroup,
@@ -226,38 +109,38 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         Name = addDProp("имя", RemoteClass.string(50), objectClass);
         groupArticleA.add(Name.property);
 
-        DocStore = addDProp("склад", Store, Document);
+        DocStore = addDProp("склад", store, document);
 
-        PrihQuantity = addDProp("кол-во прих.", RemoteClass.integer, PrihDocument, Article);
+        PrihQuantity = addDProp("кол-во прих.", RemoteClass.integer, PrihDocument, article);
         PrihQuantity.property.caption = "кол-во прих.";
 
-        RashQuantity = addDProp("кол-во расх.", RemoteClass.integer, RashDocument, Article);
+        RashQuantity = addDProp("кол-во расх.", RemoteClass.integer, RashDocument, article);
 
-        ArtToGroup = addDProp("гр. тов.", ArticleGroup, Article);
+        ArtToGroup = addDProp("гр. тов.", articleGroup, article);
         groupArticleG.add(ArtToGroup.property);
 
-        DocDate = addDProp("дата док.", RemoteClass.date, Document);
+        DocDate = addDProp("дата док.", RemoteClass.date, document);
 
-        GrAddV = addDProp("нац. по гр.", RemoteClass.integer, ArticleGroup);
+        GrAddV = addDProp("нац. по гр.", RemoteClass.integer, articleGroup);
 
-        ArtAddV = addDProp("нац. перегр.", RemoteClass.integer, Article);
+        ArtAddV = addDProp("нац. перегр.", RemoteClass.integer, article);
         groupArticleC.add(ArtAddV.property);
 
-        BarCode = addDProp("штрих-код", RemoteClass.doubleClass, Article);
+        BarCode = addDProp("штрих-код", RemoteClass.doubleClass, article);
         groupArticleA.add(BarCode.property);
 
-        Price = addDProp("цена", RemoteClass.longClass, Article);
+        Price = addDProp("цена", RemoteClass.longClass, article);
         groupArticleA.add(Price.property);
 
-        ExpireDate = addDProp("срок годн.", RemoteClass.date, Article);
+        ExpireDate = addDProp("срок годн.", RemoteClass.date, article);
         groupArticleA.add(ExpireDate.property);
 
-        Weight = addDProp("вес.", RemoteClass.bit, Article);
+        Weight = addDProp("вес.", RemoteClass.bit, article);
         groupArticleA.add(Weight.property);
 
-        LCP AbsQuantity = addCProp("абст. кол-во",null, RemoteClass.integer,Document,Article);
+        LCP AbsQuantity = addCProp("абст. кол-во", RemoteClass.integer, null, document, article);
 
-        LCP IsGrmat = addCProp("признак товара",0, RemoteClass.integer,Article);
+        LCP IsGrmat = addCProp("признак товара", RemoteClass.integer, 0, article);
         groupArticleA.add(IsGrmat.property);
 
         FilledProperty = addUProp("заполнение гр. тов.", Union.MAX,1,1,IsGrmat,1,1,ArtToGroup,1);
@@ -265,9 +148,9 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         // сделаем Quantity перегрузкой
         Quantity = addUProp("кол-во",Union.OVERRIDE,2,1,AbsQuantity,1,2,1,PrihQuantity,1,2,1,RashQuantity,1,2);
 
-        LCP RashValue = addCProp("призн. расхода",-1, RemoteClass.integer,RashDocument);
+        LCP RashValue = addCProp("призн. расхода", RemoteClass.integer, -1, RashDocument);
 
-        LCP PrihValue = addCProp("призн. прихода",1, RemoteClass.integer,PrihDocument);
+        LCP PrihValue = addCProp("призн. прихода", RemoteClass.integer, 1, PrihDocument);
 
         OpValue = addUProp("общ. призн.",Union.OVERRIDE,1,1,RashValue,1,1,PrihValue,1);
 
@@ -289,7 +172,7 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         LJP ArtGroupName = addJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
-        LDP ArtGName = addDProp("при доб. гр. тов.", RemoteClass.string(50), Article);
+        LDP ArtGName = addDProp("при доб. гр. тов.", RemoteClass.string(50), article);
         setDefProp(ArtGName,ArtGroupName,true);
 
         LJP InDoc = addJProp("товар в док.", NotZero,2,Quantity,1,2);
@@ -355,25 +238,12 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
     protected void initTables() {
-        TableImplement include;
 
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,Article));
-        tableFactory.includeIntoGraph(include);
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,Store));
-        tableFactory.includeIntoGraph(include);
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,ArticleGroup));
-        tableFactory.includeIntoGraph(include);
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,Article));
-        include.add(new DataPropertyInterface(0,Document));
-        tableFactory.includeIntoGraph(include);
-        include = new TableImplement();
-        include.add(new DataPropertyInterface(0,Article));
-        include.add(new DataPropertyInterface(0,Store));
-        tableFactory.includeIntoGraph(include);
+        tableFactory.include(article);
+        tableFactory.include(store);
+        tableFactory.include(articleGroup);
+        tableFactory.include(article,document);
+        tableFactory.include(article,store);
     }
 
     protected void initIndexes() {
@@ -422,8 +292,8 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         PrihDocument.addRelevantElement(testForm);
         RashDocument.addRelevantElement(simpleForm);
 
-        Article.addRelevantElement(test2Form);
-        ArticleGroup.addRelevantElement(testForm);
+        article.addRelevantElement(test2Form);
+        articleGroup.addRelevantElement(testForm);
 
     }
 

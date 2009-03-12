@@ -7,10 +7,5 @@ public class LSFP extends LP<StringFormulaPropertyInterface, StringFormulaProper
 
     public LSFP(StringFormulaProperty iProperty,int paramCount) {
         super(iProperty);
-        for(int i=0;i<paramCount;i++) {
-            StringFormulaPropertyInterface propertyInterface = new StringFormulaPropertyInterface(listInterfaces.size());
-            listInterfaces.add(propertyInterface);
-            property.interfaces.add(propertyInterface);
-        }
     }
 }

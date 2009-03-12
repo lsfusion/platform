@@ -20,8 +20,9 @@ public class ClassProperty extends AggregateProperty<DataPropertyInterface> {
     RemoteClass valueClass;
     Object value;
 
-    public ClassProperty(TableFactory iTableFactory, RemoteClass iValueClass, Object iValue) {
-        super(iTableFactory);
+    public ClassProperty(String iSID, RemoteClass[] classes, TableFactory iTableFactory, RemoteClass iValueClass, Object iValue) {
+        super(iSID, DataProperty.getInterfaces(classes), iTableFactory);
+        
         valueClass = iValueClass;
         value = iValue;
     }

@@ -3,6 +3,9 @@ package platform.server.data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 public class TypedObject {
     public Object value;
     public Type type;
@@ -12,15 +15,21 @@ public class TypedObject {
         type = iType;
     }
 
-    public static String getString(Object Value, Type Type, SQLSyntax Syntax) {
-        if(Value==null)
+    public static String getString(Object value, Type type, SQLSyntax syntax) {
+        if(value==null)
             return Type.NULL;
         else
-            return Type.getString(Value,Syntax);
+            return type.getString(value,syntax);
     }
 
-    public String getString(SQLSyntax Syntax) {
-        return getString(value, type,Syntax);
+    public void writeParam(PreparedStatement statement,int paramNum) throws SQLException {
+        type.writeParam(statement, paramNum, value);
+    }
+    public boolean isString() {
+        return type.isString(value);
+    }
+    public String getString(SQLSyntax syntax) {
+        return getString(value, type,syntax);
     }
 
     public String toString() {
