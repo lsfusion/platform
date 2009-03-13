@@ -51,38 +51,28 @@ public class Layout extends JFrame implements ComponentCollector {
 
         ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
 
-            public void openForm(ClientNavigatorForm element){
-
-                try {
-                    Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, false));
-                } catch (Throwable e) {
-                    ClientExceptionManager.handleException("Ошибка при открытии формы", e);
-                }
+            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
+                Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, false));
             }
 
-            public void openRelevantForm(ClientNavigatorForm element) {
-
-                try {
-                    if (element.isPrintForm)
-                        Main.layout.defaultStation.drop(new ReportDockable(element.ID, this, true));
-                    else
-                        Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, true));
-                } catch (Throwable e) {
-                    ClientExceptionManager.handleException("Ошибка при открытии релевантной формы", e);
-                }
+            public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
+                if (element.isPrintForm)
+                    Main.layout.defaultStation.drop(new ReportDockable(element.ID, this, true));
+                else
+                    Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, true));
             }
         };
 
         initDockStations(mainNavigator);
 
         addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e)
+            public void windowClosing(WindowEvent we)
             {
                 setVisible(false);
                 try {
                     write();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при сохранении расположения форм", e);
                 }
             }
         });
@@ -264,7 +254,7 @@ public class Layout extends JFrame implements ComponentCollector {
         OpenReport.setToolTipText("Открывает ранее сохраненный отчет");
         final JFrame MainFrame = this;
         OpenReport.addActionListener( new ActionListener(){
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 FileDialog Chooser = new FileDialog(MainFrame,"Отчет");
                 Chooser.setFilenameFilter(new FilenameFilter(){
                     public boolean accept(File directory, String file) {
@@ -276,8 +266,8 @@ public class Layout extends JFrame implements ComponentCollector {
 
                 try {
                     defaultStation.drop(new ReportDockable(Chooser.getFile(),Chooser.getDirectory()));
-                } catch (JRException e1) {
-                    e1.printStackTrace();
+                } catch (JRException e) {
+                    throw new RuntimeException("Ошибка при открытии сохраненного отчета", e);
                 }
             }
         });

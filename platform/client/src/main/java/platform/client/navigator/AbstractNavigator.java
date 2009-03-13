@@ -76,11 +76,7 @@ public abstract class AbstractNavigator extends JPanel {
 
                 public void mouseReleased(MouseEvent e) {
                     if (e.getClickCount() == 2) {
-                        try {
-                            changeCurrentElement();
-                        } catch (Exception e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        }
+                        changeCurrentElement();
                     }
                 }
 
@@ -90,11 +86,7 @@ public abstract class AbstractNavigator extends JPanel {
 
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                        try {
-                            changeCurrentElement();
-                        } catch (Exception e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        }
+                        changeCurrentElement();
                     }
                 }
             });
@@ -112,7 +104,7 @@ public abstract class AbstractNavigator extends JPanel {
             expandPath(new TreePath(rootNode));
         }
 
-        private void changeCurrentElement() throws ClassNotFoundException, IOException, JRException {
+        private void changeCurrentElement() {
 
             TreePath path = getSelectionPath();
             if (path == null) return;
@@ -123,7 +115,11 @@ public abstract class AbstractNavigator extends JPanel {
             Object nodeObject = node.getUserObject();
             if (! (nodeObject instanceof ClientNavigatorForm)) return;
 
-            openForm((ClientNavigatorForm) nodeObject);
+            try {
+                openForm((ClientNavigatorForm) nodeObject);
+            } catch (Exception e) {
+                throw new RuntimeException("Ошибка при открытии формы", e);
+            }
 
         }
 

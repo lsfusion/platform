@@ -48,10 +48,8 @@ class ClientFormFactory implements DockFactory<FormDockable,Integer> {
         try {
             return new ClientFormDockable(integer, navigator, false);
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new RuntimeException("Ошибка при открытии формы", e);
         }
-
-        return null;
     }
 
     public void write(Integer integer, DataOutputStream dataOutputStream) throws IOException {

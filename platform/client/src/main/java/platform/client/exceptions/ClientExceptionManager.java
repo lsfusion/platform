@@ -5,18 +5,17 @@ import org.aspectj.lang.annotation.Before;
 import platform.client.Log;
 import platform.interop.exceptions.RemoteServerException;
 
-@Aspect
 public class ClientExceptionManager {
 
-    @Before("handler(Exception) && args(e)")
-    public void runExceptionHandler(Exception e) {
+    public static void handleException(Throwable e) {
 
-        handleException("Ошибка в клиентском приложении", e);
-    }
+        e.printStackTrace();
 
-    public static void handleException(String message, Throwable e) {
-
-        message += " : " + e.getLocalizedMessage();
+        String message = e.getLocalizedMessage();
+        while (e.getCause() != null) {
+            e = e.getCause();
+            message += " : \n" + e.getLocalizedMessage();
+        }
         Log.printFailedMessage(message);
     }
 

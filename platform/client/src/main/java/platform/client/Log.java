@@ -51,9 +51,16 @@ public final class Log {
     }
 
     public static void printFailedMessage(String message) {
+
         printmsg(message);
-        out.setTemporaryBackground(Color.red);
-        out.provideErrorFeedback();
+        
+        // пока таким образом определим есть ли он на экране
+        if (out.getTopLevelAncestor() != null) {
+            out.setTemporaryBackground(Color.red);
+            out.provideErrorFeedback();
+        } else {
+            JOptionPane.showMessageDialog(null, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private static class LogView extends JPanel {

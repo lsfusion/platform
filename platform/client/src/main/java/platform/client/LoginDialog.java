@@ -2,6 +2,7 @@ package platform.client;
 
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.RemoteLogicsInterface;
+import platform.client.exceptions.ClientExceptionManager;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -68,7 +69,7 @@ public class LoginDialog extends JDialog {
             result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()));
             dispose();
         } catch (RemoteException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), null, JOptionPane.ERROR_MESSAGE);
+            throw new RuntimeException("Ошибка при подключении к серверу", e);
         }
     }
 

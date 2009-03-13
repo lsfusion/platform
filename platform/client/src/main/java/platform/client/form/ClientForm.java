@@ -151,7 +151,7 @@ public class ClientForm extends JPanel {
                                 applyFormChanges();
                                 dataChanged();
                             } catch (IOException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                throw new RuntimeException("Ошибка при активации формы", e);
                             }
                         }
                     }
@@ -188,14 +188,14 @@ public class ClientForm extends JPanel {
                 final JCheckBox checkBox = new JCheckBox(singleFilter.name);
                 checkBox.addItemListener(new ItemListener() {
 
-                    public void itemStateChanged(ItemEvent e) {
+                    public void itemStateChanged(ItemEvent ie) {
                         try {
-                            if (e.getStateChange() == ItemEvent.SELECTED)
+                            if (ie.getStateChange() == ItemEvent.SELECTED)
                                 setRegularFilter(filterGroup, singleFilter);
                             else
                                 setRegularFilter(filterGroup, null);
-                        } catch (IOException e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        } catch (IOException e) {
+                            throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
                         }
                     }
                 });
@@ -214,11 +214,11 @@ public class ClientForm extends JPanel {
                 final JComboBox comboBox = new JComboBox(filterGroup.filters.toArray());
                 comboBox.addItemListener(new ItemListener() {
 
-                    public void itemStateChanged(ItemEvent e) {
+                    public void itemStateChanged(ItemEvent ie) {
                         try {
-                            setRegularFilter(filterGroup, (ClientRegularFilterView)e.getItem());
-                        } catch (IOException e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            setRegularFilter(filterGroup, (ClientRegularFilterView)ie.getItem());
+                        } catch (IOException e) {
+                            throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
                         }
                     }
                 });
@@ -248,11 +248,11 @@ public class ClientForm extends JPanel {
         buttonPrint = new JButton("Печать");
         buttonPrint.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 try {
                     print();
-                } catch (Exception e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (Exception e) {
+                    throw new RuntimeException("Ошибка при печати формы", e);
                 }
             }
         });
@@ -262,11 +262,11 @@ public class ClientForm extends JPanel {
         buttonRefresh = new JButton("Обновить");
         buttonRefresh.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 try {
                     refreshData();
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при обновлении формы", e);
                 }
             }
         });
@@ -276,11 +276,11 @@ public class ClientForm extends JPanel {
         buttonApply = new JButton("Применить");
         buttonApply.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 try {
                     saveChanges();
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при применении изменений", e);
                 }
             }
         });
@@ -290,11 +290,11 @@ public class ClientForm extends JPanel {
         buttonCancel = new JButton("Отменить");
         buttonCancel.addActionListener(new ActionListener() {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 try {
                     cancelChanges();
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при отмене изменений", e);
                 }
             }
         });
@@ -303,11 +303,11 @@ public class ClientForm extends JPanel {
 
         AbstractAction okAction = new AbstractAction("OK") {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 try {
                     okPressed();
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при применении изменений", e);
                 }
             }
         };
@@ -321,11 +321,11 @@ public class ClientForm extends JPanel {
 
         AbstractAction closeAction = new AbstractAction("Закрыть") {
 
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent ae) {
                 try {
                     closePressed();
-                } catch (IOException e1) {
-                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при отмене изменений", e);
                 }
             }
         };
@@ -728,11 +728,11 @@ public class ClientForm extends JPanel {
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), "switchClassView");
             comp.getActionMap().put("switchClassView", new AbstractAction() {
 
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent ae) {
                     try {
                         switchClassView(groupObject);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при изменении вида", e);
                     }
                 }
             });
@@ -740,11 +740,11 @@ public class ClientForm extends JPanel {
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK), "addObject");
             comp.getActionMap().put("addObject", new AbstractAction() {
 
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent ae) {
                     try {
                         addObject(groupObject.get(0), objects.get(groupObject.get(0)).classModel.getDerivedClass());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при добавлении объекта", e);
                     }
                 }
             });
@@ -752,11 +752,11 @@ public class ClientForm extends JPanel {
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK), "removeObject");
             comp.getActionMap().put("removeObject", new AbstractAction() {
 
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent ae) {
                     try {
                         changeClass(groupObject.get(0), null);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при удалении объекта", e);
                     }
                 }
             });
@@ -764,11 +764,11 @@ public class ClientForm extends JPanel {
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.ALT_DOWN_MASK), "changeObjectClass");
             comp.getActionMap().put("changeObjectClass", new AbstractAction() {
 
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(ActionEvent ae) {
                     try {
                         changeClass(groupObject.get(0), objects.get(groupObject.get(0)).classModel.getSelectedClass());
-                    } catch (IOException e1) {
-                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при изменении класса объекта", e);
                     }
                 }
             });
@@ -819,9 +819,8 @@ public class ClientForm extends JPanel {
                 try {
                     return currentComp.getCellEditorValue();
                 } catch (RemoteException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    throw new RuntimeException("Ошибка при получении выбранного значения", e);
                 }
-                return null;
             }
 
             public boolean isCellEditable(EventObject e) {
@@ -872,7 +871,7 @@ public class ClientForm extends JPanel {
                 try {
                     currentComp = property.getEditorComponent(ClientForm.this, ivalue, cellTable.isDataChanging(), externalID);
                 } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    throw new RuntimeException("Ошибка при получении редактируемого значения", e);
                 }
 
                 Component comp = null;
@@ -930,7 +929,7 @@ public class ClientForm extends JPanel {
                 return true;
             }
 
-            protected void cellValueChanged(Object ivalue) throws IOException {
+            protected void cellValueChanged(Object ivalue) {
                 value = ivalue;
             }
 
@@ -1024,11 +1023,7 @@ public class ClientForm extends JPanel {
                         public void setValueAt(Object value, int row, int col) {
 //                            System.out.println("setValueAt");
                             if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
-                            try {
-                                cellValueChanged(value);
-                            } catch (IOException e) {
-                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                            }
+                            cellValueChanged(value);
                         }
 
                     }
@@ -1141,14 +1136,18 @@ public class ClientForm extends JPanel {
                     addGroupObjectActions(view);
                 }
 
-                protected void cellValueChanged(Object ivalue) throws IOException {
+                protected void cellValueChanged(Object ivalue) {
 
                     boolean externalID = false;
                     TableCellEditor cellEditor = view.table.getCellEditor();
                     if (cellEditor instanceof ClientAbstractCellEditor && ((ClientAbstractCellEditor)cellEditor).externalID)
                         externalID = true;
 
-                    changeProperty(key, ivalue, externalID);
+                    try {
+                        changeProperty(key, ivalue, externalID);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при изменении значения свойства", e);
+                    }
                 }
 
             }
@@ -1207,24 +1206,16 @@ public class ClientForm extends JPanel {
                 container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "addFind");
                 container.getActionMap().put("addFind", new AbstractAction() {
 
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            table.findModel.addCondition();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        }
+                    public void actionPerformed(ActionEvent ae) {
+                        table.findModel.addCondition();
                     }
                 });
 
                 container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "addFilter");
                 container.getActionMap().put("addFilter", new AbstractAction() {
 
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            table.filterModel.addCondition();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        }
+                    public void actionPerformed(ActionEvent ae) {
+                        table.filterModel.addCondition();
                     }
                 });
 
@@ -1403,7 +1394,7 @@ public class ClientForm extends JPanel {
                     super.doLayout();
                 }
 
-                protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+                protected boolean processKeyBinding(KeyStroke ks, KeyEvent ae, int condition, boolean pressed) {
 
                     try {
                         // Отдельно обработаем CTRL + HOME и CTRL + END
@@ -1416,11 +1407,11 @@ public class ClientForm extends JPanel {
                             changeGroupObject(groupObject, RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW);
                             return true;
                         }
-                    } catch (IOException e1) {
-                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при переходе на запись", e);
                     }
 
-                    return super.processKeyBinding(ks, e, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
+                    return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
                 }
 
                 public Table() {
@@ -1439,11 +1430,11 @@ public class ClientForm extends JPanel {
                         public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
                             SwingUtils.invokeLaterSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), new ActionListener() {
-                                public void actionPerformed(ActionEvent e) {
+                                public void actionPerformed(ActionEvent ae) {
                                     try {
                                         changeGroupObject(groupObject, model.getSelectedObject());
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при изменении текущего объекта", e);
                                     }
                                 }
                             }, 50);
@@ -1588,7 +1579,7 @@ public class ClientForm extends JPanel {
 
                     }
 
-                    public void addCondition() throws IOException {
+                    public void addCondition() {
 
                         queryView.collapsed = false;
                         
@@ -1669,7 +1660,7 @@ public class ClientForm extends JPanel {
                             }
                         }
 
-                        public QueryConditionView(ClientFilter ifilter) throws IOException {
+                        public QueryConditionView(ClientFilter ifilter) {
 
                             filter = ifilter;
 
@@ -1691,14 +1682,10 @@ public class ClientForm extends JPanel {
 
                             propertyView.addItemListener(new ItemListener() {
 
-                                public void itemStateChanged(ItemEvent e) {
+                                public void itemStateChanged(ItemEvent ie) {
 
-                                    filter.property = (ClientPropertyView)e.getItem();
-                                    try {
-                                        filterChanged();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                                    }
+                                    filter.property = (ClientPropertyView)ie.getItem();
+                                    filterChanged();
                                 }
                             });
 
@@ -1745,13 +1732,9 @@ public class ClientForm extends JPanel {
 
                             classValueLinkView.addItemListener(new ItemListener() {
 
-                                public void itemStateChanged(ItemEvent e) {
+                                public void itemStateChanged(ItemEvent ie) {
                                     filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
-                                    try {
-                                        filterChanged();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                                    }
+                                    filterChanged();
                                 }
                             });
 
@@ -1772,12 +1755,12 @@ public class ClientForm extends JPanel {
                             getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK), "applyQuery");
                             getActionMap().put("applyQuery", new AbstractAction() {
 
-                                public void actionPerformed(ActionEvent e) {
+                                public void actionPerformed(ActionEvent ae) {
                                     valueView.stopEditing();
                                     try {
                                         applyQuery();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при применении фильтра", e);
                                     }
                                 }
                             });
@@ -1785,24 +1768,25 @@ public class ClientForm extends JPanel {
                             getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK), "removeAll");
                             getActionMap().put("removeAll", new AbstractAction() {
 
-                                public void actionPerformed(ActionEvent e) {
+                                public void actionPerformed(ActionEvent ae) {
                                     removeAllConditions();
                                     try {
                                         applyQuery();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при применении фильтра", e);
                                     }
                                 }
                             });
 
                         }
 
-                        public void filterChanged() throws IOException {
+                        public void filterChanged() {
 
                             if (valueView != null)
                                 remove(valueView);
 
                             valueView = valueViews.get(filter.value);
+
                             if (valueView != null) {
                                 add(valueView);
                             }
@@ -1825,7 +1809,7 @@ public class ClientForm extends JPanel {
                                 setLayout(new BorderLayout());
                             }
 
-                            abstract public void propertyChanged(ClientPropertyView property) throws IOException;
+                            abstract public void propertyChanged(ClientPropertyView property) ;
 
                             public void stopEditing() {}
 
@@ -1848,7 +1832,7 @@ public class ClientForm extends JPanel {
                                         return false;
                                     }
 
-                                    protected void cellValueChanged(Object ivalue) throws IOException {
+                                    protected void cellValueChanged(Object ivalue) {
                                         super.cellValueChanged(ivalue);
                                         
                                         valueLink.value = ivalue;
@@ -1874,7 +1858,7 @@ public class ClientForm extends JPanel {
                                 return cell.view.table.requestFocusInWindow();
                             }
 
-                            public void propertyChanged(ClientPropertyView property) throws IOException {
+                            public void propertyChanged(ClientPropertyView property) {
                                 cell.setKey(property);
                                 cell.cellValueChanged(table.getSelectedValue(property));
 //                                cell.setValue(table.getSelectedValue(property));
@@ -1993,11 +1977,11 @@ public class ClientForm extends JPanel {
                             applyButton.setMaximumSize(iconButtonDimension);
                             applyButton.addActionListener(new ActionListener() {
 
-                                public void actionPerformed(ActionEvent e) {
+                                public void actionPerformed(ActionEvent ae) {
                                     try {
                                         applyQuery();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при применении фильтра", e);
                                     }
                                 }
                             });
@@ -2011,12 +1995,8 @@ public class ClientForm extends JPanel {
                             addCondition.setMaximumSize(iconButtonDimension);
                             addCondition.addActionListener(new ActionListener() {
 
-                                public void actionPerformed(ActionEvent e) {
-                                    try {
-                                        addCondition();
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                                    }
+                                public void actionPerformed(ActionEvent ae) {
+                                    addCondition();
                                 }
                             });
 //                            buttons.add(addCondition);
@@ -2188,13 +2168,13 @@ public class ClientForm extends JPanel {
 
                 private class GridHeaderMouseListener extends MouseAdapter {
                     
-                    public void mouseClicked(MouseEvent e) {
+                    public void mouseClicked(MouseEvent me) {
 
-                        if (e.getClickCount() != 2) return;
-                        if (!(e.getButton() == MouseEvent.BUTTON1 || e.getButton() == MouseEvent.BUTTON3)) return;
+                        if (me.getClickCount() != 2) return;
+                        if (!(me.getButton() == MouseEvent.BUTTON1 || me.getButton() == MouseEvent.BUTTON3)) return;
 
                         TableColumnModel columnModel = table.getColumnModel();
-                        int viewColumn = columnModel.getColumnIndexAtX(e.getX());
+                        int viewColumn = columnModel.getColumnIndexAtX(me.getX());
                         int column = columnModel.getColumn(viewColumn).getModelIndex();
 
                         if (column != -1) {
@@ -2205,19 +2185,19 @@ public class ClientForm extends JPanel {
                                 try {
                                     int ordNum = orders.indexOf(property);
                                     if (ordNum == -1) {
-                                        if (e.getButton() == MouseEvent.BUTTON1)
+                                        if (me.getButton() == MouseEvent.BUTTON1)
                                             changeGridOrder(property, RemoteFormInterface.ORDER_REPLACE);
                                          else
                                             changeGridOrder(property, RemoteFormInterface.ORDER_ADD);
                                     } else {
-                                        if (e.getButton() == MouseEvent.BUTTON1) {
+                                        if (me.getButton() == MouseEvent.BUTTON1) {
                                             changeGridOrder(property, RemoteFormInterface.ORDER_DIR);
                                         } else {
                                             changeGridOrder(property, RemoteFormInterface.ORDER_REMOVE);
                                         }
                                     }
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                } catch (IOException e) {
+                                    throw new RuntimeException("Ошибка при изменении сортировки", e); 
                                 }
 
                                 header.repaint();
@@ -2266,7 +2246,7 @@ public class ClientForm extends JPanel {
                         try {
                             changeProperty(gridColumns.get(col), value, externalID);
                         } catch (IOException e) {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            throw new RuntimeException("Ошибка при изменении значения свойства", e);
                         }
                     }
                     
@@ -2336,11 +2316,11 @@ public class ClientForm extends JPanel {
                     buttonAdd.setFocusable(false);
                     buttonAdd.addActionListener(new ActionListener() {
 
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(ActionEvent ae) {
                             try {
                                 addObject(object, classModel.getDerivedClass());
-                            } catch (IOException e1) {
-                                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка при добавлении объекта", e);
                             }
                         }
 
@@ -2352,11 +2332,11 @@ public class ClientForm extends JPanel {
                     buttonDel.setFocusable(false);
                     buttonDel.addActionListener(new ActionListener() {
 
-                        public void actionPerformed(ActionEvent e) {
+                        public void actionPerformed(ActionEvent ae) {
                             try {
                                 changeClass(object, null);
-                            } catch (IOException e1) {
-                                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка при удалении объекта", e);
                             }
                         }
 
@@ -2369,11 +2349,11 @@ public class ClientForm extends JPanel {
                         buttonChangeClass.setFocusable(false);
                         buttonChangeClass.addActionListener(new ActionListener() {
 
-                            public void actionPerformed(ActionEvent e) {
+                            public void actionPerformed(ActionEvent ae) {
                                 try {
                                     changeClass(object, classModel.getSelectedClass());
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                } catch (IOException e) {
+                                    throw new RuntimeException("Ошибка при изменении класса объекта", e);
                                 }
                             }
 
@@ -2509,7 +2489,7 @@ public class ClientForm extends JPanel {
                                 try {
                                     addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
                                 } catch (IOException e) {
-                                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    throw new RuntimeException("Ошибка при получении потомков класса", e);
                                 }
                             }
 
@@ -2519,12 +2499,12 @@ public class ClientForm extends JPanel {
 
                         addMouseListener(new MouseAdapter() {
 
-                            public void mouseReleased(MouseEvent e) {
-                                if (e.getClickCount() == 2) {
+                            public void mouseReleased(MouseEvent me) {
+                                if (me.getClickCount() == 2) {
                                     try {
                                         changeCurrentClass(getSelectedClass(), getSelectedNode());
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при изменении текущего класса", e);
                                     }
                                 }
                             }
@@ -2532,12 +2512,12 @@ public class ClientForm extends JPanel {
 
                         addKeyListener(new KeyAdapter() {
 
-                            public void keyPressed(KeyEvent e) {
-                                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                            public void keyPressed(KeyEvent ke) {
+                                if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
                                     try {
                                         changeCurrentClass(getSelectedClass(), getSelectedNode());
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при изменении текущего класса", e);
                                     }
                                     grid.table.requestFocusInWindow();
                                 }
