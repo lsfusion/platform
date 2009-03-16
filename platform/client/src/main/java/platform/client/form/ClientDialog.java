@@ -14,12 +14,12 @@ import java.io.IOException;
 
 public class ClientDialog extends JDialog {
 
-    ClientNavigator navigator;
-    ClientForm currentForm;
+    private final ClientNavigator navigator;
+    private ClientForm currentForm;
 
-    ClientClass cls;
+    private final ClientClass cls;
 
-    ClientDialog(ClientForm owner, ClientClass icls, Object value) throws IOException, ClassNotFoundException {
+    public ClientDialog(ClientForm owner, ClientClass icls, Object value) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
         setLayout(new BorderLayout());
@@ -74,7 +74,7 @@ public class ClientDialog extends JDialog {
         return objectID;
     }
 
-    public void setCurrentForm(int formID) throws IOException, ClassNotFoundException {
+    void setCurrentForm(int formID) throws IOException, ClassNotFoundException {
 
         if (formID == -1) return;
 

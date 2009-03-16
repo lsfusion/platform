@@ -5,18 +5,16 @@
 
 package platform.client.form;
 
-import platform.client.Main;
 import platform.base.BaseUtils;
 import platform.base.Pair;
-import platform.client.ExpandingTreeNode;
-import platform.client.Log;
-import platform.client.SwingUtils;
+import platform.client.*;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.layout.ReportDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.Compare;
+import platform.interop.CompressingInputStream;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.SimplexLayout;
 
@@ -83,10 +81,7 @@ public class ClientForm extends JPanel {
 
 //        getFrame().setTitle(caption);
 
-        byte[] state = remoteForm.getRichDesignByteArray();
-        Log.incrementBytesReceived(state.length);
-
-        formView = new ClientFormView(new DataInputStream(new ByteArrayInputStream(state)));
+        formView = ClientObjectProxy.retrieveClientFormView(remoteForm);
 
         initializeForm();
 
@@ -102,7 +97,7 @@ public class ClientForm extends JPanel {
 
     private FormLayout formLayout;
 
-    Map<ClientGroupObjectImplementView, GroupObjectModel> models;
+    private Map<ClientGroupObjectImplementView, GroupObjectModel> models;
 
     private JButton buttonPrint;
     private JButton buttonRefresh;
@@ -353,7 +348,7 @@ public class ClientForm extends JPanel {
         byte[] state = remoteForm.getFormChangesByteArray();
         Log.incrementBytesReceived(state.length);
 
-        applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(state)), formView));
+        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(state))), formView));
 
     }
 
@@ -444,7 +439,8 @@ public class ClientForm extends JPanel {
 
             ClientObjectImplementView object = ((ClientObjectView)property).object;
             remoteForm.changeObject(object.ID, (Integer)value);
-            models.get(property.getGroupObject()).setCurrentObject(object,(Integer)value,false);
+
+            models.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
 
             applyFormChanges();
 
@@ -496,7 +492,7 @@ public class ClientForm extends JPanel {
     private void changeFind(List<ClientFilter> conditions) {
     }
 
-    Map<ClientGroupObjectImplementView, List<ClientFilter>> currentFilters = new HashMap();
+    private final Map<ClientGroupObjectImplementView, List<ClientFilter>> currentFilters = new HashMap();
     
     private void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientFilter> conditions) throws IOException {
 
@@ -702,14 +698,14 @@ public class ClientForm extends JPanel {
             
         }
 
-        public void setCurrentObject(ClientObjectImplementView object, Integer value, boolean userChange) {
+        public void setCurrentObject(ClientObjectImplementView object, Integer value) {
 
             if (currentObject == null) return;
 
             ClientGroupObjectValue curValue = (ClientGroupObjectValue) currentObject.clone();
 
             curValue.put(object, value);
-            setCurrentGroupObject(curValue, userChange);
+            setCurrentGroupObject(curValue, false);
         }
 
         public void setPanelPropertyValue(ClientPropertyView property, Object value) {
@@ -789,7 +785,7 @@ public class ClientForm extends JPanel {
                                                            int column) {
                 
                 ClientCellView property = ((ClientCellViewTable)table).getCellView(row, column);
-                PropertyRendererComponent currentComp = property.getRendererComponent(ClientForm.this);
+                PropertyRendererComponent currentComp = property.getRendererComponent();
                 currentComp.setValue(value, isSelected, hasFocus);
 
                 JComponent comp = currentComp.getComponent();
@@ -901,7 +897,7 @@ public class ClientForm extends JPanel {
             ClientCellView key;
             Object value;
 
-            CellView view;
+            final CellView view;
 
             public CellModel(ClientCellView ikey) {
 
@@ -925,18 +921,18 @@ public class ClientForm extends JPanel {
                 view.repaint();
             }
 
-            protected boolean isDataChanging() {
+            boolean isDataChanging() {
                 return true;
             }
 
-            protected void cellValueChanged(Object ivalue) {
+            void cellValueChanged(Object ivalue) {
                 value = ivalue;
             }
 
             class CellView extends JPanel {
 
-                JLabel label;
-                CellTable table;
+                final JLabel label;
+                final CellTable table;
 
                 int ID;
 
@@ -979,7 +975,7 @@ public class ClientForm extends JPanel {
                 class CellTable extends SingleCellTable
                                     implements ClientCellViewTable {
 
-                    PropertyModel model;
+                    final PropertyModel model;
 
                     public CellTable() {
                         super();
@@ -1044,7 +1040,7 @@ public class ClientForm extends JPanel {
 
         class PanelModel {
             
-            Map<ClientCellView, PanelCellModel> models;
+            final Map<ClientCellView, PanelCellModel> models;
             
             public PanelModel() {
 
@@ -1156,15 +1152,15 @@ public class ClientForm extends JPanel {
         
         class GridModel {
 
-            ClientGridView view;
+            final ClientGridView view;
 
-            JPanel container;
+            final JPanel container;
 
-            JPanel queriesContainer;
+            final JPanel queriesContainer;
 
-            JScrollPane pane;
-            GridBagConstraints paneConstraints;
-            Table table;
+            final JScrollPane pane;
+            final GridBagConstraints paneConstraints;
+            final Table table;
 
             public GridModel(ClientGridView iview) {
 
@@ -1193,8 +1189,9 @@ public class ClientForm extends JPanel {
                 queriesContainer = new JPanel();
                 queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
-                queriesContainer.add(table.findModel.queryView);
-                queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
+//              отключим поиски пока они не работают                
+//                queriesContainer.add(table.findModel.queryView);
+//                queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
                 queriesContainer.add(table.filterModel.queryView);
                 queriesContainer.add(Box.createHorizontalGlue());
 
@@ -1297,8 +1294,8 @@ public class ClientForm extends JPanel {
                 
             }
 
-            List<ClientPropertyView> orders = new ArrayList();
-            List<Boolean> orderDirections = new ArrayList();
+            final List<ClientPropertyView> orders = new ArrayList();
+            final List<Boolean> orderDirections = new ArrayList();
 
             void changeGridOrder(ClientPropertyView property, int modiType) throws IOException {
 
@@ -1337,17 +1334,17 @@ public class ClientForm extends JPanel {
             public class Table extends ClientFormTable
                                implements ClientCellViewTable {
 
-                List<ClientCellView> gridColumns = new ArrayList();
+                final List<ClientCellView> gridColumns = new ArrayList();
                 List<ClientGroupObjectValue> gridRows = new ArrayList();
-                Map<ClientCellView,Map<ClientGroupObjectValue,Object>> gridValues = new HashMap();
+                final Map<ClientCellView,Map<ClientGroupObjectValue,Object>> gridValues = new HashMap();
 
-                Model model;
-                JTableHeader header;
+                final Model model;
+                final JTableHeader header;
 
-                FindModel findModel;
-                FilterModel filterModel;
+                final FindModel findModel;
+                final FilterModel filterModel;
 
-                int ID;
+                final int ID;
 
                 @Override
                 public int hashCode() {
@@ -1554,10 +1551,10 @@ public class ClientForm extends JPanel {
 
                 private abstract class QueryModel {
 
-                    public QueryView queryView;
+                    public final QueryView queryView;
 
-                    List<ClientFilter> conditions;
-                    Map<ClientFilter, QueryConditionView> conditionViews;
+                    final List<ClientFilter> conditions;
+                    final Map<ClientFilter, QueryConditionView> conditionViews;
 
                     boolean hasChanged = false;
 
@@ -1628,18 +1625,18 @@ public class ClientForm extends JPanel {
 
                     protected class QueryConditionView extends JPanel {
 
-                        ClientFilter filter;
+                        final ClientFilter filter;
 
-                        JComboBox propertyView;
+                        final JComboBox propertyView;
 
-                        JComboBox compareView;
+                        final JComboBox compareView;
 
-                        JComboBox classValueLinkView;
+                        final JComboBox classValueLinkView;
 
                         ClientValueLinkView valueView;
-                        Map<ClientValueLink, ClientValueLinkView> valueViews;
+                        final Map<ClientValueLink, ClientValueLinkView> valueViews;
 
-                        JButton delButton;
+                        final JButton delButton;
 
                         public final int PREFERRED_HEIGHT = 18;
 
@@ -1789,9 +1786,8 @@ public class ClientForm extends JPanel {
 
                             if (valueView != null) {
                                 add(valueView);
+                                valueView.propertyChanged(filter.property);
                             }
-
-                            valueView.propertyChanged(filter.property);
                             
                             add(delButton);
 
@@ -1817,9 +1813,9 @@ public class ClientForm extends JPanel {
 
                         private class ClientUserValueLinkView extends ClientValueLinkView {
 
-                            ClientUserValueLink valueLink;
+                            final ClientUserValueLink valueLink;
 
-                            CellModel cell;
+                            final CellModel cell;
 
                             public ClientUserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty) {
                                 super();
@@ -1874,9 +1870,9 @@ public class ClientForm extends JPanel {
 
                         private class ClientObjectValueLinkView extends ClientValueLinkView {
 
-                            ClientObjectValueLink valueLink;
+                            final ClientObjectValueLink valueLink;
 
-                            JComboBox objectView;
+                            final JComboBox objectView;
 
                             public ClientObjectValueLinkView(ClientObjectValueLink ivalueLink) {
 
@@ -1911,9 +1907,9 @@ public class ClientForm extends JPanel {
 
                         private class ClientPropertyValueLinkView extends ClientValueLinkView {
 
-                            ClientPropertyValueLink valueLink;
+                            final ClientPropertyValueLink valueLink;
 
-                            JComboBox propertyView;
+                            final JComboBox propertyView;
 
                             public ClientPropertyValueLinkView(ClientPropertyValueLink ivalueLink) {
 
@@ -1948,17 +1944,17 @@ public class ClientForm extends JPanel {
 
                     protected class QueryView extends JPanel {
 
-                        JPanel buttons;
-                        protected JPanel condviews;
+                        final JPanel buttons;
+                        final JPanel condviews;
 
                         boolean collapsed = false;
 
-                        Color defaultApplyBackground;
+                        final Color defaultApplyBackground;
 
-                        JButton applyButton;
-                        Component centerGlue;
-                        JButton addCondition;
-                        JButton collapseButton;
+                        final JButton applyButton;
+                        final Component centerGlue;
+                        final JButton addCondition;
+                        final JButton collapseButton;
                                                          
                         public QueryView() {
 
@@ -2126,7 +2122,7 @@ public class ClientForm extends JPanel {
 
                 private class GridHeaderRenderer implements TableCellRenderer {
 
-                    private TableCellRenderer tableCellRenderer;
+                    private final TableCellRenderer tableCellRenderer;
 
                     public GridHeaderRenderer(TableCellRenderer tableCellRenderer) {
                         this.tableCellRenderer = tableCellRenderer;
@@ -2294,7 +2290,7 @@ public class ClientForm extends JPanel {
 
         class ObjectModel {
 
-            ClientObjectImplementView object;
+            final ClientObjectImplementView object;
 
             JButton buttonAdd;
             JButton buttonChangeClass;
@@ -2384,7 +2380,7 @@ public class ClientForm extends JPanel {
 
             class ClassModel {
 
-                ClientClassView key;
+                final ClientClassView key;
 
                 DefaultMutableTreeNode rootNode;
                 ClientClass rootClass;
@@ -2458,9 +2454,9 @@ public class ClientForm extends JPanel {
 
                 class ClassTree extends JTree {
 
-                    DefaultTreeModel model;
+                    final DefaultTreeModel model;
 
-                    int ID;
+                    final int ID;
 
                     @Override
                     public int hashCode() {
@@ -2628,7 +2624,7 @@ public class ClientForm extends JPanel {
         
         SimplexLayout globalLayout;
         
-        Map<ClientContainerView, ContainerView> contviews;
+        final Map<ClientContainerView, ContainerView> contviews;
         
         public FormLayout(List<ClientContainerView> containers) {
         
@@ -2688,7 +2684,7 @@ public class ClientForm extends JPanel {
         
         class ContainerView extends JPanel {
             
-            ClientContainerView view;
+            final ClientContainerView view;
             
             public ContainerView(ClientContainerView iview) {
                 

@@ -1,7 +1,10 @@
-package platform.client.form;
+package platform.client.form.editor;
 
 import platform.client.logics.ClientCellView;
 import platform.client.logics.classes.ClientClass;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.ClientForm;
+import platform.client.form.ClientDialog;
 
 import java.awt.*;
 import java.rmi.RemoteException;
@@ -9,15 +12,13 @@ import java.io.IOException;
 
 public class ObjectPropertyEditor implements PropertyEditorComponent {
 
-    ClientForm clientForm;
-    ClientCellView property;
+    private final ClientForm clientForm;
 
-    ClientDialog clientDialog;
+    private ClientDialog clientDialog;
 
     public ObjectPropertyEditor(ClientForm iclientForm, ClientCellView iproperty, ClientClass cls, Object value) throws IOException, ClassNotFoundException {
 
         clientForm = iclientForm;
-        property = iproperty;
 
         clientDialog = new ClientDialog(clientForm, cls, value);
     }

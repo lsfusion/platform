@@ -6,14 +6,14 @@ import java.io.IOException;
 public class ClientNavigatorElement {
 
     public int ID;
-    public String caption;
+    private String caption;
 
-    public boolean hasChildren = false;
+    private boolean hasChildren = false;
     boolean allowChildren() { return hasChildren; }
 
     public String toString() { return caption; }
 
-    public ClientNavigatorElement(DataInputStream inStream) throws IOException {
+    ClientNavigatorElement(DataInputStream inStream) throws IOException {
         ID = inStream.readInt();
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();

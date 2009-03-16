@@ -1,6 +1,8 @@
 package platform.client.logics.classes;
 
 import platform.client.form.*;
+import platform.client.form.renderer.IntegerPropertyRenderer;
+import platform.client.form.editor.IntegerPropertyEditor;
 import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
@@ -10,7 +12,7 @@ import java.text.NumberFormat;
 
 abstract public class ClientIntegralClass extends ClientClass {
 
-    protected ClientIntegralClass(DataInputStream inStream) throws IOException {
+    ClientIntegralClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }
 

@@ -1,13 +1,14 @@
 package platform.client.logics.classes;
 
 import platform.client.form.*;
+import platform.client.form.renderer.IntegerPropertyRenderer;
+import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.rmi.RemoteException;
 
 public class ClientObjectClass extends ClientClass {
 
@@ -30,7 +31,7 @@ public class ClientObjectClass extends ClientClass {
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form, property, this, value); 
+        return new ObjectPropertyEditor(form, property, this, value);
     }
 
     public Class getJavaClass() {

@@ -11,8 +11,8 @@ import net.sf.jasperreports.engine.JRException;
 
 public abstract class ClientNavigator extends AbstractNavigator {
 
-    public RelevantFormNavigator relevantFormNavigator;
-    public RelevantClassNavigator relevantClassNavigator;
+    public final RelevantFormNavigator relevantFormNavigator;
+    public final RelevantClassNavigator relevantClassNavigator;
 
     public ClientNavigator(RemoteNavigatorInterface iremoteNavigator) {
         super(iremoteNavigator);
@@ -39,7 +39,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         openForm(form);
     }
 
-    public void openClassForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException, JRException {
+    void openClassForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException, JRException {
         openRelevantForm(form);
     }
 

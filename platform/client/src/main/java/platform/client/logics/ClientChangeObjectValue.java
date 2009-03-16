@@ -6,7 +6,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ClientChangeObjectValue extends ClientChangeValue {
-    Object value;
+    private Object value;
 
     public ClientChangeObjectValue(DataInputStream inStream) throws IOException {
         super(inStream);

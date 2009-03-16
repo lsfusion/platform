@@ -12,7 +12,7 @@ import net.sf.jasperreports.engine.JRException;
 // уничтожаемые формы
 abstract class FormDockable extends DefaultDockable {
 
-    int formID;
+    final int formID;
 
     FormDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
         this(iformID);

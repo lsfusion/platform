@@ -36,7 +36,7 @@ public class SwingUtils {
         return (Window)comp;
     }
 
-    public final static Map<String, Timer> timers = new HashMap();
+    private final static Map<String, Timer> timers = new HashMap();
     public static void invokeLaterSingleAction(String actionID, ActionListener actionListener, int delay) {
 
         stopSingleAction(actionID, false);

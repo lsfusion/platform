@@ -3,6 +3,7 @@ package platform.server.view.form.client;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.CompressingOutputStream;
 import platform.server.view.form.*;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.session.ChangeValue;
@@ -32,7 +33,9 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            new ObjectOutputStream(outStream).writeObject(reportDesign);
+            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
+            new ObjectOutputStream(compStream).writeObject(reportDesign);
+            compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -43,7 +46,9 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            form.getFormData().serialize(new DataOutputStream(outStream));
+            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
+            form.getFormData().serialize(new DataOutputStream(compStream));
+            compStream.finish();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +64,9 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            richDesign.serialize(new DataOutputStream(outStream)); 
+            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
+            richDesign.serialize(new DataOutputStream(compStream)); 
+            compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -73,11 +80,15 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
     public byte[] getFormChangesByteArray() {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
         try {
-            form.endApply().serialize(new DataOutputStream(outStream));
+            CompressingOutputStream compStream = new CompressingOutputStream(outStream);
+            form.endApply().serialize(new DataOutputStream(compStream));
+            compStream.finish();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         return outStream.toByteArray();
     }
 

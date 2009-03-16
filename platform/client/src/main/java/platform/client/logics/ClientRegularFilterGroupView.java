@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ClientRegularFilterGroupView extends ClientFunctionView {
     public int ID;
-    public List<ClientRegularFilterView> filters = new ArrayList<ClientRegularFilterView>();
+    public final List<ClientRegularFilterView> filters = new ArrayList<ClientRegularFilterView>();
 
     public ClientRegularFilterGroupView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);

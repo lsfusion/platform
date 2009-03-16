@@ -7,8 +7,8 @@ import java.text.NumberFormat;
 
 public class ClientNumericClass extends ClientDoubleClass {
 
-    byte length;
-    byte precision;
+    private byte length;
+    private byte precision;
 
     public ClientNumericClass(DataInputStream inStream) throws IOException {
         super(inStream);

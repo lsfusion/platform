@@ -13,9 +13,7 @@ public class ClientComponentView implements Serializable {
     public ClientContainerView container;
     public SimplexConstraints constraints;
 
-    public String outName = "";
-
-    public ClientComponentView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
+    ClientComponentView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
 
         if(!inStream.readBoolean()) {
             int containerID = inStream.readInt();

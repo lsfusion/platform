@@ -1,11 +1,14 @@
 package platform.client.logics;
 
+import platform.interop.form.RemoteFormInterface;
+import platform.client.Log;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.util.*;
+import java.rmi.RemoteException;
 
 public class ClientFormView implements Serializable {
 
@@ -14,7 +17,7 @@ public class ClientFormView implements Serializable {
     public List<ClientGroupObjectImplementView> groupObjects;
     public List<ClientPropertyView> properties;
 
-    public LinkedHashMap<ClientPropertyView,Boolean> defaultOrders = new LinkedHashMap<ClientPropertyView, Boolean>();
+    public final LinkedHashMap<ClientPropertyView,Boolean> defaultOrders = new LinkedHashMap<ClientPropertyView, Boolean>();
     public List<ClientRegularFilterGroupView> regularFilters;
 
     public ClientFunctionView printView;
@@ -24,10 +27,7 @@ public class ClientFormView implements Serializable {
     public ClientFunctionView okView;
     public ClientFunctionView closeView;
 
-    public List<ClientCellView> order = new ArrayList<ClientCellView>();
-
-    public ClientFormView() {
-    }
+    public final List<ClientCellView> order = new ArrayList<ClientCellView>();
 
     public ClientGroupObjectImplementView getGroupObject(int id) {
         for (ClientGroupObjectImplementView groupObject : groupObjects)
@@ -35,7 +35,7 @@ public class ClientFormView implements Serializable {
         return null;
     }
 
-    public ClientObjectView getObject(int id) {
+    ClientObjectView getObject(int id) {
         for (ClientGroupObjectImplementView groupObject : groupObjects)
             for (ClientObjectImplementView object : groupObject)
                 if (object.ID == id) return object.objectIDView;

@@ -16,18 +16,18 @@ import java.rmi.RemoteException;
 abstract public class ClientCellView extends ClientComponentView {
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    public ClientClass baseClass;
+    private ClientClass baseClass;
 
     public abstract int getID();
     public abstract ClientGroupObjectImplementView getGroupObject();
 
-    Dimension minimumSize;
-    Dimension maximumSize;
-    Dimension preferredSize;
+    private Dimension minimumSize;
+    private Dimension maximumSize;
+    private Dimension preferredSize;
 
     public String caption;
 
-    protected ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
+    ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
         caption = inStream.readUTF();
@@ -43,7 +43,7 @@ abstract public class ClientCellView extends ClientComponentView {
         return baseClass.getMinimumWidth();
     }
 
-    public int getMinimumHeight() {
+    int getMinimumHeight() {
         return getPreferredHeight();
     }
 
@@ -57,7 +57,7 @@ abstract public class ClientCellView extends ClientComponentView {
         return baseClass.getPreferredWidth();
     }
 
-    public int getPreferredHeight() {
+    int getPreferredHeight() {
         return 15;
     }
 
@@ -71,7 +71,7 @@ abstract public class ClientCellView extends ClientComponentView {
         return baseClass.getMaximumWidth();
     }
 
-    public int getMaximumHeight() {
+    int getMaximumHeight() {
         return getPreferredHeight();
     }
 
@@ -81,8 +81,8 @@ abstract public class ClientCellView extends ClientComponentView {
         return new Dimension(getMaximumWidth(), getMaximumHeight());
     }
 
-    transient protected PropertyRendererComponent renderer;
-    public PropertyRendererComponent getRendererComponent(ClientForm form) {
+    private transient PropertyRendererComponent renderer;
+    public PropertyRendererComponent getRendererComponent() {
 
         if (renderer == null) renderer = baseClass.getRendererComponent(getFormat());
 
@@ -102,13 +102,13 @@ abstract public class ClientCellView extends ClientComponentView {
         return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
     }
 
-    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value, boolean externalID) throws IOException {
+    ClientObjectValue getEditorObjectValue(ClientForm form, Object value, boolean externalID) throws IOException {
         if (externalID) return null;
         return new ClientObjectValue(baseClass, value);
     }
 
-    Format format;
-    public Format getFormat() {
+    private Format format;
+    Format getFormat() {
         if (format == null) return baseClass.getDefaultFormat();
         return format;
     }

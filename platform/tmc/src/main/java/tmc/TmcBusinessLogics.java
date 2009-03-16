@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
 
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.auth.SecurityPolicy;
@@ -49,9 +50,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         DataAdapter adapter = new PostgreDataAdapter("testplat","localhost");
         TmcBusinessLogics BL = new TmcBusinessLogics(adapter);
 //        BL.fillData();
-        LocateRegistry.createRegistry(7653).rebind("TmcBusinessLogics", BL);
+        LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
 //        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
-        System.out.println("Server successfully started");
+        System.out.println("Server has successfully started");
     }
 
     RemoteClass article;

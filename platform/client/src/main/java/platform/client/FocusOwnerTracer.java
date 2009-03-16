@@ -6,8 +6,8 @@ import java.beans.PropertyChangeListener;
 
 class FocusOwnerTracer implements PropertyChangeListener {
 
-    public static final String FOCUS_OWNER_PROPERTY = "permanentFocusOwner";
-    protected KeyboardFocusManager focusManager;
+    private static final String FOCUS_OWNER_PROPERTY = "permanentFocusOwner";
+    private final KeyboardFocusManager focusManager;
 
     protected static void installFocusTracer() {
         KeyboardFocusManager focusManager = KeyboardFocusManager.
@@ -15,12 +15,12 @@ class FocusOwnerTracer implements PropertyChangeListener {
         new FocusOwnerTracer(focusManager);
     }
 
-    public FocusOwnerTracer(KeyboardFocusManager focusManager) {
+    private FocusOwnerTracer(KeyboardFocusManager focusManager) {
         this.focusManager = focusManager;
         startListening();
     }
 
-    public void startListening() {
+    void startListening() {
         if (focusManager != null) {
             focusManager.addPropertyChangeListener(FOCUS_OWNER_PROPERTY, this);
         }

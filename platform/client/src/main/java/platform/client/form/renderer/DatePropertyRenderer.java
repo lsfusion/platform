@@ -1,12 +1,15 @@
-package platform.client.form;
+package platform.client.form.renderer;
+
+import platform.base.DateConverter;
+import platform.client.form.PropertyRendererComponent;
 
 import javax.swing.*;
 import java.text.Format;
 
-public class IntegerPropertyRenderer extends LabelPropertyRenderer
-                              implements PropertyRendererComponent {
+public class DatePropertyRenderer extends LabelPropertyRenderer
+                           implements PropertyRendererComponent {
 
-    public IntegerPropertyRenderer(Format format) {
+    public DatePropertyRenderer(Format format) {
         super(format);
 
         setHorizontalAlignment(JLabel.RIGHT);
@@ -19,11 +22,10 @@ public class IntegerPropertyRenderer extends LabelPropertyRenderer
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null)
-            setText(format.format(value));
+            setText(format.format(DateConverter.intToDate((Integer)value)));
         else
             setText("");
         setSelected(isSelected, hasFocus);
     }
-
 
 }

@@ -1,4 +1,6 @@
-package platform.client.form;
+package platform.client.form.editor;
+
+import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;

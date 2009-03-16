@@ -20,7 +20,6 @@ import bibliothek.notes.view.menu.ThemeMenu;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Main;
 import platform.client.Log;
-import platform.client.exceptions.ClientExceptionManager;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.UserInfo;
@@ -79,9 +78,9 @@ public class Layout extends JFrame implements ComponentCollector {
 
     }
 
-    DockFrontend frontend;
-    LookAndFeelList lookAndFeels;
-    ThemeMenu themes;
+    private DockFrontend frontend;
+    private LookAndFeelList lookAndFeels;
+    private ThemeMenu themes;
 
     public StackDockStation defaultStation;
 
@@ -317,10 +316,10 @@ public class Layout extends JFrame implements ComponentCollector {
         return Menu;
     }
 
-    Map<String,JRadioButtonMenuItem> WorkPlaces = new HashMap<String, JRadioButtonMenuItem>();
-    JMenu WorkPlaceMenu = new JMenu("АРМ");
-    Map<String,JMenuItem> RemoveWorkPlaces = new HashMap<String, JMenuItem>();
-    JMenu RemoveWorkPlaceMenu = new JMenu("Удалить");
+    private final Map<String,JRadioButtonMenuItem> WorkPlaces = new HashMap<String, JRadioButtonMenuItem>();
+    private final JMenu WorkPlaceMenu = new JMenu("АРМ");
+    private final Map<String,JMenuItem> RemoveWorkPlaces = new HashMap<String, JMenuItem>();
+    private final JMenu RemoveWorkPlaceMenu = new JMenu("Удалить");
 
     JMenu createWorkPlaceMenu() {
         JMenuItem Save = new JMenuItem("Сохранить");

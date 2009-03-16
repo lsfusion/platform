@@ -1,4 +1,4 @@
-package platform.client.form;
+package platform.client.form.renderer;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -11,17 +11,17 @@ public final class Log {
 
     private static String text = "";
 
-    public static void print(String itext) {
+    private static void print(String itext) {
 
         text += itext;
         out.stateChanged();
     }
 
-    public static void println(String itext) {
+    private static void println(String itext) {
         print(itext + '\n');
     }
 
-    public static void printmsg(String itext) {
+    private static void printmsg(String itext) {
         println(getMsgHeader() + itext + getMsgFooter());
     }
 
@@ -43,11 +43,16 @@ public final class Log {
 
     private final static LogView out  = new LogView();
 
-    public static JPanel getPanel() { return out; };
+    public static JPanel getPanel() { return out; }
 
     public static void printSuccessMessage(String message) {
         printmsg(message);
-        out.setTemporaryBackground(Color.green);
+        // пока таким образом определим есть ли он на экране
+        if (out.getTopLevelAncestor() != null) {
+            out.setTemporaryBackground(Color.green);
+        } else {
+            JOptionPane.showMessageDialog(null, message, "LS Fusion", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public static void printFailedMessage(String message) {
@@ -65,14 +70,16 @@ public final class Log {
 
     private static class LogView extends JPanel {
 
-        private LogTextArea view;
-        private JLabel info;
+        private final LogTextArea view;
+        private final JLabel info;
 
         public LogView() {
 
             setLayout(new BorderLayout());
 
             view = new LogTextArea();
+            view.setLineWrap(true);
+            view.setWrapStyleWord(true);
             JScrollPane pane = new JScrollPane(view);
 
             add(pane, BorderLayout.CENTER);
@@ -89,8 +96,6 @@ public final class Log {
 
 //            info.setText("Bytes received : " + bytesReceived);
         }
-
-        Timer backgroundTimer;
 
         public void setTemporaryBackground(Color color) {
 

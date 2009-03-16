@@ -16,8 +16,6 @@ public class ContainerView extends ComponentView {
 
     public String title;
 
-    LayoutManager layout;
-
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 
@@ -25,7 +23,6 @@ public class ContainerView extends ComponentView {
         outStream.writeBoolean(title==null);
         if(title!=null)
             outStream.writeUTF(title);
-        new ObjectOutputStream(outStream).writeObject(layout);
     }
 
     public void fillOrderList(List<ContainerView> containers) {

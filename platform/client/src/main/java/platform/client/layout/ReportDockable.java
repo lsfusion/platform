@@ -6,7 +6,9 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
 import platform.client.navigator.ClientNavigator;
 import platform.client.form.ClientReportData;
+import platform.client.ClientObjectProxy;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.CompressingInputStream;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,11 +38,11 @@ public class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
 
-        JasperDesign design = (JasperDesign) new ObjectInputStream(new ByteArrayInputStream(remoteForm.getReportDesignByteArray())).readObject();
+        JasperDesign design = ClientObjectProxy.retrieveJasperDesign(remoteForm);
         JasperReport report = JasperCompileManager.compileReport(design);
 
         JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),
-                new ClientReportData(new DataInputStream(new ByteArrayInputStream(remoteForm.getReportDataByteArray()))));
+                new ClientReportData(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getReportDataByteArray())))));
         return prepareViewer(new JRViewer(print));
     }
 

@@ -1,10 +1,13 @@
-package platform.client.form;
+package platform.client.form.editor;
 
 import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
 import platform.client.SwingUtils;
+import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
@@ -89,5 +92,37 @@ public class DatePropertyEditor extends JDateChooser
     public boolean valueChanged() {
         return true;
     }
+
+}
+
+class DatePropertyEditorComponent extends JTextFieldDateEditor {
+
+    public DatePropertyEditorComponent(String datePattern, String maskPattern, char placeholder) {
+        super(datePattern, maskPattern, placeholder);
+
+        setBorder(new EmptyBorder(0, 1, 0, 0));
+
+/*        SwingUtils.addFocusTraversalKey(this,
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));*/
+
+    }
+
+    @Override
+    public boolean processKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+
+        // не ловим ввод, чтобы его словил сам JTable и обработал
+        return ke.getKeyCode() != KeyEvent.VK_ENTER && super.processKeyBinding(ks, ke, condition, pressed);
+    }
+
+    //а вот так будем дурить их protected метод
+    public boolean publicProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
+        return processKeyBinding(ks, ke, condition, pressed);
+    }
+
+/*    @Override
+    public void focusLost(FocusEvent focusEvent) {
+        super.focusLost(focusEvent);
+    }*/
 
 }

@@ -1,4 +1,6 @@
-package platform.client.form;
+package platform.client.form.editor;
+
+import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -10,7 +12,7 @@ import java.awt.event.MouseEvent;
 public class BitPropertyEditor extends JCheckBox
                         implements PropertyEditorComponent {
 
-    boolean isNull = false;
+    private boolean isNull = false;
 
     public BitPropertyEditor(Object value) {
 

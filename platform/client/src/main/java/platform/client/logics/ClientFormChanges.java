@@ -8,7 +8,7 @@ import java.util.*;
 
 public class ClientFormChanges {
 
-    public Map<ClientGroupObjectImplementView,Boolean> classViews;
+    public final Map<ClientGroupObjectImplementView,Boolean> classViews;
     public Map<ClientGroupObjectImplementView,ClientGroupObjectValue> objects;
     public Map<ClientGroupObjectImplementView, List<ClientGroupObjectValue>> gridObjects;
     public Map<ClientPropertyView,Map<ClientGroupObjectValue,Object>> gridProperties;

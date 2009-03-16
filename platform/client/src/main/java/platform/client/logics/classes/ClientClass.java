@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
 abstract public class ClientClass implements Serializable {
 
     public int ID;
-    public String caption;
+    private String caption;
 
     public boolean hasChilds() {
         return false;
@@ -37,9 +37,9 @@ abstract public class ClientClass implements Serializable {
     abstract public PropertyRendererComponent getRendererComponent(Format format);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
 
-    abstract public Class getJavaClass() ;
+    protected abstract Class getJavaClass() ;
 
-    protected ClientClass(DataInputStream inStream) throws IOException {
+    ClientClass(DataInputStream inStream) throws IOException {
         ID = inStream.readInt();
         caption = inStream.readUTF();        
     }

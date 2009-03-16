@@ -12,14 +12,11 @@ public class ClientContainerView extends ClientComponentView {
 
     public String title;
 
-    LayoutManager layout;
-
     public ClientContainerView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
         ID = inStream.readInt();
         if(!inStream.readBoolean())
             title = inStream.readUTF();
-        layout = (LayoutManager) new ObjectInputStream(inStream).readObject();
     }
 }

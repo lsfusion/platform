@@ -25,11 +25,11 @@ public abstract class AbstractNavigator extends JPanel {
     private final ImageIcon formIcon = new ImageIcon(getClass().getResource("/platform/navigator/images/form.gif"));
     private final ImageIcon reportIcon = new ImageIcon(getClass().getResource("/platform/navigator/images/report.gif"));
 
-    public RemoteNavigatorInterface remoteNavigator;
+    public final RemoteNavigatorInterface remoteNavigator;
 
-    AbstractNavigator.NavigatorTree tree;
+    final AbstractNavigator.NavigatorTree tree;
 
-    public AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
+    AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
 
         remoteNavigator = iremoteNavigator;
 
@@ -48,7 +48,7 @@ public abstract class AbstractNavigator extends JPanel {
     class NavigatorTree extends JTree {
 
         DefaultMutableTreeNode rootNode;
-        DefaultTreeModel model;
+        final DefaultTreeModel model;
 
         public NavigatorTree() {
 
@@ -64,7 +64,7 @@ public abstract class AbstractNavigator extends JPanel {
                     try {
                         addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
                     } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        throw new RuntimeException("Ошибка при получении информации о формах", e);
                     }
                 }
 

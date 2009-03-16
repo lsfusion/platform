@@ -1,6 +1,8 @@
 package platform.client.logics.classes;
 
 import platform.client.form.*;
+import platform.client.form.renderer.StringPropertyRenderer;
+import platform.client.form.editor.StringPropertyEditor;
 import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
@@ -9,7 +11,7 @@ import java.text.Format;
 
 public class ClientStringClass extends ClientClass {
 
-    int length;
+    private int length;
 
     public ClientStringClass(DataInputStream inStream) throws IOException {
         super(inStream);

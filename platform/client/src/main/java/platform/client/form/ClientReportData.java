@@ -14,9 +14,9 @@ import platform.base.EmptyIterator;
 
 public class ClientReportData implements JRDataSource {
 
-    private Map<String,Integer> objects = new HashMap<String,Integer>();
-    private Map<String,Integer> properties = new HashMap<String,Integer>();
-    Iterator<ClientRow> iterator;
+    private final Map<String,Integer> objects = new HashMap<String,Integer>();
+    private final Map<String,Integer> properties = new HashMap<String,Integer>();
+    private Iterator<ClientRow> iterator;
 
     public ClientReportData(DataInputStream inStream) throws IOException {
 
@@ -40,7 +40,7 @@ public class ClientReportData implements JRDataSource {
         iterator = rows.iterator();
     }
 
-    ClientRow currentRow;
+    private ClientRow currentRow;
     public boolean next() throws JRException {
         if(!iterator.hasNext()) return false;
         currentRow = iterator.next();
@@ -71,8 +71,8 @@ public class ClientReportData implements JRDataSource {
     }
 
     class ClientRow {
-        Map<Integer,Integer> keys = new HashMap<Integer, Integer>();
-        Map<Integer,Object> values = new HashMap<Integer, Object>();
+        final Map<Integer,Integer> keys = new HashMap<Integer, Integer>();
+        final Map<Integer,Object> values = new HashMap<Integer, Object>();
 
         ClientRow(DataInputStream inStream) throws IOException {
             for(int i=0;i<objects.size();i++)

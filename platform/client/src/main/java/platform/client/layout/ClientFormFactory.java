@@ -13,7 +13,7 @@ import java.rmi.RemoteException;
 
 class ClientFormFactory implements DockFactory<FormDockable,Integer> {
 
-    ClientNavigator navigator;
+    private final ClientNavigator navigator;
     ClientFormFactory(ClientNavigator inavigator) {
         navigator = inavigator;
     }

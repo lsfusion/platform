@@ -10,7 +10,7 @@ import bibliothek.gui.dock.action.LocationHint;
 // подкидывает действия стандартные типа закрытия
 class LayoutActionGuard implements ActionGuard {
 
-    DefaultDockActionSource Source;
+    private final DefaultDockActionSource Source;
 
     LayoutActionGuard(DockController Controller) {
         Source = new DefaultDockActionSource(
