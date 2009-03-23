@@ -87,7 +87,7 @@ public class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>
         return expr.hash() + values.hashCode()*31;
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return expr.hashCode() + values.hashCode()*31;
     }
 

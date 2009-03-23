@@ -27,8 +27,8 @@ public abstract class DataSource<K,V> extends Source<K,V> {
         return (keys.size()>0?getKeyName(keys.iterator().next()):"subkey");
     }
 
-//    abstract <MK,MV> DataSource<K, Object> merge(DataSource<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps);
-public <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> merge, Map<K, MK> mergeKeys, Map<MV, Object> mergeProps) {
+    //    abstract <MK,MV> DataSource<K, Object> merge(DataSource<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps);
+    public <MK, MV> DataSource<K, Object> merge(DataSource<MK, MV> merge, Map<K, MK> mergeKeys, Map<MV, Object> mergeProps) {
         if(this== merge) {
             for(Map.Entry<K,MK> MapKey : mergeKeys.entrySet())
                 if(!MapKey.getKey().equals(MapKey.getValue()))

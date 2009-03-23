@@ -24,10 +24,7 @@ import platform.server.logics.data.IDTable;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.session.ChangeObjectValue;
-import platform.server.logics.session.ChangeValue;
-import platform.server.logics.session.DataSession;
-import platform.server.logics.session.PropertyUpdateView;
+import platform.server.logics.session.*;
 import platform.server.where.Where;
 
 import java.sql.SQLException;
@@ -466,590 +463,707 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         return session.hasChanges();
     }
 
+    // транзакция для отката при exception'ах
+    private class ApplyTransaction {
+
+        private class Group {
+
+            private class Object {
+                ObjectImplement object;
+                Integer idObject;
+                int updated;
+                RemoteClass objectClass;
+
+                private Object(ObjectImplement iObject) {
+                    object = iObject;
+                    idObject = object.idObject;
+                    updated = object.updated;
+                    objectClass = object.objectClass;
+                }
+
+                void rollback() {
+                    object.idObject = idObject;
+                    object.updated = updated;
+                    object.objectClass = objectClass;
+                }
+            }
+
+            GroupObjectImplement group;
+            Set<Filter> filters;
+            LinkedHashMap<PropertyObjectImplement,Boolean> orders;
+            boolean upKeys,downKeys;
+            List<GroupObjectValue> keys;
+            // какие ключи активны
+            Map<GroupObjectValue,Map<PropertyObjectImplement, java.lang.Object>> keyOrders;
+            int updated;
+
+            Collection<Object> objects = new ArrayList<Object>();
+
+            private Group(GroupObjectImplement iGroup) {
+                group = iGroup;
+
+                filters = new HashSet<Filter>(group.filters);
+                orders = new LinkedHashMap<PropertyObjectImplement, Boolean>(group.orders);
+                upKeys = group.upKeys;
+                downKeys = group.downKeys;
+                keys = group.keys;
+                keyOrders = group.keyOrders;
+                updated = group.updated;
+
+                for(ObjectImplement object : group)
+                    objects.add(new Object(object));
+            }
+
+            void rollback() throws SQLException {
+                group.filters = filters;
+                group.orders = orders;
+                group.upKeys = upKeys;
+                group.downKeys = downKeys;
+                group.keys = keys;
+                group.keyOrders = keyOrders;
+                group.updated = updated;
+
+                for(Object object : objects)
+                    object.rollback();
+
+                // восстанавливаем ключи в сессии
+                int groupGID = getGroupObjectGID(group);
+                ViewTable insertTable = BL.tableFactory.viewTables.get(group.size()-1);
+                insertTable.dropViewID(session, groupGID);
+                for(GroupObjectValue keyRow : group.keys) {
+                    // закинем сразу ключи для св-в чтобы Join'ить
+                    Map<KeyField,Integer> viewKeyInsert = new HashMap<KeyField, Integer>();
+                    viewKeyInsert.put(insertTable.view,groupGID);
+                    // важен правильный порядок в KeyRow
+                    ListIterator<KeyField> ivk = insertTable.objects.listIterator();
+                    for(ObjectImplement objectKey : group)
+                        viewKeyInsert.put(ivk.next(), keyRow.get(objectKey));
+                    session.insertRecord(insertTable,viewKeyInsert,new HashMap<PropertyField, java.lang.Object>());
+                }                
+            }
+        }
+
+        Collection<Group> groups = new ArrayList<Group>();
+        Map<PropertyView,Boolean> interfacePool;
+
+        Map<Property, Property.Change> propertyChanges;
+        Map<PropertyUpdateView, DataChanges> incrementChanges;
+
+        ApplyTransaction() {
+            for(GroupObjectImplement group : RemoteForm.this.groups)
+                groups.add(new Group(group));
+            interfacePool = new HashMap<PropertyView, Boolean>(RemoteForm.this.interfacePool);
+
+            if(dataChanged) {
+                incrementChanges = new HashMap<PropertyUpdateView, DataChanges>(session.incrementChanges);
+                propertyChanges = new HashMap<Property, Property.Change>(session.propertyChanges);
+            }
+        }
+
+        void rollback() throws SQLException {
+            for(Group group : groups)
+                group.rollback();
+            RemoteForm.this.interfacePool = interfacePool;
+
+            if(dataChanged) {
+                session.incrementChanges = incrementChanges;
+                session.propertyChanges = propertyChanges;
+            }
+        }
+    }
+
     private static int DIRECTION_DOWN = 0;
     private static int DIRECTION_UP = 1;
     private static int DIRECTION_CENTER = 2;
 
     public FormChanges endApply() throws SQLException {
 
-        FormChanges result = new FormChanges();
+        ApplyTransaction transaction = new ApplyTransaction();
 
-        // если изменились данные, применяем изменения
-        Collection<Property> changedProps;
-        Collection<RemoteClass> changedClasses = new HashSet<RemoteClass>();
-        if(dataChanged)
+        try {
+            FormChanges result = new FormChanges();
+            
+            // если изменились данные, применяем изменения
+            Collection<Property> changedProps;
+            Collection<RemoteClass> changedClasses = new HashSet<RemoteClass>();
+            if(dataChanged)
             changedProps = session.update(this,changedClasses);
-        else
-            changedProps = new ArrayList<Property>();
+            else
+                changedProps = new ArrayList<Property>();
 
-        // бежим по списку вниз
-        if(structUpdated) {
-            // построим Map'ы
-            // очистим старые
+            // бежим по списку вниз
+            if(structUpdated) {
+                // построим Map'ы
+                // очистим старые
+
+                for(GroupObjectImplement group : groups) {
+                    group.mapFilters = new HashSet<Filter>();
+                    group.mapOrders = new ArrayList<PropertyView>();
+                }
+
+                // фильтры
+                Set<Filter> filters = new HashSet<Filter>();
+                filters.addAll(fixedFilters);
+                for (RegularFilter regFilter : regularFilterValues.values()) filters.add(regFilter.filter);
+                for (Filter filter : userFilters) {
+                    // если вид панельный, то фильтры не нужны
+                    if (!filter.property.getApplyObject().gridClassView) continue;
+                    filters.add(filter);
+                }
+
+                for(Filter filt : filters)
+                    filt.getApplyObject().mapFilters.add(filt);
+
+                // порядки
+                for(PropertyView order : orders.keySet())
+                    order.view.getApplyObject().mapOrders.add(order);
+
+            }
 
             for(GroupObjectImplement group : groups) {
-                group.mapFilters = new HashSet<Filter>();
-                group.mapOrders = new ArrayList<PropertyView>();
-            }
 
-            // фильтры
-            Set<Filter> filters = new HashSet<Filter>();
-            filters.addAll(fixedFilters);
-            for (RegularFilter regFilter : regularFilterValues.values()) filters.add(regFilter.filter);
-            for (Filter filter : userFilters) {
-                // если вид панельный, то фильтры не нужны
-                if (!filter.property.getApplyObject().gridClassView) continue;
-                filters.add(filter);
-            }
+                if ((group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) != 0) {
+                    result.classViews.put(group, group.gridClassView);
+                }
+                // если изменились :
+                // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3)
+                boolean updateKeys = (group.updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0;
 
-            for(Filter Filt : filters)
-                Filt.getApplyObject().mapFilters.add(Filt);
-
-            // порядки
-            for(PropertyView Order : orders.keySet())
-                Order.view.getApplyObject().mapOrders.add(Order);
-
-        }
-
-        for(GroupObjectImplement group : groups) {
-
-            if ((group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) != 0) {
-                result.classViews.put(group, group.gridClassView);
-            }
-            // если изменились :
-            // хоть один класс из этого GroupObjectImplement'a - (флаг Updated - 3)
-            boolean updateKeys = (group.updated & GroupObjectImplement.UPDATED_GRIDCLASS)!=0;
-
-            // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
-            // фильтры
-            // если изменилась структура или кто-то изменил класс, перепроверяем
-            if(structUpdated) {
-                Set<Filter> NewFilter = new HashSet<Filter>();
-                for(Filter Filt : group.mapFilters)
-                    if(Filt.IsInInterface(group)) NewFilter.add(Filt);
-
-                updateKeys |= !NewFilter.equals(group.filters);
-                group.filters = NewFilter;
-            } else
-                for(Filter Filt : group.mapFilters)
-                    if(Filt.ClassUpdated(group))
-                        updateKeys |= (Filt.IsInInterface(group)? group.filters.add(Filt): group.filters.remove(Filt));
-
-            // порядки
-            boolean setOrderChanged = false;
-            Set<PropertyObjectImplement> setOrders = new HashSet<PropertyObjectImplement>(group.orders.keySet());
-            for(PropertyView order : group.mapOrders) {
+                // фильтр\порядок (надо сначала определить что в интерфейсе (верхних объектов Group и класса этого Group) в нем затем сравнить с теми что были до) - (Filters, Orders объектов)
+                // фильтры
                 // если изменилась структура или кто-то изменил класс, перепроверяем
-                if(structUpdated || order.view.classUpdated(group))
-                    setOrderChanged = (order.view.isInInterface(group)?setOrders.add(order.view): group.orders.remove(order));
-            }
-            if(structUpdated || setOrderChanged) {
-                // переформирываваем порядок, если структура или принадлежность Order'у изменилась
-                LinkedHashMap<PropertyObjectImplement,Boolean> newOrder = new LinkedHashMap<PropertyObjectImplement, Boolean>();
-                for(PropertyView Order : group.mapOrders)
-                    if(setOrders.contains(Order.view)) newOrder.put(Order.view, orders.get(Order));
+                if(structUpdated) {
+                    Set<Filter> newFilter = new HashSet<Filter>();
+                    for(Filter filt : group.mapFilters)
+                        if(filt.isInInterface(group)) newFilter.add(filt);
 
-                updateKeys |= setOrderChanged || !(new ArrayList<Map.Entry<PropertyObjectImplement,Boolean>>(group.orders.entrySet())).equals(
-                        new ArrayList<Map.Entry<PropertyObjectImplement,Boolean>>(newOrder.entrySet())); //Group.Orders.equals(NewOrder)
-                group.orders = newOrder;
-            }
+                    updateKeys |= !newFilter.equals(group.filters);
+                    group.filters = newFilter;
+                } else
+                    for(Filter filt : group.mapFilters)
+                        if(filt.classUpdated(group))
+                            updateKeys |= (filt.isInInterface(group)? group.filters.add(filt): group.filters.remove(filt));
 
-            // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
-            if(!updateKeys)
-                for(Filter filt : group.filters)
-                    if(filt.objectUpdated(group)) {updateKeys = true; break;}
-            if(!updateKeys)
-                for(PropertyObjectImplement order : group.orders.keySet())
-                    if(order.objectUpdated(group)) {updateKeys = true; break;}
-            // проверим на изменение данных
-            if(!updateKeys)
-                for(Filter filt : group.filters)
-                    if(dataChanged && filt.dataUpdated(changedProps)) {updateKeys = true; break;}
-            if(!updateKeys)
-                for(PropertyObjectImplement order : group.orders.keySet())
-                    if(dataChanged && changedProps.contains(order.property)) {updateKeys = true; break;}
-            // классы удалились\добавились
-            if(!updateKeys && dataChanged) {
-                for(ObjectImplement object : group)
-                    if(changedClasses.contains(object.gridClass)) {updateKeys = true; break;}
-            }
+                // порядки
+                boolean setOrderChanged = false;
+                Set<PropertyObjectImplement> setOrders = new HashSet<PropertyObjectImplement>(group.orders.keySet());
+                for(PropertyView order : group.mapOrders) {
+                    // если изменилась структура или кто-то изменил класс, перепроверяем
+                    if(structUpdated || order.view.classUpdated(group))
+                        setOrderChanged = (order.view.isInInterface(group)?setOrders.add(order.view):group.orders.remove(order.view));
+                }
+                if(structUpdated || setOrderChanged) {
+                    // переформирываваем порядок, если структура или принадлежность Order'у изменилась
+                    LinkedHashMap<PropertyObjectImplement,Boolean> newOrder = new LinkedHashMap<PropertyObjectImplement, Boolean>();
+                    for(PropertyView order : group.mapOrders)
+                        if(setOrders.contains(order.view)) newOrder.put(order.view, orders.get(order));
 
-            // по возврастанию (0), убыванию (1), центру (2) и откуда начинать
-            Map<PropertyObjectImplement,Object> propertySeeks = new HashMap<PropertyObjectImplement, Object>();
+                    updateKeys |= setOrderChanged || !(new ArrayList<Entry<PropertyObjectImplement,Boolean>>(group.orders.entrySet())).equals(
+                            new ArrayList<Entry<PropertyObjectImplement,Boolean>>(newOrder.entrySet())); //Group.Orders.equals(NewOrder)
+                    group.orders = newOrder;
+                }
 
-            // объект на который будет делаться активным после нахождения ключей
-            GroupObjectValue currentObject = group.getObjectValue();
+                // объекты задействованные в фильтре\порядке (по Filters\Orders верхних элементов GroupImplement'ов на флаг Updated - 0)
+                if(!updateKeys)
+                    for(Filter filt : group.filters)
+                        if(filt.objectUpdated(group)) {updateKeys = true; break;}
+                if(!updateKeys)
+                    for(PropertyObjectImplement order : group.orders.keySet())
+                        if(order.objectUpdated(group)) {updateKeys = true; break;}
+                // проверим на изменение данных
+                if(!updateKeys)
+                    for(Filter filt : group.filters)
+                        if(dataChanged && filt.dataUpdated(changedProps)) {updateKeys = true; break;}
+                if(!updateKeys)
+                    for(PropertyObjectImplement order : group.orders.keySet())
+                        if(dataChanged && changedProps.contains(order.property)) {updateKeys = true; break;}
+                // классы удалились\добавились
+                if(!updateKeys && dataChanged) {
+                    for(ObjectImplement object : group)
+                        if(changedClasses.contains(object.gridClass)) {updateKeys = true; break;}
+                }
 
-            // объект относительно которого будет устанавливаться фильтр
-            GroupObjectValue objectSeeks = group.getObjectValue();
-            int direction;
-            boolean hasMoreKeys = true;
+                // по возврастанию (0), убыванию (1), центру (2) и откуда начинать
+                Map<PropertyObjectImplement,Object> propertySeeks = new HashMap<PropertyObjectImplement, Object>();
 
-            if (objectSeeks.containsValue(null)) {
-                objectSeeks = new GroupObjectValue();
-                direction = DIRECTION_DOWN;
-            } else
-                direction = DIRECTION_CENTER;
+                // объект на который будет делаться активным после нахождения ключей
+                GroupObjectValue currentObject = group.getObjectValue();
 
-            // Различные переходы - в самое начало или конец
-            Integer pendingChanges = pendingGroupChanges.get(group);
-            if (pendingChanges == null) pendingChanges = -1;
+                // объект относительно которого будет устанавливаться фильтр
+                GroupObjectValue objectSeeks = group.getObjectValue();
+                int direction;
+                boolean hasMoreKeys = true;
 
-            if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_FIRSTROW) {
-                objectSeeks = new GroupObjectValue();
-                currentObject = null;
-                updateKeys = true;
-                hasMoreKeys = false;
-                direction = DIRECTION_DOWN;
-            }
+                if (objectSeeks.containsValue(null)) {
+                    objectSeeks = new GroupObjectValue();
+                    direction = DIRECTION_DOWN;
+                } else
+                    direction = DIRECTION_CENTER;
 
-            if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW) {
-                objectSeeks = new GroupObjectValue();
-                currentObject = null;
-                updateKeys = true;
-                hasMoreKeys = false;
-                direction = DIRECTION_UP;
-            }
+                // Различные переходы - в самое начало или конец
+                Integer pendingChanges = pendingGroupChanges.get(group);
+                if (pendingChanges == null) pendingChanges = -1;
 
-            // один раз читаем не так часто делается, поэтому не будем как с фильтрами
-            for(PropertyObjectImplement Property : userPropertySeeks.keySet()) {
-                if(Property.getApplyObject()== group) {
-                    propertySeeks.put(Property, userPropertySeeks.get(Property));
+                if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_FIRSTROW) {
+                    objectSeeks = new GroupObjectValue();
                     currentObject = null;
                     updateKeys = true;
-                    direction = DIRECTION_CENTER;
+                    hasMoreKeys = false;
+                    direction = DIRECTION_DOWN;
                 }
-            }
-            for(ObjectImplement Object : userObjectSeeks.keySet()) {
-                if(Object.groupTo == group) {
-                    objectSeeks.put(Object, userObjectSeeks.get(Object));
-                    currentObject.put(Object, userObjectSeeks.get(Object));
+
+                if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW) {
+                    objectSeeks = new GroupObjectValue();
+                    currentObject = null;
                     updateKeys = true;
-                    direction = DIRECTION_CENTER;
-                }
-            }
-
-            if(!updateKeys && (group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) !=0) {
-               // изменился "классовый" вид перечитываем св-ва
-                objectSeeks = group.getObjectValue();
-                updateKeys = true;
-                direction = DIRECTION_CENTER;
-            }
-
-            if(!updateKeys && group.gridClassView && (group.updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
-                // листание - объекты стали близки к краю (object не далеко от края - надо хранить список не базу же дергать) - изменился объект
-                int KeyNum = group.keys.indexOf(group.getObjectValue());
-                // если меньше PageSize осталось и сверху есть ключи
-                if(KeyNum< group.pageSize && group.upKeys) {
+                    hasMoreKeys = false;
                     direction = DIRECTION_UP;
-                    updateKeys = true;
+                }
 
-                    int lowestInd = group.pageSize *2-1;
-                    if (lowestInd >= group.keys.size()) {
-                        objectSeeks = new GroupObjectValue();
-                        hasMoreKeys = false;
-                    } else {
-                        objectSeeks = group.keys.get(lowestInd);
-                        propertySeeks = group.keyOrders.get(objectSeeks);
+                // один раз читаем не так часто делается, поэтому не будем как с фильтрами
+                for(PropertyObjectImplement Property : userPropertySeeks.keySet()) {
+                    if(Property.getApplyObject()== group) {
+                        propertySeeks.put(Property, userPropertySeeks.get(Property));
+                        currentObject = null;
+                        updateKeys = true;
+                        direction = DIRECTION_CENTER;
                     }
+                }
+                for(ObjectImplement object : userObjectSeeks.keySet()) {
+                    if(object.groupTo == group) {
+                        objectSeeks.put(object, userObjectSeeks.get(object));
+                        currentObject.put(object, userObjectSeeks.get(object));
+                        updateKeys = true;
+                        direction = DIRECTION_CENTER;
+                    }
+                }
 
-                } else {
-                    // наоборот вниз
-                    if(KeyNum>= group.keys.size()- group.pageSize && group.downKeys) {
-                        direction = DIRECTION_DOWN;
+                if(!updateKeys && (group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) !=0) {
+                   // изменился "классовый" вид перечитываем св-ва
+                    objectSeeks = group.getObjectValue();
+                    updateKeys = true;
+                    direction = DIRECTION_CENTER;
+                }
+
+                if(!updateKeys && group.gridClassView && (group.updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
+                    // листание - объекты стали близки к краю (object не далеко от края - надо хранить список не базу же дергать) - изменился объект
+                    int keyNum = group.keys.indexOf(group.getObjectValue());
+                    // если меньше PageSize осталось и сверху есть ключи
+                    if(keyNum< group.pageSize && group.upKeys) {
+                        direction = DIRECTION_UP;
                         updateKeys = true;
 
-                        int highestInd = group.keys.size()- group.pageSize *2;
-                        if (highestInd < 0) {
+                        int lowestInd = group.pageSize *2-1;
+                        if (lowestInd >= group.keys.size()) {
                             objectSeeks = new GroupObjectValue();
                             hasMoreKeys = false;
                         } else {
-                            objectSeeks = group.keys.get(highestInd);
+                            objectSeeks = group.keys.get(lowestInd);
                             propertySeeks = group.keyOrders.get(objectSeeks);
                         }
+
+                    } else {
+                        // наоборот вниз
+                        if(keyNum>= group.keys.size()- group.pageSize && group.downKeys) {
+                            direction = DIRECTION_DOWN;
+                            updateKeys = true;
+
+                            int highestInd = group.keys.size()- group.pageSize *2;
+                            if (highestInd < 0) {
+                                objectSeeks = new GroupObjectValue();
+                                hasMoreKeys = false;
+                            } else {
+                                objectSeeks = group.keys.get(highestInd);
+                                propertySeeks = group.keyOrders.get(objectSeeks);
+                            }
+                        }
                     }
                 }
-            }
 
-            if(updateKeys) {
-                // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
+                if(updateKeys) {
+                    // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
 
-                // проверим на интегральные классы в Group'e
-                for(ObjectImplement Object : group)
-                    if(objectSeeks.get(Object)==null && Object.baseClass instanceof IntegralClass && !group.gridClassView)
-                        objectSeeks.put(Object,1);
+                    // проверим на интегральные классы в Group'e
+                    for(ObjectImplement object : group)
+                        if(objectSeeks.get(object)==null && object.baseClass instanceof IntegralClass && !group.gridClassView)
+                            objectSeeks.put(object,1);
 
-                // докидываем Join'ами (INNER) фильтры, порядки
+                    // докидываем Join'ами (INNER) фильтры, порядки
 
-                // уберем все некорректности в Seekах :
-                // корректно если : PropertySeeks = Orders или (Orders.sublist(PropertySeeks.size) = PropertySeeks и ObjectSeeks - пустое)
-                // если Orders.sublist(PropertySeeks.size) != PropertySeeks, тогда дочитываем ObjectSeeks полностью
-                // выкидываем лишние PropertySeeks, дочитываем недостающие Orders в PropertySeeks
-                // также если панель то тупо прочитаем объект
-                boolean notEnoughOrders = !(propertySeeks.keySet().equals(group.orders.keySet()) || ((propertySeeks.size()< group.orders.size() && (
-                        new HashSet<PropertyObjectImplement>((new ArrayList<PropertyObjectImplement>(group.orders.keySet())).subList(0, propertySeeks.size())))
-                        .equals(propertySeeks.keySet())) && objectSeeks.size()==0));
-                boolean objectFound = true;
-                if((notEnoughOrders && objectSeeks.size()< group.size()) || !group.gridClassView) {
-                    // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
-                    JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group);
-                    selectKeys.putKeyWhere(objectSeeks);
-                    group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
-                    for(Entry<PropertyObjectImplement,Object> property : propertySeeks.entrySet())
-                        selectKeys.and(new CompareWhere(property.getKey().getSourceExpr(group.getClassGroup(),selectKeys.mapKeys, session),
-                                property.getKey().property.getType().getExpr(property.getValue()), Compare.EQUALS));
+                    // уберем все некорректности в Seekах :
+                    // корректно если : PropertySeeks = Orders или (Orders.sublist(PropertySeeks.size) = PropertySeeks и ObjectSeeks - пустое)
+                    // если Orders.sublist(PropertySeeks.size) != PropertySeeks, тогда дочитываем ObjectSeeks полностью
+                    // выкидываем лишние PropertySeeks, дочитываем недостающие Orders в PropertySeeks
+                    // также если панель то тупо прочитаем объект
+                    boolean notEnoughOrders = !(propertySeeks.keySet().equals(group.orders.keySet()) || ((propertySeeks.size()< group.orders.size() && (
+                            new HashSet<PropertyObjectImplement>((new ArrayList<PropertyObjectImplement>(group.orders.keySet())).subList(0, propertySeeks.size())))
+                            .equals(propertySeeks.keySet())) && objectSeeks.size()==0));
+                    boolean objectFound = true;
+                    if((notEnoughOrders && objectSeeks.size()< group.size()) || !group.gridClassView) {
+                        // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
+                        JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group);
+                        selectKeys.putKeyWhere(objectSeeks);
+                        group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
+                        for(Entry<PropertyObjectImplement,Object> property : propertySeeks.entrySet())
+                            selectKeys.and(new CompareWhere(property.getKey().getSourceExpr(group.getClassGroup(),selectKeys.mapKeys, session),
+                                    property.getKey().property.getType().getExpr(property.getValue()), Compare.EQUALS));
 
-                    // докидываем найденные ключи
-                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultKeys = selectKeys.executeSelect(session);
-                    if(resultKeys.size()>0)
+                        // докидываем найденные ключи
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultKeys = selectKeys.executeSelect(session);
+                        if(resultKeys.size()>0)
+                            for(ObjectImplement objectKey : group)
+                                objectSeeks.put(objectKey,resultKeys.keySet().iterator().next().get(objectKey));
+                        else
+                            objectFound = false;
+                    }
+
+                    if(!group.gridClassView) {
+
+                        // если не нашли объект, то придется искать
+                        if (!objectFound) {
+
+                            JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group);
+                            group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
+                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultKeys = selectKeys.executeSelect(session,new LinkedHashMap<Object,Boolean>(),1);
+                            if(resultKeys.size()>0)
+                                for(ObjectImplement objectKey : group)
+                                    objectSeeks.put(objectKey,resultKeys.keySet().iterator().next().get(objectKey));
+                        }
+
+                        // если панель и ObjectSeeks "полный", то просто меняем объект и ничего не читаем
+                        result.objects.put(group, objectSeeks);
+                        changeGroupObject(group, objectSeeks);
+
+                    } else {
+                        // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
+                        if(notEnoughOrders && objectSeeks.size()== group.size() && group.orders.size() > 0) {
+                            JoinQuery<ObjectImplement, PropertyObjectImplement> orderQuery = new JoinQuery<ObjectImplement, PropertyObjectImplement>(objectSeeks.keySet());
+                            orderQuery.putKeyWhere(objectSeeks);
+
+                            for(PropertyObjectImplement order : group.orders.keySet())
+                                orderQuery.properties.put(order, order.getSourceExpr(group.getClassGroup(),orderQuery.mapKeys, session));
+
+                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> resultOrders = orderQuery.executeSelect(session);
+                            for(PropertyObjectImplement order : group.orders.keySet())
+                                propertySeeks.put(order,resultOrders.values().iterator().next().get(order));
+                        }
+
+                        LinkedHashMap<Object,Boolean> selectOrders = new LinkedHashMap<Object, Boolean>();
+                        JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
+                        group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
+
+                        // складываются источники и значения
+                        List<SourceExpr> orderSources = new ArrayList<SourceExpr>();
+                        List<Object> orderWheres = new ArrayList<Object>();
+                        List<Boolean> orderDirs = new ArrayList<Boolean>();
+
+                        // закинем порядки (с LEFT JOIN'ом)
+                        for(Entry<PropertyObjectImplement,Boolean> toOrder : group.orders.entrySet()) {
+                            SourceExpr orderExpr = toOrder.getKey().getSourceExpr(group.getClassGroup(), selectKeys.mapKeys, session);
+                            // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
+                            if(propertySeeks.containsKey(toOrder.getKey())) {
+                                orderSources.add(orderExpr);
+                                orderWheres.add(propertySeeks.get(toOrder.getKey()));
+                                orderDirs.add(toOrder.getValue());
+                            } else //здесь надо что-то волшебное написать, чтобы null не было
+                                selectKeys.and(orderExpr.getWhere());
+                            // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
+                            selectKeys.properties.put(toOrder.getKey(), orderExpr);
+                            selectOrders.put(toOrder.getKey(),toOrder.getValue());
+                        }
+
+                        // докинем в ObjectSeeks недостающие группы
                         for(ObjectImplement objectKey : group)
-                            objectSeeks.put(objectKey,resultKeys.keySet().iterator().next().get(objectKey));
-                    else
-                        objectFound = false;
-                }
+                            if(!objectSeeks.containsKey(objectKey))
+                                objectSeeks.put(objectKey,null);
 
-                if(!group.gridClassView) {
-
-                    // если не нашли объект, то придется искать
-                    if (!objectFound) {
-
-                        JoinQuery<ObjectImplement,Object> SelectKeys = new JoinQuery<ObjectImplement,Object>(group);
-                        group.fillSourceSelect(SelectKeys, group.getClassGroup(),BL.tableFactory, session);
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> ResultKeys = SelectKeys.executeSelect(session,new LinkedHashMap<Object,Boolean>(),1);
-                        if(ResultKeys.size()>0)
-                            for(ObjectImplement ObjectKey : group)
-                                objectSeeks.put(ObjectKey,ResultKeys.keySet().iterator().next().get(ObjectKey));
-                    }
-
-                    // если панель и ObjectSeeks "полный", то просто меняем объект и ничего не читаем
-                    result.objects.put(group, objectSeeks);
-                    changeGroupObject(group, objectSeeks);
-
-                } else {
-                    // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
-                    if(notEnoughOrders && objectSeeks.size()== group.size() && group.orders.size() > 0) {
-                        JoinQuery<ObjectImplement, PropertyObjectImplement> orderQuery = new JoinQuery<ObjectImplement, PropertyObjectImplement>(objectSeeks.keySet());
-                        orderQuery.putKeyWhere(objectSeeks);
-
-                        for(PropertyObjectImplement order : group.orders.keySet())
-                            orderQuery.properties.put(order, order.getSourceExpr(group.getClassGroup(),orderQuery.mapKeys, session));
-
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> resultOrders = orderQuery.executeSelect(session);
-                        for(PropertyObjectImplement order : group.orders.keySet())
-                            propertySeeks.put(order,resultOrders.values().iterator().next().get(order));
-                    }
-
-                    LinkedHashMap<Object,Boolean> selectOrders = new LinkedHashMap<Object, Boolean>();
-                    JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
-                    group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
-
-                    // складываются источники и значения
-                    List<SourceExpr> orderSources = new ArrayList<SourceExpr>();
-                    List<Object> orderWheres = new ArrayList<Object>();
-                    List<Boolean> orderDirs = new ArrayList<Boolean>();
-
-                    // закинем порядки (с LEFT JOIN'ом)
-                    for(Map.Entry<PropertyObjectImplement,Boolean> toOrder : group.orders.entrySet()) {
-                        SourceExpr orderExpr = toOrder.getKey().getSourceExpr(group.getClassGroup(), selectKeys.mapKeys, session);
-                        // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
-                        if(propertySeeks.containsKey(toOrder.getKey())) {
-                            orderSources.add(orderExpr);
-                            orderWheres.add(propertySeeks.get(toOrder.getKey()));
-                            orderDirs.add(toOrder.getValue());
-                        } else //здесь надо что-то волшебное написать, чтобы null не было
-                            selectKeys.and(orderExpr.getWhere());
-                        // также надо кинуть в запрос ключи порядков, чтобы потом скроллить
-                        selectKeys.properties.put(toOrder.getKey(), orderExpr);
-                        selectOrders.put(toOrder.getKey(),toOrder.getValue());
-                    }
-
-                    // докинем в ObjectSeeks недостающие группы
-                    for(ObjectImplement objectKey : group)
-                        if(!objectSeeks.containsKey(objectKey))
-                            objectSeeks.put(objectKey,null);
-
-                    // закинем объекты в порядок
-                    for(ObjectImplement objectKey : objectSeeks.keySet()) {
-                        // также закинем их в порядок и в запрос6
-                        SourceExpr keyExpr = selectKeys.mapKeys.get(objectKey);
-                        selectKeys.properties.put(objectKey,keyExpr); // чтобы упорядочивать
-                        selectOrders.put(objectKey,false);
-                        Integer seekValue = objectSeeks.get(objectKey);
-                        if(seekValue!=null) {
-                            orderSources.add(keyExpr);
-                            orderWheres.add(seekValue);
-                            orderDirs.add(false);
-                        }
-                    }
-
-                    // выполняем запрос
-                    // какой ряд выбранным будем считать
-                    int activeRow = -1;
-                    // результат
-                    LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> keyResult = new LinkedHashMap<Map<ObjectImplement, Integer>, Map<Object, Object>>();
-
-                    int readSize = group.pageSize *3/(direction ==DIRECTION_CENTER?2:1);
-
-                    JoinQuery<ObjectImplement,Object> copySelect = null;
-                    if(direction ==DIRECTION_CENTER)
-                        copySelect = new JoinQuery<ObjectImplement, Object>(selectKeys);
-                    // откопируем в сторону запрос чтобы еще раз потом использовать
-                    // сначала Descending загоним
-                    group.downKeys = false;
-                    group.upKeys = false;
-                    if(direction ==DIRECTION_UP || direction ==DIRECTION_CENTER) {
-                        if(orderSources.size()>0) {
-                            selectKeys.and(generateOrderWheres(orderSources,orderWheres,orderDirs,false,0));
-                            group.downKeys = hasMoreKeys;
+                        // закинем объекты в порядок
+                        for(ObjectImplement objectKey : objectSeeks.keySet()) {
+                            // также закинем их в порядок и в запрос6
+                            SourceExpr keyExpr = selectKeys.mapKeys.get(objectKey);
+                            selectKeys.properties.put(objectKey,keyExpr); // чтобы упорядочивать
+                            selectOrders.put(objectKey,false);
+                            Integer seekValue = objectSeeks.get(objectKey);
+                            if(seekValue!=null) {
+                                orderSources.add(keyExpr);
+                                orderWheres.add(seekValue);
+                                orderDirs.add(false);
+                            }
                         }
 
-//                        System.out.println(group + " KEYS UP ");
-//                        selectKeys.outSelect(session,JoinQuery.reverseOrder(selectOrders),readSize);
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> execResult = selectKeys.executeSelect(session,JoinQuery.reverseOrder(selectOrders), readSize);
-                        ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList<Map<ObjectImplement,Integer>>(execResult.keySet())).listIterator();
-                        while(ik.hasNext()) ik.next();
-                        while(ik.hasPrevious()) {
-                            Map<ObjectImplement,Integer> row = ik.previous();
-                            keyResult.put(row,execResult.get(row));
+                        // выполняем запрос
+                        // какой ряд выбранным будем считать
+                        int activeRow = -1;
+                        // результат
+                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> keyResult = new LinkedHashMap<Map<ObjectImplement, Integer>, Map<Object, Object>>();
+
+                        int readSize = group.pageSize *3/(direction ==DIRECTION_CENTER?2:1);
+
+                        JoinQuery<ObjectImplement,Object> copySelect = null;
+                        if(direction ==DIRECTION_CENTER)
+                            copySelect = new JoinQuery<ObjectImplement, Object>(selectKeys);
+                        // откопируем в сторону запрос чтобы еще раз потом использовать
+                        // сначала Descending загоним
+                        group.downKeys = false;
+                        group.upKeys = false;
+                        if(direction ==DIRECTION_UP || direction ==DIRECTION_CENTER) {
+                            if(orderSources.size()>0) {
+                                selectKeys.and(generateOrderWheres(orderSources,orderWheres,orderDirs,false,0));
+                                group.downKeys = hasMoreKeys;
+                            }
+
+    //                        System.out.println(group + " KEYS UP ");
+    //                        selectKeys.outSelect(session,JoinQuery.reverseOrder(selectOrders),readSize);
+                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> execResult = selectKeys.executeSelect(session,JoinQuery.reverseOrder(selectOrders), readSize);
+                            ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList<Map<ObjectImplement,Integer>>(execResult.keySet())).listIterator();
+                            while(ik.hasNext()) ik.next();
+                            while(ik.hasPrevious()) {
+                                Map<ObjectImplement,Integer> row = ik.previous();
+                                keyResult.put(row,execResult.get(row));
+                            }
+                            group.upKeys = (keyResult.size()== readSize);
+
+                            // проверка чтобы не сбить объект при листании и неправильная (потому как после 2 поиска может получится что надо с 0 без Seek'а перечитывать)
+    //                        if(OrderSources.size()==0)
+                            // сделано так, чтобы при ненайденном объекте текущий объект смещался вверх, а не вниз
+                            activeRow = keyResult.size()-1;
+
                         }
-                        group.upKeys = (keyResult.size()== readSize);
+                        if(direction ==DIRECTION_CENTER) selectKeys = copySelect;
+                        // потом Ascending
+                        if(direction ==DIRECTION_DOWN || direction ==DIRECTION_CENTER) {
+                            if(orderSources.size()>0) {
+                                selectKeys.and(generateOrderWheres(orderSources,orderWheres,orderDirs,true,0));
+                                if(direction !=DIRECTION_CENTER) group.upKeys = hasMoreKeys;
+                            }
 
-                        // проверка чтобы не сбить объект при листании и неправильная (потому как после 2 поиска может получится что надо с 0 без Seek'а перечитывать)
-//                        if(OrderSources.size()==0)
-                        // сделано так, чтобы при ненайденном объекте текущий объект смещался вверх, а не вниз
-                        activeRow = keyResult.size()-1;
+    //                        System.out.println(group + " KEYS DOWN ");
+    //                        selectKeys.outSelect(session,selectOrders,readSize);
+                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> executeList = selectKeys.executeSelect(session, selectOrders, readSize);
+    //                        if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
+                            keyResult.putAll(executeList);
+                            group.downKeys = (executeList.size()== readSize);
 
-                    }
-                    if(direction ==DIRECTION_CENTER) selectKeys = copySelect;
-                    // потом Ascending
-                    if(direction ==DIRECTION_DOWN || direction ==DIRECTION_CENTER) {
-                        if(orderSources.size()>0) {
-                            selectKeys.and(generateOrderWheres(orderSources,orderWheres,orderDirs,true,0));
-                            if(direction !=DIRECTION_CENTER) group.upKeys = hasMoreKeys;
+                            if ((direction == DIRECTION_DOWN || activeRow == -1) && keyResult.size() > 0)
+                                activeRow = 0;
                         }
 
-//                        System.out.println(group + " KEYS DOWN ");
-//                        selectKeys.outSelect(session,selectOrders,readSize);
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> executeList = selectKeys.executeSelect(session, selectOrders, readSize);
-//                        if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
-                        keyResult.putAll(executeList);
-                        group.downKeys = (executeList.size()== readSize);
+                        group.keys = new ArrayList<GroupObjectValue>();
+                        group.keyOrders = new HashMap<GroupObjectValue, Map<PropertyObjectImplement, Object>>();
 
-                        if ((direction == DIRECTION_DOWN || activeRow == -1) && keyResult.size() > 0)
-                            activeRow = 0;
-                    }
+                        // параллельно будем обновлять ключи чтобы Join'ить
 
-                    group.keys = new ArrayList<GroupObjectValue>();
-                    group.keyOrders = new HashMap<GroupObjectValue, Map<PropertyObjectImplement, Object>>();
+                        int groupGID = getGroupObjectGID(group);
+                        ViewTable insertTable = BL.tableFactory.viewTables.get(group.size()-1);
+                        insertTable.dropViewID(session, groupGID);
+                        session.useTemporaryTable(insertTable);
 
-                    // параллельно будем обновлять ключи чтобы Join'ить
+                        for(Entry<Map<ObjectImplement,Integer>,Map<Object,Object>> resultRow : keyResult.entrySet()) {
+                            GroupObjectValue keyRow = new GroupObjectValue();
+                            Map<PropertyObjectImplement,Object> orderRow = new HashMap<PropertyObjectImplement, Object>();
 
-                    int groupGID = getGroupObjectGID(group);
-                    ViewTable insertTable = BL.tableFactory.viewTables.get(group.size()-1);
-                    insertTable.dropViewID(session, groupGID);
+                            // закинем сразу ключи для св-в чтобы Join'ить
+                            Map<KeyField,Integer> viewKeyInsert = new HashMap<KeyField, Integer>();
+                            viewKeyInsert.put(insertTable.view,groupGID);
+                            ListIterator<KeyField> ivk = insertTable.objects.listIterator();
 
-                    for(Entry<Map<ObjectImplement,Integer>,Map<Object,Object>> resultRow : keyResult.entrySet()) {
-                        GroupObjectValue keyRow = new GroupObjectValue();
-                        Map<PropertyObjectImplement,Object> orderRow = new HashMap<PropertyObjectImplement, Object>();
+                            // важен правильный порядок в KeyRow
+                            for(ObjectImplement objectKey : group) {
+                                Integer keyValue = resultRow.getKey().get(objectKey);
+                                keyRow.put(objectKey,keyValue);
+                                viewKeyInsert.put(ivk.next(), keyValue);
+                            }
+                            session.insertRecord(insertTable,viewKeyInsert,new HashMap<PropertyField, Object>());
 
-                        // закинем сразу ключи для св-в чтобы Join'ить
-                        Map<KeyField,Integer> viewKeyInsert = new HashMap<KeyField, Integer>();
-                        viewKeyInsert.put(insertTable.view,groupGID);
-                        ListIterator<KeyField> ivk = insertTable.objects.listIterator();
+                            for(PropertyObjectImplement toOrder : group.orders.keySet())
+                                orderRow.put(toOrder,resultRow.getValue().get(toOrder));
 
-                        // важен правильный порядок в KeyRow
-                        for(ObjectImplement objectKey : group) {
-                            Integer keyValue = resultRow.getKey().get(objectKey);
-                            keyRow.put(objectKey,keyValue);
-                            viewKeyInsert.put(ivk.next(), keyValue);
+                            group.keys.add(keyRow);
+                            group.keyOrders.put(keyRow, orderRow);
                         }
-                        session.insertRecord(insertTable,viewKeyInsert,new HashMap<PropertyField, Object>());
 
-                        for(PropertyObjectImplement toOrder : group.orders.keySet())
-                            orderRow.put(toOrder,resultRow.getValue().get(toOrder));
+                        result.gridObjects.put(group, group.keys);
 
-                        group.keys.add(keyRow);
-                        group.keyOrders.put(keyRow, orderRow);
+                        group.updated = (group.updated | GroupObjectImplement.UPDATED_KEYS);
+
+                        // если ряд никто не подставил и ключи есть пробуем старый найти
+    //                    if(ActiveRow<0 && Group.Keys.size()>0)
+    //                        ActiveRow = Group.Keys.indexOf(Group.GetObjectValue());
+
+                        // если есть в новых ключах старый ключ, то делаем его активным
+                        if (group.keys.contains(currentObject))
+                            activeRow = group.keys.indexOf(currentObject);
+
+                        if(activeRow >=0 && activeRow < group.keys.size()) {
+                            // нашли ряд его выбираем
+                            GroupObjectValue newValue = group.keys.get(activeRow);
+    //                        if (!newValue.equals(Group.GetObjectValue())) {
+                                result.objects.put(group,newValue);
+                                changeGroupObject(group,newValue);
+    //                        }
+                        } else
+                            changeGroupObject(group,new GroupObjectValue());
                     }
-
-                    result.gridObjects.put(group, group.keys);
-
-                    group.updated = (group.updated | GroupObjectImplement.UPDATED_KEYS);
-
-                    // если ряд никто не подставил и ключи есть пробуем старый найти
-//                    if(ActiveRow<0 && Group.Keys.size()>0)
-//                        ActiveRow = Group.Keys.indexOf(Group.GetObjectValue());
-
-                    // если есть в новых ключах старый ключ, то делаем его активным
-                    if (group.keys.contains(currentObject))
-                        activeRow = group.keys.indexOf(currentObject);
-
-                    if(activeRow >=0 && activeRow < group.keys.size()) {
-                        // нашли ряд его выбираем
-                        GroupObjectValue newValue = group.keys.get(activeRow);
-//                        if (!newValue.equals(Group.GetObjectValue())) {
-                            result.objects.put(group,newValue);
-                            changeGroupObject(group,newValue);
-//                        }
-                    } else
-                        changeGroupObject(group,new GroupObjectValue());
                 }
             }
-        }
 
-        Collection<PropertyView> panelProps = new ArrayList<PropertyView>();
-        Map<GroupObjectImplement,Collection<PropertyView>> groupProps = new HashMap<GroupObjectImplement, Collection<PropertyView>>();
+            Collection<PropertyView> panelProps = new ArrayList<PropertyView>();
+            Map<GroupObjectImplement,Collection<PropertyView>> groupProps = new HashMap<GroupObjectImplement, Collection<PropertyView>>();
 
 //        PanelProps.
 
-        for(PropertyView<?> drawProp : properties) {
+            for(PropertyView<?> drawProp : properties) {
 
-            // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
-            boolean read = false;
-            boolean checkClass = false;
-            boolean checkObject = false;
-            int inInterface = 0;
+                // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
+                boolean read = false;
+                boolean checkClass = false;
+                boolean checkObject = false;
+                int inInterface = 0;
 
-            if(drawProp.toDraw !=null) {
-                // если рисуемся в какой-то вид и обновился источник насильно перечитываем все св-ва
-                read = ((drawProp.toDraw.updated & (GroupObjectImplement.UPDATED_KEYS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0);
-                Boolean prevPool = interfacePool.get(drawProp);
-                inInterface = (prevPool==null?0:(prevPool?2:1));
-            }
+                if(drawProp.toDraw !=null) {
+                    // если рисуемся в какой-то вид и обновился источник насильно перечитываем все св-ва
+                    read = ((drawProp.toDraw.updated & (GroupObjectImplement.UPDATED_KEYS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0);
+                    Boolean prevPool = interfacePool.get(drawProp);
+                    inInterface = (prevPool==null?0:(prevPool?2:1));
+                }
 
-            for(ObjectImplement object : drawProp.view.mapping.values())  {
-                if(object.groupTo != drawProp.toDraw) {
-                    // "верхние" объекты интересует только изменение объектов\классов
-                    if((object.updated & ObjectImplement.UPDATED_OBJECT)!=0) {
-                        // изменился верхний объект, перечитываем
-                        read = true;
-                        if((object.updated & ObjectImplement.UPDATED_CLASS)!=0) {
-                            // изменился класс объекта перепроверяем все
-                            if(drawProp.toDraw !=null) checkClass = true;
-                            checkObject = true;
+                for(ObjectImplement object : drawProp.view.mapping.values())  {
+                    if(object.groupTo != drawProp.toDraw) {
+                        // "верхние" объекты интересует только изменение объектов\классов
+                        if((object.updated & ObjectImplement.UPDATED_OBJECT)!=0) {
+                            // изменился верхний объект, перечитываем
+                            read = true;
+                            if((object.updated & ObjectImplement.UPDATED_CLASS)!=0) {
+                                // изменился класс объекта перепроверяем все
+                                if(drawProp.toDraw !=null) checkClass = true;
+                                checkObject = true;
+                            }
+                        }
+                    } else {
+                        // изменился объект и св-во не было классовым
+                        if((object.updated & ObjectImplement.UPDATED_OBJECT)!=0 && (inInterface !=2 || !drawProp.toDraw.gridClassView)) {
+                            read = true;
+                            // изменися класс объекта
+                            if((object.updated & ObjectImplement.UPDATED_CLASS)!=0) checkObject = true;
+                        }
+                        // изменение общего класса
+                        if((object.updated & ObjectImplement.UPDATED_GRIDCLASS)!=0) checkClass = true;
+
+                    }
+                }
+
+                // обновим InterfacePool, было в InInterface
+                if(checkClass || checkObject) {
+                    int newInInterface=0;
+                    if(checkClass)
+                        newInInterface = (drawProp.view.isInInterface(drawProp.toDraw)?2:0);
+                    if((checkObject && !(checkClass && newInInterface==2)) || (checkClass && newInInterface==0 )) // && InInterface==2))
+                        newInInterface = (drawProp.view.isInInterface(null)?1:0);
+
+                    if(inInterface !=newInInterface) {
+                        inInterface = newInInterface;
+
+                        if(inInterface ==0) {
+                            interfacePool.remove(drawProp);
+                            // !!! СЮДА НАДО ВКИНУТЬ УДАЛЕНИЕ ИЗ ИНТЕРФЕЙСА
+                            result.dropProperties.add(drawProp);
+                        }
+                        else
+                            interfacePool.put(drawProp, inInterface ==2);
+                    }
+                }
+
+                if(!read && (dataChanged && changedProps.contains(drawProp.view.property)))
+                    read = true;
+
+                if (!read && dataChanged) {
+                    for (ObjectImplement object : drawProp.view.mapping.values()) {
+                        if (changedClasses.contains(object.baseClass)) {
+                            read = true;
+                            break;
                         }
                     }
-                } else {
-                    // изменился объект и св-во не было классовым
-                    if((object.updated & ObjectImplement.UPDATED_OBJECT)!=0 && (inInterface !=2 || !drawProp.toDraw.gridClassView)) {
-                        read = true;
-                        // изменися класс объекта
-                        if((object.updated & ObjectImplement.UPDATED_CLASS)!=0) checkObject = true;
-                    }
-                    // изменение общего класса
-                    if((object.updated & ObjectImplement.UPDATED_GRIDCLASS)!=0) checkClass = true;
+                }
 
+                if(inInterface >0 && read) {
+                    if(inInterface ==2 && drawProp.toDraw.gridClassView) {
+                        Collection<PropertyView> propList = groupProps.get(drawProp.toDraw);
+                        if(propList==null) {
+                            propList = new ArrayList<PropertyView>();
+                            groupProps.put(drawProp.toDraw,propList);
+                        }
+                        propList.add(drawProp);
+                    } else
+                        panelProps.add(drawProp);
                 }
             }
 
-            // обновим InterfacePool, было в InInterface
-            if(checkClass || checkObject) {
-                int newInInterface=0;
-                if(checkClass)
-                    newInInterface = (drawProp.view.isInInterface(drawProp.toDraw)?2:0);
-                if((checkObject && !(checkClass && newInInterface==2)) || (checkClass && newInInterface==0 )) // && InInterface==2))
-                    newInInterface = (drawProp.view.isInInterface(null)?1:0);
+            // погнали выполнять все собранные запросы и FormChanges
 
-                if(inInterface !=newInInterface) {
-                    inInterface = newInInterface;
+            // сначала PanelProps
+            if(panelProps.size()>0) {
+                JoinQuery<Object, PropertyView> selectProps = new JoinQuery<Object, PropertyView>(new ArrayList<Object>());
+                for(PropertyView drawProp : panelProps)
+                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(null,null, session));
 
-                    if(inInterface ==0) {
-                        interfacePool.remove(drawProp);
-                        // !!! СЮДА НАДО ВКИНУТЬ УДАЛЕНИЕ ИЗ ИНТЕРФЕЙСА
-                        result.dropProperties.add(drawProp);
-                    }
-                    else
-                        interfacePool.put(drawProp, inInterface ==2);
+                Map<PropertyView,Object> resultProps = selectProps.executeSelect(session).values().iterator().next();
+                for(PropertyView drawProp : panelProps)
+                    result.panelProperties.put(drawProp,resultProps.get(drawProp));
+            }
+
+            for(Entry<GroupObjectImplement, Collection<PropertyView>> mapGroup : groupProps.entrySet()) {
+                GroupObjectImplement group = mapGroup.getKey();
+                Collection<PropertyView> groupList = mapGroup.getValue();
+
+                JoinQuery<ObjectImplement, PropertyView> selectProps = new JoinQuery<ObjectImplement, PropertyView>(group);
+
+                ViewTable keyTable = BL.tableFactory.viewTables.get(group.size()-1);
+                Join<KeyField, PropertyField> keyJoin = new Join<KeyField,PropertyField>(keyTable);
+
+                ListIterator<KeyField> ikt = keyTable.objects.listIterator();
+                for(ObjectImplement object : group)
+                    keyJoin.joins.put(ikt.next(), selectProps.mapKeys.get(object));
+                keyJoin.joins.put(keyTable.view,keyTable.view.type.getExpr(getGroupObjectGID(group)));
+                selectProps.and(keyJoin.inJoin);
+
+                for(PropertyView drawProp : groupList)
+                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(group.getClassGroup(), selectProps.mapKeys, session));
+
+                LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> resultProps = selectProps.executeSelect(session);
+
+                for(PropertyView drawProp : groupList) {
+                    Map<GroupObjectValue,Object> propResult = new HashMap<GroupObjectValue, Object>();
+                    result.gridProperties.put(drawProp,propResult);
+
+                    for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> resultRow : resultProps.entrySet())
+                        propResult.put(new GroupObjectValue(resultRow.getKey()),resultRow.getValue().get(drawProp));
                 }
             }
 
-            if(!read && (dataChanged && changedProps.contains(drawProp.view.property)))
-                read = true;
+            userPropertySeeks.clear();
+            userObjectSeeks.clear();
 
-            if (!read && dataChanged) {
-                for (ObjectImplement object : drawProp.view.mapping.values()) {
-                    if (changedClasses.contains(object.baseClass)) {
-                        read = true;
-                        break;
-                    }
-                }
+            pendingGroupChanges.clear();
+
+            // сбрасываем все пометки
+            structUpdated = false;
+            for(GroupObjectImplement group : groups) {
+                for(ObjectImplement object : group)
+                    object.updated = 0;
+                group.updated = 0;
             }
-
-            if(inInterface >0 && read) {
-                if(inInterface ==2 && drawProp.toDraw.gridClassView) {
-                    Collection<PropertyView> propList = groupProps.get(drawProp.toDraw);
-                    if(propList==null) {
-                        propList = new ArrayList<PropertyView>();
-                        groupProps.put(drawProp.toDraw,propList);
-                    }
-                    propList.add(drawProp);
-                } else
-                    panelProps.add(drawProp);
-            }
-        }
-
-        // погнали выполнять все собранные запросы и FormChanges
-
-        // сначала PanelProps
-        if(panelProps.size()>0) {
-            JoinQuery<Object, PropertyView> selectProps = new JoinQuery<Object, PropertyView>(new ArrayList<Object>());
-            for(PropertyView drawProp : panelProps)
-                selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(null,null, session));
-
-            Map<PropertyView,Object> resultProps = selectProps.executeSelect(session).values().iterator().next();
-            for(PropertyView drawProp : panelProps)
-                result.panelProperties.put(drawProp,resultProps.get(drawProp));
-        }
-
-        for(Entry<GroupObjectImplement, Collection<PropertyView>> mapGroup : groupProps.entrySet()) {
-            GroupObjectImplement group = mapGroup.getKey();
-            Collection<PropertyView> groupList = mapGroup.getValue();
-
-            JoinQuery<ObjectImplement, PropertyView> selectProps = new JoinQuery<ObjectImplement, PropertyView>(group);
-
-            ViewTable keyTable = BL.tableFactory.viewTables.get(group.size()-1);
-            Join<KeyField, PropertyField> keyJoin = new Join<KeyField,PropertyField>(keyTable);
-
-            ListIterator<KeyField> ikt = keyTable.objects.listIterator();
-            for(ObjectImplement object : group)
-                keyJoin.joins.put(ikt.next(), selectProps.mapKeys.get(object));
-            keyJoin.joins.put(keyTable.view,keyTable.view.type.getExpr(getGroupObjectGID(group)));
-            selectProps.and(keyJoin.inJoin);
-
-            for(PropertyView drawProp : groupList)
-                selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(group.getClassGroup(), selectProps.mapKeys, session));
-
-//            System.out.println(group + " Props ");
-//            System.out.println(selectProps.getComplexity());
-//            selectProps.outSelect(session);
-            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> resultProps = selectProps.executeSelect(session);
-
-            for(PropertyView drawProp : groupList) {
-                Map<GroupObjectValue,Object> propResult = new HashMap<GroupObjectValue, Object>();
-                result.gridProperties.put(drawProp,propResult);
-
-                for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> resultRow : resultProps.entrySet())
-                    propResult.put(new GroupObjectValue(resultRow.getKey()),resultRow.getValue().get(drawProp));
-            }
-        }
-
-        userPropertySeeks.clear();
-        userObjectSeeks.clear();
-
-        pendingGroupChanges.clear();
-
-        // сбрасываем все пометки
-        structUpdated = false;
-        for(GroupObjectImplement group : groups) {
-            for(ObjectImplement object : group)
-                object.updated = 0;
-            group.updated = 0;
-        }
-        dataChanged = false;
+            dataChanged = false;
 
 //        Result.Out(this);
 
-        return result;
+            return result;
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
+        } catch (SQLException e) {
+            transaction.rollback();
+            throw e;
+        }
     }
 
     // возвращает какие объекты отчета фиксируются

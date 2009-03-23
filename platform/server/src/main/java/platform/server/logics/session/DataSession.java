@@ -18,6 +18,7 @@ import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.*;
+import platform.base.BaseUtils;
 
 import java.sql.*;
 import java.util.*;
@@ -203,41 +204,41 @@ public class DataSession  {
     }
 
     // последний параметр
-    public List<Property> update(PropertyUpdateView ToUpdate,Collection<RemoteClass> UpdateClasses) throws SQLException {
+    public List<Property> update(PropertyUpdateView toUpdate,Collection<RemoteClass> updateClasses) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
-        DataChanges toUpdateChanges = incrementChanges.get(ToUpdate);
+        DataChanges toUpdateChanges = incrementChanges.get(toUpdate);
         if(toUpdateChanges==null) toUpdateChanges = changes;
 
-        Collection<Property> ToUpdateProperties = ToUpdate.getUpdateProperties();
-        Collection<Property> NoUpdateProperties = ToUpdate.getNoUpdateProperties();
+        Collection<Property> toUpdateProperties = toUpdate.getUpdateProperties();
+        Collection<Property> noUpdateProperties = toUpdate.getNoUpdateProperties();
         // сначала читаем инкрементные св-ва которые изменились
-        List<Property> IncrementUpdateList = BusinessLogics.getChangedList(ToUpdateProperties,toUpdateChanges,NoUpdateProperties);
-        List<Property> updateList = BusinessLogics.getChangedList(IncrementUpdateList, changes,NoUpdateProperties);
+        List<Property> incrementUpdateList = BusinessLogics.getChangedList(toUpdateProperties,toUpdateChanges,noUpdateProperties);
+        List<Property> updateList = BusinessLogics.getChangedList(incrementUpdateList, changes,noUpdateProperties);
 
-        Map<Property,Integer> RequiredTypes = new HashMap<Property,Integer>();
+        Map<Property,Integer> requiredTypes = new HashMap<Property,Integer>();
         // пробежим вперед пометим свойства которые изменились, но неясно на что
-        for(Property Property : updateList)
-            RequiredTypes.put(Property,ToUpdateProperties.contains(Property)?0:null);
-        Map<Property, Integer> IncrementTypes = getIncrementTypes(updateList, RequiredTypes);
+        for(Property property : updateList)
+            requiredTypes.put(property,toUpdateProperties.contains(property)?0:null);
+        Map<Property, Integer> IncrementTypes = getIncrementTypes(updateList, requiredTypes);
 
         // запускаем IncrementChanges для этого списка
-        for(Property Property : updateList) {
-            Property.Change change = Property.incrementChanges(this,IncrementTypes.get(Property));
+        for(Property property : updateList) {
+            Property.Change change = property.incrementChanges(this,IncrementTypes.get(property));
             // подгоняем тип
-            change.correct(RequiredTypes.get(Property));
-            if(!(Property instanceof MaxGroupProperty) && ToUpdate.toSave(Property))
+            change.correct(requiredTypes.get(property));
+            if(!(property instanceof MaxGroupProperty) && toUpdate.toSave(property))
                 change.save(this);
-            propertyChanges.put(Property, change);
+            propertyChanges.put(property, change);
         }
 
-        UpdateClasses.addAll(toUpdateChanges.addClasses);
-        UpdateClasses.addAll(toUpdateChanges.removeClasses);
+        updateClasses.addAll(toUpdateChanges.addClasses);
+        updateClasses.addAll(toUpdateChanges.removeClasses);
 
         // сбрасываем лог
-        incrementChanges.put(ToUpdate,new DataChanges());
+        incrementChanges.put(toUpdate,new DataChanges());
 
-        return IncrementUpdateList;
+        return incrementUpdateList;
     }
 
     // определяет на что считаться 0,1,2
@@ -452,7 +453,7 @@ public class DataSession  {
     }
 
     private Set<SessionTable> temporaryTables = new HashSet<SessionTable>();
-    private void ensureTemporaryTable(Table table) throws SQLException {
+    public void useTemporaryTable(Table table) throws SQLException {
         if(table instanceof SessionTable && temporaryTables.add((SessionTable) table))
             createTemporaryTable((SessionTable) table);
     }
@@ -520,7 +521,7 @@ public class DataSession  {
     }
 
     public void insertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
-        ensureTemporaryTable(table);
+        useTemporaryTable(table);
 
         for(PropertyField prop : propFields.keySet())
             if(!prop.type.isString(propFields.get(prop))) {
@@ -567,7 +568,7 @@ public class DataSession  {
     }
 
     public void updateInsertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
-        ensureTemporaryTable(table);
+        useTemporaryTable(table);
 
         if(isRecord(table, keyFields)) {
             JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(table.keys);
@@ -616,13 +617,13 @@ public class DataSession  {
     }
 
     public void insertSelect(ModifyQuery modify) throws SQLException {
-        ensureTemporaryTable(modify.table);
+        useTemporaryTable(modify.table);
         executeStatement(getStatement(modify.getInsertSelect(syntax).command, modify.getInsertSelect(syntax).params));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
     public void modifyRecords(ModifyQuery modify) throws SQLException {
-        ensureTemporaryTable(modify.table);
+        useTemporaryTable(modify.table);
         executeStatement(getStatement(modify.getInsertLeftKeys(syntax).command, modify.getInsertLeftKeys(syntax).params));
         updateRecords(modify);
     }
@@ -635,7 +636,15 @@ public class DataSession  {
         return changes.hasChanges();
     }
 
-    public PreparedStatement getStatement(String command, Map<String, TypedObject> params) throws SQLException {
+    public PreparedStatement getStatement(String command, Map<String, TypedObject> paramObjects) throws SQLException {
+
+        char[][] params = new char[paramObjects.size()][];
+        TypedObject[] values = new TypedObject[params.length];
+        int paramNum = 0;
+        for(Map.Entry<String,TypedObject> param : paramObjects.entrySet()) {
+            params[paramNum] = param.getKey().toCharArray();
+            values[paramNum++] = param.getValue();
+        }
 
         // те которые isString сразу транслируем
         List<TypedObject> preparedParams = new ArrayList<TypedObject>();
@@ -644,18 +653,16 @@ public class DataSession  {
         char[] parsed = new char[toparse.length]; int num=0;
         for(int i=0;i<toparse.length;) {
             int charParsed = 0;
-            for(Map.Entry<String,TypedObject> param : params.entrySet()) {
-                String paramName = param.getKey();
-                if(i+paramName.length()<=toparse.length && paramName.equals(new String(toparse,i,paramName.length()))) { // нашли
-                    TypedObject paramValue = param.getValue();
-                    if(paramValue.isString()) { // если можно вручную пропарсить парсим
-                        parsedString = parsedString + new String(parsed,0,num) + paramValue.getString(syntax);
+            for(int p=0;p<params.length;p++) {
+                if(BaseUtils.startsWith(toparse,i,params[p])) { // нашли
+                    if(values[p].isString()) { // если можно вручную пропарсить парсим
+                        parsedString = parsedString + new String(parsed,0,num) + values[p].getString(syntax);
                         parsed = new char[toparse.length-i]; num = 0;
                     } else {
                         parsed[num++] = '?';
-                        preparedParams.add(param.getValue());
+                        preparedParams.add(values[p]);
                     }
-                    charParsed = paramName.length();
+                    charParsed = params[p].length;
                     break;
                 }
             }
@@ -668,7 +675,7 @@ public class DataSession  {
         parsedString = parsedString + new String(parsed,0,num);
 
         PreparedStatement statement = connection.prepareStatement(parsedString);
-        int paramNum = 1;
+        paramNum = 1;
         for(TypedObject param : preparedParams)
             param.writeParam(statement,paramNum++);
 

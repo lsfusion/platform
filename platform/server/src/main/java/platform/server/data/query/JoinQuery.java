@@ -114,7 +114,7 @@ public class JoinQuery<K,V> extends Source<K,V> {
         }
 
         parse = new ParsedQuery<K,V>(this);
-        putCache(this, parse);
+        putCache(this);
 
 //        System.out.println("not cached "+JoinQuery.cacheParse.size());
 //        debugWatch = true;
@@ -213,7 +213,7 @@ public class JoinQuery<K,V> extends Source<K,V> {
     }
 
     // для кэша - возвращает выражения + where чтобы потом еще Orders сравнить
-    <EK,EV> boolean equals(JoinQuery<EK,EV> query,Map<K,EK> equalKeys,Map<V,EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
+    <EK,EV> boolean equals(JoinQuery<EK, EV> query, Map<K, EK> equalKeys, Map<V, EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
         if(this== query) {
             if(BaseUtils.identity(equalKeys) && BaseUtils.identity(mapValues)) {
                 for(V property : properties.keySet())
@@ -330,36 +330,32 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return where.hash()*31+hash;
     }
 
-    static Map<Integer,Collection<JoinCache>> cacheParse = new HashMap<Integer, Collection<JoinCache>>();
+    static Map<Integer,Collection<JoinQuery>> cacheParse = new HashMap<Integer, Collection<JoinQuery>>();
     static <K,V> ParsedQuery<K,V> getCache(JoinQuery<K,V> query) {
-        Collection<JoinCache> hashCaches = cacheParse.get(query.hash());
+        Collection<JoinQuery> hashCaches = cacheParse.get(query.hash());
         if(hashCaches==null) return null;
-        for(JoinCache<?,?> cache : hashCaches) {
-            ParsedQuery<K,V> result = cache.cache(query);
+        for(JoinQuery<?,?> hashQuery : hashCaches) {
+            ParsedQuery<K,V> result = hashQuery.cache(query);
             if(result!=null) return result;
         }
         return null;
     }
-    static <K,V> void putCache(JoinQuery<K,V> query, ParsedQuery<K,V> parsed) {
-        Collection<JoinCache> hashCaches = cacheParse.get(query.hash());
-        if(hashCaches==null) {
-            hashCaches = new ArrayList<JoinCache>();
-            cacheParse.put(query.hash(),hashCaches);
-        }
-        hashCaches.add(new JoinCache<K,V>(query,parsed));
+    <CK,CV> ParsedQuery<CK,CV> cache(JoinQuery<CK,CV> query) {
+        Map<CV,V> mapProps = new HashMap<CV,V>();
+        for(Map<ValueExpr, ValueExpr> mapValues : new Pairs<ValueExpr, ValueExpr>(query.getValues().keySet(), getValues().keySet()))
+            for(Map<CK, K> mapKeys : new Pairs<CK, K>(query.keys, keys))
+                if(query.equals(this, mapKeys, mapProps, mapValues)) // нашли кэш
+                    return new ParsedQuery<CK,CV>(parse,mapKeys,mapProps,mapValues);
+        return null;
     }
 
-    <EK,EV> boolean equalsMap(JoinQuery<EK,EV> query,Map<K,EK> equalKeys,Map<V,EV> equalProperties, Map<ValueExpr, ValueExpr> equalValues) {
-
-        // переберем Values, Keys
-        for(Map<ValueExpr, ValueExpr> valueMap : new Pairs<ValueExpr, ValueExpr>(getValues().keySet(), query.getValues().keySet()))
-            for(Map<K,EK> mapKeys : new Pairs<K,EK>(keys, query.keys))
-                if(equals(query,mapKeys,equalProperties,valueMap)) {
-                    equalKeys.putAll(mapKeys);
-                    equalValues.putAll(valueMap);
-                    return true;
-                }
-        return false;
+    static <K,V> void putCache(JoinQuery<K,V> query) {
+        Collection<JoinQuery> hashCaches = cacheParse.get(query.hash());
+        if(hashCaches==null) {
+            hashCaches = new ArrayList<JoinQuery>();
+            cacheParse.put(query.hash(),hashCaches);
+        }
+        hashCaches.add(query);
     }
 
     // конструктор копирования

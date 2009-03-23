@@ -48,7 +48,7 @@ public class Filter<P extends PropertyInterface> {
         return ChangedProps.contains(property.property);
     }
 
-    boolean IsInInterface(GroupObjectImplement ClassGroup) {
+    boolean isInInterface(GroupObjectImplement ClassGroup) {
         ClassSet ValueClass = value.getValueClass(ClassGroup);
         if(ValueClass==null)
             return property.isInInterface(ClassGroup);
@@ -56,7 +56,7 @@ public class Filter<P extends PropertyInterface> {
             return property.getValueClass(ClassGroup).intersect(ValueClass);
     }
 
-    boolean ClassUpdated(GroupObjectImplement ClassGroup) {
+    boolean classUpdated(GroupObjectImplement ClassGroup) {
         return property.classUpdated(ClassGroup) || value.ClassUpdated(ClassGroup);
     }
 

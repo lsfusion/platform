@@ -27,7 +27,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     public GroupObjectImplement getApplyObject() {
         GroupObjectImplement ApplyObject=null;
         for(ObjectImplement IntObject : mapping.values())
-            if(ApplyObject==null || IntObject.groupTo.Order>ApplyObject.Order) ApplyObject = IntObject.groupTo;
+            if(ApplyObject==null || IntObject.groupTo.order >ApplyObject.order) ApplyObject = IntObject.groupTo;
 
         return ApplyObject;
     }

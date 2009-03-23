@@ -106,9 +106,6 @@ class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectW
         return new OrObjectWhere[]{this};
     }
 
-    static int followed = 0;
-    static int decomposed = 0;
-
     static Where followFalse(Where followWhere, Where falseWhere, boolean plainFollow) {
 
         if(falseWhere.isTrue()) return FALSE;

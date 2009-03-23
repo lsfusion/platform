@@ -64,7 +64,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return true;
     }
 
-    public int getHash() {
+    protected int getHash() {
         int result = hashCoeff();
         for(Where where : wheres)
             result += where.hash();
@@ -74,14 +74,12 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
     abstract int hashCoeff();
 
     // ручной кэш хэша
-    int hashCode = 0;
-    public int hashCode() {
-        if(hashCode==0) {
-            for(Where where : wheres)
-                hashCode += where.hashCode();
-            hashCode = hashCode*hashCoeff();
-        }
-        return hashCode;
+    protected int getHashCode() {
+        int result = 0;
+        for(Where where : wheres)
+            result += where.hashCode();
+        result = result * hashCoeff();
+        return result;
     }
 
     public ObjectWhereSet calculateObjects() {

@@ -188,7 +188,7 @@ public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 
         for(Map<F, EF> mapGroupKeys : new Pairs<F,EF>(from.keys, query.from.keys)) {
             Map<B,EB> mapGroupProperties = new HashMap<B, EB>();
-            if(from.equals(query.from,mapGroupKeys,mapGroupProperties, mapExprs)) {
+            if(from.equals(query.from, mapGroupKeys, mapGroupProperties, mapExprs)) {
                 // проверим что ключи совпали
                 boolean equal = true;
                 for(Map.Entry<K,EK> mapKey : mapKeys.entrySet())

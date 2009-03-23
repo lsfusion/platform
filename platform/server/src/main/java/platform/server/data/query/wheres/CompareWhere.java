@@ -143,7 +143,7 @@ public class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer
         return this==o || (o instanceof CompareWhere && compare ==((CompareWhere)o).compare && operator1.equals(((CompareWhere)o).operator1) && operator2.equals(((CompareWhere)o).operator2));
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return 31 * (31 * operator1.hashCode() + operator2.hashCode()) + 1 << compare;
     }
 

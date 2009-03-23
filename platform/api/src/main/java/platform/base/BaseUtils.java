@@ -186,4 +186,15 @@ public class BaseUtils {
         serializeObject(new DataOutputStream(outStream), value);
         return outStream.toByteArray();
     }
+
+
+    public static boolean startsWith(char[] string,int off,char[] check) {
+        if(string.length-off<check.length)
+            return false;
+
+        for(int i=0;i<check.length;i++)
+            if(string[off+i]!=check[i])
+                return false;
+        return true;
+    }
 }

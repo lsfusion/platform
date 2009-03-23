@@ -47,7 +47,7 @@ public class NullExpr extends ObjectExpr {
         return o instanceof NullExpr;
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return 0;
     }
 
@@ -56,7 +56,7 @@ public class NullExpr extends ObjectExpr {
         return equals(expr);
     }
 
-    int getHash() {
+    protected int getHash() {
         return hashCode();
     }
 

@@ -105,7 +105,7 @@ public class FormulaExpr extends AndExpr {
         return this==o || o instanceof FormulaExpr && formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params);
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return 31 * formula.hashCode() + params.hashCode();
     }
 
@@ -123,7 +123,7 @@ public class FormulaExpr extends AndExpr {
         return true;
     }
 
-    int getHash() {
+    protected int getHash() {
         int hash = 0;
         for(Map.Entry<String, SourceExpr> param : params.entrySet())
             hash += param.getKey().hashCode()+param.getValue().hash();

@@ -166,7 +166,7 @@ public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         return cases.getWhere(this);
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return cases.hashCode();
     }
 
@@ -189,7 +189,7 @@ public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
         return true;
     }
 
-    int getHash() {
+    protected int getHash() {
         int hash = 0;
         for(ExprCase exprCase : cases)
             hash = 31*hash + exprCase.hash();

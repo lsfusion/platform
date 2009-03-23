@@ -121,8 +121,8 @@ public class DefaultFormView extends FormView {
                 // Если просто кнопка - отменить фильтр
                 if (regFilter.filter == null) continue;
                 GroupObjectImplement propGroupObject = regFilter.filter.property.getApplyObject();
-                if (propGroupObject.Order > order) {
-                    order = propGroupObject.Order;
+                if (propGroupObject.order > order) {
+                    order = propGroupObject.order;
                     groupObject = propGroupObject;
                 }
             }

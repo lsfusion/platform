@@ -54,7 +54,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
     protected void addGroup(GroupObjectImplement Group) {
         Groups.add(Group);
-        Group.Order = Groups.size();
+        Group.order = Groups.size();
     }
 
     protected void addPropertyView(ObjectImplement object, List<Property> properties, Object... groups) {

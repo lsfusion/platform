@@ -18,7 +18,6 @@ import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
-import platform.server.exceptions.RemoteExceptionManager;
 
 import java.util.*;
 import java.io.ByteArrayOutputStream;
@@ -27,9 +26,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.sql.SQLException;
-
-import net.sf.jasperreports.engine.JRException;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -248,7 +244,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
 
             GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID);
 
-            groupValue.Order = groupKey.Order;
+            groupValue.order = groupKey.order;
             groupValue.pageSize = groupKey.pageSize;
             groupValue.gridClassView = groupKey.gridClassView;
             groupValue.singleViewType = groupKey.singleViewType;

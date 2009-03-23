@@ -39,7 +39,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return this==o || o instanceof NotWhere && where.equals(((NotWhere)o).where);
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return where.hashCode()*31;
     }
 
@@ -87,7 +87,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapValues, mapKeys, mapJoins) ;
     }
 
-    public int getHash() {
+    protected int getHash() {
         return where.hash()*3;
     }
 }

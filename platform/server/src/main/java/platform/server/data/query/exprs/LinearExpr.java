@@ -132,7 +132,7 @@ public class LinearExpr extends AndExpr {
         return true;
     }
 
-    int getHash() {
+    protected int getHash() {
         int result = 0;
         for(Operand operand : operands)
             result += (operand.coeff)*31 + operand.expr.hash();
@@ -206,7 +206,7 @@ public class LinearExpr extends AndExpr {
         return result.getExpr(getType());*/
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         int result = 0;
         for(Operand operand : operands)
             result += (operand.coeff)*31 + operand.expr.hashCode();

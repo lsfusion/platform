@@ -29,7 +29,7 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
         object.groupTo = this;
     }
 
-    public Integer Order = 0;
+    public Integer order = 0;
 
     // классовый вид включен или нет
     public Boolean gridClassView = true;

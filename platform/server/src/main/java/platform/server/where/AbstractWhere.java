@@ -1,6 +1,8 @@
 package platform.server.where;
 
-abstract class AbstractWhere<Not extends Where> implements Where<Not> {
+import platform.server.data.query.AbstractSourceJoin;
+
+abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
 
     Not not = null;
     public Not not() {
@@ -63,18 +65,6 @@ abstract class AbstractWhere<Not extends Where> implements Where<Not> {
 
     public boolean hashEquals(Where where) {
         return hashCode()==where.hashCode() && equals(where);
-    }
-
-    protected abstract int getHash();
-
-    boolean hashed = false;
-    int hash;
-    public int hash() {
-        if(!hashed) {
-            hash = DataWhereSet.hash(getHash());
-            hashed = true;
-        }
-        return hash;
     }
 
     // системные

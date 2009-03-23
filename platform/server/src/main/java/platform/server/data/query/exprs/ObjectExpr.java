@@ -20,7 +20,7 @@ public abstract class ObjectExpr extends AndExpr {
         return new DataWhereSet();
     }
 
-    int getHash() {
+    protected int getHash() {
         return 1;
     }
 }

@@ -72,7 +72,7 @@ public class JoinExpr<J,U> extends ObjectExpr implements JoinData {
         return exprFJ;
     }
 
-    int getHash() {
+    protected int getHash() {
         return from.hash()*31+ from.source.hashProperty(property);
     }
 

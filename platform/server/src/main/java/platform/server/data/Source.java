@@ -74,14 +74,14 @@ public abstract class Source<K,V> {
         return false;
     }
 
-    boolean Hashed = false;
-    int Hash;
+    boolean hashed = false;
+    int hash;
     public int hash() {
-        if(!Hashed) {
-            Hash = getHash();
-            Hashed = true;
+        if(!hashed) {
+            hash = getHash();
+            hashed = true;
         }
-        return Hash;
+        return hash;
     }
     protected int getHash() {
         return hashCode();
@@ -90,9 +90,9 @@ public abstract class Source<K,V> {
     public abstract int hashProperty(V Property);
 
     int getComplexity() {
-        Set<JoinQuery> Queries = new HashSet<JoinQuery>();
-        fillJoinQueries(Queries);
-        return Queries.size();
+        Set<JoinQuery> queries = new HashSet<JoinQuery>();
+        fillJoinQueries(queries);
+        return queries.size();
     }
     public abstract void fillJoinQueries(Set<JoinQuery> Queries);
 }

@@ -60,7 +60,7 @@ public class ValueExpr extends ObjectExpr implements QueryData {
         return this==o || o instanceof ValueExpr && object.equals(((ValueExpr)o).object);
     }
 
-    public int hashCode() {
+    protected int getHashCode() {
         return object.hashCode();
     }
 
