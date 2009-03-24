@@ -375,6 +375,14 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     // В дальнейшем наверное надо будет переделать на Listener'ы...
     protected void objectChanged(RemoteClass cls, Integer objectID) {}
+
+    public void changePageSize(GroupObjectImplement groupObject, int pageSize) {
+
+        groupObject.pageSize = pageSize;
+
+        structUpdated = true;
+    }
+
     public void gainedFocus() {
         dataChanged = true;
     }

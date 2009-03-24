@@ -13,6 +13,7 @@ public interface RemoteFormInterface extends Remote {
 
     byte[] getRichDesignByteArray() throws RemoteException;
 
+    void changePageSize(int groupID, int pageSize) throws RemoteException;
     void gainedFocus() throws RemoteException;
 
     byte[] getFormChangesByteArray() throws RemoteException;

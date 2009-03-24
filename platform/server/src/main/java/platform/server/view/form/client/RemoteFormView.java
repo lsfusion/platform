@@ -73,6 +73,12 @@ public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInt
         return outStream.toByteArray();
     }
 
+    public void changePageSize(int groupID, int pageSize) throws RemoteException {
+
+        GroupObjectImplement groupObject = form.getGroupObjectImplement(groupID);
+        form.changePageSize(groupObject, pageSize);
+    }
+
     public void gainedFocus() {
         form.gainedFocus();
     }

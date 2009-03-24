@@ -60,7 +60,7 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
     public int updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW;
 
     public int
-            pageSize = 12;
+            pageSize = 50;
 
     GroupObjectValue getObjectValue() {
         GroupObjectValue Result = new GroupObjectValue();

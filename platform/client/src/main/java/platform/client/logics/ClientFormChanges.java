@@ -41,6 +41,9 @@ public class ClientFormChanges {
 
             gridObjects.put(clientGroupObject, clientGridObjects);
         }
+//        for (ClientGroupObjectImplementView groupObject : gridObjects.keySet()) {
+//            System.out.println(groupObject + " : " + gridObjects.get(groupObject).size());
+//        }
 
         gridProperties = new HashMap<ClientPropertyView, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();

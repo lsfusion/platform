@@ -515,6 +515,13 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
+    void changePageSize(ClientGroupObjectImplementView groupObject, int pageSize) throws IOException {
+
+        remoteForm.changePageSize(groupObject.ID, pageSize);
+
+//        applyFormChanges();
+    }
+
     void print() throws IOException, ClassNotFoundException, JRException {
 
         Main.layout.defaultStation.drop(new ReportDockable(remoteForm.getID(), clientNavigator, remoteForm));
@@ -567,7 +574,6 @@ public class ClientForm extends JPanel {
     boolean closePressed() throws IOException {
         return cancelChanges();
     }
-
 
     private Color defaultApplyBackground;
 
@@ -1377,6 +1383,8 @@ public class ClientForm extends JPanel {
                     return fitWidth();
                 }
 
+                private int pageSize = 50;
+
                 @Override
                 public void doLayout() {
 
@@ -1387,7 +1395,6 @@ public class ClientForm extends JPanel {
                     } else {
                         autoResizeMode = JTable.AUTO_RESIZE_OFF;
                     }
-
                     super.doLayout();
                 }
 
@@ -1449,6 +1456,21 @@ public class ClientForm extends JPanel {
 
                     setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
                     setDefaultEditor(Object.class, new ClientAbstractCellEditor());
+
+                    addComponentListener(new ComponentAdapter() {
+                        public void componentResized(ComponentEvent ce) {
+                            int newPageSize = pane.getViewport().getHeight() / getRowHeight() + 1;
+//                            System.out.println(groupObject.toString() + pane.getViewport().getHeight() + " - " + getRowHeight() + " ; " + pageSize + " : " + newPageSize);
+                            if (newPageSize != pageSize) {
+                                try {
+                                    changePageSize(groupObject, newPageSize);
+                                    pageSize = newPageSize;
+                                } catch (IOException e) {
+                                    throw new RuntimeException("Ошибка при изменении размера страницы", e);
+                                }
+                            }
+                        }
+                    });
 
                 }
 
