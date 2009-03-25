@@ -37,9 +37,9 @@ public class ObjectImplement {
 
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид
 
-    public static int UPDATED_OBJECT = (1);
-    public static int UPDATED_CLASS = (1 << 1);
-    public static int UPDATED_GRIDCLASS = (1 << 3);
+    public final static int UPDATED_OBJECT = (1);
+    public final static int UPDATED_CLASS = (1 << 1);
+    public final static int UPDATED_GRIDCLASS = (1 << 3);
 
     public int updated = UPDATED_GRIDCLASS;
 

@@ -22,14 +22,14 @@ import java.util.*;
  */
 abstract public class RemoteClass extends AbstractNode {
 
-    public static BaseClass base;
-    public static BaseClass data;
-    public static IntegralClass integral;
-    public static IntegerClass integer;
-    public static LongClass longClass;
-    public static DoubleClass doubleClass;
-    public static DateClass date;
-    public static BitClass bit;
+    public final static BaseClass base;
+    public final static BaseClass data;
+    public final static IntegralClass integral;
+    public final static IntegerClass integer;
+    public final static LongClass longClass;
+    public final static DoubleClass doubleClass;
+    public final static DateClass date;
+    public final static BitClass bit;
 
     private static Collection<StringClass> strings = new ArrayList<StringClass>();
     public static StringClass string(int length) {

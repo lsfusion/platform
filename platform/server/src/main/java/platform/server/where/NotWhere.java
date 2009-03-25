@@ -30,7 +30,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return where;
     }
 
-    static String PREFIX = "NOT ";
+    final static String PREFIX = "NOT ";
     public String toString() {
         return PREFIX+where;
     }

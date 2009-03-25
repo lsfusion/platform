@@ -1,4 +1,4 @@
-package platform.server.data.query.exprs;
+package platform.server.data.query.exprs.cases;
 
 import platform.server.where.Where;
 
@@ -35,12 +35,12 @@ abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
         return prevUpWhere;
     }
 
-    D followWhere(Where where, D data, Where upWhere) {
+    protected D followWhere(Where where, D data, Where upWhere) {
         return data;
     }
 
     // добавляет Case, проверяя все что можно
-    void add(Where where,D data) {
+    public void add(Where where,D data) {
 
         Where upWhere = getUpWhere();
         where = where.followFalse(upWhere);

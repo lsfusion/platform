@@ -100,7 +100,7 @@ public class DefaultJasperDesign {
         return designField;
     }
 
-    private static int ROW_HEIGHT = 18;
+    private final static int ROW_HEIGHT = 18;
 
     private abstract class ReportLayout {
 

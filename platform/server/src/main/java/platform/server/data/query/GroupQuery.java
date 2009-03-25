@@ -12,6 +12,8 @@ import platform.server.where.Where;
 
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
 
     public void fillJoinQueries(Set<JoinQuery> queries) {
@@ -47,8 +49,8 @@ public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         this(iKeys,iFrom, Collections.singletonMap(property,iOperator));
     }
 
-    Map<K,String> keyNames = new HashMap<K, String>();
-    Map<V,String> propertyNames = new HashMap<V, String>();
+    private final Map<K,String> keyNames = new HashMap<K, String>();
+    private final Map<V,String> propertyNames = new HashMap<V, String>();
 
     public String getKeyName(K Key) {
         return keyNames.get(Key);
@@ -73,7 +75,7 @@ public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
     }
 
     // с хоть одним property where
-    JoinQuery<F,B> propertiesFrom;
+    private final JoinQuery<F,B> propertiesFrom;
 
     GroupQuery(Collection<? extends K> iKeys,JoinQuery<F,B> iFrom, Map<V,Integer> iProperties) {
         super(iKeys);
@@ -99,8 +101,8 @@ public class GroupQuery<B,K extends B,V extends B,F> extends DataSource<K,V> {
         propertiesFrom.and(propertiesWhere);
     }
 
-    JoinQuery<F,B> from;
-    Map<V,Integer> properties;
+    private final JoinQuery<F,B> from;
+    private final Map<V,Integer> properties;
 
     // заменяет параметры на другие
     public DataSource<K, V> translateValues(Map<ValueExpr, ValueExpr> mapValues) {

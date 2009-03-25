@@ -29,6 +29,19 @@
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+          <id>Codehaus Snapshots</id>
+          <url>http://snapshots.repository.codehaus.org/</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>  <!-- Workaround for MNG-2974, see note below -->
+          </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
     <distributionManagement>
       <repository>
         <id>internal</id>
@@ -69,6 +82,11 @@
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>tmc</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>findbugs</groupId>
+                <artifactId>annotations</artifactId>
+                <version>1.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

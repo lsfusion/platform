@@ -510,11 +510,11 @@ public class DataSession  {
 
         int paramNum = 0;
         Map<String,TypedObject> params = new HashMap<String, TypedObject>();
-        for(PropertyField prop : propFields.keySet()) {
-            String prm = "qxprm" + (paramNum++) + "nx"; 
-            insertString = (insertString.length()==0?"":insertString+',') + prop.name;
+        for(Map.Entry<PropertyField,Object> fieldValue : propFields.entrySet()) {
+            String prm = "qxprm" + (paramNum++) + "nx";
+            insertString = (insertString.length()==0?"":insertString+',') + fieldValue.getKey().name;
             valueString = (valueString.length()==0?"":valueString+',') + prm;
-            params.put(prm,new TypedObject(propFields.get(prop),prop.type));
+            params.put(prm,new TypedObject(fieldValue.getValue(), fieldValue.getKey().type));
         }
 
         executeStatement(getStatement("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")", params));
@@ -523,8 +523,8 @@ public class DataSession  {
     public void insertRecord(Table table,Map<KeyField,Integer> keyFields,Map<PropertyField,Object> propFields) throws SQLException {
         useTemporaryTable(table);
 
-        for(PropertyField prop : propFields.keySet())
-            if(!prop.type.isString(propFields.get(prop))) {
+        for(Map.Entry<PropertyField,Object> fieldValue : propFields.entrySet())
+            if(!fieldValue.getKey().type.isString(fieldValue.getValue())) {
                 insertParamRecord(table, keyFields, propFields);
                 return;
             }

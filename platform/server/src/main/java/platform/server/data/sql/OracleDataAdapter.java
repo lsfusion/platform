@@ -12,7 +12,7 @@ class OracleDataAdapter extends DataAdapter {
         return "NUMBER(5)";
     }
 
-    public int UpdateModel() {
+    public int updateModel() {
         return 2;
     }
 

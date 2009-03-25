@@ -10,20 +10,20 @@ import test.TestDataWhere;
 
 class WhereTester {
 
-    private static int RANDOM_SEED = 1234;
-    private static int DATAWHERE_COUNT = 4;
-    private static float FOLLOW_PERCENT = 0.1f;
+    private final static int RANDOM_SEED = 1234;
+    private final static int DATAWHERE_COUNT = 4;
+    private final static float FOLLOW_PERCENT = 0.1f;
 
-    private static int ITERATION_COUNT = 100000;
+    private final static int ITERATION_COUNT = 100000;
 
-    private static int NOT = 0;
-    private static int AND = 1;
-    private static int OR = 2;
-    private static int FOLLOW_FALSE = 3;
-    private static int FOLLOW_TRUE = 4;
-    private static int AND_NOT = 5;
-    private static int MEANS = 6;
-    private static int OPERATION_COUNT = 7;
+    private final static int NOT = 0;
+    private final static int AND = 1;
+    private final static int OR = 2;
+    private final static int FOLLOW_FALSE = 3;
+    private final static int FOLLOW_TRUE = 4;
+    private final static int AND_NOT = 5;
+    private final static int MEANS = 6;
+    private final static int OPERATION_COUNT = 7;
 
     public void test() {
 
@@ -154,10 +154,10 @@ class WhereTester {
             if (operation == MEANS) {
 
                 if (means) {
-                    if (value1 & (!value2))
+                    if (value1 && (!value2))
                         throw new RuntimeException("Error - MEANS");
                 } else {
-                    if (value1 & (!value2))
+                    if (value1 && (!value2))
                         alwaysMeans = false;
                 }
 

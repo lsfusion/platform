@@ -20,16 +20,16 @@ public abstract class Type<T> {
         ID = iID;
     }
 
-    public static IntegerType integer = new IntegerType();
-    public static LongType longType = new LongType();
-    public static DoubleType doubleType = new DoubleType();
-    public static TextType text = new TextType();
-    public static Type bytes = new ByteArrayType();
-    public static Type bit = new BitType();
-    public static IntegerType object;
-    public static Type system;
+    public final static IntegerType integer = new IntegerType();
+    public final static LongType longType = new LongType();
+    public final static DoubleType doubleType = new DoubleType();
+    public final static TextType text = new TextType();
+    public final static Type bytes = new ByteArrayType();
+    public final static Type bit = new BitType();
+    public final static IntegerType object;
+    public final static Type system;
 
-    public static String NULL = "NULL";
+    public final static String NULL = "NULL";
 
     public static StringType string(int length) {
         StringType result = new StringType(length);

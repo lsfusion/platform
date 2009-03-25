@@ -143,7 +143,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         return Query;
     }
 
-    public void Out(DataSession Session) throws SQLException {
+    public void out(DataSession Session) throws SQLException {
         System.out.println(caption);
         getOutSelect("value").outSelect(Session);
     }

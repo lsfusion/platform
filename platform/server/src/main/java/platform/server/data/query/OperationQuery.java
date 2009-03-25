@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
 import platform.interop.Compare;
-import platform.server.data.query.exprs.CaseExpr;
+import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.LinearExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;

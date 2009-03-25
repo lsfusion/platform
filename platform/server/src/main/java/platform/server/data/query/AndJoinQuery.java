@@ -16,9 +16,9 @@ class AndJoinQuery {
         where = joinWhere.and(queryWhere);
     }
 
-    Where joinWhere;
-    Where queryWhere;
-    Where where;
-    String alias;
-    Map<String, SourceExpr> properties = new HashMap<String, SourceExpr>();
+    final Where joinWhere;
+    final Where queryWhere;
+    final Where where;
+    final String alias;
+    final Map<String, SourceExpr> properties = new HashMap<String, SourceExpr>();
 }

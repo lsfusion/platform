@@ -1,6 +1,7 @@
 package platform.server.data.query.exprs;
 
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.cases.*;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -12,11 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 public class FormulaExpr extends AndExpr {
 
-    String formula;
-    Type dbType;
-    Map<String, SourceExpr> params;
+    private final String formula;
+    private final Type dbType;
+    private final Map<String, SourceExpr> params;
 
     FormulaExpr(String iFormula,Map<String,AndExpr> iParams,Type iDBType) {
         formula = iFormula;
@@ -87,7 +91,7 @@ public class FormulaExpr extends AndExpr {
     }
 
     // возвращает Where без следствий
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         Where result = Where.TRUE;
         for(SourceExpr param : params.values())
             result = result.and(param.getWhere());

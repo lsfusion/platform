@@ -1,10 +1,12 @@
 package platform.server.where;
 
 import platform.server.data.query.AbstractSourceJoin;
+import net.jcip.annotations.Immutable;
+
 
 abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
 
-    Not not = null;
+    private Not not = null;
     public Not not() {
         if(not==null)
             not = getNot();
@@ -89,7 +91,7 @@ abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin imple
 
 
     abstract ObjectWhereSet calculateObjects();
-    ObjectWhereSet objects = null;
+    private ObjectWhereSet objects = null;
     public ObjectWhereSet getObjects() {
         if(objects==null) objects = calculateObjects();
         return objects;

@@ -4,6 +4,7 @@ import platform.server.data.query.Join;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.QueryData;
 import platform.server.data.query.MapJoinEquals;
+import platform.server.data.query.exprs.cases.ExprCaseList;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -13,9 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 public class NullExpr extends ObjectExpr {
 
-    Type type;
+    private final Type type;
     public NullExpr(Type iType) {
         type = iType;
     }
@@ -39,7 +43,7 @@ public class NullExpr extends ObjectExpr {
     }
 
     // возвращает Where на notNull
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         return Where.FALSE;
     }
 

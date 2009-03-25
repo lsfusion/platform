@@ -1,6 +1,6 @@
 package platform.server.logics.properties;
 
-import platform.server.data.query.exprs.CaseExpr;
+import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.classes.RemoteClass;

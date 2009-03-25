@@ -1,22 +1,23 @@
-package platform.server.data.query.exprs;
+package platform.server.data.query.exprs.cases;
 
 import platform.server.data.types.Type;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.where.Where;
 
 public class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
 
     public ExprCaseList() {
     }
-    ExprCaseList(SourceExpr data) {
+    public ExprCaseList(SourceExpr data) {
         super(data);
     }
-    ExprCaseList(Where where, SourceExpr data) {
+    public ExprCaseList(Where where, SourceExpr data) {
         super(where, data);
     }
-    ExprCaseList(Where where, SourceExpr exprTrue, SourceExpr exprFalse) {
+    public ExprCaseList(Where where, SourceExpr exprTrue, SourceExpr exprFalse) {
         super(where, exprTrue, exprFalse);
     }
-    ExprCaseList(Where falseWhere) {
+    public ExprCaseList(Where falseWhere) {
         super(falseWhere);
     }
 
@@ -24,7 +25,7 @@ public class ExprCaseList extends CaseList<SourceExpr,ExprCase> {
         return new ExprCase(where,data);
     }
 
-    SourceExpr followWhere(Where where, SourceExpr data, Where upWhere) {
+    protected SourceExpr followWhere(Where where, SourceExpr data, Where upWhere) {
         return data.followFalse(upWhere.or(where.not()));
     }
 

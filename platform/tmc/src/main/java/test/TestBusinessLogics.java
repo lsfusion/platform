@@ -104,7 +104,6 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
         AbstractGroup groupArticleG = new AbstractGroup("Группа");
         AbstractGroup groupArticleA = new AbstractGroup("Атрибуты");
         AbstractGroup groupArticleC = new AbstractGroup("Ценовые параметры");
-        AbstractGroup groupArticleS = new AbstractGroup("Показатели");
 
         Name = addDProp("имя", RemoteClass.string(50), objectClass);
         groupArticleA.add(Name.property);
@@ -154,7 +153,7 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         OpValue = addUProp("общ. призн.",Union.OVERRIDE,1,1,RashValue,1,1,PrihValue,1);
 
-        LGP RaznSValue = addGProp("разн. пр-рас.", OpValue,true,DocStore,1);
+        addGProp("разн. пр-рас.", OpValue,true,DocStore,1);
 
         LJP RGrAddV = addJProp(groupArticleG, "наценка по товару (гр.)", GrAddV,1,ArtToGroup,1);
 
@@ -165,10 +164,10 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 //
         LNFP NotZero = addNFProp();
         LCFP Less = addCFProp(Compare.LESS);
-        LMFP Multiply = addMFProp(RemoteClass.integer,2);
+        addMFProp(RemoteClass.integer,2);
         LMFP Multiply3 = addMFProp(RemoteClass.integer,3);
 
-        LJP StoreName = addJProp("имя склада", Name,1,DocStore,1);
+        addJProp("имя склада", Name,1,DocStore,1);
 
         LJP ArtGroupName = addJProp(groupArticleG, "имя гр. тов.", Name,1,ArtToGroup,1);
 
@@ -201,7 +200,7 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
         SumMaxArt = addGProp("макс. операция (сумма)", MaxOpStore,true,2);
 
-        LGP ArtMaxQty = addGProp("макс. кол-во", Quantity,false,2);
+        addGProp("макс. кол-во", Quantity,false,2);
 
 /*        LSFP BetweenDate = addWSFProp("prm1>=prm2 AND prm1<=prm3",3);
         LJP DokBetweenDate = addJProp("документ в интервале", BetweenDate,3,DocDate,1,2,3);

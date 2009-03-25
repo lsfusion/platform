@@ -32,8 +32,8 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
     public Integer order = 0;
 
     // классовый вид включен или нет
-    public Boolean gridClassView = true;
-    public Boolean singleViewType = false;
+    public boolean gridClassView = true;
+    public boolean singleViewType = false;
 
     // закэшированные
 
@@ -52,10 +52,10 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
 
-    public static int UPDATED_OBJECT = (1);
-    static int UPDATED_KEYS = (1 << 2);
-    public static int UPDATED_GRIDCLASS = (1 << 3);
-    public static int UPDATED_CLASSVIEW = (1 << 4);
+    public final static int UPDATED_OBJECT = (1);
+    public final static int UPDATED_KEYS = (1 << 2);
+    public final static int UPDATED_GRIDCLASS = (1 << 3);
+    public final static int UPDATED_CLASSVIEW = (1 << 4);
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW;
 

@@ -1,6 +1,10 @@
-package platform.server.data.query.exprs;
+package platform.server.data.query.exprs.cases;
 
 import platform.server.data.query.MapJoinEquals;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.where.Where;
 
 import java.util.Map;

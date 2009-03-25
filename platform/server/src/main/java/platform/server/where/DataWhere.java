@@ -6,6 +6,9 @@ import platform.server.data.sql.SQLSyntax;
 import java.util.Collection;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
+
 abstract public class DataWhere extends ObjectWhere<NotWhere> {
 
     // определяет все
@@ -38,7 +41,7 @@ abstract public class DataWhere extends ObjectWhere<NotWhere> {
     }
 
     // возвращает себя и все зависимости
-    DataWhereSet follows = null;
+    private DataWhereSet follows = null;
     public DataWhereSet getFollows() {
         if(follows==null) {
             follows = new DataWhereSet(getExprFollows());

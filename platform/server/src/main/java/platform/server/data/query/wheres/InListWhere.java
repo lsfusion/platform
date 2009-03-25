@@ -2,6 +2,9 @@ package platform.server.data.query.wheres;
 
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.exprs.cases.CaseWhere;
+import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
@@ -9,16 +12,20 @@ import platform.server.where.Where;
 
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
+
 public class InListWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
-    AndExpr expr;
-    String values;
+    private final AndExpr expr;
+    private final String values;
 
     public InListWhere(AndExpr iExpr, Collection<Integer> setValues) {
         expr = iExpr;
-        values = "";
+        String stringValues = "";
         for(Integer value : setValues)
-            values = (values.length()==0?"": values +',') + value;
+            stringValues = (stringValues.length()==0?"": stringValues +',') + value;
+        values = stringValues;
     }
 
     InListWhere(AndExpr iExpr, String iValues) {

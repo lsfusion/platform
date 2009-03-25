@@ -5,7 +5,7 @@ import org.aspectj.lang.annotation.Before;
 import platform.client.Log;
 import platform.interop.exceptions.RemoteServerException;
 
-class ClientExceptionManager {
+public class ClientExceptionManager {
 
     public static void handleException(Throwable e) {
 

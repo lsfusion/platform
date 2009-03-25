@@ -49,8 +49,6 @@ class UniqueConstraint extends Constraint {
         // не равны ключи
         Where orDiffKeys = Where.FALSE;
 
-        Map<PropertyInterface,String> keyFields = new HashMap<PropertyInterface, String>();
-        Integer keyNum = 0;
         for(PropertyInterface propertyInterface : (Collection<PropertyInterface>) property.interfaces)
             orDiffKeys = orDiffKeys.or(new CompareWhere(mapChange.get(propertyInterface),mapPrev.get(propertyInterface), Compare.NOT_EQUALS));
         changed.and(orDiffKeys);

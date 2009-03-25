@@ -7,6 +7,9 @@ import platform.server.data.query.wheres.MapWhere;
 
 import java.util.Collection;
 
+import net.jcip.annotations.Immutable;
+
+
 class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectWhere<AndWhere> {
 
     // вообще надо противоположные + Object, но это наследованием не сделаешь

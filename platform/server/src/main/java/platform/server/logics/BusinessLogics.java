@@ -49,7 +49,7 @@ import net.sf.jasperreports.engine.JRException;
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends UnicastRemoteObject implements PropertyUpdateView, RemoteLogicsInterface {
 
     protected DataAdapter adapter;
-    public static boolean activateCaches = true;
+    public final static boolean activateCaches = true;
 
     public RemoteNavigatorInterface createNavigator(String login, String password) {
 
@@ -109,7 +109,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         return new ArrayList<Property>();
     }
 
-    static Set<Integer> wereSuspicious = new HashSet<Integer>();
+    final static Set<Integer> wereSuspicious = new HashSet<Integer>();
 
     // тестирующий конструктор
     public BusinessLogics(DataAdapter iAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {

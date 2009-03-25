@@ -8,7 +8,7 @@ public class DataWhereSet {
     int[] htable;
     int threshold;
 
-    float loadFactor;
+    final float loadFactor;
     public DataWhereSet() {
         loadFactor = 0.3f;
 

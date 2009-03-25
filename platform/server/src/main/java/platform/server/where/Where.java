@@ -10,6 +10,9 @@ import platform.server.data.query.exprs.KeyExpr;
 import java.util.Collection;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
+
 public interface Where<Not extends Where> extends SourceJoin {
 
     Where followFalse(Where falseWhere);

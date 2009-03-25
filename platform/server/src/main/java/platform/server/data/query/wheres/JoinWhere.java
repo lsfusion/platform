@@ -2,6 +2,7 @@ package platform.server.data.query.wheres;
 
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhere;

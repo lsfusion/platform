@@ -91,7 +91,7 @@ public class ClassSet {
         return CollectionExtend.getRandom(up,randomizer);
     }
 
-    public static ClassSet universal;
+    public final static ClassSet universal;
     static {
         universal = getUp(RemoteClass.base);
     }

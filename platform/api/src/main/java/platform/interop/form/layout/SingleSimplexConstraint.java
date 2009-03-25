@@ -21,7 +21,7 @@ abstract public class SingleSimplexConstraint implements Serializable {
                                                                    DoNotIntersectSimplexConstraint.RIGHT |
                                                                    DoNotIntersectSimplexConstraint.TOP);
 
-    public static int MAXVALUE = 1000000;
+    public final static int MAXVALUE = 1000000;
 
 //    public abstract void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2) throws LpSolveException;
 }

@@ -1,6 +1,10 @@
-package platform.server.data.query.exprs;
+package platform.server.data.query.exprs.cases;
 
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -8,10 +12,12 @@ import platform.server.where.Where;
 
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 
 public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
 
-    ExprCaseList cases;
+    private final ExprCaseList cases;
 
     // этот конструктор нужен для создания CaseExpr'а в результать mapCase'а
     CaseExpr(ExprCaseList iCases) {
@@ -162,7 +168,7 @@ public class CaseExpr extends SourceExpr implements CaseWhere<ExprCase> {
     }
 
     // возвращает Where без следствий
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         return cases.getWhere(this);
     }
 

@@ -31,8 +31,8 @@ public class IDTable extends Table {
         properties.add(value);
     }
 
-    public static int OBJECT = 1;
-    public static int FORM = 2;
+    public final static int OBJECT = 1;
+    public final static int FORM = 2;
 
     static List<Integer> getCounters() {
         List<Integer> result = new ArrayList<Integer>();

@@ -1,6 +1,6 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.CaseExpr;
+import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.ObjectExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.JoinWhere;
@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class ExprTranslator implements Translator {
 
-    private Map<JoinWhere,Where> wheres = new HashMap<JoinWhere, Where>();
+    private final Map<JoinWhere,Where> wheres = new HashMap<JoinWhere, Where>();
 //    Map<DataWhere,Where> Wheres = new HashMap<DataWhere, Where>();
-    private Map<ObjectExpr, SourceExpr> exprs = new HashMap<ObjectExpr, SourceExpr>();
+    private final Map<ObjectExpr, SourceExpr> exprs = new HashMap<ObjectExpr, SourceExpr>();
 
     void put(JoinWhere where, Where to) {
         wheres.put(where, to);

@@ -2,6 +2,8 @@ package platform.server.data.query;
 
 import platform.server.data.DataSource;
 import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.cases.CaseWhere;
+import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.where.Where;
 
 import java.util.Collection;
@@ -10,9 +12,9 @@ import java.util.Map;
 
 class CaseJoins<J,U> extends HashMap<MapCase<J>,Map<U,? extends AndExpr>> implements CaseWhere<MapCase<J>> {
 
-    Collection<ParsedJoin> translatedJoins;
-    DataSource<J,U> joinSource;
-    boolean noAlias;
+    private final Collection<ParsedJoin> translatedJoins;
+    private final DataSource<J,U> joinSource;
+    private final boolean noAlias;
 
     CaseJoins(Collection<ParsedJoin> iTranslatedJoins, DataSource<J,U> iJoinSource,boolean iNoAlias) {
         translatedJoins = iTranslatedJoins;

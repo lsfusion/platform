@@ -14,9 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 public class NotNullWhere extends DataWhere {
 
-    JoinExpr expr;
+    private final JoinExpr expr;
 
     public NotNullWhere(JoinExpr iExpr) {
         expr = iExpr;

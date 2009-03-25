@@ -4,6 +4,9 @@ import platform.interop.Compare;
 import platform.server.data.TypedObject;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.exprs.cases.CaseWhere;
+import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.StringType;
 import platform.server.where.DataWhere;
@@ -15,12 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 public class CompareWhere extends DataWhere implements CaseWhere<MapCase<Integer>> {
 
-    public SourceExpr operator1;
-    public SourceExpr operator2;
+    public final SourceExpr operator1;
+    public final SourceExpr operator2;
 
-    int compare;
+    final int compare;
 
     public CompareWhere(AndExpr iOperator1, AndExpr iOperator2,int iCompare) {
         this((SourceExpr)iOperator1,(SourceExpr)iOperator2,iCompare);

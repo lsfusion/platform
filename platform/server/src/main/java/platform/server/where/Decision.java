@@ -1,12 +1,15 @@
 package platform.server.where;
 
-class Decision {
-    AndObjectWhere condition;
-    Where addTrue;
-    Where addFalse;
+import net.jcip.annotations.Immutable;
 
-    OrWhere whereTrue;
-    OrWhere whereFalse;
+
+class Decision {
+    private final AndObjectWhere condition;
+    private final Where addTrue;
+    private final Where addFalse;
+
+    private final OrWhere whereTrue;
+    private final OrWhere whereFalse;
 
     Decision(AndObjectWhere iCondition, Where iAddTrue, Where iAddFalse, OrWhere iWhereTrue, OrWhere iWhereFalse) {
         condition = iCondition;

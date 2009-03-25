@@ -15,7 +15,7 @@ import java.util.*;
 public abstract class Source<K,V> {
 
     public Collection<K> keys;
-    public static boolean debugWatch = false;
+    public final static boolean debugWatch = false;
     public static final SQLSyntax debugSyntax = new PostgreDataAdapter();
 
     protected Source(Collection<? extends K> iKeys) {

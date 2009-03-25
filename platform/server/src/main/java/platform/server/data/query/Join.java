@@ -4,15 +4,18 @@ import platform.base.Pairs;
 import platform.server.data.DataSource;
 import platform.server.data.Source;
 import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.cases.*;
 import platform.server.data.query.wheres.JoinWhere;
 
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 public class Join<J,U>  {
     public Source<J,U> source;
-    public Map<J, SourceExpr> joins;
-    public Map<U, JoinExpr<J,U>> exprs = new HashMap<U, JoinExpr<J,U>>();
-    public JoinWhere inJoin;
+    public final Map<J, SourceExpr> joins;
+    public final Map<U, JoinExpr<J,U>> exprs = new HashMap<U, JoinExpr<J,U>>();
+    public final JoinWhere inJoin;
 
     // теоретически только для таблиц может быть
     public boolean noAlias = false;

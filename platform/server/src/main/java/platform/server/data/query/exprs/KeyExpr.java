@@ -30,7 +30,7 @@ public class KeyExpr extends ObjectExpr implements QueryData {
     }
 
     // возвращает Where без следствий
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         return Where.TRUE;
     }
 

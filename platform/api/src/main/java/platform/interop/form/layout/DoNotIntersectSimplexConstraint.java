@@ -5,10 +5,10 @@ import lpsolve.LpSolveException;
 
 class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
 
-    public static int LEFT = 1;
-    public static int RIGHT = 2;
-    public static int TOP = 4;
-    public static int BOTTOM = 8;
+    public final static int LEFT = 1;
+    public final static int RIGHT = 2;
+    public final static int TOP = 4;
+    public final static int BOTTOM = 8;
 
     int forbDir;
 

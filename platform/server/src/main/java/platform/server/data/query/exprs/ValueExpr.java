@@ -14,9 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 public class ValueExpr extends ObjectExpr implements QueryData {
 
-    public TypedObject object;
+    public final TypedObject object;
 
     public ValueExpr(Object value, Type type) {
         if(value==null)
@@ -52,7 +55,7 @@ public class ValueExpr extends ObjectExpr implements QueryData {
     }
 
     // возвращает Where без следствий
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         return Where.TRUE;
     }
 

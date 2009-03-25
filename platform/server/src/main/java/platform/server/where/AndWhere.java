@@ -7,6 +7,9 @@ import platform.server.data.query.wheres.MapWhere;
 
 import java.util.Collection;
 
+import net.jcip.annotations.Immutable;
+
+
 class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectWhere<OrWhere> {
 
     AndWhere(OrObjectWhere[] iWheres) {
@@ -134,7 +137,7 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
         return 7;
     }
 
-    Decision[] decisions = null;
+    private Decision[] decisions = null;
     Decision[] getDecisions() {
         if(decisions!=null) return decisions;
 

@@ -8,7 +8,7 @@ import java.util.Iterator;
 // нужен для "расщепления" Where на типы Join'ов,равенств ключей и остальных Where
 public class JoinWheres extends ArrayList<JoinWhereEntry> {
 
-    static boolean MEANS = true;
+    static final boolean MEANS = true;
 
     public void or(JoinWheres joins) {
         for(JoinWhereEntry whereJoin : joins)

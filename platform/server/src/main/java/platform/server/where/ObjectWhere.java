@@ -2,6 +2,8 @@ package platform.server.where;
 
 import platform.server.data.query.JoinData;
 import platform.server.data.query.wheres.MapWhere;
+import net.jcip.annotations.Immutable;
+
 
 abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> implements OrObjectWhere<Not>,AndObjectWhere<Not> {
 

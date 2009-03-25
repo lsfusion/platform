@@ -16,10 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 public class JoinExpr<J,U> extends ObjectExpr implements JoinData {
-    U property;
-    public Join<J,U> from;
-    NotNullWhere notNull;
+    private final U property;
+    public final Join<J,U> from;
+    private final NotNullWhere notNull;
 
     public JoinExpr(Join<J,U> iFrom,U iProperty) {
         from = iFrom;
@@ -53,7 +56,7 @@ public class JoinExpr<J,U> extends ObjectExpr implements JoinData {
     }
 
     // возвращает Where без следствий
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         return notNull;
     }
 

@@ -1,16 +1,19 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.Translator;
 import platform.server.data.query.MapJoinEquals;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.exprs.cases.ExprCase;
+import platform.server.data.query.exprs.cases.ExprCaseList;
 import platform.server.data.types.Type;
-import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 // абстрактный класс выражений
+
 abstract public class SourceExpr extends AbstractSourceJoin {
 
     public abstract Type getType();
@@ -25,13 +28,13 @@ abstract public class SourceExpr extends AbstractSourceJoin {
     }
 
     // возвращает Where на notNull
-    Where where=null;
+    private Where where=null;
     public Where getWhere() {
         if(where==null)
             where = calculateWhere();
         return where;
     }
-    abstract Where calculateWhere();
+    abstract protected Where calculateWhere();
 
     // получает список ExprCase'ов
     public abstract ExprCaseList getCases();

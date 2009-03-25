@@ -1,6 +1,6 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.CaseExpr;
+import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.JoinWhere;
 

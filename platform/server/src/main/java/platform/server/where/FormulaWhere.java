@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+
 abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
 
-    WhereType[] wheres;
+    protected final WhereType[] wheres;
     protected FormulaWhere(WhereType[] iWheres) {
         wheres = iWheres;
     }

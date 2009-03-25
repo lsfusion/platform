@@ -16,12 +16,12 @@ import java.util.Set;
 
 public class Filter<P extends PropertyInterface> {
 
-    public static int EQUALS = Compare.EQUALS;
-    public static int GREATER = Compare.GREATER;
-    public static int LESS = Compare.LESS;
-    public static int GREATER_EQUALS = Compare.GREATER_EQUALS;
-    public static int LESS_EQUALS = Compare.LESS_EQUALS;
-    public static int NOT_EQUALS = Compare.NOT_EQUALS;
+    public final static int EQUALS = Compare.EQUALS;
+    public final static int GREATER = Compare.GREATER;
+    public final static int LESS = Compare.LESS;
+    public final static int GREATER_EQUALS = Compare.GREATER_EQUALS;
+    public final static int LESS_EQUALS = Compare.LESS_EQUALS;
+    public final static int NOT_EQUALS = Compare.NOT_EQUALS;
 
     public PropertyObjectImplement<P> property;
     public ValueLink value;

@@ -56,10 +56,10 @@ public class ImplementTable extends Table {
         return false;
     }
 
-    private static int COMPARE_DIFF = 0;
-    private static int COMPARE_DOWN = 1;
-    private static int COMPARE_UP = 2;
-    private static int COMPARE_EQUAL = 3;
+    private final static int COMPARE_DIFF = 0;
+    private final static int COMPARE_DOWN = 1;
+    private final static int COMPARE_UP = 2;
+    private final static int COMPARE_EQUAL = 3;
 
     // 0 никак не связаны, 1 - параметр снизу в дереве, 2 - параметр сверху в дереве, 3 - равно
     // также возвращает карту если 2

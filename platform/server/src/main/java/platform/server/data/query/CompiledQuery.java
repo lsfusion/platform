@@ -19,22 +19,25 @@ import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 // нужен для Map'а ключей / значений
+// Immutable/Thread Safe
 public class CompiledQuery<K,V> {
 
-    public String from;
-    public Map<K,String> keySelect;
-    public Map<V,String> propertySelect;
-    public Collection<String> whereSelect;
+    final public String from;
+    final public Map<K,String> keySelect;
+    final public Map<V,String> propertySelect;
+    final public Collection<String> whereSelect;
 
-    public String select;
-    public List<K> keyOrder = new ArrayList<K>();
-    public List<V> propertyOrder = new ArrayList<V>();
-    public Map<K,String> keyNames;
-    public Map<V,String> propertyNames;
-    Map<V, Type> propertyTypes;
+    final public String select;
+    final public List<K> keyOrder;
+    final public List<V> propertyOrder;
+    final public Map<K,String> keyNames;
+    final public Map<V,String> propertyNames;
+    final private Map<V, Type> propertyTypes;
 
-    Map<ValueExpr,String> params;
+    final Map<ValueExpr,String> params;
 
     CompiledQuery(CompiledQuery<K,V> compile,Map<ValueExpr, ValueExpr> mapValues) {
         from = compile.from;
@@ -52,12 +55,30 @@ public class CompiledQuery<K,V> {
         params = BaseUtils.join(mapValues,compile.params);
     }
 
+    CompiledQuery(CompiledQuery<K,V> compile,Collection<V> removeProperties) {
+        from = compile.from;
+        whereSelect = compile.whereSelect;
+        keySelect = compile.keySelect;
+        propertySelect = BaseUtils.removeKeys(compile.propertySelect,removeProperties);
+
+        select = compile.select;
+        keyOrder = compile.keyOrder;
+        propertyOrder = BaseUtils.removeList(compile.propertyOrder,removeProperties);
+        keyNames = compile.keyNames;
+        propertyNames = BaseUtils.removeKeys(compile.propertyNames,removeProperties);
+        propertyTypes = BaseUtils.removeKeys(compile.propertyTypes,removeProperties);
+
+        params = compile.params;
+    }
+
     // перемаппит другой CompiledQuery
     <MK,MV> CompiledQuery(CompiledQuery<MK,MV> compile,Map<K,MK> mapKeys,Map<V,MV> mapProperties,Map<ValueExpr, ValueExpr> mapValues) {
         from = compile.from;
         whereSelect = compile.whereSelect;
         keySelect = BaseUtils.join(mapKeys,compile.keySelect);
         propertySelect = BaseUtils.join(mapProperties,compile.propertySelect);
+        keyOrder = new ArrayList<K>();
+        propertyOrder = new ArrayList<V>();
 
         select = compile.select;
         for(MK key : compile.keyOrder)
@@ -81,6 +102,8 @@ public class CompiledQuery<K,V> {
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
         whereSelect = new ArrayList<String>();
+        keyOrder = new ArrayList<K>();
+        propertyOrder = new ArrayList<V>();
 
         keyNames = new HashMap<K,String>();
 
@@ -182,7 +205,7 @@ public class CompiledQuery<K,V> {
                 }
 
                 // бежим по всем And'ам делаем Join запросы, потом объединяем их FULL'ами
-                from = "";
+                String compileFrom = "";
                 boolean second = true; // для COALESCE'ов
                 for(AndJoinQuery and : andProps) {
                     // закинем в And.Properties OrderBy
@@ -195,8 +218,8 @@ public class CompiledQuery<K,V> {
                             Source.mapNames(andPropertySelect,BaseUtils.toMap(andPropertySelect.keySet()),propertyOrder)),
                             Source.stringWhere(AndWhereSelect), JoinQuery.stringOrder(propertyOrder,query.keys.size(),orderAnds),"",top==0?"":String.valueOf(top)) + ") "+ and.alias;
 
-                    if(from.length()==0) {
-                        from = andSelect;
+                    if(compileFrom.length()==0) {
+                        compileFrom = andSelect;
                         for(K Key : query.keys.keySet())
                             keySelect.put(Key, and.alias +"."+ keyNames.get(Key));
                     } else {
@@ -206,10 +229,11 @@ public class CompiledQuery<K,V> {
                             andJoin = (andJoin.length()==0?"":andJoin + " AND ") + andKey + "=" + (second?mapKey.getValue():"COALESCE("+mapKey.getValue()+")");
                             mapKey.setValue(mapKey.getValue()+","+andKey);
                         }
-                        from = from + " FULL JOIN " + andSelect + " ON " + (andJoin.length()==0? Where.TRUE_STRING :andJoin);
+                        compileFrom = compileFrom + " FULL JOIN " + andSelect + " ON " + (andJoin.length()==0? Where.TRUE_STRING :andJoin);
                         second = false;
                     }
                 }
+                from = compileFrom;
 
                 // полученные KeySelect'ы в Data
                 for(Map.Entry<K,String> mapKey : keySelect.entrySet()) {
@@ -278,6 +302,8 @@ public class CompiledQuery<K,V> {
 
             select = syntax.getUnionOrder(from,JoinQuery.stringOrder(OrderNames), query.top ==0?"":String.valueOf(query.top));
             */
+            from = "";
+            select = "";
         }
     }
 

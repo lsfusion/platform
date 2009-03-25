@@ -11,20 +11,16 @@ import java.util.*;
 
 class ParsedQuery<K,V> {
 
-    Map<V,SourceExpr> properties;
-    Where where;
+    final Map<V,SourceExpr> properties;
+    final Where where;
 
-    Map<K, KeyExpr> keys;
+    final Map<K, KeyExpr> keys;
 
-    List<ParsedJoin> joins;
-    Map<ValueExpr, ValueExpr> values;
-
-    private ParsedQuery(Map<K, KeyExpr> iKeys) {
-        keys = iKeys;
-    }
+    final List<ParsedJoin> joins;
+    final Map<ValueExpr, ValueExpr> values;
 
     ParsedQuery(JoinQuery<K,V> query) {
-        this(query.mapKeys);
+        keys = query.mapKeys;
 
         ExprTranslator translated = new ExprTranslator();
 
@@ -45,30 +41,26 @@ class ParsedQuery<K,V> {
         compiler = new Compiler();
     }
 
-    Map<V, SourceExpr> andProperties = null;
+    private Map<V, SourceExpr> andProperties = null;
     Map<V, SourceExpr> getAndProperties() {
-        if(andProperties==null) andProperties = compiler.getAndProperties();
-        return andProperties;
+        synchronized(this) {
+            if(andProperties==null) andProperties = compiler.getAndProperties();
+            return andProperties;
+        }
     }
 
-    Map<V, SourceExpr> packedProperties = null;
+    private Map<V, SourceExpr> packedProperties = null;
     Map<V, SourceExpr> getPackedProperties() {
-        if(packedProperties==null) packedProperties = compiler.getPackedProperties();
-        return packedProperties;
+        synchronized(this) {
+            if(packedProperties==null) packedProperties = compiler.getPackedProperties();
+            return packedProperties;
+        }
     }
 
-    void removeProperty(V property) {
-        properties.remove(property);
-        if(andProperties!=null)
-            andProperties.remove(property);
-        if(packedProperties!=null)
-            packedProperties.remove(property);
-    }
-
-    Compiler compiler;
+    final Compiler compiler;
     CompiledQuery<K,V> compile = null;
     LinkedHashMap<V,Boolean> compileOrders;
-    int compileTop = 0;
+    int compileTop;
     CompiledQuery<K,V> compileSelect(SQLSyntax syntax,LinkedHashMap<V,Boolean> orders,int top) {
         synchronized(this) { // тут он уже в кэше может быть
             if(compile==null || !(compileOrders.equals(orders) && compileTop==top)) {
@@ -154,7 +146,7 @@ class ParsedQuery<K,V> {
         }
     }
     <MK,MV> ParsedQuery(ParsedQuery<MK,MV> query, Map<K, MK> mapKeys, Map<V, MV> mapProps, Map<ValueExpr, ValueExpr> mapValues) {
-        this(BaseUtils.join(mapKeys, query.keys));
+        keys = BaseUtils.join(mapKeys, query.keys);
         properties = BaseUtils.join(mapProps, query.properties);
         where = query.where;
         joins = query.joins;
@@ -185,7 +177,7 @@ class ParsedQuery<K,V> {
         }
     }
     ParsedQuery(ParsedQuery<K,V> query, Map<ValueExpr, ValueExpr> mapValues) {
-        this(query.keys);
+        keys = query.keys;
         properties = query.properties;
         where = query.where;
         joins = query.joins;
@@ -194,4 +186,34 @@ class ParsedQuery<K,V> {
         compiler = new ValueCompiler(query,mapValues);
     }
 
+    private class RemoveCompiler extends Compiler {
+        ParsedQuery<K,V> mapQuery;
+        Collection<V> removeProperties;
+
+        private RemoveCompiler(ParsedQuery<K, V> iMapQuery, Collection<V> iRemoveProperties) {
+            mapQuery = iMapQuery;
+            removeProperties = iRemoveProperties;
+        }
+
+        CompiledQuery<K, V> compile(SQLSyntax syntax, LinkedHashMap<V, Boolean> orders, int top) {
+            return new CompiledQuery<K,V>(mapQuery.compileSelect(syntax,orders,top), removeProperties);
+        }
+
+        Map<V, SourceExpr> getAndProperties() {
+            return BaseUtils.removeKeys(mapQuery.getAndProperties(),removeProperties);
+        }
+
+        Map<V, SourceExpr> getPackedProperties() {
+            return BaseUtils.removeKeys(mapQuery.getPackedProperties(),removeProperties);
+        }
+    }
+    ParsedQuery(ParsedQuery<K,V> query, Collection<V> removeProperties) {
+        keys = query.keys;
+        properties = BaseUtils.removeKeys(query.properties, removeProperties);
+        where = query.where;
+        joins = query.joins;
+        values = query.values;
+
+        compiler = new RemoveCompiler(query,removeProperties);
+    }
 }

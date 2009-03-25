@@ -23,16 +23,12 @@ public class JoinQuery<K,V> extends Source<K,V> {
         mapKeys = new HashMap<K, KeyExpr>();
         for(K Key : keys)
             mapKeys.put(Key,new KeyExpr());
+        properties = new HashMap<V, SourceExpr>();
     }
-    JoinQuery(Map<K, KeyExpr> iMapKeys) {
-        super(iMapKeys.keySet());
-        mapKeys = iMapKeys;
-    }
-
-    public Map<V, SourceExpr> properties = new HashMap<V, SourceExpr>();
+    public final Map<V, SourceExpr> properties;
     public Where where = Where.TRUE;
 
-    public Map<K,KeyExpr> mapKeys;
+    final public Map<K,KeyExpr> mapKeys;
 
     public Collection<V> getProperties() {
         return properties.keySet();
@@ -101,33 +97,44 @@ public class JoinQuery<K,V> extends Source<K,V> {
             join.source.fillJoinQueries(queries);
     }
 
-    ParsedQuery<K,V> parse = null;
-    ParsedQuery<K,V> parse() {
-//        System.out.println("compile..." + this);
-//        if(1==1) return new CompiledJoinQuery<K,V>(this,Orders,SelectTop,Params);
-        if(parse !=null) return parse;
-
-        parse = getCache(this);
-        if(parse !=null) {
-//            System.out.println("cached "+JoinQuery.cacheParse.size());
-            return parse;
-        }
-
-        parse = new ParsedQuery<K,V>(this);
-        putCache(this);
-
-//        System.out.println("not cached "+JoinQuery.cacheParse.size());
-//        debugWatch = true;
-//        System.out.println(compile.compileSelect(debugSyntax).getSelect(debugSyntax));
-//        debugWatch = false;
-
-        return parse;
+    private <CK,CV> ParsedQuery<CK,CV> cache(JoinQuery<CK,CV> query) {
+        Map<CV,V> mapProps = new HashMap<CV,V>();
+        for(Map<ValueExpr, ValueExpr> mapValues : new Pairs<ValueExpr, ValueExpr>(query.getValues().keySet(), getValues().keySet()))
+            for(Map<CK, K> mapKeys : new Pairs<CK, K>(query.keys, keys))
+                if(query.equals(this, mapKeys, mapProps, mapValues)) // нашли кэш
+                    return new ParsedQuery<CK,CV>(parse,mapKeys,mapProps,mapValues);
+        return null;
     }
 
-    void removeProperty(V property) {
-        properties.remove(property);
-        if(parse !=null)
-            parse.removeProperty(property);
+    private static class ParseCaches extends ArrayList<JoinQuery> {
+       <CK,CV> void cache(JoinQuery<CK,CV> query) {
+            synchronized(this) {
+                for(JoinQuery<?,?> cacheQuery : this) {
+                    query.parse = cacheQuery.cache(query);
+                    if(query.parse!=null) return;
+                }
+                query.parse = new ParsedQuery<CK,CV>(query);
+                add(query);
+            }
+        }
+    }
+    
+    final static Map<Integer, ParseCaches> cacheParse = new HashMap<Integer, ParseCaches>();
+    
+    private ParsedQuery<K,V> parse = null;
+    ParsedQuery<K,V> parse() {
+        if(parse!=null) return parse;
+
+        ParseCaches hashCaches;
+        synchronized(cacheParse) {
+            hashCaches = cacheParse.get(hash());
+            if(hashCaches==null) {
+                hashCaches = new ParseCaches();
+                cacheParse.put(hash(), hashCaches);
+            }
+        }
+        hashCaches.cache(this);
+        return parse;
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
@@ -160,20 +167,19 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
         Map<Object, SourceExpr> parsedProps = mergeQuery.parse().getPackedProperties();
 
+        Collection<Object> removeProps = new ArrayList<Object>();
         // погнали сливать одинаковые (именно из раных)
         for(Map.Entry<MV,Object> mergeProperty : mergeProps.entrySet()) {
             SourceExpr mergeExpr = parsedProps.get(mergeProperty.getValue());
             for(V property : properties.keySet()) {
                 if(parsedProps.get(property).equals(mergeExpr)) {
-                    mergeQuery.removeProperty(mergeProperty.getValue());
+                    removeProps.add(mergeProperty.getValue());
                     mergeProperty.setValue(property);
                     break;
                 }
             }
         }
-
-//        System.out.println("ored");
-        return mergeQuery;
+        return new JoinQuery<K, Object>(mergeQuery,removeProps);
     }
 
     public static <V> LinkedHashMap<V,Boolean> reverseOrder(LinkedHashMap<V,Boolean> orders) {
@@ -330,38 +336,11 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return where.hash()*31+hash;
     }
 
-    static Map<Integer,Collection<JoinQuery>> cacheParse = new HashMap<Integer, Collection<JoinQuery>>();
-    static <K,V> ParsedQuery<K,V> getCache(JoinQuery<K,V> query) {
-        Collection<JoinQuery> hashCaches = cacheParse.get(query.hash());
-        if(hashCaches==null) return null;
-        for(JoinQuery<?,?> hashQuery : hashCaches) {
-            ParsedQuery<K,V> result = hashQuery.cache(query);
-            if(result!=null) return result;
-        }
-        return null;
-    }
-    <CK,CV> ParsedQuery<CK,CV> cache(JoinQuery<CK,CV> query) {
-        Map<CV,V> mapProps = new HashMap<CV,V>();
-        for(Map<ValueExpr, ValueExpr> mapValues : new Pairs<ValueExpr, ValueExpr>(query.getValues().keySet(), getValues().keySet()))
-            for(Map<CK, K> mapKeys : new Pairs<CK, K>(query.keys, keys))
-                if(query.equals(this, mapKeys, mapProps, mapValues)) // нашли кэш
-                    return new ParsedQuery<CK,CV>(parse,mapKeys,mapProps,mapValues);
-        return null;
-    }
-
-    static <K,V> void putCache(JoinQuery<K,V> query) {
-        Collection<JoinQuery> hashCaches = cacheParse.get(query.hash());
-        if(hashCaches==null) {
-            hashCaches = new ArrayList<JoinQuery>();
-            cacheParse.put(query.hash(),hashCaches);
-        }
-        hashCaches.add(query);
-    }
-
     // конструктор копирования
     public JoinQuery(JoinQuery<K,V> query) {
-        this(query.mapKeys);
-        properties.putAll(query.properties);
+        super(query.keys);
+        mapKeys = query.mapKeys;
+        properties = new HashMap<V, SourceExpr>(query.properties);
         where = query.where;
         values = query.values;
     }
@@ -385,7 +364,8 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
     // конструктор трансляции переменных
     JoinQuery(JoinQuery<K,V> query,Map<ValueExpr, ValueExpr> mapValues) {
-        this(query.mapKeys);
+        super(query.keys);
+        mapKeys = query.mapKeys;
 
         properties = query.properties;
         where = query.where;
@@ -393,6 +373,19 @@ public class JoinQuery<K,V> extends Source<K,V> {
 
         if(query.parse !=null)
             parse = new ParsedQuery<K,V>(query.parse, mapValues);
+    }
+
+    // конструктор вырезания свойств
+    JoinQuery(JoinQuery<K,V> query,Collection<V> removeProperties) {
+        super(query.keys);
+        mapKeys = query.mapKeys;
+
+        properties = BaseUtils.removeKeys(query.properties,removeProperties);
+        where = query.where;
+        values = query.values;
+
+        if(query.parse !=null)
+            parse = new ParsedQuery<K,V>(query.parse, removeProperties);
     }
 }
 

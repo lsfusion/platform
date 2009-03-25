@@ -179,17 +179,17 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     }
 
-    public void switchClassView(GroupObjectImplement Group) {
-        changeClassView(Group, !Group.gridClassView);
+    public void switchClassView(GroupObjectImplement group) {
+        changeClassView(group, !group.gridClassView);
     }
 
-    private void changeClassView(GroupObjectImplement Group,Boolean Show) {
+    private void changeClassView(GroupObjectImplement group,boolean show) {
 
-        if(Group.gridClassView == Show || Group.singleViewType) return;
-        Group.gridClassView = Show;
+        if(group.gridClassView == show || group.singleViewType) return;
+        group.gridClassView = show;
 
         // расставляем пометки
-        Group.updated = Group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
+        group.updated = group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
 
         // на данный момент ClassView влияет на фильтры
         structUpdated = true;
@@ -580,9 +580,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         }
     }
 
-    private static int DIRECTION_DOWN = 0;
-    private static int DIRECTION_UP = 1;
-    private static int DIRECTION_CENTER = 2;
+    private final static int DIRECTION_DOWN = 0;
+    private final static int DIRECTION_UP = 1;
+    private final static int DIRECTION_CENTER = 2;
 
     public FormChanges endApply() throws SQLException {
 
@@ -886,15 +886,14 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                                 objectSeeks.put(objectKey,null);
 
                         // закинем объекты в порядок
-                        for(ObjectImplement objectKey : objectSeeks.keySet()) {
+                        for(Entry<ObjectImplement, Integer> objectSeek : objectSeeks.entrySet()) {
                             // также закинем их в порядок и в запрос6
-                            SourceExpr keyExpr = selectKeys.mapKeys.get(objectKey);
-                            selectKeys.properties.put(objectKey,keyExpr); // чтобы упорядочивать
-                            selectOrders.put(objectKey,false);
-                            Integer seekValue = objectSeeks.get(objectKey);
-                            if(seekValue!=null) {
+                            SourceExpr keyExpr = selectKeys.mapKeys.get(objectSeek.getKey());
+                            selectKeys.properties.put(objectSeek.getKey(),keyExpr); // чтобы упорядочивать
+                            selectOrders.put(objectSeek.getKey(),false);
+                            if(objectSeek.getValue()!=null) {
                                 orderSources.add(keyExpr);
-                                orderWheres.add(seekValue);
+                                orderWheres.add(objectSeek.getValue());
                                 orderDirs.add(false);
                             }
                         }

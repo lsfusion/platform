@@ -60,17 +60,17 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     }
 
     // проверяет на то что изменился верхний объект
-    boolean objectUpdated(GroupObjectImplement ClassGroup) {
-        for(ObjectImplement IntObject : mapping.values())
-            if(IntObject.groupTo !=ClassGroup && ((IntObject.updated & ObjectImplement.UPDATED_OBJECT)!=0)) return true;
+    boolean objectUpdated(GroupObjectImplement classGroup) {
+        for(ObjectImplement intObject : mapping.values())
+            if(intObject.groupTo !=classGroup && ((intObject.updated & ObjectImplement.UPDATED_OBJECT)!=0)) return true;
 
         return false;
     }
 
     // изменился хоть один из классов интерфейса (могло повлиять на вхождение в интерфейс)
-    boolean classUpdated(GroupObjectImplement ClassGroup) {
-        for(ObjectImplement IntObject : mapping.values())
-            if(((IntObject.updated & ((IntObject.groupTo ==ClassGroup)? ObjectImplement.UPDATED_CLASS: ObjectImplement.UPDATED_CLASS)))!=0) return true;
+    boolean classUpdated(GroupObjectImplement classGroup) {
+        for(ObjectImplement intObject : mapping.values())
+            if(((intObject.updated & ((intObject.groupTo ==classGroup)? ObjectImplement.UPDATED_CLASS: ObjectImplement.UPDATED_OBJECT)))!=0) return true;
 
         return false;
     }

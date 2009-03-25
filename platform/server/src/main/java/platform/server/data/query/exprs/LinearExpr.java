@@ -1,6 +1,7 @@
 package platform.server.data.query.exprs;
 
 import platform.server.data.query.*;
+import platform.server.data.query.exprs.cases.ExprCaseList;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -36,8 +37,6 @@ public class LinearExpr extends AndExpr {
         for(Operand operand : operands)
             if(operand.expr.hashCode()==expr.hashCode() && operand.expr.equals(expr)) {
                 operand.coeff += coeff;
-//                if(operand.coeff==0)
-//                    throw new RuntimeException("!!!!! Сейчас она при убирании операндов немного по другому работать будет ???? В этом тоже глюк может быть");
                 return;
             }
         operands.add(new Operand(expr, coeff));
@@ -64,7 +63,7 @@ public class LinearExpr extends AndExpr {
     }
 
     // возвращает Where на notNull
-    Where calculateWhere() {
+    protected Where calculateWhere() {
         Where result = Where.FALSE;
         for(Operand operand : operands)
             result = result.or(operand.expr.getWhere());

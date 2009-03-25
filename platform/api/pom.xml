@@ -16,6 +16,10 @@
           <artifactId>lpsolve</artifactId>
           <version>5.5</version>
       </dependency>
+      <dependency>
+          <groupId>findbugs</groupId>
+          <artifactId>annotations</artifactId>
+      </dependency>
   </dependencies>
 
 </project>

@@ -197,4 +197,21 @@ public class BaseUtils {
                 return false;
         return true;
     }
+
+    public static <K,V> Map<K,V> removeKeys(Map<K,V> map,Collection<K> remove) {
+        Map<K,V> removeMap = new HashMap<K,V>();
+        for(Map.Entry<K,V> property : map.entrySet())
+            if(!remove.contains(property.getKey()))
+                removeMap.put(property.getKey(),property.getValue());
+        return removeMap;
+    }
+
+    public static <K> List<K> removeList(List<K> list,Collection<K> remove) {
+        List<K> removeList = new ArrayList<K>();
+        for(K property : list)
+            if(!remove.contains(property))
+                removeList.add(property);
+        return removeList;
+    }
+
 }
