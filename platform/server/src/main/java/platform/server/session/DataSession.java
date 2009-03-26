@@ -1,4 +1,4 @@
-package platform.server.logics.session;
+package platform.server.session;
 
 import platform.interop.Compare;
 import platform.server.data.*;

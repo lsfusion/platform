@@ -8,13 +8,13 @@ import platform.server.data.query.UnionQuery;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.ChangePropertySecurityPolicy;
+import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.BitClass;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.ChangeValue;
-import platform.server.logics.session.DataSession;
+import platform.server.session.ChangeValue;
+import platform.server.session.DataSession;
 
 import java.util.*;
 import java.sql.SQLException;

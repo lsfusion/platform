@@ -5,7 +5,7 @@ import platform.server.data.PropertyField;
 import platform.server.data.Table;
 import platform.server.data.GlobalTable;
 import platform.server.data.types.Type;
-import platform.server.logics.session.*;
+import platform.server.session.*;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.view.form.ViewTable;
 

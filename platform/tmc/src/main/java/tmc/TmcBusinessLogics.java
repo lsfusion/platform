@@ -12,13 +12,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.net.MalformedURLException;
-import java.net.ServerSocket;
 
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.auth.SecurityPolicy;
+import platform.server.auth.SecurityPolicy;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
-import platform.server.logics.auth.User;
+import platform.server.auth.User;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.AggregateProperty;

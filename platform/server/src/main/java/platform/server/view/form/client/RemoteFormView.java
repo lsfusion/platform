@@ -6,7 +6,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.CompressingOutputStream;
 import platform.server.view.form.*;
 import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.session.ChangeValue;
+import platform.server.session.ChangeValue;
 
 import java.sql.SQLException;
 import java.io.*;

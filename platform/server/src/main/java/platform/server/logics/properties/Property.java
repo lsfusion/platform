@@ -12,13 +12,13 @@ import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.auth.ChangePropertySecurityPolicy;
+import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.data.MapKeysTable;
 import platform.server.logics.properties.groups.AbstractNode;
-import platform.server.logics.session.*;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;

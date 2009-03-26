@@ -1,11 +1,10 @@
 package platform.server.logics.properties.linear;
 
 import platform.server.logics.ObjectValue;
-import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.HashMap;

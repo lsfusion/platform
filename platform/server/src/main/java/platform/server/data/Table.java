@@ -5,7 +5,7 @@ import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;

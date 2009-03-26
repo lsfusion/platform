@@ -8,13 +8,12 @@ import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.ChangePropertySecurityPolicy;
+import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.data.MapKeysTable;
-import platform.server.logics.session.ChangeValue;
-import platform.server.logics.session.DataSession;
+import platform.server.session.ChangeValue;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;

@@ -8,7 +8,7 @@ import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.logics.classes.IntegralClass;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.util.*;
 

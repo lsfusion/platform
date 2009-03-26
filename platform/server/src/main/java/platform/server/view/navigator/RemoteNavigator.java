@@ -11,11 +11,11 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.auth.SecurityPolicy;
-import platform.server.logics.auth.User;
+import platform.server.auth.SecurityPolicy;
+import platform.server.auth.User;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
 

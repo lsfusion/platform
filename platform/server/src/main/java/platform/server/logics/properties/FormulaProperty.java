@@ -1,8 +1,8 @@
 package platform.server.logics.properties;
 
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataChanges;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataChanges;
+import platform.server.session.DataSession;
 
 import java.util.Collection;
 import java.util.List;

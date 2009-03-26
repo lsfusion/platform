@@ -1,7 +1,7 @@
 package platform.server.logics.constraints;
 
 import platform.server.logics.properties.Property;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 

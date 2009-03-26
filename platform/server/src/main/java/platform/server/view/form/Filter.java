@@ -6,7 +6,7 @@ import platform.server.data.query.wheres.CompareWhere;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.io.DataInputStream;
 import java.io.IOException;

@@ -5,7 +5,7 @@ import platform.server.data.query.OperationQuery;
 import platform.server.data.Union;
 import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.util.Collection;
 import java.util.Map;

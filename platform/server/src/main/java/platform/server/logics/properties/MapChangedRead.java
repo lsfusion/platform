@@ -7,7 +7,7 @@ import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ValueClassSet;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.util.Collection;
 import java.util.Collections;

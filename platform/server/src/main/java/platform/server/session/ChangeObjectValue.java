@@ -1,4 +1,4 @@
-package platform.server.logics.session;
+package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.server.logics.classes.RemoteClass;

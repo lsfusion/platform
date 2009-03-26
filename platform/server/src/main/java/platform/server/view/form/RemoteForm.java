@@ -16,7 +16,7 @@ import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.SecurityPolicy;
+import platform.server.auth.SecurityPolicy;
 import platform.server.logics.classes.IntegralClass;
 import platform.server.logics.classes.ObjectClass;
 import platform.server.logics.classes.RemoteClass;
@@ -24,7 +24,7 @@ import platform.server.logics.data.IDTable;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.session.*;
+import platform.server.session.*;
 import platform.server.where.Where;
 
 import java.sql.SQLException;

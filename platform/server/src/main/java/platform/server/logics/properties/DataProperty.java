@@ -10,11 +10,11 @@ import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.ChangePropertySecurityPolicy;
+import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.*;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;

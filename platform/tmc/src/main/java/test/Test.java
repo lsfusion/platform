@@ -9,14 +9,8 @@ import tmc.TmcBusinessLogics;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.session.DataSession;
-import platform.server.view.navigator.RemoteNavigator;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.sql.SQLException;
-import java.rmi.RemoteException;
 import java.io.IOException;
 
 public class Test {

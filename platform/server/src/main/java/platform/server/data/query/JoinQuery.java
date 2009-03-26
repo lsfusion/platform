@@ -8,7 +8,7 @@ import platform.server.data.query.exprs.*;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 import platform.server.where.Where;
 
 import java.sql.SQLException;

@@ -3,7 +3,7 @@ package platform.server.view.form;
 import platform.base.BaseUtils;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.io.DataInputStream;
 import java.io.IOException;

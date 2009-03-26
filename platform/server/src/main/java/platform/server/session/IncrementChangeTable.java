@@ -1,4 +1,4 @@
-package platform.server.logics.session;
+package platform.server.session;
 
 import platform.server.data.PropertyField;
 import platform.server.data.types.Type;

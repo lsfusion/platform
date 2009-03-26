@@ -11,15 +11,13 @@ import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 import platform.server.where.Where;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 // нужен для Map'а ключей / значений
 // Immutable/Thread Safe

@@ -5,7 +5,7 @@ import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractNode;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 import platform.server.logics.BusinessLogics;
 import platform.server.view.form.client.report.ReportDrawField;
 import platform.server.view.navigator.NavigatorElement;

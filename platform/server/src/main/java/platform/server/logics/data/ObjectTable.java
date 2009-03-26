@@ -8,7 +8,7 @@ import platform.server.data.query.JoinQuery;
 import platform.server.data.query.wheres.InListWhere;
 import platform.server.data.types.Type;
 import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

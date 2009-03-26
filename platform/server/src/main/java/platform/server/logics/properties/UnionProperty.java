@@ -9,14 +9,14 @@ import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.query.exprs.LinearExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.auth.ChangePropertySecurityPolicy;
+import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.logics.classes.sets.ClassSet;
 import platform.server.logics.classes.sets.InterfaceClass;
 import platform.server.logics.classes.sets.InterfaceClassSet;
 import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataChanges;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataChanges;
+import platform.server.session.DataSession;
 
 import java.util.*;
 

@@ -3,7 +3,7 @@ package platform.server.view.form;
 import platform.server.data.KeyField;
 import platform.server.data.SessionTable;
 import platform.server.data.types.Type;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

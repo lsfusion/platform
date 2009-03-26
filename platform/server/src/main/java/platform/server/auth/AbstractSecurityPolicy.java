@@ -1,4 +1,4 @@
-package platform.server.logics.auth;
+package platform.server.auth;
 
 import java.util.Collection;
 import java.util.HashSet;

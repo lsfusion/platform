@@ -9,8 +9,8 @@ import platform.server.data.query.exprs.SourceExpr;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.classes.sets.*;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataChanges;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataChanges;
+import platform.server.session.DataSession;
 import platform.server.where.Where;
 
 import java.util.*;

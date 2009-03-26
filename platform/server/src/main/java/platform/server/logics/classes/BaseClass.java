@@ -2,7 +2,7 @@ package platform.server.logics.classes;
 
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.text.Format;

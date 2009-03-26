@@ -6,8 +6,8 @@ import platform.server.data.types.Type;
 import platform.server.data.Union;
 import platform.server.logics.classes.sets.ValueClassSet;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataChanges;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataChanges;
+import platform.server.session.DataSession;
 
 import java.util.*;
 

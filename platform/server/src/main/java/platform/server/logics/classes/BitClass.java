@@ -3,7 +3,7 @@ package platform.server.logics.classes;
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.server.data.types.Type;
 import platform.server.logics.data.TableFactory;
-import platform.server.logics.session.DataSession;
+import platform.server.session.DataSession;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.sql.SQLException;
