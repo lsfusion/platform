@@ -19,7 +19,7 @@ abstract public class FormulaProperty<T extends FormulaPropertyInterface> extend
     }
 
     // не может быть изменений в принципе
-    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         return false;
     }
 

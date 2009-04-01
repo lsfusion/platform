@@ -23,10 +23,6 @@ import net.sf.jasperreports.engine.JRException;
 
 public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
 
-    TestBusinessLogics(DataAdapter iDataAdapter) throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException, FileNotFoundException {
-        super(iDataAdapter);
-    }
-
     TestBusinessLogics(DataAdapter iDataAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
         super(iDataAdapter,testType,seed,iterations);
     }

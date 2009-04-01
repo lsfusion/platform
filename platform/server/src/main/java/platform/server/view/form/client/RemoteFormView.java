@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.CompressingOutputStream;
+import platform.interop.RemoteObject;
 import platform.server.view.form.*;
 import platform.server.logics.classes.RemoteClass;
 import platform.server.session.ChangeValue;
@@ -15,14 +16,14 @@ import java.rmi.server.UnicastRemoteObject;
 import java.rmi.RemoteException;
 
 // фасад для работы с клиентом
-public class RemoteFormView extends UnicastRemoteObject implements RemoteFormInterface {
+public class RemoteFormView extends RemoteObject implements RemoteFormInterface {
 
     RemoteForm form;
     public FormView richDesign;
     public JasperDesign reportDesign;
 
-    public RemoteFormView(RemoteForm iForm, FormView iRichDesign, JasperDesign iReportDesign) throws RemoteException {
-        super();
+    public RemoteFormView(RemoteForm iForm, FormView iRichDesign, JasperDesign iReportDesign, int port) throws RemoteException {
+        super(port);
         
         form = iForm;
         richDesign = iRichDesign;

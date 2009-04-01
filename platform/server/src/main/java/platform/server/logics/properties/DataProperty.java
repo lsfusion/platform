@@ -100,37 +100,31 @@ public class DataProperty<D extends PropertyInterface> extends Property<DataProp
     public boolean onDefaultChange;
 
     // заполняет список, возвращает есть ли изменения, последний параметр для рекурсий
-    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
-        if(changedProperties.contains(this)) return true;
-        if(noUpdate.contains(this)) return false;
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         // если null то значит полный список запрашивают
         if(changes ==null) return true;
 
-        boolean Changed = changes.properties.contains(this);
+        boolean changed = changes.properties.contains(this);
 
-        if(!Changed)
+        if(!changed)
             for(DataPropertyInterface Interface : interfaces)
-                if(changes.removeClasses.contains(Interface.interfaceClass)) Changed = true;
+                if(changes.removeClasses.contains(Interface.interfaceClass)) changed = true;
 
-        if(!Changed)
-            if(changes.removeClasses.contains(value)) Changed = true;
+        if(!changed)
+            if(changes.removeClasses.contains(value)) changed = true;
 
         if(defaultProperty !=null) {
-            boolean DefaultChanged = defaultProperty.fillChangedList(changedProperties, changes, noUpdate);
-            if(!Changed) {
+            boolean defaultChanged = defaultProperty.fillChanges(changedProperties, changes, noUpdate);
+            if(!changed) {
                 if(onDefaultChange)
-                    Changed = DefaultChanged;
+                    changed = defaultChanged;
                 else
-                    for(DataPropertyInterface Interface : interfaces)
-                        if(changes.addClasses.contains(Interface.interfaceClass)) Changed = true;
+                    for(DataPropertyInterface propertyInterface : interfaces)
+                        if(changes.addClasses.contains(propertyInterface.interfaceClass)) changed = true;
             }
         }
 
-        if(Changed) {
-            changedProperties.add(this);
-            return true;
-        } else
-            return false;
+        return changed;
     }
 
     public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {

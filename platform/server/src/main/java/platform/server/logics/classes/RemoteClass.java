@@ -53,7 +53,7 @@ abstract public class RemoteClass extends AbstractNode {
             if(numeric.length==length && numeric.precision==precision)
                 return numeric;
         NumericClass numeric = new NumericClass(1000700+numerics.size(),"Число "+length+","+precision,length,precision);
-        numeric.addParent(data);
+        numeric.addParent(integral);
         numerics.add(numeric);
         return numeric;
 

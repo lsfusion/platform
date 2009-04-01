@@ -133,7 +133,16 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // заполняет список, возвращает есть ли изменения
-    public abstract boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate);
+    public boolean fillChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+        if(changedProperties.contains(this)) return true;
+        if(noUpdate.contains(this)) return false;
+
+        boolean changed = fillDependChanges(changedProperties, changes, noUpdate);
+        if(changed)
+            changedProperties.add(this);
+        return changed;
+    }
+    protected abstract boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate);
 
     JoinQuery<T,String> getOutSelect(String Value) {
         JoinQuery<T,String> Query = new JoinQuery<T,String>(interfaces);

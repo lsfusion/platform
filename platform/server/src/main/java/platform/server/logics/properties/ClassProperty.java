@@ -31,17 +31,13 @@ public class ClassProperty extends AggregateProperty<DataPropertyInterface> {
         // этому св-ву чужого не надо
     }
 
-    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         // если Value null то ничего не интересует
         if(value ==null) return false;
-        if(changedProperties.contains(this)) return true;
-        if(noUpdate.contains(this)) return false;
 
-        for(DataPropertyInterface ValueInterface : interfaces)
-            if(changes ==null || changes.addClasses.contains(ValueInterface.interfaceClass) || changes.removeClasses.contains(ValueInterface.interfaceClass)) {
-                changedProperties.add(this);
+        for(DataPropertyInterface valueInterface : interfaces)
+            if(changes ==null || changes.addClasses.contains(valueInterface.interfaceClass) || changes.removeClasses.contains(valueInterface.interfaceClass))
                 return true;
-            }
 
         return false;
     }

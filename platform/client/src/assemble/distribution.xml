@@ -9,13 +9,12 @@
       <!-->из-за того что в commons-beanutils по ошибке включены commons-collections<-->
       <excludes>
           <exclude>commons-beanutils:commons-beanutils</exclude>
+          <exclude>com.intellij:forms_rt</exclude>
       </excludes>
       <unpack>true</unpack>
       <unpackOptions>
           <excludes>
-              <exclude>META-INF/LICENSE.txt</exclude>
-              <exclude>META-INF/NOTICE.txt</exclude>
-              <exclude>META-INF/README.txt</exclude>
+              <exclude>META-INF/*.*</exclude>
           </excludes>
       </unpackOptions>
     </dependencySet>
@@ -27,9 +26,19 @@
        <unpackOptions>
            <excludes>
                <exclude>org/apache/commons/collections/**</exclude>
-               <exclude>META-INF/LICENSE.txt</exclude>
-               <exclude>META-INF/NOTICE.txt</exclude>
-               <exclude>META-INF/README.txt</exclude>
+               <exclude>META-INF/*.*</exclude>
+           </excludes>
+       </unpackOptions>
+    </dependencySet>
+    <dependencySet>
+       <includes>
+           <include>com.intellij:forms_rt</include>
+       </includes>
+       <unpack>true</unpack>
+       <unpackOptions>
+           <excludes>
+               <exclude>com/intellij/uiDesigner/core/**</exclude>
+               <exclude>META-INF/*.*</exclude>
            </excludes>
        </unpackOptions>
     </dependencySet>

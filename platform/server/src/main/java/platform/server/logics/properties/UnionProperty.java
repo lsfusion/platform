@@ -79,17 +79,11 @@ abstract public class UnionProperty extends AggregateProperty<PropertyInterface>
         return result;
     }
 
-    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
-        if(changedProperties.contains(this)) return true;
-        if(noUpdate.contains(this)) return false;
-
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
         boolean changed = false;
 
         for(PropertyMapImplement operand : operands)
             changed = operand.mapFillChangedList(changedProperties, changes, noUpdate) || changed;
-
-        if(changed)
-            changedProperties.add(this);
 
         return changed;
     }

@@ -9,6 +9,7 @@ package platform.server.view.navigator;
 
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.RemoteObject;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.auth.SecurityPolicy;
@@ -29,15 +30,15 @@ import java.rmi.server.UnicastRemoteObject;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteObject implements RemoteNavigatorInterface {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface {
 
     DataAdapter Adapter;
     T BL;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(DataAdapter iAdapter,T iBL,User iCurrentUser) throws RemoteException {
-        super();
+    public RemoteNavigator(DataAdapter iAdapter,T iBL,User iCurrentUser,int port) throws RemoteException {
+        super(port);
 
         Adapter = iAdapter;
         BL = iBL;
@@ -205,7 +206,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends UnicastRemoteO
                         remoteForm.userObjectSeeks.put(object, objectID);
                 }
 
-            return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign());
+            return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort);
 
         } catch (Exception e) {
            throw new RuntimeException(e);

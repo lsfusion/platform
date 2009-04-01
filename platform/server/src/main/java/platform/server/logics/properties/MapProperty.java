@@ -136,19 +136,13 @@ abstract class MapProperty<T extends PropertyInterface,M extends PropertyInterfa
     }*/
 
     // заполняет список, возвращает есть ли изменения
-    public boolean fillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
-        if(changedProperties.contains(this)) return true;
-        if(noUpdate.contains(this)) return false;
-
-        boolean Changed = getMapProperty().fillChangedList(changedProperties, changes, noUpdate);
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
+        boolean changed = getMapProperty().fillChanges(changedProperties, changes, noUpdate);
 
         for(PropertyInterfaceImplement Implement : getMapImplements().values())
-            Changed = Implement.mapFillChangedList(changedProperties, changes, noUpdate) || Changed;
+            changed = Implement.mapFillChangedList(changedProperties, changes, noUpdate) || changed;
 
-        if(Changed)
-            changedProperties.add(this);
-
-        return Changed;
+        return changed;
     }
 
     boolean containsImplement(Collection<Property> Properties) {

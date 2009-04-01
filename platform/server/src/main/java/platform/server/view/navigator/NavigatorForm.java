@@ -65,6 +65,10 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         addPropertyView(properties, groups, object1, object2);
     }
 
+    protected void addPropertyView(ObjectImplement object1, ObjectImplement object2, ObjectImplement object3, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object1, object2, object3);
+    }
+
     private void addPropertyView(List<Property> properties, Object[] groups, ObjectImplement... objects) {
 
         for (int i = 0; i < groups.length; i++) {

@@ -5,6 +5,7 @@ import platform.base.Combinations;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.RemoteObject;
 import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.data.*;
@@ -46,7 +47,7 @@ import java.io.*;
 
 import net.sf.jasperreports.engine.JRException;
 
-public abstract class BusinessLogics<T extends BusinessLogics<T>> extends UnicastRemoteObject implements PropertyUpdateView, RemoteLogicsInterface {
+public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements PropertyUpdateView, RemoteLogicsInterface {
 
     protected DataAdapter adapter;
     public final static boolean activateCaches = true;
@@ -57,7 +58,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         if (user == null) throw new LoginException();
 
         try {
-            return new RemoteNavigator(adapter, this, user);
+            return new RemoteNavigator(adapter, this, user, exportPort);
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -85,8 +86,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     }
 
     // по умолчанию с полным стартом
-    public BusinessLogics(DataAdapter iAdapter) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
-        super();
+    public BusinessLogics(DataAdapter iAdapter,int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+        super(exportPort);
 
         adapter = iAdapter;
 
@@ -113,7 +114,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
     // тестирующий конструктор
     public BusinessLogics(DataAdapter iAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
-        super();
+        super(1099);
 
         adapter = iAdapter;
 
@@ -1110,7 +1111,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     public static List<Property> getChangedList(Collection<? extends Property> updateProps, DataChanges changes,Collection<Property> noUpdateProps) {
         List<Property> changedList = new ArrayList<Property>();
         for(Property property : updateProps)
-            property.fillChangedList(changedList,changes,noUpdateProps);
+            property.fillChanges(changedList,changes,noUpdateProps);
         return changedList;
     }
 
@@ -1137,6 +1138,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
     static int AutoSeed = 1400;
     public void autoFillDB(Map<RemoteClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
+        System.out.print("Идет заполнение базы данных...");
+
         autoFillDB = true;
         DataSession session = createSession(adapter);
 
@@ -1161,7 +1164,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
 
         for(RemoteClass fillClass : classes)
             if(fillClass.childs.size()==0) {
-                System.out.println(fillClass.caption);
+                System.out.println("Класс : "+fillClass.caption);
 
                 Integer quantity = classQuantity.get(fillClass);
                 if(quantity==null) quantity = 1;
@@ -1187,7 +1190,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
             if(abstractProperty instanceof DataProperty) {
                 DataProperty<?> property = (DataProperty)abstractProperty;
 
-                System.out.println(property.caption);
+                System.out.println("Свойство : "+property.caption);
 
                 Set<DataPropertyInterface> interfaceNotNull = propNotNull.get(property);
                 if(interfaceNotNull==null) interfaceNotNull = new HashSet<DataPropertyInterface>();
@@ -1237,7 +1240,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
                 }
             }
 
-        System.out.println("Apply");
+        System.out.println("Применение изменений...");
         apply(session);
 
         session.startTransaction();
@@ -1254,6 +1257,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Unicas
         tableFactory.idTable.reserveID(session, IDTable.OBJECT, autoIDCounter);
 
         session.close();
+
+        System.out.println("База данных была успешно заполнена");
 
         autoFillDB = false;
     }

@@ -34,8 +34,8 @@ import platform.server.view.form.*;
 
 public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
-    public TmcBusinessLogics(DataAdapter iAdapter) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
-        super(iAdapter);
+    public TmcBusinessLogics(DataAdapter iAdapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
+        super(iAdapter,port);
     }
 
     public TmcBusinessLogics(DataAdapter iAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
@@ -47,8 +47,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         System.out.println("Server is starting...");
         DataAdapter adapter = new PostgreDataAdapter("testplat","localhost");
-        TmcBusinessLogics BL = new TmcBusinessLogics(adapter);
-//        BL.fillData();
+        TmcBusinessLogics BL = new TmcBusinessLogics(adapter,7652);
+
+        if(args.length>0 && args[0].equals("-F"))
+            BL.fillData();
         LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
 //        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
         System.out.println("Server has successfully started");

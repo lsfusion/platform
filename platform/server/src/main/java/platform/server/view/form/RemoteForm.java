@@ -1164,9 +1164,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 //        Result.Out(this);
 
             return result;
-        } catch (RuntimeException e) {
-            transaction.rollback();
-            throw e;
+//        } catch (RuntimeException e) {
+//            transaction.rollback();
+//            throw e;
         } catch (SQLException e) {
             transaction.rollback();
             throw e;

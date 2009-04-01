@@ -70,20 +70,20 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
         ChangeQuery<JoinPropertyInterface,PropertyField> resultQuery = new ChangeQuery<JoinPropertyInterface, PropertyField>(interfaces); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
         ValueClassSet<JoinPropertyInterface> resultClass = new ValueClassSet<JoinPropertyInterface>();
 
-        int QueryIncrementType = changeType;
+        int queryIncrementType = changeType;
         if(implementations.property instanceof MultiplyFormulaProperty && changeType ==1)
             resultQuery.add(getMapQuery(getChangeImplements(session,1), changeTable.value,resultClass,true));
         else {
             // если нужна 1 и изменились св-ва то придется просто 2-ку считать (хотя это потом можно поменять)
-            if(QueryIncrementType==1 && containsImplement(session.propertyChanges.keySet()))
-                QueryIncrementType = 2;
+            if(queryIncrementType==1 && containsImplement(session.propertyChanges.keySet()))
+                queryIncrementType = 2;
 
             // все на Value - PrevValue не интересует, его как раз верхний подгоняет
-            resultQuery.add(getMapQuery(getChange(session,QueryIncrementType==1?1:0), changeTable.value,resultClass,false));
-            if(QueryIncrementType==2) resultQuery.add(getMapQuery(getPreviousChange(session), changeTable.prevValue,new ValueClassSet<JoinPropertyInterface>(),false));
+            resultQuery.add(getMapQuery(getChange(session,queryIncrementType==1?1:0), changeTable.value,resultClass,false));
+            if(queryIncrementType==2) resultQuery.add(getMapQuery(getPreviousChange(session), changeTable.prevValue,new ValueClassSet<JoinPropertyInterface>(),false));
         }
 
-        return new Change(QueryIncrementType,resultQuery,resultClass);
+        return new Change(queryIncrementType,resultQuery,resultClass);
     }
 
     public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {

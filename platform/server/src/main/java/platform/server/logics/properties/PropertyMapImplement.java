@@ -60,7 +60,7 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
 
     // заполняет список, возвращает есть ли изменения
     public boolean mapFillChangedList(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
-        return property.fillChangedList(changedProperties, changes, noUpdate);
+        return property.fillChanges(changedProperties, changes, noUpdate);
     }
 
     ChangeValue mapGetChangeProperty(DataSession session, Map<P, ObjectValue> keys, int coeff, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
