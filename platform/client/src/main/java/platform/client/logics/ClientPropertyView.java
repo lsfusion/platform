@@ -1,6 +1,8 @@
 package platform.client.logics;
 
 import platform.client.form.ClientForm;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.logics.classes.ClientClass;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,11 +37,19 @@ public class ClientPropertyView extends ClientCellView {
         return groupObject;
     }
 
-    protected ClientObjectValue getEditorObjectValue(ClientForm form, Object value, boolean externalID) throws IOException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) throws IOException, ClassNotFoundException {
 
-        ClientChangeValue changeValue = ClientChangeValue.deserialize(new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyEditorObjectValueByteArray(this.ID, externalID))));
-        if (changeValue == null) return null;
+        ClientObjectValue objectValue;
+        if (isDataChanging) {
+            ClientChangeValue changeValue = ClientChangeValue.deserialize(new DataInputStream(new ByteArrayInputStream(
+                    form.remoteForm.getPropertyChangeValueByteArray(this.ID, externalID))));
+            if (changeValue == null) return null;
 
-        return changeValue.getObjectValue(value);
+            objectValue = changeValue.getObjectValue(value);
+        } else
+            objectValue = new ClientObjectValue(ClientClass.deserialize(new DataInputStream(new ByteArrayInputStream(
+                    form.remoteForm.getPropertyValueClassByteArray(this.ID)))),value);
+
+        return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
     }
 }

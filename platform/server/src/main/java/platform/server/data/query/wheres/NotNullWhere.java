@@ -1,20 +1,15 @@
 package platform.server.data.query.wheres;
 
+import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.JoinExpr;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.translators.Translator;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import net.jcip.annotations.Immutable;
 
 
 public class NotNullWhere extends DataWhere {
@@ -38,17 +33,11 @@ public class NotNullWhere extends DataWhere {
     }
 
     public Where translate(Translator translator) {
-
-        SourceExpr transExpr = expr.translate(translator);
-
-        if(transExpr== expr)
-            return this;
-
-        return transExpr.getWhere();
+        return expr.translate(translator).getWhere();
     }
 
-    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
-        expr.fillJoins(joins, values);
+    public int fillContext(Context context, boolean compile) {
+        return expr.fillContext(context, compile);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> Joins, Where AndWhere) {
@@ -56,32 +45,27 @@ public class NotNullWhere extends DataWhere {
     }
 
     protected DataWhereSet getExprFollows() {
-        return expr.from.inJoin.getFollows();
+        return ((DataWhere)expr.from.getWhere()).getFollows(); // следует из assertion'а что из JoinExpr => JoinWhere
     }
 
-    public Where getJoinWhere() {
-        return expr.from.inJoin; // собсно ради этого все и делается
-    }
-
-    public Where getNotJoinWhere() {
-//        return super.getNotJoinWhere();
-        return Where.TRUE;
+    public InnerJoins getInnerJoins() {
+        return new InnerJoins((JoinWhere)expr.from.getWhere(),this);
     }
 
     public Where copy() {
         return this;
     }
 
-    public JoinWheres getInnerJoins() {
-        return new JoinWheres(expr.from.inJoin,this);
-    }
-
     // для кэша
-    public boolean equals(Where Where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
-        return Where instanceof NotNullWhere && expr.equals(((NotNullWhere)Where).expr, mapValues, mapKeys, mapJoins);
+    public boolean equals(Where Where, MapContext mapContext) {
+        return Where instanceof NotNullWhere && expr.equals(((NotNullWhere)Where).expr, mapContext);
     }
 
     protected int getHash() {
         return expr.hash();
+    }
+
+    public ClassExprWhere calculateClassWhere() {
+        return expr.getClassWhere();
     }
 }

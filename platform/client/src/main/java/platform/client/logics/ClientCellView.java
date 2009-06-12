@@ -4,6 +4,8 @@ import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientType;
+import platform.client.logics.classes.ClientTypeSerializer;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -11,12 +13,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.Format;
 import java.util.Collection;
-import java.rmi.RemoteException;
 
 abstract public class ClientCellView extends ClientComponentView {
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    private ClientClass baseClass;
+    protected ClientType baseType;
 
     public abstract int getID();
     public abstract ClientGroupObjectImplementView getGroupObject();
@@ -32,7 +33,7 @@ abstract public class ClientCellView extends ClientComponentView {
 
         caption = inStream.readUTF();
 
-        baseClass = ClientClass.deserialize(inStream);
+        baseType = ClientTypeSerializer.deserialize(inStream);
 
         minimumSize = (Dimension) new ObjectInputStream(inStream).readObject();
         maximumSize = (Dimension) new ObjectInputStream(inStream).readObject();
@@ -40,7 +41,7 @@ abstract public class ClientCellView extends ClientComponentView {
     }
 
     public int getMinimumWidth() {
-        return baseClass.getMinimumWidth();
+        return baseType.getMinimumWidth();
     }
 
     int getMinimumHeight() {
@@ -54,7 +55,7 @@ abstract public class ClientCellView extends ClientComponentView {
     }
 
     public int getPreferredWidth() {
-        return baseClass.getPreferredWidth();
+        return baseType.getPreferredWidth();
     }
 
     int getPreferredHeight() {
@@ -68,7 +69,7 @@ abstract public class ClientCellView extends ClientComponentView {
     }
 
     public int getMaximumWidth() {
-        return baseClass.getMaximumWidth();
+        return baseType.getMaximumWidth();
     }
 
     int getMaximumHeight() {
@@ -84,32 +85,16 @@ abstract public class ClientCellView extends ClientComponentView {
     private transient PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent() {
 
-        if (renderer == null) renderer = baseClass.getRendererComponent(getFormat());
+        if (renderer == null) renderer = baseType.getRendererComponent(getFormat());
 
         return renderer;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) throws IOException, ClassNotFoundException {
-
-        ClientObjectValue objectValue;
-        if (isDataChanging)
-            objectValue = getEditorObjectValue(form, value, externalID);
-        else
-            objectValue = new ClientObjectValue(baseClass, value);
-
-        if (objectValue == null) return null;
-
-        return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
-    }
-
-    ClientObjectValue getEditorObjectValue(ClientForm form, Object value, boolean externalID) throws IOException {
-        if (externalID) return null;
-        return new ClientObjectValue(baseClass, value);
-    }
+    public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) throws IOException, ClassNotFoundException;
 
     private Format format;
     Format getFormat() {
-        if (format == null) return baseClass.getDefaultFormat();
+        if (format == null) return baseType.getDefaultFormat();
         return format;
     }
 

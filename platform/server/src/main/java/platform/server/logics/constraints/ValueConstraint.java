@@ -2,10 +2,13 @@ package platform.server.logics.constraints;
 
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.DefaultData;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.DataSession;
+import platform.server.where.WhereBuilder;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -20,21 +23,23 @@ abstract class ValueConstraint extends Constraint {
 
     int invalid;
 
-    public String check(DataSession session, Property property) throws SQLException {
+    public <P extends PropertyInterface> String check(DataSession session, Property<P> property, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException {
 
-        JoinQuery<PropertyInterface,String> changed = new JoinQuery<PropertyInterface,String>(property.interfaces);
+        JoinQuery<P,String> changed = new JoinQuery<P,String>(property);
 
-        SourceExpr valueExpr = session.propertyChanges.get(property).getExpr(changed.mapKeys,0);
+        WhereBuilder changedWhere = new WhereBuilder();
+        SourceExpr valueExpr = property.getSourceExpr(changed.mapKeys,session.changes,defaultProps, noUpdateProps, changedWhere);
         // закинем условие на то что мы ищем
-        changed.and(new CompareWhere(valueExpr, property.changeTable.value.type.getEmptyValueExpr(), invalid));
+        changed.and(valueExpr.compare(new ValueExpr(property.getType().getEmptyValueExpr()), invalid));
+        changed.and(changedWhere.toWhere());
         changed.properties.put("value", valueExpr);
 
-        LinkedHashMap<Map<PropertyInterface,Integer>,Map<String,Object>> result = changed.executeSelect(session);
+        LinkedHashMap<Map<P, Object>, Map<String, Object>> result = changed.executeSelect(session);
         if(result.size()>0) {
             String resultString = "Ограничение на св-во "+ property.caption +" нарушено"+'\n';
-            for(Map.Entry<Map<PropertyInterface,Integer>,Map<String,Object>> row : result.entrySet()) {
+            for(Map.Entry<Map<P,Object>,Map<String,Object>> row : result.entrySet()) {
                 resultString += "   Объекты : ";
-                for(PropertyInterface propertyInterface : (Collection<PropertyInterface>) property.interfaces)
+                for(P propertyInterface : property.interfaces)
                     resultString += row.getKey().get(propertyInterface)+" ";
                 resultString += "Значение : "+row.getValue().get("value") + '\n';
             }

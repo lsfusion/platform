@@ -5,9 +5,9 @@ import java.util.Map;
 
 public class PropertyImplement<T,P extends PropertyInterface> {
 
-    protected PropertyImplement(PropertyImplement<T,P> iProperty) {
-        property = iProperty.property;
-        mapping = new HashMap<P,T>(iProperty.mapping);
+    protected PropertyImplement(Property<P> iProperty,Map<P,T> iMapping) {
+        property = iProperty;
+        mapping = iMapping;
     }
 
     protected PropertyImplement(Property<P> iProperty) {

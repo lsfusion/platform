@@ -1,252 +1,133 @@
 package platform.server.logics.properties;
 
-import platform.interop.Compare;
+import platform.base.BaseUtils;
+import platform.server.auth.ChangePropertySecurityPolicy;
+import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.query.ChangeQuery;
+import platform.server.data.classes.ConcreteClass;
+import platform.server.data.classes.CustomClass;
+import platform.server.data.classes.ValueClass;
+import platform.server.data.classes.where.AndClassWhere;
+import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.Join;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.JoinExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.logics.ObjectValue;
-import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.classes.sets.*;
-import platform.server.logics.data.TableFactory;
+import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.exprs.cases.ExprCaseList;
+import platform.server.data.types.Type;
 import platform.server.session.*;
+import platform.server.where.Where;
+import platform.server.where.WhereBuilder;
 
-import java.sql.SQLException;
 import java.util.*;
 
-public class DataProperty<D extends PropertyInterface> extends Property<DataPropertyInterface> {
-    public RemoteClass value;
+public class DataProperty extends Property<DataPropertyInterface> {
 
-    static Collection<DataPropertyInterface> getInterfaces(RemoteClass[] classes) {
+    public ValueClass value;
+
+    static Collection<DataPropertyInterface> getInterfaces(ValueClass[] classes) {
         Collection<DataPropertyInterface> interfaces = new ArrayList<DataPropertyInterface>();
-        for(RemoteClass interfaceClass : classes)
+        for(ValueClass interfaceClass : classes)
             interfaces.add(new DataPropertyInterface(interfaces.size(),interfaceClass));
         return interfaces;
     }
 
-    public DataProperty(String iSID, RemoteClass[] classes, TableFactory iTableFactory, RemoteClass iValue) {
-        super(iSID, getInterfaces(classes), iTableFactory);
+    public DataProperty(String iSID, ValueClass[] classes, ValueClass iValue) {
+        super(iSID, getInterfaces(classes));
         value = iValue;
-
-        defaultMap = new HashMap<DataPropertyInterface,D>();
-
-        dataChange = tableFactory.getDataChangeTable(interfaces.size(), getType());
-        // если нету Map'a построим
-        dataChangeMap = new HashMap<KeyField,DataPropertyInterface>();
-        Iterator<KeyField> io = dataChange.objects.iterator();
-        for(DataPropertyInterface Interface : interfaces)
-            dataChangeMap.put(io.next(),Interface);
     }
 
-    public ClassSet calculateValueClass(InterfaceClass<DataPropertyInterface> ClassImplement) {
-        // пока так потом сделаем перегрузку по классам
-        // если не тот класс сразу зарубаем
-       for(DataPropertyInterface DataInterface : interfaces)
-            if(!ClassImplement.get(DataInterface).intersect(ClassSet.getUp(DataInterface.interfaceClass)))
-                return new ClassSet();
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
 
-        return ClassSet.getUp(value);
+        // если null то значит полный список запрашивают
+        if(changes==null) return true;
+
+        if(changes.getProperties().contains(this)) return true;
+        if(value instanceof CustomClass && changes.getRemoveClasses().contains((CustomClass)value)) return true;
+        for(DataPropertyInterface propertyInterface : interfaces)
+            if(changes.getRemoveClasses().contains(propertyInterface.interfaceClass)) return true;
+
+        DefaultData defaultData = defaultProps.get(this);
+        return (defaultData!=null && defaultData.property.fillChanges(changedProperties, changes, BaseUtils.removeKey(defaultProps,this), noUpdateProps));
     }
 
-    public InterfaceClassSet<DataPropertyInterface> calculateClassSet(ClassSet reqValue) {
-        if(reqValue.intersect(ClassSet.getUp(value))) {
-            InterfaceClass<DataPropertyInterface> ResultInterface = new InterfaceClass<DataPropertyInterface>();
-            for(DataPropertyInterface Interface : interfaces)
-                ResultInterface.put(Interface,ClassSet.getUp(Interface.interfaceClass));
-            return new InterfaceClassSet<DataPropertyInterface>(ResultInterface);
-        } else
-            return new InterfaceClassSet<DataPropertyInterface>();
-    }
-
-    public ValueClassSet<DataPropertyInterface> calculateValueClassSet() {
-        return new ValueClassSet<DataPropertyInterface>(ClassSet.getUp(value),getClassSet(ClassSet.universal));
-    }
-
-    // свойства для "ручных" изменений пользователем
-    public DataChangeTable dataChange;
-    public Map<KeyField,DataPropertyInterface> dataChangeMap = null;
-
-    void outDataChangesTable(DataSession Session) throws SQLException {
-        dataChange.outSelect(Session);
-    }
-
-    public ChangeValue getChangeProperty(DataSession Session, Map<DataPropertyInterface, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-
-        if(!getValueClass(new InterfaceClass<DataPropertyInterface>(Keys)).isEmpty() && (securityPolicy == null || securityPolicy.checkPermission(this))) {
-            if(Coeff==0 && Session!=null) {
-                return new ChangeObjectValue(value, Session.readProperty(this,Keys));
-            } else
-                return new ChangeCoeffValue(value,Coeff);
-        } else
+    @Override
+    public MapChangeDataProperty<DataPropertyInterface> getChangeProperty(Map<DataPropertyInterface, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
+        if(allInInterface(new AndClassWhere<DataPropertyInterface>(interfaceClasses)) && (securityPolicy == null || securityPolicy.checkPermission(this)))
+            return new MapChangeDataProperty<DataPropertyInterface>(this,BaseUtils.toMap(interfaces),false);
+        else
             return null;
     }
 
-    public void changeProperty(Map<DataPropertyInterface, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        // записываем в таблицу изменений
-        if (securityPolicy == null || securityPolicy.checkPermission(this))
-            Session.changeProperty(this, Keys, NewValue, externalID);
+    @Override
+    public void fillTableChanges(TableChanges fill, TableChanges changes) {
+        super.fillTableChanges(fill, changes);
+        BaseUtils.putNotNull(this,changes.data.get(this),fill.data);
+        if(value instanceof CustomClass)
+            BaseUtils.putNotNull((CustomClass) value,changes.remove.get((CustomClass)value),fill.remove);
+        for(DataPropertyInterface remove : interfaces)
+            if(remove.interfaceClass instanceof CustomClass) // удаление по интерфейсам совпадает
+                BaseUtils.putNotNull((CustomClass) remove.interfaceClass,changes.remove.get((CustomClass)remove.interfaceClass),fill.remove);
     }
 
-    // св-во по умолчанию (при ClassSet подставляется)
-    public Property<D> defaultProperty;
-    // map интерфейсов на PropertyInterface
-    public Map<DataPropertyInterface,D> defaultMap;
-    // если нужно еще за изменениями следить и перебивать
-    public boolean onDefaultChange;
+    public SourceExpr calculateSourceExpr(Map<DataPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+        // здесь session всегда не null
 
-    // заполняет список, возвращает есть ли изменения, последний параметр для рекурсий
-    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Collection<Property> noUpdate) {
-        // если null то значит полный список запрашивают
-        if(changes ==null) return true;
+        SourceExpr dataExpr = getSourceExpr(joinImplement);
 
-        boolean changed = changes.properties.contains(this);
-
-        if(!changed)
-            for(DataPropertyInterface Interface : interfaces)
-                if(changes.removeClasses.contains(Interface.interfaceClass)) changed = true;
-
-        if(!changed)
-            if(changes.removeClasses.contains(value)) changed = true;
-
-        if(defaultProperty !=null) {
-            boolean defaultChanged = defaultProperty.fillChanges(changedProperties, changes, noUpdate);
-            if(!changed) {
-                if(onDefaultChange)
-                    changed = defaultChanged;
-                else
-                    for(DataPropertyInterface propertyInterface : interfaces)
-                        if(changes.addClasses.contains(propertyInterface.interfaceClass)) changed = true;
-            }
+        // ручные изменения
+        ExprCaseList cases = new ExprCaseList();
+        DataChangeTable dataChange = session.data.get(this);
+        if(dataChange!=null) {
+            Join<PropertyField> changedJoin = dataChange.join(BaseUtils.join(dataChange.mapKeys, joinImplement));
+            cases.add(changedJoin.getWhere(),changedJoin.getExpr(dataChange.value));
         }
 
-        return changed;
+        // блок с удалением
+        RemoveClassTable removeTable;
+        Where removeWhere = Where.FALSE;
+        if(value instanceof CustomClass && (removeTable = session.remove.get((CustomClass) value))!=null)
+            removeWhere = removeWhere.or(removeTable.getJoinWhere(dataExpr));
+
+        for(DataPropertyInterface remove : interfaces)
+            if(remove.interfaceClass instanceof CustomClass && (removeTable = session.remove.get((CustomClass) remove.interfaceClass))!=null)
+                removeWhere = removeWhere.or(removeTable.getJoinWhere(joinImplement.get(remove)));
+
+        if(!removeWhere.isFalse())
+            cases.add(removeWhere.and(dataExpr.getWhere()),new CaseExpr());
+
+        // свойства по умолчанию
+        DefaultData defaultData = defaultProps.get(this);
+        if(defaultData !=null) {
+            WhereBuilder defaultChanges = new WhereBuilder();
+            SourceExpr defaultExpr = defaultData.property.getSourceExpr(BaseUtils.join(defaultData.mapping, joinImplement),session, BaseUtils.removeKey(defaultProps,this), noUpdateProps, defaultChanges);
+            cases.add(defaultChanges.toWhere(),defaultExpr);
+        }
+
+        if(changedWhere !=null) changedWhere.add(cases.getUpWhere());
+        cases.add(Where.TRUE,dataExpr);
+        return new CaseExpr(cases);
     }
 
-    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
-
-        // если на изм. надо предыдущее изменение иначе просто на =
-        // пока неясно после реализации QueryIncrementChanged станет яснее
-        if(defaultProperty !=null && requiredTypes.containsKey(defaultProperty))
-            defaultProperty.setChangeType(requiredTypes, onDefaultChange ?2:0);
+    protected Map<DataPropertyInterface, ValueClass> getMapClasses() {
+        Map<DataPropertyInterface, ValueClass> result = new HashMap<DataPropertyInterface, ValueClass>();
+        for(DataPropertyInterface propertyInterface : interfaces)
+            result.put(propertyInterface,propertyInterface.interfaceClass);
+        return result;
     }
 
-    // заполним старыми значениями (LEFT JOIN'ом)
-    public Change incrementChanges(DataSession session, int changeType) {
-
-        // на 3 то есть слева/направо
-        ChangeQuery<DataPropertyInterface, PropertyField> resultQuery = new ChangeQuery<DataPropertyInterface, PropertyField>(interfaces);
-        ValueClassSet<DataPropertyInterface> resultClass = new ValueClassSet<DataPropertyInterface>();
-
-        // Default изменения (пока Add)
-        if(defaultProperty !=null) {
-            if(!onDefaultChange) {
-                // бежим по всем добавленным интерфейсам
-                for(DataPropertyInterface propertyInterface : interfaces)
-                    if(session.changes.addClasses.contains(propertyInterface.interfaceClass)) {
-                        JoinQuery<DataPropertyInterface,PropertyField> query = new JoinQuery<DataPropertyInterface, PropertyField>(interfaces);
-                        Map<D, SourceExpr> joinImplement = new HashMap<D, SourceExpr>();
-                        // "перекодируем" в базовый интерфейс
-                        for(DataPropertyInterface dataInterface : interfaces)
-                            joinImplement.put(defaultMap.get(dataInterface),query.mapKeys.get(dataInterface));
-
-                        // вкидываем "новое" состояние DefaultProperty с Join'ое с AddClassTable
-                        // если DefaultProperty требует на входе такой добавляемый интерфейс то можно чисто новое брать
-                        joinChangeClass(tableFactory.addClassTable,query,session,propertyInterface);
-
-                        ValueClassSet<D> defaultValueSet = session.getSourceClass(defaultProperty).and(new ChangeClass<D>(defaultMap.get(propertyInterface),session.addChanges.get(propertyInterface.interfaceClass)));
-                        SourceExpr defaultExpr = session.getSourceExpr(defaultProperty, joinImplement, defaultValueSet.getClassSet(ClassSet.universal));
-                        query.properties.put(changeTable.value, defaultExpr);
-                        query.and(defaultExpr.getWhere());
-
-                        resultQuery.add(query);
-                        resultClass.or(defaultValueSet.mapBack(defaultMap));
-                    }
-            } else {
-                if(session.propertyChanges.containsKey(defaultProperty)) {
-                    Property<D>.Change defaultChange = session.getChange(defaultProperty);
-                    JoinQuery<DataPropertyInterface, PropertyField> query = new JoinQuery<DataPropertyInterface, PropertyField>(interfaces);
-
-                    Map<D, SourceExpr> joinImplement = new HashMap<D, SourceExpr>();
-                    // "перекодируем" в базовый интерфейс
-                    for(DataPropertyInterface dataInterface : interfaces)
-                        joinImplement.put(defaultMap.get(dataInterface),query.mapKeys.get(dataInterface));
-
-                    // по изменению св-ва
-                    JoinExpr newExpr = defaultChange.getExpr(joinImplement,0);
-                    query.properties.put(changeTable.value, newExpr);
-                    // new, не равно prev
-                    query.and(newExpr.from.inJoin);
-                    query.and(new CompareWhere(newExpr,defaultChange.getExpr(joinImplement,2), Compare.EQUALS).not());
-
-                    resultQuery.add(query);
-                    resultClass.or(defaultChange.classes.mapBack(defaultMap));
-                }
-            }
-        }
-
-        boolean dataChanged = session.changes.properties.contains(this);
-        JoinQuery<DataPropertyInterface, PropertyField> dataQuery = null;
-        SourceExpr dataExpr = null;
-        if(dataChanged) {
-            dataQuery = new JoinQuery<DataPropertyInterface, PropertyField>(interfaces);
-            // GetChangedFrom
-            Join<KeyField, PropertyField> dataJoin = new Join<KeyField, PropertyField>(dataChange, dataChangeMap,dataQuery);
-            dataJoin.joins.put(dataChange.property, dataChange.property.type.getExpr(ID));
-            dataQuery.and(dataJoin.inJoin);
-
-            dataExpr = dataJoin.exprs.get(dataChange.value);
-            dataQuery.properties.put(changeTable.value, dataExpr);
-            resultClass.or(session.dataChanges.get(this));
-        }
-
-        for(DataPropertyInterface removeInterface : interfaces) {
-            if(session.changes.removeClasses.contains(removeInterface.interfaceClass)) {
-                // те изменения которые были на удаляемые объекты исключаем
-                if(dataChanged) tableFactory.removeClassTable.excludeJoin(dataQuery,session,removeInterface.interfaceClass,dataQuery.mapKeys.get(removeInterface));
-
-                // проверяем может кто удалился из интерфейса объекта
-                JoinQuery<DataPropertyInterface, PropertyField> query = new JoinQuery<DataPropertyInterface, PropertyField>(interfaces);
-                joinChangeClass(tableFactory.removeClassTable,query,session,removeInterface);
-
-                InterfaceClassSet<DataPropertyInterface> removeClassSet = getClassSet(ClassSet.universal).and(new InterfaceClass<DataPropertyInterface>(removeInterface,session.removeChanges.get(removeInterface.interfaceClass)));
-                // пока сделаем что наплевать на старое значение хотя конечно 2 раза может тоже не имеет смысл считать
-                query.properties.put(changeTable.value, changeTable.value.type.getExpr(null));
-                query.and(getSourceExpr(query.mapKeys,removeClassSet).getWhere());
-
-                resultQuery.add(query);
-                resultClass.or(new ValueClassSet<DataPropertyInterface>(new ClassSet(),removeClassSet));
-            }
-        }
-
-        if(session.changes.removeClasses.contains(value)) {
-            // те изменения которые были на удаляемые объекты исключаем
-            if(dataChanged) tableFactory.removeClassTable.excludeJoin(dataQuery,session, value,dataExpr);
-
-            JoinQuery<DataPropertyInterface, PropertyField> query = new JoinQuery<DataPropertyInterface, PropertyField>(interfaces);
-            Join<KeyField, PropertyField> removeJoin = new Join<KeyField, PropertyField>(tableFactory.removeClassTable.getClassJoin(session, value));
-
-            InterfaceClassSet<DataPropertyInterface> removeClassSet = getClassSet(session.removeChanges.get(value));
-            removeJoin.joins.put(tableFactory.removeClassTable.object,getSourceExpr(query.mapKeys,removeClassSet));
-            query.and(removeJoin.inJoin);
-            query.properties.put(changeTable.value, changeTable.value.type.getExpr(null));
-
-            resultQuery.add(query);
-            resultClass.or(new ValueClassSet<DataPropertyInterface>(new ClassSet(),removeClassSet));
-        }
-
-        // здесь именно в конце так как должна быть последней
-        if(dataChanged)
-            resultQuery.add(dataQuery);
-
-        return new Change(0,resultQuery,resultClass);
+    protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
+        AndClassWhere<Field> result = new AndClassWhere<Field>();
+        for(Map.Entry<DataPropertyInterface,KeyField> mapKey : mapTable.mapKeys.entrySet())
+            result.add(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());
+        result.add(storedField, value.getUpSet());
+        return new ClassWhere<Field>(result);
     }
 
-    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
-        return 0;
+    public ValueClass getValueClass() {
+        return value;
+    }
+    public Type getType() {
+        return value.getType();
     }
 }

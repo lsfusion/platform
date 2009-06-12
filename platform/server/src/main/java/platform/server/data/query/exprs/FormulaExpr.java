@@ -1,7 +1,9 @@
 package platform.server.data.query.exprs;
 
+import platform.server.data.classes.ConcreteValueClass;
 import platform.server.data.query.*;
-import platform.server.data.query.exprs.cases.*;
+import platform.server.data.query.translators.DirectTranslator;
+import platform.server.data.query.translators.Translator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -9,55 +11,27 @@ import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import net.jcip.annotations.Immutable;
 
 
-public class FormulaExpr extends AndExpr {
+public class FormulaExpr extends StaticClassExpr {
 
     private final String formula;
-    private final Type dbType;
-    private final Map<String, SourceExpr> params;
+    private final ConcreteValueClass valueClass;
+    private final Map<String, AndExpr> params;
 
-    FormulaExpr(String iFormula,Map<String,AndExpr> iParams,Type iDBType) {
-        formula = iFormula;
-        params = (Map<String, SourceExpr>) (Map<String, ? extends SourceExpr>) iParams;
-        dbType = iDBType;
-    }
-
-    public FormulaExpr(String iFormula,Type iDBType,Map<String,SourceExpr> iParams) {
+    FormulaExpr(String iFormula,Map<String,AndExpr> iParams, ConcreteValueClass iValueClass) {
         formula = iFormula;
         params = iParams;
-        dbType = iDBType;
+        valueClass = iValueClass;
     }
 
-    // линейный конструктор (сумма/разница)
-    FormulaExpr(SourceExpr op1,SourceExpr op2,boolean sum) {
-        formula = "prm1"+(sum?"+":"-")+"prm2";
-        params = new HashMap<String,SourceExpr>();
-        params.put("prm1",op1);
-        params.put("prm2",op2);
-        dbType = op1.getType();
-    }
-
-    // линейный конструктор (коэффициент)
-    FormulaExpr(SourceExpr expr,Integer coeff) {
-        formula = coeff+"*prm1";
-        params = new HashMap<String,SourceExpr>();
-        params.put("prm1",expr);
-        dbType = expr.getType();
-    }
-
-    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
-        for(SourceExpr param : params.values())
-            param.fillJoins(joins, values);
+    public int fillContext(Context context, boolean compile) {
+        return context.fill(params.values(),compile);
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        for(SourceExpr param : params.values())
+        for(AndExpr param : params.values())
             param.fillJoinWheres(joins, andWhere);
     }
 
@@ -75,19 +49,25 @@ public class FormulaExpr extends AndExpr {
          return "("+result+")";
     }
 
-    public Type getType() {
-        return dbType;
+    public Type getType(Where where) {
+        return valueClass.getType();
     }
 
     public SourceExpr translate(Translator translator) {
-        MapCaseList<String> caseList = CaseExpr.translateCase(params, translator, false, false);
-        if(caseList==null)
-            return this;
+        return SourceExpr.formula(formula,valueClass,translator.translate(params));
+    }
 
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<String> mapCase : caseList)  // здесь напрямую потому как MapCaseList уже все проверил
-            result.add(new ExprCase(mapCase.where, SourceExpr.containsNull(mapCase.data)?getType().getExpr(null):new FormulaExpr(formula,mapCase.data, dbType)));
-        return result.getExpr(getType());
+    public AndExpr translateAnd(DirectTranslator translator) {
+        return new FormulaExpr(formula,translator.translateAnd(params),valueClass);
+    }
+
+    @Override
+    public AndExpr linearFollowFalse(Where where) {
+        Map<String,AndExpr> transParams = new HashMap<String,AndExpr>();
+        for(Map.Entry<String,AndExpr> param : params.entrySet())
+            transParams.put(param.getKey(), param.getValue().linearFollowFalse(where));
+        assert !transParams.containsValue(null); // предпологается что сверху был andFollowFalse
+        return new FormulaExpr(formula,transParams,valueClass);
     }
 
     // возвращает Where без следствий
@@ -100,13 +80,13 @@ public class FormulaExpr extends AndExpr {
 
     public DataWhereSet getFollows() {
         DataWhereSet follows = new DataWhereSet();
-        for(SourceExpr param : params.values())
-            follows.addAll(((AndExpr)param).getFollows());
+        for(AndExpr param : params.values())
+            follows.addAll(param.getFollows());
         return follows;
     }
 
     public boolean equals(Object o) {
-        return this==o || o instanceof FormulaExpr && formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params);
+        return this==o || o instanceof FormulaExpr && formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 
     protected int getHashCode() {
@@ -114,24 +94,28 @@ public class FormulaExpr extends AndExpr {
     }
 
     // для кэша
-    public boolean equals(SourceExpr expr, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+    public boolean equals(SourceExpr expr, MapContext mapContext) {
         if(!(expr instanceof FormulaExpr)) return false;
 
         FormulaExpr formulaExpr = (FormulaExpr) expr;
 
-        if(!formula.equals(formulaExpr.formula) || params.size()!=formulaExpr.params.size()) return false;
+        if(!(formula.equals(formulaExpr.formula) && params.size()==formulaExpr.params.size() && valueClass.equals(formulaExpr.valueClass))) return false;
 
-        for(Map.Entry<String, SourceExpr> param : params.entrySet())
-            if(!param.getValue().equals(formulaExpr.params.get(param.getKey()), mapValues, mapKeys, mapJoins))
+        for(Map.Entry<String,AndExpr> param : params.entrySet())
+            if(!param.getValue().equals(formulaExpr.params.get(param.getKey()), mapContext))
                 return false;
         return true;
     }
 
     protected int getHash() {
         int hash = 0;
-        for(Map.Entry<String, SourceExpr> param : params.entrySet())
+        for(Map.Entry<String,AndExpr> param : params.entrySet())
             hash += param.getKey().hashCode()+param.getValue().hash();
-        return hash*31 + formula.hashCode();
+        return valueClass.hashCode()*31*31 + hash*31 + formula.hashCode();
+    }
+
+    public ConcreteValueClass getStaticClass() {
+        return valueClass;
     }
 }
 

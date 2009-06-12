@@ -1,13 +1,12 @@
 package platform.server.where;
 
+import platform.base.BaseUtils;
+import platform.server.data.classes.where.ClassExprWhere;
+import platform.server.data.classes.where.MeanClassWheres;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.JoinWheres;
-import platform.server.data.query.Translator;
+import platform.server.data.query.translators.Translator;
 import platform.server.data.query.wheres.MapWhere;
-
-import java.util.Collection;
-
-import net.jcip.annotations.Immutable;
 
 
 class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectWhere<OrWhere> {
@@ -71,13 +70,8 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
             return this;
     }
 
-    public Where siblingsFollow(Where falseWhere) {
-        OrWhere notWhere = not();
-        Where followAnd = OrWhere.followFalse(notWhere,falseWhere,false);
-        if(followAnd==notWhere) // чтобы сохранить ссылку
-            return this;
-        else
-            return followAnd.not();
+    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
+        return OrWhere.followFalse(not(),falseWhere,false,false).not();
     }
 
     public boolean checkTrue() {
@@ -106,17 +100,16 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
         return where instanceof AndWhere && ((AndWhere)where).substractWheres(wheres)!=null;
     }
 
-    public boolean evaluate(Collection<DataWhere> data) {
-        boolean result = true;
-        for(Where where : wheres)
-            result = result && where.evaluate(data);
-        return result;
-    }
-
-    public JoinWheres getInnerJoins() {
-        JoinWheres result = new JoinWheres(TRUE, TRUE);
+    public InnerJoins getInnerJoins() {
+        InnerJoins result = new InnerJoins(TRUE, TRUE);
         for(Where<?> where : wheres)
             result = result.and(where.getInnerJoins());
+        return result;
+    }
+    public MeanClassWheres getMeanClassWheres() {
+        MeanClassWheres result = new MeanClassWheres(ClassExprWhere.TRUE, TRUE);
+        for(Where<?> where : wheres)
+            result = result.and(where.getMeanClassWheres());
         return result;
     }
 
@@ -125,12 +118,7 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
     }
 
     public Where translate(Translator translator) {
-        OrWhere notWhere = not();
-        Where translatedNotWhere = notWhere.translate(translator);
-        if(translatedNotWhere==notWhere)
-            return this;
-        else
-            return translatedNotWhere.not();
+        return not().translate(translator).not();
     }
 
     int hashCoeff() {
@@ -180,7 +168,7 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
         for(OrObjectWhere opWhere : wheres) {
             boolean paired = false;
             for(int i=0;i<pairedThatWheres.length;i++)
-                if(pairedThatWheres[i]!=null && pairAnd.wheres[i].hashEquals(opWhere)) {
+                if(pairedThatWheres[i]!=null && BaseUtils.hashEquals(pairAnd.wheres[i],opWhere)) {
                     pairedWheres[pairs++] = opWhere;
                     pairedThatWheres[i] = null;
                     paired = true;
@@ -211,6 +199,6 @@ class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectW
     }
 
     public boolean equals(Object o) {
-        return this==o || o instanceof AndWhere && equalWheres(((AndWhere)o).wheres);
+        return this==o || o instanceof AndWhere && BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);
     }
 }

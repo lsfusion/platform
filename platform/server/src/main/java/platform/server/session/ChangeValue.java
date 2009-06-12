@@ -1,14 +1,14 @@
 package platform.server.session;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteValueClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public abstract class ChangeValue {
-    public RemoteClass changeClass;
+    public ConcreteValueClass changeClass;
 
-    ChangeValue(RemoteClass iClass) {
+    ChangeValue(ConcreteValueClass iClass) {
         changeClass = iClass;
     }
 

@@ -58,7 +58,9 @@ public interface RemoteFormInterface extends Remote {
 
     byte[] getChildClassesByteArray(int objectID, int classID) throws RemoteException;
 
-    byte[] getPropertyEditorObjectValueByteArray(int propertyID, boolean externalID) throws RemoteException;
+    byte[] getPropertyChangeValueByteArray(int propertyID, boolean externalID) throws RemoteException;
+
+    byte[] getPropertyValueClassByteArray(int propertyID) throws RemoteException;
 
     final static int GID_SHIFT = 1000;
 

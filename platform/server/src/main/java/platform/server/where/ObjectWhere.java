@@ -1,8 +1,8 @@
 package platform.server.where;
 
 import platform.server.data.query.JoinData;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.query.wheres.MapWhere;
-import net.jcip.annotations.Immutable;
 
 
 abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> implements OrObjectWhere<Not>,AndObjectWhere<Not> {
@@ -27,19 +27,21 @@ abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> i
         return new OrObjectWhere[]{this};
     }
 
-    public Where siblingsFollow(Where falseWhere) {
-        if(OrWhere.op(not(),falseWhere,true).checkTrue())
+    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
+        // исходим из предположения что что !(not()=>falseWhere) то есть !(op,this,true).checkTrue
+        if(!sureNotTrue && OrWhere.orTrue(this,falseWhere)) return TRUE;
+        if(means(falseWhere))
             return FALSE;
         else
-            return this;
+            return linearFollowFalse(falseWhere);
+    }
+
+    public Where linearFollowFalse(Where falseWhere) {
+        return this;
     }
 
     public boolean checkTrue() {
         return false;
-    }
-
-    public int getSize() {
-        return 1;
     }
 
     public int getHeight() {

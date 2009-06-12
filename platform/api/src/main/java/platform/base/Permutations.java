@@ -2,7 +2,7 @@ package platform.base;
 
 import java.util.Iterator;
 
-abstract class Permutations<Permute> implements Iterable<Permute> {
+public abstract class Permutations<Permute> implements Iterable<Permute> {
 
     int size;
 

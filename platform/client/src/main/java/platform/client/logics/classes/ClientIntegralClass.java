@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 
-abstract public class ClientIntegralClass extends ClientClass {
+abstract public class ClientIntegralClass extends ClientDataClass {
 
     ClientIntegralClass(DataInputStream inStream) throws IOException {
         super(inStream);
@@ -22,6 +22,8 @@ abstract public class ClientIntegralClass extends ClientClass {
     public Format getDefaultFormat() {
         return NumberFormat.getInstance();
     }
+
+    protected abstract Class getJavaClass() ;
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, getJavaClass()); }

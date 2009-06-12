@@ -1,12 +1,10 @@
 package platform.server.where;
 
+import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.QueryData;
 import platform.server.data.sql.SQLSyntax;
 
-import java.util.Collection;
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
 
 
 abstract public class DataWhere extends ObjectWhere<NotWhere> {
@@ -50,13 +48,13 @@ abstract public class DataWhere extends ObjectWhere<NotWhere> {
         return follows;
     }
 
-    public boolean evaluate(Collection<DataWhere> data) {
-        return data.contains(this);
-    }
-
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     protected String getNotSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
         return NotWhere.PREFIX + getSource(queryData, syntax);
+    }
+
+    public MeanClassWheres getMeanClassWheres() {
+        return new MeanClassWheres(getClassWhere(),this);
     }
 }

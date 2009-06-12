@@ -1,74 +1,72 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
-import platform.base.Pairs;
 import platform.interop.Compare;
-import platform.server.data.Source;
-import platform.server.data.query.exprs.*;
+import platform.server.data.MapSource;
+import platform.server.data.classes.BaseClass;
+import platform.server.data.classes.ConcreteClass;
+import platform.server.data.classes.DataClass;
+import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.session.DataSession;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.session.SQLSession;
 import platform.server.where.Where;
+import platform.server.caches.Lazy;
 
 import java.sql.SQLException;
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 // запрос Join
-public class JoinQuery<K,V> extends Source<K,V> {
+@Immutable
+public class JoinQuery<K,V> implements MapKeysInterface<K> {
 
-    public JoinQuery(Collection<? extends K> iKeys) {
-        super(iKeys);
+    public final Map<K,KeyExpr> mapKeys;
+    public Map<V, SourceExpr> properties;
+    protected Where<?> where = Where.TRUE;
 
-        mapKeys = new HashMap<K, KeyExpr>();
-        for(K Key : keys)
-            mapKeys.put(Key,new KeyExpr());
+    public JoinQuery(Map<K,KeyExpr> iMapKeys) {
+        mapKeys = iMapKeys;
         properties = new HashMap<V, SourceExpr>();
     }
-    public final Map<V, SourceExpr> properties;
-    public Where where = Where.TRUE;
 
-    final public Map<K,KeyExpr> mapKeys;
-
-    public Collection<V> getProperties() {
-        return properties.keySet();
+    public JoinQuery(MapKeysInterface<K> mapInterface) {
+        this(mapInterface.getMapKeys());
     }
 
-    public Type getType(V Property) {
-        return properties.get(Property).getType();
+    public Map<K, KeyExpr> getMapKeys() {
+        return mapKeys;
     }
 
-    private List<Join> joins = null;
-    Map<ValueExpr, ValueExpr> values = null;
-    
-    private void fillJoins() {
-        if(joins==null) {
-            joins = new ArrayList<Join>();
-            Set<ValueExpr> joinValues = new HashSet<ValueExpr>();
-            for(SourceExpr property : properties.values())
-                property.fillJoins(joins, joinValues);
-            where.fillJoins(joins, joinValues);
-
-            if(values ==null) {
-                for(Join join : joins)
-                    joinValues.addAll(join.source.getValues().keySet());
-                values = BaseUtils.toMap(joinValues);
-            }
-        }
+    public Type getKeyType(K key) {
+        return mapKeys.get(key).getType(where);
     }
+
+    protected Context context = null;
+
+    protected static <K,V> Context getContext(Map<K,KeyExpr> mapKeys,Map<V,SourceExpr> properties,Where where)  {
+        Context context = new Context();
+        context.fill(mapKeys.values(),false);
+        context.fill(properties.values(),false);
+        where.fillContext(context, false);
+        return context;
+    }
+
     // скомпилированные св-ва
-    List<Join> getJoins() {
-        fillJoins();
-        return joins;
-    }
-    public Map<ValueExpr, ValueExpr> getValues() {
-        fillJoins();
-        return values;
+    public Context getContext() {
+        if(context ==null)
+            context = getContext(mapKeys,properties,where);
+        return context;
     }
 
-    // перетранслирует
-    public void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins) {
-        parse().parseJoin(join, translated, translatedJoins);
+    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement) {
+        return parse().join(joinImplement);
     }
 
     static <K> String stringOrder(List<K> sources, int offset, LinkedHashMap<K,Boolean> orders) {
@@ -78,108 +76,37 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return orderString;
     }
 
-    public int hashProperty(V property) {
-        return properties.get(property).hash();
-    }
-
     public void and(Where addWhere) {
         where = where.and(addWhere);
     }
 
-    public void putKeyWhere(Map<K,Integer> keyValues) {
-        for(Map.Entry<K,Integer> mapKey : keyValues.entrySet())
-            and(new CompareWhere(mapKeys.get(mapKey.getKey()),Type.object.getExpr(mapKey.getValue()), Compare.EQUALS));
+    public void putKeyWhere(Map<K, DataObject> keyValues) {
+        for(Map.Entry<K,DataObject> mapKey : keyValues.entrySet())
+            and(new CompareWhere(mapKeys.get(mapKey.getKey()), mapKey.getValue().getExpr(), Compare.EQUALS));
     }
 
-    public void fillJoinQueries(Set<JoinQuery> queries) {
-        queries.add(this);
-        for(Join join : getJoins())
-            join.source.fillJoinQueries(queries);
-    }
-
-    private <CK,CV> ParsedQuery<CK,CV> cache(JoinQuery<CK,CV> query) {
-        Map<CV,V> mapProps = new HashMap<CV,V>();
-        for(Map<ValueExpr, ValueExpr> mapValues : new Pairs<ValueExpr, ValueExpr>(query.getValues().keySet(), getValues().keySet()))
-            for(Map<CK, K> mapKeys : new Pairs<CK, K>(query.keys, keys))
-                if(query.equals(this, mapKeys, mapProps, mapValues)) // нашли кэш
-                    return new ParsedQuery<CK,CV>(parse,mapKeys,mapProps,mapValues);
+    public <CK,CV> MapSource<CK,CV,K,V> map(JoinQuery<CK,CV> query) {
+        Map<CV,V> mapProps;
+        for(MapContext mapContext : query.getContext().map(getContext()))
+            if(query.where.equals(where,mapContext) && (mapProps=mapContext.equalProps(query.properties,properties))!=null)
+                return new MapSource<CK,CV,K,V>(BaseUtils.crossValues(query.mapKeys,mapKeys,mapContext.keys),mapProps,mapContext.values);
         return null;
     }
 
-    private static class ParseCaches extends ArrayList<JoinQuery> {
-       <CK,CV> void cache(JoinQuery<CK,CV> query) {
-            synchronized(this) {
-                for(JoinQuery<?,?> cacheQuery : this) {
-                    query.parse = cacheQuery.cache(query);
-                    if(query.parse!=null) return;
-                }
-                query.parse = new ParsedQuery<CK,CV>(query);
-                add(query);
-            }
-        }
+    public ParsedQuery<K,V> parse() { // именно ParsedQuery потому как aspect'ами корректируется
+        return new ParsedJoinQuery<K,V>(this);
     }
-    
-    final static Map<Integer, ParseCaches> cacheParse = new HashMap<Integer, ParseCaches>();
-    
-    private ParsedQuery<K,V> parse = null;
-    ParsedQuery<K,V> parse() {
-        if(parse!=null) return parse;
 
-        ParseCaches hashCaches;
-        synchronized(cacheParse) {
-            hashCaches = cacheParse.get(hash());
-            if(hashCaches==null) {
-                hashCaches = new ParseCaches();
-                cacheParse.put(hash(), hashCaches);
-            }
-        }
-        hashCaches.cache(this);
-        return parse;
+    @Lazy
+    public <B> ClassWhere<B> getClassWhere(Collection<? extends V> properties) {
+        return parse().getClassWhere(properties);
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return parse().compileSelect(syntax);
+        return compile(syntax, new LinkedHashMap<V, Boolean>(), 0);
     }
     CompiledQuery<K,V> compile(SQLSyntax syntax,LinkedHashMap<V,Boolean> orders,int selectTop) {
         return parse().compileSelect(syntax,orders,selectTop);
-    }
-
-    <MK, MV> JoinQuery<K, Object> or(JoinQuery<MK, MV> toMergeQuery, Map<K, MK> mergeKeys, Map<MV, Object> mergeProps) {
-
-//        throw new RuntimeException("not supported");
-        // результат
-        JoinQuery<K,Object> mergeQuery = new JoinQuery<K,Object>(keys);
-
-        // себя Join'им
-        Join<K,Object> join = new Join<K,Object>((Source<K,Object>)this,mergeQuery);
-        mergeQuery.properties.putAll(join.exprs);
-
-        // Merge запрос Join'им, надо пересоздать объекты и построить карту
-        Join<MK,MV> mergeJoin = new Join<MK,MV>(toMergeQuery,mergeQuery, mergeKeys);
-        for(Map.Entry<MV, JoinExpr<MK,MV>> mergeExpr : mergeJoin.exprs.entrySet()) {
-            Object mergeObject = new Object();
-            mergeProps.put(mergeExpr.getKey(),mergeObject);
-            mergeQuery.properties.put(mergeObject, mergeExpr.getValue());
-        }
-
-        // закинем их на Or
-        mergeQuery.and(join.inJoin.or(mergeJoin.inJoin));
-
-        Map<Object, SourceExpr> parsedProps = mergeQuery.parse().getPackedProperties();
-
-        Collection<Object> removeProps = new ArrayList<Object>();
-        // погнали сливать одинаковые (именно из раных)
-        for(Map.Entry<MV,Object> mergeProperty : mergeProps.entrySet()) {
-            SourceExpr mergeExpr = parsedProps.get(mergeProperty.getValue());
-            for(V property : properties.keySet()) {
-                if(parsedProps.get(property).equals(mergeExpr)) {
-                    removeProps.add(mergeProperty.getValue());
-                    mergeProperty.setValue(property);
-                    break;
-                }
-            }
-        }
-        return new JoinQuery<K, Object>(mergeQuery,removeProps);
     }
 
     public static <V> LinkedHashMap<V,Boolean> reverseOrder(LinkedHashMap<V,Boolean> orders) {
@@ -189,143 +116,79 @@ public class JoinQuery<K,V> extends Source<K,V> {
         return result;
     }
 
-    public LinkedHashMap<Map<K, Integer>, Map<V, Object>> executeSelect(DataSession session) throws SQLException {
-        return compile(session.syntax).executeSelect(session,false);
+    public LinkedHashMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session) throws SQLException {
+        return executeSelect(session,new LinkedHashMap<V, Boolean>(),0);
     }
-    public LinkedHashMap<Map<K, Integer>, Map<V, Object>> executeSelect(DataSession session,LinkedHashMap<V,Boolean> orders,int selectTop) throws SQLException {
+    public LinkedHashMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session,LinkedHashMap<V,Boolean> orders,int selectTop) throws SQLException {
         return compile(session.syntax,orders,selectTop).executeSelect(session,false);
     }
 
-    public void outSelect(DataSession session) throws SQLException {
+    public LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSelectClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return executeSelectClasses(session, new LinkedHashMap<V, Boolean>(), 0, baseClass);
+    }
+
+    static class ReadClasses<T> {
+        Map<T,DataClass> mapDataClasses = new HashMap<T, DataClass>();
+        Map<T,Object> mapObjectClasses = new HashMap<T, Object>();
+
+        BaseClass baseClass;
+
+        ReadClasses(Map<T,? extends SourceExpr> map,JoinQuery<?,Object> query,BaseClass iBaseClass) {
+            baseClass = iBaseClass;
+            for(Map.Entry<T,? extends SourceExpr> expr : map.entrySet()) {
+                Type type = expr.getValue().getType(query.where);
+                if(type instanceof DataClass)
+                    mapDataClasses.put(expr.getKey(),(DataClass)type);
+                else {
+                    Object propertyClass = new Object();
+                    mapObjectClasses.put(expr.getKey(),propertyClass);
+                    query.properties.put(propertyClass,expr.getValue().getClassExpr(baseClass));
+                }
+            }
+        }
+
+        ObjectValue read(T key,Object value,Map<Object,Object> classes) {
+            ConcreteClass propertyClass = mapDataClasses.get(key);
+            if(propertyClass==null) propertyClass = baseClass.findConcreteClassID((Integer) classes.get(mapObjectClasses.get(key)));
+            return ObjectValue.getValue(value,propertyClass);
+        }
+    }
+
+    public LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSelectClasses(SQLSession session,LinkedHashMap<V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
+        LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>>();
+
+        if(where.isFalse()) return result; // иначе типы ключей не узнаем
+
+        // создаем запрос с IsClassExpr'ами
+        JoinQuery<K,Object> classQuery = new JoinQuery<K,Object>((JoinQuery<K,Object>) this,false);
+
+        ReadClasses<K> keyClasses = new ReadClasses<K>(mapKeys,classQuery,baseClass);
+        ReadClasses<V> propClasses = new ReadClasses<V>(properties,classQuery,baseClass);
+
+        LinkedHashMap<Map<K, Object>, Map<Object, Object>> rows = classQuery.executeSelect(session, (LinkedHashMap<Object,Boolean>) orders,selectTop);
+
+        // перемаппим
+        for(Map.Entry<Map<K,Object>,Map<Object,Object>> row : rows.entrySet()) {
+            Map<K,DataObject> keyResult = new HashMap<K, DataObject>();
+            for(Map.Entry<K,Object> keyRow : row.getKey().entrySet())
+                keyResult.put(keyRow.getKey(), (DataObject) keyClasses.read(keyRow.getKey(),keyRow.getValue(),row.getValue()));
+            Map<V,ObjectValue> propResult = new HashMap<V, ObjectValue>();
+            for(V property : properties.keySet())
+                propResult.put(property,propClasses.read(property,row.getValue().get(property),row.getValue()));
+            result.put(keyResult,propResult);
+        }
+        return result;
+    }
+
+    public void outSelect(SQLSession session) throws SQLException {
         compile(session.syntax).outSelect(session);
     }
-    public void outSelect(DataSession session,LinkedHashMap<V,Boolean> orders,int selectTop) throws SQLException {
+    public void outSelect(SQLSession session,LinkedHashMap<V,Boolean> orders,int selectTop) throws SQLException {
         compile(session.syntax,orders,selectTop).outSelect(session);
     }
 
-    String string = null;
     public String toString() {
-/*        if(string==null) {
-            try {
-                string = compile(Main.Adapter).getSelect(Main.Adapter);
-            } catch (Exception e) {
-                string = e.getMessage();
-            }
-        }
-        // временно
-        return string;*/
-
         return "JQ";
-    }
-
-    // для кэша - возвращает выражения + where чтобы потом еще Orders сравнить
-    <EK,EV> boolean equals(JoinQuery<EK, EV> query, Map<K, EK> equalKeys, Map<V, EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
-        if(this== query) {
-            if(BaseUtils.identity(equalKeys) && BaseUtils.identity(mapValues)) {
-                for(V property : properties.keySet())
-                    mapProperties.put(property, (EV) property);
-                return true;
-            } else
-                return false;
-        }
-
-        if(properties.size()!= query.properties.size()) return false;
-
-        Map<ValueExpr,ValueExpr> mapJoinValues = BaseUtils.crossJoin(getValues(), query.getValues(), mapValues);
-        if(mapJoinValues.values().contains(null)) return false;
-
-        Map<KeyExpr,KeyExpr> mapJoinKeys = BaseUtils.crossJoin(mapKeys, query.mapKeys, equalKeys);
-
-        // бежим по всем Join'ам, пытаемся промаппить их друг на друга
-        List<Join> joins = getJoins();
-        List<Join> queryJoins = query.getJoins();
-
-        if(joins.size()!=queryJoins.size())
-            return false;
-
-        // строим hash
-        Map<Integer,Collection<Join>> hashQueryJoins = new HashMap<Integer,Collection<Join>>();
-        for(Join join : queryJoins) {
-            Integer hash = join.hash();
-            Collection<Join> hashJoins = hashQueryJoins.get(hash);
-            if(hashJoins==null) {
-                hashJoins = new ArrayList<Join>();
-                hashQueryJoins.put(hash,hashJoins);
-            }
-            hashJoins.add(join);
-        }
-
-        // бежим
-        MapJoinEquals mapJoinEquals = new MapJoinEquals();
-        for(Join join : joins) {
-            Collection<Join> hashJoins = hashQueryJoins.get(join.hash());
-            if(hashJoins==null) return false;
-            boolean atLeastOneEquals = false;
-            for(Join hashJoin : hashJoins)
-                atLeastOneEquals = join.equals(hashJoin, mapJoinValues, mapJoinKeys, mapJoinEquals) || atLeastOneEquals;
-            if(!atLeastOneEquals) return false;
-        }
-
-        if(!where.equals(query.where, mapJoinValues, mapJoinKeys, mapJoinEquals)) return false;
-
-        // свойства проверим
-        Map<EV,V> queryMap = new HashMap<EV, V>();
-        for(Map.Entry<V, SourceExpr> mapProperty : properties.entrySet()) {
-            EV mapQuery = null;
-            for(Map.Entry<EV, SourceExpr> mapQueryProperty : query.properties.entrySet())
-                if(!queryMap.containsKey(mapQueryProperty.getKey()) &&
-                    mapProperty.getValue().equals(mapQueryProperty.getValue(), mapJoinValues, mapJoinKeys, mapJoinEquals)) {
-                    mapQuery = mapQueryProperty.getKey();
-                    break;
-                }
-            if(mapQuery==null) return false;
-            queryMap.put(mapQuery,mapProperty.getKey());
-        }
-
-        // составляем карту возврата
-        for(Map.Entry<EV,V> mapQuery : queryMap.entrySet())
-            mapProperties.put(mapQuery.getValue(),mapQuery.getKey());
-        return true;
-    }
-
-    class EqualCache<EK,EV> {
-        JoinQuery<EK,EV> query;
-        Map<K,EK> mapKeys;
-        Map<ValueExpr, ValueExpr> mapValues;
-
-        EqualCache(JoinQuery<EK, EV> iQuery, Map<K, EK> iMapKeys, Map<ValueExpr, ValueExpr> iMapValues) {
-            query = iQuery;
-            mapKeys = iMapKeys;
-            mapValues = iMapValues;
-        }
-
-        public boolean equals(Object o) {
-            return this==o || (o instanceof EqualCache && query.equals(((EqualCache)o).query) && mapKeys.equals(((EqualCache)o).mapKeys) && mapValues.equals(((EqualCache)o).mapValues));
-        }
-
-        public int hashCode() {
-            return mapValues.hashCode()*31*31+ mapKeys.hashCode()*31+ query.hashCode();
-        }
-    }
-    
-    // кэш для сравнений и метод собсно тоже для кэша
-    Map<EqualCache,Map<V,?>> cacheEquals = new HashMap<EqualCache, Map<V,?>>();
-    public <EK,EV> boolean equals(Source<EK,EV> source,Map<K,EK> equalKeys,Map<V,EV> mapProperties, Map<ValueExpr, ValueExpr> mapValues) {
-        if(!(source instanceof JoinQuery)) return false;
-
-        JoinQuery<EK,EV> query = (JoinQuery<EK,EV>) source;
-        
-        EqualCache<EK,EV> equalCache = new EqualCache<EK,EV>(query, equalKeys, mapValues);
-        Map<V,EV> equalMap = (Map<V,EV>) cacheEquals.get(equalCache);
-        if(equalMap==null) {
-            equalMap = new HashMap<V, EV>();
-            if(!equals(query, equalKeys, equalMap, mapValues))
-                return false;
-            cacheEquals.put(equalCache,equalMap);
-        }
-
-        mapProperties.putAll(equalMap);
-        return true;
     }
 
     protected int getHash() {
@@ -337,55 +200,36 @@ public class JoinQuery<K,V> extends Source<K,V> {
     }
 
     // конструктор копирования
-    public JoinQuery(JoinQuery<K,V> query) {
-        super(query.keys);
+    public JoinQuery(JoinQuery<K, V> query, boolean noProps) {
         mapKeys = query.mapKeys;
-        properties = new HashMap<V, SourceExpr>(query.properties);
+        if(noProps)
+            properties = new HashMap<V, SourceExpr>();
+        else
+            properties = new HashMap<V, SourceExpr>(query.properties);
+
         where = query.where;
-        values = query.values;
     }
 
-    // конструктор фиксации переменных
-    JoinQuery(Map<? extends V, ValueExpr> propertyValues,JoinQuery<K,V> query) {
-        this(query.keys);
+    public <GK extends V, GV extends V> ParsedQuery<GK,GV> groupBy(Collection<GK> keys,GV property, boolean max) {
+        // вытаскиваем Case'ы
+        Collection<GV> maxProps = new ArrayList<GV>();
+        Collection<GV> sumProps = new ArrayList<GV>();
+        if(max)
+            maxProps.add(property);
+        else
+            sumProps.add(property);
 
-        Join<K,V> sourceJoin = new Join<K,V>(query,this);
-        where = sourceJoin.inJoin;
+        return parse().groupBy(keys, maxProps, sumProps);
+    }
 
-        // раскидываем по dumb'ам или на выход
-        for(Map.Entry<V, JoinExpr<K,V>> property : sourceJoin.exprs.entrySet()) {
-            ValueExpr propertyValue = propertyValues.get(property.getKey());
-            if(propertyValue==null)
-                properties.put(property.getKey(), property.getValue());
-            else
-                where = where.and(new CompareWhere(property.getValue(),propertyValue, Compare.EQUALS));
+    boolean hashed = false;
+    int hash;
+    public int hash() {
+        if(!hashed) {
+            hash = getHash();
+            hashed = true;
         }
-    }
-
-    // конструктор трансляции переменных
-    JoinQuery(JoinQuery<K,V> query,Map<ValueExpr, ValueExpr> mapValues) {
-        super(query.keys);
-        mapKeys = query.mapKeys;
-
-        properties = query.properties;
-        where = query.where;
-        values = BaseUtils.join(mapValues, query.getValues());
-
-        if(query.parse !=null)
-            parse = new ParsedQuery<K,V>(query.parse, mapValues);
-    }
-
-    // конструктор вырезания свойств
-    JoinQuery(JoinQuery<K,V> query,Collection<V> removeProperties) {
-        super(query.keys);
-        mapKeys = query.mapKeys;
-
-        properties = BaseUtils.removeKeys(query.properties,removeProperties);
-        where = query.where;
-        values = query.values;
-
-        if(query.parse !=null)
-            parse = new ParsedQuery<K,V>(query.parse, removeProperties);
+        return hash;
     }
 }
 

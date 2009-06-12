@@ -1,10 +1,16 @@
 package platform.server.where;
 
+import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.exprs.SourceExpr;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import net.jcip.annotations.Immutable;
 
-
-abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
+@Immutable
+public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin<Where> implements Where<Not> {
 
     private Not not = null;
     public Not not() {
@@ -17,16 +23,29 @@ abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin imple
     public Where and(Where where) {
         return not().or(where.not()).not(); // A AND B = not(notA OR notB)
     }
+    public Where andMeans(Where where) {
+        return not().orMeans(where.not()).not(); // A AND B = not(notA OR notB)
+    }
     public Where or(Where where) {
-        return OrWhere.op(this,where,false);
+        Where or = OrWhere.op(this,where,false);
+        assert !(!or.isTrue() && or.checkTrue());
+        return or;
     }
     public Where orMeans(Where where) {
         return OrWhere.op(this,where,true);
     }
 
     public Where followFalse(Where falseWhere) {
-        return OrWhere.followFalse(this,falseWhere,false);
+        return OrWhere.followFalse(this,falseWhere,false,false);
     }
+
+    public <K> Map<K, SourceExpr> followTrue(Map<K, ? extends SourceExpr> map) {
+        Map<K,SourceExpr> result = new HashMap<K, SourceExpr>();
+        for(Map.Entry<K,? extends SourceExpr> entry : map.entrySet())
+            result.put(entry.getKey(),entry.getValue().followFalse(not()));
+        return result;
+    }
+
     public boolean means(Where where) {
         return OrWhere.op(not(),where,true).checkTrue();
     }
@@ -65,10 +84,6 @@ abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin imple
         return where1.getObjects().depends(where2.getObjects());
     }
 
-    public boolean hashEquals(Where where) {
-        return hashCode()==where.hashCode() && equals(where);
-    }
-
     // системные
     static AndObjectWhere[] siblings(AndObjectWhere[] wheres,int i) {
         AndObjectWhere[] siblings = new AndObjectWhere[wheres.length-1];
@@ -96,4 +111,13 @@ abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin imple
         if(objects==null) objects = calculateObjects();
         return objects;
     }
+
+    private ClassExprWhere classWhere=null;
+    public ClassExprWhere getClassWhere() {
+        if(classWhere==null)
+            classWhere = calculateClassWhere();
+        return classWhere;
+    }
+
+    protected abstract ClassExprWhere calculateClassWhere();
 }

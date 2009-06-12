@@ -1,37 +1,39 @@
 package platform.server.view.form;
 
+import platform.server.data.Field;
 import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
-import platform.server.data.types.Type;
-import platform.server.session.DataSession;
+import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.types.ObjectType;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 // таблица куда виды складывают свои объекты
-public class ViewTable extends SessionTable {
-    public ViewTable(Integer iObjects) {
-        super("viewtable"+iObjects.toString());
-        objects = new ArrayList<KeyField>();
-        for(Integer i=0;i<iObjects;i++) {
-            KeyField objKeyField = new KeyField("object"+i, Type.object);
-            objects.add(objKeyField);
+public class ViewTable extends SessionTable<ViewTable> {
+
+    public final Map<KeyField,ObjectImplement> mapKeys;
+
+    public ViewTable(GroupObjectImplement group, int GID) {
+        super("viewtable_"+(GID>=0?GID:"n"+(-GID)));
+
+        mapKeys = new HashMap<KeyField, ObjectImplement>();
+        for(ObjectImplement object : group) {
+            KeyField objKeyField = new KeyField("object"+ object.sID, object.getType());
+            mapKeys.put(objKeyField,object);
             keys.add(objKeyField);
         }
-
-        view = new KeyField("viewid",Type.system);
-        keys.add(view);
     }
 
-    List<KeyField> objects;
-    KeyField view;
+    public ViewTable(String iName, Map<KeyField, ObjectImplement> iMapKeys, ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
+        super(iName, iClasses, iPropertyClasses);
 
-    void dropViewID(DataSession session,Integer viewID) throws SQLException {
-        Map<KeyField,Integer> valueKeys = new HashMap<KeyField, Integer>();
-        valueKeys.put(view,viewID);
-        session.deleteKeyRecords(this,valueKeys);
+        mapKeys = iMapKeys;
+        keys.addAll(mapKeys.keySet());
+    }
+
+    public ViewTable createThis(ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
+        return new ViewTable(name, mapKeys, iClasses, iPropertyClasses);
     }
 }

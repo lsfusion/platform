@@ -1,15 +1,13 @@
 package platform.server.where;
 
+import platform.server.data.classes.where.ClassExprWhere;
+import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.*;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.translators.Translator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 class NotWhere extends ObjectWhere<DataWhere> {
 
@@ -43,10 +41,6 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return where.hashCode()*31;
     }
 
-    public boolean evaluate(Collection<DataWhere> data) {
-        return !where.evaluate(data);
-    }
-
     public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
         if(where.getFollows().intersect(decompose.data))
             return TRUE;
@@ -60,15 +54,12 @@ class NotWhere extends ObjectWhere<DataWhere> {
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     public Where translate(Translator translator) {
-        Where transWhere = where.translate(translator);
-        if(transWhere==where)
-            return this;
-        return transWhere.not();
+        return where.translate(translator).not();
     }
 
 
-    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
-        where.fillJoins(joins,values);
+    public int fillContext(Context context, boolean compile) {
+        return where.fillContext(context, compile);
     }
 
     public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
@@ -79,15 +70,28 @@ class NotWhere extends ObjectWhere<DataWhere> {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public JoinWheres getInnerJoins() {
-        return new JoinWheres(TRUE,this);
+    public InnerJoins getInnerJoins() {
+        return new InnerJoins(Where.TRUE,this);
     }
 
-    public boolean equals(Where equalWhere, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
-        return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapValues, mapKeys, mapJoins) ;
+    public MeanClassWheres getMeanClassWheres() {
+        return new MeanClassWheres(ClassExprWhere.TRUE,this);
+    }
+
+    public boolean equals(Where equalWhere, MapContext mapContext) {
+        return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapContext) ;
     }
 
     protected int getHash() {
         return where.hash()*3;
+    }
+
+    public ClassExprWhere calculateClassWhere() {
+        return ClassExprWhere.TRUE;
+    }
+
+    @Override
+    public Where linearFollowFalse(Where falseWhere) {
+        return where.linearFollowFalse(falseWhere).not();
     }
 }

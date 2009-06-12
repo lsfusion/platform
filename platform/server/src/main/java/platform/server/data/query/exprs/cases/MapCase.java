@@ -1,7 +1,7 @@
 package platform.server.data.query.exprs.cases;
 
-import platform.server.where.Where;
 import platform.server.data.query.exprs.AndExpr;
+import platform.server.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;

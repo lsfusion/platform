@@ -1,11 +1,12 @@
 package platform.server.view.navigator;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteCustomClass;
+import platform.server.data.classes.CustomClass;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class ClassCache extends LinkedHashMap<RemoteClass, Integer> {
+class ClassCache extends LinkedHashMap<ConcreteCustomClass, Integer> {
 
     public ClassCache() {
     }
@@ -14,7 +15,7 @@ class ClassCache extends LinkedHashMap<RemoteClass, Integer> {
         super(classCache);
     }
 
-    public Integer put(RemoteClass cls, Integer value) {
+    public Integer put(ConcreteCustomClass cls, Integer value) {
 
         if (cls == null) {
             throw new RuntimeException("Unable to put null key to cache");
@@ -28,11 +29,11 @@ class ClassCache extends LinkedHashMap<RemoteClass, Integer> {
             return null;
     }
 
-    public Integer getObject(RemoteClass cls) {
+    public Integer getObject(CustomClass cls) {
 
         Integer objectID = -1;
-        for (Map.Entry<RemoteClass, Integer> entry : entrySet()) {
-            if (entry.getKey().isParent(cls)) objectID = entry.getValue();
+        for (Map.Entry<ConcreteCustomClass,Integer> entry : entrySet()) {
+            if (entry.getKey().isChild(cls)) objectID = entry.getValue();
         }
 
         return objectID;

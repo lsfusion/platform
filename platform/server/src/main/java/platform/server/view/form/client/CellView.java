@@ -1,6 +1,7 @@
 package platform.server.view.form.client;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.types.Type;
+import platform.server.data.types.TypeSerializer;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.awt.*;
@@ -22,25 +23,25 @@ abstract public class CellView extends ComponentView {
 
         outStream.writeUTF(getCaption());
 
-        getBaseClass().serialize(outStream);
+        TypeSerializer.serialize(outStream,getType());
 
         new ObjectOutputStream(outStream).writeObject(minimumSize);
         new ObjectOutputStream(outStream).writeObject(maximumSize);
         new ObjectOutputStream(outStream).writeObject(preferredSize);
     }
 
-    abstract RemoteClass getBaseClass();
+    abstract Type getType();
 
     abstract int getID();
     abstract String getSID();
     abstract String getCaption();
 
     public Format getFormat() {
-        return getBaseClass().getDefaultFormat();
+        return getType().getDefaultFormat();
     }
 
     public int getMinimumWidth() {
-        return getBaseClass().getMinimumWidth();
+        return getType().getMinimumWidth();
     }
 
     public int getMinimumHeight() {
@@ -54,7 +55,7 @@ abstract public class CellView extends ComponentView {
     }
 
     public int getPreferredWidth() {
-        return getBaseClass().getPreferredWidth();
+        return getType().getPreferredWidth();
     }
 
     public int getPreferredHeight() {
@@ -68,7 +69,7 @@ abstract public class CellView extends ComponentView {
     }
 
     public int getMaximumWidth() {
-        return getBaseClass().getMaximumWidth();
+        return getType().getMaximumWidth();
     }
 
     public int getMaximumHeight() {
@@ -98,6 +99,6 @@ abstract public class CellView extends ComponentView {
             reportField.pattern = ((SimpleDateFormat)format).toPattern();
         }
 
-        getBaseClass().fillReportDrawField(reportField);
+        getType().fillReportDrawField(reportField);
     }
 }

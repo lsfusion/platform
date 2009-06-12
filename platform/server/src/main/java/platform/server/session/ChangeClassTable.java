@@ -1,66 +1,37 @@
 package platform.server.session;
 
+import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.types.Type;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.SessionTable;
+import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.types.ObjectType;
+import platform.server.where.Where;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 // хранит добавляение\удаление классов
-public class ChangeClassTable extends ChangeTable {
+public abstract class ChangeClassTable<This extends ChangeClassTable> extends SessionTable<This> {
 
-    KeyField objectClass;
-    public KeyField object;
+    public final KeyField object;
 
-    ChangeClassTable(String iTable) {
-        super(iTable);
+    ChangeClassTable(String iTable,int iClassID) {
+        super(iTable+"_"+iClassID);
 
-        object = new KeyField("object", Type.object);
+        object = new KeyField("object", ObjectType.instance);
         keys.add(object);
-
-        objectClass = new KeyField("class",Type.system);
-        keys.add(objectClass);
     }
 
-    void changeClass(DataSession changeSession, Integer idObject, Collection<RemoteClass> Classes,boolean Drop) throws SQLException {
+    protected ChangeClassTable(String iName, KeyField iObject, ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
+        super(iName, iClasses, iPropertyClasses);
 
-        for(RemoteClass change : Classes) {
-            Map<KeyField,Integer> changeKeys = new HashMap<KeyField, Integer>();
-            changeKeys.put(object,idObject);
-            changeKeys.put(objectClass,change.ID);
-            if(Drop) {
-                if(!BusinessLogics.autoFillDB)
-                    changeSession.deleteKeyRecords(this,changeKeys);
-            } else
-                changeSession.insertRecord(this,changeKeys,new HashMap<PropertyField, Object>());
-        }
+        object = iObject;
+        keys.add(object);
     }
 
-    void dropSession(DataSession changeSession) throws SQLException {
-        Map<KeyField,Integer> ValueKeys = new HashMap<KeyField, Integer>();
-        changeSession.deleteKeyRecords(this,ValueKeys);
+    public Where getJoinWhere(SourceExpr expr) {
+        return join(Collections.singletonMap(object, expr)).getWhere();
     }
-
-    public JoinQuery<KeyField,PropertyField> getClassJoin(DataSession changeSession, RemoteClass changeClass) {
-
-        Collection<KeyField> objectKeys = new ArrayList<KeyField>();
-        objectKeys.add(object);
-        JoinQuery<KeyField,PropertyField> classQuery = new JoinQuery<KeyField,PropertyField>(objectKeys);
-
-        Join<KeyField,PropertyField> classJoin = new Join<KeyField,PropertyField>(this);
-        classJoin.joins.put(object,classQuery.mapKeys.get(object));
-        classJoin.joins.put(objectClass,objectClass.type.getExpr(changeClass.ID));
-        classQuery.and(classJoin.inJoin);
-
-        return classQuery;
-    }
-
 }

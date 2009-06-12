@@ -1,15 +1,16 @@
 package platform.server.data.sql;
 
-import platform.server.data.TypedObject;
+import platform.server.logics.DataObject;
+import platform.server.data.types.TypeObject;
 
 import java.util.Map;
 
 public class SQLExecute {
 
     public String command;
-    public Map<String, TypedObject> params;
+    public Map<String, TypeObject> params;
 
-    public SQLExecute(String iCommand, Map<String, TypedObject> iParams) {
+    public SQLExecute(String iCommand, Map<String, TypeObject> iParams) {
         command = iCommand;
         params = iParams;
     }

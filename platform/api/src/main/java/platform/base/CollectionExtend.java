@@ -8,14 +8,6 @@ public class CollectionExtend {
             map.remove(Key);
     }
 
-    public static <V> V getRandom(Set<V> toRandom, Random randomizer) {
-        int randomNum = randomizer.nextInt(toRandom.size());
-        int countNum = 0;
-        for(V object : toRandom)
-            if(countNum==randomNum) return object;
-        return null;
-    }
-
     public static <T> Set<T> intersect(Set<T> op1,Set<T> op2) {
         Set<T> result = new HashSet<T>();
         for(T element : op1)

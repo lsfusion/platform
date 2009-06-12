@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.client.SwingUtils;
 import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 
@@ -17,9 +18,9 @@ public class ClientDialog extends JDialog {
     private final ClientNavigator navigator;
     private ClientForm currentForm;
 
-    private final ClientClass cls;
+    private final ClientObjectClass cls;
 
-    public ClientDialog(ClientForm owner, ClientClass icls, Object value) throws IOException, ClassNotFoundException {
+    public ClientDialog(ClientForm owner, ClientObjectClass icls, Object value) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
         setLayout(new BorderLayout());

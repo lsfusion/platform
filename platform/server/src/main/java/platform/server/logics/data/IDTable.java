@@ -1,16 +1,17 @@
 package platform.server.logics.data;
 
 import platform.interop.Compare;
-import platform.server.data.KeyField;
-import platform.server.data.ModifyQuery;
-import platform.server.data.PropertyField;
-import platform.server.data.Table;
+import platform.server.data.*;
+import platform.server.data.classes.SystemClass;
+import platform.server.data.classes.where.AndClassWhere;
+import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.types.Type;
 import platform.server.logics.BusinessLogics;
-import platform.server.session.DataSession;
+import platform.server.logics.DataObject;
+import platform.server.session.SQLSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,16 +20,26 @@ import java.util.List;
 
 // таблица счетчика sID
 public class IDTable extends Table {
+
+    public static final IDTable instance = new IDTable(); 
+
     KeyField key;
     PropertyField value;
 
     IDTable() {
         super("idtable");
-        key = new KeyField("id", Type.system);
+        key = new KeyField("id", SystemClass.instance);
         keys.add(key);
 
-        value = new PropertyField("value",Type.system);
+        value = new PropertyField("value", SystemClass.instance);
         properties.add(value);
+
+        classes = new ClassWhere<KeyField>(key, SystemClass.instance);
+
+        AndClassWhere<Field> valueClasses = new AndClassWhere<Field>();
+        valueClasses.add(key, SystemClass.instance);
+        valueClasses.add(value, SystemClass.instance);
+        propertyClasses.put(value,new ClassWhere<Field>(valueClasses));
     }
 
     public final static int OBJECT = 1;
@@ -41,17 +52,16 @@ public class IDTable extends Table {
         return result;
     }
 
-    public Integer generateID(DataSession dataSession, int idType) throws SQLException {
+    public Integer generateID(SQLSession dataSession, int idType) throws SQLException {
 
         if(BusinessLogics.autoFillDB) return BusinessLogics.autoIDCounter++;
         // читаем
-        JoinQuery<KeyField, PropertyField> query = new JoinQuery<KeyField, PropertyField>(keys);
-        Join<KeyField,PropertyField> joinTable = new Join<KeyField, PropertyField>(this);
-        joinTable.joins.put(key,query.mapKeys.get(key));
-        query.and(joinTable.inJoin);
-        query.properties.put(value, joinTable.exprs.get(value));
+        JoinQuery<KeyField, PropertyField> query = new JoinQuery<KeyField, PropertyField>(this);
+        Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));
+        query.and(joinTable.getWhere());
+        query.properties.put(value, joinTable.getExpr(value));
 
-        query.and(new CompareWhere(query.mapKeys.get(key),Type.object.getExpr(idType), Compare.EQUALS));
+        query.and(new CompareWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance), Compare.EQUALS));
 
         Integer freeID = (Integer) query.executeSelect(dataSession).values().iterator().next().get(value);
 
@@ -60,10 +70,10 @@ public class IDTable extends Table {
         return freeID+1;
     }
 
-    public void reserveID(DataSession session, int idType, Integer ID) throws SQLException {
-        JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(keys);
-        updateQuery.putKeyWhere(Collections.singletonMap(key,idType));
-        updateQuery.properties.put(value,value.type.getExpr(ID+1));
+    public void reserveID(SQLSession session, int idType, Integer ID) throws SQLException {
+        JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(this);
+        updateQuery.putKeyWhere(Collections.singletonMap(key,new DataObject(idType, SystemClass.instance)));
+        updateQuery.properties.put(value,new ValueExpr(ID+1, SystemClass.instance));
         session.updateRecords(new ModifyQuery(this,updateQuery));
     }
 }

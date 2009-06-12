@@ -1,24 +1,21 @@
 package platform.server.where;
 
-import platform.server.data.query.JoinWheres;
+import platform.server.data.classes.where.ClassExprWhere;
+import platform.server.data.classes.where.MeanClassWheres;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.query.Translator;
-import platform.server.data.query.MapJoinEquals;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.exprs.SourceExpr;
 
-import java.util.Collection;
 import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
-
-public interface Where<Not extends Where> extends SourceJoin {
+public interface Where<Not extends Where> extends SourceJoin<Where> {
 
     Where followFalse(Where falseWhere);
+    
+    public abstract <K> Map<K, SourceExpr> followTrue(Map<K,? extends SourceExpr> map);
 
     // внутренние
-    Where siblingsFollow(Where falseWhere);
+    Where innerFollowFalse(Where falseWhere, boolean sureNotTrue);
     boolean checkTrue();
     boolean directMeansFrom(AndObjectWhere where);
 
@@ -29,7 +26,8 @@ public interface Where<Not extends Where> extends SourceJoin {
 
     Where and(Where where);
     Where or(Where where);
-    Where orMeans(Where where); // чисто для means 
+    Where andMeans(Where where); // чисто для means 
+    Where orMeans(Where where); // чисто для means
     boolean means(Where where);
 
     AndObjectWhere[] getAnd();
@@ -41,24 +39,18 @@ public interface Where<Not extends Where> extends SourceJoin {
     // также получает objects not linked с decompose, (потому как при сокращении могут вырезаться некоторые)
     Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects);
 
-    boolean evaluate(Collection<DataWhere> data);
-
-    boolean hashEquals(Where where);
-
     static String TRUE_STRING = "1=1";
     static String FALSE_STRING = "1<>1";
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    abstract Where translate(Translator translator);
+    abstract public InnerJoins getInnerJoins();
+    abstract public MeanClassWheres getMeanClassWheres();
 
-    abstract JoinWheres getInnerJoins();
-
-    abstract boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins);
+    abstract public ClassExprWhere getClassWhere();
 
     int hash();
 
-    int getSize();
     int getHeight();
 
     static Where TRUE = new AndWhere();

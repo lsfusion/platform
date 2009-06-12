@@ -1,22 +1,12 @@
 package platform.server.data.query.exprs.cases;
 
-import platform.server.data.query.MapJoinEquals;
-import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.MapContext;
 import platform.server.where.Where;
 
-import java.util.Map;
-
-public class ExprCase extends Case<SourceExpr> {
+public class ExprCase extends Case<AndExpr> {
 
     public ExprCase(Where iWhere, AndExpr iExpr) {
-        this(iWhere,(SourceExpr)iExpr);
-    }
-
-    // дублируем чтобы различать
-    ExprCase(Where iWhere, SourceExpr iExpr) {
         super(iWhere,iExpr);
     }
 
@@ -33,8 +23,8 @@ public class ExprCase extends Case<SourceExpr> {
     }
 
     // для кэша
-    boolean equals(ExprCase aCase, Map<ValueExpr,ValueExpr> mapValues, Map<KeyExpr,KeyExpr> mapKeys, MapJoinEquals mapJoins) {
-        return where.equals(aCase.where, mapValues, mapKeys, mapJoins) && data.equals(aCase.data, mapValues, mapKeys, mapJoins);
+    boolean equals(ExprCase aCase, MapContext mapJoins) {
+        return where.equals(aCase.where, mapJoins) && data.equals(aCase.data, mapJoins);
     }
 
     int hash() {

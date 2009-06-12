@@ -5,7 +5,7 @@ import platform.server.logics.properties.StringFormulaPropertyInterface;
 
 public class LSFP extends LP<StringFormulaPropertyInterface, StringFormulaProperty> {
 
-    public LSFP(StringFormulaProperty iProperty,int paramCount) {
+    public LSFP(StringFormulaProperty iProperty) {
         super(iProperty);
     }
 }

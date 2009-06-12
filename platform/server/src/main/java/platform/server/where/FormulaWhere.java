@@ -1,17 +1,13 @@
 package platform.server.where;
 
-import platform.server.data.query.Join;
+import platform.base.BaseUtils;
+import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.QueryData;
-import platform.server.data.query.MapJoinEquals;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.Context;
+import platform.server.data.query.MapContext;
 import platform.server.data.sql.SQLSyntax;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import net.jcip.annotations.Immutable;
 
 
 abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
@@ -40,12 +36,14 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return "("+result+")";
     }
 
-    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
+    public int fillContext(Context context, boolean compile) {
+        int level = -1;
         for(Where where : wheres)
-            where.fillJoins(joins, values);
+            level = BaseUtils.max(where.fillContext(context, compile),level);
+        return level;
     }
 
-    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
+    public boolean equals(Where where, MapContext mapContext) {
         if(where.getClass()!=getClass()) return false;
 
         FormulaWhere thisWhere = (FormulaWhere)where;
@@ -56,7 +54,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         for(Where andWhere : wheres) {
             boolean found = false;
             for(int i=0;i<checkWheres.length;i++)
-                if(checkWheres[i]!=null && andWhere.equals(checkWheres[i], mapValues, mapKeys, mapJoins)) {
+                if(checkWheres[i]!=null && andWhere.equals(checkWheres[i], mapContext)) {
                     checkWheres[i] = null;
                     found = true;
                     break;
@@ -78,11 +76,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
 
     // ручной кэш хэша
     protected int getHashCode() {
-        int result = 0;
-        for(Where where : wheres)
-            result += where.hashCode();
-        result = result * hashCoeff();
-        return result;
+        return BaseUtils.hashArraySet(wheres)*hashCoeff();
     }
 
     public ObjectWhereSet calculateObjects() {
@@ -125,15 +119,6 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return reverse(not(wheres));
     }
 
-    public int getSize() {
-        if(wheres.length==0) return 0;
-
-        int size = 1;
-        for(Where where : wheres)
-            size += where.getSize();
-        return size;
-    }
-
     int height;
     public int getHeight() {
         if(wheres.length==0) return 0;
@@ -147,23 +132,6 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return height;
     }
 
-    boolean equalWheres(WhereType[] equals) {
-        if(wheres.length!=equals.length) return false;
-        WhereType[] checkWheres = equals.clone();
-        for(WhereType where : wheres) {
-            boolean found = false;
-            for(int i=0;i<checkWheres.length;i++)
-                if(checkWheres[i]!=null && where.hashEquals(checkWheres[i])) {
-                    checkWheres[i] = null;
-                    found = true;
-                    break;
-                }
-            if(!found) return false;
-        }
-
-        return true;
-    }
-
     // отнимает одно мн-во от второго
     WhereType[] substractWheres(WhereType[] substract) {
         if(substract.length>wheres.length) return null;
@@ -172,7 +140,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         for(WhereType andWhere : substract) {
             boolean found = false;
             for(int i=0;i<rawRestWheres.length;i++)
-                if(rawRestWheres[i]!=null && andWhere.hashEquals(rawRestWheres[i])) {
+                if(rawRestWheres[i]!=null && BaseUtils.hashEquals(andWhere,rawRestWheres[i])) {
                     rawRestWheres[i] = null;
                     found = true;
                     break;
@@ -186,4 +154,8 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
         return restWheres;
     }
     abstract WhereType[] newArray(int length);
+
+    public ClassExprWhere calculateClassWhere() {
+        return getMeanClassWheres().orMeans();
+    }
 }

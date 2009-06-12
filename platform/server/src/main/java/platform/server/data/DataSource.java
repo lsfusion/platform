@@ -1,21 +1,33 @@
 package platform.server.data;
 
-import platform.server.data.query.ParsedJoin;
-import platform.server.data.query.ExprTranslator;
-import platform.server.data.query.Join;
+import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.query.*;
+import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.sql.PostgreDataAdapter;
+import platform.server.data.types.Type;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.HashMap;
 
-public abstract class DataSource<K,V> extends Source<K,V> {
+public abstract class DataSource<K,V> {
 
-    protected DataSource(Collection<? extends K> iKeys) {
-        super(iKeys);
+    public DataSource() {
     }
-    DataSource() {
-    }
+
+    public abstract Collection<K> getKeys();
+
+    public static final SQLSyntax debugSyntax = new PostgreDataAdapter();
+
+    public abstract Collection<V> getProperties();
+    public abstract Type getType(V property);
+
+    public abstract int hashProperty(V Property);
 
     public abstract String getSource(SQLSyntax syntax, Map<ValueExpr, String> params);
 
@@ -24,7 +36,7 @@ public abstract class DataSource<K,V> extends Source<K,V> {
 
     // получает строку по которой можно определить входит ли ряд в запрос Select
     public String getInSourceName() {
-        return (keys.size()>0?getKeyName(keys.iterator().next()):"subkey");
+        return (getKeys().size()>0?getKeyName(getKeys().iterator().next()):"subkey");
     }
 
     //    abstract <MK,MV> DataSource<K, Object> merge(DataSource<MK,MV> Merge, Map<K,MK> MergeKeys, Map<MV, Object> MergeProps);
@@ -42,9 +54,39 @@ public abstract class DataSource<K,V> extends Source<K,V> {
         return null;
     }
 
-    public void parseJoin(Join<K, V> join, ExprTranslator translated, Collection<ParsedJoin> translatedJoins) {
-        join.translate(translated, translatedJoins, this);
+    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement) {
+        CaseJoin<V> result = new CaseJoin<V>(getProperties());
+        for(MapCase<K> caseJoin : CaseExpr.pullCases(joinImplement))
+            result.add(new JoinCase<V>(caseJoin.where,joinAnd(caseJoin.data)));
+        return result;
     }
 
+    public DataJoin<K, V> joinAnd(Map<K, ? extends AndExpr> joinImplement) {
+        return new DataJoin<K,V>(this,joinImplement);
+    }
+
+    public abstract Collection<ValueExpr> getValues();
+
+    // заменяет параметры на другие - key есть, value какие нужны
     public abstract DataSource<K,V> translateValues(Map<ValueExpr, ValueExpr> values);
+
+    abstract public DataSource<K,V> packClassWhere(ClassWhere<K> keyClasses);
+    abstract public ClassWhere<Object> getClassWhere(Collection<V> notNull);
+    abstract public ClassWhere<K> getKeyClassWhere();
+
+    public abstract <EK, EV> Iterable<MapSource<K, V, EK, EV>> map(DataSource<EK, EV> source);
+
+    boolean hashed = false;
+    int hash;
+    public int hash() {
+        if(!hashed) {
+            hash = getHash();
+            hashed = true;
+        }
+        return hash;
+    }
+    protected int getHash() {
+        return hashCode();
+    }
+    
 }

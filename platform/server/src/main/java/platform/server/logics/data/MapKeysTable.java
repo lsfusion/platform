@@ -1,17 +1,17 @@
 package platform.server.logics.data;
 
-import platform.server.data.Table;
 import platform.server.data.KeyField;
-import platform.server.logics.properties.PropertyInterface;
 
 import java.util.Map;
 
 public class MapKeysTable<T> {
     public ImplementTable table;
-    public Map<KeyField,T> mapKeys;
+    public Map<T,KeyField> mapKeys;
 
-    public MapKeysTable(ImplementTable iTable, Map<KeyField, T> iMapKeys) {
+    public MapKeysTable(ImplementTable iTable, Map<T,KeyField> iMapKeys) {
         table = iTable;
         mapKeys = iMapKeys;
+        
+        assert (table.keys.size()==mapKeys.size());
     }
 }

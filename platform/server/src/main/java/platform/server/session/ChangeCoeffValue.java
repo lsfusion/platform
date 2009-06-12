@@ -1,6 +1,6 @@
 package platform.server.session;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteValueClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.io.IOException;
 public class ChangeCoeffValue extends ChangeValue {
     public Integer coeff;
 
-    public ChangeCoeffValue(RemoteClass iClass, Integer iCoeff) {
+    public ChangeCoeffValue(ConcreteValueClass iClass, Integer iCoeff) {
         super(iClass);
         coeff = iCoeff;
     }

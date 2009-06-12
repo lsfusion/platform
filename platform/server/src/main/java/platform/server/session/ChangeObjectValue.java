@@ -1,7 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteValueClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.io.IOException;
 public class ChangeObjectValue extends ChangeValue {
     public Object value;
 
-    public ChangeObjectValue(RemoteClass iClass, Object iValue) {
+    public ChangeObjectValue(ConcreteValueClass iClass, Object iValue) {
         super(iClass);
         value = iValue;
     }

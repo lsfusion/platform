@@ -1,14 +1,16 @@
 package platform.server.data;
 
 import platform.server.data.query.CompiledQuery;
-import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
-import platform.server.data.sql.SQLSyntax;
+import platform.server.data.query.ParsedQuery;
 import platform.server.data.sql.SQLExecute;
-import platform.server.session.DataSession;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.session.SQLSession;
 
-import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class ModifyQuery {
     public Table table;
@@ -37,10 +39,10 @@ public class ModifyQuery {
 
             List<KeyField> keyOrder = new ArrayList<KeyField>();
             List<PropertyField> propertyOrder = new ArrayList<PropertyField>();
-            String SelectString = syntax.getSelect(fromSelect, Source.stringExpr(
-                    Source.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
-                    Source.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
-                    Source.stringWhere(whereSelect),"","","");
+            String SelectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
+                    SQLSession.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
+                    SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
+                    SQLSession.stringWhere(whereSelect),"","","");
 
             String setString = "";
             for(KeyField field : keyOrder)
@@ -53,15 +55,8 @@ public class ModifyQuery {
             if(updateModel==1) {
                 // SQL-серверная модель когда она подхватывает первый Join и старую таблицу уже не вилит
                 // построим JoinQuery куда переJoin'им все эти поля (оптимизатор уберет все дублирующиеся таблицы)
-                JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(table.keys);
-                Join<KeyField, PropertyField> tableJoin = new Join<KeyField, PropertyField>(table, updateQuery);
-                tableJoin.noAlias = true;
-                updateQuery.and(tableJoin.inJoin);
-
-                Join<KeyField, PropertyField> changeJoin = new Join<KeyField, PropertyField>(change, updateQuery);
-                updateQuery.and(changeJoin.inJoin);
-                for(PropertyField changeField : change.properties.keySet())
-                    updateQuery.properties.put(changeField, changeJoin.exprs.get(changeField));
+                JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(change,false);
+                updateQuery.and(table.joinAnd(updateQuery.mapKeys).getWhere());
                 changeCompile = updateQuery.compile(syntax);
                 whereSelect = changeCompile.whereSelect;
             } else {
@@ -89,11 +84,9 @@ public class ModifyQuery {
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
 
         // делаем для этого еще один запрос
-        JoinQuery<KeyField, PropertyField> leftKeysQuery = new JoinQuery<KeyField, PropertyField>(table.keys);
-        // при Join'им ModifyQuery
-        leftKeysQuery.and(new Join<KeyField, PropertyField>(change,leftKeysQuery).inJoin);
+        JoinQuery<KeyField, PropertyField> leftKeysQuery = new JoinQuery<KeyField, PropertyField>(change, true);
         // исключим ключи которые есть
-        leftKeysQuery.and((new Join<KeyField, PropertyField>(table,leftKeysQuery)).inJoin.not());
+        leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());
 
         return (new ModifyQuery(table,leftKeysQuery)).getInsertSelect(syntax);
     }
@@ -109,12 +102,5 @@ public class ModifyQuery {
             insertString = (insertString.length()==0?"":insertString+",") + propertyField.name;
 
         return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") " + changeCompile.select,changeCompile.getQueryParams());
-    }
-
-    void outSelect(DataSession Session) throws SQLException {
-        System.out.println("Table");
-        table.outSelect(Session);
-        System.out.println("Source");
-        change.outSelect(Session);
     }
 }

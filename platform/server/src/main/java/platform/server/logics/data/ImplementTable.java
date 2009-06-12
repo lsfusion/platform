@@ -2,24 +2,27 @@ package platform.server.logics.data;
 
 import platform.server.data.KeyField;
 import platform.server.data.Table;
-import platform.server.data.types.Type;
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ValueClass;
+import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.types.ObjectType;
 
 import java.util.*;
 
 public class ImplementTable extends Table {
-    Map<KeyField,RemoteClass> mapFields = new HashMap<KeyField, RemoteClass>();
+    Map<KeyField, ValueClass> mapFields = new HashMap<KeyField, ValueClass>();
 
-    public ImplementTable(String iName,RemoteClass... classes) {
+    public ImplementTable(String iName, ValueClass... implementClasses) {
         super(iName);
 
-        for(int fieldNum=0;fieldNum<classes.length;fieldNum++) {
-            KeyField field = new KeyField("key"+fieldNum, Type.object);
+        for(int fieldNum=0;fieldNum<implementClasses.length;fieldNum++) {
+            KeyField field = new KeyField("key"+fieldNum,implementClasses[fieldNum].getType());
             keys.add(field);
-            mapFields.put(field,classes[fieldNum]);
+            mapFields.put(field,implementClasses[fieldNum]);
         }
         childs = new HashSet<ImplementTable>();
         parents = new HashSet<ImplementTable>();
+
+        classes = classes.or(new ClassWhere<KeyField>(mapFields));
     }
 
     // кэшированный граф
@@ -34,21 +37,21 @@ public class ImplementTable extends Table {
     private final static int IS_PARENT = 1;
     private final static int IS_EQUAL = 2;
 
-    <T> boolean recCompare(int operation, Map<T,RemoteClass> toCompare,ListIterator<KeyField> iRec,Map<KeyField,T> mapTo) {
+    private <T> boolean recCompare(int operation, Map<T, ValueClass> toCompare,ListIterator<KeyField> iRec,Map<T,KeyField> mapTo) {
         if(!iRec.hasNext()) return true;
 
         KeyField proceedItem = iRec.next();
-        RemoteClass proceedClass = mapFields.get(proceedItem);
-        for(Map.Entry<T,RemoteClass> pairItem : toCompare.entrySet()) {
-            if(!mapTo.containsValue(pairItem.getKey()) &&
-               ((operation==IS_PARENT && proceedClass.isParent(pairItem.getValue()) ||
-               (operation==IS_CHILD && pairItem.getValue().isParent(proceedClass))) ||
+        ValueClass proceedClass = mapFields.get(proceedItem);
+        for(Map.Entry<T, ValueClass> pairItem : toCompare.entrySet()) {
+            if(!mapTo.containsKey(pairItem.getKey()) &&
+               ((operation==IS_PARENT && pairItem.getValue().isCompatibleParent(proceedClass)) ||
+               (operation==IS_CHILD && proceedClass.isCompatibleParent(pairItem.getValue())) ||
                (operation==IS_EQUAL && pairItem.getValue() == proceedClass))) {
                     // если parent - есть связь и нету ключа, гоним рекурсию дальше
-                    mapTo.put(proceedItem,pairItem.getKey());
+                    mapTo.put(pairItem.getKey(),proceedItem);
                     // если нашли карту выходим
                     if(recCompare(operation, toCompare,iRec, mapTo)) return true;
-                    mapTo.remove(proceedItem);
+                    mapTo.remove(pairItem.getKey());
             }
         }
 
@@ -61,19 +64,14 @@ public class ImplementTable extends Table {
     private final static int COMPARE_UP = 2;
     private final static int COMPARE_EQUAL = 3;
 
-    // 0 никак не связаны, 1 - параметр снизу в дереве, 2 - параметр сверху в дереве, 3 - равно
-    // также возвращает карту если 2
-    <T> int compare(Map<T,RemoteClass> toCompare,Map<KeyField,T> mapTo) {
-
-        // перебором и не будем страдать фигней
-        // сначала что не 1 проверим
+    // также возвращает карту если не Diff
+    <T> int compare(Map<T, ValueClass> toCompare,Map<T,KeyField> mapTo) {
 
         ListIterator<KeyField> iRec = (new ArrayList<KeyField>(mapFields.keySet())).listIterator();
         if(recCompare(IS_EQUAL,toCompare,iRec,mapTo)) return COMPARE_EQUAL;
         if(recCompare(IS_CHILD,toCompare,iRec,mapTo)) return COMPARE_UP;
         if(recCompare(IS_EQUAL,toCompare,iRec,mapTo)) return COMPARE_DOWN;
 
-        // !!!! должна заполнять MapTo только если уже нашла
         return COMPARE_DIFF;
     }
 
@@ -86,18 +84,14 @@ public class ImplementTable extends Table {
         while(i.hasNext()) {
             ImplementTable item = i.next();
             Integer relation = item.compare(includeItem.mapFields,new HashMap<KeyField,KeyField>());
-            if(relation==COMPARE_DOWN) {
-                // снизу в дереве
-                // добавляем ее как промежуточную
+            if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
                 item.childs.add(includeItem);
                 includeItem.parents.add(item);
                 if(toAdd) {
                     item.childs.remove(this);
                     i.remove();
                 }
-            } else {
-                // сверху в дереве или никак не связаны
-                // передаем дальше
+            } else { // сверху в дереве или никак не связаны, передаем дальше
                 if(relation!=COMPARE_EQUAL) item.includeIntoGraph(includeItem,relation==COMPARE_UP,checks);
                 if(relation==COMPARE_UP || relation==COMPARE_EQUAL) toAdd = false;
             }
@@ -110,8 +104,8 @@ public class ImplementTable extends Table {
         }
     }
 
-    public <T> MapKeysTable<T> getMapTable(Map<T,RemoteClass> findItem) {
-        Map<KeyField,T> mapCompare = new HashMap<KeyField, T>();
+    public <T> MapKeysTable<T> getMapTable(Map<T, ValueClass> findItem) {
+        Map<T,KeyField> mapCompare = new HashMap<T,KeyField>();
         int relation = compare(findItem,mapCompare);
         // если внизу или отличается то не туда явно зашли
         if(relation==COMPARE_DOWN || relation==COMPARE_DIFF) return null;

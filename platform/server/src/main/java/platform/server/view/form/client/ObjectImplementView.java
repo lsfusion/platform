@@ -1,16 +1,16 @@
 package platform.server.view.form.client;
 
-import platform.server.logics.classes.RemoteClass;
-import platform.server.view.form.ObjectImplement;
+import platform.server.data.types.Type;
+import platform.server.view.navigator.ObjectNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ObjectImplementView extends CellView {
 
-    public ObjectImplement view;
+    public ObjectNavigator view;
 
-    public ObjectImplementView(ObjectImplement iView) {
+    public ObjectImplementView(ObjectNavigator iView) {
         view = iView;
     }
 
@@ -23,8 +23,8 @@ public class ObjectImplementView extends CellView {
         classView.serialize(outStream);
     }
 
-    RemoteClass getBaseClass() {
-        return view.baseClass;
+    Type getType() {
+        return view.baseClass.getType();
     }
 
     int getID() {

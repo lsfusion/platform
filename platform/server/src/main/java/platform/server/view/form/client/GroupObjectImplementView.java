@@ -1,19 +1,19 @@
 package platform.server.view.form.client;
 
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
+import platform.server.view.navigator.GroupObjectNavigator;
+import platform.server.view.navigator.ObjectNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class GroupObjectImplementView extends ArrayList<ObjectImplementView> implements ClientSerialize {
-    public GroupObjectImplement view;
+    public GroupObjectNavigator view;
 
-    public GroupObjectImplementView(GroupObjectImplement iView) {
+    public GroupObjectImplementView(GroupObjectNavigator iView) {
         view = iView;
 
-        for(ObjectImplement object : view)
+        for(ObjectNavigator object : view)
             add(new ObjectImplementView(object));
         
         singleViewType = view.singleViewType;

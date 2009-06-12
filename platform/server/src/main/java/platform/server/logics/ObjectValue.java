@@ -1,20 +1,21 @@
 package platform.server.logics;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteClass;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.sql.SQLSyntax;
 
-public class ObjectValue {
-    public Integer object;
-    public RemoteClass objectClass;
+public abstract class ObjectValue {
 
-    public boolean equals(Object o) {
-        return this==o || o instanceof ObjectValue && object.equals(((ObjectValue) o).object);
+    public abstract String getString(SQLSyntax syntax);
+
+    public abstract boolean isString(SQLSyntax syntax);
+
+    public abstract SourceExpr getExpr();
+
+    public static ObjectValue getValue(Object value, ConcreteClass objectClass) {
+        if(value==null)
+            return new NullValue();
+        else
+            return new DataObject(value, objectClass);
     }
-
-    public int hashCode() {
-        return object.hashCode();
-    }
-
-    public ObjectValue(Integer iObject, RemoteClass iClass) {
-        object =iObject;
-        objectClass =iClass;}
 }

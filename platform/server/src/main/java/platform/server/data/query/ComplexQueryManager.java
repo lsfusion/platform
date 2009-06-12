@@ -7,7 +7,7 @@ import platform.interop.exceptions.ComplexQueryException;
 
 @Aspect
 public class ComplexQueryManager {
-
+/*
     public interface Counter {
         void start();
         void add();
@@ -42,5 +42,5 @@ public class ComplexQueryManager {
     public void callBeforeTranslate(Counter query) {
         query.add();
     }
-
+  */
 }

@@ -2,16 +2,15 @@ package platform.server.view.form;
 
 import platform.interop.Compare;
 import platform.server.data.query.JoinQuery;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.session.DataSession;
+import platform.server.logics.properties.*;
+import platform.server.session.TableChanges;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 public class Filter<P extends PropertyInterface> {
@@ -33,10 +32,10 @@ public class Filter<P extends PropertyInterface> {
         value = iValue;
     }
 
-    public Filter(DataInputStream inStream, RemoteForm form) throws IOException {
+    public Filter(DataInputStream inStream, RemoteForm form) throws IOException, SQLException {
         property = form.getPropertyView(inStream.readInt()).view;
         compare = inStream.readInt();
-        value = ValueLink.deserialize(inStream, form);
+        value = ValueLink.deserialize(inStream, form, property.property.getType());
     }
 
 
@@ -48,24 +47,25 @@ public class Filter<P extends PropertyInterface> {
         return ChangedProps.contains(property.property);
     }
 
-    boolean isInInterface(GroupObjectImplement ClassGroup) {
-        ClassSet ValueClass = value.getValueClass(ClassGroup);
-        if(ValueClass==null)
-            return property.isInInterface(ClassGroup);
+    boolean isInInterface(GroupObjectImplement classGroup) {
+        return true; // пока будем считать что нету в интерфейсе и включать тоже не будем
+        /* ClassSet valueClass = value.getValueClass(classGroup);
+        if(valueClass==null)
+            return property.isInInterface(classGroup);
         else
-            return property.getValueClass(ClassGroup).intersect(ValueClass);
+            return property.getValueClass(classGroup).intersect(valueClass); */
     }
 
     boolean classUpdated(GroupObjectImplement ClassGroup) {
-        return property.classUpdated(ClassGroup) || value.ClassUpdated(ClassGroup);
+        return property.classUpdated(ClassGroup) || value.classUpdated(ClassGroup);
     }
 
     boolean objectUpdated(GroupObjectImplement ClassGroup) {
-        return property.objectUpdated(ClassGroup) || value.ObjectUpdated(ClassGroup);
+        return property.objectUpdated(ClassGroup) || value.objectUpdated(ClassGroup);
     }
 
-    void fillSelect(JoinQuery<ObjectImplement, ?> Query, Set<GroupObjectImplement> ClassGroup, DataSession Session) {
-        Query.and(new CompareWhere(property.getSourceExpr(ClassGroup,Query.mapKeys,Session), value.getValueExpr(ClassGroup,Query.mapKeys,Session, property.property.getType()), compare));
+    void fillSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException {
+        query.and(property.getSourceExpr(classGroup, query.mapKeys, session, defaultProps, noUpdateProps).compare(value.getValueExpr(classGroup, query.mapKeys, session, property.property.getType(), defaultProps, noUpdateProps), compare));
     }
 
     public Collection<? extends Property> getProperties() {

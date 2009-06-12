@@ -12,15 +12,20 @@ import java.text.NumberFormat;
 
 public class ClientObjectClass extends ClientClass {
 
-    public int getPreferredWidth() { return 45; }
-    public int getMaximumWidth() { return getPreferredWidth(); }
+    public final static ClientObjectType type = new ClientObjectType();
 
-    public Format getDefaultFormat() {
-        return NumberFormat.getInstance();
+    public ClientType getType() {
+        return type;
     }
 
+    public int ID;
+    private String caption;
+    public String toString() { return caption; }
+    
     public ClientObjectClass(DataInputStream inStream) throws IOException {
         super(inStream);
+        caption = inStream.readUTF();
+        ID = inStream.readInt();
         hasChilds = inStream.readBoolean();
     }
 
@@ -29,13 +34,7 @@ public class ClientObjectClass extends ClientClass {
         return hasChilds;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form, property, this, value);
     }
-
-    public Class getJavaClass() {
-        return Integer.class;
-    }
-
 }

@@ -1,12 +1,11 @@
 package platform.server.logics.properties;
 
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.logics.data.TableFactory;
+import platform.server.data.types.Type;
 import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 
 public class CompareFormulaProperty extends WhereFormulaProperty {
 
@@ -14,8 +13,8 @@ public class CompareFormulaProperty extends WhereFormulaProperty {
     public FormulaPropertyInterface operator1;
     public FormulaPropertyInterface operator2;
 
-    public CompareFormulaProperty(String sID, TableFactory iTableFactory, int iCompare) {
-        super(sID,2,iTableFactory);
+    public CompareFormulaProperty(String sID, int iCompare) {
+        super(sID,2);
         compare = iCompare;
 
         Iterator<FormulaPropertyInterface> i = interfaces.iterator();
@@ -23,7 +22,7 @@ public class CompareFormulaProperty extends WhereFormulaProperty {
         operator2 = i.next();
     }
 
-    Where getWhere(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement) {
-        return new CompareWhere(joinImplement.get(operator1), joinImplement.get(operator2), compare);
+    Where getWhere(Map<FormulaPropertyInterface,? extends SourceExpr> joinImplement) {
+        return joinImplement.get(operator1).compare(joinImplement.get(operator2), compare);
     }
 }

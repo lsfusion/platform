@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import platform.client.logics.ClientCellView;
 import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
 import platform.client.form.ClientDialog;
@@ -16,7 +17,7 @@ public class ObjectPropertyEditor implements PropertyEditorComponent {
 
     private ClientDialog clientDialog;
 
-    public ObjectPropertyEditor(ClientForm iclientForm, ClientCellView iproperty, ClientClass cls, Object value) throws IOException, ClassNotFoundException {
+    public ObjectPropertyEditor(ClientForm iclientForm, ClientCellView iproperty, ClientObjectClass cls, Object value) throws IOException, ClassNotFoundException {
 
         clientForm = iclientForm;
 

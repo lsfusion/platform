@@ -2,10 +2,11 @@ package platform.server.data;
 
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
+import platform.server.data.types.TypeSerializer;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.DataInputStream;
 
 public abstract class Field {
     public String name;
@@ -13,7 +14,12 @@ public abstract class Field {
 
     Field(String iName,Type iType) {
         name = iName;
-        type = iType;}
+        type = iType;
+
+        if(type==null)
+            iType = iType;
+        assert type!=null;
+    }
 
     public String getDeclare(SQLSyntax syntax) {
         return name + " " + type.getDB(syntax);
@@ -26,12 +32,12 @@ public abstract class Field {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getType());
         outStream.writeUTF(name);
-        type.serialize(outStream);
+        TypeSerializer.serialize(outStream,type);
     }
 
     protected Field(DataInputStream inStream) throws IOException {
         name = inStream.readUTF();
-        type = Type.deserialize(inStream);
+        type = TypeSerializer.deserialize(inStream);
     }
 
     public static Field deserialize(DataInputStream inStream) throws IOException {
@@ -43,4 +49,14 @@ public abstract class Field {
     }
 
     abstract byte getType();
+
+    @Override
+    public boolean equals(Object obj) {
+        return this==obj || obj instanceof Field && name.equals(((Field)obj).name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

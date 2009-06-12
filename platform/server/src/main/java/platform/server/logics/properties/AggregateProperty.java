@@ -1,31 +1,31 @@
 package platform.server.logics.properties;
 
 import platform.base.BaseUtils;
+import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.ModifyQuery;
 import platform.server.data.PropertyField;
+import platform.server.data.classes.ValueClass;
+import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.logics.ObjectValue;
-import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.classes.sets.ClassSet;
-import platform.server.logics.classes.sets.InterfaceClassSet;
-import platform.server.logics.data.TableFactory;
-import platform.server.session.ChangeValue;
+import platform.server.data.types.Type;
 import platform.server.session.DataSession;
+import platform.server.session.SQLSession;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    protected AggregateProperty(String iSID,Collection<T> iInterfaces, TableFactory iTableFactory) {
-        super(iSID,iInterfaces,iTableFactory);
+    protected AggregateProperty(String iSID,Collection<T> iInterfaces) {
+        super(iSID,iInterfaces);
     }
 
-    // расчитывает выражение
-    abstract SourceExpr calculateSourceExpr(Map<T,? extends SourceExpr> joinImplement, InterfaceClassSet<T> joinClasses);
+    public ValueClass getValueClass() {
+        return getQuery("value").getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
+    }
 
     Object dropZero(Object Value) {
         if(Value instanceof Integer && Value.equals(0)) return null;
@@ -36,16 +36,16 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     }
 
     // проверяет аггрегацию для отладки
-    public boolean checkAggregation(DataSession Session,String Caption) throws SQLException {
-        JoinQuery<T, String> AggrSelect;
-        AggrSelect = getOutSelect("value");
+    public boolean checkAggregation(SQLSession session,String caption) throws SQLException {
+        JoinQuery<T, String> aggrSelect;
+        aggrSelect = getQuery("value");
 /*        if(caption.equals("Дата 8") || caption.equals("Склад")) {
             System.out.println("AGGR - "+caption);
             AggrSelect.outSelect(Session);
         }*/
-        LinkedHashMap<Map<T, Integer>, Map<String, Object>> AggrResult = AggrSelect.executeSelect(Session);
-        tableFactory.reCalculateAggr = true;
-        AggrSelect = getOutSelect("value");
+        LinkedHashMap<Map<T, Object>, Map<String, Object>> aggrResult = aggrSelect.executeSelect(session);
+        DataSession.reCalculateAggr = true;
+        aggrSelect = getQuery("value");
 /*        if(caption.equals("Дата 8") || caption.equals("Склад")) {
             System.out.println("RECALCULATE - "+caption);
             AggrSelect.outSelect(Session);
@@ -55,35 +55,35 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 //            AggrSelect.outSelect(Session);
 //        }
 
-        LinkedHashMap<Map<T, Integer>, Map<String, Object>> CalcResult = AggrSelect.executeSelect(Session);
-        tableFactory.reCalculateAggr = false;
+        LinkedHashMap<Map<T, Object>, Map<String, Object>> calcResult = aggrSelect.executeSelect(session);
+        DataSession.reCalculateAggr = false;
 
-        Iterator<Map.Entry<Map<T,Integer>,Map<String,Object>>> i = AggrResult.entrySet().iterator();
+        Iterator<Map.Entry<Map<T,Object>,Map<String,Object>>> i = aggrResult.entrySet().iterator();
         while(i.hasNext()) {
-            Map.Entry<Map<T,Integer>,Map<String,Object>> Row = i.next();
-            Map<T, Integer> RowKey = Row.getKey();
-            Object RowValue = dropZero(Row.getValue().get("value"));
-            Map<String,Object> CalcRow = CalcResult.get(RowKey);
-            Object CalcValue = (CalcRow==null?null:dropZero(CalcRow.get("value")));
-            if(RowValue==CalcValue || (RowValue!=null && RowValue.equals(CalcValue))) {
+            Map.Entry<Map<T,Object>,Map<String,Object>> row = i.next();
+            Map<T, Object> rowKey = row.getKey();
+            Object rowValue = dropZero(row.getValue().get("value"));
+            Map<String,Object> calcRow = calcResult.get(rowKey);
+            Object calcValue = (calcRow==null?null:dropZero(calcRow.get("value")));
+            if(rowValue==calcValue || (rowValue!=null && rowValue.equals(calcValue))) {
                 i.remove();
-                CalcResult.remove(RowKey);
+                calcResult.remove(rowKey);
             }
         }
         // вычистим и отсюда 0
-        i = CalcResult.entrySet().iterator();
+        i = calcResult.entrySet().iterator();
         while(i.hasNext()) {
             if(dropZero(i.next().getValue().get("value"))==null)
                 i.remove();
         }
 
-        if(CalcResult.size()>0 || AggrResult.size()>0) {
-            System.out.println("----CheckAggregations "+Caption+"-----");
+        if(calcResult.size()>0 || aggrResult.size()>0) {
+            System.out.println("----CheckAggregations "+caption+"-----");
             System.out.println("----Aggr-----");
-            for(Map.Entry<Map<T,Integer>,Map<String,Object>> Row : AggrResult.entrySet())
-                System.out.println(Row);
+            for(Map.Entry<Map<T,Object>,Map<String,Object>> row : aggrResult.entrySet())
+                System.out.println(row);
             System.out.println("----Calc-----");
-            for(Map.Entry<Map<T,Integer>,Map<String,Object>> Row : CalcResult.entrySet())
+            for(Map.Entry<Map<T,Object>,Map<String,Object>> Row : calcResult.entrySet())
                 System.out.println(Row);
 //
 //            ((GroupProperty)this).outIncrementState(Session);
@@ -93,43 +93,38 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return true;
     }
 
-    public void recalculateAggregation(DataSession session) throws SQLException {
+    public void recalculateAggregation(SQLSession session) throws SQLException {
         PropertyField writeField = field;
         field = null;
 
-        JoinQuery<KeyField, PropertyField> writeQuery = new JoinQuery<KeyField, PropertyField>(mapTable.table.keys);
-        SourceExpr recalculateExpr = getSourceExpr(BaseUtils.join(BaseUtils.reverse(mapTable.mapKeys), writeQuery.mapKeys), getClassSet(ClassSet.universal));
+        JoinQuery<KeyField, PropertyField> writeQuery = new JoinQuery<KeyField, PropertyField>(mapTable.table);
+        SourceExpr recalculateExpr = getSourceExpr(BaseUtils.join(mapTable.mapKeys, writeQuery.mapKeys));
         writeQuery.properties.put(writeField, recalculateExpr);
-        writeQuery.and(new Join<KeyField, PropertyField>(mapTable.table, writeQuery).inJoin.or(recalculateExpr.getWhere()));
+        writeQuery.and(mapTable.table.joinAnd(writeQuery.mapKeys).getWhere().or(recalculateExpr.getWhere()));
+
         session.modifyRecords(new ModifyQuery(mapTable.table,writeQuery));
 
         field = writeField;
     }
 
-    List<PropertyMapImplement<PropertyInterface, T>> getImplements(Map<T, ObjectValue> keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        return new ArrayList<PropertyMapImplement<PropertyInterface, T>>();
-    }
-
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
 
-    PropertyMapImplement<?,T> getChangeImplement(Map<T, ObjectValue> Keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        List<PropertyMapImplement<PropertyInterface, T>> Implements = getImplements(Keys, securityPolicy);
-        for(int i=Implements.size()-1;i>=0;i--)
-            if(Implements.get(i).mapGetChangeProperty(null, Keys, 0, securityPolicy)!=null && (securityPolicy == null || securityPolicy.checkPermission(Implements.get(i).property)))
-                return Implements.get(i);
-        return null;
+    public Type getType() {
+        SourceExpr calculateExpr = calculateSourceExpr(getMapKeys());
+        return calculateExpr.getType(calculateExpr.getWhere());
     }
 
-    public ChangeValue getChangeProperty(DataSession Session, Map<T, ObjectValue> Keys, int Coeff, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        PropertyMapImplement<?,T> Implement = getChangeImplement(Keys, securityPolicy);
-        if(Implement==null) return null;
-        return Implement.mapGetChangeProperty(Session,Keys,getCoeff(Implement)*Coeff, securityPolicy);
+    protected Map<T, ValueClass> getMapClasses() {
+        JoinQuery<T, String> query = new JoinQuery<T, String>(this);
+        query.and(calculateSourceExpr(query.mapKeys).getWhere());
+        return query.<T>getClassWhere(new ArrayList<String>()).getCommonParent(interfaces);
     }
 
-    public void changeProperty(Map<T, ObjectValue> Keys, Object NewValue, boolean externalID, DataSession Session, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        PropertyMapImplement<?,T> operand = getChangeImplement(Keys, securityPolicy);
-        if (operand != null)
-            operand.mapChangeProperty(Keys, NewValue, externalID, Session, securityPolicy);
+    protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
+        JoinQuery<KeyField, Field> query = new JoinQuery<KeyField,Field>(mapTable.table);
+        SourceExpr expr = calculateSourceExpr(BaseUtils.join(mapTable.mapKeys, query.mapKeys));
+        query.properties.put(storedField,expr);
+        query.and(expr.getWhere());
+        return query.getClassWhere(Collections.singleton(storedField));
     }
-
 }

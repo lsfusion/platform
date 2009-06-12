@@ -1,7 +1,7 @@
 package platform.server.auth;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteCustomClass;
 
-public class AddClassSecurityPolicy extends AbstractSecurityPolicy<RemoteClass> {
+public class AddClassSecurityPolicy extends AbstractSecurityPolicy<ConcreteCustomClass> {
 
 }

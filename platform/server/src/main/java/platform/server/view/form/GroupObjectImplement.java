@@ -1,27 +1,37 @@
 package platform.server.view.form;
 
 import platform.interop.form.RemoteFormInterface;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.query.ChangeQuery;
-import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
-import platform.server.logics.classes.IntegralClass;
-import platform.server.logics.data.TableFactory;
+import platform.server.data.query.MapKeysInterface;
+import platform.server.data.query.exprs.KeyExpr;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.DefaultData;
+import platform.server.logics.properties.Property;
+import platform.server.session.TableChanges;
 import platform.server.session.DataSession;
 
+import java.sql.SQLException;
 import java.util.*;
 
-public class GroupObjectImplement extends ArrayList<ObjectImplement> {
+public class GroupObjectImplement extends ArrayList<ObjectImplement> implements MapKeysInterface<ObjectImplement> {
 
     // глобальный идентификатор чтобы писать во ViewTable
     public final int ID;
-    public GroupObjectImplement(int iID) {
+    public GroupObjectImplement(int iID,int iOrder,int iPageSize,boolean iGridClassView,boolean iSingleViewType) {
 
-        if (iID >= RemoteFormInterface.GID_SHIFT)
-            throw new RuntimeException("sID must be less than " + RemoteFormInterface.GID_SHIFT);
+        assert (iID < RemoteFormInterface.GID_SHIFT);
 
         ID = iID;
+        order = iOrder;
+        pageSize = iPageSize;
+        gridClassView = iGridClassView;
+        singleViewType = iSingleViewType;
+    }
+
+    public Map<ObjectImplement, KeyExpr> getMapKeys() {
+        return ObjectImplement.getMapKeys(this);
     }
 
     public void addObject(ObjectImplement object) {
@@ -46,9 +56,9 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
     LinkedHashMap<PropertyObjectImplement,Boolean> orders = new LinkedHashMap<PropertyObjectImplement, Boolean>();
 
     boolean upKeys, downKeys;
-    List<GroupObjectValue> keys = null;
+    List<Map<ObjectImplement,DataObject>> keys = null;
     // какие ключи активны
-    Map<GroupObjectValue,Map<PropertyObjectImplement,Object>> keyOrders = null;
+    Map<Map<ObjectImplement,DataObject>,Map<PropertyObjectImplement,ObjectValue>> keyOrders = null;
 
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
 
@@ -59,60 +69,49 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> {
 
     public int updated = UPDATED_GRIDCLASS | UPDATED_CLASSVIEW;
 
-    public int
-            pageSize = 50;
+    public int pageSize = 50;
 
-    GroupObjectValue getObjectValue() {
-        GroupObjectValue Result = new GroupObjectValue();
-        for(ObjectImplement Object : this)
-            Result.put(Object,Object.idObject);
+    Map<ObjectImplement,DataObject> getGroupObjectValue() {
+        Map<ObjectImplement,DataObject> result = new HashMap<ObjectImplement, DataObject>();
+        for(ObjectImplement object : this) {
+            DataObject objectValue = object.getValue();
+            if(objectValue!=null)
+                result.put(object,object.getValue());
+        }
 
-        return Result;
+        return result;
+    }
+
+    public Map<ObjectImplement,DataObject> findGroupObjectValue(Map<ObjectImplement,Object> map) {
+        for(Map<ObjectImplement,DataObject> keyRow : keys) {
+            boolean equal = true;
+            for(Map.Entry<ObjectImplement,DataObject> keyEntry : keyRow.entrySet())
+                if(!keyEntry.getValue().object.equals(map.get(keyEntry.getKey()))) {
+                    equal = false;
+                    break;
+                }
+            if(equal)
+                return keyRow;
+        }
+
+        throw new RuntimeException("key not found");
     }
 
     // получает Set группы
     public Set<GroupObjectImplement> getClassGroup() {
 
-        Set<GroupObjectImplement> Result = new HashSet<GroupObjectImplement>();
-        Result.add(this);
-        return Result;
+        Set<GroupObjectImplement> result = new HashSet<GroupObjectImplement>();
+        result.add(this);
+        return result;
     }
 
-    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableFactory tableFactory, DataSession session) {
+    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException {
 
-        // фильтры первыми потому как ограничивают ключи
-        for(Filter filt : filters) filt.fillSelect(query, classGroup, session);
+        for(Filter filt : filters) 
+            filt.fillSelect(query, classGroup, session, defaultProps, noUpdateProps);
 
         // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
-        for(ObjectImplement object : this) {
-
-            if (object.baseClass instanceof IntegralClass) continue;
-
-            // не было в фильтре
-            // если есть remove'классы или новые объекты их надо докинуть
-            JoinQuery<KeyField, PropertyField> objectQuery = tableFactory.objectTable.getClassJoin(object.gridClass);
-            if(session !=null && session.changes.addClasses.contains(object.gridClass)) {
-                // придется UnionQuery делать, ObjectTable'а Key и AddClass Object'а
-                ChangeQuery<KeyField,PropertyField> resultQuery = new ChangeQuery<KeyField, PropertyField>(objectQuery.keys);
-
-                resultQuery.add(objectQuery);
-
-                // придется создавать запрос чтобы ключи перекодировать
-                JoinQuery<KeyField, PropertyField> addQuery = new JoinQuery<KeyField, PropertyField>(objectQuery.keys);
-                Join<KeyField,PropertyField> addJoin = new Join<KeyField, PropertyField>(tableFactory.addClassTable.getClassJoin(session, object.gridClass));
-                addJoin.joins.put(tableFactory.addClassTable.object,addQuery.mapKeys.get(tableFactory.objectTable.key));
-                addQuery.and(addJoin.inJoin);
-                resultQuery.add(addQuery);
-
-                objectQuery = resultQuery;
-            }
-
-            Join<KeyField, PropertyField> ObjectJoin = new Join<KeyField, PropertyField>(objectQuery);
-            ObjectJoin.joins.put(tableFactory.objectTable.key, query.mapKeys.get(object));
-            query.and(ObjectJoin.inJoin);
-
-            if(session !=null && session.changes.removeClasses.contains(object.gridClass))
-                tableFactory.removeClassTable.excludeJoin(query, session, object.gridClass, query.mapKeys.get(object));
-        }
+        for(ObjectImplement object : this)
+            query.and(DataSession.getIsClassWhere(session,query.mapKeys.get(object),object.getGridClass(),null));
     }
 }

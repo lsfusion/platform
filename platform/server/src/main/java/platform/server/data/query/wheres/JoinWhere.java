@@ -1,35 +1,40 @@
 package platform.server.data.query.wheres;
 
+import platform.server.data.classes.BitClass;
+import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.*;
-import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.translators.Translator;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class JoinWhere extends DataWhere implements JoinData {
-    Join<?,?> from;
+public class JoinWhere<J,U> extends DataWhere implements JoinData {
+    DataJoin<J,U> from;
 
-    public JoinWhere(Join iFrom) {
-        from =iFrom;
+    ClassExprWhere joinClassWhere;
+
+    public JoinWhere(DataJoin<J,U> iFrom,ClassExprWhere iJoinClassWhere) {
+        from = iFrom;
+        joinClassWhere = iJoinClassWhere;
     }
 
-    public <J extends Join> void fillJoins(List<J> joins, Set<ValueExpr> values) {
-        from.fillJoins(joins, values);
+    public int fillContext(Context context, boolean compile) {
+        return context.add(from,compile);
     }
 
     public Join getJoin() {
         return from;
     }
 
-    public JoinWheres getInnerJoins() {
-        return new JoinWheres(this, Where.TRUE);
+    public InnerJoins getInnerJoins() {
+        return new InnerJoins(this,this);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -51,12 +56,13 @@ public class JoinWhere extends DataWhere implements JoinData {
     protected DataWhereSet getExprFollows() {
         DataWhereSet follows = new DataWhereSet();
         for(SourceExpr expr : from.joins.values())
-            follows.addAll(((AndExpr)expr).getFollows());
+            if(expr instanceof AndExpr)
+                follows.addAll(((AndExpr)expr).getFollows());
         return follows;
     }
 
     public SourceExpr getFJExpr() {
-        return new CaseExpr(this, Type.bit.getExpr(true));
+        return new CaseExpr(this, new ValueExpr(true, BitClass.instance));
     }
 
     public String getFJString(String exprFJ) {
@@ -68,11 +74,15 @@ public class JoinWhere extends DataWhere implements JoinData {
     }
 
     // для кэша
-    public boolean equals(Where where, Map<ValueExpr, ValueExpr> mapValues, Map<KeyExpr, KeyExpr> mapKeys, MapJoinEquals mapJoins) {
-        return where instanceof JoinWhere && mapJoins.equals(this, (JoinWhere) where);
+    public boolean equals(Where where, MapContext mapContext) {
+        return where instanceof JoinWhere && mapContext.equals(this, (JoinWhere) where);
     }
 
     protected int getHash() {
         return from.hash();
+    }
+
+    public ClassExprWhere calculateClassWhere() {
+        return joinClassWhere;
     }
 }

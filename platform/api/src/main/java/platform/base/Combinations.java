@@ -10,10 +10,10 @@ public class Combinations<T,V> implements Iterable<Map<T,V>> {
 
     List<T> from = new ArrayList<T>();
     List<List<V>> to = new ArrayList<List<V>>();
-    public Combinations(Map<T, Collection<V>> map) {
-        for(Map.Entry<T,Collection<V>> entry : map.entrySet()) {
+    public Combinations(Map<T, List<V>> map) {
+        for(Map.Entry<T,List<V>> entry : map.entrySet()) {
             from.add(entry.getKey());
-            to.add(new ArrayList<V>(entry.getValue()));
+            to.add(entry.getValue());
         }
     }
 

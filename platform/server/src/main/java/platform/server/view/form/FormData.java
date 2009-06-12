@@ -2,18 +2,18 @@ package platform.server.view.form;
 
 import platform.base.BaseUtils;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 // считанные данные (должен быть интерфейс Serialize)
 public class FormData {
 
     private List<FormRow> rows = new ArrayList<FormRow>();
-    public void add(Map<ObjectImplement,Integer> keys,Map<PropertyView,Object> properties) {
+    public void add(Map<ObjectImplement,Object> keys,Map<PropertyView,Object> properties) {
         rows.add(new FormRow(keys,properties));
     }
 
@@ -27,7 +27,7 @@ public class FormData {
         Set<ObjectImplement> objects = firstRow.keys.keySet();
         outStream.writeInt(objects.size());
         for(ObjectImplement object : objects) {
-            outStream.writeUTF(object.getSID());
+            outStream.writeUTF(object.sID);
             outStream.writeInt(object.ID);
         }
 
@@ -45,18 +45,18 @@ public class FormData {
 }
 
 class FormRow {
-    Map<ObjectImplement,Integer> keys;
+    Map<ObjectImplement,Object> keys;
     Map<PropertyView,Object> values;
 
-    FormRow(Map<ObjectImplement, Integer> iKeys, Map<PropertyView, Object> iProperties) {
+    FormRow(Map<ObjectImplement, Object> iKeys, Map<PropertyView, Object> iProperties) {
         keys = iKeys;
         values = iProperties;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        for(Map.Entry<ObjectImplement,Integer> key : keys.entrySet()) {
+        for(Map.Entry<ObjectImplement,Object> key : keys.entrySet()) {
             outStream.writeInt(key.getKey().ID);
-            outStream.writeInt(key.getValue());
+            BaseUtils.serializeObject(outStream,key.getValue());
         }
         for(Map.Entry<PropertyView,Object> property : values.entrySet()) {
             outStream.writeInt(property.getKey().ID);

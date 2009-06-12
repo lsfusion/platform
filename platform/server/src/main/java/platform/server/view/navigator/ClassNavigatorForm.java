@@ -1,21 +1,18 @@
 package platform.server.view.navigator;
 
+import platform.server.data.classes.CustomClass;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
 
 public class ClassNavigatorForm extends NavigatorForm {
 
-    public ClassNavigatorForm(BusinessLogics BL, RemoteClass cls) {
-        super(cls.ID + 2134232, cls.caption);
+    public ClassNavigatorForm(BusinessLogics BL, CustomClass cls) {
+        super(cls.ID + 43132, cls.caption);
 
-        ObjectImplement object = new ObjectImplement(IDShift(1),cls);
-        object.caption = cls.caption;
+        ObjectNavigator object = new ObjectNavigator(IDShift(1),cls,cls.caption);
 
-        GroupObjectImplement groupObject = new GroupObjectImplement(IDShift(1));
+        GroupObjectNavigator groupObject = new GroupObjectNavigator(IDShift(1));
+        groupObject.add(object);
 
-        groupObject.addObject(object);
         addGroup(groupObject);
 
         addPropertyView(BL.properties, BL.baseGroup, true, object);

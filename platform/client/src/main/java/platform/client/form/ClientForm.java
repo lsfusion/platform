@@ -97,7 +97,7 @@ public class ClientForm extends JPanel {
 
     private FormLayout formLayout;
 
-    private Map<ClientGroupObjectImplementView, GroupObjectModel> models;
+    public Map<ClientGroupObjectImplementView, GroupObjectModel> models;
 
     private JButton buttonPrint;
     private JButton buttonRefresh;
@@ -449,7 +449,7 @@ public class ClientForm extends JPanel {
 
     }
 
-    void addObject(ClientObjectImplementView object, ClientClass cls) throws IOException {
+    void addObject(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
         
         remoteForm.addObject(object.ID, cls.ID);
         dataChanged();
@@ -457,7 +457,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    void changeClass(ClientObjectImplementView object, ClientClass cls) throws IOException {
+    void changeClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
 
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(object.groupObject), true);
 
@@ -467,7 +467,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    void changeGridClass(ClientObjectImplementView object, ClientClass cls) throws IOException {
+    void changeGridClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
 
         remoteForm.changeGridClass(object.ID, cls.ID);
         applyFormChanges();
@@ -598,13 +598,13 @@ public class ClientForm extends JPanel {
 
     }
 
-    class GroupObjectModel {
+    public class GroupObjectModel {
 
         final ClientGroupObjectImplementView groupObject;
 
         final PanelModel panel;
         final GridModel grid;
-        final Map<ClientObjectImplementView, ObjectModel> objects = new HashMap();
+        public final Map<ClientObjectImplementView, ObjectModel> objects = new HashMap();
 
         ClientGroupObjectValue currentObject;
 
@@ -883,7 +883,7 @@ public class ClientForm extends JPanel {
                     if (comp == null && currentComp.valueChanged()) {
 
                         Object newValue = getCellEditorValue();
-                        if (!BaseUtils.compareObjects(ivalue, newValue))
+                        if (!BaseUtils.nullEquals(ivalue, newValue))
                             table.setValueAt(newValue, row, column);
                     }
                 }
@@ -1024,7 +1024,7 @@ public class ClientForm extends JPanel {
 
                         public void setValueAt(Object value, int row, int col) {
 //                            System.out.println("setValueAt");
-                            if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
+                            if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
                             cellValueChanged(value);
                         }
 
@@ -2255,7 +2255,7 @@ public class ClientForm extends JPanel {
                     public void setValueAt(Object value, int row, int col) {
 
                         // частный случай - не работает если меняется не само это свойство, а какое-то связанное
-                        if (BaseUtils.compareObjects(value, getValueAt(row, col))) return;
+                        if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
 
                         boolean externalID = false;
                         TableCellEditor cellEditor = getCellEditor();
@@ -2310,7 +2310,7 @@ public class ClientForm extends JPanel {
             
         }
 
-        class ObjectModel {
+        public class ObjectModel {
 
             final ClientObjectImplementView object;
 
@@ -2318,7 +2318,7 @@ public class ClientForm extends JPanel {
             JButton buttonChangeClass;
             JButton buttonDel;
 
-            ClassModel classModel;
+            public ClassModel classModel;
 
             public ObjectModel(ClientObjectImplementView iobject) throws IOException {
 
@@ -2400,7 +2400,7 @@ public class ClientForm extends JPanel {
 
             }
 
-            class ClassModel {
+            public class ClassModel {
 
                 final ClientClassView key;
 
@@ -2408,7 +2408,7 @@ public class ClientForm extends JPanel {
                 ClientClass rootClass;
 
                 DefaultMutableTreeNode currentNode;
-                ClientClass currentClass;
+                public ClientClass currentClass;
 
                 JScrollPane pane;
                 ClassTree view;
@@ -2444,23 +2444,23 @@ public class ClientForm extends JPanel {
                     return (DefaultMutableTreeNode) path.getLastPathComponent();
                 }
 
-                public ClientClass getDerivedClass() {
+                public ClientObjectClass getDerivedClass() {
 
                     DefaultMutableTreeNode selNode = getSelectedNode();
-                    if (selNode == null || !currentNode.isNodeChild(selNode)) return currentClass;
+                    if (selNode == null || !currentNode.isNodeChild(selNode)) return (ClientObjectClass) currentClass;
 
-                    return (ClientClass) selNode.getUserObject();
+                    return (ClientObjectClass) selNode.getUserObject();
                 }
 
-                public ClientClass getSelectedClass() {
+                public ClientObjectClass getSelectedClass() {
 
                     DefaultMutableTreeNode selNode = getSelectedNode();
-                    if (selNode == null) return currentClass;
+                    if (selNode == null) return (ClientObjectClass) currentClass;
 
-                    return (ClientClass) selNode.getUserObject();
+                    return (ClientObjectClass) selNode.getUserObject();
                 }
 
-                public void changeCurrentClass(ClientClass cls, DefaultMutableTreeNode clsNode) throws IOException {
+                public void changeCurrentClass(ClientObjectClass cls, DefaultMutableTreeNode clsNode) throws IOException {
 
                     if (cls == null) return;
 
@@ -2595,7 +2595,7 @@ public class ClientForm extends JPanel {
                         Object nodeObject = parent.getUserObject();
                         if (nodeObject == null || ! (nodeObject instanceof ClientClass) ) return;
 
-                        ClientClass parentClass = (ClientClass) nodeObject;
+                        ClientObjectClass parentClass = (ClientObjectClass) nodeObject;
 
                         List<ClientClass> classes = DeSerializer.deserializeListClientClass(
                                                                         remoteForm.getChildClassesByteArray(object.ID,parentClass.ID));
@@ -2622,14 +2622,14 @@ public class ClientForm extends JPanel {
                         return (DefaultMutableTreeNode) path.getLastPathComponent();
                     }
 
-                    public ClientClass getSelectedClass() {
+                    public ClientObjectClass getSelectedClass() {
 
                         DefaultMutableTreeNode node = getSelectedNode();
                         if (node == null) return null;
                         
                         Object nodeObject = node.getUserObject();
                         if (! (nodeObject instanceof ClientClass)) return null;
-                        return (ClientClass) nodeObject;
+                        return (ClientObjectClass) nodeObject;
                     }
 
                 }

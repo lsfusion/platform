@@ -1,11 +1,11 @@
 package platform.server.logics.properties;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ValueClass;
 
 public class DataPropertyInterface extends PropertyInterface<DataPropertyInterface> {
-    public RemoteClass interfaceClass;
+    public ValueClass interfaceClass;
 
-    public DataPropertyInterface(int iID, RemoteClass iClass) {
+    public DataPropertyInterface(int iID, ValueClass iClass) {
         super(iID);
         interfaceClass = iClass;
     }

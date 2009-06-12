@@ -1,6 +1,5 @@
 package platform.server.logics.properties.linear;
 
-import platform.server.logics.properties.JoinPropertyInterface;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.properties.UnionProperty;
 

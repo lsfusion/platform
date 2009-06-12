@@ -5,28 +5,29 @@
 
 package platform.server.view.form;
 
+import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.view.form.FormData;
+import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.query.Join;
+import platform.server.data.classes.ConcreteCustomClass;
+import platform.server.data.classes.CustomClass;
+import platform.server.data.classes.DataClass;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.auth.SecurityPolicy;
-import platform.server.logics.classes.IntegralClass;
-import platform.server.logics.classes.ObjectClass;
-import platform.server.logics.classes.RemoteClass;
 import platform.server.logics.data.IDTable;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.properties.*;
 import platform.server.session.*;
+import platform.server.view.navigator.*;
 import platform.server.where.Where;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -40,13 +41,11 @@ import java.util.Map.Entry;
 public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateView {
 
     // используется для записи в сессии изменений в базу - требуется глобально уникальный идентификатор
-    private final int GID;
-    public int getGID() { return GID; }
+    public final int GID;
 
-    private int getGroupObjectGID(GroupObjectImplement group) { return GID * RemoteFormInterface.GID_SHIFT + group.ID; }
+    public final int sessionID;
 
-    private final int ID;
-    public int getID() { return ID; }
+    public final int ID;
 
     T BL;
 
@@ -54,19 +53,158 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     SecurityPolicy securityPolicy;
 
-    protected RemoteForm(int iID, T iBL, DataSession iSession, SecurityPolicy isecurityPolicy) throws SQLException {
+    public Map<DataProperty, DefaultData> getDefaultProperties() {
+        return BL.defaultProps;
+    }
+
+    private class ObjectImplementMapper {
+
+        private Map<ObjectNavigator, ObjectImplement> mapper = new HashMap<ObjectNavigator, ObjectImplement>();
+
+        ObjectImplement doMapping(ObjectNavigator objKey,CustomClassView classView) {
+
+            ObjectImplement objValue;
+            if(objKey.baseClass instanceof DataClass)
+                objValue = new DataObjectImplement(objKey.ID,objKey.getSID(), (DataClass) objKey.baseClass,objKey.caption);
+            else
+                objValue = new CustomObjectImplement(objKey.ID,objKey.getSID(), (CustomClass) objKey.baseClass,objKey.caption, classView);
+
+            mapper.put(objKey, objValue);
+            return objValue;
+        }
+    }
+
+    private class GroupObjectImplementMapper {
+
+        private Map<GroupObjectNavigator, GroupObjectImplement> mapper = new HashMap<GroupObjectNavigator, GroupObjectImplement>();
+        ObjectImplementMapper objectMapper;
+
+        public GroupObjectImplementMapper(ObjectImplementMapper iobjectMapper) {
+            objectMapper = iobjectMapper;
+        }
+
+        GroupObjectImplement doMapping(GroupObjectNavigator groupKey,int order,CustomClassView classView) {
+
+            GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID,order,
+                    groupKey.pageSize,groupKey.gridClassView,groupKey.singleViewType);
+            for (ObjectNavigator object : groupKey)
+                groupValue.addObject(objectMapper.doMapping(object,classView));
+
+            mapper.put(groupKey, groupValue);
+            return groupValue;
+        }
+    }
+
+    private class PropertyObjectImplementMapper {
+
+        private Map<PropertyObjectNavigator, PropertyObjectImplement> mapper = new HashMap<PropertyObjectNavigator, PropertyObjectImplement>();
+        ObjectImplementMapper objectMapper;
+
+        PropertyObjectImplementMapper(ObjectImplementMapper iobjectMapper) {
+            objectMapper = iobjectMapper;
+        }
+
+        PropertyObjectImplement doMapping(PropertyObjectNavigator<?> propKey) {
+
+            if (mapper.containsKey(propKey)) return mapper.get(propKey);
+
+            PropertyObjectImplement propValue = new PropertyObjectImplement(propKey.property,BaseUtils.join(propKey.mapping,objectMapper.mapper));
+
+            mapper.put(propKey, propValue);
+            return propValue;
+        }
+    }
+
+    private class PropertyViewMapper {
+
+        PropertyObjectImplementMapper propertyMapper;
+        GroupObjectImplementMapper groupMapper;
+
+        PropertyViewMapper(PropertyObjectImplementMapper ipropertyMapper, GroupObjectImplementMapper igroupMapper) {
+            propertyMapper = ipropertyMapper;
+            groupMapper = igroupMapper;
+        }
+
+        PropertyView doMapping(PropertyViewNavigator<?> propKey) {
+
+            return new PropertyView(propKey.ID, propKey.getSID(), propertyMapper.doMapping(propKey.view), groupMapper.mapper.get(propKey.toDraw));
+        }
+    }
+
+    private class FilterMapper {
+
+        private ObjectImplementMapper objectMapper;
+        private PropertyObjectImplementMapper propertyMapper;
+
+        FilterMapper(ObjectImplementMapper iobjectMapper, PropertyObjectImplementMapper ipropertyMapper) {
+            objectMapper = iobjectMapper;
+            propertyMapper = ipropertyMapper;
+        }
+
+        Filter doMapping(FilterNavigator filterKey) throws SQLException {
+
+            PropertyObjectImplement mapProperty = propertyMapper.doMapping(filterKey.property);
+            
+            ValueLinkNavigator navigatorValue = filterKey.value;
+            ValueLink value = null;
+            if (navigatorValue instanceof UserLinkNavigator)
+                value = new UserValueLink(session.getObjectValue(((UserLinkNavigator)navigatorValue).value,mapProperty.property.getType()));
+            if (navigatorValue instanceof ObjectLinkNavigator)
+                value = new ObjectValueLink(objectMapper.mapper.get(((ObjectLinkNavigator)navigatorValue).object));
+            if (navigatorValue instanceof PropertyLinkNavigator)
+                value = new PropertyValueLink(propertyMapper.doMapping(((PropertyLinkNavigator)navigatorValue).property));
+
+            return new Filter(mapProperty, filterKey.compare, value);
+        }
+    }
+
+    final FocusView<T> focusView;
+
+    public RemoteForm(int iID, T iBL, DataSession iSession, SecurityPolicy isecurityPolicy, NavigatorForm<?> navigatorForm, CustomClassView classView, FocusView<T> iFocusView) throws SQLException {
 
         ID = iID;
         BL = iBL;
         session = iSession;
         securityPolicy = isecurityPolicy;
 
+        focusView = iFocusView;
+
         structUpdated = true;
 
-        GID = BL.tableFactory.idTable.generateID(session, IDTable.FORM);
+        GID = IDTable.instance.generateID(session, IDTable.FORM);
+        sessionID = session.generateSessionID(ID);
+
+        ObjectImplementMapper objectMapper = new ObjectImplementMapper();
+        GroupObjectImplementMapper groupObjectMapper = new GroupObjectImplementMapper(objectMapper);
+        PropertyObjectImplementMapper propertyMapper = new PropertyObjectImplementMapper(objectMapper);
+        PropertyViewMapper propertyViewMapper = new PropertyViewMapper(propertyMapper, groupObjectMapper);
+        FilterMapper filterMapper = new FilterMapper(objectMapper, propertyMapper);
+
+        for (int i=0;i<navigatorForm.groups.size();i++)
+            groups.add(groupObjectMapper.doMapping(navigatorForm.groups.get(i),i,classView));
+
+        for (PropertyViewNavigator navigatorProperty : navigatorForm.propertyViews)
+            if (securityPolicy.property.view.checkPermission(navigatorProperty.view.property))
+                properties.add(propertyViewMapper.doMapping(navigatorProperty));
+
+        for (FilterNavigator navigatorFilter : navigatorForm.fixedFilters)
+            fixedFilters.add(filterMapper.doMapping(navigatorFilter));
+
+        for (RegularFilterGroupNavigator navigatorGroup : navigatorForm.regularFilterGroups) {
+
+            RegularFilterGroup group = new RegularFilterGroup(navigatorGroup.ID);
+            for (RegularFilterNavigator filter : navigatorGroup.filters)
+                group.addFilter(new RegularFilter(filter.ID, filterMapper.doMapping(filter.filter), filter.name, filter.key));
+
+            regularFilterGroups.add(group);
+        }
+
+        hintsNoUpdate = navigatorForm.hintsNoUpdate;
+        hintsSave = navigatorForm.hintsSave;
     }
 
     public List<GroupObjectImplement> groups = new ArrayList<GroupObjectImplement>();
+    public Map<GroupObjectImplement,ViewTable> groupTables = new HashMap<GroupObjectImplement, ViewTable>(); 
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public List<PropertyView> properties = new ArrayList<PropertyView>();
 
@@ -104,16 +242,12 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         return null;
     }
 
-    public ChangeValue getPropertyEditorObjectValue(PropertyView propertyView, boolean externalID) throws SQLException {
+    public void serializePropertyEditorObjectValue(DataOutputStream outStream, PropertyView propertyView, boolean externalID) throws SQLException, IOException {
 
-        ChangeValue changeValue = propertyView.view.getChangeProperty(session, securityPolicy.property.change);
-        if (!externalID) return changeValue;
-
-        if (changeValue == null) return null;
-        DataProperty propertyID = changeValue.changeClass.getExternalID();
-        if (propertyID == null) return null;
-
-        return new ChangeObjectValue(propertyID.value, null);
+        MapChangeDataProperty<?> change = propertyView.view.getChangeProperty(securityPolicy.property.change, externalID);
+        outStream.writeBoolean(change==null);
+        if(change!=null)
+            change.serializeChange(outStream, session, propertyView.view.getInterfaceValues() , getDefaultProperties(), getNoUpdateProperties());
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -128,55 +262,10 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         pendingGroupChanges.put(group, changeType);
     }
 
-    public void changeGroupObject(GroupObjectImplement group, GroupObjectValue value) throws SQLException {
+    public void changeGroupObject(GroupObjectImplement group,Map<ObjectImplement,DataObject> value) throws SQLException {
         // проставим все объектам метки изменений
         for(ObjectImplement object : group)
-            changeObject(object, value.get(object));
-    }
-
-    public void changeObject(ObjectImplement object, Integer value) throws SQLException {
-
-        if ((object.idObject==null && value==null) || (object.idObject!=null && object.idObject.equals(value))) return;
-
-        object.idObject = value;
-
-        // запишем класс объекта
-        RemoteClass objectClass = null;
-        if (value != null) {
-            if(object.baseClass instanceof ObjectClass)
-                objectClass = session.getObjectClass(value);
-            else
-                objectClass = object.baseClass;
-        }
-
-        if(object.objectClass != objectClass) {
-
-            object.objectClass = objectClass;
-
-            object.updated = object.updated | ObjectImplement.UPDATED_CLASS;
-        }
-
-        object.updated = object.updated | ObjectImplement.UPDATED_OBJECT;
-        object.groupTo.updated = object.groupTo.updated | GroupObjectImplement.UPDATED_OBJECT;
-
-        // сообщаем всем, кто следит
-        // если object.Class == null, то значит объект удалили
-        if (object.objectClass != null)
-            objectChanged(object.objectClass, value);
-    }
-
-    public void changeGridClass(ObjectImplement Object,Integer idClass) throws SQLException {
-
-        RemoteClass GridClass = BL.objectClass.findClassID(idClass);
-        if(Object.gridClass == GridClass) return;
-
-        if(GridClass==null) throw new RuntimeException();
-        Object.gridClass = GridClass;
-
-        // расставляем пометки
-        Object.updated = Object.updated | ObjectImplement.UPDATED_GRIDCLASS;
-        Object.groupTo.updated = Object.groupTo.updated | GroupObjectImplement.UPDATED_GRIDCLASS;
-
+            object.changeValue(session, value.get(object));
     }
 
     public void switchClassView(GroupObjectImplement group) {
@@ -188,10 +277,8 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         if(group.gridClassView == show || group.singleViewType) return;
         group.gridClassView = show;
 
-        // расставляем пометки
         group.updated = group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
 
-        // на данный момент ClassView влияет на фильтры
         structUpdated = true;
     }
 
@@ -256,87 +343,67 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // пометка что изменились данные
     private boolean dataChanged = false;
 
-    public void addObject(ObjectImplement object, RemoteClass cls) throws SQLException {
+    public void addObject(CustomObjectImplement object, ConcreteCustomClass cls) throws SQLException {
         // пока тупо в базу
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
 
-        Integer addID = BL.addObject(session, cls);
+        DataObject addObject = session.addObject(cls);
 
         boolean foundConflict = false;
 
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter<?> filter : object.groupTo.filters) {
-            if(filter.compare ==0) {
-                JoinQuery<ObjectImplement,String> subQuery = new JoinQuery<ObjectImplement,String>(filter.property.mapping.values());
-                Map<ObjectImplement,Integer> fixedObjects = new HashMap<ObjectImplement, Integer>();
-                for(ObjectImplement SibObject : filter.property.mapping.values()) {
-                    if(SibObject.groupTo !=object.groupTo) {
-                        fixedObjects.put(SibObject,SibObject.idObject);
+            if(filter.compare ==0 && filter.property.property instanceof DataProperty) {
+                JoinQuery<ObjectImplement,String> subQuery = new JoinQuery<ObjectImplement,String>(ObjectImplement.getMapKeys(filter.property.mapping.values()));
+                Map<ObjectImplement,DataObject> fixedObjects = new HashMap<ObjectImplement, DataObject>();
+                for(ObjectImplement mapObject : filter.property.mapping.values()) {
+                    ObjectImplement sibObject = (CustomObjectImplement) mapObject;
+                    if(sibObject.groupTo !=object.groupTo) {
+                        fixedObjects.put(sibObject,sibObject.getValue());
                     } else {
-                        if(SibObject!=object) {
-                            Join<KeyField,PropertyField> ObjectJoin = new Join<KeyField,PropertyField>(BL.tableFactory.objectTable.getClassJoin(SibObject.gridClass));
-                            ObjectJoin.joins.put(BL.tableFactory.objectTable.key,subQuery.mapKeys.get(SibObject));
-                            subQuery.and(ObjectJoin.inJoin);
-                        } else
-                            fixedObjects.put(SibObject,addID);
+                        if(sibObject!=object)
+                            subQuery.and(subQuery.mapKeys.get(sibObject).getIsClassWhere(sibObject.getGridClass().getUpSet()));
+                        else
+                            fixedObjects.put(sibObject,addObject);
                     }
                 }
 
                 subQuery.putKeyWhere(fixedObjects);
 
-                subQuery.properties.put("newvalue", filter.value.getValueExpr(object.groupTo.getClassGroup(),subQuery.mapKeys, session, filter.property.property.getType()));
+                subQuery.properties.put("newvalue", filter.value.getValueExpr(object.groupTo.getClassGroup(),subQuery.mapKeys, session.changes, filter.property.property.getType(), getDefaultProperties(), getNoUpdateProperties()));
 
-                LinkedHashMap<Map<ObjectImplement,Integer>,Map<String,Object>> Result = subQuery.executeSelect(session);
+                LinkedHashMap<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> result = subQuery.executeSelectClasses(session,BL.baseClass);
                 // изменяем св-ва
-                for(Entry<Map<ObjectImplement,Integer>,Map<String,Object>> row : Result.entrySet()) {
-                    Property changeProperty = filter.property.property;
-                    Map<PropertyInterface,ObjectValue> keys = new HashMap<PropertyInterface, ObjectValue>();
-                    for(PropertyInterface propertyInterface : (Collection<PropertyInterface>)changeProperty.interfaces) {
-                        ObjectImplement changeObject = filter.property.mapping.get(propertyInterface);
-                        keys.put(propertyInterface,new ObjectValue(row.getKey().get(changeObject),changeObject.gridClass));
+                for(Entry<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> row : result.entrySet()) {
+                    DataProperty changeProperty = (DataProperty) filter.property.property;
+                    Map<DataPropertyInterface,DataObject> keys = new HashMap<DataPropertyInterface, DataObject>();
+                    for(DataPropertyInterface propertyInterface : changeProperty.interfaces) {
+                        CustomObjectImplement changeObject = (CustomObjectImplement) filter.property.mapping.get(propertyInterface);
+                        keys.put(propertyInterface,row.getKey().get(changeObject));
                     }
-                    changeProperty.changeProperty(keys,row.getValue().get("newvalue"), false, session, null);
+                    session.changeProperty(changeProperty,keys,row.getValue().get("newvalue"),false);
                 }
             } else {
                 if (object.groupTo.equals(filter.getApplyObject())) foundConflict = true;
             }
         }
 
-        for (PropertyView prop : orders.keySet()) {
+        for (PropertyView prop : orders.keySet())
             if (object.groupTo.equals(prop.toDraw)) foundConflict = true;
-        }
 
-        changeObject(object, addID);
+        object.changeValue(session, addObject);
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится
-        if (foundConflict) {
+        if (foundConflict)
             changeClassView(object.groupTo, false);
-        }
 
         dataChanged = true;
     }
 
-    public void changeClass(ObjectImplement object, RemoteClass cls) throws SQLException {
-
-        // проверка, что разрешено удалять объекты
-        if (cls == null) {
-            if (!securityPolicy.cls.edit.remove.checkPermission(object.objectClass)) return;
-        } else {
-            if (!(securityPolicy.cls.edit.remove.checkPermission(object.objectClass) || securityPolicy.cls.edit.change.checkPermission(object.objectClass))) return;
-            if (!(securityPolicy.cls.edit.add.checkPermission(cls) || securityPolicy.cls.edit.change.checkPermission(cls))) return;
-        }
-
-        BL.changeClass(session, object.idObject,cls);
-
-        // Если объект удалили, то сбрасываем текущий объект в null
-        if (cls == null) {
-            changeObject(object, null);
-        }
-
-        object.updated = object.updated | ObjectImplement.UPDATED_CLASS;
-
+    public void changeClass(CustomObjectImplement object, int classID) throws SQLException {
+        object.changeClass(session, classID);
         dataChanged = true;
     }
 
@@ -347,7 +414,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     private void changeProperty(PropertyObjectImplement property, Object value, boolean externalID) throws SQLException {
 
         // изменяем св-во
-        property.property.changeProperty(fillPropertyInterface(property), value, externalID, session, securityPolicy.property.change);
+        property.getChangeProperty(securityPolicy.property.change, externalID).change(session,property.getInterfaceValues(),value,externalID);
 
         dataChanged = true;
     }
@@ -355,14 +422,17 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // Обновление данных
     public void refreshData() {
 
-        for(GroupObjectImplement Group : groups) {
-            Group.updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
+        for(GroupObjectImplement group : groups) {
+            group.updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
         }
     }
 
     // Применение изменений
     public String saveChanges() throws SQLException {
-        return BL.apply(session);
+        String applyString = session.apply(BL);
+        if(applyString==null)
+            refreshData();
+        return applyString;
     }
 
     public void cancelChanges() throws SQLException {
@@ -374,7 +444,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     // ------------------ Через эти методы сообщает верхним объектам об изменениях ------------------- //
 
     // В дальнейшем наверное надо будет переделать на Listener'ы...
-    protected void objectChanged(RemoteClass cls, Integer objectID) {}
+    protected void objectChanged(ConcreteCustomClass cls, Integer objectID) {}
 
     public void changePageSize(GroupObjectImplement groupObject, int pageSize) {
 
@@ -385,67 +455,19 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
     public void gainedFocus() {
         dataChanged = true;
+        focusView.gainedFocus(this);
     }
 
     void close() throws SQLException {
 
         session.incrementChanges.remove(this);
-        for(GroupObjectImplement Group : groups) {
-            ViewTable DropTable = BL.tableFactory.viewTables.get(Group.size()-1);
-            DropTable.dropViewID(session, getGroupObjectGID(Group));
-        }
+        for(ViewTable viewTable : groupTables.values())
+            session.dropTemporaryTable(viewTable);
     }
 
     // --------------------------------------------------------------------------------------- //
     // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
     // --------------------------------------------------------------------------------------- //
-
-    private Map<PropertyInterface,ObjectValue> fillPropertyInterface(PropertyObjectImplement<?> property) {
-
-        Property changeProperty = property.property;
-        Map<PropertyInterface,ObjectValue> keys = new HashMap<PropertyInterface, ObjectValue>();
-        for(PropertyInterface propertyInterface : (Collection<PropertyInterface>)changeProperty.interfaces) {
-            ObjectImplement object = property.mapping.get(propertyInterface);
-            keys.put(propertyInterface,new ObjectValue(object.idObject,object.objectClass));
-        }
-
-        return keys;
-    }
-
-    // рекурсия для генерации порядка
-    private Where generateOrderWheres(List<SourceExpr> orderSources,List<Object> orderWheres,List<Boolean> orderDirs,boolean down,int index) {
-
-        SourceExpr orderExpr = orderSources.get(index);
-        Object orderValue = orderWheres.get(index);
-        if(orderValue==null) orderValue = orderExpr.getType().getEmptyValue();
-        boolean last = !(index +1< orderSources.size());
-
-        int compareIndex;
-        if (orderDirs.get(index)) {
-            if (down) {
-                if (last)
-                    compareIndex = Compare.LESS_EQUALS;
-                else
-                    compareIndex = Compare.LESS;
-            } else
-                compareIndex = Compare.GREATER;
-        } else {
-            if (down) {
-                if (last)
-                    compareIndex = Compare.GREATER_EQUALS;
-                else
-                    compareIndex = Compare.GREATER;
-            } else
-                compareIndex = Compare.LESS;
-        }
-        Where orderWhere = new CompareWhere(orderExpr,orderExpr.getType().getExpr(orderValue),compareIndex);
-
-        if(!last) // >A OR (=A AND >B)
-            return new CompareWhere(orderExpr,orderExpr.getType().getExpr(orderValue), Compare.EQUALS).
-                    and(generateOrderWheres(orderSources, orderWheres, orderDirs, down, index +1)).or(orderWhere);
-        else
-            return orderWhere;
-    }
 
     public Collection<Property> getUpdateProperties() {
 
@@ -463,12 +485,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     }
 
     public Collection<Property> hintsSave = new HashSet<Property>();
-    public boolean toSave(Property Property) {
-        return hintsSave.contains(Property);
-    }
 
     public boolean hasSessionChanges() {
-        return session.hasChanges();
+        return session.changes.hasChanges();
     }
 
     // транзакция для отката при exception'ах
@@ -478,21 +497,21 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
             private class Object {
                 ObjectImplement object;
-                Integer idObject;
+                DataObject value;
                 int updated;
-                RemoteClass objectClass;
+//                RemoteClass objectClass;
 
                 private Object(ObjectImplement iObject) {
                     object = iObject;
-                    idObject = object.idObject;
+/*                    value = object.value;
                     updated = object.updated;
-                    objectClass = object.objectClass;
+                    objectClass = object.currentClass;*/
                 }
 
                 void rollback() {
-                    object.idObject = idObject;
+/*                    object.value = value;
                     object.updated = updated;
-                    object.objectClass = objectClass;
+                    object.currentClass = objectClass;*/
                 }
             }
 
@@ -500,12 +519,14 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             Set<Filter> filters;
             LinkedHashMap<PropertyObjectImplement,Boolean> orders;
             boolean upKeys,downKeys;
-            List<GroupObjectValue> keys;
+            List<Map<ObjectImplement,DataObject>> keys;
             // какие ключи активны
-            Map<GroupObjectValue,Map<PropertyObjectImplement, java.lang.Object>> keyOrders;
+            Map<Map<ObjectImplement,DataObject>,Map<PropertyObjectImplement,ObjectValue>> keyOrders;
             int updated;
 
             Collection<Object> objects = new ArrayList<Object>();
+
+            ViewTable viewTable;
 
             private Group(GroupObjectImplement iGroup) {
                 group = iGroup;
@@ -520,6 +541,8 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                 for(ObjectImplement object : group)
                     objects.add(new Object(object));
+
+                viewTable = groupTables.get(group);
             }
 
             void rollback() throws SQLException {
@@ -535,27 +558,27 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                     object.rollback();
 
                 // восстанавливаем ключи в сессии
-                int groupGID = getGroupObjectGID(group);
-                ViewTable insertTable = BL.tableFactory.viewTables.get(group.size()-1);
-                insertTable.dropViewID(session, groupGID);
-                for(GroupObjectValue keyRow : group.keys) {
-                    // закинем сразу ключи для св-в чтобы Join'ить
-                    Map<KeyField,Integer> viewKeyInsert = new HashMap<KeyField, Integer>();
-                    viewKeyInsert.put(insertTable.view,groupGID);
-                    // важен правильный порядок в KeyRow
-                    ListIterator<KeyField> ivk = insertTable.objects.listIterator();
-                    for(ObjectImplement objectKey : group)
-                        viewKeyInsert.put(ivk.next(), keyRow.get(objectKey));
-                    session.insertRecord(insertTable,viewKeyInsert,new HashMap<PropertyField, java.lang.Object>());
-                }                
+                if(viewTable==null) {
+                    ViewTable newTable = groupTables.get(group);
+                    if(newTable!=null) {
+                        session.dropTemporaryTable(newTable);
+                        groupTables.remove(group);
+                    }
+                } else {
+                    session.deleteKeyRecords(viewTable, new HashMap<KeyField, Integer>());
+                    for(Map<ObjectImplement, DataObject> keyRow : group.keys)
+                        session.insertRecord(viewTable,BaseUtils.join(viewTable.mapKeys,keyRow),new HashMap<PropertyField,ObjectValue>());
+                    groupTables.put(group,viewTable);                    
+                }
             }
         }
 
         Collection<Group> groups = new ArrayList<Group>();
         Map<PropertyView,Boolean> interfacePool;
 
-        Map<Property, Property.Change> propertyChanges;
-        Map<PropertyUpdateView, DataChanges> incrementChanges;
+        Map<PropertyUpdateView, ViewDataChanges> incrementChanges;
+
+        TableChanges changes;
 
         ApplyTransaction() {
             for(GroupObjectImplement group : RemoteForm.this.groups)
@@ -563,8 +586,8 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             interfacePool = new HashMap<PropertyView, Boolean>(RemoteForm.this.interfacePool);
 
             if(dataChanged) {
-                incrementChanges = new HashMap<PropertyUpdateView, DataChanges>(session.incrementChanges);
-                propertyChanges = new HashMap<Property, Property.Change>(session.propertyChanges);
+                incrementChanges = new HashMap<PropertyUpdateView, ViewDataChanges>(session.incrementChanges);
+                changes = new TableChanges(session.changes);
             }
         }
 
@@ -575,7 +598,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
             if(dataChanged) {
                 session.incrementChanges = incrementChanges;
-                session.propertyChanges = propertyChanges;
+                session.changes = changes;
             }
         }
     }
@@ -593,9 +616,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             
             // если изменились данные, применяем изменения
             Collection<Property> changedProps;
-            Collection<RemoteClass> changedClasses = new HashSet<RemoteClass>();
+            Collection<CustomClass> changedClasses = new HashSet<CustomClass>();
             if(dataChanged)
-            changedProps = session.update(this,changedClasses);
+                changedProps = session.update(this,changedClasses);
             else
                 changedProps = new ArrayList<Property>();
 
@@ -658,7 +681,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 for(PropertyView order : group.mapOrders) {
                     // если изменилась структура или кто-то изменил класс, перепроверяем
                     if(structUpdated || order.view.classUpdated(group))
-                        setOrderChanged = (order.view.isInInterface(group)?setOrders.add(order.view):group.orders.remove(order.view));
+                        setOrderChanged = (order.view.isInInterface(group)?setOrders.add(order.view):group.orders.remove(order.view)!=null);
                 }
                 if(structUpdated || setOrderChanged) {
                     // переформирываваем порядок, если структура или принадлежность Order'у изменилась
@@ -688,22 +711,22 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 // классы удалились\добавились
                 if(!updateKeys && dataChanged) {
                     for(ObjectImplement object : group)
-                        if(changedClasses.contains(object.gridClass)) {updateKeys = true; break;}
+                        if(object.classChanged(changedClasses)) {updateKeys = true; break;}
                 }
 
                 // по возврастанию (0), убыванию (1), центру (2) и откуда начинать
-                Map<PropertyObjectImplement,Object> propertySeeks = new HashMap<PropertyObjectImplement, Object>();
+                Map<PropertyObjectImplement,ObjectValue> propertySeeks = new HashMap<PropertyObjectImplement, ObjectValue>();
 
                 // объект на который будет делаться активным после нахождения ключей
-                GroupObjectValue currentObject = group.getObjectValue();
+                Map<ObjectImplement,DataObject> currentObject = group.getGroupObjectValue();
 
                 // объект относительно которого будет устанавливаться фильтр
-                GroupObjectValue objectSeeks = group.getObjectValue();
+                Map<ObjectImplement,DataObject> objectSeeks = group.getGroupObjectValue();
                 int direction;
                 boolean hasMoreKeys = true;
 
                 if (objectSeeks.containsValue(null)) {
-                    objectSeeks = new GroupObjectValue();
+                    objectSeeks = new HashMap<ObjectImplement, DataObject>();
                     direction = DIRECTION_DOWN;
                 } else
                     direction = DIRECTION_CENTER;
@@ -713,7 +736,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 if (pendingChanges == null) pendingChanges = -1;
 
                 if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_FIRSTROW) {
-                    objectSeeks = new GroupObjectValue();
+                    objectSeeks = new HashMap<ObjectImplement, DataObject>();
                     currentObject = null;
                     updateKeys = true;
                     hasMoreKeys = false;
@@ -721,7 +744,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 }
 
                 if (pendingChanges == RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW) {
-                    objectSeeks = new GroupObjectValue();
+                    objectSeeks = new HashMap<ObjectImplement, DataObject>();
                     currentObject = null;
                     updateKeys = true;
                     hasMoreKeys = false;
@@ -729,9 +752,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 }
 
                 // один раз читаем не так часто делается, поэтому не будем как с фильтрами
-                for(PropertyObjectImplement Property : userPropertySeeks.keySet()) {
-                    if(Property.getApplyObject()== group) {
-                        propertySeeks.put(Property, userPropertySeeks.get(Property));
+                for(PropertyObjectImplement property : userPropertySeeks.keySet()) {
+                    if(property.getApplyObject()== group) {
+                        propertySeeks.put(property, session.getObjectValue(userPropertySeeks.get(property),property.property.getType()));
                         currentObject = null;
                         updateKeys = true;
                         direction = DIRECTION_CENTER;
@@ -739,8 +762,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 }
                 for(ObjectImplement object : userObjectSeeks.keySet()) {
                     if(object.groupTo == group) {
-                        objectSeeks.put(object, userObjectSeeks.get(object));
-                        currentObject.put(object, userObjectSeeks.get(object));
+                        DataObject objectValue = session.getDataObject(userObjectSeeks.get(object),object.getBaseClass().getType());
+                        objectSeeks.put(object, objectValue);
+                        currentObject.put(object, objectValue);
                         updateKeys = true;
                         direction = DIRECTION_CENTER;
                     }
@@ -748,14 +772,14 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                 if(!updateKeys && (group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) !=0) {
                    // изменился "классовый" вид перечитываем св-ва
-                    objectSeeks = group.getObjectValue();
+                    objectSeeks = group.getGroupObjectValue();
                     updateKeys = true;
                     direction = DIRECTION_CENTER;
                 }
 
                 if(!updateKeys && group.gridClassView && (group.updated & GroupObjectImplement.UPDATED_OBJECT)!=0) {
                     // листание - объекты стали близки к краю (object не далеко от края - надо хранить список не базу же дергать) - изменился объект
-                    int keyNum = group.keys.indexOf(group.getObjectValue());
+                    int keyNum = group.keys.indexOf(group.getGroupObjectValue());
                     // если меньше PageSize осталось и сверху есть ключи
                     if(keyNum< group.pageSize && group.upKeys) {
                         direction = DIRECTION_UP;
@@ -763,7 +787,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                         int lowestInd = group.pageSize *2-1;
                         if (lowestInd >= group.keys.size()) {
-                            objectSeeks = new GroupObjectValue();
+                            objectSeeks = new HashMap<ObjectImplement, DataObject>();
                             hasMoreKeys = false;
                         } else {
                             objectSeeks = group.keys.get(lowestInd);
@@ -778,7 +802,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                             int highestInd = group.keys.size()- group.pageSize *2;
                             if (highestInd < 0) {
-                                objectSeeks = new GroupObjectValue();
+                                objectSeeks = new HashMap<ObjectImplement, DataObject>();
                                 hasMoreKeys = false;
                             } else {
                                 objectSeeks = group.keys.get(highestInd);
@@ -792,9 +816,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                     // --- перечитываем источник (если "классовый" вид - 50, + помечаем изменения GridObjects, иначе TOP 1
 
                     // проверим на интегральные классы в Group'e
-                    for(ObjectImplement object : group)
-                        if(objectSeeks.get(object)==null && object.baseClass instanceof IntegralClass && !group.gridClassView)
-                            objectSeeks.put(object,1);
+/*                    for(ObjectImplement object : group)
+                        if(objectSeeks.get(object)==null && object.baseClass instanceof DataClass && !group.gridClassView)
+                            objectSeeks.put(object,new DataObject(((DataClass)object.baseClass).getDefaultValue(),object.baseClass));*/
 
                     // докидываем Join'ами (INNER) фильтры, порядки
 
@@ -811,13 +835,13 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                         // дочитываем ObjectSeeks то есть на = PropertySeeks, ObjectSeeks
                         JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group);
                         selectKeys.putKeyWhere(objectSeeks);
-                        group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
-                        for(Entry<PropertyObjectImplement,Object> property : propertySeeks.entrySet())
-                            selectKeys.and(new CompareWhere(property.getKey().getSourceExpr(group.getClassGroup(),selectKeys.mapKeys, session),
-                                    property.getKey().property.getType().getExpr(property.getValue()), Compare.EQUALS));
+                        group.fillSourceSelect(selectKeys, group.getClassGroup(), session.changes, getDefaultProperties(), getNoUpdateProperties());
+                        for(Entry<PropertyObjectImplement, ObjectValue> property : propertySeeks.entrySet())
+                            selectKeys.and(property.getKey().getSourceExpr(group.getClassGroup(),selectKeys.mapKeys, session.changes, getDefaultProperties(), getNoUpdateProperties())
+                                    .compare(property.getValue().getExpr(), Compare.EQUALS));
 
                         // докидываем найденные ключи
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultKeys = selectKeys.executeSelect(session);
+                        LinkedHashMap<Map<ObjectImplement,DataObject>,Map<Object, ObjectValue>> resultKeys = selectKeys.executeSelectClasses(session, BL.baseClass);
                         if(resultKeys.size()>0)
                             for(ObjectImplement objectKey : group)
                                 objectSeeks.put(objectKey,resultKeys.keySet().iterator().next().get(objectKey));
@@ -829,10 +853,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                         // если не нашли объект, то придется искать
                         if (!objectFound) {
-
                             JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group);
-                            group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
-                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultKeys = selectKeys.executeSelect(session,new LinkedHashMap<Object,Boolean>(),1);
+                            group.fillSourceSelect(selectKeys, group.getClassGroup(), session.changes, getDefaultProperties(), getNoUpdateProperties());
+                            LinkedHashMap<Map<ObjectImplement,DataObject>,Map<Object, ObjectValue>> resultKeys = selectKeys.executeSelectClasses(session, new LinkedHashMap<Object, Boolean>(), 1, BL.baseClass);
                             if(resultKeys.size()>0)
                                 for(ObjectImplement objectKey : group)
                                     objectSeeks.put(objectKey,resultKeys.keySet().iterator().next().get(objectKey));
@@ -845,29 +868,29 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                     } else {
                         // выкидываем Property которых нет, дочитываем недостающие Orders, по ObjectSeeks то есть не в привязке к отбору
                         if(notEnoughOrders && objectSeeks.size()== group.size() && group.orders.size() > 0) {
-                            JoinQuery<ObjectImplement, PropertyObjectImplement> orderQuery = new JoinQuery<ObjectImplement, PropertyObjectImplement>(objectSeeks.keySet());
+                            JoinQuery<ObjectImplement, PropertyObjectImplement> orderQuery = new JoinQuery<ObjectImplement, PropertyObjectImplement>(ObjectImplement.getMapKeys(objectSeeks.keySet()));
                             orderQuery.putKeyWhere(objectSeeks);
 
                             for(PropertyObjectImplement order : group.orders.keySet())
-                                orderQuery.properties.put(order, order.getSourceExpr(group.getClassGroup(),orderQuery.mapKeys, session));
+                                orderQuery.properties.put(order, order.getSourceExpr(group.getClassGroup(),orderQuery.mapKeys, session.changes, getDefaultProperties(), getNoUpdateProperties()));
 
-                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyObjectImplement,Object>> resultOrders = orderQuery.executeSelect(session);
+                            LinkedHashMap<Map<ObjectImplement,DataObject>,Map<PropertyObjectImplement, ObjectValue>> resultOrders = orderQuery.executeSelectClasses(session, BL.baseClass);
                             for(PropertyObjectImplement order : group.orders.keySet())
                                 propertySeeks.put(order,resultOrders.values().iterator().next().get(order));
                         }
 
                         LinkedHashMap<Object,Boolean> selectOrders = new LinkedHashMap<Object, Boolean>();
                         JoinQuery<ObjectImplement,Object> selectKeys = new JoinQuery<ObjectImplement,Object>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
-                        group.fillSourceSelect(selectKeys, group.getClassGroup(),BL.tableFactory, session);
+                        group.fillSourceSelect(selectKeys, group.getClassGroup(), session.changes, getDefaultProperties(), getNoUpdateProperties());
 
                         // складываются источники и значения
                         List<SourceExpr> orderSources = new ArrayList<SourceExpr>();
-                        List<Object> orderWheres = new ArrayList<Object>();
+                        List<ObjectValue> orderWheres = new ArrayList<ObjectValue>();
                         List<Boolean> orderDirs = new ArrayList<Boolean>();
 
                         // закинем порядки (с LEFT JOIN'ом)
                         for(Entry<PropertyObjectImplement,Boolean> toOrder : group.orders.entrySet()) {
-                            SourceExpr orderExpr = toOrder.getKey().getSourceExpr(group.getClassGroup(), selectKeys.mapKeys, session);
+                            SourceExpr orderExpr = toOrder.getKey().getSourceExpr(group.getClassGroup(), selectKeys.mapKeys, session.changes, getDefaultProperties(), getNoUpdateProperties());
                             // надо закинуть их в запрос, а также установить фильтры на порядки чтобы
                             if(propertySeeks.containsKey(toOrder.getKey())) {
                                 orderSources.add(orderExpr);
@@ -886,7 +909,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                                 objectSeeks.put(objectKey,null);
 
                         // закинем объекты в порядок
-                        for(Entry<ObjectImplement, Integer> objectSeek : objectSeeks.entrySet()) {
+                        for(Entry<ObjectImplement, DataObject> objectSeek : objectSeeks.entrySet()) {
                             // также закинем их в порядок и в запрос6
                             SourceExpr keyExpr = selectKeys.mapKeys.get(objectSeek.getKey());
                             selectKeys.properties.put(objectSeek.getKey(),keyExpr); // чтобы упорядочивать
@@ -902,30 +925,39 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                         // какой ряд выбранным будем считать
                         int activeRow = -1;
                         // результат
-                        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> keyResult = new LinkedHashMap<Map<ObjectImplement, Integer>, Map<Object, Object>>();
+                        LinkedHashMap<Map<ObjectImplement,DataObject>,Map<Object,ObjectValue>> keyResult = new LinkedHashMap<Map<ObjectImplement, DataObject>, Map<Object, ObjectValue>>();
 
                         int readSize = group.pageSize *3/(direction ==DIRECTION_CENTER?2:1);
 
+                        // сгенирируем orderWhere
+                        Where orderWhere = Where.TRUE;
+                        for(int i=orderSources.size()-1;i>=0;i--) {
+                            ObjectValue orderValue = orderWheres.get(i);
+                            if(orderValue instanceof DataObject)
+                                orderWhere = orderSources.get(i).compare(orderValue.getExpr(), orderDirs.get(i)? Compare.LESS:Compare.GREATER)
+                                    .or(orderSources.get(i).compare(orderValue.getExpr(),Compare.EQUALS).and(orderWhere));
+                        }
+
+                        // откопируем в сторону запрос чтобы еще раз потом использовать
                         JoinQuery<ObjectImplement,Object> copySelect = null;
                         if(direction ==DIRECTION_CENTER)
-                            copySelect = new JoinQuery<ObjectImplement, Object>(selectKeys);
-                        // откопируем в сторону запрос чтобы еще раз потом использовать
+                            copySelect = new JoinQuery<ObjectImplement, Object>(selectKeys, false);
                         // сначала Descending загоним
                         group.downKeys = false;
                         group.upKeys = false;
                         if(direction ==DIRECTION_UP || direction ==DIRECTION_CENTER) {
                             if(orderSources.size()>0) {
-                                selectKeys.and(generateOrderWheres(orderSources,orderWheres,orderDirs,false,0));
+                                selectKeys.and(orderWhere.not());
                                 group.downKeys = hasMoreKeys;
                             }
 
-    //                        System.out.println(group + " KEYS UP ");
-    //                        selectKeys.outSelect(session,JoinQuery.reverseOrder(selectOrders),readSize);
-                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> execResult = selectKeys.executeSelect(session,JoinQuery.reverseOrder(selectOrders), readSize);
-                            ListIterator<Map<ObjectImplement,Integer>> ik = (new ArrayList<Map<ObjectImplement,Integer>>(execResult.keySet())).listIterator();
+//                            System.out.println(group + " KEYS UP ");
+//                            selectKeys.outSelect(session,JoinQuery.reverseOrder(selectOrders),readSize);
+                            LinkedHashMap<Map<ObjectImplement, DataObject>, Map<Object, ObjectValue>> execResult = selectKeys.executeSelectClasses(session, JoinQuery.reverseOrder(selectOrders), readSize, BL.baseClass);
+                            ListIterator<Map<ObjectImplement,DataObject>> ik = (new ArrayList<Map<ObjectImplement,DataObject>>(execResult.keySet())).listIterator();
                             while(ik.hasNext()) ik.next();
                             while(ik.hasPrevious()) {
-                                Map<ObjectImplement,Integer> row = ik.previous();
+                                Map<ObjectImplement,DataObject> row = ik.previous();
                                 keyResult.put(row,execResult.get(row));
                             }
                             group.upKeys = (keyResult.size()== readSize);
@@ -934,19 +966,18 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
     //                        if(OrderSources.size()==0)
                             // сделано так, чтобы при ненайденном объекте текущий объект смещался вверх, а не вниз
                             activeRow = keyResult.size()-1;
-
                         }
                         if(direction ==DIRECTION_CENTER) selectKeys = copySelect;
                         // потом Ascending
                         if(direction ==DIRECTION_DOWN || direction ==DIRECTION_CENTER) {
                             if(orderSources.size()>0) {
-                                selectKeys.and(generateOrderWheres(orderSources,orderWheres,orderDirs,true,0));
+                                selectKeys.and(orderWhere);
                                 if(direction !=DIRECTION_CENTER) group.upKeys = hasMoreKeys;
                             }
 
-    //                        System.out.println(group + " KEYS DOWN ");
-    //                        selectKeys.outSelect(session,selectOrders,readSize);
-                            LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> executeList = selectKeys.executeSelect(session, selectOrders, readSize);
+//                            System.out.println(group + " KEYS DOWN ");
+//                            selectKeys.outSelect(session,selectOrders,readSize);
+                            LinkedHashMap<Map<ObjectImplement,DataObject>,Map<Object,ObjectValue>> executeList = selectKeys.executeSelectClasses(session, selectOrders, readSize, BL.baseClass);
     //                        if((OrderSources.size()==0 || Direction==2) && ExecuteList.size()>0) ActiveRow = KeyResult.size();
                             keyResult.putAll(executeList);
                             group.downKeys = (executeList.size()== readSize);
@@ -955,39 +986,26 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                                 activeRow = 0;
                         }
 
-                        group.keys = new ArrayList<GroupObjectValue>();
-                        group.keyOrders = new HashMap<GroupObjectValue, Map<PropertyObjectImplement, Object>>();
+                        group.keys = new ArrayList<Map<ObjectImplement, DataObject>>();
+                        group.keyOrders = new HashMap<Map<ObjectImplement, DataObject>, Map<PropertyObjectImplement, ObjectValue>>();
 
                         // параллельно будем обновлять ключи чтобы Join'ить
-
-                        int groupGID = getGroupObjectGID(group);
-                        ViewTable insertTable = BL.tableFactory.viewTables.get(group.size()-1);
-                        insertTable.dropViewID(session, groupGID);
-                        session.useTemporaryTable(insertTable);
-
-                        for(Entry<Map<ObjectImplement,Integer>,Map<Object,Object>> resultRow : keyResult.entrySet()) {
-                            GroupObjectValue keyRow = new GroupObjectValue();
-                            Map<PropertyObjectImplement,Object> orderRow = new HashMap<PropertyObjectImplement, Object>();
-
-                            // закинем сразу ключи для св-в чтобы Join'ить
-                            Map<KeyField,Integer> viewKeyInsert = new HashMap<KeyField, Integer>();
-                            viewKeyInsert.put(insertTable.view,groupGID);
-                            ListIterator<KeyField> ivk = insertTable.objects.listIterator();
-
-                            // важен правильный порядок в KeyRow
-                            for(ObjectImplement objectKey : group) {
-                                Integer keyValue = resultRow.getKey().get(objectKey);
-                                keyRow.put(objectKey,keyValue);
-                                viewKeyInsert.put(ivk.next(), keyValue);
-                            }
-                            session.insertRecord(insertTable,viewKeyInsert,new HashMap<PropertyField, Object>());
-
-                            for(PropertyObjectImplement toOrder : group.orders.keySet())
-                                orderRow.put(toOrder,resultRow.getValue().get(toOrder));
-
-                            group.keys.add(keyRow);
-                            group.keyOrders.put(keyRow, orderRow);
+                        ViewTable insertTable = groupTables.get(group);
+                        if(insertTable==null) {
+                            insertTable = new ViewTable(group, sessionID * RemoteFormInterface.GID_SHIFT + group.ID);
+                            session.createTemporaryTable(insertTable);
                         }
+
+                        List<Map<KeyField,DataObject>> viewKeys = new ArrayList<Map<KeyField, DataObject>>();
+                        for(Entry<Map<ObjectImplement, DataObject>, Map<Object, ObjectValue>> resultRow : keyResult.entrySet()) {
+                            viewKeys.add(BaseUtils.join(insertTable.mapKeys,resultRow.getKey()));
+
+                            Map<ObjectImplement,DataObject> keyRow = new HashMap<ObjectImplement,DataObject>(resultRow.getKey());
+                            group.keys.add(keyRow);
+                            group.keyOrders.put(keyRow, BaseUtils.filterKeys(resultRow.getValue(),group.orders.keySet()));
+                        }
+
+                        groupTables.put(group, insertTable.writeKeys(session, viewKeys));
 
                         result.gridObjects.put(group, group.keys);
 
@@ -1003,13 +1021,13 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                         if(activeRow >=0 && activeRow < group.keys.size()) {
                             // нашли ряд его выбираем
-                            GroupObjectValue newValue = group.keys.get(activeRow);
+                            Map<ObjectImplement,DataObject> newValue = group.keys.get(activeRow);
     //                        if (!newValue.equals(Group.GetObjectValue())) {
                                 result.objects.put(group,newValue);
                                 changeGroupObject(group,newValue);
     //                        }
                         } else
-                            changeGroupObject(group,new GroupObjectValue());
+                            changeGroupObject(group,new HashMap<ObjectImplement,DataObject>());
                     }
                 }
             }
@@ -1021,7 +1039,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
             for(PropertyView<?> drawProp : properties) {
 
-                // 3 признака : перечитать, (возможно класс изменился, возможно объектный интерфейс изменился - чисто InterfacePool)
+                // три состояния св-ва : 0 - не в интерфейсе, 1 - в интерфейсе объектов, 2 - в интерфейсе классов (toDraw)
                 boolean read = false;
                 boolean checkClass = false;
                 boolean checkObject = false;
@@ -1030,6 +1048,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 if(drawProp.toDraw !=null) {
                     // если рисуемся в какой-то вид и обновился источник насильно перечитываем все св-ва
                     read = ((drawProp.toDraw.updated & (GroupObjectImplement.UPDATED_KEYS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0);
+
                     Boolean prevPool = interfacePool.get(drawProp);
                     inInterface = (prevPool==null?0:(prevPool?2:1));
                 }
@@ -1037,10 +1056,10 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                 for(ObjectImplement object : drawProp.view.mapping.values())  {
                     if(object.groupTo != drawProp.toDraw) {
                         // "верхние" объекты интересует только изменение объектов\классов
-                        if((object.updated & ObjectImplement.UPDATED_OBJECT)!=0) {
+                        if(object.objectUpdated()) {
                             // изменился верхний объект, перечитываем
                             read = true;
-                            if((object.updated & ObjectImplement.UPDATED_CLASS)!=0) {
+                            if(object.classUpdated()) {
                                 // изменился класс объекта перепроверяем все
                                 if(drawProp.toDraw !=null) checkClass = true;
                                 checkObject = true;
@@ -1048,52 +1067,58 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
                         }
                     } else {
                         // изменился объект и св-во не было классовым
-                        if((object.updated & ObjectImplement.UPDATED_OBJECT)!=0 && (inInterface !=2 || !drawProp.toDraw.gridClassView)) {
+                        if(object.objectUpdated() && !(inInterface ==2 && drawProp.toDraw.gridClassView)) {
                             read = true;
                             // изменися класс объекта
-                            if((object.updated & ObjectImplement.UPDATED_CLASS)!=0) checkObject = true;
+                            if((object.classUpdated())) checkObject = true;
                         }
                         // изменение общего класса
-                        if((object.updated & ObjectImplement.UPDATED_GRIDCLASS)!=0) checkClass = true;
-
+                        if((object.groupTo.updated & ObjectImplement.UPDATED_GRIDCLASS)!=0) checkClass = true;
                     }
                 }
 
                 // обновим InterfacePool, было в InInterface
                 if(checkClass || checkObject) {
-                    int newInInterface=0;
-                    if(checkClass)
+                    int newInInterface;
+                    if(checkClass) { // если классы изменились перечитываем
+                        assert drawProp.toDraw!=null;
                         newInInterface = (drawProp.view.isInInterface(drawProp.toDraw)?2:0);
-                    if((checkObject && !(checkClass && newInInterface==2)) || (checkClass && newInInterface==0 )) // && InInterface==2))
+                    } else // иначе берем какой был
+                        newInInterface = inInterface;
+
+                    if(newInInterface!=2 && (checkObject || checkClass)) // если не классовый и объект изменился
                         newInInterface = (drawProp.view.isInInterface(null)?1:0);
 
-                    if(inInterface !=newInInterface) {
+                    if(inInterface!=newInInterface) {
                         inInterface = newInInterface;
 
-                        if(inInterface ==0) {
+                        if(inInterface==0) {
                             interfacePool.remove(drawProp);
                             // !!! СЮДА НАДО ВКИНУТЬ УДАЛЕНИЕ ИЗ ИНТЕРФЕЙСА
                             result.dropProperties.add(drawProp);
                         }
                         else
-                            interfacePool.put(drawProp, inInterface ==2);
+                            interfacePool.put(drawProp,inInterface==2);
                     }
                 }
 
                 if(!read && (dataChanged && changedProps.contains(drawProp.view.property)))
                     read = true;
 
-                if (!read && dataChanged) {
+/*                if (!read && dataChanged) {
                     for (ObjectImplement object : drawProp.view.mapping.values()) {
-                        if (changedClasses.contains(object.baseClass)) {
+                        if (object.classChanged(changedClasses)) {
                             read = true;
                             break;
                         }
                     }
-                }
+                }*/
 
-                if(inInterface >0 && read) {
-                    if(inInterface ==2 && drawProp.toDraw.gridClassView) {
+                assert (inInterface==2)==(drawProp.toDraw!=null && drawProp.view.isInInterface(drawProp.toDraw));
+                assert !(drawProp.view.isInInterface(null) && inInterface==0);
+
+                if(inInterface>0 && read) {
+                    if(inInterface==2 && drawProp.toDraw.gridClassView) {
                         Collection<PropertyView> propList = groupProps.get(drawProp.toDraw);
                         if(propList==null) {
                             propList = new ArrayList<PropertyView>();
@@ -1109,9 +1134,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
             // сначала PanelProps
             if(panelProps.size()>0) {
-                JoinQuery<Object, PropertyView> selectProps = new JoinQuery<Object, PropertyView>(new ArrayList<Object>());
+                JoinQuery<Object, PropertyView> selectProps = new JoinQuery<Object, PropertyView>(new HashMap<Object, KeyExpr>());
                 for(PropertyView drawProp : panelProps)
-                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(null,null, session));
+                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(null,null, session.changes, getDefaultProperties(), getNoUpdateProperties()));
 
                 Map<PropertyView,Object> resultProps = selectProps.executeSelect(session).values().iterator().next();
                 for(PropertyView drawProp : panelProps)
@@ -1124,26 +1149,19 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
                 JoinQuery<ObjectImplement, PropertyView> selectProps = new JoinQuery<ObjectImplement, PropertyView>(group);
 
-                ViewTable keyTable = BL.tableFactory.viewTables.get(group.size()-1);
-                Join<KeyField, PropertyField> keyJoin = new Join<KeyField,PropertyField>(keyTable);
-
-                ListIterator<KeyField> ikt = keyTable.objects.listIterator();
-                for(ObjectImplement object : group)
-                    keyJoin.joins.put(ikt.next(), selectProps.mapKeys.get(object));
-                keyJoin.joins.put(keyTable.view,keyTable.view.type.getExpr(getGroupObjectGID(group)));
-                selectProps.and(keyJoin.inJoin);
+                ViewTable keyTable = groupTables.get(mapGroup.getKey()); // ставим фильтр на то что только из viewTable'а
+                selectProps.and(keyTable.joinAnd(BaseUtils.join(keyTable.mapKeys,selectProps.mapKeys)).getWhere());
 
                 for(PropertyView drawProp : groupList)
-                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(group.getClassGroup(), selectProps.mapKeys, session));
+                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(group.getClassGroup(), selectProps.mapKeys, session.changes, getDefaultProperties(), getNoUpdateProperties()));
 
-                LinkedHashMap<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> resultProps = selectProps.executeSelect(session);
+                LinkedHashMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.executeSelect(session);
 
                 for(PropertyView drawProp : groupList) {
-                    Map<GroupObjectValue,Object> propResult = new HashMap<GroupObjectValue, Object>();
+                    Map<Map<ObjectImplement,DataObject>,Object> propResult = new HashMap<Map<ObjectImplement,DataObject>, Object>();
+                    for(Entry<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultRow : resultProps.entrySet())
+                        propResult.put(group.findGroupObjectValue(resultRow.getKey()),resultRow.getValue().get(drawProp));
                     result.gridProperties.put(drawProp,propResult);
-
-                    for(Entry<Map<ObjectImplement,Integer>,Map<PropertyView,Object>> resultRow : resultProps.entrySet())
-                        propResult.put(new GroupObjectValue(resultRow.getKey()),resultRow.getValue().get(drawProp));
                 }
             }
 
@@ -1161,7 +1179,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             }
             dataChanged = false;
 
-//        Result.Out(this);
+//        result.out(this);
 
             return result;
 //        } catch (RuntimeException e) {
@@ -1199,7 +1217,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
 
         // пока сделаем тупо получаем один большой запрос
 
-        JoinQuery<ObjectImplement,Object> query = new JoinQuery<ObjectImplement,Object>(readObjects);
+        JoinQuery<ObjectImplement,Object> query = new JoinQuery<ObjectImplement,Object>(ObjectImplement.getMapKeys(readObjects));
         LinkedHashMap<Object,Boolean> queryOrders = new LinkedHashMap<Object, Boolean>();
 
         for (GroupObjectImplement group : groups) {
@@ -1207,11 +1225,11 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             if (classGroups.contains(group)) {
 
                 // не фиксированные ключи
-                group.fillSourceSelect(query,classGroups,BL.tableFactory, session);
+                group.fillSourceSelect(query,classGroups, session.changes, getDefaultProperties(), getNoUpdateProperties());
 
                 // закинем Order'ы
                 for(Map.Entry<PropertyObjectImplement,Boolean> order : group.orders.entrySet()) {
-                    query.properties.put(order.getKey(),order.getKey().getSourceExpr(classGroups, query.mapKeys, session));
+                    query.properties.put(order.getKey(),order.getKey().getSourceExpr(classGroups, query.mapKeys, session.changes, getDefaultProperties(), getNoUpdateProperties()));
                     queryOrders.put(order.getKey(),order.getValue());
                 }
 
@@ -1225,18 +1243,17 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         FormData result = new FormData();
 
         for(PropertyView property : properties)
-            query.properties.put(property, property.view.getSourceExpr(classGroups, query.mapKeys, session));
+            query.properties.put(property, property.view.getSourceExpr(classGroups, query.mapKeys, session.changes, getDefaultProperties(), getNoUpdateProperties()));
 
-        LinkedHashMap<Map<ObjectImplement,Integer>,Map<Object,Object>> resultSelect = query.executeSelect(session,queryOrders,0);
-        for(Entry<Map<ObjectImplement,Integer>,Map<Object,Object>> row : resultSelect.entrySet()) {
-            Map<ObjectImplement,Integer> groupValue = new HashMap<ObjectImplement, Integer>();
+        LinkedHashMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.executeSelect(session,queryOrders,0);
+        for(Entry<Map<ObjectImplement, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
+            Map<ObjectImplement,Object> groupValue = new HashMap<ObjectImplement, Object>();
             for(GroupObjectImplement group : groups)
-                for(ObjectImplement object : group) {
+                for(ObjectImplement object : group)
                     if (readObjects.contains(object))
                         groupValue.put(object,row.getKey().get(object));
                     else
-                        groupValue.put(object,object.idObject);
-                }
+                        groupValue.put(object,object.getValue().object);
 
             Map<PropertyView,Object> propertyValues = new HashMap<PropertyView, Object>();
             for(PropertyView property : properties)

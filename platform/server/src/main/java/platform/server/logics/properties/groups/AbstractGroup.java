@@ -1,6 +1,6 @@
 package platform.server.logics.properties.groups;
 
-import platform.server.logics.classes.RemoteClass;
+import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.logics.properties.Property;
 
 import java.util.ArrayList;
@@ -29,23 +29,23 @@ public class AbstractGroup extends AbstractNode {
         return false;
     }
 
-    public List<RemoteClass> getClasses() {
-        List<RemoteClass> result = new ArrayList();
+    public List<ConcreteCustomClass> getClasses() {
+        List<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
         fillClasses(result);
         return result;
     }
 
-    private void fillClasses(List<RemoteClass> classes) {
+    private void fillClasses(List<ConcreteCustomClass> classes) {
         for (AbstractNode child : children) {
             if (child instanceof AbstractGroup)
                 ((AbstractGroup)child).fillClasses(classes);
-            if (child instanceof RemoteClass)
-                classes.add((RemoteClass)child);
+            if (child instanceof ConcreteCustomClass)
+                classes.add((ConcreteCustomClass)child);
         }
     }
 
     public List<Property> getProperties() {
-        List<Property> result = new ArrayList();
+        List<Property> result = new ArrayList<Property>();
         fillProperties(result);
         return result;
     }

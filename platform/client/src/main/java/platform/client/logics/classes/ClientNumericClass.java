@@ -7,14 +7,14 @@ import java.text.NumberFormat;
 
 public class ClientNumericClass extends ClientDoubleClass {
 
-    private byte length;
-    private byte precision;
+    private int length;
+    private int precision;
 
     public ClientNumericClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
-        length = inStream.readByte();
-        precision = inStream.readByte();
+        length = inStream.readInt();
+        precision = inStream.readInt();
     }
 
     public Format getDefaultFormat() {

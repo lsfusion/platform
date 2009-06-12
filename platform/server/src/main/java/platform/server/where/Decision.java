@@ -1,7 +1,6 @@
 package platform.server.where;
 
-import net.jcip.annotations.Immutable;
-
+import platform.base.BaseUtils;
 
 class Decision {
     private final AndObjectWhere condition;
@@ -21,11 +20,11 @@ class Decision {
     }
 
     Where pairs(Decision decision2,boolean plainFollow) {
-        if(condition.hashEquals(decision2.condition))
+        if(BaseUtils.hashEquals(condition,decision2.condition))
             return OrWhere.op(OrWhere.op(whereTrue,decision2.addTrue,plainFollow).not(),
                 OrWhere.op(whereFalse,decision2.addFalse,plainFollow).not(),plainFollow).not();
 
-        if(condition.hashEquals(decision2.condition.not()))
+        if(BaseUtils.hashEquals(condition,decision2.condition.not()))
             return OrWhere.op(OrWhere.op(whereTrue,decision2.addFalse,plainFollow).not(),
                 OrWhere.op(whereFalse,decision2.addTrue,plainFollow).not(),plainFollow).not();
 

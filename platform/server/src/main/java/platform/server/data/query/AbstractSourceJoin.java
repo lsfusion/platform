@@ -1,9 +1,8 @@
 package platform.server.data.query;
 
 import platform.server.where.DataWhereSet;
-import net.jcip.annotations.Immutable;
 
-abstract public class AbstractSourceJoin implements SourceJoin {
+abstract public class AbstractSourceJoin<T extends SourceJoin> implements SourceJoin<T> {
 
     boolean hashed = false;
     int hash;

@@ -1,16 +1,16 @@
 package platform.server.view.form.client;
 
-import platform.server.view.form.RegularFilter;
-import platform.server.view.form.RegularFilterGroup;
+import platform.server.view.navigator.RegularFilterGroupNavigator;
+import platform.server.view.navigator.RegularFilterNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 public class RegularFilterGroupView extends FunctionView {
-    public RegularFilterGroup view;
+    public RegularFilterGroupNavigator view;
 
-    public RegularFilterGroupView(RegularFilterGroup iView) {
+    public RegularFilterGroupView(RegularFilterGroupNavigator iView) {
         view = iView;
     }
 
@@ -19,7 +19,7 @@ public class RegularFilterGroupView extends FunctionView {
         outStream.writeInt(view.ID);
 
         outStream.writeInt(view.filters.size());
-        for(RegularFilter filter : view.filters) {
+        for(RegularFilterNavigator filter : view.filters) {
             outStream.writeInt(filter.ID);
             outStream.writeUTF(filter.name);
 

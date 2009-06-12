@@ -9,17 +9,11 @@ public class PropertyView<P extends PropertyInterface> {
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     public GroupObjectImplement toDraw;
 
-    public PropertyView(int iID, PropertyObjectImplement<P> iView, GroupObjectImplement iToDraw) {
+    public PropertyView(int iID, String iSID, PropertyObjectImplement<P> iView, GroupObjectImplement iToDraw) {
         view = iView;
         toDraw = iToDraw;
         ID = iID;
-    }
-
-    public PropertyView(PropertyView<P> navigatorProperty) {
-
-        ID = navigatorProperty.ID;
-        view = navigatorProperty.view;
-        toDraw = navigatorProperty.toDraw;
+        sID = iSID;
     }
 
     public String toString() {
@@ -32,6 +26,6 @@ public class PropertyView<P extends PropertyInterface> {
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public String sID;
     public String getSID() {
-        if (sID != null) return sID; else return "prop" + ID;
+        return sID;
     }
 }

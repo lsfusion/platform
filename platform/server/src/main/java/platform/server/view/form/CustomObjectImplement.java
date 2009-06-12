@@ -1,0 +1,123 @@
+package platform.server.view.form;
+
+import platform.server.data.classes.ConcreteCustomClass;
+import platform.server.data.classes.ConcreteObjectClass;
+import platform.server.data.classes.CustomClass;
+import platform.server.data.classes.ValueClass;
+import platform.server.data.classes.where.ClassSet;
+import platform.server.data.types.Type;
+import platform.server.data.types.ObjectType;
+import platform.server.logics.DataObject;
+import platform.server.session.ChangesSession;
+
+import java.sql.SQLException;
+import java.util.Collection;
+
+public class CustomObjectImplement extends ObjectImplement {
+
+    public CustomClass baseClass;
+    CustomClass gridClass;
+    
+    public ConcreteCustomClass currentClass;
+
+    private CustomClassView classView;
+
+    public CustomObjectImplement(int iID, String iSID, CustomClass iBaseClass, String iCaption, CustomClassView iClassView) {
+        super(iID,iSID,iCaption);
+        baseClass = iBaseClass;
+        gridClass = baseClass;
+
+        classView = iClassView;
+    }
+
+    public CustomClass getBaseClass() {
+        return baseClass;
+    }
+
+    public ClassSet getClassSet(GroupObjectImplement classGroup) {
+        if(groupTo==classGroup)
+            return getGridClass().getUpSet();
+        else
+            return getObjectClass();
+    }
+
+    public ValueClass getGridClass() {
+        return gridClass;
+    }
+
+    public ConcreteObjectClass getObjectClass() {
+        if(currentClass==null) // нету объекта
+            return baseClass.getBaseClass().unknown;
+        else
+            return currentClass;
+    }
+
+    DataObject value;
+
+    @Override
+    public void changeValue(ChangesSession session, DataObject changeValue) throws SQLException {
+        if((changeValue==null && value==null) || (changeValue!=null && changeValue.equals(value))) return;
+
+        value = changeValue;
+
+        // запишем класс объекта
+        ConcreteCustomClass changeClass;
+        if(value==null)
+            changeClass = null;
+        else {
+            changeClass = (ConcreteCustomClass) session.getCurrentClass(value);
+            classView.objectChanged(changeClass, (Integer) value.object);
+        }
+
+        if(changeClass != currentClass) {
+            currentClass = changeClass;
+            updated = updated | ObjectImplement.UPDATED_CLASS;
+        }
+
+        updated = updated | ObjectImplement.UPDATED_OBJECT;
+        groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_OBJECT;
+    }
+
+    public void changeValue(ChangesSession session, Object changeValue) throws SQLException {
+        changeValue(session,session.getDataObject(changeValue, baseClass.getType()));
+    }
+
+    public boolean classChanged(Collection<CustomClass> changedClasses) {
+        return changedClasses.contains(gridClass);
+    }
+
+    public boolean classUpdated() {
+        return (updated & ObjectImplement.UPDATED_CLASS)!=0; 
+    }
+
+    public DataObject getValue() {
+        return value;
+    }
+
+    public void changeClass(ChangesSession session,int classID) throws SQLException {
+
+        assert value!=null;
+        // запишем объекты, которые надо будет сохранять
+        if(classID==-1) {
+            session.changeClass(value,null);
+            changeValue(session, (DataObject)null);
+        } else
+            session.changeClass(value,baseClass.findConcreteClassID(classID));
+    }
+
+    public void changeGridClass(int classID) {
+
+        CustomClass changeClass = baseClass.findClassID(classID);
+
+        if(gridClass != changeClass) {
+            gridClass = changeClass;
+
+            // расставляем пометки
+            groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_GRIDCLASS;
+        }
+    }
+
+    public Type getType() {
+        return ObjectType.instance;
+    }
+}

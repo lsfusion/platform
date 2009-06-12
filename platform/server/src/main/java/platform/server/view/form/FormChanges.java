@@ -1,6 +1,7 @@
 package platform.server.view.form;
 
 import platform.base.BaseUtils;
+import platform.server.logics.DataObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,23 +11,23 @@ import java.util.*;
 public class FormChanges {
 
     public Map<GroupObjectImplement,Boolean> classViews = new HashMap<GroupObjectImplement, Boolean>();
-    public Map<GroupObjectImplement,GroupObjectValue> objects = new HashMap<GroupObjectImplement, GroupObjectValue>();
-    public Map<GroupObjectImplement, List<GroupObjectValue>> gridObjects = new HashMap<GroupObjectImplement, List<GroupObjectValue>>();
-    public Map<PropertyView,Map<GroupObjectValue,Object>> gridProperties = new HashMap<PropertyView, Map<GroupObjectValue, Object>>();
+    public Map<GroupObjectImplement,Map<ObjectImplement, DataObject>> objects = new HashMap<GroupObjectImplement,Map<ObjectImplement,DataObject>>();
+    public Map<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>> gridObjects = new HashMap<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>>();
+    public Map<PropertyView,Map<Map<ObjectImplement,DataObject>,Object>> gridProperties = new HashMap<PropertyView, Map<Map<ObjectImplement, DataObject>, Object>>();
     public Map<PropertyView,Object> panelProperties = new HashMap<PropertyView, Object>();
     public Set<PropertyView> dropProperties = new HashSet<PropertyView>();
 
     void out(RemoteForm<?> bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
         for(GroupObjectImplement group : bv.groups) {
-            List<GroupObjectValue> groupGridObjects = gridObjects.get(group);
+            List<Map<ObjectImplement, DataObject>> groupGridObjects = gridObjects.get(group);
             if(groupGridObjects!=null) {
                 System.out.println(group.ID +" - Grid Changes");
-                for(GroupObjectValue value : groupGridObjects)
+                for(Map<ObjectImplement, DataObject> value : groupGridObjects)
                     System.out.println(value);
             }
 
-            GroupObjectValue value = objects.get(group);
+            Map<ObjectImplement, DataObject> value = objects.get(group);
             if(value!=null)
                 System.out.println(group.ID +" - Object Changes "+value);
         }
@@ -34,9 +35,9 @@ public class FormChanges {
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
         for(PropertyView property : gridProperties.keySet()) {
-            Map<GroupObjectValue,Object> propertyValues = gridProperties.get(property);
+            Map<Map<ObjectImplement, DataObject>, Object> propertyValues = gridProperties.get(property);
             System.out.println(property+" ---- property");
-            for(GroupObjectValue gov : propertyValues.keySet())
+            for(Map<ObjectImplement, DataObject> gov : propertyValues.keySet())
                 System.out.println(gov+" - "+propertyValues.get(gov));
         }
 
@@ -58,30 +59,30 @@ public class FormChanges {
         }
 
         outStream.writeInt(objects.size());
-        for (Map.Entry<GroupObjectImplement,GroupObjectValue> objectValue : objects.entrySet()) {
+        for (Map.Entry<GroupObjectImplement,Map<ObjectImplement,DataObject>> objectValue : objects.entrySet()) {
             outStream.writeInt(objectValue.getKey().ID);
             for (ObjectImplement object : objectValue.getKey()) // именно так чтобы гарантировано в том же порядке
-                outStream.writeInt(objectValue.getValue().get(object));
+                outStream.writeInt((Integer) objectValue.getValue().get(object).object);
         }
 
         outStream.writeInt(gridObjects.size());
-        for (Map.Entry<GroupObjectImplement,List<GroupObjectValue>> gridObject : gridObjects.entrySet()) {
+        for (Map.Entry<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>> gridObject : gridObjects.entrySet()) {
             outStream.writeInt(gridObject.getKey().ID);
 
             outStream.writeInt(gridObject.getValue().size());
-            for (GroupObjectValue groupObjectValue : gridObject.getValue())
+            for (Map<ObjectImplement, DataObject> groupObjectValue : gridObject.getValue())
                 for (ObjectImplement object : gridObject.getKey()) // именно так чтобы гарантировано в том же порядке
-                    outStream.writeInt(groupObjectValue.get(object));
+                    outStream.writeInt((Integer) groupObjectValue.get(object).object);
         }
 
         outStream.writeInt(gridProperties.size());
-        for (Map.Entry<PropertyView,Map<GroupObjectValue,Object>> gridProperty : gridProperties.entrySet()) {
+        for (Map.Entry<PropertyView,Map<Map<ObjectImplement,DataObject>,Object>> gridProperty : gridProperties.entrySet()) {
             outStream.writeInt(gridProperty.getKey().ID);
 
             outStream.writeInt(gridProperty.getValue().size());
-            for (Map.Entry<GroupObjectValue,Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
+            for (Map.Entry<Map<ObjectImplement,DataObject>,Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
                 for (ObjectImplement object : gridProperty.getKey().toDraw) // именно так чтобы гарантировано в том же порядке
-                    outStream.writeInt(gridPropertyValue.getKey().get(object));
+                    outStream.writeInt((Integer) gridPropertyValue.getKey().get(object).getValue());
                 BaseUtils.serializeObject(outStream, gridPropertyValue.getValue());
             }
         }

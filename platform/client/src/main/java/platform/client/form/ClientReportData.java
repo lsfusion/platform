@@ -71,12 +71,12 @@ public class ClientReportData implements JRDataSource {
     }
 
     class ClientRow {
-        final Map<Integer,Integer> keys = new HashMap<Integer, Integer>();
+        final Map<Integer,Object> keys = new HashMap<Integer, Object>();
         final Map<Integer,Object> values = new HashMap<Integer, Object>();
 
         ClientRow(DataInputStream inStream) throws IOException {
             for(int i=0;i<objects.size();i++)
-                keys.put(inStream.readInt(),inStream.readInt());
+                keys.put(inStream.readInt(),BaseUtils.deserializeObject(inStream));
             for(int i=0;i<properties.size();i++)
                 values.put(inStream.readInt(),BaseUtils.deserializeObject(inStream));
         }

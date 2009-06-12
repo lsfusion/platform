@@ -13,35 +13,11 @@ import java.rmi.RemoteException;
 
 abstract public class ClientClass implements Serializable {
 
-    public int ID;
-    private String caption;
+    public abstract boolean hasChilds();
 
-    public boolean hasChilds() {
-        return false;
-    }
-
-    public String toString() { return caption; }
-
-    public int getMinimumWidth() {
-        return getPreferredWidth();
-    }
-    public int getPreferredWidth() {
-        return 50;
-    }
-    public int getMaximumWidth() {
-        return Integer.MAX_VALUE;
-    }
-
-    public abstract Format getDefaultFormat();
-
-    abstract public PropertyRendererComponent getRendererComponent(Format format);
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
 
-    protected abstract Class getJavaClass() ;
-
-    ClientClass(DataInputStream inStream) throws IOException {
-        ID = inStream.readInt();
-        caption = inStream.readUTF();        
+    protected ClientClass(DataInputStream inStream) throws IOException {
     }
 
     public static ClientClass deserialize(DataInputStream inStream) throws IOException {
@@ -58,4 +34,6 @@ abstract public class ClientClass implements Serializable {
 
         throw new IOException();
     }
+
+    public abstract ClientType getType();
 }

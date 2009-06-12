@@ -3,33 +3,33 @@ package platform.server.view.form.client;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.server.logics.properties.groups.AbstractGroup;
-import platform.server.view.form.*;
-import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.*;
 
 import java.awt.*;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class DefaultFormView extends FormView {
 
-    private transient Map<GroupObjectImplement, GroupObjectImplementView> mgroupObjects = new HashMap<GroupObjectImplement, GroupObjectImplementView>();
-    public GroupObjectImplementView get(GroupObjectImplement groupObject) { return mgroupObjects.get(groupObject); }
+    private transient Map<GroupObjectNavigator, GroupObjectImplementView> mgroupObjects = new HashMap<GroupObjectNavigator, GroupObjectImplementView>();
+    public GroupObjectImplementView get(GroupObjectNavigator groupObject) { return mgroupObjects.get(groupObject); }
 
-    private transient Map<ObjectImplement, ObjectImplementView> mobjects = new HashMap<ObjectImplement, ObjectImplementView>();
-    public ObjectImplementView get(ObjectImplement object) { return mobjects.get(object); }
+    private transient Map<ObjectNavigator, ObjectImplementView> mobjects = new HashMap<ObjectNavigator, ObjectImplementView>();
+    public ObjectImplementView get(ObjectNavigator object) { return mobjects.get(object); }
 
     private transient Map<GroupObjectImplementView, ContainerView> groupObjectContainers = new HashMap<GroupObjectImplementView, ContainerView>();
     private transient Map<GroupObjectImplementView, ContainerView> panelContainers = new HashMap<GroupObjectImplementView, ContainerView>();
     private transient Map<GroupObjectImplementView, ContainerView> buttonContainers = new HashMap<GroupObjectImplementView, ContainerView>();
     private transient Map<GroupObjectImplementView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectImplementView, Map<AbstractGroup, ContainerView>>();
 
-    public DefaultFormView(NavigatorForm navigatorForm) {
+    public DefaultFormView(NavigatorForm<?> navigatorForm) {
 
         ContainerView mainContainer = addContainer();
         mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
-        for (GroupObjectImplement group : (List<GroupObjectImplement>)navigatorForm.Groups) {
+        for (GroupObjectNavigator group : navigatorForm.groups) {
 
             GroupObjectImplementView clientGroup = new GroupObjectImplementView(group);
 
@@ -38,7 +38,7 @@ public class DefaultFormView extends FormView {
 
             ContainerView groupContainer = addContainer();
             groupContainer.container = mainContainer;
-            groupContainer.constraints.order = navigatorForm.Groups.indexOf(group);
+            groupContainer.constraints.order = navigatorForm.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
             groupContainer.constraints.insetsInside = new Insets(0,0,4,0);
 
@@ -98,7 +98,7 @@ public class DefaultFormView extends FormView {
             }
         }
 
-        for (PropertyView property : (List<PropertyView>)navigatorForm.propertyViews) {
+        for (PropertyViewNavigator property : navigatorForm.propertyViews) {
 
             GroupObjectImplementView groupObject = mgroupObjects.get(property.toDraw);
 
@@ -112,25 +112,16 @@ public class DefaultFormView extends FormView {
             order.add(clientProperty);
         }
 
-        for (RegularFilterGroup filterGroup : (List<RegularFilterGroup>)navigatorForm.regularFilterGroups) {
+        for (RegularFilterGroupNavigator filterGroup : navigatorForm.regularFilterGroups) {
+
+            Set<ObjectNavigator> groupObjects = new HashSet<ObjectNavigator>();
 
             // ищем самый нижний GroupObjectImplement, к которому применяется фильтр
-            GroupObjectImplement groupObject = null;
-            int order = -1;
-            for (RegularFilter regFilter : filterGroup.filters) {
-                // Если просто кнопка - отменить фильтр
-                if (regFilter.filter == null) continue;
-                GroupObjectImplement propGroupObject = regFilter.filter.property.getApplyObject();
-                if (propGroupObject.order > order) {
-                    order = propGroupObject.order;
-                    groupObject = propGroupObject;
-                }
-            }
-
-            if (groupObject == null) continue;
+            for (RegularFilterNavigator regFilter : filterGroup.filters)
+                groupObjects.addAll(navigatorForm.getApplyObject(regFilter.filter.property.mapping.values()));
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
-            filterGroupView.container = buttonContainers.get(mgroupObjects.get(groupObject));
+            filterGroupView.container = buttonContainers.get(mgroupObjects.get(navigatorForm.getApplyObject(groupObjects)));
             filterGroupView.constraints.order = 3 + navigatorForm.regularFilterGroups.indexOf(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
 
@@ -139,7 +130,7 @@ public class DefaultFormView extends FormView {
 
         ContainerView formButtonContainer = addContainer();
         formButtonContainer.container = mainContainer;
-        formButtonContainer.constraints.order = navigatorForm.Groups.size();
+        formButtonContainer.constraints.order = navigatorForm.groups.size();
         formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         printView.container = formButtonContainer;

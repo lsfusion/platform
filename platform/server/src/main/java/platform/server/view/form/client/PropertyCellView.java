@@ -1,21 +1,21 @@
 package platform.server.view.form.client;
 
-import platform.server.logics.classes.RemoteClass;
-import platform.server.view.form.PropertyView;
+import platform.server.data.types.Type;
+import platform.server.view.navigator.PropertyViewNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class PropertyCellView extends CellView implements ClientSerialize {
 
-    public PropertyView view;
+    public PropertyViewNavigator view;
 
-    public PropertyCellView(PropertyView iView) {
+    public PropertyCellView(PropertyViewNavigator iView) {
         view = iView;
     }
 
-    RemoteClass getBaseClass() {
-        return view.view.property.getBaseClass().getCommonClass();
+    Type getType() {
+        return view.view.property.getType();
     }
 
     int getID() {

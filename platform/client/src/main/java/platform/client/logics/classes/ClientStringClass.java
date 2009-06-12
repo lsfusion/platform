@@ -9,7 +9,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
 
-public class ClientStringClass extends ClientClass {
+public class ClientStringClass extends ClientDataClass {
 
     private int length;
 
@@ -28,8 +28,4 @@ public class ClientStringClass extends ClientClass {
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new StringPropertyEditor(length, value); }
-
-    public Class getJavaClass() {
-        return String.class;
-    }
 }

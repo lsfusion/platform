@@ -1,26 +1,18 @@
 package platform.server.logics.properties;
 
-import platform.server.data.PropertyField;
-import platform.server.data.query.ChangeQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.UnionQuery;
+import platform.server.auth.ChangePropertySecurityPolicy;
+import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
-import platform.server.logics.ObjectValue;
-import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.logics.classes.BitClass;
-import platform.server.logics.classes.RemoteClass;
-import platform.server.logics.classes.sets.*;
-import platform.server.logics.data.TableFactory;
-import platform.server.session.ChangeValue;
-import platform.server.session.DataSession;
+import platform.server.session.DataChanges;
+import platform.server.session.MapChangeDataProperty;
+import platform.server.session.TableChanges;
+import platform.server.where.WhereBuilder;
 
 import java.util.*;
-import java.sql.SQLException;
 
-public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinPropertyInterface,T, JoinPropertyInterface,T, PropertyField> {
-    public PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T> implementations;
+public class JoinProperty<T extends PropertyInterface> extends AggregateProperty<JoinPropertyInterface> {
+    public PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T> implement;
 
     static Collection<JoinPropertyInterface> getInterfaces(int intNum) {
         Collection<JoinPropertyInterface> interfaces = new ArrayList<JoinPropertyInterface>();
@@ -29,204 +21,31 @@ public class JoinProperty<T extends PropertyInterface> extends MapProperty<JoinP
         return interfaces;
     }
 
-    public JoinProperty(String iSID, int intNum, TableFactory iTableFactory, Property<T> iProperty) {
-        super(iSID, getInterfaces(intNum), iTableFactory);
-        implementations = new PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T>(iProperty);
+    public JoinProperty(String iSID, int intNum, Property<T> iProperty) {
+        super(iSID, getInterfaces(intNum));
+        implement = new PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T>(iProperty);
     }
 
-    InterfaceClassSet<JoinPropertyInterface> getMapClassSet(MapRead<JoinPropertyInterface> Read, InterfaceClass<T> InterfaceImplement) {
-        InterfaceClassSet<JoinPropertyInterface> Result = getUniversalInterface();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : implementations.mapping.entrySet())
-           Result = Result.and(Read.getImplementClassSet(MapInterface.getValue(),InterfaceImplement.get(MapInterface.getKey())));
-        return Result;
-    }
+    public SourceExpr calculateSourceExpr(Map<JoinPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
 
-    public void fillRequiredChanges(Integer incrementType, Map<Property, Integer> requiredTypes) {
-
-        // если только основное - Property ->I - как было (если изменилось только 2 то его и вкинем), возвр. I
-        // иначе (не (основное MultiplyProperty и 1)) - Property, Implements ->0 - как было, возвр. 0 - (на подчищение - если (1 или 2) то Left Join'им старые значения)
-        // иначе (основное MultiplyProperty и 1) - Implements ->1 - как было (но с другим оператором), возвр. 1
-
-        if(!containsImplement(requiredTypes.keySet())) {
-            implementations.property.setChangeType(requiredTypes, incrementType);
-        } else {
-            int ReqType = (implementAllInterfaces() && incrementType.equals(0)?0:2);
-
-            implementations.property.setChangeType(requiredTypes,ReqType);
-            for(PropertyInterfaceImplement Interface : implementations.mapping.values())
-                if(Interface instanceof PropertyMapImplement)
-                    (((PropertyMapImplement)Interface).property).setChangeType(requiredTypes,(implementations.property instanceof MultiplyFormulaProperty && incrementType.equals(1)?1:ReqType));
-        }
-    }
-
-    // инкрементные св-ва
-    public Change incrementChanges(DataSession session, int changeType) {
-
-        // алгоритм такой - для всех map св-в (в которых были изменения) строим подмножества изм. св-в
-        // далее реализации этих св-в "замещаем" (то есть при JOIN будем подставлять), с остальными св-вами делаем LEFT JOIN на IS NULL
-        // и JOIN'им с основным св-вом делая туда FULL JOIN новых значений
-        // или UNION или большой FULL JOIN в нужном порядке (и не делать LEFT JOIN на IS NULL) и там сделать большой NVL
-
-        ChangeQuery<JoinPropertyInterface,PropertyField> resultQuery = new ChangeQuery<JoinPropertyInterface, PropertyField>(interfaces); // по умолчанию на KEYNULL (но если Multiply то 1 на сумму)
-        ValueClassSet<JoinPropertyInterface> resultClass = new ValueClassSet<JoinPropertyInterface>();
-
-        int queryIncrementType = changeType;
-        if(implementations.property instanceof MultiplyFormulaProperty && changeType ==1)
-            resultQuery.add(getMapQuery(getChangeImplements(session,1), changeTable.value,resultClass,true));
-        else {
-            // если нужна 1 и изменились св-ва то придется просто 2-ку считать (хотя это потом можно поменять)
-            if(queryIncrementType==1 && containsImplement(session.propertyChanges.keySet()))
-                queryIncrementType = 2;
-
-            // все на Value - PrevValue не интересует, его как раз верхний подгоняет
-            resultQuery.add(getMapQuery(getChange(session,queryIncrementType==1?1:0), changeTable.value,resultClass,false));
-            if(queryIncrementType==2) resultQuery.add(getMapQuery(getPreviousChange(session), changeTable.prevValue,new ValueClassSet<JoinPropertyInterface>(),false));
-        }
-
-        return new Change(queryIncrementType,resultQuery,resultClass);
-    }
-
-    public Integer getIncrementType(Collection<Property> changedProps, Set<Property> toWait) {
-        if(!containsImplement(changedProps)) {
-            toWait.add(implementations.property);
-            return null;
-        } else
-        if(implementations.property instanceof MultiplyFormulaProperty)
-            return 1;
-        else
-            return 0;
-    }
-
-    Property<T> getMapProperty() {
-        return implementations.property;
-    }
-
-    Map<T, PropertyInterfaceImplement<JoinPropertyInterface>> getMapImplements() {
-        return implementations.mapping;
-    }
-
-    Collection<JoinPropertyInterface> getMapInterfaces() {
-        return interfaces;
-    }
-
-    // по сути для формулы выделяем
-    ValueClassSet<JoinPropertyInterface> getReadValueClassSet(MapRead<JoinPropertyInterface> Read, InterfaceClassSet<T> MapClasses) {
-        ValueClassSet<JoinPropertyInterface> Result = new ValueClassSet<JoinPropertyInterface>();
-
-        if(implementations.property instanceof ObjectFormulaProperty) {
-            ObjectFormulaProperty ObjectProperty = (ObjectFormulaProperty) implementations.property;
-            // сначала кидаем на baseClass, bit'ы
-            for(InterfaceClass<JoinPropertyInterface> ValueInterface : getMapClassSet(Read, (InterfaceClass<T>) ObjectProperty.getInterfaceClass(ClassSet.getUp(RemoteClass.base)))) {
-                InterfaceClass<T> ImplementInterface = new InterfaceClass<T>();
-                for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> MapInterface : implementations.mapping.entrySet()) // если null то уже не подходит по интерфейсу
-                    ImplementInterface.put(MapInterface.getKey(), MapInterface.getValue().mapValueClass(ValueInterface));
-
-                if(!ImplementInterface.isEmpty()) {
-                    Result.or(new ChangeClass<JoinPropertyInterface>(ValueInterface, implementations.property.getValueClass(ImplementInterface)));
-                    MapClasses.or(ImplementInterface);
-                }
-            }
-        } else {
-            for(ChangeClass<T> ImplementChange : Read.getMapChangeClass(implementations.property))
-                for(InterfaceClass<T> ImplementInterface : ImplementChange.interfaceClasses) {
-                    InterfaceClassSet<JoinPropertyInterface> ResultInterface = getMapClassSet(Read, ImplementInterface);
-                    if(!ResultInterface.isEmpty()) {
-                        Result.or(new ChangeClass<JoinPropertyInterface>(ResultInterface,ImplementChange.value));
-                        MapClasses.or(ImplementInterface);
-                    }
-                }
-        }
-
-        return Result;
-    }
-
-    void fillChangedRead(UnionQuery<JoinPropertyInterface, PropertyField> listQuery, PropertyField value, MapChangedRead<JoinPropertyInterface> read, ValueClassSet<JoinPropertyInterface> readClasses) {
-        // создается JoinQuery - на вход getMapInterfaces, Query.MapKeys - map интерфейсов
-        InterfaceClassSet<T> MapClasses = new InterfaceClassSet<T>();
-        ValueClassSet<JoinPropertyInterface> result = getReadValueClassSet(read, MapClasses);
-        if(result.isEmpty()) return;
-
-        JoinQuery<JoinPropertyInterface,PropertyField> query = new JoinQuery<JoinPropertyInterface, PropertyField>(interfaces);
-
-        // далее создается для getMapImplements - map <ImplementClass,SourceExpr> имплементаций - по getExpr'ы (Changed,SourceExpr) с переданным map интерфейсов
-        Map<T, SourceExpr> implementSources = new HashMap<T,SourceExpr>();
-        Map<PropertyInterfaceImplement<JoinPropertyInterface>, SourceExpr> implementExprs = new HashMap<PropertyInterfaceImplement<JoinPropertyInterface>, SourceExpr>();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> implement : implementations.mapping.entrySet()) {
-            SourceExpr implementExpr = read.getImplementExpr(implement.getValue(), query.mapKeys, result.getClassSet(ClassSet.universal));
-            implementSources.put(implement.getKey(), implementExpr);
-            implementExprs.put(implement.getValue(), implementExpr);
-        }
-        read.fillMapExpr(query, value, implementations.property,implementSources,implementExprs,MapClasses);
-
-        readClasses.or(result);
-        listQuery.add(query);
-    }
-
-    public ClassSet calculateValueClass(InterfaceClass<JoinPropertyInterface> ClassImplement) {
-        return getValueClassSet().getValueClass(ClassImplement);
-    }
-
-    public InterfaceClassSet<JoinPropertyInterface> calculateClassSet(ClassSet reqValue) {
-        InterfaceClassSet<JoinPropertyInterface> Result = new InterfaceClassSet<JoinPropertyInterface>();
-        for(InterfaceClass<T> ImplementClass : implementations.property.getClassSet(reqValue))
-            Result.or(getMapClassSet(new MapRead<JoinPropertyInterface>(),ImplementClass));
-        return Result;
-    }
-
-    public ValueClassSet<JoinPropertyInterface> calculateValueClassSet() {
-        return getReadValueClassSet(DBRead,new InterfaceClassSet<T>());
-    }
-
-    Object JoinValue = "jvalue";
-    SourceExpr calculateSourceExpr(Map<JoinPropertyInterface,? extends SourceExpr> joinImplement, InterfaceClassSet<JoinPropertyInterface> joinClasses) {
-
-        // именно через Query потому как если не хватит ключей компилятор их подхватит здесь
-        JoinQuery<JoinPropertyInterface,Object> Query = new JoinQuery<JoinPropertyInterface,Object>(interfaces);
         // считаем новые SourceExpr'ы и классы
-        Map<T, SourceExpr> ImplementSources = new HashMap<T, SourceExpr>();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : implementations.mapping.entrySet())
-            ImplementSources.put(Implement.getKey(),Implement.getValue().mapSourceExpr(Query.mapKeys, joinClasses));
-
-        InterfaceClassSet<T> ImplementClasses = new InterfaceClassSet<T>();
-        for(InterfaceClass<JoinPropertyInterface> JoinClass : joinClasses) {
-            InterfaceClass<T> ImplementClass = new InterfaceClass<T>();
-            for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> Implement : implementations.mapping.entrySet())
-                ImplementClass.put(Implement.getKey(),Implement.getValue().mapValueClass(JoinClass));
-            ImplementClasses.or(ImplementClass);
-        }
-
-        Query.properties.put(JoinValue, implementations.property.getSourceExpr(ImplementSources, ImplementClasses));
-        return (new Join<JoinPropertyInterface,Object>(Query, joinImplement)).exprs.get(JoinValue);
+        Map<T, SourceExpr> implementExprs = new HashMap<T, SourceExpr>();
+        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> interfaceImplement : implement.mapping.entrySet())
+            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapSourceExpr(joinImplement, session, defaultProps, changedWhere, noUpdateProps));
+        return implement.property.getSourceExpr(implementExprs, session, defaultProps, noUpdateProps, changedWhere);
     }
 
-    Map<PropertyField, Type> getMapNullProps(PropertyField Value) {
-        Map<PropertyField, Type> NullProps = new HashMap<PropertyField, Type>();
-        NullProps.put(Value, getType());
-        return NullProps;
+    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
+        boolean changed = false;
+        for(PropertyInterfaceImplement<JoinPropertyInterface> interfaceImplement : implement.mapping.values())
+            changed = interfaceImplement.mapFillChanges(changedProperties, changes, noUpdateProps, defaultProps) || changed;
+        return implement.property.fillChanges(changedProperties, changes, defaultProps, noUpdateProps) || changed;
     }
 
-    PropertyField getDefaultObject() {
-        return changeTable.value;
-    }
 
-    List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> getImplements(Map<JoinPropertyInterface, ObjectValue> keys, ChangePropertySecurityPolicy securityPolicy) throws SQLException {
-        List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> Result = new ArrayList<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>>();
-        List<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>> BitProps = new ArrayList<PropertyMapImplement<PropertyInterface, JoinPropertyInterface>>();
-        for(PropertyInterfaceImplement<JoinPropertyInterface> Implement : implementations.mapping.values())
-            if(Implement instanceof PropertyMapImplement) {
-                PropertyMapImplement<PropertyInterface, JoinPropertyInterface> PropertyImplement = (PropertyMapImplement<PropertyInterface, JoinPropertyInterface>)Implement;
-                // все Data вперед, биты назад, остальные попорядку
-                if(PropertyImplement.property instanceof DataProperty)
-                    Result.add(PropertyImplement);
-                else {
-                    ChangeValue ChangeValue = PropertyImplement.mapGetChangeProperty(null, keys, 0, securityPolicy);
-                    if(ChangeValue!=null && ChangeValue.changeClass instanceof BitClass)
-                        BitProps.add(PropertyImplement);
-                    else // в начало
-                        Result.add(0,PropertyImplement);
-                }
-            }
-        Result.addAll(0,BitProps);
-        return Result;
+    @Override
+    public MapChangeDataProperty<JoinPropertyInterface> getChangeProperty(Map<JoinPropertyInterface, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
+        if(implement.mapping.size()!=1) return null;
+        return implement.mapping.values().iterator().next().mapGetChangeProperty(interfaceClasses, securityPolicy, externalID);
     }
 }

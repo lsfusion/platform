@@ -9,7 +9,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
 
-public class ClientBitClass extends ClientClass {
+public class ClientBitClass extends ClientDataClass {
 
     public ClientBitClass(DataInputStream inStream) throws IOException {
         super(inStream);
@@ -23,9 +23,4 @@ public class ClientBitClass extends ClientClass {
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new BitPropertyEditor(value); }
-
-    public Class getJavaClass() {
-        return Boolean.class;
-    }
-
 }

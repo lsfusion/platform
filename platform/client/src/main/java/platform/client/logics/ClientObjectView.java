@@ -2,9 +2,12 @@ package platform.client.logics;
 
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.logics.classes.ClientDataClass;
+import platform.client.logics.classes.ClientClass;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.util.Collection;
 
 public class ClientObjectView extends ClientCellView {
@@ -35,8 +38,15 @@ public class ClientObjectView extends ClientCellView {
         if (!object.groupObject.singleViewType) {
             form.switchClassView(object.groupObject);
             return null;
-        } else
-            return super.getEditorComponent(form, value, isDataChanging, externalID);
+        } else {
+            ClientClass cls;
+            if(baseType instanceof ClientDataClass)
+                cls = (ClientDataClass)baseType;
+            else // идиотизм конечно но пока ладно
+                cls = form.models.get(object.groupObject).objects.get(object).classModel.currentClass;
+
+            return cls.getEditorComponent(form, this, value, getFormat());
+        }
     }
 
 }
