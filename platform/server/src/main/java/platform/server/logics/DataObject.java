@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import platform.server.data.classes.ConcreteClass;
+import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 
@@ -30,6 +31,7 @@ public class DataObject extends ObjectValue {
 
         assert object!=null;
         assert (object instanceof Number || object instanceof String || object instanceof Boolean || object instanceof byte[]);
+        assert !(objectClass instanceof LogicalClass && !object.equals(true));
 
         objectClass = iClass;
     }

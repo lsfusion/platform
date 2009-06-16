@@ -3,6 +3,7 @@ package platform.server.data.classes;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
+import platform.interop.Data;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -44,15 +45,11 @@ public class ByteArrayClass extends DataClass<byte[]> {
     }
 
     public byte getTypeID() {
-        return 8;
+        return Data.BYTEARRAY;
     }
 
     public String getDB(SQLSyntax syntax) {
         return syntax.getByteArrayType();
-    }
-
-    public String getEmptyString() {
-        throw new RuntimeException("not supported");
     }
 
     public boolean isSafeString(Object value) {

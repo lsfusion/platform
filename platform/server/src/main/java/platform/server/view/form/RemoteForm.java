@@ -141,10 +141,8 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             propertyMapper = ipropertyMapper;
         }
 
-        Filter doMapping(FilterNavigator filterKey) throws SQLException {
+        CompareFilter doMapping(PropertyObjectImplement mapProperty,CompareFilterNavigator filterKey) throws SQLException {
 
-            PropertyObjectImplement mapProperty = propertyMapper.doMapping(filterKey.property);
-            
             ValueLinkNavigator navigatorValue = filterKey.value;
             ValueLink value = null;
             if (navigatorValue instanceof UserLinkNavigator)
@@ -154,7 +152,21 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
             if (navigatorValue instanceof PropertyLinkNavigator)
                 value = new PropertyValueLink(propertyMapper.doMapping(((PropertyLinkNavigator)navigatorValue).property));
 
-            return new Filter(mapProperty, filterKey.compare, value);
+            return new CompareFilter(mapProperty, filterKey.compare, value);
+        }
+
+        NotNullFilter doMapping(PropertyObjectImplement mapProperty, NotNullFilterNavigator filterKey) {
+            return new NotNullFilter(mapProperty);
+        }
+
+        Filter doMapping(FilterNavigator filterKey) throws SQLException {
+            PropertyObjectImplement mapProperty = propertyMapper.doMapping(filterKey.property);
+            if(filterKey instanceof CompareFilterNavigator)
+                return doMapping(mapProperty, (CompareFilterNavigator) filterKey);
+            if(filterKey instanceof NotNullFilterNavigator)
+                return doMapping(mapProperty, (NotNullFilterNavigator) filterKey); 
+
+            throw new RuntimeException("not supported");
         }
     }
 
@@ -355,38 +367,41 @@ public class RemoteForm<T extends BusinessLogics<T>> implements PropertyUpdateVi
         // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на ValueLink сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение ValueLink, GetValueExpr
         for(Filter<?> filter : object.groupTo.filters) {
-            if(filter.compare ==0 && filter.property.property instanceof DataProperty) {
-                JoinQuery<ObjectImplement,String> subQuery = new JoinQuery<ObjectImplement,String>(ObjectImplement.getMapKeys(filter.property.mapping.values()));
-                Map<ObjectImplement,DataObject> fixedObjects = new HashMap<ObjectImplement, DataObject>();
-                for(ObjectImplement mapObject : filter.property.mapping.values()) {
-                    ObjectImplement sibObject = (CustomObjectImplement) mapObject;
-                    if(sibObject.groupTo !=object.groupTo) {
-                        fixedObjects.put(sibObject,sibObject.getValue());
-                    } else {
-                        if(sibObject!=object)
-                            subQuery.and(subQuery.mapKeys.get(sibObject).getIsClassWhere(sibObject.getGridClass().getUpSet()));
-                        else
-                            fixedObjects.put(sibObject,addObject);
+            if(filter instanceof CompareFilter) {
+                CompareFilter<?> compareFilter = (CompareFilter)filter;
+                if(compareFilter.compare ==0 && filter.property.property instanceof DataProperty) {
+                    JoinQuery<ObjectImplement,String> subQuery = new JoinQuery<ObjectImplement,String>(ObjectImplement.getMapKeys(filter.property.mapping.values()));
+                    Map<ObjectImplement,DataObject> fixedObjects = new HashMap<ObjectImplement, DataObject>();
+                    for(ObjectImplement mapObject : filter.property.mapping.values()) {
+                        ObjectImplement sibObject = (CustomObjectImplement) mapObject;
+                        if(sibObject.groupTo !=object.groupTo) {
+                            fixedObjects.put(sibObject,sibObject.getValue());
+                        } else {
+                            if(sibObject!=object)
+                                subQuery.and(subQuery.mapKeys.get(sibObject).getIsClassWhere(sibObject.getGridClass().getUpSet()));
+                            else
+                                fixedObjects.put(sibObject,addObject);
+                        }
                     }
-                }
 
-                subQuery.putKeyWhere(fixedObjects);
+                    subQuery.putKeyWhere(fixedObjects);
 
-                subQuery.properties.put("newvalue", filter.value.getValueExpr(object.groupTo.getClassGroup(),subQuery.mapKeys, session.changes, filter.property.property.getType(), getDefaultProperties(), getNoUpdateProperties()));
+                    subQuery.properties.put("newvalue", compareFilter.value.getValueExpr(object.groupTo.getClassGroup(),subQuery.mapKeys, session.changes, filter.property.property.getType(), getDefaultProperties(), getNoUpdateProperties()));
 
-                LinkedHashMap<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> result = subQuery.executeSelectClasses(session,BL.baseClass);
-                // изменяем св-ва
-                for(Entry<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> row : result.entrySet()) {
-                    DataProperty changeProperty = (DataProperty) filter.property.property;
-                    Map<DataPropertyInterface,DataObject> keys = new HashMap<DataPropertyInterface, DataObject>();
-                    for(DataPropertyInterface propertyInterface : changeProperty.interfaces) {
-                        CustomObjectImplement changeObject = (CustomObjectImplement) filter.property.mapping.get(propertyInterface);
-                        keys.put(propertyInterface,row.getKey().get(changeObject));
+                    LinkedHashMap<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> result = subQuery.executeSelectClasses(session,BL.baseClass);
+                    // изменяем св-ва
+                    for(Entry<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> row : result.entrySet()) {
+                        DataProperty changeProperty = (DataProperty) filter.property.property;
+                        Map<DataPropertyInterface,DataObject> keys = new HashMap<DataPropertyInterface, DataObject>();
+                        for(DataPropertyInterface propertyInterface : changeProperty.interfaces) {
+                            CustomObjectImplement changeObject = (CustomObjectImplement) filter.property.mapping.get(propertyInterface);
+                            keys.put(propertyInterface,row.getKey().get(changeObject));
+                        }
+                        session.changeProperty(changeProperty,keys,row.getValue().get("newvalue"),false);
                     }
-                    session.changeProperty(changeProperty,keys,row.getValue().get("newvalue"),false);
+                } else {
+                    if (object.groupTo.equals(compareFilter.getApplyObject())) foundConflict = true;
                 }
-            } else {
-                if (object.groupTo.equals(filter.getApplyObject())) foundConflict = true;
             }
         }
 

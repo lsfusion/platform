@@ -107,7 +107,7 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> implements 
 
     void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException {
 
-        for(Filter filt : filters) 
+        for(Filter filt : filters)
             filt.fillSelect(query, classGroup, session, defaultProps, noUpdateProps);
 
         // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом

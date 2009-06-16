@@ -1,6 +1,7 @@
 package platform.server.data.classes;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.interop.Data;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class IntegerClass extends IntegralClass<Integer> {
     }
 
     public byte getTypeID() {
-        return 1;
+        return Data.INTEGER;
     }
 
     boolean isCompatible(DataClass compClass) {

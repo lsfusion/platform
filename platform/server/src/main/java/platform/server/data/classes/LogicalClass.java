@@ -1,38 +1,31 @@
 package platform.server.data.classes;
 
+import net.sf.jasperreports.engine.JRAlignment;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
 import platform.server.view.form.client.report.ReportDrawField;
-import platform.server.data.sql.SQLSyntax;
 import platform.interop.Data;
 
-import java.util.Random;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.sql.SQLException;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.Format;
+import java.util.*;
 
-import net.sf.jasperreports.engine.JRAlignment;
+public class LogicalClass extends DataClass<Boolean> {
 
-public class BitClass extends DataClass<Boolean> {
-
-    public static final BitClass instance = new BitClass();
+    public static final LogicalClass instance = new LogicalClass();
 
     public String toString() {
-        return "Bit";
+        return "Logical";
     }
 
     public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        return new DataObject(randomizer.nextBoolean(),this);
+        return new DataObject(true,this);
     }
 
     public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        List<DataObject> result = new ArrayList<DataObject>();
-        result.add(new DataObject(false,this));
-        result.add(new DataObject(true,this));
-        return result;
+        return Collections.singletonList(new DataObject(true,this));
     }
 
     public int getPreferredWidth() { return 35; }
@@ -52,11 +45,11 @@ public class BitClass extends DataClass<Boolean> {
     }
 
     public byte getTypeID() {
-        return Data.BIT;
+        return Data.LOGICAL;
     }
 
     public DataClass getCompatible(DataClass compClass) {
-        return compClass instanceof BitClass ?this:null;
+        return compClass instanceof LogicalClass ?this:null;
     }
 
     public Object getDefaultValue() {
@@ -68,13 +61,24 @@ public class BitClass extends DataClass<Boolean> {
     }
 
     public Boolean read(Object value) {
-        if(value instanceof Number)
-            return ((Number)value).byteValue()!=0;
-        else
-            return (Boolean) value;
+        if(value!=null) return true;
+        return null;
     }
 
     public boolean isSafeString(Object value) {
+        return true;
+    }
+    public String getString(Object value, SQLSyntax syntax) {
+        assert (Boolean)value;
+        return syntax.getBitString(true);
+    }
+
+    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+        assert (Boolean)value;
+        statement.setByte(num, (byte)1);
+    }
+
+/*    public boolean isSafeString(Object value) {
         return true;
     }
     public String getString(Object value, SQLSyntax syntax) {
@@ -84,5 +88,5 @@ public class BitClass extends DataClass<Boolean> {
     public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
         statement.setByte(num, (byte) ((Boolean)value?1:0));
     }
-
+  */
 }

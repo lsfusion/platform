@@ -58,11 +58,6 @@ public class PostgreDataAdapter extends DataAdapter {
         return "";
     }
 
-    public String getNullValue(Type dbType) {
-        String emptyValue = dbType.getEmptyString();
-        return "NULLIF(" + emptyValue + "," + emptyValue + ")";
-    }
-
     public String startTransaction() {
         return "BEGIN TRANSACTION";
     }

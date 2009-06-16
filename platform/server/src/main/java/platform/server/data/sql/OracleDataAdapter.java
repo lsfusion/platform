@@ -98,11 +98,6 @@ class OracleDataAdapter extends DataAdapter {
         return "SELECT " + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy);
     }
 
-    public String getNullValue(Type dbType) {
-        String EmptyValue = dbType.getEmptyString();
-        return "NULLIF(" + EmptyValue + "," + EmptyValue + ")";
-    }
-
     public String getUnionOrder(String union, String orderBy, String top) {
         if(top.length()==0)
             return union + clause("ORDER BY", orderBy);

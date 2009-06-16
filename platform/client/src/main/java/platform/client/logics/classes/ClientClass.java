@@ -2,14 +2,13 @@ package platform.client.logics.classes;
 
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.ClientCellView;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.Format;
-import java.rmi.RemoteException;
 
 abstract public class ClientClass implements Serializable {
 
@@ -23,14 +22,15 @@ abstract public class ClientClass implements Serializable {
     public static ClientClass deserialize(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
 
-        if(type==0) return new ClientObjectClass(inStream);
-        if(type==1) return new ClientIntegerClass(inStream);
-        if(type==2) return new ClientLongClass(inStream);
-        if(type==3) return new ClientDoubleClass(inStream);
-        if(type==4) return new ClientNumericClass(inStream);
-        if(type==5) return new ClientBitClass(inStream);
-        if(type==6) return new ClientDateClass(inStream);
-        if(type==7) return new ClientStringClass(inStream);
+        if(type==Data.OBJECT) return new ClientObjectClass(inStream);
+        if(type==Data.INTEGER) return new ClientIntegerClass(inStream);
+        if(type==Data.LONG) return new ClientLongClass(inStream);
+        if(type==Data.DOUBLE) return new ClientDoubleClass(inStream);
+        if(type==Data.NUMERIC) return new ClientNumericClass(inStream);
+        if(type==Data.LOGICAL) return new ClientLogicalClass(inStream);
+        if(type==Data.DATE) return new ClientDateClass(inStream);
+        if(type==Data.STRING) return new ClientStringClass(inStream);
+        if(type==Data.BIT) return new ClientBitClass(inStream);
 
         throw new IOException();
     }

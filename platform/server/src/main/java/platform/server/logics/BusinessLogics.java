@@ -5,15 +5,14 @@ import platform.base.BaseUtils;
 import platform.base.Combinations;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteObject;
+import platform.interop.Compare;
 import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
 import platform.server.auth.User;
 import platform.server.data.*;
-import platform.server.data.types.Type;
 import platform.server.data.classes.*;
 import platform.server.data.query.JoinQuery;
-import platform.server.data.query.MapCacheAspect;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.data.IDTable;
@@ -63,12 +62,42 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return idCount;
     }
 
+    protected LCFP groeq2;
+    protected LCFP greater2;
+    protected LJP between;
+    protected LP and1;
+    protected LP equals2;
+
+    protected LP vtrue;
+
+    protected IsClassProperty date;
+
     void initBase() {
         baseClass = new BaseClass(idShift(1), "Объект");
 
         tableFactory = new TableFactory(baseClass);
 
         baseElement = new NavigatorElement<T>(0, "Base Group");
+
+        // математические св-ва
+        equals2 = addCFProp(Compare.EQUALS);
+        and1 = addAFProp(false);
+        groeq2 = addCFProp(Compare.GREATER_EQUALS);
+        greater2 = addCFProp(Compare.GREATER);
+        between = addJProp("Между", and1,3, groeq2,1,2, groeq2,3,1);
+        vtrue = addCProp("Истина",LogicalClass.instance,true);
+
+        date = new IsClassProperty(DateClass.instance);
+    }
+
+    protected class IsClassProperty {
+        public final LP is;
+        public final LP object;
+
+        public IsClassProperty(ValueClass valueClass) {
+            is = addCProp(valueClass.toString() + "(пр.)", LogicalClass.instance, true, valueClass);
+            object = addJProp(valueClass.toString(), and1, 1, 1, is, 1);
+        }
     }
 
     // по умолчанию с полным стартом
@@ -85,6 +114,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // сначала инициализируем stored потому как используется для определения интерфейса
         System.out.println("Initializing stored properties...");
         initStored();
+
+        assert checkUProps();
 
         System.out.println("Initializing navigators...");
         initNavigators();
@@ -529,13 +560,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return listProperty;
     }
 
-    protected LNFP addNFProp() {
-        NotNullFormulaProperty property = new NotNullFormulaProperty(genSID());
-        LNFP listProperty = new LNFP(property);
-        properties.add(property);
-        return listProperty;
-    }
-
     protected LMFP addMFProp(ConcreteValueClass value,int paramCount) {
         MultiplyFormulaProperty property = new MultiplyFormulaProperty(genSID(),value,paramCount);
         LMFP listProperty = new LMFP(property);
@@ -543,13 +567,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return listProperty;
     }
 
-    protected LOFP addOFProp(int bitCount) {
-        return addOFProp(genSID(),bitCount);
+    protected LAFP addAFProp(boolean... nots) {
+        return addAFProp(genSID(),nots);
     }    
-    protected LOFP addOFProp(String sID, int bitCount) {
-        ObjectFormulaProperty property = new ObjectFormulaProperty(sID,bitCount);
+    protected LAFP addAFProp(String sID, boolean... nots) {
+        AndFormulaProperty property = new AndFormulaProperty(sID,nots);
         properties.add(property);
-        return new LOFP(property);
+        return new LAFP(property);
     }
 
     <T extends PropertyInterface> List<PropertyInterfaceImplement> readPropImpl(LP<T,Property<T>> mainProp,Object... params) {
@@ -648,7 +672,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LUP addUProp(AbstractGroup group, String caption, Union unionType, int intNum, Object... params) {
         return addUProp(group, genSID(), caption, unionType, intNum, params);
     }
-
     protected LUP addUProp(String sID, String caption, Union unionType, int intNum, Object... params) {
         return addUProp(null, sID, caption, unionType, intNum, params);
     }
@@ -698,6 +721,96 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             group.add(property);
 
         return listProperty;
+    }
+
+    // объединение классовое (непересекающихся) свойств 
+    protected LUP addCUProp(String caption, LP... props) {
+        return addCUProp((AbstractGroup)null, caption, props);
+    }
+    protected LUP addCUProp(AbstractGroup group, String caption, LP... props) {
+        return addCUProp(group, genSID(), caption, props);
+    }
+    protected LUP addCUProp(String sID, String caption, LP... props) {
+        return addCUProp(null, sID, caption, props);
+    }
+    Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
+    // объединяет разные по классам св-ва
+    protected LUP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
+        assert checkCUProps.add(props);
+
+        int intNum = props[0].listInterfaces.size();
+        Object[] params = new Object[props.length*(1+intNum)];
+        for(int i=0;i<props.length;i++) {
+            params[i*(1+intNum)] = props[i];
+            for(int j=1;j<=intNum;j++)
+                params[i*(1+intNum)+j] = j;
+        }
+        return addUProp(group,sID,caption,Union.OVERRIDE,intNum,params);
+    }
+
+    // разница
+    protected LUP addDUProp(String caption, LP prop1, LP prop2) {
+        return addDUProp((AbstractGroup)null, caption, prop1, prop2);
+    }
+    protected LUP addDUProp(AbstractGroup group, String caption, LP prop1, LP prop2) {
+        return addDUProp(group, genSID(), caption, prop1, prop2);
+    }
+    protected LUP addDUProp(String sID, String caption, LP prop1, LP prop2) {
+        return addDUProp(null, sID, caption, prop1, prop2);
+    }
+    protected LUP addDUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
+        int intNum = prop1.listInterfaces.size();
+        Object[] params = new Object[2*(2+intNum)];
+        params[0] = 1; params[1] = prop1;
+        for(int i=0;i<intNum;i++)
+            params[2+i] = i+1;
+        params[2+intNum] = -1; params[3+intNum] = prop2;
+        for(int i=0;i<intNum;i++)
+            params[4+intNum+i] = i+1;
+        return addUProp(group,sID,caption,Union.SUM,intNum,params);
+    }
+
+    // объединение пересекающихся свойств
+    protected LUP addSUProp(String caption, Union unionType, LP... props) {
+        return addSUProp((AbstractGroup)null, caption, unionType, props);
+    }
+    protected LUP addSUProp(AbstractGroup group, String caption, Union unionType, LP... props) {
+        return addSUProp(group, genSID(), caption, unionType, props);
+    }
+    protected LUP addSUProp(String sID, String caption, Union unionType, LP... props) {
+        return addSUProp(null, sID, caption, unionType, props);
+    }
+    Collection<LP[]> checkSUProps = new ArrayList<LP[]>();
+    // объединяет разные по классам св-ва
+    protected LUP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
+        assert checkSUProps.add(props);
+        int exoff = (unionType==Union.SUM?1:0);
+        int intNum = props[0].listInterfaces.size();
+        Object[] params = new Object[props.length*(1+intNum+exoff)];
+        for(int i=0;i<props.length;i++) {
+            if(unionType==Union.SUM)
+                params[i*(1+intNum+exoff)] = 1;    
+            params[i*(1+intNum+exoff)+exoff] = props[i];
+            for(int j=1;j<=intNum;j++)
+                params[i*(1+intNum+exoff)+exoff+j] = j;
+        }
+        return addUProp(group,sID,caption,unionType,intNum,params);
+    }
+
+    private boolean intersect(LP[] props) {
+        for(int i=0;i<props.length;i++)
+            for(int j=i+1;j<props.length;j++)
+                if(((LP<?, ?>) props[i]).intersect((LP<?,?>)props[j]))
+                    return true;
+        return false;
+    }
+
+    private boolean checkUProps() {
+        for(LP[] props : checkCUProps)
+            assert !intersect(props);
+        for(LP[] props : checkSUProps)
+            assert intersect(props);
+        return true;
     }
 
     public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {

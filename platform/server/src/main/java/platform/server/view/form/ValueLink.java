@@ -18,9 +18,10 @@ abstract public class ValueLink {
 
 //    ClassSet getValueClass(GroupObjectImplement ClassGroup) {return null;}
 
-    boolean classUpdated(GroupObjectImplement ClassGroup) {return false;}
-
-    boolean objectUpdated(GroupObjectImplement ClassGroup) {return false;}
+    boolean classUpdated(GroupObjectImplement classGroup) {return false;}
+    boolean objectUpdated(GroupObjectImplement classGroup) {return false;}
+    boolean dataUpdated(Collection<Property> changedProps) {return false;}
+    void fillProperties(Collection<Property> properties) {}
 
     public abstract SourceExpr getValueExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableChanges session, Type DBType, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException;
 

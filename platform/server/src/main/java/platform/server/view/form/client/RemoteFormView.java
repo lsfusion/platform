@@ -180,7 +180,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
 
     public void addFilter(byte[] state) {
         try {
-            form.addUserFilter(new Filter(new DataInputStream(new ByteArrayInputStream(state)), form));
+            form.addUserFilter(new CompareFilter(new DataInputStream(new ByteArrayInputStream(state)), form));
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SQLException e) {

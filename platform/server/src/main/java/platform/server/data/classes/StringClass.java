@@ -3,6 +3,7 @@ package platform.server.data.classes;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
+import platform.interop.Data;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class StringClass extends DataClass<String> {
     }
 
     public byte getTypeID() {
-        return 7;
+        return Data.STRING;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -66,10 +67,6 @@ public class StringClass extends DataClass<String> {
 
     public String getDB(SQLSyntax syntax) {
         return syntax.getStringType(length);
-    }
-
-    public String getEmptyString() {
-        return "''";
     }
 
     public boolean isSafeString(Object value) {

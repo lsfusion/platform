@@ -1,6 +1,7 @@
 package platform.server.data.query.exprs;
 
 import platform.server.data.classes.ConcreteClass;
+import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.*;
 import platform.server.data.query.translators.DirectTranslator;
 import platform.server.data.query.translators.Translator;
@@ -22,6 +23,8 @@ public class ValueExpr extends StaticClassExpr implements QueryData {
     public ValueExpr(Object iObject, ConcreteClass iObjectClass) {
         object = iObject;
         objectClass = iObjectClass;
+
+        assert !(objectClass instanceof LogicalClass && !object.equals(true));
     }
 
     public ValueExpr(DataObject value) {

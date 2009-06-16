@@ -35,12 +35,12 @@ public class ObjectValueLink extends ValueLink {
     }*/
 
     @Override
-    boolean classUpdated(GroupObjectImplement ClassGroup) {
+    boolean classUpdated(GroupObjectImplement classGroup) {
         return object.classUpdated();
     }
 
     @Override
-    boolean objectUpdated(GroupObjectImplement ClassGroup) {
+    boolean objectUpdated(GroupObjectImplement classGroup) {
         return object.objectUpdated();
     }
 

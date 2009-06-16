@@ -1,8 +1,12 @@
 package platform.client.logics.classes;
 
-import platform.client.form.*;
-import platform.client.form.renderer.BitPropertyRenderer;
+import platform.client.form.PropertyRendererComponent;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.ClientForm;
+import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.editor.BitPropertyEditor;
+import platform.client.form.renderer.LogicalPropertyRenderer;
+import platform.client.form.renderer.BitPropertyRenderer;
 import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;

@@ -5,6 +5,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
 import platform.server.view.form.client.report.ReportDrawField;
+import platform.interop.Data;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -51,7 +52,7 @@ public class DateClass extends DataClass<Integer> {
     }
 
     public byte getTypeID() {
-        return 6;
+        return Data.DATE;
     }
 
     public DataClass getCompatible(DataClass compClass) {
@@ -73,10 +74,6 @@ public class DateClass extends DataClass<Integer> {
 
     public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
         statement.setInt(num, (Integer)value);
-    }
-
-    public String getEmptyString() {
-        return "0";
     }
 
     public boolean isSafeString(Object value) {

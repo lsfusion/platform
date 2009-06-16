@@ -35,10 +35,6 @@ public class ObjectType implements Type<Integer> {
         statement.setInt(num, (Integer)value);
     }
 
-    public String getEmptyString() {
-        return "0";
-    }
-
     public boolean isSafeString(Object value) {
         return true;
     }

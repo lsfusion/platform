@@ -1,6 +1,7 @@
 package platform.server.data.classes;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.interop.Data;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class LongClass extends IntegralClass<Long> {
     }
 
     public byte getTypeID() {
-        return 2;
+        return Data.LONG;
     }
 
     int getWhole() {

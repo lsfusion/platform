@@ -19,8 +19,8 @@ import java.util.Map;
 
 public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
-    ConcreteValueClass valueClass;
-    Object value;
+    final ConcreteValueClass valueClass;
+    final Object value;
 
     static Collection<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
         Collection<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
@@ -34,11 +34,11 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         
         valueClass = iValueClass;
         value = iValue;
+
+        assert value!=null;
     }
 
     protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
-        // если Value null то ничего не интересует
-        if(value ==null) return false;
         if(changes==null) return true;
         
         for(ClassPropertyInterface valueInterface : interfaces)
@@ -61,9 +61,6 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public SourceExpr calculateSourceExpr(Map<ClassPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
         // здесь session может быть null
-
-        if(value==null) return new CaseExpr();
-
         Where classWhere = Where.TRUE;
         for(ClassPropertyInterface valueInterface : interfaces) // берем (нужного класса and не remove'уты) or add'уты
             classWhere = classWhere.and(DataSession.getIsClassWhere(session, joinImplement.get(valueInterface),

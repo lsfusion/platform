@@ -4,15 +4,12 @@ import net.sf.jasperreports.engine.JRException;
 import platform.interop.Compare;
 import platform.interop.UserInfo;
 import platform.server.auth.User;
-import platform.server.data.Union;
-import platform.server.data.types.ObjectType;
 import platform.server.data.classes.*;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.properties.linear.LDP;
 import platform.server.logics.properties.linear.LP;
-import platform.server.view.form.Filter;
 import platform.server.view.navigator.*;
 
 import java.io.FileNotFoundException;
@@ -63,23 +60,22 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP lessEquals = addCFProp(Compare.LESS_EQUALS);
         LP less = addCFProp(Compare.LESS);
         multiply2 = addMFProp(quantityClass,2);
-        LP and1 = addOFProp(1);
 
         name = addDProp(baseGroup, "name", "Имя", StringClass.get(50), baseClass);
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, document);
         quantity = addDProp(baseGroup, "quantity", "Кол-во", quantityClass, document, article);
         outInQuantity = addDProp(baseGroup, "outInQuantity", "Кол-во расх. док.", quantityClass, outDocument, article, inDocument);
 
-        isInDocument = addCProp("Приход", BitClass.instance,true,inDocument);
+        isInDocument = addCProp("Приход", LogicalClass.instance,true,inDocument);
         inQuantity = addJProp("Кол-во прихода",multiply2,2,quantity,1,2,isInDocument,1);
 
-        LP isOutDocument = addCProp("Расход", BitClass.instance,true,outDocument);
+        LP isOutDocument = addCProp("Расход", LogicalClass.instance,true,outDocument);
         LP outQuantity = addJProp(baseGroup, "Кол-во расхода",multiply2,2,quantity,1,2,isOutDocument,1);
 
         outSumInQuantity = addGProp(baseGroup, "Кол-во расх.", outInQuantity, true, 1, 2);
         sumOutQuantity = addGProp(baseGroup, "Всего расх.", outInQuantity,true, 3, 2);
 
-        remains = addUProp(baseGroup,"Ост. по парт.",Union.SUM,2,1,inQuantity,1,2,-1,sumOutQuantity,1,2);
+        remains = addDUProp(baseGroup,"Ост. по парт.",inQuantity,sumOutQuantity);
 
         LP remainPrev = addGProp(baseGroup, "Всего до", addJProp(baseGroup, "Остаток до",multiply2,3,
                         addJProp("Документ до",and1,2,
@@ -150,7 +146,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addPropertyView(objArt, objInDoc, properties, baseGroup);
             addPropertyView(objOutDoc, objArt, objInDoc, properties, baseGroup);
 
-            addFixedFilter(new FilterNavigator(getPropertyView(remains.property).view, Filter.NOT_EQUALS, new UserLinkNavigator(0)));
+            addFixedFilter(new CompareFilterNavigator(getPropertyView(remains.property).view, Compare.NOT_EQUALS, new UserLinkNavigator(0)));
 
             addHintsNoUpdate(remains.property);
         }

@@ -12,8 +12,6 @@ public interface Type<T> extends Reader<T> {
 
     String getDB(SQLSyntax syntax);
 
-    String getEmptyString();
-
     boolean isSafeString(Object value);
     String getString(Object value, SQLSyntax syntax);
 

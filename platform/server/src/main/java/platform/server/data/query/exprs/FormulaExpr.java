@@ -63,6 +63,8 @@ public class FormulaExpr extends StaticClassExpr {
 
     @Override
     public AndExpr linearFollowFalse(Where where) {
+        where = where.orMeans(getWhere().not());
+        
         Map<String,AndExpr> transParams = new HashMap<String,AndExpr>();
         for(Map.Entry<String,AndExpr> param : params.entrySet())
             transParams.put(param.getKey(), param.getValue().linearFollowFalse(where));

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Collections;
 
-public class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInterfaceImplement<P> {
+public class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInterfaceImplement<P>, Comparable<P> {
 
     public int ID = 0;
     public PropertyInterface(int iID) {
@@ -36,4 +36,9 @@ public class PropertyInterface<P extends PropertyInterface<P>> implements Proper
     public MapChangeDataProperty<P> mapGetChangeProperty(Map<P, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
         return null;
     }
+
+    public int compareTo(P o) {
+        return ID-o.ID;
+    }
+
 }

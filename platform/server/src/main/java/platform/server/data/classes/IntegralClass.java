@@ -63,10 +63,6 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
             return NumericClass.get(integralClass.getWhole()+getPrecision(), getPrecision());
     }
 
-    public String getEmptyString() {
-        return "0";
-    }
-
     public boolean isSafeString(Object value) {
         return true;
     }

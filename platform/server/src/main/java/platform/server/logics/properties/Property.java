@@ -95,12 +95,21 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
     @Lazy
     public boolean anyInInterface(AndClassWhere<T> interfaceClasses) {
-        return !getQuery("value").<T>getClassWhere(new ArrayList<String>()).and(new ClassWhere<T>(interfaceClasses)).isFalse();
+        return !getClassWhere().and(new ClassWhere<T>(interfaceClasses)).isFalse();
     }
 
     @Lazy
     public boolean allInInterface(AndClassWhere<T> interfaceClasses) {
-        return new ClassWhere<T>(interfaceClasses).means(getQuery("value").<T>getClassWhere(new ArrayList<String>()));
+        return new ClassWhere<T>(interfaceClasses).means(getClassWhere());
+    }
+
+    public <P extends PropertyInterface> boolean intersect(Property<P> property,Map<P,T> map) {
+        return !getClassWhere().and(property.getClassWhere().mapKeys(map)).isFalse();
+    }
+
+    @Lazy
+    private ClassWhere<T> getClassWhere() {
+        return getQuery("value").getClassWhere(new ArrayList<String>());
     }
 
     // получает базовый класс по сути нужен для определения класса фильтра

@@ -47,11 +47,4 @@ public class AndClassExprWhere extends AbstractAndClassWhere<VariableClassExpr,A
             result.add((VariableClassExpr)table[indexes[i]]);
         return result;
     }
-
-    public Where toWhere() {
-        Where where = Where.TRUE;
-        for(int i=0;i<size;i++)
-            where = where.and(((VariableClassExpr)table[indexes[i]]).getIsClassWhere(vtable[indexes[i]]));
-        return where;
-    }
 }

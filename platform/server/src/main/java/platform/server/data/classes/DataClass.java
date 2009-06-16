@@ -8,6 +8,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.view.form.client.report.ReportDrawField;
+import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -91,13 +92,13 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, Class
     public static DataClass deserialize(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
 
-        if(type==1) return IntegerClass.instance;
-        if(type==2) return LongClass.instance;
-        if(type==3) return DoubleClass.instance;
-        if(type==4) return NumericClass.get(inStream.readInt(), inStream.readInt());
-        if(type==5) return BitClass.instance;
-        if(type==6) return DateClass.instance;
-        if(type==7) return StringClass.get(inStream.readInt());
+        if(type==Data.INTEGER) return IntegerClass.instance;
+        if(type==Data.LONG) return LongClass.instance;
+        if(type==Data.DOUBLE) return DoubleClass.instance;
+        if(type==Data.NUMERIC) return NumericClass.get(inStream.readInt(), inStream.readInt());
+        if(type==Data.LOGICAL) return LogicalClass.instance;
+        if(type==Data.DATE) return DateClass.instance;
+        if(type==Data.STRING) return StringClass.get(inStream.readInt());
 
         throw new IOException();
     }

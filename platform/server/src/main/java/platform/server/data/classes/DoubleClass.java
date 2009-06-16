@@ -1,6 +1,7 @@
 package platform.server.data.classes;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.interop.Data;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class DoubleClass extends IntegralClass<Double> {
     }
 
     public byte getTypeID() {
-        return 3;
+        return Data.DOUBLE;
     }
 
     int getWhole() {

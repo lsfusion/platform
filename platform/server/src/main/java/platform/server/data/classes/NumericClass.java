@@ -1,6 +1,7 @@
 package platform.server.data.classes;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.interop.Data;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class NumericClass extends IntegralClass<Double> {
     }
 
     public byte getTypeID() {
-        return 4; 
+        return Data.NUMERIC; 
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

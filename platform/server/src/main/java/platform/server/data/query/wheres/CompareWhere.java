@@ -63,6 +63,8 @@ public class CompareWhere extends DataWhere {
 
     @Override
     public Where linearFollowFalse(Where falseWhere) {
+        falseWhere = falseWhere.orMeans(not());
+        
         return new CompareWhere(operator1.linearFollowFalse(falseWhere),operator2.linearFollowFalse(falseWhere),compare);
     }
 

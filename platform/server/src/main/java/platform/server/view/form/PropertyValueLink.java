@@ -32,13 +32,23 @@ public class PropertyValueLink extends ValueLink {
     }*/
 
     @Override
-    boolean classUpdated(GroupObjectImplement ClassGroup) {
-        return property.classUpdated(ClassGroup);
+    boolean classUpdated(GroupObjectImplement classGroup) {
+        return property.classUpdated(classGroup);
     }
 
     @Override
-    boolean objectUpdated(GroupObjectImplement ClassGroup) {
-        return property.objectUpdated(ClassGroup);
+    boolean objectUpdated(GroupObjectImplement classGroup) {
+        return property.objectUpdated(classGroup);
+    }
+
+    @Override
+    boolean dataUpdated(Collection<Property> changedProps) {
+        return property.dataUpdated(changedProps);
+    }
+
+    @Override
+    void fillProperties(Collection<Property> properties) {
+        property.fillProperties(properties);
     }
 
     public SourceExpr getValueExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableChanges session, Type DBType, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {

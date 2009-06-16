@@ -25,8 +25,6 @@ public interface SQLSyntax {
     String getClustered();
     String getCommandEnd();
 
-    String getNullValue(Type dbType);
-
     String getSessionTableName(String tableName);
     String getCreateSessionTable(String tableName,String declareString,String constraintString);
     String getDropSessionTable(String tableName);

@@ -1,6 +1,6 @@
 package platform.server.data.query.wheres;
 
-import platform.server.data.classes.BitClass;
+import platform.server.data.classes.LogicalClass;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.AndExpr;
@@ -62,7 +62,7 @@ public class JoinWhere<J,U> extends DataWhere implements JoinData {
     }
 
     public SourceExpr getFJExpr() {
-        return new CaseExpr(this, new ValueExpr(true, BitClass.instance));
+        return new CaseExpr(this, new ValueExpr(true, LogicalClass.instance));
     }
 
     public String getFJString(String exprFJ) {

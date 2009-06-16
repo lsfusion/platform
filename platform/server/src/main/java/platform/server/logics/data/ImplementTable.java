@@ -65,9 +65,11 @@ public class ImplementTable extends Table {
     private final static int COMPARE_EQUAL = 3;
 
     // также возвращает карту если не Diff
-    <T> int compare(Map<T, ValueClass> toCompare,Map<T,KeyField> mapTo) {
+    private <T> int compare(Map<T, ValueClass> toCompare,Map<T,KeyField> mapTo) {
 
-        ListIterator<KeyField> iRec = (new ArrayList<KeyField>(mapFields.keySet())).listIterator();
+        toCompare = new TreeMap<T,ValueClass>(toCompare);
+        ListIterator<KeyField> iRec = (new ArrayList<KeyField>(new TreeSet<KeyField>(mapFields.keySet()))).listIterator();
+
         if(recCompare(IS_EQUAL,toCompare,iRec,mapTo)) return COMPARE_EQUAL;
         if(recCompare(IS_CHILD,toCompare,iRec,mapTo)) return COMPARE_UP;
         if(recCompare(IS_EQUAL,toCompare,iRec,mapTo)) return COMPARE_DOWN;

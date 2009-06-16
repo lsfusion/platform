@@ -8,13 +8,12 @@ import org.aspectj.lang.annotation.Aspect;
 import java.util.*;
 
 import platform.server.data.MapSource;
-import platform.server.data.classes.BitClass;
+import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.where.WhereBuilder;
-import platform.server.where.Where;
 import platform.server.logics.properties.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.session.TableChanges;
@@ -199,7 +198,7 @@ public class MapCacheAspect {
             WhereBuilder queryWheres = (changedWheres==null?null:new WhereBuilder());
             query.properties.put(PROPERTY_STRING, (SourceExpr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,changes,defaultProps,noUpdateProps,queryWheres}));
             if(changedWheres!=null)
-                query.properties.put(CHANGED_STRING,new CaseExpr(queryWheres.toWhere(),new ValueExpr(true,BitClass.instance)));
+                query.properties.put(CHANGED_STRING,new CaseExpr(queryWheres.toWhere(),new ValueExpr(true, LogicalClass.instance)));
 
             exprCache.put(implement,query);
         } else

@@ -8,7 +8,7 @@ public class RegularFilterNavigator {
     public String name = "";
     public KeyStroke key;
 
-    public RegularFilterNavigator(int iID, FilterNavigator ifilter, String iname, KeyStroke ikey) {
+    public RegularFilterNavigator(int iID, CompareFilterNavigator ifilter, String iname, KeyStroke ikey) {
         ID = iID;
         filter = ifilter;
         name = iname;

@@ -61,6 +61,14 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return false;
     }
 
+    boolean dataUpdated(Collection<Property> changedProps) {
+        return changedProps.contains(property);
+    }
+
+    public void fillProperties(Collection<Property> properties) {
+        properties.add(property);
+    }
+
     public Map<P, DataObject> getInterfaceValues() {
         Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
         for(Map.Entry<P, ObjectImplement> implement : mapping.entrySet())

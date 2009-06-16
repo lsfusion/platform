@@ -42,13 +42,15 @@ public class DataProperty extends Property<DataPropertyInterface> {
         // если null то значит полный список запрашивают
         if(changes==null) return true;
 
+        DefaultData defaultData = defaultProps.get(this);
+        if(defaultData!=null && defaultData.property.fillChanges(changedProperties, changes, BaseUtils.removeKey(defaultProps,this), noUpdateProps)) return true;
+
         if(changes.getProperties().contains(this)) return true;
         if(value instanceof CustomClass && changes.getRemoveClasses().contains((CustomClass)value)) return true;
         for(DataPropertyInterface propertyInterface : interfaces)
             if(changes.getRemoveClasses().contains(propertyInterface.interfaceClass)) return true;
 
-        DefaultData defaultData = defaultProps.get(this);
-        return (defaultData!=null && defaultData.property.fillChanges(changedProperties, changes, BaseUtils.removeKey(defaultProps,this), noUpdateProps));
+        return false;
     }
 
     @Override

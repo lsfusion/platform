@@ -28,13 +28,6 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr,AndClas
         return new MeanClassWhere(notNull,this);
     }
 
-    public Where toWhere() {
-        Where result = Where.FALSE;
-        for(AndClassExprWhere where : wheres)
-            result = result.or(where.toWhere());
-        return result;
-    }
-
     public boolean means(Where where) {
         for(AndClassExprWhere and : wheres)
             if(!new ClassExprWhere(and).toMeanWhere(and.keySet()).means(where)) return false;

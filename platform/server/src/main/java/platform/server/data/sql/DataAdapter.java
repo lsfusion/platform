@@ -1,7 +1,5 @@
 package platform.server.data.sql;
 
-import platform.server.data.types.Type;
-
 import java.sql.SQLException;
 
 public abstract class DataAdapter implements SQLSyntax {
@@ -65,10 +63,6 @@ public abstract class DataAdapter implements SQLSyntax {
 
     public boolean noAutoCommit() {
         return false;
-    }
-
-    public String getNullValue(Type dbType) {
-        return "NULL";
     }
 
     // по умолчанию
