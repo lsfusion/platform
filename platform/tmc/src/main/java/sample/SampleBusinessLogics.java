@@ -8,9 +8,10 @@ import platform.server.data.classes.*;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.properties.linear.LDP;
-import platform.server.logics.properties.linear.LP;
+import platform.server.logics.linear.properties.LDP;
+import platform.server.logics.linear.properties.LP;
 import platform.server.view.navigator.*;
+import platform.server.view.navigator.filter.CompareFilterNavigator;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -67,27 +68,27 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         outInQuantity = addDProp(baseGroup, "outInQuantity", "Кол-во расх. док.", quantityClass, outDocument, article, inDocument);
 
         isInDocument = addCProp("Приход", LogicalClass.instance,true,inDocument);
-        inQuantity = addJProp("Кол-во прихода",multiply2,2,quantity,1,2,isInDocument,1);
+        inQuantity = addJProp("Кол-во прихода",multiply2, quantity,1,2,isInDocument,1);
 
         LP isOutDocument = addCProp("Расход", LogicalClass.instance,true,outDocument);
-        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",multiply2,2,quantity,1,2,isOutDocument,1);
+        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",multiply2, quantity,1,2,isOutDocument,1);
 
-        outSumInQuantity = addGProp(baseGroup, "Кол-во расх.", outInQuantity, true, 1, 2);
-        sumOutQuantity = addGProp(baseGroup, "Всего расх.", outInQuantity,true, 3, 2);
+        outSumInQuantity = addSGProp(baseGroup, "Кол-во расх.", outInQuantity, 1, 2);
+        sumOutQuantity = addSGProp(baseGroup, "Всего расх.", outInQuantity, 3, 2);
 
         remains = addDUProp(baseGroup,"Ост. по парт.",inQuantity,sumOutQuantity);
 
-        LP remainPrev = addGProp(baseGroup, "Всего до", addJProp(baseGroup, "Остаток до",multiply2,3,
-                        addJProp("Документ до",and1,2,
-                                addJProp("Дата до",lessEquals,2,date,1,date,2),1,2,
+        LP remainPrev = addSGProp(baseGroup, "Всего до", addJProp(baseGroup, "Остаток до",multiply2,
+                addJProp("Документ до",and1,
+                        addJProp("Дата до",lessEquals, date,1,date,2),1,2,
                                 lessEquals,1,2),1,2,
-                        remains,1,3),true,2,3);
+                        remains,1,3),2,3);
 
-        LP calcQuantity = addJProp(baseGroup, "Расч. кол-во",addSFProp("prm1+LEAST(prm3,prm2)-prm3", quantityClass, 4),3,
-            remains,3,2,outQuantity,1,2, remainPrev,3,2,
-            addJProp(baseGroup, "Есть ост.",less,3,
-                addJProp(baseGroup, "Всего пред",addSFProp("prm1-prm2", quantityClass, 2),2,
-                        remainPrev,1,2,remains,1,2),3,2,
+        LP calcQuantity = addJProp(baseGroup, "Расч. кол-во",addSFProp("prm1+LEAST(prm3,prm2)-prm3", quantityClass, 4),
+                remains,3,2,outQuantity,1,2, remainPrev,3,2,
+            addJProp(baseGroup, "Есть ост.",less,
+                    addJProp(baseGroup, "Всего пред",addSFProp("prm1-prm2", quantityClass, 2),
+                            remainPrev,1,2,remains,1,2),3,2,
                 outQuantity,1,2),1,2,3);
 
 //        setDefProp(outInQuantity,calcQuantity,true);
@@ -146,7 +147,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addPropertyView(objArt, objInDoc, properties, baseGroup);
             addPropertyView(objOutDoc, objArt, objInDoc, properties, baseGroup);
 
-            addFixedFilter(new CompareFilterNavigator(getPropertyView(remains.property).view, Compare.NOT_EQUALS, new UserLinkNavigator(0)));
+            addFixedFilter(new CompareFilterNavigator(getPropertyView(remains.property).view, Compare.NOT_EQUALS, 0));
 
             addHintsNoUpdate(remains.property);
         }

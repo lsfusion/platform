@@ -2,12 +2,9 @@ package platform.server.where;
 
 import platform.base.BaseUtils;
 import platform.server.data.classes.where.ClassExprWhere;
-import platform.server.data.query.QueryData;
 import platform.server.data.query.Context;
-import platform.server.data.query.MapContext;
-import platform.server.data.sql.SQLSyntax;
-
-import java.util.Map;
+import platform.server.data.query.HashContext;
+import platform.server.data.query.CompileSource;
 
 
 abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
@@ -18,66 +15,29 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
     }
 
     abstract String getOp();
-    public String toString() {
-        if(wheres.length==0) return getOp().equals("AND")?"TRUE":"FALSE";
 
-        String result = "";
-        for(Where where : wheres)
-            result = (result.length()==0?"":result+" "+getOp()+" ") + where;
-        return "("+result+")";
-    }
-
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+    public String getSource(CompileSource compile) {
         if(wheres.length==0) return getOp().equals("AND")? TRUE_STRING : FALSE_STRING;
 
         String result = "";
         for(Where where : wheres)
-            result = (result.length()==0?"":result+" "+getOp()+" ") + where.getSource(queryData, syntax);
+            result = (result.length()==0?"":result+" "+getOp()+" ") + where.getSource(compile);
         return "("+result+")";
     }
 
-    public int fillContext(Context context, boolean compile) {
-        int level = -1;
+    public void fillContext(Context context) {
         for(Where where : wheres)
-            level = BaseUtils.max(where.fillContext(context, compile),level);
-        return level;
+            where.fillContext(context);
     }
 
-    public boolean equals(Where where, MapContext mapContext) {
-        if(where.getClass()!=getClass()) return false;
-
-        FormulaWhere thisWhere = (FormulaWhere)where;
-
-        if(wheres.length!= thisWhere.wheres.length) return false;
-
-        Where[] checkWheres = thisWhere.wheres.clone();
-        for(Where andWhere : wheres) {
-            boolean found = false;
-            for(int i=0;i<checkWheres.length;i++)
-                if(checkWheres[i]!=null && andWhere.equals(checkWheres[i], mapContext)) {
-                    checkWheres[i] = null;
-                    found = true;
-                    break;
-                }
-            if(!found) return false;
-        }
-
-        return true;
-    }
-
-    protected int getHash() {
+    public int hashContext(HashContext hashContext) {
         int result = hashCoeff();
         for(Where where : wheres)
-            result += where.hash();
+            result += where.hashContext(hashContext);
         return result;
     }
 
     abstract int hashCoeff();
-
-    // ручной кэш хэша
-    protected int getHashCode() {
-        return BaseUtils.hashArraySet(wheres)*hashCoeff();
-    }
 
     public ObjectWhereSet calculateObjects() {
         if(wheres.length==0)
@@ -153,7 +113,7 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
             if(where!=null) restWheres[rest++] = where;
         return restWheres;
     }
-    abstract WhereType[] newArray(int length);
+    public abstract WhereType[] newArray(int length);
 
     public ClassExprWhere calculateClassWhere() {
         return getMeanClassWheres().orMeans();

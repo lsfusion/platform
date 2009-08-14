@@ -1,7 +1,6 @@
 package platform.server.logics.properties;
 
 import platform.server.data.classes.ConcreteValueClass;
-import platform.server.data.types.Type;
 
 public class MultiplyFormulaProperty extends StringFormulaProperty {
 

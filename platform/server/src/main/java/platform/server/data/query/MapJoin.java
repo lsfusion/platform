@@ -2,11 +2,11 @@ package platform.server.data.query;
 
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.where.Where;
-import platform.base.BaseUtils;
 
+import java.util.Collection;
 import java.util.Map;
 
-public class MapJoin<V,MV> implements Join<V> {
+public class MapJoin<V,MV> extends Join<V> {
     private Join<MV> join;
     protected Map<V,MV> mapProps;
 
@@ -19,15 +19,12 @@ public class MapJoin<V,MV> implements Join<V> {
         return join.getExpr(mapProps.get(property));
     }
 
-    public Map<V, SourceExpr> getExprs() {
-        return BaseUtils.join(mapProps,join.getExprs());
+    public Collection<V> getProperties() {
+        return mapProps.keySet();
     }
 
     public Where getWhere() {
         return join.getWhere();
     }
 
-    public Context getContext() {
-        return join.getContext();
-    }
 }

@@ -1,10 +1,8 @@
 package platform.server.logics.properties;
 
-import platform.server.session.DataChanges;
-import platform.server.data.types.Type;
-import platform.base.BaseUtils;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
 abstract public class UnionProperty extends FunctionProperty<PropertyInterface> {
 
@@ -21,10 +19,7 @@ abstract public class UnionProperty extends FunctionProperty<PropertyInterface> 
 
     protected abstract Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> getOperands();
 
-    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
-        boolean changed = false;
-        for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : getOperands())
-            changed = operand.mapFillChanges(changedProperties, changes, noUpdateProps, defaultProps) || changed;
-        return changed;
+    protected void fillDepends(Set<Property> depends) {
+        fillDepends(depends,getOperands());
     }
 }

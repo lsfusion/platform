@@ -18,6 +18,6 @@ public abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
             up = up.or(cCase.where);
         }
 
-        return result;
+        return result.or(caseInterface.getElse().and(up.not()));
     }
 }

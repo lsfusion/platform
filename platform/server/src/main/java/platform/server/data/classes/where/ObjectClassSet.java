@@ -2,7 +2,7 @@ package platform.server.data.classes.where;
 
 import platform.server.data.classes.BaseClass;
 
-public interface ObjectClassSet extends ClassSet {
+public interface ObjectClassSet extends AndClassSet {
 
     BaseClass getBaseClass();
 

@@ -1,16 +1,15 @@
 package platform.server.caches;
 
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.classes.where.AndClassWhere;
-import platform.server.logics.properties.Property;
+import org.aspectj.lang.reflect.MethodSignature;
 
-import java.util.*;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Aspect
@@ -32,13 +31,13 @@ public class CacheAspect {
     @DeclareParents(value="@net.jcip.annotations.Immutable *",defaultImpl=ImmutableInterfaceImplement.class)
     private ImmutableInterface immutable;
 
-    class Invocation {
-        Method method;
-        Object[] args;
+    static class Invocation {
+        final Method method;
+        final Object[] args;
 
-        Invocation(ProceedingJoinPoint thisJoinPoint) {
-            method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
-            args = thisJoinPoint.getArgs();
+        Invocation(ProceedingJoinPoint thisJoinPoint, Object[] args) {
+            this.method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
+            this.args = args;
         }
 
         @Override
@@ -59,8 +58,9 @@ public class CacheAspect {
 
     @Around("execution(@platform.server.caches.Lazy * (@net.jcip.annotations.Immutable *).*(..)) && target(object)") // с call'ом есть баги
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        Invocation invoke = new Invocation(thisJoinPoint,thisJoinPoint.getArgs());
+        
         Map caches = ((ImmutableInterface)object).getCaches();
-        Invocation invoke = new Invocation(thisJoinPoint);
         Object result = caches.get(invoke);
         if(result==null) {
             result = thisJoinPoint.proceed();
@@ -69,11 +69,27 @@ public class CacheAspect {
         return result;
     }
 
+    @Around("execution(@platform.server.caches.ParamLazy * *.*(@net.jcip.annotations.Immutable *)) && target(object)") // с call'ом есть баги
+    public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        Object[] args = thisJoinPoint.getArgs();
+        Object[] switchArgs = new Object[args.length];
+        switchArgs[0] = object;
+        System.arraycopy(args, 1, switchArgs, 1, args.length-1);
+        Invocation invoke = new Invocation(thisJoinPoint,switchArgs);
+
+        Map caches = ((ImmutableInterface)args[0]).getCaches();
+        Object result = caches.get(invoke);
+        if(result==null) {
+            result = thisJoinPoint.proceed();
+            caches.put(invoke,result);
+        }
+        return result;
+    }
+    
     @Around("execution(@platform.server.caches.SynchronizedLazy * (@net.jcip.annotations.Immutable *).*(..)) && target(object)") // с call'ом есть баги
     public Object callSynchronizedMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         synchronized(object) {
             return callMethod(thisJoinPoint, object);
         }
     }
-
 }

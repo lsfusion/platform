@@ -9,6 +9,7 @@ import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.client.*;
 import platform.client.logics.*;
+import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.layout.ReportDockable;
@@ -489,19 +490,19 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    private void changeFind(List<ClientFilter> conditions) {
+    private void changeFind(List<ClientPropertyFilter> conditions) {
     }
 
-    private final Map<ClientGroupObjectImplementView, List<ClientFilter>> currentFilters = new HashMap();
+    private final Map<ClientGroupObjectImplementView, List<ClientPropertyFilter>> currentFilters = new HashMap();
     
-    private void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientFilter> conditions) throws IOException {
+    private void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientPropertyFilter> conditions) throws IOException {
 
         currentFilters.put(groupObject, conditions);
 
         remoteForm.clearUserFilters();
 
-        for (List<ClientFilter> listFilter : currentFilters.values())
-            for (ClientFilter filter : listFilter) {
+        for (List<ClientPropertyFilter> listFilter : currentFilters.values())
+            for (ClientPropertyFilter filter : listFilter) {
                 remoteForm.addFilter(Serializer.serializeClientFilter(filter));
             }
 
@@ -1575,8 +1576,8 @@ public class ClientForm extends JPanel {
 
                     public final QueryView queryView;
 
-                    final List<ClientFilter> conditions;
-                    final Map<ClientFilter, QueryConditionView> conditionViews;
+                    final List<ClientPropertyFilter> conditions;
+                    final Map<ClientPropertyFilter, QueryConditionView> conditionViews;
 
                     boolean hasChanged = false;
 
@@ -1604,7 +1605,7 @@ public class ClientForm extends JPanel {
                         
                         hasChanged = true;
 
-                        ClientFilter condition = new ClientFilter();
+                        ClientPropertyFilter condition = new ClientPropertyFilter();
                         conditions.add(condition);
 
                         QueryConditionView conditionView = new QueryConditionView(condition);
@@ -1619,7 +1620,7 @@ public class ClientForm extends JPanel {
 //                        container.validate();
                     }
 
-                    public void removeCondition(ClientFilter condition) {
+                    public void removeCondition(ClientPropertyFilter condition) {
 
                         hasChanged = true;
                         
@@ -1647,7 +1648,7 @@ public class ClientForm extends JPanel {
 
                     protected class QueryConditionView extends JPanel {
 
-                        final ClientFilter filter;
+                        final ClientPropertyFilter filter;
 
                         final JComboBox propertyView;
 
@@ -1679,7 +1680,7 @@ public class ClientForm extends JPanel {
                             }
                         }
 
-                        public QueryConditionView(ClientFilter ifilter) {
+                        public QueryConditionView(ClientPropertyFilter ifilter) {
 
                             filter = ifilter;
 

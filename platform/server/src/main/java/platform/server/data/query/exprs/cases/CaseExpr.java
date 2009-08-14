@@ -1,46 +1,37 @@
 package platform.server.data.query.exprs.cases;
 
-import platform.base.BaseUtils;
 import platform.server.data.classes.BaseClass;
-import platform.server.data.classes.where.ClassSet;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
-import platform.server.data.types.ObjectType;
-import platform.server.data.types.Reader;
 import platform.server.data.types.NullReader;
+import platform.server.data.types.Reader;
+import platform.server.data.types.Type;
 import platform.server.where.Where;
+import platform.server.caches.ParamLazy;
+import platform.interop.Compare;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.ListIterator;
+import java.util.Map;
 
 
 public class CaseExpr extends SourceExpr {
 
     private final ExprCaseList cases;
 
-    public CaseExpr() {
-        this(new ExprCaseList());
-    }
+    public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
 
     // этот конструктор нужен для создания CaseExpr'а в результать mapCase'а
     public CaseExpr(ExprCaseList iCases) {
         cases = iCases;
-        if(cases.size()>0) {
-            ExprCase lastCase = cases.get(cases.size()-1); // в последнем элементе срезаем null'ы с конца
-            lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not());
-        }
-    }
-
-    public CaseExpr(Where where,SourceExpr expr) {
-        this(new ExprCaseList(where,expr));
-    }
-
-    public CaseExpr(Where where, SourceExpr exprTrue, SourceExpr exprFalse) {
-        this(new ExprCaseList(where,exprTrue,exprFalse));
+        assert !(cases.size()==1 && cases.get(0).where.isTrue());
     }
 
     // получает список ExprCase'ов
@@ -48,31 +39,30 @@ public class CaseExpr extends SourceExpr {
         return cases;
     }
 
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
+    public String getSource(CompileSource compile) {
+
+        if(compile instanceof ToString) {
+            String result = "";
+            for(ExprCase exprCase : cases)
+                result = (result.length()==0?"":result+",")+exprCase.toString();
+            return "CE(" + result + ")";
+        }
 
         if(cases.size()==0) return SQLSyntax.NULL;
-        if(cases.size()==1 && cases.get(0).where.isTrue()) return cases.get(0).data.getSource(queryData, syntax);
 
         String source = "CASE";
         boolean noElse = false;
         for(int i=0;i<cases.size();i++) {
-            ExprCase exprCaseCase = cases.get(i);
-            String caseSource = exprCaseCase.data.getSource(queryData, syntax);
+            ExprCase exprCase = cases.get(i);
+            String caseSource = exprCase.data.getSource(compile);
 
-            if(i== cases.size()-1 && exprCaseCase.where.isTrue()) {
+            if(i== cases.size()-1 && exprCase.where.isTrue()) {
                 source = source + " ELSE " + caseSource;
                 noElse = true;
             } else
-                source = source + " WHEN " + exprCaseCase.where.getSource(queryData, syntax) + " THEN " + caseSource;
+                source = source + " WHEN " + exprCase.where.getSource(compile) + " THEN " + caseSource;
         }
         return source + (noElse?"":" ELSE "+ SQLSyntax.NULL)+" END";
-    }
-
-    public String toString() {
-        String result = "";
-        for(ExprCase exprCase : cases)
-            result = (result.length()==0?"":result+",")+exprCase.toString();
-        return "CE(" + result + ")";
     }
 
     public Type getType(Where where) {
@@ -85,19 +75,20 @@ public class CaseExpr extends SourceExpr {
         return getType(where);
     }
 
-    // не means OR верхних +
-    // нету NullExpr'ов в ExprCase'е +
-    // нету одинаковых AndExpr'ов 
-    // пустой ExprCase - null
-    // из одного элемента который means Expr.getWhere - по сути достаточно чистого Expr'а (не обязательно)
-    // вообще разделение на translate и compile такое что все что быстро выполняется лучше сюда, остальное в Compile
+    @ParamLazy
+    public CaseExpr translateDirect(KeyTranslator translator) {
+        ExprCaseList translatedCases = new ExprCaseList();
+        for(ExprCase exprCase : cases)
+            translatedCases.add(new ExprCase(exprCase.where.translate(translator),exprCase.data.translateDirect(translator)));
+        return new CaseExpr(translatedCases);        
+    }
 
-    // все без not'ов (means,andNot)
-    public SourceExpr translate(Translator translator) {
+    @ParamLazy
+    public SourceExpr translateQuery(QueryTranslator translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
             translatedCases.add(exprCase.where.translate(translator),exprCase.data.translate(translator));
-        return new CaseExpr(translatedCases);
+        return translatedCases.getExpr();
     }
 
     public SourceExpr followFalse(Where where) {
@@ -106,7 +97,7 @@ public class CaseExpr extends SourceExpr {
         ExprCaseList followedCases = new ExprCaseList(where); // where идет в up
         for(ExprCase exprCase : cases)
             followedCases.add(exprCase.where,exprCase.data);
-        return new CaseExpr(followedCases);
+        return followedCases.getExpr();
     }
 
     static private <K> void recPullCases(ListIterator<Map.Entry<K, ? extends SourceExpr>> ic, MapCase<K> current, Where currentWhere, MapCaseList<K> result) {
@@ -139,13 +130,11 @@ public class CaseExpr extends SourceExpr {
         return result;
     }
 
-    public int fillContext(Context context, boolean compile) {
-        int level = -1;
+    public void fillContext(Context context) {
         for(ExprCase exprCase : cases) {
-            level = BaseUtils.max(exprCase.where.fillContext(context, compile),level);
-            level = BaseUtils.max(exprCase.data.fillContext(context, compile),level);
+            exprCase.where.fillContext(context);
+            exprCase.data.fillContext(context);
         }
-        return level;
     }
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -156,21 +145,12 @@ public class CaseExpr extends SourceExpr {
         }
     }
 
-    protected int getHashCode() {
-        return cases.hashCode();
-    }
-
     public boolean equals(Object obj) {
         return this==obj || obj instanceof CaseExpr && cases.equals(((CaseExpr)obj).cases);
     }
 
-    // для кэша
-    public boolean equals(SourceExpr expr, MapContext mapContext) {
-        return expr instanceof CaseExpr && cases.equals(((CaseExpr) expr).cases, mapContext);
-    }
-
-    protected int getHash() {
-        return cases.hash();
+    public int hashContext(HashContext hashContext) {
+        return cases.hashContext(hashContext);
     }
 
     // получение Where'ов
@@ -183,7 +163,7 @@ public class CaseExpr extends SourceExpr {
         });
     }
 
-    public Where getIsClassWhere(final ClassSet set) {
+    public Where getIsClassWhere(final AndClassSet set) {
         return cases.getWhere(new CaseWhereInterface<AndExpr>(){
             public Where getWhere(AndExpr cCase) {
                 return cCase.getIsClassWhere(set);
@@ -191,7 +171,7 @@ public class CaseExpr extends SourceExpr {
         });
     }
 
-    public Where compare(final SourceExpr expr, final int compare) {
+    public Where compare(final SourceExpr expr, final Compare compare) {
         return cases.getWhere(new CaseWhereInterface<AndExpr>(){
             public Where getWhere(AndExpr cCase) {
                 return cCase.compare(expr,compare);
@@ -207,14 +187,14 @@ public class CaseExpr extends SourceExpr {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
             result.add(new ExprCase(exprCase.where,exprCase.data.scale(coeff)));
-        return new CaseExpr(result);
+        return result.getExpr();
     }
 
     public SourceExpr getClassExpr(BaseClass baseClass) {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.getClassExpr(baseClass));
-        return new CaseExpr(result);
+        return result.getExpr();
     }
 
     public SourceExpr sum(SourceExpr expr) {
@@ -222,6 +202,6 @@ public class CaseExpr extends SourceExpr {
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.sum(expr));
         result.add(Where.TRUE,expr); // если null то expr 
-        return new CaseExpr(result);
+        return result.getExpr();
     }
 }

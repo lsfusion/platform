@@ -1,11 +1,12 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
+import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.Combinations;
+import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteObject;
-import platform.interop.Compare;
 import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
@@ -15,26 +16,33 @@ import platform.server.data.classes.*;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.data.IDTable;
 import platform.server.logics.data.ImplementTable;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.*;
 import platform.server.logics.properties.groups.AbstractGroup;
-import platform.server.logics.properties.linear.*;
-import platform.server.session.DataChanges;
+import platform.server.logics.linear.properties.*;
 import platform.server.session.DataSession;
 import platform.server.session.SQLSession;
+import platform.server.session.TableChanges;
+import platform.server.session.DataChanges;
 import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.RemoteNavigator;
+import platform.server.caches.Lazy;
 
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
+@Immutable
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
 
+    public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
+    
     protected DataAdapter adapter;
     public final static boolean activateCaches = true;
 
@@ -70,8 +78,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP vtrue;
 
-    protected IsClassProperty date;
-
     void initBase() {
         baseClass = new BaseClass(idShift(1), "Объект");
 
@@ -84,20 +90,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         and1 = addAFProp(false);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
-        between = addJProp("Между", and1,3, groeq2,1,2, groeq2,3,1);
+        between = addJProp("Между", and1, groeq2,1,2, groeq2,3,1);
         vtrue = addCProp("Истина",LogicalClass.instance,true);
-
-        date = new IsClassProperty(DateClass.instance);
     }
 
-    protected class IsClassProperty {
-        public final LP is;
-        public final LP object;
-
-        public IsClassProperty(ValueClass valueClass) {
-            is = addCProp(valueClass.toString() + "(пр.)", LogicalClass.instance, true, valueClass);
-            object = addJProp(valueClass.toString(), and1, 1, 1, is, 1);
+    private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();
+    // получает свойство is
+    protected LP is(ValueClass valueClass) {
+        LP isProp = is.get(valueClass);
+        if(isProp==null) {
+            isProp = addCProp(valueClass.toString() + "(пр.)", LogicalClass.instance, true, valueClass);
+            is.put(valueClass,isProp);
         }
+        return isProp;
+    }
+    private Map<ValueClass,LP> object = new HashMap<ValueClass, LP>();
+    public LP object(ValueClass valueClass) {
+        LP objectProp = object.get(valueClass);
+        if(objectProp==null) {
+            objectProp = addJProp(valueClass.toString(), and1, 1, is(valueClass), 1);
+            object.put(valueClass,objectProp);
+        }
+        return objectProp;
     }
 
     // по умолчанию с полным стартом
@@ -247,6 +261,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
+    @Lazy
     public Collection<Property> getStoredProperties() {
         Collection<Property> result = new ArrayList<Property>();
         for(Property property : properties)
@@ -255,6 +270,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
+    @Lazy
     public Collection<Property> getConstrainedProperties() {
         Collection<Property> result = new ArrayList<Property>();
         for(Property property : properties)
@@ -263,10 +279,42 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
+    public Collection<Property> getAppliedProperties() {
+        return BaseUtils.join(getStoredProperties(), getConstrainedProperties());
+    }
+
+    static class DependsOrder<O extends Property> extends Property.Order<O,DependsOrder.All,DependsOrder.Changes> {
+
+        DependsOrder(Collection<O> properties) {
+            super(properties, new All());
+        }
+
+        // помечает все как измененные
+        static class All extends DataChanges<All> {
+
+            public void add(All changes) {}
+
+            public void dependsAdd(All changes, CustomClass customClass) {}
+            public void dependsRemove(All changes, CustomClass customClass) {}
+            public void dependsData(All changes, DataProperty property) {}
+
+            public boolean hasChanges() { return true; }
+        }
+
+        static class Changes extends Property.UsedChanges<All,Changes> {
+            public All newChanges() {
+                return new All();
+            }
+        }
+
+        public Changes newChanges() {
+            return new Changes();
+        }
+    }
+
     public void initStored() {
         // привяжем к таблицам все свойства
-        List<Property> list = getChangedList(BaseUtils.merge(persistents, getDataProperties()), null, new HashSet<Property>(), new HashMap<DataProperty, DefaultData>());
-        for(Property property : list) {
+        for(Property property : new DependsOrder<Property>(BaseUtils.merge(persistents, getDataProperties()))) {
             System.out.println("Initializing stored - "+property+"...");
             property.markStored(tableFactory);
         }
@@ -522,16 +570,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new LDP(property);
     }
 
-    public Map<DataProperty,DefaultData> defaultProps = new HashMap<DataProperty,DefaultData>();
-    protected void setDefProp(LDP data, LP defaultProperty,boolean onChange) {
-        DefaultData defaultData = new DefaultData(defaultProperty.property);
-        for(int i=0;i<data.listInterfaces.size();i++)
-            defaultData.mapping.put(defaultProperty.listInterfaces.get(i),(DataPropertyInterface)data.listInterfaces.get(i));
-        defaultData.onDefaultChange = onChange;
-
-        defaultProps.put(((DataProperty)data.property),defaultData);
-    }
-
     protected LCP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp(genSID(), caption, valueClass, value, params);
     }
@@ -553,7 +591,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
 
-    protected LCFP addCFProp(int compare) {
+    protected LCFP addCFProp(Compare compare) {
         CompareFormulaProperty property = new CompareFormulaProperty(genSID(),compare);
         LCFP listProperty = new LCFP(property);
         properties.add(property);
@@ -576,44 +614,145 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new LAFP(property);
     }
 
-    <T extends PropertyInterface> List<PropertyInterfaceImplement> readPropImpl(LP<T,Property<T>> mainProp,Object... params) {
-        List<PropertyInterfaceImplement> result = new ArrayList<PropertyInterfaceImplement>();
-        int waitInterfaces = 0, mainInt = 0;
-        PropertyMapImplement mapRead = null;
-        LP propRead = null;
-        for(Object p : params) {
-            if(p instanceof Integer) {
-                // число может быть как ссылкой на родной интерфейс так и
-                PropertyInterface propInt = mainProp.listInterfaces.get((Integer)p-1);
-                if(waitInterfaces==0) {
-                    // родную берем
-                    result.add(propInt);
-                } else {
-                    // докидываем в маппинг
-                    mapRead.mapping.put(propRead.listInterfaces.get(propRead.listInterfaces.size()-waitInterfaces), propInt);
-                    waitInterfaces--;
-                }
-            } else {
-               // имплементация, типа LP
-               propRead = (LP)p;
-               mapRead = new PropertyMapImplement(propRead.property);
-               waitInterfaces = propRead.listInterfaces.size();
-               result.add(mapRead);
-            }
+    // Linear Implement
+    private static abstract class LI {
+        abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces);
+
+        abstract Object[] write();
+    }
+
+    private static class LII extends LI {
+        int intNum;
+
+        private LII(int intNum) {
+            this.intNum = intNum;
         }
 
+        <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces) {
+            return interfaces.get(intNum-1);
+        }
+
+        Object[] write() {
+            return new Object[]{intNum};
+        }
+    }
+
+    private static class LMI<P extends PropertyInterface> extends LI {
+        LP<P,?> lp;
+        int[] mapInt;
+
+        private LMI(LP<P, ?> lp) {
+            this.lp = lp;
+            this.mapInt = new int[lp.listInterfaces.size()];
+        }
+
+        <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces) {
+            PropertyMapImplement<P,T> mapRead = new PropertyMapImplement<P,T>(lp.property);
+            for(int i=0;i<lp.listInterfaces.size();i++)
+                mapRead.mapping.put(lp.listInterfaces.get(i),interfaces.get(mapInt[i]-1));
+            return mapRead;
+        }
+
+        Object[] write() {
+            Object[] result = new Object[mapInt.length+1];
+            result[0] = lp;
+            for(int i=0;i<mapInt.length;i++)
+                result[i+1] = mapInt[i];
+            return result;
+        }
+    }
+
+    public static Object[] getUParams(LP[] props,int exoff) {
+        int intNum = props[0].listInterfaces.size();
+        Object[] params = new Object[props.length*(1+intNum+exoff)];
+        for(int i=0;i<props.length;i++) {
+            if(exoff>0)
+                params[i*(1+intNum+exoff)] = 1;
+            params[i*(1+intNum+exoff)+exoff] = props[i];
+            for(int j=1;j<=intNum;j++)
+                params[i*(1+intNum+exoff)+exoff+j] = j;
+        }
+        return params;
+    }
+
+    Object[] directLI(LP prop) {
+        return getUParams(new LP[]{prop},0);
+    }
+
+    // считывает "линейные" имплементации
+    static List<LI> readLI(Object[] params) {
+        List<LI> result = new ArrayList<LI>();
+        for(int i=0;i<params.length;i++)
+            if(params[i] instanceof Integer)
+                result.add(new LII((Integer)params[i]));
+            else {
+                LMI impl = new LMI((LP) params[i]);
+                for(int j=0;j<impl.mapInt.length;j++)
+                    impl.mapInt[j] = (Integer)params[i+j+1];
+                i += impl.mapInt.length;
+                result.add(impl);
+            }
+        return result;
+    }                               
+
+    static Object[] writeLI(List<LI> linearImpl) {
+        Object[][] objectLI = new Object[linearImpl.size()][];
+        for(int i=0;i<linearImpl.size();i++)
+            objectLI[i] = linearImpl.get(i).write();
+        int size = 0;
+        for(Object[] li : objectLI)
+            size += li.length;
+        Object[] result = new Object[size]; int i = 0;
+        for(Object[] li : objectLI)
+            for(Object param : li)
+                result[i++] = param;
+        return result; 
+    }
+
+    static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> mapLI(List<LI> linearImpl, List<T> interfaces) {
+        List<PropertyInterfaceImplement<T>> result = new ArrayList<PropertyInterfaceImplement<T>>();
+        for(LI impl : linearImpl)
+            result.add(impl.map(interfaces));
         return result;
     }
 
-    protected LJP addJProp(String caption, LP mainProp, int intNum, Object... params) {
-        return addJProp(null, caption, mainProp, intNum, params);
+    public static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> readImplements(List<T> listInterfaces,Object... params) {
+        return mapLI(readLI(params),listInterfaces);
     }
 
-    protected LJP addJProp(AbstractGroup group, String caption, LP mainProp, int intNum, Object... params) {
-        return addJProp(group, genSID(), caption, mainProp, intNum, params);
+    private LJP addJProp(LP mainProp, Object... params) {
+        return addJProp("sys", mainProp, params);
     }
 
-    protected LJP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, int intNum, Object... params) {
+    protected LJP addJProp(String caption, LP mainProp, Object... params) {
+        return addJProp(null, caption, mainProp, params);
+    }
+
+    protected LJP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
+        return addJProp(group, genSID(), caption, mainProp, params);
+    }
+
+    protected int getIntNum(Object[] params) {
+        int intNum = 0;
+        for(Object param : params)
+            if(param instanceof Integer)
+                intNum = BaseUtils.max(intNum,(Integer)param);
+        return intNum;
+    }
+
+    public static <T extends PropertyInterface,P extends PropertyInterface> PropertyImplement<PropertyInterfaceImplement<P>,T> mapImplement(LP<T,?> property,List<PropertyInterfaceImplement<P>> propImpl) {
+        int mainInt = 0;
+        Map<T,PropertyInterfaceImplement<P>> mapping = new HashMap<T, PropertyInterfaceImplement<P>>();
+        for(PropertyInterfaceImplement<P> implement : propImpl) {
+            mapping.put(property.listInterfaces.get(mainInt),implement);
+            mainInt++;
+        }
+        return new PropertyImplement<PropertyInterfaceImplement<P>,T>(property.property,mapping);
+    }
+
+    protected LJP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
+
+        int intNum = getIntNum(params);
 
         JoinProperty property = new JoinProperty(sID,intNum,mainProp.property);
         property.sID = sID;
@@ -623,30 +762,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             group.add(property);
         
         LJP listProperty = new LJP(property);
-        int mainInt = 0;
-        List<PropertyInterfaceImplement> propImpl = readPropImpl(listProperty,params);
-        for(PropertyInterfaceImplement implement : propImpl) {
-            property.implement.mapping.put(mainProp.listInterfaces.get(mainInt),implement);
-            mainInt++;
-        }
+        property.implement = mapImplement(mainProp,readImplements(listProperty.listInterfaces,params));
         properties.add(property);
 
         return listProperty;
     }
 
-    protected LGP addGProp(String caption, LP groupProp, boolean sum, Object... params) {
-        return addGProp((AbstractGroup)null, caption, groupProp, sum, params);
-    }
-    protected LGP addGProp(AbstractGroup group, String caption, LP groupProp, boolean sum, Object... params) {
-        return addGProp(group, genSID(), caption, groupProp, sum, params);
-    }
-    protected LGP addGProp(String sID, String caption, LP groupProp, boolean sum, Object... params) {
-        return addGProp(null, sID, caption, groupProp, sum, params);
-    }
-    protected LGP addGProp(AbstractGroup group, String sID, String caption, LP groupProp, boolean sum, Object... params) {
+    private LGP addGProp(AbstractGroup group, String sID, String caption, LP groupProp, boolean sum, Object... params) {
 
         List<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
-        List<PropertyInterfaceImplement> propImpl = readPropImpl(groupProp,params);
+        List<PropertyInterfaceImplement> propImpl = readImplements(groupProp.listInterfaces,params);
         for(PropertyInterfaceImplement implement : propImpl)
             interfaces.add(new GroupPropertyInterface(interfaces.size(),implement));
 
@@ -656,7 +781,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         else
             property = new MaxGroupProperty(sID,interfaces,groupProp.property);
 
-        property.sID = sID;
         property.caption = caption;
         properties.add(property);
 
@@ -666,16 +790,42 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new LGP(property,interfaces);
     }
 
-    protected LUP addUProp(String caption, Union unionType, int intNum, Object... params) {
-        return addUProp((AbstractGroup)null, caption, unionType, intNum, params);
+    protected LGP addSGProp(String caption, LP groupProp, Object... params) {
+        return addSGProp((AbstractGroup)null, caption, groupProp, params);
     }
-    protected LUP addUProp(AbstractGroup group, String caption, Union unionType, int intNum, Object... params) {
-        return addUProp(group, genSID(), caption, unionType, intNum, params);
+    protected LGP addSGProp(AbstractGroup group, String caption, LP groupProp, Object... params) {
+        return addSGProp(group, genSID(), caption, groupProp, params);
     }
-    protected LUP addUProp(String sID, String caption, Union unionType, int intNum, Object... params) {
-        return addUProp(null, sID, caption, unionType, intNum, params);
+    protected LGP addSGProp(String sID, String caption, LP groupProp, Object... params) {
+        return addSGProp(null, sID, caption, groupProp, params);
     }
-    protected LUP addUProp(AbstractGroup group, String sID, String caption, Union unionType, int intNum, Object... params) {
+    protected LGP addSGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+        return addGProp(group, sID, caption, groupProp, true, params);
+    }
+
+    protected LP[] addMGProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP groupProp, Object... params) {
+        int intNum = groupProp.listInterfaces.size();
+        List<LI> li = readLI(params);
+        Object[] interfaces = writeLI(li.subList(extra,li.size())); // "вырежем" группировочные интерфейсы
+
+        LP[] result = new LP[extra+1];
+        int i = 0;
+        do {
+            result[i] = addGProp(group,ids[i],captions[i],groupProp,false,interfaces);
+            if(i<extra) // если не последняя
+                groupProp = addJProp(and1, BaseUtils.add(li.get(i).write(),directLI( // само свойство
+                        addJProp(equals2, BaseUtils.add(directLI(groupProp),directLI( // только те кто дает предыдущий максимум
+                        addJProp(result[i], interfaces))))))); // предыдущий максимум
+        } while (i++<extra);
+        return result;
+    }
+    protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+        return addMGProp(group,new String[]{sID},new String[]{caption}, 0, groupProp, params)[0];
+    }
+
+    protected LUP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {
+
+        int intNum = ((LP)params[unionType==Union.SUM?1:0]).listInterfaces.size();
 
         UnionProperty property = null;
         int extra = 0;
@@ -691,8 +841,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 property = new OverrideUnionProperty(sID,intNum);
                 break;
         }
-        property.sID = sID;
-        property.caption = caption;
 
         LUP listProperty = new LUP(property);
 
@@ -715,6 +863,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     break;
             }
         }
+
+        property.sID = sID;
+        property.caption = caption;
         properties.add(property);
 
         if (group != null)
@@ -733,19 +884,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LUP addCUProp(String sID, String caption, LP... props) {
         return addCUProp(null, sID, caption, props);
     }
+
     Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
     // объединяет разные по классам св-ва
     protected LUP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
         assert checkCUProps.add(props);
-
-        int intNum = props[0].listInterfaces.size();
-        Object[] params = new Object[props.length*(1+intNum)];
-        for(int i=0;i<props.length;i++) {
-            params[i*(1+intNum)] = props[i];
-            for(int j=1;j<=intNum;j++)
-                params[i*(1+intNum)+j] = j;
-        }
-        return addUProp(group,sID,caption,Union.OVERRIDE,intNum,params);
+        return addUProp(group,sID,caption,Union.OVERRIDE, getUParams(props, 0));
     }
 
     // разница
@@ -767,7 +911,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         params[2+intNum] = -1; params[3+intNum] = prop2;
         for(int i=0;i<intNum;i++)
             params[4+intNum+i] = i+1;
-        return addUProp(group,sID,caption,Union.SUM,intNum,params);
+        return addUProp(group,sID,caption,Union.SUM, params);
     }
 
     // объединение пересекающихся свойств
@@ -784,17 +928,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     // объединяет разные по классам св-ва
     protected LUP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
         assert checkSUProps.add(props);
-        int exoff = (unionType==Union.SUM?1:0);
+        return addUProp(group,sID,caption,unionType,getUParams(props,(unionType==Union.SUM?1:0)));
+    }
+
+    protected LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {
         int intNum = props[0].listInterfaces.size();
-        Object[] params = new Object[props.length*(1+intNum+exoff)];
-        for(int i=0;i<props.length;i++) {
-            if(unionType==Union.SUM)
-                params[i*(1+intNum+exoff)] = 1;    
-            params[i*(1+intNum+exoff)+exoff] = props[i];
-            for(int j=1;j<=intNum;j++)
-                params[i*(1+intNum+exoff)+exoff+j] = j;
-        }
-        return addUProp(group,sID,caption,unionType,intNum,params);
+        int propNum = props.length/(1+extra);
+        LP[] maxProps = Arrays.copyOfRange(props,0,propNum);
+        
+        LP[] result = new LP[extra+1];
+        int i = 0;
+        do {
+            result[i] = addUProp(group,ids[i],captions[i],Union.MAX,getUParams(maxProps,0));
+            if(i<extra) { // если не последняя
+                for(int j=0;j<propNum;j++)
+                    maxProps[j] = addJProp(and1, BaseUtils.add(directLI(props[(i+1)*propNum+j]),directLI( // само свойство
+                    addJProp(equals2, BaseUtils.add(directLI(maxProps[j]),directLI(result[i])))))); // только те кто дает предыдущий максимум
+            }
+        } while (i++<extra);
+        return result;
     }
 
     private boolean intersect(LP[] props) {
@@ -1172,18 +1324,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.close();
     }
 
-    public static <P extends Property> List<P> getChangedList(Collection<P> updateProps, DataChanges changes,Collection<Property> noUpdateProps,Map<DataProperty,DefaultData> defaultProps) {
-        List<Property> changedList = new ArrayList<Property>();
-        for(P property : updateProps)
-            property.fillChanges(changedList,changes, defaultProps, noUpdateProps);
-
-        List<P> result = new ArrayList<P>();
-        for(Property changed : changedList)
-            if(updateProps.contains(changed))
-                result.add((P)changed);
-        return result;
-    }
-
     // флаг для оптимизации
     protected Map<DataProperty,Integer> autoQuantity(Integer quantity, LDP... properties) {
         Map<DataProperty,Integer> result = new HashMap<DataProperty,Integer>();
@@ -1329,7 +1469,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private void recalculateAggregations(SQLSession session,Collection<AggregateProperty> recalculateProperties) throws SQLException {
-        for(AggregateProperty dependProperty : getChangedList(recalculateProperties,null,new HashSet<Property>(),new HashMap<DataProperty, DefaultData>())) {
+
+        for(AggregateProperty dependProperty : new DependsOrder<AggregateProperty>(recalculateProperties)) {
             System.out.print("Идет перерасчет аггрегированного св-ва ("+dependProperty+")... ");
             dependProperty.recalculateAggregation(session);
             System.out.println("Done");

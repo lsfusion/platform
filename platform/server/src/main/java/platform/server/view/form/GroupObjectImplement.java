@@ -6,11 +6,10 @@ import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.DefaultData;
 import platform.server.logics.properties.Property;
-import platform.server.session.TableChanges;
 import platform.server.session.DataSession;
+import platform.server.session.TableChanges;
+import platform.server.view.form.filter.Filter;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -105,12 +104,12 @@ public class GroupObjectImplement extends ArrayList<ObjectImplement> implements 
         return result;
     }
 
-    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException {
+    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) throws SQLException {
 
         for(Filter filt : filters)
-            filt.fillSelect(query, classGroup, session, defaultProps, noUpdateProps);
+            query.and(filt.getWhere(query.mapKeys, classGroup, session, depends));
 
-        // докинем Join ко всем классам, те которых не было FULL JOIN'ом остальные Join'ом
+        // докинем JoinSelect ко всем классам, те которых не было FULL JOIN'ом остальные JoinSelect'ом
         for(ObjectImplement object : this)
             query.and(DataSession.getIsClassWhere(session,query.mapKeys.get(object),object.getGridClass(),null));
     }

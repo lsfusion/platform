@@ -7,6 +7,8 @@ import platform.interop.RemoteObject;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.data.classes.CustomClass;
 import platform.server.view.form.*;
+import platform.server.view.form.filter.CompareFilter;
+import platform.server.view.form.filter.Filter;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -180,7 +182,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
 
     public void addFilter(byte[] state) {
         try {
-            form.addUserFilter(new CompareFilter(new DataInputStream(new ByteArrayInputStream(state)), form));
+            form.addUserFilter(Filter.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form));
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SQLException e) {

@@ -1,13 +1,10 @@
 package platform.server.data.query;
 
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.DeclareParents;
-import platform.interop.exceptions.ComplexQueryException;
 
-@Aspect
+/*@Aspect
 public class ComplexQueryManager {
-/*
+
     public interface Counter {
         void start();
         void add();
@@ -42,5 +39,7 @@ public class ComplexQueryManager {
     public void callBeforeTranslate(Counter query) {
         query.add();
     }
-  */
+
 }
+
+*/

@@ -3,7 +3,10 @@ package platform.server.data.classes.where;
 import platform.base.BaseUtils;
 import platform.server.data.classes.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class OrObjectClassSet implements OrClassSet {
 
@@ -40,7 +43,7 @@ public class OrObjectClassSet implements OrClassSet {
 
     public OrObjectClassSet or(OrObjectClassSet node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
-        UpClassSet orUp = up.or(node.up);
+        UpClassSet orUp = up.add(node.up);
 
         ConcreteCustomClassSet orSet = new ConcreteCustomClassSet();
         orSet.addAll(set,node.up);
@@ -73,12 +76,12 @@ public class OrObjectClassSet implements OrClassSet {
         assert (!isEmpty());
         assert !unknown;
 
-        Set<CustomClass> commonParents = new HashSet<CustomClass>(BaseUtils.merge(Arrays.asList(up.wheres),Arrays.asList(set.toArray())));
+        Set<CustomClass> commonParents = new HashSet<CustomClass>(BaseUtils.merge(Arrays.asList(up.getCommonClasses()),set.toCollection()));
         while(commonParents.size()>1) {
             Iterator<CustomClass> i = commonParents.iterator();
             CustomClass first = i.next(); i.remove();
             CustomClass second = i.next(); i.remove();
-            commonParents.addAll(Arrays.asList(first.commonParents(second).toArray()));
+            commonParents.addAll(first.commonParents(second).toCollection());
         }
         return commonParents.iterator().next();
     }

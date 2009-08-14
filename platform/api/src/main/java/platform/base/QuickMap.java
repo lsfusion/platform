@@ -1,16 +1,19 @@
 package platform.base;
 
+import java.util.Collection;
+import java.util.ArrayList;
+
 // дублируем QuickSet
-public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
+public abstract class QuickMap<K,V> {
     public int size;
     protected Object[] table;
     protected int[] htable;
-    protected V[] vtable;
+    protected Object[] vtable;
 
     protected int[] indexes; // номера в таблице
 
-    protected abstract V[] newValues(int size);
-    protected abstract This getThis();
+    protected abstract V addValue(V prevValue, V newValue);
+    protected abstract boolean containsAll(V who,V what);
 
     private final float loadFactor;
     public QuickMap() {
@@ -18,12 +21,12 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
 
         table = new Object[8];
         htable = new int[table.length];
-        vtable = newValues(8);
+        vtable = new Object[8];
 
         indexes = new int[(int)(table.length * loadFactor)];
     }
 
-    public QuickMap(This set) {
+    public QuickMap(QuickMap<K,V> set) {
         size = set.size;
         loadFactor = set.loadFactor;
 
@@ -34,14 +37,17 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
         indexes = set.indexes.clone();
     }
 
+    protected QuickMap(K key, V value) {
+        this();
+        add(key,value);
+    }
+
     public K getKey(int i) {
         return (K) table[indexes[i]];
     }
     public V getValue(int i) {
-        return vtable[indexes[i]];
+        return (V) vtable[indexes[i]];
     }
-
-    protected abstract This copy();
 
     public boolean isEmpty() {
         return size==0;
@@ -52,7 +58,7 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
 
         Object[] newTable = new Object[length];
         int[] newHTable = new int[length];
-        V[] newVTable = newValues(length);
+        Object[] newVTable = new Object[length];
         for(int i=0;i<size;i++) {
             int newHash = (htable[indexes[i]] & (length-1));
             while(newTable[newHash]!=null) newHash = (newHash==length-1?0:newHash+1);
@@ -80,17 +86,15 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
         return add(key,hash(key.hashCode()),value);
     }
 
-    public boolean add(int index,QuickMap<K,V,?> map) {
+    public boolean add(int index,QuickMap<K,V> map) {
         return add(map.table[map.indexes[index]],map.htable[map.indexes[index]],map.vtable[map.indexes[index]]);
     }
 
-    protected abstract V addValue(V prevValue, V newValue);
-
-    private boolean add(Object key,int hash,V value) {
+    private boolean add(Object key,int hash,Object value) {
         int i=hash & (table.length-1);
         while(table[i]!=null) {
             if(htable[i]==hash && table[i].equals(key)) {
-                V addValue = addValue(vtable[i],value);
+                V addValue = addValue((V)vtable[i], (V) value);
                 if(addValue==null)
                     return false;
                 else {
@@ -105,31 +109,19 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
         return true;
     }
 
-    // здесь можно еще сократить equals не проверяя друг с другом
-    public This merge(This set) {
-        if(table.length>set.table.length) return set.merge(getThis()); // пусть добавляется в большую
-
-        This result = set.copy();
-        if(!result.addAll(getThis()))
-            return null;
-        return result;
-    }
-
-    public boolean addAll(This set) {
+    public boolean addAll(QuickMap<K,V> set) {
         for(int i=0;i<set.size;i++)
             if(!add(i,set))
                 return false;
         return true;
     }
 
-    protected abstract boolean containsAll(V who,V what);
-
-    public boolean containsAll(QuickMap<K,V,?> set) {
+    public boolean containsAll(QuickMap<K,V> set) {
         if(size>set.size) return false; // если больше то содержать не может
 
         for(int i=0;i<size;i++) {
-            V inSet = set.get((K) table[indexes[i]],htable[indexes[i]]);
-            if(inSet==null || !(containsAll(vtable[indexes[i]],inSet))) return false;
+            V inSet = set.get(getKey(i),htable[indexes[i]]);
+            if(inSet==null || !(containsAll(getValue(i),inSet))) return false;
         }
         return true;
     }
@@ -138,7 +130,7 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
     private V get(K key,int hash) {
         for(int i=hash & (table.length-1);table[i]!=null;i=(i==table.length-1?0:i+1))
             if(htable[i]==hash && table[i].equals(key))
-                return vtable[i];
+                return (V) vtable[i];
         return null;
     }
 
@@ -173,7 +165,14 @@ public abstract class QuickMap<K,V,This extends QuickMap<K,V,This>> {
     public int hashCode() {
         int hash = 0;
         for(int i=0;i<size;i++)
-            hash = hash + htable[indexes[i]] ^ vtable[indexes[i]].hashCode();
+            hash += htable[indexes[i]] ^ vtable[indexes[i]].hashCode();
         return hash;
+    }
+
+    public Collection<K> keys() {
+        Collection<K> keys = new ArrayList<K>();
+        for(int i=0;i<size;i++)
+            keys.add(getKey(i));
+        return keys;
     }
 }

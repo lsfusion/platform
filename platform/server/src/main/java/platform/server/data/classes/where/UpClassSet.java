@@ -1,14 +1,15 @@
 package platform.server.data.classes.where;
 
-import platform.base.DNFWhere;
+import platform.base.SetWhere;
 import platform.server.data.classes.*;
-import platform.server.data.types.Type;
 import platform.server.data.types.ObjectType;
+import platform.server.data.types.Type;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 // выше вершин
-public class UpClassSet extends DNFWhere<CustomClass,UpClassSet> implements ObjectClassSet {
+public class UpClassSet extends SetWhere<CustomClass,UpClassSet> implements ObjectClassSet {
 
     private UpClassSet(CustomClass[] iClasses) {
         super(iClasses);
@@ -38,20 +39,20 @@ public class UpClassSet extends DNFWhere<CustomClass,UpClassSet> implements Obje
         return new UpClassSet(iWheres);
     }
 
-    protected UpClassSet getThis() {
-        return this;
-    }
-
     protected CustomClass[] newArray(int size) {
         return new CustomClass[size];
     }
 
-    public boolean means(CustomClass from, CustomClass to) {
-        return from.isChild(to);
+    protected boolean containsAll(CustomClass who, CustomClass what) {
+        return what.isChild(who);
     }
 
-    public CustomClass[] and(CustomClass where1, CustomClass where2) {
-        return where1.commonChilds(where2).toArray();
+    protected CustomClass[] intersect(CustomClass where1, CustomClass where2) {
+        CustomClassSet common = where1.commonChilds(where2);
+        CustomClass[] result = new CustomClass[common.size];
+        for(int i=0;i<common.size;i++)
+            result[i] = common.get(i);
+        return result;
     }
 
     public boolean inSet(UpClassSet up,ConcreteCustomClassSet set) { // проверяет находится ли в up,set - обратная containsAll
@@ -60,14 +61,14 @@ public class UpClassSet extends DNFWhere<CustomClass,UpClassSet> implements Obje
         return true;
     }
 
-    public ClassSet and(ClassSet node) {
+    public AndClassSet and(AndClassSet node) {
         if(node instanceof ConcreteClass) {
             if(has((ConcreteClass)node))
                 return node;
             else
                 return UpClassSet.FALSE;
         } else
-            return and((UpClassSet)node);
+            return intersect((UpClassSet)node);
     }
 
     public OrClassSet getOr() {
@@ -78,7 +79,7 @@ public class UpClassSet extends DNFWhere<CustomClass,UpClassSet> implements Obje
         return wheres.length==0;
     }
 
-    public boolean containsAll(ClassSet node) {
+    public boolean containsAll(AndClassSet node) {
         if(node instanceof ConcreteClass)
             return has((ConcreteClass)node);
         else
@@ -112,4 +113,17 @@ public class UpClassSet extends DNFWhere<CustomClass,UpClassSet> implements Obje
     public Type getType() {
         return ObjectType.instance;
     }
+
+    // чисто для getCommonParent
+    public CustomClass[] getCommonClasses() {
+        return wheres;
+    }
+
+    public UpClassSet add(UpClassSet set) {
+        return super.add(set);
+    }
+    public UpClassSet intersect(UpClassSet set) {
+        return super.intersect(set);
+    }
+
 }

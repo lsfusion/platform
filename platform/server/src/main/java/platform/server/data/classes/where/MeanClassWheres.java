@@ -4,7 +4,7 @@ import platform.base.QuickMap;
 import platform.server.where.Where;
 
 
-public class MeanClassWheres extends QuickMap<ClassExprWhere,Where,MeanClassWheres> {
+public class MeanClassWheres extends QuickMap<ClassExprWhere,Where> {
 
     public void or(MeanClassWheres joins) {
         addAll(joins);
@@ -12,18 +12,6 @@ public class MeanClassWheres extends QuickMap<ClassExprWhere,Where,MeanClassWher
 
     protected Where addValue(Where prevValue, Where newValue) {
         return newValue.orMeans(prevValue);
-    }
-
-    protected Where[] newValues(int size) {
-        return new Where[size];
-    }
-
-    protected MeanClassWheres getThis() {
-        return this;
-    }
-
-    protected MeanClassWheres copy() {
-        return new MeanClassWheres();
     }
 
     protected boolean containsAll(Where who, Where what) {
@@ -34,11 +22,11 @@ public class MeanClassWheres extends QuickMap<ClassExprWhere,Where,MeanClassWher
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(int i=0;i<size;i++) {
             ClassExprWhere orMean = (ClassExprWhere) table[indexes[i]];
-            if(!orMean.means(vtable[indexes[i]].not()))
+            if(!orMean.means(getValue(i).not()))
                 result = result.or(orMean);
-            else
+/*            else
                 if(!vtable[indexes[i]].isFalse())
-                    throw new RuntimeException("found");
+                    throw new RuntimeException("found");*/
         }
         return result;
     }
@@ -57,7 +45,7 @@ public class MeanClassWheres extends QuickMap<ClassExprWhere,Where,MeanClassWher
         for(int i1=0;i1<size;i1++)
             for(int i2=0;i2<joins.size;i2++) {
                 ClassExprWhere andJoin = ((ClassExprWhere)table[indexes[i1]]).and((ClassExprWhere)joins.table[joins.indexes[i2]]);
-                Where andWhere = vtable[indexes[i1]].andMeans(joins.vtable[joins.indexes[i2]]);
+                Where andWhere = getValue(i1).andMeans(joins.getValue(i2));
                 if(!andJoin.isFalse())
                     result.add(andJoin, andWhere);
             }

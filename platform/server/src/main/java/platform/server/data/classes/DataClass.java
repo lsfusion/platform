@@ -1,14 +1,14 @@
 package platform.server.data.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
-import platform.server.data.classes.where.ClassSet;
+import platform.interop.Data;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.OrClassSet;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.view.form.client.report.ReportDrawField;
-import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.util.Random;
 
-public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, ClassSet, OrClassSet {
+public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndClassSet, OrClassSet {
 
     public abstract DataClass getCompatible(DataClass compClass);
     public abstract Object getDefaultValue();
@@ -45,7 +45,7 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, Class
         return false;
     }
 
-    public DataClass and(ClassSet node) {
+    public DataClass and(AndClassSet node) {
         if(node.isEmpty()) return this;
 
         DataClass compatible = getCompatible((DataClass) node);
@@ -61,7 +61,7 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, Class
         return this;
     }
 
-    public boolean containsAll(ClassSet node) {
+    public boolean containsAll(AndClassSet node) {
         return inSet(node);
     }
 
@@ -76,7 +76,7 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, Class
         return this;
     }
 
-    public boolean inSet(ClassSet set) {
+    public boolean inSet(AndClassSet set) {
         return set instanceof DataClass && getCompatible((DataClass)set)!=null;
     }
 

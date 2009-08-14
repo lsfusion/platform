@@ -1,31 +1,29 @@
 package platform.server.data.query.wheres;
 
-import platform.server.data.classes.UnknownClass;
 import platform.server.data.classes.DataClass;
+import platform.server.data.classes.UnknownClass;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.ObjectClassSet;
-import platform.server.data.classes.where.ClassSet;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.IsClassExpr;
 import platform.server.data.query.exprs.VariableClassExpr;
 import platform.server.data.query.translators.Translator;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-
-import java.util.Map;
+import platform.server.caches.ParamLazy;
 
 
 public class IsClassWhere extends DataWhere {
 
     private final VariableClassExpr expr;
-    private final ClassSet classes;
+    private final AndClassSet classes;
 
-    // для того чтобы один и тот же Join все использовали
+    // для того чтобы один и тот же JoinSelect все использовали
     private final IsClassExpr classExpr;
 
-    public IsClassWhere(VariableClassExpr iExpr, ClassSet iClasses) {
+    public IsClassWhere(VariableClassExpr iExpr, AndClassSet iClasses) {
         expr = iExpr;
         classes = iClasses;
 
@@ -36,19 +34,20 @@ public class IsClassWhere extends DataWhere {
             classExpr = null;
     }
 
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return ((ObjectClassSet)classes).getWhereString(classExpr.getSource(queryData, syntax));
+    public String getSource(CompileSource compile) {
+        if(compile instanceof ToString)
+            return expr.getSource(compile) + " isClass(" + classes + ")";
+
+        return ((ObjectClassSet)classes).getWhereString(classExpr.getSource(compile));
     }
 
     // а вот тут надо извратится и сделать Or проверив сначала null'ы
-    protected String getNotSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return ((ObjectClassSet)classes).getNotWhereString(classExpr.getSource(queryData, syntax));
+    @Override
+    protected String getNotSource(CompileSource compile) {
+        return ((ObjectClassSet)classes).getNotWhereString(classExpr.getSource(compile));
     }
 
-    public String toString() {
-        return expr.toString() + " isClass(" + classes + ")";
-    }
-
+    @ParamLazy
     public Where translate(Translator translator) {
         return expr.translate(translator).getIsClassWhere(classes);
     }
@@ -57,11 +56,8 @@ public class IsClassWhere extends DataWhere {
         return new ClassExprWhere(expr,classes).and(expr.getWhere().getClassWhere());
     }
 
-    public int fillContext(Context context, boolean compile) {
-        if(classes instanceof ObjectClassSet)
-            return classExpr.fillContext(context, compile);
-        else
-            return expr.fillContext(context, compile);
+    public void fillContext(Context context) {
+        expr.fillContext(context);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -76,27 +72,13 @@ public class IsClassWhere extends DataWhere {
     }
 
     public InnerJoins getInnerJoins() {
-        Where joinWhere = Where.TRUE;
-        if(classes instanceof DataClass)
-            joinWhere = this;
-        else
-        if(!(classes instanceof UnknownClass))
-            joinWhere = classExpr.joinExpr.from.getWhere();
-        return new InnerJoins(joinWhere,this);
+        if(!(classes instanceof UnknownClass || classes instanceof DataClass))
+            return new InnerJoins(classExpr.joinExpr.getJoin(),this);
+        return new InnerJoins(this);
     }
 
-    // для кэша
-    public boolean equals(Where where, MapContext mapContext) {
-        return where instanceof IsClassWhere && classes.equals(((IsClassWhere)where).classes) &&
-                expr.equals(((IsClassWhere)where).expr, mapContext);
-    }
-
-    protected int getHash() {
-        return expr.hash() + classes.hashCode()*31;
-    }
-
-    protected int getHashCode() {
-        return expr.hashCode() + classes.hashCode()*31;
+    public int hashContext(HashContext hashContext) {
+        return expr.hashContext(hashContext) + classes.hashCode()*31;
     }
 
     public boolean equals(Object obj) {

@@ -1,9 +1,9 @@
 package platform.server.data.classes;
 
-import platform.server.data.classes.where.ClassSet;
+import platform.server.data.classes.where.AndClassSet;
 
-public interface ConcreteClass extends RemoteClass,ClassSet {
+public interface ConcreteClass extends RemoteClass, AndClassSet {
 
-    boolean inSet(ClassSet set);
+    boolean inSet(AndClassSet set);
     
 }

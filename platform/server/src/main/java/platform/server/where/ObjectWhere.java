@@ -1,7 +1,6 @@
 package platform.server.where;
 
 import platform.server.data.query.JoinData;
-import platform.server.data.query.InnerJoins;
 import platform.server.data.query.wheres.MapWhere;
 
 
@@ -33,10 +32,10 @@ abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> i
         if(means(falseWhere))
             return FALSE;
         else
-            return linearFollowFalse(falseWhere);
+            return packFollowFalse(falseWhere);
     }
 
-    public Where linearFollowFalse(Where falseWhere) {
+    public Where packFollowFalse(Where falseWhere) {
         return this;
     }
 

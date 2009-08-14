@@ -1,5 +1,7 @@
 package platform.server.view.form;
 
+import platform.server.view.form.filter.Filter;
+
 import javax.swing.*;
 import java.io.Serializable;
 

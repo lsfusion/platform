@@ -1,7 +1,5 @@
 package platform.server.data.sql;
 
-import platform.server.data.types.Type;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

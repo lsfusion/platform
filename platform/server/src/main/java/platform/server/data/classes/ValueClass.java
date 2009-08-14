@@ -1,6 +1,6 @@
 package platform.server.data.classes;
 
-import platform.server.data.classes.where.ClassSet;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.logics.DataObject;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractGroup;
@@ -19,7 +19,7 @@ public interface ValueClass extends RemoteClass {
 
     AbstractGroup getParent();
 
-    ClassSet getUpSet();
+    AndClassSet getUpSet();
 
     DataProperty getExternalID();
 

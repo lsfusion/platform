@@ -5,16 +5,17 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.server.data.classes.ValueClass;
-import platform.server.data.classes.where.AndClassWhere;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.logics.properties.groups.AbstractGroup;
-import platform.server.logics.properties.linear.LP;
+import platform.server.logics.linear.properties.LP;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
 import platform.server.view.form.client.report.DefaultJasperDesign;
+import platform.server.view.navigator.filter.FilterNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,7 +28,9 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
     public Set<FilterNavigator> fixedFilters = new HashSet<FilterNavigator>();
 
-    public void addFixedFilter(FilterNavigator filter) { fixedFilters.add(filter); }
+    public void addFixedFilter(FilterNavigator filter) {
+        fixedFilters.add(filter); 
+    }
 
     public List<RegularFilterGroupNavigator> regularFilterGroups = new ArrayList<RegularFilterGroupNavigator>();
     public void addRegularFilterGroup(RegularFilterGroupNavigator group) { regularFilterGroups.add(group); }
@@ -116,11 +119,11 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
         for (List<P> mapping : new ListPermutations<P>(property.interfaces)) {
 
-            AndClassWhere<P> propertyInterface = new AndClassWhere<P>();
+            Map<P, AndClassSet> propertyInterface = new HashMap<P, AndClassSet>();
             int interfaceCount = 0;
             for (P iface : mapping) {
                 ValueClass propertyClass = objects[interfaceCount++].baseClass;
-                propertyInterface.add(iface, propertyClass.getUpSet());
+                propertyInterface.put(iface, propertyClass.getUpSet());
             }
  
             if ((upClasses && property.anyInInterface(propertyInterface)) || (!upClasses && property.allInInterface(propertyInterface)))

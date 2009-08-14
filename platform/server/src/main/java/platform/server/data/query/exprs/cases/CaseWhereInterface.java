@@ -2,6 +2,10 @@ package platform.server.data.query.exprs.cases;
 
 import platform.server.where.Where;
 
-public interface CaseWhereInterface<C> {
-    Where getWhere(C cCase);
+public abstract class CaseWhereInterface<C> {
+    public abstract Where getWhere(C cCase);
+
+    public Where getElse() {
+        return Where.FALSE;
+    }
 }

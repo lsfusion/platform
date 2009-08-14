@@ -1,19 +1,17 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.query.*;
-import platform.server.data.query.translators.DirectTranslator;
-import platform.server.data.query.translators.Translator;
-import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.query.wheres.IsClassWhere;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
 import platform.server.data.classes.BaseClass;
-import platform.server.data.classes.where.ClassSet;
+import platform.server.data.classes.where.AndClassSet;
+import platform.server.data.query.*;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.wheres.IsClassWhere;
+import platform.server.data.query.wheres.MapWhere;
+import platform.server.data.types.Type;
 import platform.server.where.Where;
+import platform.server.where.DataWhereSet;
 
-import java.util.Map;
-
-public class KeyExpr extends VariableClassExpr implements QueryData {
+public class KeyExpr extends VariableClassExpr {
 
     final String name;
     @Override
@@ -25,13 +23,12 @@ public class KeyExpr extends VariableClassExpr implements QueryData {
         name = iName;
     }
 
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return queryData.get(this);
+    public String getSource(CompileSource compile) {
+        return compile.keySelect.get(this);
     }
 
-    public int fillContext(Context context, boolean compile) {
+    public void fillContext(Context context) {
         context.keys.add(this);
-        return -1;
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -46,17 +43,16 @@ public class KeyExpr extends VariableClassExpr implements QueryData {
         return Where.TRUE;
     }
 
-    // для кэша
-    public boolean equals(SourceExpr expr, MapContext mapContext) {
-        return mapContext.keys.get(this).equals(expr);
-    }
-
-    public SourceExpr translate(Translator translator) {
+    public SourceExpr translateQuery(QueryTranslator translator) {
         return translator.translate(this);
     }
 
-    public KeyExpr translateAnd(DirectTranslator translator) {
+    public KeyExpr translateDirect(KeyTranslator translator) {
         return translator.translate(this);
+    }
+
+    public DataWhereSet getFollows() {
+        return new DataWhereSet();
     }
 
     private IsClassExpr classExpr;
@@ -66,11 +62,20 @@ public class KeyExpr extends VariableClassExpr implements QueryData {
         return classExpr;
     }
 
-    public Where getIsClassWhere(ClassSet set) {
+    public Where getIsClassWhere(AndClassSet set) {
         if(set.isEmpty())
             return Where.FALSE;
         else
             return new IsClassWhere(this,set);
     }
 
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
+    public int hashContext(HashContext hashContext) {
+        return hashContext.hash(this);
+    }
 }

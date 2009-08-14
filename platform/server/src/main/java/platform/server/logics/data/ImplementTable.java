@@ -4,7 +4,6 @@ import platform.server.data.KeyField;
 import platform.server.data.Table;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.types.ObjectType;
 
 import java.util.*;
 
@@ -22,7 +21,7 @@ public class ImplementTable extends Table {
         childs = new HashSet<ImplementTable>();
         parents = new HashSet<ImplementTable>();
 
-        classes = classes.or(new ClassWhere<KeyField>(mapFields));
+        classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
     }
 
     // кэшированный граф

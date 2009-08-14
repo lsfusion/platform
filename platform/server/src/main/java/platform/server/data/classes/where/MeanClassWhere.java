@@ -1,52 +1,53 @@
 package platform.server.data.classes.where;
 
+import platform.server.data.query.*;
+import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.wheres.MapWhere;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.*;
-import platform.server.data.query.translators.Translator;
-import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.sql.SQLSyntax;
-
-import java.util.Collection;
-import java.util.Map;
 
 public class MeanClassWhere extends DataWhere {
 
-    Collection<? extends AndExpr> exprs;
     ClassExprWhere packWhere;
 
-    MeanClassWhere(Collection<? extends AndExpr> iExprs, ClassExprWhere iPackWhere) {
-        exprs = iExprs;
+    public MeanClassWhere(ClassExprWhere iPackWhere) {
         packWhere = iPackWhere;
+//
+//        assert !packWhere.isFalse();
     }
 
     protected DataWhereSet getExprFollows() {
-        DataWhereSet follows = new DataWhereSet();
-        for(AndExpr expr : exprs)
-            follows.addAll(expr.getFollows());
-        return follows;
+        return packWhere.getFollows();
     }
 
     protected ClassExprWhere calculateClassWhere() {
         return packWhere;
     }
 
-    public int fillContext(Context context, boolean compile) {
-        throw new RuntimeException("Not supported");
+    public void fillContext(Context context) {
+//        throw new RuntimeException("Not supported");
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         throw new RuntimeException("Not supported");
     }
 
-    protected int getHash() {
+    public int hashContext(HashContext hashContext) {
+        return System.identityHashCode(this);
+    }
+
+    public String getSource(CompileSource compile) {
+        if(compile instanceof ToString)
+            return packWhere.toString();
+
         throw new RuntimeException("Not supported");
     }
 
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        throw new RuntimeException("Not supported");
+    @Override
+    public String toString() {
+        return packWhere.toString();
     }
 
     public Where translate(Translator translator) {
@@ -54,10 +55,6 @@ public class MeanClassWhere extends DataWhere {
     }
 
     public InnerJoins getInnerJoins() {
-        throw new RuntimeException("Not supported");
-    }
-
-    public boolean equals(Where where, MapContext mapContext) {
         throw new RuntimeException("Not supported");
     }
 }

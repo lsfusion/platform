@@ -2,9 +2,8 @@ package platform.server.logics.properties;
 
 import platform.server.data.classes.ConcreteValueClass;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.types.Type;
-import platform.server.where.WhereBuilder;
 import platform.server.session.TableChanges;
+import platform.server.where.WhereBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +26,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         formula = iFormula;
     }
 
-    public SourceExpr calculateSourceExpr(Map<StringFormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<StringFormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
 
         Map<String, SourceExpr> params = new HashMap<String, SourceExpr>();
         for(StringFormulaPropertyInterface propertyInterface : interfaces)

@@ -1,6 +1,7 @@
 package platform.server.data;
 
-import platform.server.data.classes.where.AndClassWhere;
+import platform.base.BaseUtils;
+import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
@@ -8,6 +9,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.session.SQLSession;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,31 +31,21 @@ public abstract class SessionTable<This extends SessionTable> extends Table {
 
     public abstract This createThis(ClassWhere<KeyField> iClasses,Map<PropertyField,ClassWhere<Field>> iPropertyClasses);
 
-    AndClassWhere<KeyField> getMapClasses(Map<KeyField,DataObject> keyFields) {
-        AndClassWhere<KeyField> keyClasses = new AndClassWhere<KeyField>();
-        for(Map.Entry<KeyField, DataObject> keyField : keyFields.entrySet())
-            keyClasses.add(keyField.getKey(), keyField.getValue().objectClass);
-        return keyClasses;
-    }
-
-
     public This insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
 
-        AndClassWhere<KeyField> keyClasses = getMapClasses(keyFields);
+        Map<KeyField, ConcreteClass> keyClasses = DataObject.getMapClasses(keyFields);
 
         Map<PropertyField, ClassWhere<Field>> orPropertyClasses = new HashMap<PropertyField, ClassWhere<Field>>(); 
         for(Map.Entry<PropertyField,ObjectValue> propertyField : propFields.entrySet()) {
             ClassWhere<Field> existedPropertyClasses = propertyClasses.get(propertyField.getKey());
             if(propertyField.getValue() instanceof DataObject) {
-                AndClassWhere<Field> insertAnd = new AndClassWhere<Field>(keyClasses);
-                insertAnd.add(propertyField.getKey(),((DataObject)propertyField.getValue()).objectClass);
-                ClassWhere<Field> insertClasses = new ClassWhere<Field>(insertAnd);
+                ClassWhere<Field> insertClasses = new ClassWhere<Field>(BaseUtils.merge(keyClasses,
+                        Collections.singletonMap(propertyField.getKey(),((DataObject)propertyField.getValue()).objectClass)));
                 if(existedPropertyClasses!=null)
                     insertClasses = insertClasses.or(existedPropertyClasses);
                 orPropertyClasses.put(propertyField.getKey(),insertClasses);
             } else
-                if(existedPropertyClasses!=null)
-                    orPropertyClasses.put(propertyField.getKey(),existedPropertyClasses);
+                orPropertyClasses.put(propertyField.getKey(),existedPropertyClasses!=null?existedPropertyClasses:ClassWhere.<Field>STATIC(false));
         }
 
         if(update)
@@ -69,7 +61,7 @@ public abstract class SessionTable<This extends SessionTable> extends Table {
 
         ClassWhere<KeyField> writeClasses = new ClassWhere<KeyField>();
         for(Map<KeyField, DataObject> row : rows) {
-            writeClasses = writeClasses.or(new ClassWhere<KeyField>(getMapClasses(row)));
+            writeClasses = writeClasses.or(new ClassWhere<KeyField>(DataObject.getMapClasses(row)));
             session.insertRecord(this,row,new HashMap<PropertyField, ObjectValue>());
         }
 

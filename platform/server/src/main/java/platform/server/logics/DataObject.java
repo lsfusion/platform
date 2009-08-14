@@ -4,9 +4,10 @@ import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.base.BaseUtils;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataObject extends ObjectValue {
 
@@ -29,8 +30,7 @@ public class DataObject extends ObjectValue {
     public DataObject(Object iObject, ConcreteClass iClass) {
         object = iObject;
 
-        assert object!=null;
-        assert (object instanceof Number || object instanceof String || object instanceof Boolean || object instanceof byte[]);
+        assert BaseUtils.isData(object);
         assert !(objectClass instanceof LogicalClass && !object.equals(true));
 
         objectClass = iClass;
@@ -49,5 +49,12 @@ public class DataObject extends ObjectValue {
 
     public Object getValue() {
         return object;
+    }
+
+    public static <K> Map<K,ConcreteClass> getMapClasses(Map<K,DataObject> map) {
+        Map<K,ConcreteClass> mapClasses = new HashMap<K,ConcreteClass>();
+        for(Map.Entry<K,DataObject> keyField : map.entrySet())
+            mapClasses.put(keyField.getKey(), keyField.getValue().objectClass);
+        return mapClasses;        
     }
 }

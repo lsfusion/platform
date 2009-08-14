@@ -2,7 +2,6 @@ package platform.base;
 
 import java.io.*;
 import java.util.*;
-import java.math.BigDecimal;
 
 public class BaseUtils {
 
@@ -88,8 +87,10 @@ public class BaseUtils {
 
     public static <K,V> Map<V,K> reverse(Map<K,V> map) {
         Map<V,K> result = new HashMap<V, K>();
-        for(Map.Entry<K,V> entry : map.entrySet())
+        for(Map.Entry<K,V> entry : map.entrySet()) {
+            assert !result.containsKey(entry.getValue());
             result.put(entry.getValue(),entry.getKey());
+        }
         return result;
     }
 
@@ -101,8 +102,8 @@ public class BaseUtils {
         return join(crossJoin(map,mapJoin),mapTo);
     }
 
-    public static <KA,VA,KB,VB> Map<KA,KB> crossValues(Map<KA,VA> map,Map<KB,VB> mapTo,Map<VA,VB> mapJoin) {
-        return join(join(map,mapJoin),reverse(mapTo));
+    public static <KA,VA,KB,VB> Map<KA,KB> crossValues(Map<KA,VA> map,Map<KB,VB> mapTo,Map<VB,VA> mapJoin) {
+        return join(join(map,reverse(mapJoin)),reverse(mapTo));
     }
 
     public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
@@ -242,6 +243,12 @@ public class BaseUtils {
         return removeMap;
     }
 
+    public static <K> Collection<K> add(Collection<K> col,K add) {
+        Collection<K> result = new ArrayList<K>(col);
+        result.add(add);
+        return result;
+    }
+
     public static <K> Collection<K> remove(Collection<K> set,Collection<K> remove) {
         Collection<K> result = new ArrayList<K>(set);
         result.removeAll(remove);
@@ -379,7 +386,6 @@ public class BaseUtils {
     }
 
 
-
     public static abstract class Group<G,K> {
         public abstract G group(K key);
     }
@@ -406,7 +412,127 @@ public class BaseUtils {
         return addValue;
     }
 
-    public static <K,V> void putNotNull(K key, V value, Map<K,V> map) {
-        if(value!=null) map.put(key,value);
+    public static <K,V> void putNotNull(K key, Map<K,V> from, Map<K,V> to) {
+        V value = from.get(key);
+        if(value!=null) to.put(key,value);
+    }
+
+    public static class Paired<T> {
+        public final T[] common;
+
+        private final T[] diff1;
+        private final T[] diff2;
+        private final boolean invert;
+
+        public T[] getDiff1() { return invert?diff2:diff1; }
+        public T[] getDiff2() { return invert?diff1:diff2; }
+
+        public Paired(T[] array1,T[] array2, ArrayInstancer<T> instancer) {
+            if(array1.length>array2.length) {
+                T[] sw = array2; array2 = array1; array1 = sw; invert = true;
+            } else
+                invert = false;
+            assert array1.length<=array2.length;
+            T[] pairedWheres = instancer.newArray(array1.length); int pairs = 0;
+            T[] thisWheres = instancer.newArray(array1.length); int thisnum = 0;
+            T[] pairedThatWheres = array2.clone();
+            for(T opWhere : array1) {
+                boolean paired = false;
+                for(int i=0;i<pairedThatWheres.length;i++)
+                    if(pairedThatWheres[i]!=null && hashEquals(array2[i],opWhere)) {
+                        pairedWheres[pairs++] = opWhere;
+                        pairedThatWheres[i] = null;
+                        paired = true;
+                        break;
+                    }
+                if(!paired) thisWheres[thisnum++] = opWhere;
+            }
+
+            if(pairs==0) {
+                common = instancer.newArray(0);
+                diff1 = array1;
+                diff2 = array2;
+            } else {
+                if(pairs==array1.length) {
+                    common = array1;
+                    diff1 = instancer.newArray(0);
+                } else {
+                    common = instancer.newArray(pairs); System.arraycopy(pairedWheres,0,common,0,pairs);
+                    diff1 = instancer.newArray(thisnum); System.arraycopy(thisWheres,0,diff1,0,thisnum);
+                }
+
+                if(pairs==array2.length)
+                    diff2 = diff1;
+                else {
+                    diff2 = instancer.newArray(array2.length-pairs); int compiledNum = 0;
+                    for(T opWhere : pairedThatWheres)
+                        if(opWhere!=null) diff2[compiledNum++] = opWhere;
+                }
+            }
+        }
+    }
+
+    public static <K,EK,T> Map<K, EK> mapEquals(Map<K,T> map, Map<EK,T> equals) {
+        if(map.size()!=equals.size()) return null;
+
+        Map<K, EK> mapKeys = new HashMap<K, EK>();
+        for(Map.Entry<K,T> key : map.entrySet()) {
+            EK mapKey = null;
+            for(Map.Entry<EK,T> equalKey : equals.entrySet())
+                if(!mapKeys.containsValue(equalKey.getKey()) &&
+                    key.getValue().equals(equalKey.getValue())) {
+                    mapKey = equalKey.getKey();
+                    break;
+                }
+            if(mapKey==null) return null;
+            mapKeys.put(key.getKey(),mapKey);
+        }
+        return mapKeys;
+    }
+
+    public static <K> String toString(Collection<K> array, String separator) {
+        String result = "";
+        for(K element : array)
+            result = (result.length()==0?"":result+separator) + element;
+        return result;
+    }
+
+    public static <K,V> boolean containsAll(Map<K,V> map, Map<K,V> contains) {
+        for(Map.Entry<K,V> entry : contains.entrySet())
+            if(!entry.getValue().equals(map.get(entry.getKey())))
+                return false;
+        return true;
+    }
+
+    public static <K> Map<K,String> mapString(Collection<K> col) {
+        Map<K,String> result = new HashMap<K, String>();
+        for(K element : col)
+            result.put(element,element.toString());
+        return result;
+    }
+
+    public static Object[] add(Object[] array1,Object[] array2) {
+        return add(array1,array2,objectInstancer);
+    }
+
+    public final static ArrayInstancer<Object> objectInstancer = new ArrayInstancer<Object>() {
+        public Object[] newArray(int size) {
+            return new Object[size];
+        }
+    };
+
+    public static <T> T[] add(T[] array1,T[] array2,ArrayInstancer<T> instancer) {
+        T[] result = instancer.newArray(array1.length+array2.length);
+        System.arraycopy(array1,0,result,0,array1.length);
+        System.arraycopy(array2,0,result,array1.length,array2.length);
+        return result;
+    }
+
+    public static boolean isData(Object object) {
+        return object instanceof Number || object instanceof String || object instanceof Boolean || object instanceof byte[];
+    }
+
+    public static <I,E extends I> List<E> immutableCast(List<I> list) {
+        return (List<E>)(List<? extends I>)list;        
     }
 }

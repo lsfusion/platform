@@ -1,29 +1,32 @@
 package platform.server.data.query;
 
+import net.jcip.annotations.Immutable;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.DeclareParents;
 import org.aspectj.lang.annotation.Aspect;
-
-import java.util.*;
-
-import platform.server.data.MapSource;
+import org.aspectj.lang.annotation.DeclareParents;
+import platform.base.BaseUtils;
+import platform.server.caches.Lazy;
+import platform.server.caches.MapContext;
+import platform.server.caches.MapParamsIterable;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.translators.KeyTranslator;
-import platform.server.where.WhereBuilder;
-import platform.server.logics.properties.*;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.properties.DataProperty;
 import platform.server.session.TableChanges;
-import platform.base.BaseUtils;
+import platform.server.where.WhereBuilder;
+
+import java.util.*;
 
 @Aspect
 public class MapCacheAspect {
 
     // добавление кэшированного св-ва
-    public interface ParseInterface {
+    public interface ParseInterface {  
         ParsedQuery getParse(); void setParse(ParsedQuery query);
     }
     public static class ParseInterfaceImplement implements ParseInterface {
@@ -34,10 +37,14 @@ public class MapCacheAspect {
     private ParseInterface parseInterface;
 
     static <K,V,CK,CV> MapParsedQuery<CK,CV,K,V> cacheQuery(JoinQuery<K,V> cache,JoinQuery<CK,CV> query) {
-        MapSource<CK, CV, K, V> map = cache.map(query);
-        if(map==null) return null;
-        return new MapParsedQuery<CK,CV,K,V>((ParsedJoinQuery<K,V>) ((ParseInterface)cache).getParse(),map);
-    }
+        for(KeyTranslator translator : new MapParamsIterable(cache, query, true)) {
+            Map<CV,V> mapProps;
+            if(cache.where.translate(translator).equals(query.where) && (mapProps=BaseUtils.mapEquals(query.properties,translator.translate(cache.properties)))!=null)
+                return new MapParsedQuery<CK,CV,K,V>((ParsedJoinQuery<K,V>) ((ParseInterface)cache).getParse(),
+                        mapProps,BaseUtils.crossValues(query.mapKeys, cache.mapKeys, translator.keys),translator.values);
+        }
+        return null;
+    }                        
 
     final static Map<Integer, Collection<JoinQuery>> cacheParse = new HashMap<Integer, Collection<JoinQuery>>();
     <K,V> ParsedQuery<K,V> parse(JoinQuery<K,V> query,ProceedingJoinPoint thisJoinPoint) throws Throwable {
@@ -46,10 +53,11 @@ public class MapCacheAspect {
 
         Collection<JoinQuery> hashCaches;
         synchronized(cacheParse) {
-            hashCaches = cacheParse.get(query.hash());
+            int hashQuery = MapParamsIterable.hash(query,true);
+            hashCaches = cacheParse.get(hashQuery);
             if(hashCaches==null) {
                 hashCaches = new ArrayList<JoinQuery>();
-                cacheParse.put(query.hash(), hashCaches);
+                cacheParse.put(hashQuery, hashCaches);
             }
         }
 //        synchronized(hashCaches) {
@@ -83,23 +91,28 @@ public class MapCacheAspect {
     @DeclareParents(value="platform.server.data.query.ParsedJoinQuery",defaultImpl=JoinInterfaceImplement.class)
     private JoinInterface joinInterface;
 
-    class JoinImplement<K> {
+    @Immutable
+    class JoinImplement<K> implements MapContext {
         final Map<K,? extends SourceExpr> exprs;
         final Map<ValueExpr,ValueExpr> values; // map context'а values на те которые нужны
-        final Context context; // context exprs'ов
 
         JoinImplement(Map<K, ? extends SourceExpr> iExprs,Map<ValueExpr,ValueExpr> iValues) {
             exprs = iExprs;
             values = iValues;
-
-            context = new Context();
-            context.fill(exprs.values(),false);
         }
 
-        int hash() {
+        @Lazy
+        public Context getContext() {
+            Context context;
+            context = new Context();
+            context.fill(exprs);
+            return context;
+        }
+
+        public int hash(HashContext hashContext) {
             int hash=0;
             for(Map.Entry<K,? extends SourceExpr> expr : exprs.entrySet())
-                hash += expr.getKey().hashCode() + expr.getValue().hash();
+                hash += expr.getKey().hashCode() ^ expr.getValue().hashContext(hashContext);
             return hash;
         }
     }
@@ -109,24 +122,26 @@ public class MapCacheAspect {
 
         Map<JoinImplement<K>,Join<V>> hashCaches;
         synchronized(joinCaches) {
-            hashCaches = joinCaches.get(joinImplement.hash());
+            int hashImplement = MapParamsIterable.hash(joinImplement,true);
+            hashCaches = joinCaches.get(hashImplement);
             if(hashCaches==null) {
                 hashCaches = new HashMap<JoinImplement<K>, Join<V>>();
-                joinCaches.put(joinImplement.hash(), hashCaches);
+                joinCaches.put(hashImplement, hashCaches);
             }
         }
         synchronized(hashCaches) {
             for(Map.Entry<JoinImplement<K>,Join<V>> cache : hashCaches.entrySet()) {
-                for(MapContext mapContext : cache.getKey().context.map(joinImplement.context))
-                    if(mapContext.equals(cache.getKey().exprs,joinImplement.exprs)) {
+                for(KeyTranslator translator : new MapParamsIterable(cache.getKey(), joinImplement, true)) {
+                    if(translator.translate(cache.getKey().exprs).equals(joinImplement.exprs)) {
                         // здесь не все values нужно докинуть их из контекста (ключи по идее все)
-                        assert mapContext.keys.keySet().equals(cache.getValue().getContext().keys);
                         Map<ValueExpr,ValueExpr> transValues;
-                        if((transValues=BaseUtils.mergeEqual(mapContext.values,BaseUtils.crossJoin(cache.getKey().values,joinImplement.values)))!=null) {
+                        if((transValues=BaseUtils.mergeEqual(translator.values,BaseUtils.crossJoin(cache.getKey().values,joinImplement.values)))!=null) {
                             System.out.println("join cached");
-                            return new TranslateJoin<V>(new KeyTranslator(cache.getValue().getContext(),mapContext.keys,transValues),cache.getValue());
+                            return new TranslateJoin<V>(new KeyTranslator(translator.keys,transValues),cache.getValue());
                         }
-                    }
+                    } else
+                        cache = cache;
+                }
             }
             System.out.println("join not cached");
             Join<V> join = (Join<V>) thisJoinPoint.proceed();
@@ -140,29 +155,24 @@ public class MapCacheAspect {
         return join(joinExprs,joinValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
     }
 
-    static class SourceExprImplement {
-        final TableChanges changes;
-        final boolean changed;
+    static class SourceExprImplement<U extends Property.TableUsedChanges<U>> {
+        final U usedChanges; 
+        final boolean changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
 
-        SourceExprImplement(Property property,TableChanges sessionChanges, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, boolean iChanged) {
+        SourceExprImplement(Property<?> property,TableChanges sessionChanges,Collection<DataProperty> usedDefault, Property.TableDepends<U> depends, boolean iChanged) {
+            if(sessionChanges==null)
+                usedChanges = depends.newChanges();
+            else
+                usedChanges = property.getUsedChanges(sessionChanges, usedDefault, depends);
             changed = iChanged;
-
-            changes = new TableChanges();
-
-            if(sessionChanges!=null) {
-                List<Property> dependChanges = new ArrayList<Property>();
-                property.fillChanges(dependChanges,sessionChanges,defaultProps, noUpdateProps);
-                for(Property depend : dependChanges)
-                    depend.fillTableChanges(changes,sessionChanges);
-            }
         }
 
         public boolean equals(Object o) {
-            return this == o || o instanceof SourceExprImplement && changed == ((SourceExprImplement) o).changed && changes.equals(((SourceExprImplement) o).changes);
+            return this == o || o instanceof SourceExprImplement && changed == ((SourceExprImplement) o).changed && usedChanges.equals(((SourceExprImplement) o).usedChanges);
         }
 
         public int hashCode() {
-            return 31 * changes.hashCode() + (changed ? 1 : 0);
+            return 31 * usedChanges.hashCode() + (changed ? 1 : 0);
         }
     }
 
@@ -179,14 +189,14 @@ public class MapCacheAspect {
     final String PROPERTY_STRING = "expr";
     final String CHANGED_STRING = "where";
 
-    public <K extends PropertyInterface> SourceExpr getSourceExpr(Property<K> property,Map<K,SourceExpr> joinExprs,TableChanges changes,Map<DataProperty, DefaultData> defaultProps,Collection<Property> noUpdateProps,WhereBuilder changedWheres,ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface,U extends Property.TableUsedChanges<U>> SourceExpr getSourceExpr(Property<K> property,Map<K,SourceExpr> joinExprs,TableChanges changes, Collection<DataProperty> usedDefault,Property.TableDepends<U> depends,WhereBuilder changedWheres,ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // если идет autoFillDB то не кэшируем
         if(BusinessLogics.autoFillDB) return (SourceExpr) thisJoinPoint.proceed();
 
         property.cached = true;
 
-        SourceExprImplement implement = new SourceExprImplement(property,changes,defaultProps,noUpdateProps,changedWheres!=null);
+        SourceExprImplement<U> implement = new SourceExprImplement<U>(property,changes,usedDefault,depends,changedWheres!=null);
 
         Map<SourceExprImplement,JoinQuery<K,String>> exprCache = ((SourceExprInterface)property).getSourceExprCache();
 
@@ -196,9 +206,9 @@ public class MapCacheAspect {
             // надо проверить что с такими changes, defaultProps, noUpdateProps
             query = new JoinQuery<K,String>(property);
             WhereBuilder queryWheres = (changedWheres==null?null:new WhereBuilder());
-            query.properties.put(PROPERTY_STRING, (SourceExpr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,changes,defaultProps,noUpdateProps,queryWheres}));
+            query.properties.put(PROPERTY_STRING, (SourceExpr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,changes,usedDefault,depends,queryWheres}));
             if(changedWheres!=null)
-                query.properties.put(CHANGED_STRING,new CaseExpr(queryWheres.toWhere(),new ValueExpr(true, LogicalClass.instance)));
+                query.properties.put(CHANGED_STRING,new ValueExpr(true, LogicalClass.instance).and(queryWheres.toWhere()));
 
             exprCache.put(implement,query);
         } else
@@ -210,10 +220,10 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getSourceExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("call(platform.server.data.query.exprs.SourceExpr platform.server.logics.properties.Property.getSourceExpr(java.util.Map,platform.server.session.TableChanges,java.util.Map,java.util.Collection,platform.server.where.WhereBuilder)) " +
-            "&& target(property) && args(joinExprs,changes,defaultProps,noUpdateProps,changedWhere)")
-    public Object callGetSourceExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, TableChanges changes,Map defaultProps, Collection noUpdateProps, WhereBuilder changedWhere) throws Throwable {
+    @Around("call(platform.server.data.query.exprs.SourceExpr platform.server.logics.properties.Property.getSourceExpr(java.util.Map,platform.server.session.TableChanges,java.util.Collection,platform.server.logics.properties.Property.TableDepends,platform.server.where.WhereBuilder)) " +
+            "&& target(property) && args(joinExprs,changes,usedDefault,depends,changedWhere)")
+    public Object callGetSourceExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, TableChanges changes, Collection usedDefault, Property.TableDepends depends,WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        return getSourceExpr(property, joinExprs, changes, defaultProps, noUpdateProps, changedWhere, thisJoinPoint);
+        return getSourceExpr(property, joinExprs, changes, usedDefault, depends, changedWhere, thisJoinPoint);
     }
 }

@@ -3,15 +3,13 @@ package platform.server.session;
 import platform.server.data.classes.CustomClass;
 import platform.server.logics.properties.DataProperty;
 
-import java.util.Set;
+public abstract class DataChanges<This extends DataChanges<This>> {
 
-// изменения данных
-public interface DataChanges {
+    public abstract void add(This changes);
 
-    Set<DataProperty> getProperties();
+    public abstract void dependsAdd(This changes, CustomClass customClass);
+    public abstract void dependsRemove(This changes, CustomClass customClass);
+    public abstract void dependsData(This changes, DataProperty property);
 
-    Set<CustomClass> getAddClasses();
-    Set<CustomClass> getRemoveClasses();
-
-    boolean hasChanges();
+    public abstract boolean hasChanges();
 }

@@ -1,5 +1,8 @@
 package platform.server.view.navigator;
 
+import platform.server.view.navigator.filter.FilterNavigator;
+import platform.server.view.navigator.filter.CompareFilterNavigator;
+
 import javax.swing.*;
 
 public class RegularFilterNavigator {

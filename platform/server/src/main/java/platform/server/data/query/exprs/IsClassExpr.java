@@ -1,36 +1,33 @@
 package platform.server.data.query.exprs;
 
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
+import platform.server.data.Table;
 import platform.server.data.classes.BaseClass;
 import platform.server.data.classes.SystemClass;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.DirectTranslator;
-import platform.server.data.query.translators.Translator;
-import platform.server.data.query.wheres.IsClassWhere;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.KeyTranslator;
 import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
+import platform.server.caches.ParamLazy;
 
 import java.util.Collections;
-import java.util.Map;
 
 public class IsClassExpr extends StaticClassExpr {
 
     public VariableClassExpr expr;
     BaseClass baseClass;
 
-    public final JoinExpr joinExpr;
+    public final Table.Join.Expr joinExpr;
 
-    IsClassExpr(VariableClassExpr iExpr, BaseClass iBaseClass) {
+    public IsClassExpr(VariableClassExpr iExpr, BaseClass iBaseClass) {
         expr = iExpr;
         
         baseClass = iBaseClass;
 
         // assertion что есть
-        joinExpr = (JoinExpr) new DataJoin<KeyField, PropertyField>(baseClass.table,
+        joinExpr = (Table.Join.Expr) baseClass.table.joinAnd(
                 Collections.singletonMap(baseClass.table.key, expr)).getExpr(baseClass.table.objectClass);
     }
 
@@ -51,39 +48,32 @@ public class IsClassExpr extends StaticClassExpr {
         return SystemClass.instance;
     }
 
-    public SourceExpr translate(Translator translator) {
+    @ParamLazy
+    public SourceExpr translateQuery(QueryTranslator translator) {
         return expr.translate(translator).getClassExpr(baseClass); 
     }
 
-    public StaticClassExpr translateAnd(DirectTranslator translator) {
-        return (IsClassExpr) expr.translateAnd(translator).getClassExpr(baseClass);
+    @ParamLazy
+    public StaticClassExpr translateDirect(KeyTranslator translator) {
+        return (IsClassExpr) expr.translateDirect(translator).getClassExpr(baseClass);
     }
 
     protected Where calculateWhere() {
-        return new IsClassWhere(expr, baseClass.getUpSet());
+        return expr.getWhere();
     }
 
-    public boolean equals(SourceExpr equalExpr, MapContext mapContext) {
-        return equalExpr instanceof IsClassExpr && expr.equals(((IsClassExpr)equalExpr).expr, mapContext);
+    public int hashContext(HashContext hashContext) {
+        return expr.hashContext(hashContext)+1;
     }
 
-    protected int getHash() {
-        return expr.hash()+1;
+    public String getSource(CompileSource compile) {
+        if(compile instanceof ToString)
+            return "class("+expr.getSource(compile)+")";
+
+        return joinExpr.getSource(compile);
     }
 
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return queryData.get(joinExpr);
-    }
-
-    public int fillContext(Context context, boolean compile) {
-        if(compile)
-            return context.add(joinExpr.from, compile);
-        else
-            return expr.fillContext(context, compile);
-    }
-
-    @Override
-    public String toString() {
-        return "class("+expr+")";
+    public void fillContext(Context context) {
+        expr.fillContext(context);
     }
 }

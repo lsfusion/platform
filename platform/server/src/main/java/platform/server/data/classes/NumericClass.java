@@ -1,7 +1,7 @@
 package platform.server.data.classes;
 
-import platform.server.data.sql.SQLSyntax;
 import platform.interop.Data;
+import platform.server.data.sql.SQLSyntax;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

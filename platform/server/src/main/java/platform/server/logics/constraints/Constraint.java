@@ -18,6 +18,6 @@ import java.util.Map;
 // constraint
 public abstract class Constraint {
 
-    public abstract <P extends PropertyInterface> String check(DataSession session, Property<P> property, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException;
+    public abstract <P extends PropertyInterface> String check(DataSession session, Property<P> property) throws SQLException;
 
 }

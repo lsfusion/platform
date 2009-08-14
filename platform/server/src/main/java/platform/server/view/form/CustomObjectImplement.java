@@ -4,9 +4,11 @@ import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.data.classes.ConcreteObjectClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.ValueClass;
-import platform.server.data.classes.where.ClassSet;
-import platform.server.data.types.Type;
+import platform.server.data.classes.where.AndClassSet;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.types.ObjectType;
+import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
 import platform.server.session.ChangesSession;
 
@@ -34,7 +36,7 @@ public class CustomObjectImplement extends ObjectImplement {
         return baseClass;
     }
 
-    public ClassSet getClassSet(GroupObjectImplement classGroup) {
+    public AndClassSet getClassSet(GroupObjectImplement classGroup) {
         if(groupTo==classGroup)
             return getGridClass().getUpSet();
         else
@@ -94,6 +96,10 @@ public class CustomObjectImplement extends ObjectImplement {
         return value;
     }
 
+    protected SourceExpr getExpr() {
+        return value==null?CaseExpr.NULL:value.getExpr();
+    }
+
     public void changeClass(ChangesSession session,int classID) throws SQLException {
 
         assert value!=null;
@@ -104,6 +110,7 @@ public class CustomObjectImplement extends ObjectImplement {
         } else
             session.changeClass(value,baseClass.findConcreteClassID(classID));
     }
+
 
     public void changeGridClass(int classID) {
 

@@ -1,7 +1,7 @@
 package platform.server.data.classes;
 
-import platform.server.logics.data.ObjectTable;
 import platform.server.data.classes.where.ConcreteCustomClassSet;
+import platform.server.logics.data.ObjectTable;
 
 public class BaseClass extends AbstractCustomClass {
 

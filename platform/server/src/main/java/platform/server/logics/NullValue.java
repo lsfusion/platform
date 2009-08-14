@@ -3,7 +3,6 @@ package platform.server.logics;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
 
 public class NullValue extends ObjectValue {
 
@@ -19,7 +18,7 @@ public class NullValue extends ObjectValue {
     }
 
     public SourceExpr getExpr() {
-        return new CaseExpr();
+        return CaseExpr.NULL;
     }
 
     public boolean equals(Object o) {

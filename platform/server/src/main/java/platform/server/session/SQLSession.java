@@ -2,15 +2,14 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.server.data.*;
-import platform.server.data.types.Type;
-import platform.server.data.types.TypeObject;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.types.TypeObject;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -375,15 +374,15 @@ public class SQLSession {
     }
 
     // вспомогательные методы
-    public static String stringExpr(LinkedHashMap<String,String> KeySelect,LinkedHashMap<String,String> PropertySelect) {
-        String ExpressionString = "";
-        for(Map.Entry<String,String> Key : KeySelect.entrySet())
-            ExpressionString = (ExpressionString.length()==0?"":ExpressionString+",") + Key.getValue() + " AS " + Key.getKey();
-        if(KeySelect.size()==0)
-            ExpressionString = "1 AS subkey";
-        for(Map.Entry<String,String> Property : PropertySelect.entrySet())
-            ExpressionString = (ExpressionString.length()==0?"":ExpressionString+",") + Property.getValue() + " AS " + Property.getKey();
-        return ExpressionString;
+    public static String stringExpr(Map<String,String> keySelect,Map<String,String> propertySelect) {
+        String expressionString = "";
+        for(Map.Entry<String,String> Key : keySelect.entrySet())
+            expressionString = (expressionString.length()==0?"":expressionString+",") + Key.getValue() + " AS " + Key.getKey();
+        if(keySelect.size()==0)
+            expressionString = "1 AS subkey";
+        for(Map.Entry<String,String> Property : propertySelect.entrySet())
+            expressionString = (expressionString.length()==0?"":expressionString+",") + Property.getValue() + " AS " + Property.getKey();
+        return expressionString;
     }
 
     public static <T> LinkedHashMap<String,String> mapNames(Map<T,String> exprs,Map<T,String> names, List<T> order) {
@@ -393,12 +392,5 @@ public class SQLSession {
             order.add(name.getKey());
         }
         return result;
-    }
-
-    public static String stringWhere(Collection<String> WhereSelect) {
-        String WhereString = "";
-        for(String Where : WhereSelect)
-            WhereString = (WhereString.length()==0?"":WhereString+" AND ") + Where;
-        return WhereString;
     }
 }

@@ -33,11 +33,11 @@ public class UnknownClass implements ConcreteObjectClass {
         session.deleteKeyRecords(baseClass.table,Collections.singletonMap(baseClass.table.key,(Integer)value.object));
     }
 
-    public boolean inSet(ClassSet set) {
+    public boolean inSet(AndClassSet set) {
         return set instanceof UnknownClass && equals(set);
     }
 
-    public boolean containsAll(ClassSet node) {
+    public boolean containsAll(AndClassSet node) {
         return inSet(node);
     }
 
@@ -46,7 +46,7 @@ public class UnknownClass implements ConcreteObjectClass {
     }
 
     public SourceExpr getIDExpr() {
-        return new CaseExpr();
+        return CaseExpr.NULL;
     }
 
     public Type getType() {
@@ -61,7 +61,7 @@ public class UnknownClass implements ConcreteObjectClass {
         return source + " IS NOT NULL";
     }
 
-    public ObjectClassSet and(ClassSet node) {
+    public ObjectClassSet and(AndClassSet node) {
         return inSet(node)?this:UpClassSet.FALSE;
     }
 

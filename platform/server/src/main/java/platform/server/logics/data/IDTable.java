@@ -3,20 +3,17 @@ package platform.server.logics.data;
 import platform.interop.Compare;
 import platform.server.data.*;
 import platform.server.data.classes.SystemClass;
-import platform.server.data.classes.where.AndClassWhere;
 import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 // таблица счетчика sID
 public class IDTable extends Table {
@@ -36,9 +33,9 @@ public class IDTable extends Table {
 
         classes = new ClassWhere<KeyField>(key, SystemClass.instance);
 
-        AndClassWhere<Field> valueClasses = new AndClassWhere<Field>();
-        valueClasses.add(key, SystemClass.instance);
-        valueClasses.add(value, SystemClass.instance);
+        Map<Field, SystemClass> valueClasses = new HashMap<Field, SystemClass>();
+        valueClasses.put(key, SystemClass.instance);
+        valueClasses.put(value, SystemClass.instance);
         propertyClasses.put(value,new ClassWhere<Field>(valueClasses));
     }
 
@@ -57,11 +54,11 @@ public class IDTable extends Table {
         if(BusinessLogics.autoFillDB) return BusinessLogics.autoIDCounter++;
         // читаем
         JoinQuery<KeyField, PropertyField> query = new JoinQuery<KeyField, PropertyField>(this);
-        Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));
+        Join joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));
         query.and(joinTable.getWhere());
         query.properties.put(value, joinTable.getExpr(value));
 
-        query.and(new CompareWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance), Compare.EQUALS));
+        query.and(new EqualsWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance)));
 
         Integer freeID = (Integer) query.executeSelect(dataSession).values().iterator().next().get(value);
 

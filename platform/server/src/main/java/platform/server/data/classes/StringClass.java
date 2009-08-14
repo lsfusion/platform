@@ -1,9 +1,9 @@
 package platform.server.data.classes;
 
+import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
-import platform.interop.Data;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -85,7 +85,6 @@ public class StringClass extends DataClass<String> {
     }
 
     private static Collection<StringClass> strings = new ArrayList<StringClass>();
-    public final static String NULL = "NULL";
 
     public static StringClass get(int length) {
         for(StringClass string : strings)

@@ -9,7 +9,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         super(iID, iCaption, iParents);
     }
 
-    public boolean inSet(ClassSet set) {
+    public boolean inSet(AndClassSet set) {
         return (set instanceof ConcreteCustomClass && equals(set)) || (set instanceof UpClassSet && ((UpClassSet) set).has(this));
     }
 
@@ -33,7 +33,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return source + " IS NULL OR NOT " + getWhereString(source);
     }
 
-    public ObjectClassSet and(ClassSet node) {
+    public ObjectClassSet and(AndClassSet node) {
         return inSet(node)?this:UpClassSet.FALSE;
     }
 
@@ -41,7 +41,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return false;
     }
 
-    public boolean containsAll(ClassSet node) {
+    public boolean containsAll(AndClassSet node) {
         return node instanceof ConcreteCustomClass && this==node;
     }
 

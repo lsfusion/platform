@@ -1,20 +1,19 @@
 package platform.server.data.classes;
 
+import net.sf.jasperreports.engine.JRAlignment;
+import platform.interop.Data;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
 import platform.server.view.form.client.report.ReportDrawField;
-import platform.server.data.sql.SQLSyntax;
-import platform.interop.Data;
 
-import java.util.Random;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.Format;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
-import java.text.Format;
-
-import net.sf.jasperreports.engine.JRAlignment;
+import java.util.Random;
 
 public class BitClass extends DataClass<Boolean> {
 

@@ -1,9 +1,9 @@
 package platform.server.data.classes;
 
+import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
-import platform.interop.Data;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

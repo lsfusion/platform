@@ -3,15 +3,13 @@ package platform.server.logics.properties;
 import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.types.Type;
-import platform.server.session.DataChanges;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
 
 import java.util.*;
 
-public class JoinProperty<T extends PropertyInterface> extends AggregateProperty<JoinPropertyInterface> {
+public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<JoinPropertyInterface> {
     public PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T> implement;
 
     static Collection<JoinPropertyInterface> getInterfaces(int intNum) {
@@ -23,25 +21,21 @@ public class JoinProperty<T extends PropertyInterface> extends AggregateProperty
 
     public JoinProperty(String iSID, int intNum, Property<T> iProperty) {
         super(iSID, getInterfaces(intNum));
-        implement = new PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T>(iProperty);
     }
 
-    public SourceExpr calculateSourceExpr(Map<JoinPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<JoinPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
 
         // считаем новые SourceExpr'ы и классы
         Map<T, SourceExpr> implementExprs = new HashMap<T, SourceExpr>();
         for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> interfaceImplement : implement.mapping.entrySet())
-            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapSourceExpr(joinImplement, session, defaultProps, changedWhere, noUpdateProps));
-        return implement.property.getSourceExpr(implementExprs, session, defaultProps, noUpdateProps, changedWhere);
+            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere));
+        return implement.property.getSourceExpr(implementExprs, session, usedDefault, depends, changedWhere);
     }
 
-    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
-        boolean changed = false;
-        for(PropertyInterfaceImplement<JoinPropertyInterface> interfaceImplement : implement.mapping.values())
-            changed = interfaceImplement.mapFillChanges(changedProperties, changes, noUpdateProps, defaultProps) || changed;
-        return implement.property.fillChanges(changedProperties, changes, defaultProps, noUpdateProps) || changed;
+    protected void fillDepends(Set<Property> depends) {
+        fillDepends(depends,implement.mapping.values());
+        depends.add(implement.property);       
     }
-
 
     @Override
     public MapChangeDataProperty<JoinPropertyInterface> getChangeProperty(Map<JoinPropertyInterface, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {

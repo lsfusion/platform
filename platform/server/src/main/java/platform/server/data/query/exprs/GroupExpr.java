@@ -1,0 +1,277 @@
+package platform.server.data.query.exprs;
+
+import platform.base.BaseUtils;
+import platform.server.caches.MapContext;
+import platform.server.caches.MapParamsIterable;
+import platform.server.caches.Lazy;
+import platform.server.caches.ParamLazy;
+import platform.server.data.classes.where.MeanClassWhere;
+import platform.server.data.query.*;
+import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.wheres.EqualsWhere;
+import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.exprs.cases.ExprCaseList;
+import platform.server.data.query.exprs.cases.MapCase;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.types.Type;
+import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
+import platform.interop.Compare;
+
+import java.util.*;
+
+import net.jcip.annotations.Immutable;
+
+@Immutable
+public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,This>> extends MapExpr implements MapContext {
+
+    public static final boolean inner = false;
+    
+    public final Where where;
+    public final Map<AndExpr,AndExpr> group;
+    public final E expr;
+
+    final Context context;
+
+    @Lazy
+    public Where getJoinsWhere() {
+        return getJoinsWhere(group);
+    }
+
+    // проталкивает "верхний" where внутрь
+    private static Where pushWhere(Where where,Map<AndExpr,AndExpr> group) {
+        Where result = new MeanClassWhere(where.and(getJoinsWhere(group)).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()));
+        assert result.means(getWhere(group.keySet())); // надо assert'ить чтобы не and'ить
+        return result;
+    }
+
+    public abstract E packExpr(E expr, Where trueWhere);
+
+    // можно использовать напрямую только заведомо зная что не null
+    private GroupExpr(Map<AndExpr, AndExpr> group, Where where, E expr, Where upWhere) {
+
+        Map<AndExpr,AndExpr> keepGroup = new HashMap<AndExpr, AndExpr>(); // проталкиваем values внутрь
+        for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
+            if(!(groupExpr.getValue() instanceof ValueExpr))
+                keepGroup.put(groupExpr.getKey(),groupExpr.getValue());
+            else
+                where = where.and(new EqualsWhere(groupExpr.getKey(), (ValueExpr)groupExpr.getValue()));
+
+        Where pushWhere = pushWhere(upWhere, keepGroup);
+        this.expr = packExpr(expr,pushWhere.and(where)); // сначала pack'аем expr
+        this.where = where.followFalse(pushWhere.and(this.expr.getWhere()).not()); // затем pack'аем where
+        Where exprWhere = this.expr.getWhere().and(this.where); // теперь pack'аем group
+        this.group = new HashMap<AndExpr, AndExpr>();
+        for(Map.Entry<AndExpr,AndExpr> entry : keepGroup.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
+            this.group.put(entry.getKey().packFollowFalse(exprWhere.and(pushWhere.or(entry.getKey().getWhere().not()))),entry.getValue());
+
+        context = getContext(this.expr, this.group, this.where); // перечитаем
+
+        assert checkExpr();
+    }
+
+    public GroupExpr(Where where, Map<AndExpr, AndExpr> group, E expr) {
+        this(group, where, expr, Where.TRUE);
+    }
+
+    private static Map<AndExpr,AndExpr> pushValues(Map<AndExpr,AndExpr> group,Where<?> trueWhere) {
+        Map<AndExpr,ValueExpr> exprValues = trueWhere.getExprValues();
+        Map<AndExpr,AndExpr> result = new HashMap<AndExpr, AndExpr>(); ValueExpr pushValue; // проталкиваем values внутрь
+        for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
+            result.put(groupExpr.getKey(),((pushValue=exprValues.get(groupExpr.getValue()))==null?groupExpr.getValue():pushValue));
+        return result;
+    }
+
+    // assertion когда не надо push'ать
+    public boolean assertNoPush(Where<?> trueWhere) { // убрал trueWhere.and(getJoinsWhere())
+        return Collections.disjoint(group.values(),trueWhere.getExprValues().keySet()) && getFullWhere().getClassWhere().means(trueWhere.getClassWhere().mapBack(group));
+    }
+
+    public GroupExpr(This groupExpr,Where<?> falseWhere) { // в отличии от joins, expr нельзя проталкивать потому как повлияет на результат !!!
+        this(pushValues(groupExpr.group,falseWhere.not()), groupExpr.where, groupExpr.expr,falseWhere.not());
+
+        assert !getFullWhere().isFalse();
+    }
+
+    // трансляция
+    public GroupExpr(This groupExpr,KeyTranslator translator) {
+        // надо еще транслировать "внутренние" values
+        Map<ValueExpr, ValueExpr> mapValues = BaseUtils.filterKeys(translator.values, groupExpr.context.values);
+
+        if(BaseUtils.identity(mapValues)) { // если все совпадает то и не перетранслируем внутри ничего 
+            expr = groupExpr.expr;
+            where = groupExpr.where;
+            group = translator.translateDirect(groupExpr.group);
+        } else { // еще values перетранслируем
+            KeyTranslator valueTranslator = new KeyTranslator(BaseUtils.toMap(groupExpr.context.keys), mapValues);
+            expr = (E) groupExpr.expr.translateDirect(valueTranslator);
+            where = groupExpr.where.translate(valueTranslator);
+            group = new HashMap<AndExpr, AndExpr>();
+            for(Map.Entry<AndExpr,AndExpr> groupJoin : groupExpr.group.entrySet())
+                group.put(groupJoin.getKey().translateDirect(valueTranslator),groupJoin.getValue().translateDirect(translator));
+        }
+
+        context = new Context(new HashSet<KeyExpr>(groupExpr.context.keys),new HashSet<ValueExpr>(mapValues.values()));
+
+        assert checkExpr();
+    }
+
+    private boolean checkExpr() {
+        assert getContext(expr,group,where).equals(context);
+
+        for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
+            assert !(groupExpr.getValue() instanceof ValueExpr);
+
+        return true;
+    }
+
+    protected abstract SourceExpr createThis(Where iWhere,Map<AndExpr,AndExpr> iGroup,E iExpr);
+
+    // трансляция не прямая
+    @ParamLazy
+    public SourceExpr translateQuery(QueryTranslator translator) {
+        ExprCaseList result = new ExprCaseList();
+        for(MapCase<AndExpr> mapCase : CaseExpr.pullCases(translator.translate(group)))
+            result.add(mapCase.where,createThis(where,mapCase.data,expr));
+        return result.getExpr();
+    }
+
+    private static Context getContext(SourceExpr expr, Map<AndExpr, AndExpr> group, Where where) {
+        // перечитаем joins, потому как из-за merge'а могут поуходить join'ы
+        Context context = new Context();
+        context.fill(group.keySet());
+        expr.fillContext(context);
+        where.fillContext(context);
+        return context;
+    }
+
+    @Lazy
+    public Where getFullWhere() {
+        return expr.getWhere().and(getWhere(group.keySet())).and(where);
+    }
+
+    public Type getType(Where where) {
+        return expr.getType(getFullWhere());
+    }
+
+    public abstract class NotNull extends MapExpr.NotNull {
+
+        protected DataWhereSet getExprFollows() {
+            return MapExpr.getExprFollows(group);
+        }
+
+        public InnerJoins getInnerJoins() {
+            // здесь что-то типа GroupJoin'а быть должно
+            return new InnerJoins(getGroupJoin(),this);
+        }
+
+        public int hashContext(HashContext hashContext) {
+            return GroupExpr.this.hashContext(hashContext);
+        }
+
+        @Override
+        public Where packFollowFalse(Where falseWhere) {
+            return GroupExpr.this.packFollowFalse(falseWhere).getWhere();
+        }
+
+        public GroupJoin getGroupJoin() {
+            return GroupExpr.this.getGroupJoin();
+        }
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    class ImplementHashes implements MapContext {
+        final Map<AndExpr,Integer> groupHashes = new HashMap<AndExpr, Integer>();
+
+        ImplementHashes(HashContext hashContext) {
+            for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
+                groupHashes.put(groupExpr.getKey(),groupExpr.getValue().hashContext(hashContext));
+        }
+
+        ImplementHashes() {
+            for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
+                groupHashes.put(groupExpr.getKey(),groupExpr.getValue().hashCode());
+        }
+
+        public Context getContext() {
+            return GroupExpr.this.getContext();
+        }
+
+        public int hash(HashContext hashContext) {
+            int hash = 0;
+            for(Map.Entry<AndExpr,Integer> groupHash : groupHashes.entrySet())
+                hash += groupHash.getKey().hashContext(hashContext) ^ groupHash.getValue();
+            return (where.hashContext(hashContext) * 31 + expr.hashContext(hashContext)) * 31 + hash;
+        }
+    }
+
+    // hash'и "внешнего" контекста, там пойдет внутренняя трансляция values поэтому hash по values надо "протолкнуть" внутрь
+    public int hashContext(final HashContext hashContext) {
+        return new ImplementHashes(hashContext).hash(new HashContext() {
+            public int hash(KeyExpr expr) {
+                return 1;
+            }
+            public int hash(ValueExpr expr) {
+                return hashContext.hash(expr);
+            }
+        });
+    }
+
+    // hash'и "внутреннего" контекста
+    public int hash(HashContext hashContext) {
+        return new ImplementHashes().hash(hashContext);
+    }
+
+    public boolean equals(Object o) {
+        if(this==o) return true;
+        if (o==null || getClass()!=o.getClass()) return false;
+
+        GroupExpr<?,?> groupExpr = ((GroupExpr)o);
+
+        for(KeyTranslator translator : new MapParamsIterable(this, groupExpr, false))
+            if(where.translate(translator).equals(groupExpr.where) && expr.translate(translator).equals(groupExpr.expr) &&
+                    translator.translateDirect(BaseUtils.reverse(group)).equals(BaseUtils.reverse(groupExpr.group)))
+                return true;
+        return false;
+    }
+
+    public Object getFJGroup() {
+        return this;
+    }
+
+    static <K,V> Collection<InnerJoins.Entry> getInnerJoins(Map<K,AndExpr> groupKeys,SourceExpr expr,Where where) {
+        throw new RuntimeException("not supported");
+    }
+
+    public void fillContext(Context context) {
+        context.fill(group);
+        context.values.addAll(this.context.values);
+    }
+
+    public GroupJoin getGroupJoin() {
+        return new GroupJoin(where, group, context.keys);  
+    }
+
+    public abstract boolean isMax();
+
+    public String getSource(CompileSource compile) {
+        return compile.getSource(this);
+    }
+
+    @Override
+    public String toString() {
+        int hash = hashCode();
+        hash = hash>0?hash:-hash;
+        int tobt = 0;
+        for(int i=0;i<4;i++) {
+            tobt += hash % 255;
+            hash = hash/255;
+        }
+        return "G"+tobt;
+    }
+}
+

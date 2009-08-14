@@ -5,7 +5,6 @@ import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
 import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.types.ObjectType;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 

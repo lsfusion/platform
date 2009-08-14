@@ -1,7 +1,6 @@
 package platform.server.data;
 
 import platform.server.data.classes.ByteArrayClass;
-import platform.server.data.classes.where.AndClassWhere;
 import platform.server.data.classes.where.ClassWhere;
 
 public class GlobalTable extends Table {
@@ -16,7 +15,7 @@ public class GlobalTable extends Table {
         struct = new PropertyField("struct", ByteArrayClass.instance);
         properties.add(struct);
 
-        classes = new ClassWhere<KeyField>(new AndClassWhere<KeyField>());
+        classes = ClassWhere.TRUE();
         
         propertyClasses.put(struct,new ClassWhere<Field>(struct, ByteArrayClass.instance));
     }

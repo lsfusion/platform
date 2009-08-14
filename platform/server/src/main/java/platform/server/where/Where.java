@@ -4,11 +4,15 @@ import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.query.HashContext;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.translators.Translator;
 
 import java.util.Map;
 
-public interface Where<Not extends Where> extends SourceJoin<Where> {
+public interface Where<Not extends Where> extends SourceJoin {
 
     Where followFalse(Where falseWhere);
     
@@ -33,6 +37,8 @@ public interface Where<Not extends Where> extends SourceJoin<Where> {
     AndObjectWhere[] getAnd();
     OrObjectWhere[] getOr();
 
+    Map<AndExpr,ValueExpr> getExprValues();
+
     ObjectWhereSet getObjects();
 
     // получает where такой что this => result, а также result.getObjects() not linked с decompose
@@ -49,10 +55,12 @@ public interface Where<Not extends Where> extends SourceJoin<Where> {
 
     abstract public ClassExprWhere getClassWhere();
 
-    int hash();
+    int hashContext(HashContext hashContext);    
 
     int getHeight();
 
     static Where TRUE = new AndWhere();
     static Where FALSE = new OrWhere();
+
+    public abstract Where translate(Translator translator);
 }

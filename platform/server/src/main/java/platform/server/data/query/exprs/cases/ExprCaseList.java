@@ -1,11 +1,8 @@
 package platform.server.data.query.exprs.cases;
 
-import platform.server.data.classes.DataClass;
-import platform.server.data.classes.IntegralClass;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.MapContext;
-import platform.server.data.types.Type;
+import platform.server.data.query.HashContext;
 import platform.server.where.Where;
 
 public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
@@ -34,6 +31,12 @@ public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
 
     // возвращает CaseExpr
     public SourceExpr getExpr() {
+        if(size()>0) {
+            ExprCase lastCase = get(size()-1); // в последнем элементе срезаем null'ы с конца
+            lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not());
+        }
+        if(size()==1 && get(0).where.isTrue())
+            return get(0).data;
         return new CaseExpr(this);
     }
 
@@ -72,19 +75,10 @@ public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
         return upWhere.or(nullWhere);
     }
 
-    public boolean equals(ExprCaseList cases,MapContext mapContext) {
-        if(!(size()==cases.size())) return false;
-
-        for(int i=0;i<size();i++)
-            if(!get(i).equals(cases.get(i),mapContext))
-                return false;
-        return true;
-    }
-
-    public int hash() {
+    int hashContext(HashContext hashContext) {
         int hash = 0;
         for(ExprCase exprCase : this)
-            hash = 31*hash + exprCase.hash();
+            hash = 31*hash + exprCase.hashContext(hashContext);
         return hash;
     }
 }

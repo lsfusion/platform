@@ -1,8 +1,9 @@
 package platform.server.data.query;
 
-import platform.base.BaseUtils;
+import net.jcip.annotations.Immutable;
 import platform.interop.Compare;
-import platform.server.data.MapSource;
+import platform.server.caches.Lazy;
+import platform.server.caches.MapContext;
 import platform.server.data.classes.BaseClass;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.DataClass;
@@ -10,26 +11,24 @@ import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.SQLSession;
 import platform.server.where.Where;
-import platform.server.caches.Lazy;
 
 import java.sql.SQLException;
 import java.util.*;
 
-import net.jcip.annotations.Immutable;
-
-// запрос Join
+// запрос JoinSelect
 @Immutable
-public class JoinQuery<K,V> implements MapKeysInterface<K> {
+public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
 
     public final Map<K,KeyExpr> mapKeys;
     public Map<V, SourceExpr> properties;
-    protected Where<?> where = Where.TRUE;
+    public Where<?> where = Where.TRUE;
 
     public JoinQuery(Map<K,KeyExpr> iMapKeys) {
         mapKeys = iMapKeys;
@@ -48,21 +47,18 @@ public class JoinQuery<K,V> implements MapKeysInterface<K> {
         return mapKeys.get(key).getType(where);
     }
 
-    protected Context context = null;
-
     protected static <K,V> Context getContext(Map<K,KeyExpr> mapKeys,Map<V,SourceExpr> properties,Where where)  {
         Context context = new Context();
-        context.fill(mapKeys.values(),false);
-        context.fill(properties.values(),false);
-        where.fillContext(context, false);
+        context.fill(mapKeys);
+        context.fill(properties);
+        where.fillContext(context);
         return context;
     }
 
     // скомпилированные св-ва
+    @Lazy
     public Context getContext() {
-        if(context ==null)
-            context = getContext(mapKeys,properties,where);
-        return context;
+        return getContext(mapKeys,properties,where);
     }
 
     public Join<V> join(Map<K, ? extends SourceExpr> joinImplement) {
@@ -82,15 +78,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K> {
 
     public void putKeyWhere(Map<K, DataObject> keyValues) {
         for(Map.Entry<K,DataObject> mapKey : keyValues.entrySet())
-            and(new CompareWhere(mapKeys.get(mapKey.getKey()), mapKey.getValue().getExpr(), Compare.EQUALS));
-    }
-
-    public <CK,CV> MapSource<CK,CV,K,V> map(JoinQuery<CK,CV> query) {
-        Map<CV,V> mapProps;
-        for(MapContext mapContext : query.getContext().map(getContext()))
-            if(query.where.equals(where,mapContext) && (mapProps=mapContext.equalProps(query.properties,properties))!=null)
-                return new MapSource<CK,CV,K,V>(BaseUtils.crossValues(query.mapKeys,mapKeys,mapContext.keys),mapProps,mapContext.values);
-        return null;
+            and(new EqualsWhere(mapKeys.get(mapKey.getKey()), mapKey.getValue().getExpr()));
     }
 
     public ParsedQuery<K,V> parse() { // именно ParsedQuery потому как aspect'ами корректируется
@@ -160,7 +148,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K> {
         if(where.isFalse()) return result; // иначе типы ключей не узнаем
 
         // создаем запрос с IsClassExpr'ами
-        JoinQuery<K,Object> classQuery = new JoinQuery<K,Object>((JoinQuery<K,Object>) this,false);
+        JoinQuery<K,Object> classQuery = new JoinQuery<K,Object>((JoinQuery<K,Object>) this);
 
         ReadClasses<K> keyClasses = new ReadClasses<K>(mapKeys,classQuery,baseClass);
         ReadClasses<V> propClasses = new ReadClasses<V>(properties,classQuery,baseClass);
@@ -191,45 +179,18 @@ public class JoinQuery<K,V> implements MapKeysInterface<K> {
         return "JQ";
     }
 
-    protected int getHash() {
-        // должны совпасть hash'и properties и hash'и wheres
-        int hash = 0;
-        for(SourceExpr property : properties.values())
-            hash += property.hash();
-        return where.hash()*31+hash;
-    }
-
     // конструктор копирования
-    public JoinQuery(JoinQuery<K, V> query, boolean noProps) {
+    public JoinQuery(JoinQuery<K, V> query) {
         mapKeys = query.mapKeys;
-        if(noProps)
-            properties = new HashMap<V, SourceExpr>();
-        else
-            properties = new HashMap<V, SourceExpr>(query.properties);
-
+        properties = new HashMap<V, SourceExpr>(query.properties);
         where = query.where;
     }
 
-    public <GK extends V, GV extends V> ParsedQuery<GK,GV> groupBy(Collection<GK> keys,GV property, boolean max) {
-        // вытаскиваем Case'ы
-        Collection<GV> maxProps = new ArrayList<GV>();
-        Collection<GV> sumProps = new ArrayList<GV>();
-        if(max)
-            maxProps.add(property);
-        else
-            sumProps.add(property);
-
-        return parse().groupBy(keys, maxProps, sumProps);
-    }
-
-    boolean hashed = false;
-    int hash;
-    public int hash() {
-        if(!hashed) {
-            hash = getHash();
-            hashed = true;
-        }
-        return hash;
+    public int hash(HashContext hashContext) {
+        int hash = 0;
+        for(SourceExpr property : properties.values())
+            hash += property.hashContext(hashContext);
+        return where.hashContext(hashContext) * 31 + hash;
     }
 }
 

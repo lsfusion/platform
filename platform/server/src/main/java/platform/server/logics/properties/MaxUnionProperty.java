@@ -1,9 +1,8 @@
 package platform.server.logics.properties;
 
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.where.WhereBuilder;
 import platform.server.session.TableChanges;
+import platform.server.where.WhereBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,15 +12,15 @@ public class MaxUnionProperty extends UnionProperty {
 
     public Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> operands = new ArrayList<PropertyMapImplement<PropertyInterface, PropertyInterface>>();
 
-    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
 
         SourceExpr result = null;
         for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : operands) {
-            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, session, defaultProps, changedWhere, noUpdateProps);
+            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere);
             if(result==null)
                 result = operandExpr;
             else
-                result = new CaseExpr(result.greater(operandExpr), result, operandExpr);
+                result = result.max(operandExpr);
         }
         return result;
     }

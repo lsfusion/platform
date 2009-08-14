@@ -2,10 +2,10 @@ package platform.server.data;
 
 import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.JoinQuery;
-import platform.server.data.query.ParsedQuery;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.session.SQLSession;
+import platform.base.BaseUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,7 +42,7 @@ public class ModifyQuery {
             String SelectString = syntax.getSelect(fromSelect, SQLSession.stringExpr(
                     SQLSession.mapNames(changeCompile.keySelect,changeCompile.keyNames,keyOrder),
                     SQLSession.mapNames(changeCompile.propertySelect,changeCompile.propertyNames,propertyOrder)),
-                    SQLSession.stringWhere(whereSelect),"","","");
+                    BaseUtils.toString(whereSelect, " AND "),"","","");
 
             String setString = "";
             for(KeyField field : keyOrder)
@@ -53,9 +53,9 @@ public class ModifyQuery {
             update = "UPDATE " + table.getName(syntax) + " SET ("+setString+") = ("+SelectString+") WHERE EXISTS ("+SelectString+")";
         } else {
             if(updateModel==1) {
-                // SQL-серверная модель когда она подхватывает первый Join и старую таблицу уже не вилит
+                // SQL-серверная модель когда она подхватывает первый JoinSelect и старую таблицу уже не вилит
                 // построим JoinQuery куда переJoin'им все эти поля (оптимизатор уберет все дублирующиеся таблицы)
-                JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(change,false);
+                JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(change);
                 updateQuery.and(table.joinAnd(updateQuery.mapKeys).getWhere());
                 changeCompile = updateQuery.compile(syntax);
                 whereSelect = changeCompile.whereSelect;
@@ -84,7 +84,8 @@ public class ModifyQuery {
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
 
         // делаем для этого еще один запрос
-        JoinQuery<KeyField, PropertyField> leftKeysQuery = new JoinQuery<KeyField, PropertyField>(change, true);
+        JoinQuery<KeyField, PropertyField> leftKeysQuery = new JoinQuery<KeyField, PropertyField>(change.mapKeys);
+        leftKeysQuery.and(change.where);
         // исключим ключи которые есть
         leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());
 

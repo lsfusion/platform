@@ -6,9 +6,12 @@ import platform.server.data.PropertyField;
 import platform.server.data.Table;
 import platform.server.data.classes.BaseClass;
 import platform.server.data.classes.SystemClass;
-import platform.server.data.classes.where.AndClassWhere;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.types.ObjectType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 // таблица в которой лежат объекты
 public class ObjectTable extends Table {
@@ -27,9 +30,9 @@ public class ObjectTable extends Table {
 
         classes = new ClassWhere<KeyField>(key,baseClass.getUpSet());
 
-        AndClassWhere<Field> valueClasses = new AndClassWhere<Field>();
-        valueClasses.add(key,baseClass.getUpSet());
-        valueClasses.add(objectClass, SystemClass.instance);
+        Map<Field, AndClassSet> valueClasses = new HashMap<Field, AndClassSet>();
+        valueClasses.put(key,baseClass.getUpSet());
+        valueClasses.put(objectClass, SystemClass.instance);
         propertyClasses.put(objectClass,new ClassWhere<Field>(valueClasses));
     }
 

@@ -4,8 +4,6 @@ import java.util.Iterator;
 
 public abstract class MapIterable<K,M> implements Iterable<M> {
 
-
-
     protected abstract M map(K key);
     protected abstract Iterator<K> mapIterator();
 

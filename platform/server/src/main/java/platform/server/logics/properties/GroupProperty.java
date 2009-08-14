@@ -1,18 +1,17 @@
 package platform.server.logics.properties;
 
-import platform.server.data.query.Join;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.ParsedQuery;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.session.DataChanges;
 import platform.server.session.TableChanges;
+import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-abstract public class GroupProperty<T extends PropertyInterface> extends AggregateProperty<GroupPropertyInterface<T>> {
+abstract public class GroupProperty<T extends PropertyInterface> extends FunctionProperty<GroupPropertyInterface<T>> {
 
     // оператор
     int operator;
@@ -28,51 +27,39 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Aggrega
 
     Object groupValue = "grfield";
 
-    public JoinQuery<T,Object> getJoinQuery(TableChanges session, Map<DataProperty, DefaultData> defaultProps, boolean changed, Collection<Property> noUpdateProps) {
-
-        WhereBuilder changedWhere = null;
-        if(changed)
-            changedWhere = new WhereBuilder();
-
-        JoinQuery<T,Object> query = new JoinQuery<T,Object>(groupProperty);
+    Map<GroupPropertyInterface<T>,SourceExpr> getGroupImplements(Map<T, KeyExpr> mapKeys, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+        Map<GroupPropertyInterface<T>,SourceExpr> group = new HashMap<GroupPropertyInterface<T>, SourceExpr>();
         for(GroupPropertyInterface<T> propertyInterface : interfaces)
-            query.properties.put(propertyInterface, propertyInterface.implement.mapSourceExpr(query.mapKeys, session, defaultProps, changedWhere, noUpdateProps));
-        query.properties.put(groupValue, groupProperty.getSourceExpr(query.mapKeys, session, defaultProps, noUpdateProps, changedWhere));
-
-        if(changed)
-            query.and(changedWhere.toWhere());
-
-        return query;
+            group.put(propertyInterface,propertyInterface.implement.mapSourceExpr(mapKeys, session, usedDefault, depends, changedWhere));
+        return group;
     }
 
+    public SourceExpr calculateSourceExpr(Map<GroupPropertyInterface<T>, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
 
-    public SourceExpr calculateSourceExpr(Map<GroupPropertyInterface<T>, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+        Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
-        Join<Object> newJoin = getGroupJoin(getJoinQuery(session,defaultProps,false, noUpdateProps),joinImplement);
-        if(session==null || changedWhere==null) return newJoin.getExpr(groupValue);
+        SourceExpr newExpr = SourceExpr.groupBy(getGroupImplements(mapKeys, session, usedDefault, depends, null),
+            groupProperty.getSourceExpr(mapKeys, session, usedDefault, depends, null),Where.TRUE,operator!=1,joinImplement);
+        if(session==null || changedWhere==null) return newExpr;
 
-        JoinQuery<T,Object> changedQuery = getJoinQuery(session,defaultProps,true, noUpdateProps); // измененные группировочные записи
-        Join<Object> changedJoin = getGroupJoin(changedQuery,joinImplement);
+        // новые группировочные записи
+        WhereBuilder changedGroupWhere = new WhereBuilder();
+        SourceExpr changedExpr = SourceExpr.groupBy(getGroupImplements(mapKeys, session, usedDefault, depends, changedGroupWhere),
+            groupProperty.getSourceExpr(mapKeys, session, usedDefault, depends, changedGroupWhere),changedGroupWhere.toWhere(),operator!=1,joinImplement);
 
-        JoinQuery<T,Object> changedPrevQuery = new JoinQuery<T,Object>(changedQuery,true); // старые значения по измененным записям
-        changedPrevQuery.properties.putAll(getJoinQuery(null, null, false, noUpdateProps).join(changedPrevQuery.mapKeys).getExprs());
-        Join<Object> changedPrevJoin = getGroupJoin(changedPrevQuery,joinImplement);
+        // старые группировочные записи
+        SourceExpr changedPrevExpr = SourceExpr.groupBy(getGroupImplements(mapKeys, null, null, depends, null),
+            groupProperty.getSourceExpr(mapKeys, null, null, depends, null),changedGroupWhere.toWhere(),operator!=1,joinImplement);
 
-        changedWhere.add(changedJoin.getWhere().or(changedPrevJoin.getWhere()));
-        return getChangedExpr(changedJoin.getExpr(groupValue), changedPrevJoin.getExpr(groupValue),
-                getSourceExpr(joinImplement), newJoin.getExpr(groupValue));
+        changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
+        return getChangedExpr(changedExpr, changedPrevExpr, getSourceExpr(joinImplement), newExpr);
     }
 
     abstract SourceExpr getChangedExpr(SourceExpr changedExpr,SourceExpr changedPrevExpr,SourceExpr prevExpr,SourceExpr newExpr);
 
-    Join<Object> getGroupJoin(JoinQuery<T,Object> query, Map<GroupPropertyInterface<T>, ? extends SourceExpr> joinImplement) {
-        return query.groupBy(interfaces,groupValue,operator!=1).join(joinImplement);
-    }
-
-    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
-        boolean changed = false;
+    protected void fillDepends(Set<Property> depends) {
         for(GroupPropertyInterface<T> interfaceImplement : interfaces)
-            changed = interfaceImplement.implement.mapFillChanges(changedProperties, changes, noUpdateProps, defaultProps) || changed;
-        return groupProperty.fillChanges(changedProperties, changes, defaultProps, noUpdateProps) || changed;
+            interfaceImplement.implement.mapFillDepends(depends);
+        depends.add(groupProperty);
     }
 }

@@ -2,6 +2,9 @@ package platform.server.where;
 
 import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.QueryData;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.GroupJoin;
+import platform.server.data.query.exprs.GroupExpr;
 import platform.server.data.sql.SQLSyntax;
 
 import java.util.Map;
@@ -16,7 +19,7 @@ abstract public class DataWhere extends ObjectWhere<NotWhere> {
         return where instanceof DataWhere && ((DataWhere)where).follow(this);
     }
 
-    public NotWhere getNot() {
+    public NotWhere calculateNot() {
         return new NotWhere(this);
     }
 
@@ -50,11 +53,11 @@ abstract public class DataWhere extends ObjectWhere<NotWhere> {
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    protected String getNotSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return NotWhere.PREFIX + getSource(queryData, syntax);
+    protected String getNotSource(CompileSource compile) {
+        return NotWhere.PREFIX + getSource(compile);
     }
 
-    public MeanClassWheres getMeanClassWheres() {
+    public MeanClassWheres calculateMeanClassWheres() {
         return new MeanClassWheres(getClassWhere(),this);
     }
 }

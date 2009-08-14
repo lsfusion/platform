@@ -23,7 +23,7 @@ public class IncrementChangeTable extends SessionTable<IncrementChangeTable> {
     }*/
 
     public IncrementChangeTable createThis(ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        throw new RuntimeException("not supported");
     }
 
     public final ImplementTable table;

@@ -1,24 +1,24 @@
 package platform.server.logics.properties;
 
+import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.data.classes.LogicalClass;
-import platform.server.where.WhereBuilder;
 import platform.server.session.TableChanges;
+import platform.server.where.WhereBuilder;
+import platform.interop.Compare;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Collection;
-import java.util.ArrayList;
 
 public class CompareFormulaProperty extends ValueFormulaProperty<FormulaPropertyInterface> {
 
-    int compare;
+    Compare compare;
     public FormulaPropertyInterface operator1;
     public FormulaPropertyInterface operator2;
 
-    public CompareFormulaProperty(String sID, int iCompare) {
+    public CompareFormulaProperty(String sID, Compare iCompare) {
         super(sID, getInterfaces(2), LogicalClass.instance);
 
         compare = iCompare;
@@ -34,7 +34,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<FormulaProperty
         return interfaces;
     }
 
-    public SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
-        return new CaseExpr(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare), new ValueExpr(true, LogicalClass.instance));
+    public SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+        return new ValueExpr(true, LogicalClass.instance).and(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

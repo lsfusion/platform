@@ -1,33 +1,28 @@
 package platform.interop;
 
-public class Compare {
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.DataOutputStream;
 
-    public static final int EQUALS = 0;
-    public static final int GREATER = 1;
-    public static final int LESS = 2;
-    public static final int GREATER_EQUALS = 3;
-    public static final int LESS_EQUALS = 4;
-    public static final int NOT_EQUALS = 5;
+public enum Compare {
 
-    public static int not(int compare) {
-        switch(compare) {
-            case EQUALS: return NOT_EQUALS;
-            case GREATER: return LESS_EQUALS;
-            case LESS: return GREATER_EQUALS;
-            case GREATER_EQUALS: return LESS;
-            case LESS_EQUALS: return GREATER;
-            default: throw new RuntimeException("Не должно быть");
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS;
+
+    public static Compare deserialize(DataInputStream inStream) throws IOException {
+        switch(inStream.readByte()) {
+            case 0:
+                return EQUALS;
+            case 1:
+                return GREATER;
+            case 2:
+                return LESS;
+            case 3:
+                return GREATER_EQUALS;
+            case 4:
+                return LESS_EQUALS;
+            case 5:
+                return NOT_EQUALS;
         }
-    }
-
-    public static int reverse(int compare) {
-        switch(compare) {
-            case EQUALS: return EQUALS;
-            case GREATER: return LESS;
-            case LESS: return GREATER;
-            case GREATER_EQUALS: return LESS_EQUALS;
-            case LESS_EQUALS: return GREATER_EQUALS;
-            default: throw new RuntimeException("Не должно быть");
-        }
+        throw new RuntimeException("Deserialize Compare");
     }
 }

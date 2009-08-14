@@ -1,28 +1,26 @@
 package platform.base;
 
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.ArrayList;
 
-public abstract class QuickSet<T,This extends QuickSet<T,This>> {
-    protected int size;
-    protected T[] table;
+public class QuickSet<T> {
+    public int size;
+    protected Object[] table;
     protected int[] htable;
 
     protected int[] indexes;
-
-    protected abstract T[] newArray(int size);
-    protected abstract This getThis();
 
     private final float loadFactor;
     public QuickSet() {
         loadFactor = 0.3f;
 
-        table = newArray(8);
+        table = new Object[8];
         htable = new int[table.length];
 
         indexes = new int[(int)(table.length * loadFactor)];
     }
 
-    public QuickSet(This set) {
+    public QuickSet(QuickSet<T> set) {
         size = set.size;
         loadFactor = set.loadFactor;
 
@@ -32,14 +30,11 @@ public abstract class QuickSet<T,This extends QuickSet<T,This>> {
         indexes = set.indexes.clone();
     }
 
-    T[] array; // подразумевается что immutable
-    public T[] toArray() {
-        if(array==null) {
-            array = newArray(size);
-            for(int i=0;i<size;i++)
-                array[i] = table[indexes[i]];
-        }
-        return array;
+    public Collection<T> toCollection() {
+        Collection<T> result = new ArrayList<T>();
+        for(int i=0;i<size;i++)
+            result.add(get(i));
+        return result;
     }
 
     public boolean contains(T where) {
@@ -53,32 +48,32 @@ public abstract class QuickSet<T,This extends QuickSet<T,This>> {
         return false;
     }
 
-    public boolean intersect(This set) {
-        if(size>set.size) return set.intersect(getThis());
+    public boolean intersect(QuickSet<T> set) {
+        if(size>set.size) return set.intersect(this);
 
         for(int i=0;i<size;i++)
-            if(set.contains(table[indexes[i]],htable[indexes[i]]))
+            if(set.contains(get(i),htable[indexes[i]]))
                 return true;
         return false;
     }
 
-    public QuickSet(This[] sets) {
-        This minSet = sets[0];
+    public QuickSet(QuickSet<T>[] sets) {
+        QuickSet<T> minSet = sets[0];
         for(int i=1;i<sets.length;i++)
             if(sets[i].size<minSet.size)
                 minSet = sets[i];
 
         loadFactor = 0.3f;
 
-        table = newArray(minSet.table.length);
+        table = new Object[minSet.table.length];
         htable = new int[table.length];
 
-        indexes = new int[minSet.size];
+        indexes = new int[(int)(table.length * loadFactor)];
 
         for(int i=0;i<minSet.size;i++) {
-            T element = minSet.table[minSet.indexes[i]]; int hash = minSet.htable[minSet.indexes[i]];
+            T element = minSet.get(i); int hash = minSet.htable[minSet.indexes[i]];
             boolean all = true;
-            for(This set : sets)
+            for(QuickSet<T> set : sets)
                 if(set!=minSet && !set.contains(element,hash)) {
                     all = false;
                     break;
@@ -95,7 +90,7 @@ public abstract class QuickSet<T,This extends QuickSet<T,This>> {
     private void resize(int length) {
         int[] newIndexes = new int[(int)(length * loadFactor)];
 
-        T[] newTable = newArray(length);
+        Object[] newTable = new Object[length];
         int[] newHTable = new int[length];
         for(int i=0;i<size;i++) {
             int newHash = (htable[indexes[i]] & (length-1));
@@ -121,26 +116,27 @@ public abstract class QuickSet<T,This extends QuickSet<T,This>> {
         add(where,hash(where.hashCode()));
     }
 
-    protected void add(T where,int hash) {
+    protected boolean add(T where,int hash) {
         int i=hash & (table.length-1);
         while(table[i]!=null) {
             if(htable[i]==hash && (table[i]==where || table[i].equals(where)))
-                return;
+                return true;
             i=(i==table.length-1?0:i+1);
         }
         table[i] = where; htable[i] = hash;
         indexes[size++] = i;
         if(size>=indexes.length)
             resize(2*table.length);
+        return false;
     }
 
-    public void addAll(This set) {
+    public void addAll(QuickSet<T> set) {
         for(int i=0;i<set.size;i++)
-            add(set.table[set.indexes[i]],set.htable[set.indexes[i]]);
+            add(set.get(i),set.htable[set.indexes[i]]);
     }
 
     public T get(int i) {
-        return table[indexes[i]]; 
+        return (T) table[indexes[i]];
     }
 
     @Override
@@ -153,7 +149,7 @@ public abstract class QuickSet<T,This extends QuickSet<T,This>> {
 
     public T getSingle() {
         if(size==1)
-            return table[indexes[0]];
+            return get(0);
         else
             return null;
     }
@@ -178,5 +174,4 @@ public abstract class QuickSet<T,This extends QuickSet<T,This>> {
             hash = hash + htable[indexes[i]];
         return hash * 31;
     }
-
 }

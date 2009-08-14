@@ -7,7 +7,6 @@ import platform.server.data.ModifyQuery;
 import platform.server.data.PropertyField;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.query.Join;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;

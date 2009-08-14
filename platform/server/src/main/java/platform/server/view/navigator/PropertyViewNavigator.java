@@ -22,4 +22,9 @@ public class PropertyViewNavigator<P extends PropertyInterface> {
     public String getSID() {
         if (sID != null) return sID; else return "prop" + ID;
     }
+
+    @Override
+    public String toString() {
+        return view.toString();
+    }
 }

@@ -1,15 +1,43 @@
 package platform.server.logics.properties;
 
-import java.util.Map;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.session.TableChanges;
+import platform.server.session.DataChanges;
+import platform.server.where.WhereBuilder;
+import platform.server.where.Where;
+import platform.base.BaseUtils;
 
-public class DefaultData<P extends PropertyInterface> extends PropertyImplement<DataPropertyInterface,P> {
+import java.util.*;
 
-    public DefaultData(Property<P> iProperty) {
-        super(iProperty);
+public class DefaultData<D extends PropertyInterface> {
+
+    PropertyImplement<PropertyInterfaceImplement<DataPropertyInterface>,D> data;
+    Collection<PropertyMapImplement<?,DataPropertyInterface>> onChange = new ArrayList<PropertyMapImplement<?, DataPropertyInterface>>();
+    
+    public DefaultData(PropertyImplement<PropertyInterfaceImplement<DataPropertyInterface>,D> data, Collection<PropertyMapImplement<?,DataPropertyInterface>> onChange) {
+        this.data = data;
+        this.onChange = onChange;
     }
 
-    public Property<P> defaultProperty;
-    public Map<DataPropertyInterface,P> defaultMap;
-    public boolean onDefaultChange;
+    public <C extends DataChanges<C>,U extends Property.UsedChanges<C,U>> U getUsedChanges(C changes, Collection<DataProperty> usedDefault, Property.Depends<C,U> depends) {
 
+        Set<Property> used = new HashSet<Property>();
+        FunctionProperty.fillDepends(used,BaseUtils.merge(data.mapping.values(),onChange));
+        return Property.getUsedChanges(used, changes, usedDefault, depends);
+    }
+
+    public SourceExpr getSourceExpr(Map<DataPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, Property.TableDepends<? extends Property.TableUsedChanges> depends, WhereBuilder changedWhere) {
+
+        WhereBuilder onChangeWhere = new WhereBuilder();
+        Map<D, SourceExpr> implementExprs = new HashMap<D, SourceExpr>();
+        for(Map.Entry<D,PropertyInterfaceImplement<DataPropertyInterface>> interfaceImplement : data.mapping.entrySet())
+            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapSourceExpr(joinImplement, session, usedDefault, depends, onChangeWhere));
+
+        Where andWhere = Where.TRUE; // докинем дополнительные условия
+        for(PropertyMapImplement<?,DataPropertyInterface> propChange : onChange)
+            andWhere = andWhere.and(propChange.mapSourceExpr(joinImplement, session, usedDefault, depends, onChangeWhere).getWhere());
+
+        changedWhere.add(andWhere.and(onChangeWhere.toWhere()));        
+        return data.property.getSourceExpr(implementExprs);
+    }
 }

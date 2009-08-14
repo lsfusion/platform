@@ -1,36 +1,26 @@
 package platform.server.logics.properties;
 
 import platform.server.data.classes.ConcreteValueClass;
-import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.data.types.Type;
-import platform.server.session.*;
+import platform.server.session.DataSession;
+import platform.server.session.TableChanges;
+import platform.server.session.DataChanges;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
-import platform.base.BaseUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
-public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
+public class ClassProperty extends AggregateProperty<DataPropertyInterface> {
 
     final ConcreteValueClass valueClass;
     final Object value;
 
-    static Collection<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
-        Collection<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
-        for(ValueClass interfaceClass : classes)
-            interfaces.add(new ClassPropertyInterface(interfaces.size(),interfaceClass));
-        return interfaces;
-    }
-
     public ClassProperty(String iSID, ValueClass[] classes, ConcreteValueClass iValueClass, Object iValue) {
-        super(iSID, getInterfaces(classes));
+        super(iSID, DataProperty.getInterfaces(classes));
         
         valueClass = iValueClass;
         value = iValue;
@@ -38,33 +28,29 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         assert value!=null;
     }
 
-    protected boolean fillDependChanges(List<Property> changedProperties, DataChanges changes, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) {
-        if(changes==null) return true;
-        
-        for(ClassPropertyInterface valueInterface : interfaces)
-            if(valueInterface.interfaceClass instanceof CustomClass && (changes.getAddClasses().contains((CustomClass)valueInterface.interfaceClass) ||
-                    changes.getRemoveClasses().contains((CustomClass)valueInterface.interfaceClass)))
-                return true;
-
-        return false;
+    public static <C extends DataChanges<C>,U extends UsedChanges<C,U>> void dependsClasses(Collection<DataPropertyInterface> interfaces,C changes, U fill) {
+        for(DataPropertyInterface valueInterface : interfaces) {
+            fill.dependsAdd(changes, valueInterface.interfaceClass);
+            fill.dependsRemove(changes, valueInterface.interfaceClass);
+        }
     }
 
-    @Override
-    public void fillTableChanges(TableChanges fill, TableChanges changes) {
-        super.fillTableChanges(fill, changes);
-        for(ClassPropertyInterface propertyInterface : interfaces)
-            if(propertyInterface.interfaceClass instanceof CustomClass) {
-                BaseUtils.putNotNull((CustomClass)propertyInterface.interfaceClass,changes.remove.get((CustomClass)propertyInterface.interfaceClass),fill.remove);
-                BaseUtils.putNotNull((CustomClass)propertyInterface.interfaceClass,changes.add.get((CustomClass)propertyInterface.interfaceClass),fill.add);
-            }
+    <C extends DataChanges<C>,U extends UsedChanges<C,U>> U calculateUsedChanges(C changes, Collection<DataProperty> usedDefault, Depends<C, U> depends) {
+        U result = depends.newChanges();
+        dependsClasses(interfaces, changes, result);
+        return result;
     }
 
-    public SourceExpr calculateSourceExpr(Map<ClassPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
-        // здесь session может быть null
+    public static Where getIsClassWhere(Map<DataPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
         Where classWhere = Where.TRUE;
-        for(ClassPropertyInterface valueInterface : interfaces) // берем (нужного класса and не remove'уты) or add'уты
-            classWhere = classWhere.and(DataSession.getIsClassWhere(session, joinImplement.get(valueInterface),
-                    valueInterface.interfaceClass, changedWhere));
-        return new CaseExpr(classWhere,new ValueExpr(value,valueClass));
+        for(Map.Entry<DataPropertyInterface,? extends SourceExpr> join : joinImplement.entrySet()) // берем (нужного класса and не remove'уты) or add'уты
+            classWhere = classWhere.and(DataSession.getIsClassWhere(session, join.getValue(),
+                    join.getKey().interfaceClass, changedWhere));
+        return classWhere;
+    }
+
+    public SourceExpr calculateSourceExpr(Map<DataPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+        // здесь session может быть null
+        return new ValueExpr(value,valueClass).and(getIsClassWhere(joinImplement, session, usedDefault, depends, changedWhere));
     }
 }

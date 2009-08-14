@@ -1,26 +1,26 @@
 package platform.server.logics.constraints;
 
-import platform.interop.Compare;
+import platform.base.BaseUtils;
 import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.DefaultData;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.DataSession;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
-import platform.base.BaseUtils;
+import platform.interop.Compare;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 // >= 0
 class UniqueConstraint extends Constraint {
 
-    public <P extends PropertyInterface> String check(DataSession session, Property<P> property, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps) throws SQLException {
+    public <P extends PropertyInterface> String check(DataSession session, Property<P> property) throws SQLException {
 
         // надо проверить для каждого что старых нету
         // изменения JOIN'им (ст. запрос FULL JOIN новый) ON изм. зн = новому зн. WHERE код изм. = код нов. и ключи не равны и зн. не null
@@ -39,10 +39,10 @@ class UniqueConstraint extends Constraint {
         JoinQuery<Object,String> changed = new JoinQuery<Object,String>(BaseUtils.merge(mapPropExprs,mapPrevExprs));
 
         WhereBuilder changedWhere = new WhereBuilder();
-        SourceExpr changedExpr = property.getSourceExpr(mapPropExprs,session.changes,defaultProps, noUpdateProps, changedWhere);
+        SourceExpr changedExpr = property.getSourceExpr(mapPropExprs,session.changes,session,changedWhere);
 
         // равны значения
-        changed.and(changedExpr.compare(property.getSourceExpr(BaseUtils.join(mapPrevKeys, mapPrevExprs)),Compare.EQUALS));
+        changed.and(changedExpr.compare(property.getSourceExpr(BaseUtils.join(mapPrevKeys, mapPrevExprs)), Compare.EQUALS));
         changed.and(changedWhere.toWhere());
         // значения не NULL
         changed.and(changedExpr.getWhere());
@@ -50,7 +50,7 @@ class UniqueConstraint extends Constraint {
         // не равны ключи
         Where orDiffKeys = Where.FALSE;
         for(P propertyInterface : property.interfaces)
-            orDiffKeys = orDiffKeys.or(new CompareWhere(changed.mapKeys.get(propertyInterface),changed.mapKeys.get(mapPrevKeys.get(propertyInterface)), Compare.NOT_EQUALS));
+            orDiffKeys = orDiffKeys.or(new EqualsWhere(changed.mapKeys.get(propertyInterface),changed.mapKeys.get(mapPrevKeys.get(propertyInterface))).not());
         changed.and(orDiffKeys);
         changed.properties.put("value", changedExpr);
 

@@ -1,8 +1,8 @@
 package platform.server.logics.properties;
 
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.where.WhereBuilder;
 import platform.server.session.TableChanges;
+import platform.server.where.WhereBuilder;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,11 +20,11 @@ public class SumUnionProperty extends UnionProperty {
         return operands.keySet();
     }
 
-    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
 
         SourceExpr result = null;        
         for(Map.Entry<PropertyMapImplement<PropertyInterface,PropertyInterface>,Integer> operandCoeff : operands.entrySet()) {
-            SourceExpr operandExpr = operandCoeff.getKey().mapSourceExpr(joinImplement, session, defaultProps, changedWhere, noUpdateProps).scale(operandCoeff.getValue());
+            SourceExpr operandExpr = operandCoeff.getKey().mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere).scale(operandCoeff.getValue());
             if(result==null)
                 result = operandExpr;
             else

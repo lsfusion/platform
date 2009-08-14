@@ -118,7 +118,7 @@ public class DefaultFormView extends FormView {
 
             // ищем самый нижний GroupObjectImplement, к которому применяется фильтр
             for (RegularFilterNavigator regFilter : filterGroup.filters)
-                groupObjects.addAll(navigatorForm.getApplyObject(regFilter.filter.property.mapping.values()));
+                groupObjects.addAll(navigatorForm.getApplyObject(regFilter.filter.getObjects()));
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
             filterGroupView.container = buttonContainers.get(mgroupObjects.get(navigatorForm.getApplyObject(groupObjects)));

@@ -5,9 +5,6 @@ import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.*;
 import platform.server.data.query.translators.Translator;
 import platform.server.data.query.wheres.MapWhere;
-import platform.server.data.sql.SQLSyntax;
-
-import java.util.Map;
 
 class NotWhere extends ObjectWhere<DataWhere> {
 
@@ -24,21 +21,18 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return meanWhere instanceof NotWhere && where.follow(((NotWhere)meanWhere).where);
     }
 
-    public DataWhere getNot() {
+    public DataWhere calculateNot() {
         return where;
     }
 
     final static String PREFIX = "NOT ";
-    public String toString() {
-        return PREFIX+where;
-    }
 
     public boolean equals(Object o) {
         return this==o || o instanceof NotWhere && where.equals(((NotWhere)o).where);
     }
 
-    protected int getHashCode() {
-        return where.hashCode()*31;
+    public int hashContext(HashContext hashContext) {
+        return where.hashContext(hashContext)*31;
     }
 
     public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
@@ -58,12 +52,15 @@ class NotWhere extends ObjectWhere<DataWhere> {
     }
 
 
-    public int fillContext(Context context, boolean compile) {
-        return where.fillContext(context, compile);
+    public void fillContext(Context context) {
+        where.fillContext(context);
     }
 
-    public String getSource(Map<QueryData, String> queryData, SQLSyntax syntax) {
-        return where.getNotSource(queryData,syntax);
+    public String getSource(CompileSource compile) {
+        if(compile instanceof ToString)
+            return PREFIX + where.getSource(compile);
+
+        return where.getNotSource(compile);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -71,19 +68,11 @@ class NotWhere extends ObjectWhere<DataWhere> {
     }
 
     public InnerJoins getInnerJoins() {
-        return new InnerJoins(Where.TRUE,this);
+        return new InnerJoins(this);
     }
 
-    public MeanClassWheres getMeanClassWheres() {
+    public MeanClassWheres calculateMeanClassWheres() {
         return new MeanClassWheres(ClassExprWhere.TRUE,this);
-    }
-
-    public boolean equals(Where equalWhere, MapContext mapContext) {
-        return equalWhere instanceof NotWhere && where.equals(((NotWhere)equalWhere).where, mapContext) ;
-    }
-
-    protected int getHash() {
-        return where.hash()*3;
     }
 
     public ClassExprWhere calculateClassWhere() {
@@ -91,7 +80,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
     }
 
     @Override
-    public Where linearFollowFalse(Where falseWhere) {
-        return where.linearFollowFalse(falseWhere).not();
+    public Where packFollowFalse(Where falseWhere) {
+        return where.packFollowFalse(falseWhere).not();
     }
 }

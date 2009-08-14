@@ -10,6 +10,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.properties.Property;
+import platform.server.view.form.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -32,7 +33,7 @@ public interface ChangesSession {
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException;
 
     // узнает список изменений произошедших без него
-    public List<Property> update(PropertyUpdateView toUpdate, Collection<CustomClass> updateClasses) throws SQLException;
+    public Collection<Property> update(RemoteForm<?> toUpdate, Collection<CustomClass> updateClasses) throws SQLException;
 
     public String apply(BusinessLogics<?> BL) throws SQLException;
 }

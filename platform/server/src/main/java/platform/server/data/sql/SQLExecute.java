@@ -1,6 +1,5 @@
 package platform.server.data.sql;
 
-import platform.server.logics.DataObject;
 import platform.server.data.types.TypeObject;
 
 import java.util.Map;

@@ -3,7 +3,6 @@ package platform.server.logics.properties;
 import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
@@ -26,15 +25,15 @@ public class OverrideUnionProperty extends UnionProperty {
         return operands;
     }
 
-    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Map<DataProperty, DefaultData> defaultProps, Collection<Property> noUpdateProps, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
 
         SourceExpr result = null;
         for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : operands) {
-            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, session, defaultProps, changedWhere, noUpdateProps);
+            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere);
             if(result==null)
                 result = operandExpr;
             else
-                result = new CaseExpr(operandExpr.getWhere(), operandExpr, result);
+                result = operandExpr.nvl(result);
         }
         return result;
     }

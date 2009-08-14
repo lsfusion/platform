@@ -1,7 +1,7 @@
 package platform.server.logics.properties;
 
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.interop.Compare;
 
 import java.util.Collection;
 
@@ -12,6 +12,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
     }
 
     SourceExpr getChangedExpr(SourceExpr changedExpr, SourceExpr changedPrevExpr, SourceExpr prevExpr, SourceExpr newExpr) {
-        return new CaseExpr(changedExpr.greater(prevExpr), changedExpr, new CaseExpr(changedPrevExpr.greater(changedExpr), newExpr, prevExpr));
+//        return newExpr;
+        return changedExpr.ifElse(changedExpr.greater(prevExpr), newExpr.ifElse(changedPrevExpr.compare(prevExpr,Compare.EQUALS), prevExpr));
     }
 }

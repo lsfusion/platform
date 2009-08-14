@@ -1,24 +1,30 @@
 package platform.server.data.query.exprs;
 
 import platform.interop.Compare;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.ClassExprWhere;
-import platform.server.data.classes.where.ClassSet;
-import platform.server.data.classes.where.OrClassSet;
-import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.cases.ExprCaseList;
-import platform.server.data.query.translators.DirectTranslator;
+import platform.server.data.query.exprs.cases.CaseWhereInterface;
+import platform.server.data.query.translators.KeyTranslator;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.wheres.MapWhere;
+import platform.server.data.query.wheres.EqualsWhere;
+import platform.server.data.query.wheres.GreaterWhere;
 import platform.server.data.types.Reader;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
-import java.util.Collections;
-
 
 public abstract class AndExpr extends SourceExpr {
+
+    public static SourceExpr create(AndExpr expr) {
+        if(expr.getWhere().getClassWhere().isFalse())
+            return CaseExpr.NULL;
+        else
+            return expr;
+    }
 
     // получает список ExprCase'ов
     public ExprCaseList getCases() {
@@ -35,16 +41,16 @@ public abstract class AndExpr extends SourceExpr {
         return getType(where); // assert'ится что не null
     }
 
-    public abstract AndExpr translateAnd(DirectTranslator translator);
+    public abstract AndExpr translateDirect(KeyTranslator translator);
 
     public abstract void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
     public SourceExpr followFalse(Where where) {
         AndExpr andFollow = andFollowFalse(where);
         if(andFollow==null)
-            return new CaseExpr();
+            return CaseExpr.NULL;
         else
-            return this;
+            return andFollow;
     }
 
     // возвращает null если по определению не верно
@@ -52,21 +58,47 @@ public abstract class AndExpr extends SourceExpr {
         if(getWhere().means(where))
             return null;
         else
-            return linearFollowFalse(where);
+            return packFollowFalse(where);
     }
 
-    // для linear'ов делает followFalse
-    public AndExpr linearFollowFalse(Where where) {
+    // для linear'ов делает followFalse, известно что не means(where)
+    public AndExpr packFollowFalse(Where where) {
         return this;
     }
 
-    public abstract ClassExprWhere getClassWhere(ClassSet classes);
+    public abstract ClassExprWhere getClassWhere(AndClassSet classes);
 
-    public Where compare(SourceExpr expr, int compare) {
-        if(expr instanceof AndExpr)
-            return new CompareWhere(this,(AndExpr)expr,compare);
-        else
-            return expr.compare(this, Compare.reverse(compare));
+    public Where compare(final SourceExpr expr, final Compare compare) {
+        if(expr instanceof AndExpr) {
+            switch(compare) {
+                case EQUALS:
+                    return EqualsWhere.create(this,(AndExpr)expr);
+                case GREATER:
+                    return GreaterWhere.create(this,(AndExpr)expr);
+                case GREATER_EQUALS:
+                    return GreaterWhere.create(this,(AndExpr)expr).or(EqualsWhere.create(this,(AndExpr)expr));
+                case LESS:
+                    return GreaterWhere.create((AndExpr)expr,this);
+                case LESS_EQUALS:
+                    return GreaterWhere.create((AndExpr)expr,this).or(EqualsWhere.create(this,(AndExpr)expr));
+                case NOT_EQUALS:
+                    return EqualsWhere.create(this,(AndExpr)expr).not();                 
+            }
+            throw new RuntimeException("should not be");
+        } else {
+            return expr.getCases().getWhere(new CaseWhereInterface<AndExpr>() {
+                public Where getWhere(AndExpr cCase) {
+                    return compare(cCase,compare);
+                }
+/*                @Override
+                public Where getElse() {
+                    if(compare==Compare.EQUALS || compare==Compare.NOT_EQUALS)
+                        return Where.FALSE;
+                    else // если не equals то нас устроит и просто не null
+                        return AndExpr.this.getWhere();
+                }*/
+            });
+        }
     }
 
     public AndExpr scale(int coeff) {
@@ -74,14 +106,17 @@ public abstract class AndExpr extends SourceExpr {
 
         LinearOperandMap map = new LinearOperandMap();
         map.add(this,coeff);
-        return new LinearExpr(map);
+        return map.getExpr();
     }
 
-    public AndExpr sum(AndExpr expr) {
+    public SourceExpr sum(AndExpr expr) {
+        if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
+            return nvl(expr);
+        
         LinearOperandMap map = new LinearOperandMap();
         map.add(this,1);
         map.add(expr,1);
-        return new LinearExpr(map);
+        return map.getExpr();
     }
 
     public SourceExpr sum(SourceExpr expr) {

@@ -1,24 +1,32 @@
 package platform.server.where;
 
+import net.jcip.annotations.Immutable;
+import platform.server.caches.ManualLazy;
+import platform.server.caches.Lazy;
 import platform.server.data.classes.where.ClassExprWhere;
+import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.wheres.CompareWhere;
+import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.interop.Compare;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
 @Immutable
-public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin<Where> implements Where<Not> {
+public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
 
     private Not not = null;
+    @ManualLazy
     public Not not() {
         if(not==null)
-            not = getNot();
+            not = calculateNot();
         return not;
     }
-    abstract Not getNot();
+    abstract Not calculateNot();
 
     public Where and(Where where) {
         return not().or(where.not()).not(); // A AND B = not(notA OR notB)
@@ -91,11 +99,17 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
         System.arraycopy(wheres,i+1,siblings,i,wheres.length-i-1);
         return siblings;
     }
+    static Where siblingsWhere(AndObjectWhere[] wheres,int i) {
+        return toWhere(siblings(wheres,i));
+    }
     static AndObjectWhere[] siblings(AndObjectWhere[] wheres,int i,int numWheres) {
         AndObjectWhere[] siblings = new AndObjectWhere[numWheres-1];
         System.arraycopy(wheres,0,siblings,0,i);
         System.arraycopy(wheres,i+1,siblings,i,numWheres-i-1);
         return siblings;
+    }
+    static Where siblingsWhere(AndObjectWhere[] wheres,int i,int numWheres) {
+        return toWhere(siblings(wheres,i,numWheres));
     }
     static OrObjectWhere[] siblings(OrObjectWhere[] wheres,int i) {
         OrObjectWhere[] siblings = new OrObjectWhere[wheres.length-1];
@@ -103,21 +117,48 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
         System.arraycopy(wheres,i+1,siblings,i,wheres.length-i-1);
         return siblings;
     }
-
-
-    abstract ObjectWhereSet calculateObjects();
-    private ObjectWhereSet objects = null;
-    public ObjectWhereSet getObjects() {
-        if(objects==null) objects = calculateObjects();
-        return objects;
+    static Where siblingsWhere(OrObjectWhere[] wheres,int i) {
+        return toWhere(siblings(wheres,i));
     }
 
-    private ClassExprWhere classWhere=null;
+    private ObjectWhereSet objects = null;
+    @ManualLazy
+    public ObjectWhereSet getObjects() {
+        if(objects==null)
+            objects = calculateObjects();
+        return objects;
+    }
+    abstract ObjectWhereSet calculateObjects();
+
+    public ClassExprWhere classWhere = null;
+    @ManualLazy
     public ClassExprWhere getClassWhere() {
         if(classWhere==null)
             classWhere = calculateClassWhere();
         return classWhere;
     }
-
     protected abstract ClassExprWhere calculateClassWhere();
+
+
+    public MeanClassWheres meanClassWheres = null;
+    @ManualLazy
+    public MeanClassWheres getMeanClassWheres() {
+        if(meanClassWheres==null)
+            meanClassWheres = calculateMeanClassWheres();
+        return meanClassWheres;
+    }
+    protected abstract MeanClassWheres calculateMeanClassWheres();
+
+    @Lazy
+    public Map<AndExpr, ValueExpr> getExprValues() {
+        Map<AndExpr, ValueExpr> result = new HashMap<AndExpr, ValueExpr>();
+        for(OrObjectWhere orWhere : getOr())
+            if(orWhere instanceof EqualsWhere) {
+                CompareWhere where = (CompareWhere)orWhere;
+                assert !(where.operator1 instanceof ValueExpr);
+                if(where.operator2 instanceof ValueExpr)
+                    result.put(where.operator1, (ValueExpr) where.operator2);
+            }
+        return result;
+    }
 }

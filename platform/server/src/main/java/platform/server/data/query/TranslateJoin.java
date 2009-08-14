@@ -1,16 +1,17 @@
 package platform.server.data.query;
 
+import net.jcip.annotations.Immutable;
+import platform.server.caches.Lazy;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.Translator;
 import platform.server.where.Where;
-import platform.server.caches.Lazy;
 
-import java.util.Map;
-
-import net.jcip.annotations.Immutable;
+import java.util.Collection;
 
 @Immutable
-public class TranslateJoin<U> implements Join<U>  {
+public class TranslateJoin<U> extends Join<U>  {
 
     Translator translator;
     Join<U> join;
@@ -18,6 +19,8 @@ public class TranslateJoin<U> implements Join<U>  {
     public TranslateJoin(Translator iTranslator,Join<U> iJoin) {
         translator = iTranslator;
         join = iJoin;
+
+        assert translator instanceof KeyTranslator || translator instanceof QueryTranslator;
     }
 
     @Lazy
@@ -30,13 +33,8 @@ public class TranslateJoin<U> implements Join<U>  {
         return join.getExpr(property).translate(translator);
     }
 
-    @Lazy
-    public Map<U, SourceExpr> getExprs() {
-        return translator.translate(join.getExprs());
-    }
-
-    public Context getContext() {
-        return translator.getContext();
+    public Collection<U> getProperties() {
+        return join.getProperties();
     }
 }
 

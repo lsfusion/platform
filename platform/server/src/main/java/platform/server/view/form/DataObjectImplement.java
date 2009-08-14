@@ -3,7 +3,9 @@ package platform.server.view.form;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.DataClass;
 import platform.server.data.classes.ValueClass;
-import platform.server.data.classes.where.ClassSet;
+import platform.server.data.classes.where.AndClassSet;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
 import platform.server.session.ChangesSession;
@@ -23,7 +25,7 @@ public class DataObjectImplement extends ObjectImplement {
         value = dataClass.getDefaultValue();
     }
 
-    public ClassSet getClassSet(GroupObjectImplement classGroup) {
+    public AndClassSet getClassSet(GroupObjectImplement classGroup) {
         return getObjectClass();
     }
 
@@ -62,6 +64,10 @@ public class DataObjectImplement extends ObjectImplement {
 
     public DataObject getValue() {
         return new DataObject(value,dataClass);
+    }
+
+    protected SourceExpr getExpr() {
+        return new ValueExpr(value,dataClass);
     }
 
     public Type getType() {

@@ -1,30 +1,39 @@
 package platform.server.data;
 
+import platform.server.data.classes.LogicalClass;
+import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.Join;
-import platform.server.data.query.MapKeysInterface;
+import platform.server.data.query.*;
+import platform.server.data.query.exprs.*;
+import platform.server.data.query.exprs.cases.MapCase;
+import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.Translator;
+import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.session.SQLSession;
+import platform.server.where.DataWhere;
+import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
+import platform.server.caches.Lazy;
+import platform.server.caches.ParamLazy;
 import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
-public class Table extends DataSource<KeyField, PropertyField> implements MapKeysInterface<KeyField> {
+import net.jcip.annotations.Immutable;
+
+@Immutable
+public class Table implements MapKeysInterface<KeyField> {
     public final String name;
     public final Collection<KeyField> keys = new ArrayList<KeyField>();
     public final Collection<PropertyField> properties = new ArrayList<PropertyField>();
-
-    public Collection<KeyField> getKeys() {
-        return keys;
-    }
 
     public Map<KeyField, KeyExpr> getMapKeys() {
         Map<KeyField,KeyExpr> result = new HashMap<KeyField, KeyExpr>();
@@ -51,40 +60,12 @@ public class Table extends DataSource<KeyField, PropertyField> implements MapKey
         propertyClasses = iPropertyClasses;
     }
 
-    public String getSource(SQLSyntax syntax, Map<ValueExpr, String> params) {
-        return getName(syntax);
-    }
-
     public String getName(SQLSyntax Syntax) {
         return name;
     }
 
     public String toString() {
         return name;
-    }
-
-    public Collection<PropertyField> getProperties() {
-        return properties;
-    }
-
-    public Type getType(PropertyField property) {
-        return property.type;
-    }
-
-    public String getKeyName(KeyField Key) {
-        return Key.name;
-    }
-
-    public String getPropertyName(PropertyField Property) {
-        return Property.name;
-    }
-
-    public Collection<ValueExpr> getValues() {
-        return new ArrayList<ValueExpr>();
-    }
-
-    public DataSource<KeyField, PropertyField> translateValues(Map<ValueExpr, ValueExpr> values) {
-        return this;
     }
 
     public KeyField findKey(String name) {
@@ -125,27 +106,13 @@ public class Table extends DataSource<KeyField, PropertyField> implements MapKey
         propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
     }
 
-    public DataSource<KeyField, PropertyField> packClassWhere(ClassWhere<KeyField> keyClasses) {
-        return this;
-    }
-
     public ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
-    public ClassWhere<KeyField> getKeyClassWhere() {
-        return classes;
-    }
-    
+
     public final Map<PropertyField,ClassWhere<Field>> propertyClasses;
-    public ClassWhere<Object> getClassWhere(Collection<PropertyField> notNull) {
-        ClassWhere<Field> result = new ClassWhere<Field>();
-        for(PropertyField property : notNull)
-            result = result.or(propertyClasses.get(property));
-        return (ClassWhere<Object>)(ClassWhere<?>)result;
-    }
 
     @Override
     public boolean equals(Object obj) {
         return this == obj || obj instanceof Table && name.equals(((Table)obj).name) && classes.equals(((Table)obj).classes) && propertyClasses.equals(((Table)obj).propertyClasses);
-
     }
 
     @Override
@@ -153,27 +120,265 @@ public class Table extends DataSource<KeyField, PropertyField> implements MapKey
         return name.hashCode();
     }
 
-    protected int getHash() {
-        return hashCode();
-    }
-
-    public int hashProperty(PropertyField property) {
-        return property.hashCode();
-    }
-
-    public <EK, EV> Iterable<MapSource<KeyField, PropertyField, EK, EV>> map(DataSource<EK, EV> source) {
-        if(equals(source))
-            return Collections.singleton(new MapSource<KeyField,PropertyField,EK,EV>((Map<KeyField, EK>)BaseUtils.toMap(keys),(Map<PropertyField, EV>)BaseUtils.toMap(getProperties()),BaseUtils.toMap(getValues())));
-        else
-            return new ArrayList<MapSource<KeyField,PropertyField,EK,EV>>();
-    }
-
-
     public void out(SQLSession session) throws SQLException {
         JoinQuery<KeyField,PropertyField> query = new JoinQuery<KeyField,PropertyField>(this);
-        Join<PropertyField> join = join(query.mapKeys);
+        Join join = joinAnd(query.mapKeys);
         query.and(join.getWhere());
         query.properties.putAll(join.getExprs());
         query.outSelect(session);
+    }
+
+    public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends SourceExpr> joinImplement) {
+        JoinCaseList<PropertyField> result = new JoinCaseList<PropertyField>();
+        for(MapCase<KeyField> caseJoin : CaseExpr.pullCases(joinImplement))
+            result.add(new JoinCase<PropertyField>(caseJoin.where,joinAnd(caseJoin.data)));
+        return new CaseJoin<PropertyField>(result, properties);
+    }
+
+    public Join joinAnd(Map<KeyField, ? extends AndExpr> joinImplement) {
+        return new Join(joinImplement);
+    }
+
+    @Immutable
+    public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
+
+        public Map<KeyField, AndExpr> joins;
+
+        public Join(Map<KeyField, ? extends AndExpr> iJoins) {
+            joins = (Map<KeyField, AndExpr>) iJoins;
+            assert (joins.size()==keys.size());
+        }
+
+        @Lazy
+        Where getJoinsWhere() {
+            return MapExpr.getJoinsWhere(joins);
+        }
+
+        public DataWhereSet getJoinFollows() {
+            return MapExpr.getExprFollows(joins);
+        }
+
+        protected DataWhereSet getExprFollows() {
+            return ((IsIn)getWhere()).getFollows();
+        }
+
+        @Lazy
+        public SourceExpr getExpr(PropertyField property) {
+            return AndExpr.create(new Expr(property));
+        }
+
+        @Lazy
+        public Where<?> getWhere() {
+            ClassExprWhere classWhere = classes.map(joins).and(getJoinsWhere().getClassWhere());
+            if(classWhere.isFalse())
+                return Where.FALSE;
+            else
+                return new IsIn(classWhere);
+        }
+
+        public Collection<PropertyField> getProperties() {
+            return Table.this.properties;
+        }
+
+        public int hashContext(HashContext hashContext) {
+            int hash = Table.this.hashCode()*31;
+                // нужен симметричный хэш относительно выражений
+            for(Map.Entry<KeyField,AndExpr> join : joins.entrySet())
+                hash += join.getKey().hashCode() ^ join.getValue().hashContext(hashContext);
+            return hash;
+        }
+
+        @ParamLazy
+        public Join translateDirect(KeyTranslator translator) {
+            return new Join(translator.translateDirect(joins));
+        }
+
+        @ParamLazy
+        public platform.server.data.query.Join<PropertyField> translateQuery(QueryTranslator translator) {
+            return join(translator.translate(joins));
+        }
+
+        public platform.server.data.query.Join<PropertyField> translate(Translator<?> translator) {
+            if(translator instanceof KeyTranslator)
+                return translateDirect((KeyTranslator)translator);
+            else
+                return translateQuery((QueryTranslator)translator);
+        }
+
+        public String getName(SQLSyntax syntax) {
+            return Table.this.getName(syntax);
+        }
+
+        private Table getTable() {
+            return Table.this;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof Join && Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
+        }
+
+        @Override
+        public int hashCode() {
+            return hashContext(new HashContext(){
+                public int hash(KeyExpr expr) {
+                    return expr.hashCode();
+                }
+
+                public int hash(ValueExpr expr) {
+                    return expr.hashCode();
+                }
+            });
+        }
+
+        public class IsIn extends DataWhere implements JoinData {
+
+            public String getFirstKey() {
+                if(keys.size()==0) {
+                    assert Table.this.name.equals("global");
+                    return "dumb";
+                }
+                return keys.iterator().next().toString();
+            }
+
+            ClassExprWhere joinClassWhere;
+
+            public IsIn(ClassExprWhere iJoinClassWhere) {
+                joinClassWhere = iJoinClassWhere;
+            }
+
+            public void fillContext(Context context) {
+                context.fill(joins);
+            }
+
+            public Join getJoin() {
+                return Join.this;
+            }
+
+            public Object getFJGroup() {
+                return Join.this;
+            }
+
+            public InnerJoins getInnerJoins() {
+                return new InnerJoins(Join.this,this);
+            }
+
+            protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+                joins.add(this,andWhere);
+            }
+
+            public String getSource(CompileSource compile) {
+                return compile.getSource(this);
+            }
+
+            public String toString() {
+                return "IN JOIN " + Join.this.toString();
+            }
+
+            public Where translate(Translator translator) {
+                return Join.this.translate(translator).getWhere();
+            }
+
+            protected DataWhereSet getExprFollows() {
+                return getJoinFollows();
+            }
+
+            public SourceExpr getFJExpr() {
+                return new ValueExpr(true, LogicalClass.instance).and(this);
+            }
+
+            public String getFJString(String exprFJ) {
+                return exprFJ + " IS NOT NULL";
+            }
+
+            public ClassExprWhere calculateClassWhere() {
+                return joinClassWhere;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return this == o || o instanceof IsIn && Join.this.equals(((IsIn) o).getJoin());
+            }
+
+            public int hashContext(HashContext hashContext) {
+                return Join.this.hashContext(hashContext);
+            }
+        }
+
+        public class Expr extends MapExpr {
+
+            public final PropertyField property;
+
+            // напрямую может конструироваться только при полной уверенности что не null
+            private Expr(PropertyField iProperty) {
+                property = iProperty;
+            }
+
+            public SourceExpr translateQuery(QueryTranslator translator) {
+                return Join.this.translate(translator).getExpr(property);
+            }
+
+            public Table.Join.Expr translateDirect(KeyTranslator translator) {
+                return (Expr) Join.this.translateDirect(translator).getExpr(property);
+            }
+
+            public void fillContext(Context context) {
+                context.fill(joins);
+            }
+
+            public Join getJoin() {
+                return Join.this;
+            }
+
+            public Object getFJGroup() {
+                return Join.this;
+            }
+
+            public String toString() {
+                return Join.this.toString() + "." + property;
+            }
+
+            public Type getType(Where where) {
+                return property.type;
+            }
+
+            // возвращает Where без следствий
+            protected Where calculateWhere() {
+                return new NotNull();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return this == o || o instanceof Expr && Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
+            }
+
+            public int hashContext(HashContext hashContext) {
+                return Join.this.hashContext(hashContext)*31+property.hashCode();
+            }
+
+            public String getSource(CompileSource compile) {
+                return compile.getSource(this);
+            }
+
+            public class NotNull extends MapExpr.NotNull {
+
+                protected DataWhereSet getExprFollows() {
+                    return Join.this.getExprFollows();
+                }
+
+                public InnerJoins getInnerJoins() {
+                    return new InnerJoins(Join.this,this);
+                }
+
+                public ClassExprWhere calculateClassWhere() {
+                    return propertyClasses.get(property).map(BaseUtils.merge(joins,Collections.singletonMap(property,Expr.this))).and(Join.this.getJoinsWhere().getClassWhere());
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return Table.this.toString();
+        }
     }
 }
