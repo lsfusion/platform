@@ -4,6 +4,7 @@ import platform.server.data.classes.IntegralClass;
 import platform.server.data.query.*;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.where.Where;
+import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
     public String getSource(CompileSource compile) {
 
         if(size()==1) {
-            Map.Entry<AndExpr,Integer> operand = entrySet().iterator().next();
+            Map.Entry<AndExpr,Integer> operand = BaseUtils.singleEntry(this);
             return addToString(true, operand.getKey().getSource(compile), operand.getValue());
         }
 
@@ -115,7 +116,7 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
 
     public AndExpr getExpr() {
         if(size()==1) {
-            Map.Entry<AndExpr, Integer> entry = entrySet().iterator().next();
+            Map.Entry<AndExpr, Integer> entry = BaseUtils.singleEntry(this);
             if(entry.getValue().equals(1))
                 return entry.getKey();
         }

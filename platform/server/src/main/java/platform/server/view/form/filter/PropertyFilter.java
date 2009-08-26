@@ -11,13 +11,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-/**
- * Created by IntelliJ IDEA.
- * User: ME2
- * Date: 30.07.2009
- * Time: 16:17:40
- * To change this template use File | Settings | File Templates.
- */
 public abstract class PropertyFilter<P extends PropertyInterface> extends Filter {
 
     public PropertyObjectImplement<P> property;
@@ -47,7 +40,11 @@ public abstract class PropertyFilter<P extends PropertyInterface> extends Filter
         return property.dataUpdated(changedProps);
     }
 
-    protected void fillProperties(Set<Property> properties) {
+    public void fillProperties(Set<Property> properties) {
         property.fillProperties(properties);
+    }
+
+    public boolean isInInterface(GroupObjectImplement classGroup) {
+        return property.isInInterface(classGroup);
     }
 }

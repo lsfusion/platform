@@ -1,6 +1,7 @@
 package platform.server.view.form.client;
 
 import platform.server.view.navigator.PropertyViewNavigator;
+import platform.server.view.navigator.CellViewNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class FormView implements ClientSerialize {
     // список фильтров
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
 
-    public LinkedHashMap<PropertyViewNavigator,Boolean> defaultOrders = new LinkedHashMap<PropertyViewNavigator, Boolean>();
+    public LinkedHashMap<CellViewNavigator,Boolean> defaultOrders = new LinkedHashMap<CellViewNavigator, Boolean>();
 
     public FunctionView printView = new FunctionView();
     public FunctionView refreshView = new FunctionView();
@@ -58,7 +59,8 @@ public class FormView implements ClientSerialize {
         serializeList(outStream,regularFilters);
 
         outStream.writeInt(defaultOrders.size());
-        for(Map.Entry<PropertyViewNavigator,Boolean> order : defaultOrders.entrySet()) {
+        for(Map.Entry<CellViewNavigator,Boolean> order : defaultOrders.entrySet()) {
+            outStream.writeBoolean(order.getKey() instanceof PropertyViewNavigator);
             outStream.writeInt(order.getKey().ID);
             outStream.writeBoolean(order.getValue());
         }

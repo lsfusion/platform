@@ -10,6 +10,8 @@ import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.types.ObjectType;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.NullValue;
 import platform.server.session.ChangesSession;
 
 import java.sql.SQLException;
@@ -54,21 +56,24 @@ public class CustomObjectImplement extends ObjectImplement {
             return currentClass;
     }
 
-    DataObject value;
+    ObjectValue value;
 
     @Override
-    public void changeValue(ChangesSession session, DataObject changeValue) throws SQLException {
-        if((changeValue==null && value==null) || (changeValue!=null && changeValue.equals(value))) return;
+    public void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException {
+
+        assert changeValue!=null;
+        
+        if(changeValue.equals(value)) return;
 
         value = changeValue;
 
         // запишем класс объекта
         ConcreteCustomClass changeClass;
-        if(value==null)
+        if(value instanceof NullValue)
             changeClass = null;
         else {
-            changeClass = (ConcreteCustomClass) session.getCurrentClass(value);
-            classView.objectChanged(changeClass, (Integer) value.object);
+            changeClass = (ConcreteCustomClass) session.getCurrentClass(getDataObject());
+            classView.objectChanged(changeClass, (Integer) getDataObject().object);
         }
 
         if(changeClass != currentClass) {
@@ -81,34 +86,40 @@ public class CustomObjectImplement extends ObjectImplement {
     }
 
     public void changeValue(ChangesSession session, Object changeValue) throws SQLException {
-        changeValue(session,session.getDataObject(changeValue, baseClass.getType()));
+        changeValue(session,session.getObjectValue(changeValue, baseClass.getType()));
     }
 
     public boolean classChanged(Collection<CustomClass> changedClasses) {
         return changedClasses.contains(gridClass);
     }
 
-    public boolean classUpdated() {
-        return (updated & ObjectImplement.UPDATED_CLASS)!=0; 
+    public boolean classUpdated(GroupObjectImplement classGroup) {
+        if(groupTo!=classGroup)
+            return (updated & ObjectImplement.UPDATED_CLASS)!=0;
+        else
+            return (updated & ObjectImplement.UPDATED_GRIDCLASS)!=0;
     }
 
-    public DataObject getValue() {
+    public boolean isInInterface(GroupObjectImplement group) {
+        return groupTo == group || value instanceof DataObject; // если не в классовом виде то только если не null
+    }
+
+    public ObjectValue getObjectValue() {
         return value;
     }
 
     protected SourceExpr getExpr() {
-        return value==null?CaseExpr.NULL:value.getExpr();
+        return value.getExpr();
     }
 
     public void changeClass(ChangesSession session,int classID) throws SQLException {
 
-        assert value!=null;
         // запишем объекты, которые надо будет сохранять
         if(classID==-1) {
-            session.changeClass(value,null);
-            changeValue(session, (DataObject)null);
+            session.changeClass(getDataObject(),null);
+            changeValue(session, NullValue.instance);
         } else
-            session.changeClass(value,baseClass.findConcreteClassID(classID));
+            session.changeClass(getDataObject(),baseClass.findConcreteClassID(classID));
     }
 
 

@@ -45,10 +45,8 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
 
     public Where getIsClassWhere(AndClassSet set) {
         // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
-        if(!intersect(set)) { // если не пересекается то false
-            if(1==1) throw new RuntimeException("to test");
+        if(!intersect(set)) // если не пересекается то false
             return Where.FALSE;
-        }
         if(getSet().containsAll(set.getOr())) // если set содержит все элементы, то достаточно просто что не null
             return getWhere();
         return new IsClassWhere(this,set);

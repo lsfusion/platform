@@ -38,7 +38,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
-@Immutable
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
@@ -70,6 +69,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return idCount;
     }
 
+    protected AbstractCustomClass namedObject, transaction;
+
     protected LCFP groeq2;
     protected LCFP greater2;
     protected LJP between;
@@ -78,8 +79,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP vtrue;
 
+    protected LDP name;
+    protected LDP date;
+
     void initBase() {
         baseClass = new BaseClass(idShift(1), "Объект");
+
+        namedObject = addAbstractClass("Объект с именем", baseClass);
+        transaction = addAbstractClass("Транзакция", baseClass);
 
         tableFactory = new TableFactory(baseClass);
 
@@ -92,6 +99,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         greater2 = addCFProp(Compare.GREATER);
         between = addJProp("Между", and1, groeq2,1,2, groeq2,3,1);
         vtrue = addCProp("Истина",LogicalClass.instance,true);
+
+        name = addDProp(baseGroup, "name", "Имя", StringClass.get(50), namedObject);
+        date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
     }
 
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();
@@ -243,7 +253,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
     public DataSession createSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(adapter, baseClass);
+        return new DataSession(adapter, baseClass, namedObject, name.property, transaction, date.property);
     }
 
     public BaseClass baseClass;
@@ -261,7 +271,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    @Lazy
     public Collection<Property> getStoredProperties() {
         Collection<Property> result = new ArrayList<Property>();
         for(Property property : properties)
@@ -270,7 +279,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    @Lazy
     public Collection<Property> getConstrainedProperties() {
         Collection<Property> result = new ArrayList<Property>();
         for(Property property : properties)
@@ -1307,7 +1315,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     if(randomizer.nextInt(10)<8)
                         valueObject = changeProp.value.getRandomObject(session, randomizer);
                     else
-                        valueObject = new NullValue();
+                        valueObject = NullValue.instance;
 
                     session.changeProperty(changeProp, keys, valueObject, false);
                 }

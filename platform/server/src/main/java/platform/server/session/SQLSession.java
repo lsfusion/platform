@@ -291,7 +291,7 @@ public class SQLSession {
         getQuery.and(fieldExpr.getWhere());
         LinkedHashMap<Map<Object, Object>, Map<String, Object>> result = getQuery.executeSelect(this);
         if(result.size()>0)
-            return result.values().iterator().next().get("result");
+            return BaseUtils.singleValue(result).get("result");
         else
             return null;
     }

@@ -8,10 +8,10 @@ import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.Property;
 import platform.server.session.ChangesSession;
 import platform.server.session.TableChanges;
-import platform.server.view.form.filter.CompareValue;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
-public abstract class ObjectImplement implements CompareValue {
+public abstract class ObjectImplement extends CellView implements OrderView {
 
     public static Map<ObjectImplement, KeyExpr> getMapKeys(Collection<ObjectImplement> objects) {
         Map<ObjectImplement,KeyExpr> result = new HashMap<ObjectImplement, KeyExpr>();
@@ -29,15 +29,8 @@ public abstract class ObjectImplement implements CompareValue {
         return result;
     }
 
-    // идентификатор (в рамках формы)
-    public final int ID;
-
-    // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    public final String sID;
-    
     public ObjectImplement(int iID, String iSID, String iCaption) {
-        ID = iID;
-        sID = iSID;
+        super(iID,iSID);
         caption = iCaption;
     }
 
@@ -47,7 +40,7 @@ public abstract class ObjectImplement implements CompareValue {
     public final static int UPDATED_CLASS = (1 << 1);
     public final static int UPDATED_GRIDCLASS = (1 << 3);
 
-    protected int updated = UPDATED_GRIDCLASS;
+    protected int updated = UPDATED_CLASS | UPDATED_GRIDCLASS;
 
     public GroupObjectImplement groupTo;
 
@@ -64,7 +57,10 @@ public abstract class ObjectImplement implements CompareValue {
 
     public abstract ValueClass getBaseClass();
 
-    public abstract DataObject getValue();
+    public abstract ObjectValue getObjectValue();
+    public DataObject getDataObject() {
+        return (DataObject)getObjectValue();
+    }
 
     // может и null передаваться
     public abstract AndClassSet getClassSet(GroupObjectImplement classGroup);
@@ -72,24 +68,21 @@ public abstract class ObjectImplement implements CompareValue {
 
     public abstract ValueClass getGridClass();
 
-    public abstract void changeValue(ChangesSession session, DataObject changeValue) throws SQLException;
-
     public abstract void changeValue(ChangesSession session, Object changeValue) throws SQLException;
+    public abstract void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException;
 
     public abstract boolean classChanged(Collection<CustomClass> changedClasses);
-    public abstract boolean classUpdated();
 
     public abstract Type getType();
 
-    public boolean objectUpdated() {
-        return (updated & UPDATED_OBJECT)!=0;
-    }
-
-    public boolean classUpdated(GroupObjectImplement classGroup) { return classUpdated(); }
-    public boolean objectUpdated(GroupObjectImplement classGroup) { return objectUpdated(); }
+    public boolean objectUpdated(GroupObjectImplement classGroup) { return groupTo!=classGroup && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
-    public void fillProperties(Collection<Property> properties) { }
+    public void fillProperties(Set<Property> properties) { }
     public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) {
         return getSourceExpr(classGroup, classSource);
+    }
+
+    public GroupObjectImplement getApplyObject() {
+        return groupTo;
     }
 }

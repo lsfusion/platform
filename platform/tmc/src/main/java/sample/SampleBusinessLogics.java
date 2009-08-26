@@ -41,15 +41,15 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     CustomClass article,document,inDocument,outDocument;
     protected void initClasses() {
-        article = addConcreteClass("Товар", baseClass);
-        document = addConcreteClass("Документ", baseClass);
+        article = addConcreteClass("Товар", namedObject);
+        document = addConcreteClass("Документ", namedObject, transaction);
         inDocument = addConcreteClass("Приходный документ", document);
         outDocument = addConcreteClass("Расходный документ", document);
     }
 
 
     LDP outInQuantity;
-    LP name,date,quantity,inQuantity,sumOutQuantity;
+    LP quantity,inQuantity,sumOutQuantity;
     LP outSumInQuantity,isInDocument;
     LP multiply2;
     LP remains;
@@ -62,16 +62,10 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP less = addCFProp(Compare.LESS);
         multiply2 = addMFProp(quantityClass,2);
 
-        name = addDProp(baseGroup, "name", "Имя", StringClass.get(50), baseClass);
-        date = addDProp(baseGroup, "date", "Дата", DateClass.instance, document);
-        quantity = addDProp(baseGroup, "quantity", "Кол-во", quantityClass, document, article);
+        quantity = addDProp(baseGroup, "quantity", "Кол-во", quantityClass, transaction, article);
         outInQuantity = addDProp(baseGroup, "outInQuantity", "Кол-во расх. док.", quantityClass, outDocument, article, inDocument);
 
-        isInDocument = addCProp("Приход", LogicalClass.instance,true,inDocument);
-        inQuantity = addJProp("Кол-во прихода",multiply2, quantity,1,2,isInDocument,1);
-
-        LP isOutDocument = addCProp("Расход", LogicalClass.instance,true,outDocument);
-        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",multiply2, quantity,1,2,isOutDocument,1);
+        inQuantity = addJProp("Кол-во прихода",and1, quantity,1,2,is(inDocument),1);
 
         outSumInQuantity = addSGProp(baseGroup, "Кол-во расх.", outInQuantity, 1, 2);
         sumOutQuantity = addSGProp(baseGroup, "Всего расх.", outInQuantity, 3, 2);
@@ -84,6 +78,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
                                 lessEquals,1,2),1,2,
                         remains,1,3),2,3);
 
+        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",and1, quantity,1,2,is(outDocument),1);
+        
         LP calcQuantity = addJProp(baseGroup, "Расч. кол-во",addSFProp("prm1+LEAST(prm3,prm2)-prm3", quantityClass, 4),
                 remains,3,2,outQuantity,1,2, remainPrev,3,2,
             addJProp(baseGroup, "Есть ост.",less,
@@ -102,8 +98,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     protected void initTables() {
         tableFactory.include("article",article);
-        tableFactory.include("document",document);
-        tableFactory.include("articledocument",article,document);
+        tableFactory.include("document", transaction);
+        tableFactory.include("articledocument",article, transaction);
     }
 
     protected void initIndexes() {

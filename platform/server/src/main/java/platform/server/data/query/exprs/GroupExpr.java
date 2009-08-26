@@ -41,7 +41,7 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
 
     // проталкивает "верхний" where внутрь
     private static Where pushWhere(Where where,Map<AndExpr,AndExpr> group) {
-        Where result = new MeanClassWhere(where.and(getJoinsWhere(group)).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()));
+        Where result = where.and(getJoinsWhere(group)).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getMeansWhere();
         assert result.means(getWhere(group.keySet())); // надо assert'ить чтобы не and'ить
         return result;
     }

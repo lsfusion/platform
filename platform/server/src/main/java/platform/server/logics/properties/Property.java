@@ -262,7 +262,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         readQuery.putKeyWhere(keys);
 
         readQuery.properties.put(readValue, getSourceExpr(readQuery.mapKeys,session.changes,depends,null));
-        return readQuery.executeSelect(session).values().iterator().next().get(readValue);
+        return BaseUtils.singleValue(readQuery.executeSelect(session)).get(readValue);
     }
 
 /*    public void saveChanges(DataSession session,Map<DataProperty,DefaultData> defaultProps) throws SQLException {

@@ -22,4 +22,8 @@ public class RegularFilterGroup implements Serializable {
                 return filter;
         return null;
     }
+    
+    public GroupObjectImplement getApplyObject() {
+        return filters.iterator().next().filter.getApplyObject();
+    }
 }

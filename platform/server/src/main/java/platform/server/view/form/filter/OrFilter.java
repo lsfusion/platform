@@ -43,7 +43,7 @@ public class OrFilter extends Filter {
         return op1.dataUpdated(changedProps) || op2.dataUpdated(changedProps);
     }
 
-    protected void fillProperties(Set<Property> properties) {
+    public void fillProperties(Set<Property> properties) {
         op1.fillProperties(properties);
         op2.fillProperties(properties);
     }
@@ -59,5 +59,9 @@ public class OrFilter extends Filter {
 
     public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) throws SQLException {
         return op1.getWhere(mapKeys, classGroup, session, depends).or(op2.getWhere(mapKeys, classGroup, session, depends));
+    }
+
+    public boolean isInInterface(GroupObjectImplement classGroup) {
+        return op1.isInInterface(classGroup) || op2.isInInterface(classGroup);
     }
 }

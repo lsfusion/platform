@@ -31,7 +31,7 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
     public CompareFilter(DataInputStream inStream, RemoteForm form) throws IOException, SQLException {
         super(inStream,form);
         compare = Compare.deserialize(inStream);
-        value = deserializeCompare(inStream, form, property.property.getType());
+        value = deserializeCompare(inStream, form, property.getType());
     }
 
     private static CompareValue deserializeCompare(DataInputStream inStream, RemoteForm form, Type DBType) throws IOException, SQLException {
@@ -68,9 +68,13 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
     }
 
     @Override
-    protected void fillProperties(Set<Property> properties) {
+    public void fillProperties(Set<Property> properties) {
         super.fillProperties(properties);
         value.fillProperties(properties);
     }
 
+    @Override
+    public boolean isInInterface(GroupObjectImplement classGroup) {
+        return super.isInInterface(classGroup) && value.isInInterface(classGroup);
+    }
 }

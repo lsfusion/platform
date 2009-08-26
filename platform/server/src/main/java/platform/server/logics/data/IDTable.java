@@ -11,6 +11,7 @@ import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
+import platform.base.BaseUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -60,7 +61,7 @@ public class IDTable extends Table {
 
         query.and(new EqualsWhere(query.mapKeys.get(key),new ValueExpr(idType, SystemClass.instance)));
 
-        Integer freeID = (Integer) query.executeSelect(dataSession).values().iterator().next().get(value);
+        Integer freeID = (Integer) BaseUtils.singleValue(query.executeSelect(dataSession)).get(value);
 
         // замещаем
         reserveID(dataSession, idType, freeID);

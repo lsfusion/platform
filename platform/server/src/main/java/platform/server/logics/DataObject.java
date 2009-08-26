@@ -3,8 +3,11 @@ package platform.server.logics;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.where.Where;
 import platform.base.BaseUtils;
+import platform.interop.Compare;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +47,7 @@ public class DataObject extends ObjectValue {
     }
 
     public ValueExpr getExpr() {
-        return new ValueExpr(this);
+        return new ValueExpr(object,objectClass);
     }
 
     public Object getValue() {
@@ -56,5 +59,10 @@ public class DataObject extends ObjectValue {
         for(Map.Entry<K,DataObject> keyField : map.entrySet())
             mapClasses.put(keyField.getKey(), keyField.getValue().objectClass);
         return mapClasses;        
+    }
+
+    public Where order(SourceExpr expr, boolean desc, Where orderWhere) {
+        Where greater = expr.compare(this,Compare.GREATER);
+        return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
     }
 }

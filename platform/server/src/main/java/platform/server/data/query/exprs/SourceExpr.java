@@ -18,6 +18,7 @@ import platform.server.data.query.translators.Translator;
 import platform.server.data.types.Reader;
 import platform.server.data.types.Type;
 import platform.server.where.Where;
+import platform.server.logics.DataObject;
 
 import java.util.Collection;
 import java.util.Map;
@@ -52,6 +53,10 @@ abstract public class SourceExpr extends AbstractSourceJoin {
     public abstract Where getIsClassWhere(AndClassSet set);
 
     public abstract Where compare(SourceExpr expr, Compare compare);
+
+    public Where compare(DataObject data, Compare compare) {
+        return compare(data.getExpr(),compare);
+    }
 
     public Where greater(SourceExpr expr) {
         return compare(expr,Compare.GREATER).or(expr.getWhere().not());

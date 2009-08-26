@@ -292,22 +292,22 @@ public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements Or
 
     public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
 
-         if(!sureNotTrue && orTrue(this,falseWhere))
-            return TRUE;
+         if(!sureNotTrue) {
+             if(orTrue(this,falseWhere))
+                return TRUE;
+             sureNotTrue = true;
+         }
 
-//        falseWhere = decomposeFalse(falseWhere,this);
-//        if(falseWhere.isFalse())
-//            return this;
-
-        Where followWhere = FALSE; //false
+        Where followWhere = FALSE;
         AndObjectWhere[] staticWheres = wheres;
         int current = 0;
         for(AndObjectWhere where : wheres) { // после упрощения важно использовать именно этот элемент, иначе неправильно работать будет
             AndObjectWhere[] siblingWheres = siblings(staticWheres, current);
-            Where followAndWhere = followFalse(where,op(op(toWhere(siblingWheres),followWhere,true),falseWhere,true),false,true);
+            Where followAndWhere = followFalse(where,op(op(toWhere(siblingWheres),followWhere,true),falseWhere,true),false,sureNotTrue);
             if(!BaseUtils.hashEquals(followAndWhere,where)) { // если изменился static "перекидываем" в result
                 followWhere = op(followWhere,followAndWhere,false);
                 staticWheres = siblingWheres;
+                sureNotTrue = false; // при изменении follow мог упаковаться и соответственно изменится и уже быть true
             } else
                 current++;
         }

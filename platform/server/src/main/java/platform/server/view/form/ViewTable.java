@@ -18,7 +18,7 @@ public class ViewTable extends SessionTable<ViewTable> {
         super("viewtable_"+(GID>=0?GID:"n"+(-GID)));
 
         mapKeys = new HashMap<KeyField, ObjectImplement>();
-        for(ObjectImplement object : group) {
+        for(ObjectImplement object : group.objects) {
             KeyField objKeyField = new KeyField("object"+ object.sID, object.getType());
             mapKeys.put(objKeyField,object);
             keys.add(objKeyField);

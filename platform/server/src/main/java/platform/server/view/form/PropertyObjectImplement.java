@@ -4,11 +4,11 @@ import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.properties.*;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
-import platform.server.view.form.filter.CompareValue;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<ObjectImplement,P> implements CompareValue {
+public class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<ObjectImplement,P> implements OrderView {
 
     public PropertyObjectImplement(Property<P> iProperty,Map<P,ObjectImplement> iMapping) {
         super(iProperty,iMapping);
@@ -43,21 +43,15 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     // проверяет на то что изменился верхний объект
     public boolean objectUpdated(GroupObjectImplement classGroup) {
         for(ObjectImplement intObject : mapping.values())
-            if(intObject.groupTo !=classGroup && intObject.objectUpdated()) return true;
+            if(intObject.objectUpdated(classGroup)) return true;
 
         return false;
     }
 
-    // изменился хоть один из классов интерфейса (могло повлиять на вхождение в интерфейс)
     public boolean classUpdated(GroupObjectImplement classGroup) {
         for(ObjectImplement intObject : mapping.values())
-            if(intObject.groupTo==classGroup) {
-                if(intObject.classUpdated())
-                    return true;
-            } else {
-                if(intObject.objectUpdated())
-                    return true;
-            }
+            if(intObject.classUpdated(classGroup))
+                return true;
 
         return false;
     }
@@ -66,14 +60,14 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return changedProps.contains(property);
     }
 
-    public void fillProperties(Collection<Property> properties) {
+    public void fillProperties(Set<Property> properties) {
         properties.add(property);
     }
 
     public Map<P, DataObject> getInterfaceValues() {
         Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
         for(Map.Entry<P, ObjectImplement> implement : mapping.entrySet())
-            mapInterface.put(implement.getKey(),implement.getValue().getValue());
+            mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
         return mapInterface;
     }
     
@@ -90,5 +84,9 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         for(P propertyInterface : property.interfaces)
             joinImplement.put(propertyInterface, mapping.get(propertyInterface).getSourceExpr(classGroup, classSource));
         return property.getSourceExpr(joinImplement,session,depends,null);
+    }
+
+    public Type getType() {
+        return property.getType();
     }
 }

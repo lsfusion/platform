@@ -3,11 +3,13 @@ package platform.server.logics;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.where.Where;
 
 public class NullValue extends ObjectValue {
 
-    public NullValue() {
+    private NullValue() {
     }
+    public static NullValue instance = new NullValue();
 
     public String getString(SQLSyntax syntax) {
         return SQLSyntax.NULL;
@@ -21,6 +23,10 @@ public class NullValue extends ObjectValue {
         return CaseExpr.NULL;
     }
 
+    public Object getValue() {
+        return null;
+    }
+
     public boolean equals(Object o) {
         return this==o || o instanceof NullValue;
     }
@@ -28,4 +34,13 @@ public class NullValue extends ObjectValue {
     public int hashCode() {
         return 0;
     }
+
+    public Where order(SourceExpr expr, boolean desc, Where orderWhere) {
+        Where greater = expr.getWhere();
+        if(desc)
+            return greater.not().and(orderWhere);
+        else
+            return greater.or(orderWhere);
+    }
+
 }

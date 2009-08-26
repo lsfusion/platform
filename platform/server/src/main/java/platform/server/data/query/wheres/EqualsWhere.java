@@ -16,8 +16,6 @@ public class EqualsWhere extends CompareWhere {
 
     private EqualsWhere(AndExpr iOperator1, AndExpr iOperator2) {
         super(iOperator1, iOperator2);
-
-        assert !(operator1 instanceof ValueExpr && operator2 instanceof KeyExpr);
     }
 
     public static Where create(AndExpr operator1, AndExpr operator2) {
@@ -74,6 +72,8 @@ public class EqualsWhere extends CompareWhere {
     public InnerJoins getInnerJoins() {
         if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr)
             return new InnerJoins((KeyExpr)operator1,(ValueExpr)operator2);
+        if(operator2 instanceof KeyExpr && operator1 instanceof ValueExpr)
+            return new InnerJoins((KeyExpr)operator2,(ValueExpr)operator1);
         return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
     }
 

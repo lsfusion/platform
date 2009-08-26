@@ -28,7 +28,7 @@ abstract class ValueConstraint extends Constraint {
         WhereBuilder changedWhere = new WhereBuilder();
         SourceExpr valueExpr = property.getSourceExpr(changed.mapKeys,session.changes,session,changedWhere);
         // закинем условие на то что мы ищем
-        changed.and(valueExpr.compare(new ValueExpr(property.getType().getEmptyValueExpr()), invalid));
+        changed.and(valueExpr.compare(property.getType().getEmptyValueExpr(), invalid));
         changed.and(changedWhere.toWhere());
         changed.properties.put("value", valueExpr);
 

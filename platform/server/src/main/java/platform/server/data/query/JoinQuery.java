@@ -68,7 +68,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
     static <K> String stringOrder(List<K> sources, int offset, LinkedHashMap<K,Boolean> orders) {
         String orderString = "";
         for(Map.Entry<K,Boolean> order : orders.entrySet())
-            orderString = (orderString.length()==0?"":orderString+",") + (sources.indexOf(order.getKey())+offset+1) + " " + (order.getValue()?"DESC":"ASC");
+            orderString = (orderString.length()==0?"":orderString+",") + (sources.indexOf(order.getKey())+offset+1) + " " + (order.getValue()?"DESC NULLS LAST":"ASC NULLS FIRST");
         return orderString;
     }
 
@@ -78,7 +78,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
 
     public void putKeyWhere(Map<K, DataObject> keyValues) {
         for(Map.Entry<K,DataObject> mapKey : keyValues.entrySet())
-            and(new EqualsWhere(mapKeys.get(mapKey.getKey()), mapKey.getValue().getExpr()));
+            and(mapKeys.get(mapKey.getKey()).compare(mapKey.getValue(),Compare.EQUALS));
     }
 
     public ParsedQuery<K,V> parse() { // именно ParsedQuery потому как aspect'ами корректируется

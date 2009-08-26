@@ -25,10 +25,6 @@ public class ValueExpr extends StaticClassExpr {
         assert !(objectClass instanceof LogicalClass && !object.equals(true));
     }
 
-    public ValueExpr(DataObject value) {
-        this(value.object,value.objectClass);
-    }
-
     public ConcreteClass getStaticClass() {
         return objectClass;
     }

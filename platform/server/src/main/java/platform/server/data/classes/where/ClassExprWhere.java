@@ -24,8 +24,14 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return true;
     }
 
+    public Where getMeansWhere() {
+        if(isTrue()) return Where.TRUE;
+        if(isFalse()) return Where.FALSE;
+        return new MeanClassWhere(this);
+    }
+
     public boolean means(Where where) {
-        return new MeanClassWhere(this).means(where);
+        return getMeansWhere().means(where);
     }
 
     private ClassExprWhere(boolean isTrue) {

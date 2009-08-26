@@ -317,15 +317,23 @@ public class CompiledQuery<K,V> {
                 alias = "t" + (aliasNum++);
                 inner = innerWhere.means(innerJoin);
 
+                // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
                 String joinString = "";
+                Map<String,KeyExpr> joinKeys = new HashMap<String, KeyExpr>();
                 for(Map.Entry<String,AndExpr> keyJoin : initJoins(innerJoin).entrySet()) {
-                    String keySourceString = alias + "." + keyJoin.getKey();
-                    String keyJoinString = keyJoin.getValue().getSource(InnerSelect.this);
-                    if(keyJoinString==null) {// значит KeyExpr которого еще не было
+                    String keySource = alias + "." + keyJoin.getKey();
+                    if(keyJoin.getValue() instanceof KeyExpr)
+                        joinKeys.put(keySource,(KeyExpr)keyJoin.getValue());
+                    else
+                        joinString = (joinString.length()==0?"":joinString+" AND ") + keySource + "=" + keyJoin.getValue().getSource(InnerSelect.this);
+                }
+                for(Map.Entry<String,KeyExpr> keyJoin : joinKeys.entrySet()) { // дозаполним ключи
+                    String keySource = keySelect.get(keyJoin.getValue());
+                    if(keySource==null) {
                         assert inner;
-                        keySelect.put((KeyExpr) keyJoin.getValue(),keySourceString);
+                        keySelect.put(keyJoin.getValue(),keyJoin.getKey());
                     } else
-                        joinString = (joinString.length()==0?"":joinString+" AND ") + keySourceString + "=" + keyJoinString;
+                        joinString = (joinString.length()==0?"":joinString+" AND ") + keyJoin.getKey() + "=" + keySource;
                 }
                 join = joinString;
                 

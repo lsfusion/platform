@@ -2,6 +2,7 @@ package platform.server.view.form;
 
 import platform.base.BaseUtils;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.util.*;
 public class FormChanges {
 
     public Map<GroupObjectImplement,Boolean> classViews = new HashMap<GroupObjectImplement, Boolean>();
-    public Map<GroupObjectImplement,Map<ObjectImplement, DataObject>> objects = new HashMap<GroupObjectImplement,Map<ObjectImplement,DataObject>>();
+    public Map<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>> objects = new HashMap<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>>();
     public Map<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>> gridObjects = new HashMap<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>>();
     public Map<PropertyView,Map<Map<ObjectImplement,DataObject>,Object>> gridProperties = new HashMap<PropertyView, Map<Map<ObjectImplement, DataObject>, Object>>();
     public Map<PropertyView,Object> panelProperties = new HashMap<PropertyView, Object>();
@@ -27,7 +28,7 @@ public class FormChanges {
                     System.out.println(value);
             }
 
-            Map<ObjectImplement, DataObject> value = objects.get(group);
+            Map<ObjectImplement, ? extends ObjectValue> value = objects.get(group);
             if(value!=null)
                 System.out.println(group.ID +" - Object Changes "+value);
         }
@@ -59,10 +60,10 @@ public class FormChanges {
         }
 
         outStream.writeInt(objects.size());
-        for (Map.Entry<GroupObjectImplement,Map<ObjectImplement,DataObject>> objectValue : objects.entrySet()) {
+        for (Map.Entry<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>> objectValue : objects.entrySet()) {
             outStream.writeInt(objectValue.getKey().ID);
-            for (ObjectImplement object : objectValue.getKey()) // именно так чтобы гарантировано в том же порядке
-                outStream.writeInt((Integer) objectValue.getValue().get(object).object);
+            for (ObjectImplement object : objectValue.getKey().objects) // именно так чтобы гарантировано в том же порядке
+                BaseUtils.serializeObject(outStream,objectValue.getValue().get(object).getValue());
         }
 
         outStream.writeInt(gridObjects.size());
@@ -71,7 +72,7 @@ public class FormChanges {
 
             outStream.writeInt(gridObject.getValue().size());
             for (Map<ObjectImplement, DataObject> groupObjectValue : gridObject.getValue())
-                for (ObjectImplement object : gridObject.getKey()) // именно так чтобы гарантировано в том же порядке
+                for (ObjectImplement object : gridObject.getKey().objects) // именно так чтобы гарантировано в том же порядке
                     outStream.writeInt((Integer) groupObjectValue.get(object).object);
         }
 
@@ -81,7 +82,7 @@ public class FormChanges {
 
             outStream.writeInt(gridProperty.getValue().size());
             for (Map.Entry<Map<ObjectImplement,DataObject>,Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
-                for (ObjectImplement object : gridProperty.getKey().toDraw) // именно так чтобы гарантировано в том же порядке
+                for (ObjectImplement object : gridProperty.getKey().toDraw.objects) // именно так чтобы гарантировано в том же порядке
                     outStream.writeInt((Integer) gridPropertyValue.getKey().get(object).getValue());
                 BaseUtils.serializeObject(outStream, gridPropertyValue.getValue());
             }

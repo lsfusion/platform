@@ -6,6 +6,7 @@ import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
+import platform.base.BaseUtils;
 
 import java.util.*;
 
@@ -40,6 +41,6 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     @Override
     public MapChangeDataProperty<JoinPropertyInterface> getChangeProperty(Map<JoinPropertyInterface, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
         if(implement.mapping.size()!=1) return null;
-        return implement.mapping.values().iterator().next().mapGetChangeProperty(interfaceClasses, securityPolicy, externalID);
+        return BaseUtils.singleValue(implement.mapping).mapGetChangeProperty(interfaceClasses, securityPolicy, externalID);
     }
 }

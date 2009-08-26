@@ -4,10 +4,11 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.interop.CompressingOutputStream;
 import platform.interop.RemoteObject;
+import platform.interop.Scroll;
+import platform.interop.Order;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.data.classes.CustomClass;
 import platform.server.view.form.*;
-import platform.server.view.form.filter.CompareFilter;
 import platform.server.view.form.filter.Filter;
 
 import java.io.*;
@@ -20,7 +21,7 @@ import java.util.Map;
 // фасад для работы с клиентом
 public class RemoteFormView extends RemoteObject implements RemoteFormInterface {
 
-    RemoteForm form;
+    RemoteForm<?> form;
     public FormView richDesign;
     public JasperDesign reportDesign;
 
@@ -108,7 +109,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(value));
             // считаем ключи и найдем groupObjectValue
             Map<ObjectImplement,Object> mapValues = new HashMap<ObjectImplement, Object>();
-            for(ObjectImplement object : groupObject)
+            for(ObjectImplement object : groupObject.objects)
                 mapValues.put(object, inStream.readInt());
             form.changeGroupObject(groupObject, groupObject.findGroupObjectValue(mapValues));
         } catch (Exception e) {
@@ -123,10 +124,12 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         return (((CustomObjectImplement) objectImplement).currentClass).ID;
     }
 
-    public void changeGroupObject(int groupID, int changeType) {
+    public void changeGroupObject(int groupID, byte changeType) {
         try {
-            form.changeGroupObject(form.getGroupObjectImplement(groupID), changeType);
+            form.changeGroupObject(form.getGroupObjectImplement(groupID), Scroll.deserialize(changeType));
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -172,17 +175,34 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         form.switchClassView(form.getGroupObjectImplement(groupID));
     }
 
-    public void changeOrder(int propertyID, int modiType) {
-        form.changeOrder(form.getPropertyView(propertyID), modiType);
+    public void changePropertyOrder(int propertyID, byte modiType) {
+        PropertyView propertyView = form.getPropertyView(propertyID);
+        try {
+            propertyView.toDraw.changeOrder(propertyView.view, Order.deserialize(modiType));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void changeObjectOrder(int objectID, byte modiType) {
+        ObjectImplement object = form.getObjectImplement(objectID);
+        try {
+            object.groupTo.changeOrder(object, Order.deserialize(modiType));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void clearUserFilters() {
-        form.clearUserFilters();
+
+        for(GroupObjectImplement group : form.groups)
+            group.clearUserFilters();
     }
 
     public void addFilter(byte[] state) {
         try {
-            form.addUserFilter(Filter.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form));
+            Filter filter = Filter.deserialize(new DataInputStream(new ByteArrayInputStream(state)), form);
+            filter.getApplyObject().addUserFilter(filter);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SQLException e) {

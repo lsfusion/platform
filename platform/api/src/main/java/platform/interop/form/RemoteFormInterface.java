@@ -22,7 +22,7 @@ public interface RemoteFormInterface extends Remote {
 
     int getObjectClassID(int objectID) throws RemoteException;
 
-    void changeGroupObject(int groupID, int changeType) throws RemoteException;
+    void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
     void changePropertyView(int propertyID, byte[] object, boolean externalID) throws RemoteException;
 
@@ -36,7 +36,9 @@ public interface RemoteFormInterface extends Remote {
 
     void switchClassView(int groupID) throws RemoteException;
 
-    void changeOrder(int propertyID, int modiType) throws RemoteException;
+    void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
+
+    void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;
 
     void clearUserFilters() throws RemoteException;
 
@@ -66,10 +68,5 @@ public interface RemoteFormInterface extends Remote {
 
     final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
     final static int CHANGEGROUPOBJECT_LASTROW = 1;
-    
-    final static int ORDER_REPLACE = 1;
-    final static int ORDER_ADD = 2;
-    final static int ORDER_REMOVE = 3;
-    final static int ORDER_DIR = 4;
 
 }

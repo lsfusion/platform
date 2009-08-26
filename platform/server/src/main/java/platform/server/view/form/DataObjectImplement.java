@@ -8,6 +8,7 @@ import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.session.ChangesSession;
 
 import java.sql.SQLException;
@@ -51,19 +52,24 @@ public class DataObjectImplement extends ObjectImplement {
         groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_OBJECT;
     }
 
-    public void changeValue(ChangesSession session, DataObject changeValue) throws SQLException {
-        changeValue(session, changeValue.object);
+    public void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException {
+        changeValue(session, changeValue.getValue());
     }
 
     public boolean classChanged(Collection<CustomClass> changedClasses) {
         return false;
     }
-    public boolean classUpdated() {
+
+    // собсно null быть не может (пока) поэтому проверки как в CustomObjectImplement и не надо (как и UPDATED_CLASS) 
+    public boolean classUpdated(GroupObjectImplement classGroup) {
         return false;
     }
+    public boolean isInInterface(GroupObjectImplement group) {
+        return true;
+    }
 
-    public DataObject getValue() {
-        return new DataObject(value,dataClass);
+    public ObjectValue getObjectValue() {
+        return DataObject.getValue(value,dataClass);
     }
 
     protected SourceExpr getExpr() {

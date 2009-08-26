@@ -26,7 +26,7 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
-            objects.put(clientGroupObject,new ClientGroupObjectValue(inStream, clientGroupObject));
+            objects.put(clientGroupObject,new ClientGroupObjectValue(inStream, clientGroupObject,true));
         }
 
         gridObjects = new HashMap<ClientGroupObjectImplementView, List<ClientGroupObjectValue>>();

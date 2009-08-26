@@ -25,4 +25,27 @@ public enum Compare {
         }
         throw new RuntimeException("Deserialize Compare");
     }
+
+    public byte serialize() throws IOException {
+        switch(this) {
+            case EQUALS:
+                return 0;
+            case GREATER:
+                return 1;
+            case LESS:
+                return 2;
+            case GREATER_EQUALS:
+                return 3;
+            case LESS_EQUALS:
+                return 4;
+            case NOT_EQUALS:
+                return 5;
+        }
+        throw new RuntimeException("Serialize Compare");
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(serialize());
+    }
+
 }

@@ -17,7 +17,7 @@ public class ClientFormView implements Serializable {
     public List<ClientGroupObjectImplementView> groupObjects;
     public List<ClientPropertyView> properties;
 
-    public final LinkedHashMap<ClientPropertyView,Boolean> defaultOrders = new LinkedHashMap<ClientPropertyView, Boolean>();
+    public final LinkedHashMap<ClientCellView,Boolean> defaultOrders = new LinkedHashMap<ClientCellView, Boolean>();
     public List<ClientRegularFilterGroupView> regularFilters;
 
     public ClientFunctionView printView;
@@ -82,8 +82,14 @@ public class ClientFormView implements Serializable {
             }});
 
         int orderCount = inStream.readInt();
-        for(int i=0;i<orderCount;i++)
-            defaultOrders.put(getPropertyView(inStream.readInt()),inStream.readBoolean());
+        for(int i=0;i<orderCount;i++) {
+            ClientCellView order;
+            if(inStream.readBoolean())
+                order = getPropertyView(inStream.readInt());
+            else
+                order = getObject(inStream.readInt());    
+            defaultOrders.put(order,inStream.readBoolean());
+        }
 
         printView = new ClientFunctionView(inStream,containers);
         refreshView = new ClientFunctionView(inStream,containers);

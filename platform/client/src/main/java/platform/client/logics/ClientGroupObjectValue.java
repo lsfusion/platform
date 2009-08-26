@@ -1,5 +1,7 @@
 package platform.client.logics;
 
+import platform.base.BaseUtils;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,14 +12,18 @@ public class ClientGroupObjectValue extends ClientGroupObjectMap<Integer>
                              implements Serializable {
 
     public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject) throws IOException {
-        for (ClientObjectImplementView clientObject : clientGroupObject) {
+        for (ClientObjectImplementView clientObject : clientGroupObject)
             put(clientObject, inStream.readInt());
-        }
+    }
+    
+    public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject,boolean nulls) throws IOException {
+        for (ClientObjectImplementView clientObject : clientGroupObject)
+            put(clientObject, (Integer) BaseUtils.deserializeObject(inStream));
+
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        for (Map.Entry<ClientObjectImplementView,Integer> objectValue : entrySet()) {
+        for (Map.Entry<ClientObjectImplementView,Integer> objectValue : entrySet())
             outStream.writeInt(objectValue.getValue());
-        }        
     }
 }

@@ -1,6 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.base.DateConverter;
 import platform.interop.Compare;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
@@ -34,7 +35,11 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
 
     public TableChanges changes = new TableChanges();
 
-    public BaseClass baseClass;
+    public final BaseClass baseClass;
+    public final CustomClass namedObject;
+    public final DataProperty name;
+    public final CustomClass transaction;
+    public final DataProperty date;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -58,10 +63,14 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
         return isClassWhere;
     }
 
-    public DataSession(DataAdapter adapter, BaseClass iCustomClass) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, DataProperty name, CustomClass transaction, DataProperty date) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         super(adapter);
 
-        baseClass = iCustomClass;
+        this.baseClass = baseClass;
+        this.namedObject = namedObject;
+        this.name = name;
+        this.transaction = transaction;
+        this.date = date;
     }
 
     public void restart(boolean cancel) throws SQLException {
@@ -86,11 +95,19 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
     }
 
     public DataObject addObject(ConcreteCustomClass customClass) throws SQLException {
-        
+
         DataObject object = new DataObject(IDTable.instance.generateID(this, IDTable.OBJECT),baseClass.unknown);
 
         // запишем объекты, которые надо будет сохранять
         changeClass(object, customClass);
+        
+        if(customClass.isChild(namedObject))
+            changeProperty(name,Collections.singletonMap(BaseUtils.single(name.interfaces),object),
+                    new DataObject(customClass.caption+" "+object.object,(StringClass)name.value),false);
+
+        if(customClass.isChild(transaction))
+            changeProperty(date,Collections.singletonMap(BaseUtils.single(date.interfaces),object),
+                    new DataObject(DateConverter.dateToInt(new Date()),(DateClass)date.value),false);
 
         return object;
     }    
@@ -158,14 +175,14 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
             DataProperty extPropID = property.value.getExternalID();
 
             JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID);
-            query.and(extPropID.getSourceExpr(query.mapKeys).compare(newValue.getExpr(),Compare.EQUALS));
+            query.and(extPropID.getSourceExpr(query.mapKeys).compare((DataObject) newValue,Compare.EQUALS));
 
             LinkedHashMap<Map<DataPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeSelectClasses(this, baseClass);
 
             if (result.size() == 0)
-                newValue = new NullValue();
+                newValue = NullValue.instance;
             else
-                newValue = result.keySet().iterator().next().values().iterator().next();
+                newValue = BaseUtils.singleValue(BaseUtils.singleKey(result));
         }
 
         changes.data.put(property,dataChange.insertRecord(this,BaseUtils.join(dataChange.mapKeys,keys),Collections.singletonMap(dataChange.value,newValue),true));
@@ -196,15 +213,17 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
                 dataClass = baseClass.unknown;
             else {
                 assert (result.size()==1);
-                dataClass = baseClass.findConcreteClassID((Integer) result.values().iterator().next().get("classid"));
+                dataClass = baseClass.findConcreteClassID((Integer) BaseUtils.singleValue(result).get("classid"));
             }
         }
         return new DataObject(value,dataClass);
     }
 
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException {
-        if(value==null) return new NullValue();
-        return getDataObject(value, type);
+        if(value==null)
+            return NullValue.instance;
+        else
+            return getDataObject(value, type);
     }
 
     // узнает список изменений произошедших без него

@@ -6,18 +6,20 @@ import platform.server.session.TableChanges;
 import platform.server.view.form.RemoteForm;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.Updated;
 import platform.server.where.Where;
 import platform.interop.FilterType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class Filter {
+public abstract class Filter implements Updated {
+
+    // даже если не в интерфейсе все равно ставить (то есть по сути фильтр делать false)
+    public final static boolean ignoreInInterface = false;
 
     public Filter() {
     }
@@ -43,28 +45,5 @@ public abstract class Filter {
 
     public abstract GroupObjectImplement getApplyObject();
 
-    public boolean isInInterface(GroupObjectImplement classGroup) {
-        return true; // пока будем считать что нету в интерфейсе и включать тоже не будем
-        /* AndClassSet valueClass = value.getValueClass(classGroup);
-        if(valueClass==null)
-            return property.isInInterface(classGroup);
-        else
-            return property.getValueClass(classGroup).intersect(valueClass); */
-    }
-
-    public abstract boolean classUpdated(GroupObjectImplement classGroup);
-
-    public abstract boolean objectUpdated(GroupObjectImplement classGroup);
-
-    public abstract boolean dataUpdated(Collection<Property> changedProps);
-
     public abstract Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) throws SQLException;
-
-    protected abstract void fillProperties(Set<Property> properties);
-
-    public Set<Property> getProperties() {
-        Set<Property> properties = new HashSet<Property>();
-        fillProperties(properties);
-        return properties;
-    }
 }

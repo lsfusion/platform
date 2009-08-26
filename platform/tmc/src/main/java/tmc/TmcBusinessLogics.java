@@ -115,15 +115,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", baseClass);
-        articleGroup = addConcreteClass("Группа товаров", baseClass);
+        article = addConcreteClass("Товар", namedObject);
+        articleGroup = addConcreteClass("Группа товаров", namedObject);
 
-        store = addConcreteClass("Склад", baseClass);
+        store = addConcreteClass("Склад", namedObject);
 
-        supplier = addConcreteClass("Поставщик", baseClass);
-        customer = addConcreteClass("Покупатель", baseClass);
+        supplier = addConcreteClass("Поставщик", namedObject);
+        customer = addConcreteClass("Покупатель", namedObject);
 
-        document = addAbstractClass("Документ", baseClass);
+        document = addAbstractClass("Документ", namedObject);
         primaryDocument = addAbstractClass("Первичный документ", document);
         secondaryDocument = addAbstractClass("Непервичный документ", document);
         quantityDocument = addAbstractClass("Товарный документ", document);
@@ -185,7 +185,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private void initPrimaryProperties() {
 
-        initObjectProperties();
         initArticleProperties();
         initCustomArticleLogics();
         initExtIncProperties();
@@ -193,17 +192,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         initReceiptProperties();
         initReturnProperties();
         initRevalProperties();
-    }
-
-    // ------------------------------------------------------------------------------------------------------- //
-    // ------------------------------------------- Общие свойства -------------------------------------------- //
-    // ------------------------------------------------------------------------------------------------------- //
-
-    LDP name;
-
-    private void initObjectProperties() {
-
-        name = addDProp(baseGroup, "name", "Имя", StringClass.get(50), baseClass);
     }
 
     // ------------------------------------------------------------------------------------------------------- //
@@ -1154,7 +1142,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         addDProp(baseGroup, "Тип", StringClass.get(10), articleBeer);
         addDProp(baseGroup, "Упак.", StringClass.get(10), articleBeer);
 
-        CustomClass wineTaste = addConcreteClass("Вкус вина", baseClass);
+        CustomClass wineTaste = addConcreteClass("Вкус вина", namedObject);
         CustomClass articleWine = addConcreteClass("Вино", articleAlcohol);
         addJProp(baseGroup, "Вкус", name, addDProp("Код вкуса", wineTaste, articleWine), 1);
 
@@ -1184,7 +1172,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         CustomClass articleClothes = addConcreteClass("Одежда", article);
         addDProp(baseGroup, "Модель", StringClass.get(10), articleClothes);
 
-        CustomClass shirtSize = addConcreteClass("Размер майки", baseClass);
+        CustomClass shirtSize = addConcreteClass("Размер майки", namedObject);
         CustomClass articleTShirt = addConcreteClass("Майки", articleClothes);
         addJProp(baseGroup, "Размер", name, addDProp("Код размера", shirtSize, articleTShirt), 1);
 
@@ -1960,7 +1948,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         classQuantity.put(revalDocument,((Double)(modifier *0.5)).intValue());
 
         Map<DataProperty, Set<DataPropertyInterface>> propNotNulls = new HashMap<DataProperty, Set<DataPropertyInterface>>();
-        name.putNotNulls(propNotNulls,0);
         artGroup.putNotNulls(propNotNulls,0);
         extIncDate.putNotNulls(propNotNulls,0);
         intraDate.putNotNulls(propNotNulls,0);

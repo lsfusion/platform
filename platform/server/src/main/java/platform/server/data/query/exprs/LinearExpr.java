@@ -9,6 +9,7 @@ import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 import platform.server.caches.ParamLazy;
+import platform.base.BaseUtils;
 
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class LinearExpr extends StaticClassExpr {
         map = iMap;
         // повырезаем все смежные getWhere с нулевыми коэффицентами
         assert (map.size()>0);
-        assert !(map.size()==1 && map.values().iterator().next().equals(1));
+        assert !(map.size()==1 && BaseUtils.singleValue(map).equals(1));
     }
 
     public Type getType(Where where) {
@@ -56,7 +57,7 @@ public class LinearExpr extends StaticClassExpr {
 
     public boolean equals(Object obj) {
         if(map.size()==1) {
-            Map.Entry<AndExpr, Integer> singleEntry = map.entrySet().iterator().next();
+            Map.Entry<AndExpr, Integer> singleEntry = BaseUtils.singleEntry(map);
             if(singleEntry.getValue().equals(1)) return singleEntry.getKey().equals(obj);
         }
         return this==obj || obj instanceof LinearExpr && map.equals(((LinearExpr)obj).map);

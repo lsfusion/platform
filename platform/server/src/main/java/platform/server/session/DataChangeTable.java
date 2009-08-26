@@ -41,7 +41,7 @@ public class DataChangeTable extends ChangePropertyTable<DataPropertyInterface,D
         if(property.value instanceof CustomClass && removeClasses.contains((CustomClass)property.value)) {
             JoinQuery<KeyField,PropertyField> dropValues = new JoinQuery<KeyField, PropertyField>(this);
             Join dataJoin = joinAnd(dropValues.mapKeys);
-            dropValues.and(dataJoin.getExpr(value).compare(new ValueExpr(object), Compare.EQUALS));
+            dropValues.and(dataJoin.getExpr(value).compare(object, Compare.EQUALS));
             dropValues.properties.put(value,CaseExpr.NULL);
             session.updateRecords(new ModifyQuery(this,dropValues));
         }

@@ -8,6 +8,8 @@ import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.session.TableChanges;
 import platform.server.logics.properties.Property;
+import platform.server.where.Where;
+import platform.interop.Compare;
 
 import java.util.Set;
 import java.util.Map;
@@ -22,9 +24,11 @@ public abstract class ObjectValue implements CompareValue {
 
     public abstract SourceExpr getExpr();
 
+    public abstract Object getValue();
+
     public static ObjectValue getValue(Object value, ConcreteClass objectClass) {
         if(value==null)
-            return new NullValue();
+            return NullValue.instance;
         else
             return new DataObject(value, objectClass);
     }
@@ -36,5 +40,9 @@ public abstract class ObjectValue implements CompareValue {
     public boolean classUpdated(GroupObjectImplement classGroup) {return false;}
     public boolean objectUpdated(GroupObjectImplement classGroup) {return false;}
     public boolean dataUpdated(Collection<Property> changedProps) {return false;}
-    public void fillProperties(Collection<Property> properties) {}
+    public void fillProperties(Set<Property> properties) {}
+    public boolean isInInterface(GroupObjectImplement classGroup) {return true;}
+
+    public abstract Where order(SourceExpr expr, boolean desc, Where orderWhere);
+
 }

@@ -27,6 +27,8 @@ import java.io.ObjectOutputStream;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -161,13 +163,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                         }
                     });
 
-            for (GroupObjectImplement groupObject : remoteForm.groups)
-                for (ObjectImplement object : groupObject)
+            for (GroupObjectImplement groupObject : remoteForm.groups) {
+                Map<OrderView,Object> userSeeks = new HashMap<OrderView, Object>();
+                for (ObjectImplement object : groupObject.objects)
                     if(object instanceof CustomObjectImplement) {
                         int objectID = classCache.getObject(((CustomObjectImplement)object).baseClass);
                         if (objectID != -1)
-                            remoteForm.userObjectSeeks.put(object, objectID);
+                            userSeeks.put(object, objectID);
                     }
+                if(!userSeeks.isEmpty())
+                    remoteForm.userGroupSeeks.put(groupObject,userSeeks);
+            }
 
             return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort);
 

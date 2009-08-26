@@ -67,24 +67,25 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     }
 
     AbstractCustomClass document, quantityDocument, incomeDocument, outcomeDocument, extOutcomeDocument,
-                        saleDocument, articleDocument;
+                        saleDocument, articleDocument, priceOutDocument;
 
     ConcreteCustomClass article, articleGroup, store, customer, supplier, extIncomeDocument, extIncomeDetail, intraDocument, exchangeDocument,
                         cashSaleDocument, clearingSaleDocument, invDocument, returnDocument, revalDocument;
     
     protected void initClasses() {
 
-        article = addConcreteClass("Товар", baseClass);
-        articleGroup = addConcreteClass("Группа товаров", baseClass);
+        article = addConcreteClass("Товар", namedObject);
+        articleGroup = addConcreteClass("Группа товаров", namedObject);
 
-        store = addConcreteClass("Склад", baseClass);
+        store = addConcreteClass("Склад", namedObject);
 
-        supplier = addConcreteClass("Поставщик", baseClass);
-        customer = addConcreteClass("Покупатель", baseClass);
+        supplier = addConcreteClass("Поставщик", namedObject);
+        customer = addConcreteClass("Покупатель", namedObject);
 
-        document = addAbstractClass("Документ", baseClass);
+        document = addAbstractClass("Документ", namedObject, transaction);
+        priceOutDocument = addAbstractClass("Документ изм. цены", document);
         quantityDocument = addAbstractClass("Документ перемещения", document);
-        incomeDocument = addAbstractClass("Приходный документ", quantityDocument);
+        incomeDocument = addAbstractClass("Приходный документ", quantityDocument, priceOutDocument);
         outcomeDocument = addAbstractClass("Расходный документ", quantityDocument);
         articleDocument = addAbstractClass("Перемещение товара", quantityDocument);
 
@@ -103,10 +104,10 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         returnDocument = addConcreteClass("Возврат поставщику", extOutcomeDocument, articleDocument);
 
-        revalDocument = addConcreteClass("Переоценка", document);
+        revalDocument = addConcreteClass("Переоценка", priceOutDocument);
     }
 
-    LDP name, docDate, artGroup, incStore, outStore, extIncSupplier, extIncDetailPriceIn, extIncDetailVATIn, invDBBalance,
+    LDP artGroup, incStore, outStore, extIncSupplier, extIncDetailPriceIn, extIncDetailVATIn, invDBBalance,
             returnSupplier, clearingSaleCustomer, articleQuantity, extIncDetailDocument, extIncDetailQuantity, extIncDetailArticle;
 
     LP quantity, roundm1, addPercent, docIncBalanceQuantity, docOutBalanceQuantity,
@@ -146,9 +147,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         roundm1 = addSFProp("round(CAST(prm1 as numeric),-1)", DoubleClass.instance, 1);
         LP multiplyDouble2 = addMFProp(DoubleClass.instance,2);
 
-        // общие св-ва объектов
-        name = addDProp(baseGroup, "name", "Имя", StringClass.get(50), baseClass);
-
         // свойства товара
         artGroup = addDProp("artGroup", "Гр. тов.", articleGroup, article);
         LP artGroupName = addJProp(baseGroup, "Имя гр. тов.", name, artGroup, 1);
@@ -176,13 +174,11 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         returnSupplier = addDProp("returnSupplier","Поставщик", supplier, returnDocument);
         LP returnSupplierName = addJProp(baseGroup, "Имя поставщика", name, returnSupplier, 1);
 
-        docDate = addDProp(baseGroup, "docDate", "Дата", DateClass.instance, document);
-
         // сравнение дат
-        LP groeqDocDate = addJProp("Дата док.>=Дата", groeq2, docDate, 1, object(DateClass.instance), 2);
-        LP greaterDocDate = addJProp("Дата док.>Дата", greater2, docDate, 1, object(DateClass.instance), 2);
-        LP betweenDocDate = addJProp("Дата док. между Дата", between, docDate, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-        LP equalDocDate = addJProp("Дата док.=Дата", equals2, docDate, 1, object(DateClass.instance), 2);
+        LP groeqDocDate = addJProp("Дата док.>=Дата", groeq2, date, 1, object(DateClass.instance), 2);
+        LP greaterDocDate = addJProp("Дата док.>Дата", greater2, date, 1, object(DateClass.instance), 2);
+        LP betweenDocDate = addJProp("Дата док. между Дата", between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        LP equalDocDate = addJProp("Дата док.=Дата", equals2, date, 1, object(DateClass.instance), 2);
 
         incStore = addDProp("incStore", "Склад (прих.)", store, incomeDocument);
         LP incStoreName = addJProp(baseGroup, "Имя склада (прих.)", name, incStore, 1);
@@ -219,7 +215,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         docOutBalanceQuantity = addJProp(baseGroup, "Остаток (расх.)", balanceStoreQuantity, outStore, 1, 2);
         docIncBalanceQuantity = addJProp(baseGroup, "Остаток (прих.)", balanceStoreQuantity, incStore, 1, 2);
 
-//        invDBBalance.setDefProp(balanceStoreQuantity, outStore, 1, 2);
+        invDBBalance.setDefProp(balanceStoreQuantity, outStore, 1, 2);
 
         // для отчетов св-ва за период
         LP dltStoreArticleGroeqDateQuantity = initDateBalance(groeqDocDate, "с даты");
@@ -236,15 +232,28 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleArticleBetweenDateQuantity = addSGProp(baseGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, 2, 3, 4);
 
         // переоценка
-        LP revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
-        LP revalVatOut = addDProp(baseGroup, "revalVatOut", "НДС розн.", DoubleClass.instance, revalDocument, article);
         isRevalued = addDProp(baseGroup, "isRevalued", "Переоц.", LogicalClass.instance, revalDocument, article);
+        
+        LDP revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
+        LDP revalVatOut = addDProp(baseGroup, "revalVatOut", "НДС розн.", DoubleClass.instance, revalDocument, article);
 
         // посл. (текущие) документы
 
+        LP[] maxRevalProps = addMGProp(lastDocumentGroup, new String[]{"maxRevalDate","maxRevalDoc"}, new String[]{"Дата посл. переоц.","Посл. док. переоц."}, 1,
+                addJProp("Дата посл. переоц.", and1, date, 1, isRevalued, 1, 2), 1, 2);
+        currentRevalDate = maxRevalProps[0];
+        currentRevalDoc = maxRevalProps[1];
+
+        // текущие надбавки
+        LP currentAdd = addJProp(currentGroup, "Надбавка (тек.)", revalAdd, currentRevalDoc, 1, 1);
+        LP currentVatOut = addJProp(currentGroup, "НДС (тек.)", revalVatOut, currentRevalDoc, 1, 1);
+
+        revalAdd.setDefProp(currentAdd, 2, isRevalued, 1, 2);
+        revalVatOut.setDefProp(currentVatOut, 2, isRevalued, 1, 2);
+
         // посл. документ прихода от вн. пост.
         LP[] maxExtIncProps = addMGProp(lastDocumentGroup, new String[]{"maxExtIncDate","maxExtIncDoc"}, new String[]{"Дата посл. вн. прих.","Посл. вн. прих."}, 1,
-                addJProp("Дата прих. (кол-во)", and1, docDate, 1, extIncQuantity, 1, 2), 1, 2);
+                addJProp("Дата прих. (кол-во)", and1, date, 1, extIncQuantity, 1, 2), 1, 2);
         currentExtIncDate = maxExtIncProps[0];
         currentExtIncDoc = maxExtIncProps[1];
 
@@ -252,14 +261,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // посл. документ прихода на склад
         LP[] maxIncProps = addMGProp(lastDocumentGroup, new String[]{"maxStoreIncDate","maxStoreIncDoc"}, new String[]{"Дата посл. прих. по скл.","Посл. прих. по скл."}, 1,
-                addJProp("Дата прих. (кол-во)", and1, docDate, 1, quantity, 1, 2), 1, incStore, 1, 2);
+                addJProp("Дата прих. (кол-во)", and1, date, 1, quantity, 1, 2), 1, incStore, 1, 2);
         currentIncDate = maxIncProps[0];
         currentIncDoc = maxIncProps[1];
-
-        LP[] maxRevalProps = addMGProp(lastDocumentGroup, new String[]{"maxRevalDate","maxRevalDoc"}, new String[]{"Дата посл. переоц.","Посл. док. переоц."}, 1,
-                addJProp("Дата посл. переоц.", and1, docDate, 1, isRevalued, 1, 2), 1, 2);
-        currentRevalDate = maxRevalProps[0];
-        currentRevalDoc = maxRevalProps[1];
 
         LP[] maxPriceOutProps = addMUProp(lastDocumentGroup, new String[]{"maxRetailDate","maxRetailDoc"}, new String[]{"Дата посл. цены по скл.","Посл. док. цены по скл."}, 1,
                 currentIncDate, addJProp("",and1, currentRevalDate,2,is(store),1), currentIncDoc, addJProp("",and1, currentRevalDoc,2,is(store),1)); // переоценка идет для всех складов
@@ -282,19 +286,15 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         addJProp(baseGroup, "Цена пост.(док.)", currentPriceIn, outStore, 1, 2);
 
-//        outPriceIn.setDefProp(currentPriceIn, outStore, 1, 2, quantity, 1, 2); // подставляем тек. цену со склада расх
+        outPriceIn.setDefProp(currentPriceIn, outStore, 1, 2, quantity, 1, 2); // подставляем тек. цену со склада расх
 
-        // текущие надбавки
-        LP currentAdd = addJProp(currentGroup, "Надбавка (тек.)", revalAdd, currentRevalDoc, 1, 1);
-        LP currentVatOut = addJProp(currentGroup, "НДС (тек.)", revalVatOut, currentRevalDoc, 1, 1);
-
-        // НДС по док. 
+        // НДС по док.
         LDP documentVatOut = addDProp(baseGroup, "documentVatOut", "НДС (док.)", DoubleClass.instance, quantityDocument, article);
-//        documentVatOut.setDefProp(currentVatOut, 2, quantity, 1, 2);
+        documentVatOut.setDefProp(currentVatOut, 2, quantity, 1, 2);
 
         // Надбавака по док.
         LDP documentAdd = addDProp(baseGroup, "documentAdd", "Надбавка (док.)", DoubleClass.instance, quantityDocument, article);
-//        documentAdd.setDefProp(currentAdd, 2, quantity, 1, 2);
+        documentAdd.setDefProp(currentAdd, 2, quantity, 1, 2);
 
         // цена для вн. прих.
         LP extIncPriceOut = calcPriceOut(baseGroup, "Цена розн. (вн. прих.)", extIncPriceIn, documentAdd, documentVatOut, new Object[]{1,2}, new Object[]{1,2});
@@ -307,7 +307,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // цена прих. переоценки
         LDP revalPriceIn = addDProp(baseGroup, "revalPriceOut", "Цена прих. (переоц.)", DoubleClass.instance, revalDocument, store, article);
-//        revalPriceIn.setDefProp(currentPriceIn, 2, 3, isRevalued, 1, 3);
+        revalPriceIn.setDefProp(currentPriceIn, 2, 3, isRevalued, 1, 3);
 
         // цена розн. переоценки
         LP revalPriceOut = calcPriceOut(baseGroup,"Цена розн. (переоц.)",revalPriceIn, revalAdd, revalVatOut, new Object[]{1,2,3}, new Object[]{1,3});
@@ -322,7 +322,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP currentPriceOut = addJProp(currentGroup, "Цена розн. (тек.)", priceOutChange, currentPriceOutDoc, 1, 2, 1, 2);
 
         // заполним defProp'ы для цены розн.
-//        outPriceOut.setDefProp(currentPriceOut, outStore, 1, 2, quantity, 1, 2);
+        outPriceOut.setDefProp(currentPriceOut, outStore, 1, 2, quantity, 1, 2);
 
         // прих. суммы по позициям
         LP extIncDetailSumIn = addJProp(baseGroup, "Сумма пост.", round,
@@ -370,10 +370,10 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     protected void initTables() {
 
         tableFactory.include("article",article);
-        tableFactory.include("document",document);
+        tableFactory.include("document", document);
         tableFactory.include("store",store);
         tableFactory.include("articlegroup",articleGroup);
-        tableFactory.include("articledocument",article,document);
+        tableFactory.include("articledocument",article, document);
         tableFactory.include("articlestore",article,store);
     }
 
@@ -763,11 +763,11 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticlePrimDocNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objPrimDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
+            ObjectNavigator objPrimDoc = addSingleGroupObjectImplement(priceOutDocument, "Документ", properties, baseGroup);
 
             addPropertyView(objPrimDoc, objArt, properties, baseGroup);
 
-            addPropertyView(objPrimDoc, objArt, objStore, properties, priceOutChange);
+            addPropertyView(objPrimDoc, objStore, objArt, properties, priceOutChange);
 
             addPropertyView(objArt, properties, lastDocumentGroup, currentGroup);
 
@@ -776,7 +776,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addFixedFilter(new NotNullFilterNavigator(getPropertyView(priceOutChange.property).view));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyView(docDate.property), false);
+            formView.defaultOrders.put(getPropertyView(date.property), false);
+            formView.defaultOrders.put(objPrimDoc, false);
             richDesign = formView;
         }
     }
@@ -786,7 +787,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticleDocNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", properties, baseGroup, docDate, incStore, outStore);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", properties, baseGroup, date, incStore, outStore);
 
             addPropertyView(objDoc, objArt, properties, baseGroup);
 //            addPropertyView(properties, baseGroup, true, objDoc);
@@ -797,7 +798,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                 new CompareFilterNavigator(getPropertyView(outStore.property).view,Compare.EQUALS,objStore)));
 
             DefaultFormView formView = new DefaultFormView(this);
-            formView.defaultOrders.put(getPropertyView(docDate.property), false);
+            formView.defaultOrders.put(getPropertyView(date.property), false);
             richDesign = formView;
         }
     }
@@ -967,9 +968,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         classQuantity.put(revalDocument,((Double)(modifier *0.5)).intValue());
 
         Map<DataProperty, Set<DataPropertyInterface>> propNotNulls = new HashMap<DataProperty, Set<DataPropertyInterface>>();
-        name.putNotNulls(propNotNulls,0);
         artGroup.putNotNulls(propNotNulls,0);
-        docDate.putNotNulls(propNotNulls,0);
         incStore.putNotNulls(propNotNulls,0);
         outStore.putNotNulls(propNotNulls,0);
         extIncSupplier.putNotNulls(propNotNulls,0);

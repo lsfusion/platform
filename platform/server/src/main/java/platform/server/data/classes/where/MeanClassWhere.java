@@ -14,8 +14,9 @@ public class MeanClassWhere extends DataWhere {
 
     public MeanClassWhere(ClassExprWhere iPackWhere) {
         packWhere = iPackWhere;
-//
-//        assert !packWhere.isFalse();
+
+        assert !packWhere.isFalse();
+        assert !packWhere.isTrue();
     }
 
     protected DataWhereSet getExprFollows() {

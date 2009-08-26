@@ -16,6 +16,8 @@ import platform.client.layout.ReportDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.Compare;
 import platform.interop.CompressingInputStream;
+import platform.interop.Scroll;
+import platform.interop.Order;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.SimplexLayout;
 
@@ -336,10 +338,10 @@ public class ClientForm extends JPanel {
 
     private void initializeOrders() throws IOException {
         // Применяем порядки по умолчанию
-        for (Map.Entry<ClientPropertyView, Boolean> entry : formView.defaultOrders.entrySet()) {
-            models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteFormInterface.ORDER_ADD);
+        for (Map.Entry<ClientCellView, Boolean> entry : formView.defaultOrders.entrySet()) {
+            models.get(entry.getKey().getGroupObject()).grid.changeGridOrder(entry.getKey(), Order.ADD);
             if (!entry.getValue()) {
-                models.get(entry.getKey().groupObject).grid.changeGridOrder(entry.getKey(), RemoteFormInterface.ORDER_DIR);
+                models.get(entry.getKey().getGroupObject()).grid.changeGridOrder(entry.getKey(), Order.DIR);
             }
         }
     }
@@ -378,13 +380,11 @@ public class ClientForm extends JPanel {
             models.get(groupObject).grid.setGridObjects(formChanges.gridObjects.get(groupObject));
         }
 
-        for (ClientGroupObjectImplementView groupObject : formChanges.objects.keySet()) {
-            models.get(groupObject).setCurrentGroupObject(formChanges.objects.get(groupObject),false);
-        }
+        for (Map.Entry<ClientGroupObjectImplementView,ClientGroupObjectValue> groupObject : formChanges.objects.entrySet())
+            models.get(groupObject.getKey()).setCurrentGroupObject(groupObject.getValue(),false);
 
-        for (ClientGroupObjectImplementView groupObject : formChanges.classViews.keySet()) {
+        for (ClientGroupObjectImplementView groupObject : formChanges.classViews.keySet())
             models.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
-        }
 
         // Затем их свойства
 
@@ -417,9 +417,9 @@ public class ClientForm extends JPanel {
 
     }
 
-    void changeGroupObject(ClientGroupObjectImplementView groupObject, int changeType) throws IOException {
+    void changeGroupObject(ClientGroupObjectImplementView groupObject, Scroll changeType) throws IOException {
 
-        remoteForm.changeGroupObject(groupObject.ID, changeType);
+        remoteForm.changeGroupObject(groupObject.ID, changeType.serialize());
 
         applyFormChanges();
 
@@ -483,9 +483,12 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    void changeOrder(ClientPropertyView property, int modiType) throws IOException {
+    void changeOrder(ClientCellView property, Order modiType) throws IOException {
 
-        remoteForm.changeOrder(property.ID, modiType);
+        if(property instanceof ClientPropertyView)
+            remoteForm.changePropertyOrder(((ClientPropertyView)property).ID, modiType.serialize());
+        else
+            remoteForm.changeObjectOrder(((ClientObjectView)property).getID(), modiType.serialize());
 
         applyFormChanges();
     }
@@ -791,7 +794,7 @@ public class ClientForm extends JPanel {
                                                            int row, 
                                                            int column) {
                 
-                ClientCellView property = ((ClientCellViewTable)table).getCellView(row, column);
+                ClientCellView property = ((ClientCellViewTable)table).getCellView(column);
                 PropertyRendererComponent currentComp = property.getRendererComponent();
                 currentComp.setValue(value, isSelected, hasFocus);
 
@@ -869,7 +872,7 @@ public class ClientForm extends JPanel {
                 
                 ClientCellViewTable cellTable = (ClientCellViewTable)table;
 
-                ClientCellView property = cellTable.getCellView(row, column);
+                ClientCellView property = cellTable.getCellView(column);
 
                 try {
                     currentComp = property.getEditorComponent(ClientForm.this, ivalue, cellTable.isDataChanging(), externalID);
@@ -1035,7 +1038,7 @@ public class ClientForm extends JPanel {
                         return CellModel.this.isDataChanging();
                     }
 
-                    public ClientCellView getCellView(int row, int col) {
+                    public ClientCellView getCellView(int col) {
                         return key;
                     }
 
@@ -1301,41 +1304,36 @@ public class ClientForm extends JPanel {
                 
             }
 
-            final List<ClientPropertyView> orders = new ArrayList();
-            final List<Boolean> orderDirections = new ArrayList();
+            final List<ClientCellView> orders = new ArrayList<ClientCellView>();
+            final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
-            void changeGridOrder(ClientPropertyView property, int modiType) throws IOException {
+            void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
 
                 changeOrder(property, modiType);
 
-                if (modiType == RemoteFormInterface.ORDER_REPLACE) {
+                int ordNum;
+                switch(modiType) {
+                    case REPLACE:
+                        orders.clear();
+                        orderDirections.clear();
 
-                    orders.clear();
-                    orderDirections.clear();
-
-                    orders.add(property);
-                    orderDirections.add(true);
+                        orders.add(property);
+                        orderDirections.add(true);
+                        break;
+                    case ADD:
+                        orders.add(property);
+                        orderDirections.add(true);
+                        break;
+                    case DIR:
+                        ordNum = orders.indexOf(property);
+                        orderDirections.set(ordNum, !orderDirections.get(ordNum));
+                        break;
+                    case REMOVE:
+                        ordNum = orders.indexOf(property);
+                        orders.remove(ordNum);
+                        orderDirections.remove(ordNum);
+                        break;
                 }
-
-                if (modiType == RemoteFormInterface.ORDER_ADD) {
-
-                    orders.add(property);
-                    orderDirections.add(true);
-                }
-
-                if (modiType == RemoteFormInterface.ORDER_DIR) {
-
-                    int ordNum = orders.indexOf(property);
-                    orderDirections.set(ordNum, !orderDirections.get(ordNum));
-                }
-
-                if (modiType == RemoteFormInterface.ORDER_REMOVE) {
-
-                    int ordNum = orders.indexOf(property);
-                    orders.remove(ordNum);
-                    orderDirections.remove(ordNum);
-                }
-
             }
 
             public class Table extends ClientFormTable
@@ -1404,12 +1402,12 @@ public class ClientForm extends JPanel {
                     try {
                         // Отдельно обработаем CTRL + HOME и CTRL + END
                         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, InputEvent.CTRL_DOWN_MASK))) {
-                            changeGroupObject(groupObject, RemoteFormInterface.CHANGEGROUPOBJECT_FIRSTROW);
+                            changeGroupObject(groupObject, Scroll.HOME);
                             return true;
                         }
 
                         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_END, InputEvent.CTRL_DOWN_MASK))) {
-                            changeGroupObject(groupObject, RemoteFormInterface.CHANGEGROUPOBJECT_LASTROW);
+                            changeGroupObject(groupObject, Scroll.END);
                             return true;
                         }
                     } catch (IOException e) {
@@ -1434,10 +1432,13 @@ public class ClientForm extends JPanel {
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
+                            final ClientGroupObjectValue changeObject = model.getSelectedObject();
+                            assert changeObject!=null;
                             SwingUtils.invokeLaterSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), new ActionListener() {
                                 public void actionPerformed(ActionEvent ae) {
                                     try {
-                                        changeGroupObject(groupObject, model.getSelectedObject());
+                                        if(changeObject.equals(model.getSelectedObject()))
+                                            changeGroupObject(groupObject, model.getSelectedObject());
                                     } catch (IOException e) {
                                         throw new RuntimeException("Ошибка при изменении текущего объекта", e);
                                     }
@@ -1711,17 +1712,17 @@ public class ClientForm extends JPanel {
 
 //                            add(Box.createHorizontalStrut(4));
 
-                            Pair<String,Integer>[] comparisons = new Pair[] {new Pair("=", Compare.EQUALS), new Pair(">", Compare.GREATER), new Pair("<", Compare.LESS),
+                            Pair<String,Compare>[] comparisons = new Pair[] {new Pair("=", Compare.EQUALS), new Pair(">", Compare.GREATER), new Pair("<", Compare.LESS),
                                                                              new Pair(">=", Compare.GREATER_EQUALS), new Pair("<=", Compare.LESS_EQUALS), new Pair("<>", Compare.NOT_EQUALS)};
                             compareView = new QueryConditionComboBox(comparisons);
                             add(compareView);
 
-                            filter.compare = ((Pair<String,Integer>)compareView.getSelectedItem()).second; 
+                            filter.compare = ((Pair<String,Compare>) compareView.getSelectedItem()).second;
 
                             compareView.addItemListener(new ItemListener() {
 
                                 public void itemStateChanged(ItemEvent e) {
-                                    filter.compare = ((Pair<String,Integer>)e.getItem()).second;
+                                    filter.compare = ((Pair<String,Compare>)e.getItem()).second;
 
                                     hasChanged = true;
                                     queryView.dataChanged();
@@ -1729,7 +1730,7 @@ public class ClientForm extends JPanel {
                             });
 //                            add(Box.createHorizontalStrut(4));
 
-                            valueViews = new HashMap();
+                            valueViews = new HashMap<ClientValueLink, ClientValueLinkView>();
                             
                             ClientUserValueLink userValue = new ClientUserValueLink();
 //                            userValue.value = table.getSelectedValue();
@@ -2169,7 +2170,7 @@ public class ClientForm extends JPanel {
                             label.setHorizontalAlignment(JLabel.CENTER);
                             label.setVerticalAlignment(JLabel.TOP);
 
-                            ClientPropertyView property = table.getPropertyView(row, column);
+                            ClientCellView property = table.getCellView(column);
                             if (property != null) {
 
                                 int ordNum = orders.indexOf(property);
@@ -2198,21 +2199,21 @@ public class ClientForm extends JPanel {
 
                         if (column != -1) {
 
-                            ClientPropertyView property = table.getPropertyView(0, column);
+                            ClientCellView property = table.getCellView(column);
                             if (property != null) {
 
                                 try {
                                     int ordNum = orders.indexOf(property);
                                     if (ordNum == -1) {
                                         if (me.getButton() == MouseEvent.BUTTON1)
-                                            changeGridOrder(property, RemoteFormInterface.ORDER_REPLACE);
+                                            changeGridOrder(property, Order.REPLACE);
                                          else
-                                            changeGridOrder(property, RemoteFormInterface.ORDER_ADD);
+                                            changeGridOrder(property, Order.ADD);
                                     } else {
                                         if (me.getButton() == MouseEvent.BUTTON1) {
-                                            changeGridOrder(property, RemoteFormInterface.ORDER_DIR);
+                                            changeGridOrder(property, Order.DIR);
                                         } else {
-                                            changeGridOrder(property, RemoteFormInterface.ORDER_REMOVE);
+                                            changeGridOrder(property, Order.REMOVE);
                                         }
                                     }
                                 } catch (IOException e) {
@@ -2295,18 +2296,9 @@ public class ClientForm extends JPanel {
                     return true;
                 }
 
-                public ClientCellView getCellView(int row, int col) {
+                public ClientCellView getCellView(int col) {
                     return gridColumns.get(col);
                 }
-
-                public ClientPropertyView getPropertyView(int row, int col) {
-                    ClientCellView cell = getCellView(row, col);
-                    if (cell instanceof ClientPropertyView)
-                        return (ClientPropertyView) cell;
-                    else
-                        return null;
-                }
-
             }
             
         }

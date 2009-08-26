@@ -20,6 +20,6 @@ public class GroupObjectNavigator extends ArrayList<ObjectNavigator> {
 
     public boolean gridClassView = true;
     public boolean singleViewType = false;
-    public int pageSize = 50;
+    public int pageSize = 10;
     
 }

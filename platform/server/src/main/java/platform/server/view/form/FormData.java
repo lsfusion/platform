@@ -34,7 +34,7 @@ public class FormData {
         Set<PropertyView> properties = firstRow.values.keySet();
         outStream.writeInt(properties.size());
         for(PropertyView propertyView : properties) {
-            outStream.writeUTF(propertyView.getSID());
+            outStream.writeUTF(propertyView.sID);
             outStream.writeInt(propertyView.ID);
         }
 
