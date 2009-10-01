@@ -42,13 +42,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K,E,V> LinkedHashMap<V,E> linkedJoin(LinkedHashMap<K,E> map, Map<K,V> joinMap) {
-        LinkedHashMap<V,E> result = new LinkedHashMap<V, E>();
-        for(Map.Entry<K,E> entry : map.entrySet())
-            result.put(joinMap.get(entry.getKey()),entry.getValue());
-        return result;
-    }
-
     public static <K,E,V> Map<K,V> innerJoin(Map<K,E> map, Map<E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,E> entry : map.entrySet()) {
@@ -311,6 +304,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B,K1 extends B,K2 extends B> List<B> mergeList(List<K1> list1,List<K2> list2) {
+        List<B> result = new ArrayList<B>(list1);
+        result.addAll(list2);
+        return result;
+    }
+
     public static <V,MV,EV> Map<Object,EV> mergeMaps(Map<V, EV> map, Map<MV, EV> toMerge,Map<MV, Object> mergedMap) {
         Map<Object,EV> merged = new HashMap<Object,EV>(map);
         Map<EV,Object> reversed = BaseUtils.reverse(merged);
@@ -340,7 +339,7 @@ public class BaseUtils {
         for(T element : array1) {
             boolean found = false;
             for(int i=0;i<check2.length;i++)
-                if(check2[i]!=null && element.hashCode()==check2[i].hashCode() && element.equals(check2[i])) {
+                if(check2[i]!=null && BaseUtils.hashEquals(element,check2[i])) {
                     check2[i] = null;
                     found = true;
                     break;
@@ -480,7 +479,7 @@ public class BaseUtils {
             EK mapKey = null;
             for(Map.Entry<EK,T> equalKey : equals.entrySet())
                 if(!mapKeys.containsValue(equalKey.getKey()) &&
-                    key.getValue().equals(equalKey.getValue())) {
+                    BaseUtils.hashEquals(key.getValue(),equalKey.getValue())) {
                     mapKey = equalKey.getKey();
                     break;
                 }
@@ -541,10 +540,6 @@ public class BaseUtils {
         return col.iterator().next();
     }
 
-    public static <I> I singleKey(Map<I,?> map) {
-        return BaseUtils.single(map.keySet());
-    }
-
     public static <I> I singleValue(Map<?,I> map) {
         return BaseUtils.single(map.values());
     }
@@ -565,50 +560,5 @@ public class BaseUtils {
         List<K> result = new ArrayList<K>();
         reverse(col.iterator(),result);
         return result;
-    }
-
-    private static <K,V> void reverse(Iterator<Map.Entry<K,V>> i, LinkedHashMap<K,V> result) {
-        if(i.hasNext()) {
-            Map.Entry<K,V> entry = i.next();
-            reverse(i,result);
-            result.put(entry.getKey(),entry.getValue());
-        }
-    }
-
-    public static <K,V> LinkedHashMap<K,V> reverse(LinkedHashMap<K,V> linkedMap) {
-        LinkedHashMap<K,V> result = new LinkedHashMap<K,V>();
-        reverse(linkedMap.entrySet().iterator(),result);
-        return result;
-    }
-
-    public static <K,V> LinkedHashMap<K,V> moveStart(LinkedHashMap<K,V> map, Collection<K> col) {
-        LinkedHashMap<K,V> result = new LinkedHashMap<K,V>();
-        for(Map.Entry<K,V> entry : map.entrySet())
-            if(col.contains(entry.getKey()))
-                result.put(entry.getKey(),entry.getValue());
-        for(Map.Entry<K,V> entry : map.entrySet())
-            if(!col.contains(entry.getKey()))
-                result.put(entry.getKey(),entry.getValue());
-        return result;
-    }
-
-    public static <K,V> boolean equalsLinked(LinkedHashMap<K,V> map1,LinkedHashMap<K,V> map2) {
-        if(map1.size()!=map2.size())
-            return false;
-
-        Iterator<Map.Entry<K,V>> i1 = map1.entrySet().iterator();
-        Iterator<Map.Entry<K,V>> i2 = map2.entrySet().iterator();
-        while(i1.hasNext()) {
-            Map.Entry<K, V> entry1 = i1.next();
-            Map.Entry<K, V> entry2 = i2.next();
-            if(!(entry1.getKey().equals(entry2.getKey()) && entry1.getValue().equals(entry2.getValue())))
-                return false;
-        }
-
-        return true;
-    }
-
-    public static <K,V> boolean starts(LinkedHashMap<K,V> map, Collection<K> col) {
-        return equalsLinked(map,moveStart(map,col)); 
     }
 }

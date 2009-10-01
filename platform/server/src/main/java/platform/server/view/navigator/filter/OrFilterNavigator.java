@@ -1,7 +1,7 @@
 package platform.server.view.navigator.filter;
 
-import platform.server.view.form.filter.OrFilter;
 import platform.server.view.form.filter.Filter;
+import platform.server.view.form.filter.OrFilter;
 import platform.server.view.navigator.ObjectNavigator;
 
 import java.sql.SQLException;

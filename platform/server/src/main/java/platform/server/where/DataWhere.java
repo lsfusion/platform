@@ -1,13 +1,7 @@
 package platform.server.where;
 
 import platform.server.data.classes.where.MeanClassWheres;
-import platform.server.data.query.QueryData;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.GroupJoin;
-import platform.server.data.query.exprs.GroupExpr;
-import platform.server.data.sql.SQLSyntax;
-
-import java.util.Map;
 
 
 abstract public class DataWhere extends ObjectWhere<NotWhere> {
@@ -59,5 +53,12 @@ abstract public class DataWhere extends ObjectWhere<NotWhere> {
 
     public MeanClassWheres calculateMeanClassWheres() {
         return new MeanClassWheres(getClassWhere(),this);
+    }
+
+    public static Where create(DataWhere where) {
+        if(where.getClassWhere().isFalse())
+            return Where.FALSE;
+        else
+            return where;
     }
 }

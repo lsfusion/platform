@@ -1,8 +1,5 @@
 package platform.server.view.form;
 
-import platform.server.data.types.Type;
-import platform.server.view.form.filter.CompareValue;
-
 public abstract class CellView {
 
     // идентификатор (в рамках формы)

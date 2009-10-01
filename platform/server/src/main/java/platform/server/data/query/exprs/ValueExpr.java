@@ -3,12 +3,11 @@ package platform.server.data.query.exprs;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
-import platform.server.logics.DataObject;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
@@ -56,12 +55,12 @@ public class ValueExpr extends StaticClassExpr {
     }
 
     // возвращает Where без следствий
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return Where.TRUE;
     }
 
-    public boolean equals(Object o) {
-        return this==o || o instanceof ValueExpr && object.equals(((ValueExpr)o).object) && objectClass.equals(((ValueExpr)o).objectClass);
+    public boolean twins(AbstractSourceJoin o) {
+        return object.equals(((ValueExpr)o).object) && objectClass.equals(((ValueExpr)o).objectClass);
     }
 
     @Override

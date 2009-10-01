@@ -1,5 +1,6 @@
 package platform.server.data.query.exprs.cases;
 
+import platform.base.BaseUtils;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.where.Where;
 
@@ -16,7 +17,7 @@ public class MapCaseList<K> extends AddCaseList<Map<K, AndExpr>,MapCase<K>> {
         where = where.followFalse(upWhere);
         if(!where.isFalse()) {
             MapCase<K> lastCase = size()>0?get(size()-1):null;
-            if(lastCase!=null && lastCase.data.equals(map)) // заOr'им
+            if(lastCase!=null && BaseUtils.hashEquals(lastCase.data,map)) // заOr'им
                 lastCase.where = lastCase.where.or(where);
             else
                 add(new MapCase<K>(where, map));

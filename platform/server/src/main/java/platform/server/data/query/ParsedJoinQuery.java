@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.Lazy;
 import platform.server.caches.SynchronizedLazy;
 import platform.server.data.classes.where.ClassWhere;
@@ -18,7 +19,6 @@ import platform.server.where.Where;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Immutable
@@ -39,10 +39,10 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     }
 
     public CompiledQuery<K,V> compileSelect(SQLSyntax syntax) {
-        return compileSelect(syntax,new LinkedHashMap<V, Boolean>(),0);
+        return compileSelect(syntax,new OrderedMap<V, Boolean>(),0);
     }
     @SynchronizedLazy
-    public CompiledQuery<K,V> compileSelect(SQLSyntax syntax,LinkedHashMap<V,Boolean> orders,int top) {
+    public CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders,int top) {
         return new CompiledQuery<K,V>(this, syntax, orders, top);
     }
 

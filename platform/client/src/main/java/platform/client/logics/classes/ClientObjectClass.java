@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 
-public class ClientObjectClass extends ClientClass {
+public abstract class ClientObjectClass extends ClientClass {
 
     public final static ClientObjectType type = new ClientObjectType();
 
@@ -27,6 +27,14 @@ public class ClientObjectClass extends ClientClass {
         caption = inStream.readUTF();
         ID = inStream.readInt();
         hasChilds = inStream.readBoolean();
+    }
+
+    public static ClientClass deserializeObject(DataInputStream inStream) throws IOException {
+        boolean concrete = inStream.readBoolean();
+        if(concrete)
+            return new ClientConcreteClass(inStream);
+        else
+            return new ClientAbstractClass(inStream); 
     }
 
     private boolean hasChilds;

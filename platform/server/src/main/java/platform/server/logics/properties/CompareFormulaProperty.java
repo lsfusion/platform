@@ -1,11 +1,11 @@
 package platform.server.logics.properties;
 
+import platform.interop.Compare;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
-import platform.interop.Compare;
 
 import java.util.ArrayList;
 import java.util.Collection;

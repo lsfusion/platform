@@ -12,6 +12,7 @@ import platform.client.logics.*;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
+import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.layout.ReportDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.Compare;
@@ -209,12 +210,14 @@ public class ClientForm extends JPanel {
                 });
             } else {
 
-                final JComboBox comboBox = new JComboBox(filterGroup.filters.toArray());
+                final JComboBox comboBox = new JComboBox(
+                        BaseUtils.mergeList(Collections.singletonList("(Все)"),filterGroup.filters).toArray());
                 comboBox.addItemListener(new ItemListener() {
 
                     public void itemStateChanged(ItemEvent ie) {
                         try {
-                            setRegularFilter(filterGroup, (ClientRegularFilterView)ie.getItem());
+                            setRegularFilter(filterGroup,
+                                    ie.getItem() instanceof ClientRegularFilterView?(ClientRegularFilterView)ie.getItem():null);
                         } catch (IOException e) {
                             throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
                         }
@@ -398,6 +401,9 @@ public class ClientForm extends JPanel {
 
         formLayout.getComponent().validate();
 
+        // выдадим сообщение если было от сервера
+        if(formChanges.message.length()>0)
+            Log.printFailedMessage(formChanges.message);        
     }
 
     void changeGroupObject(ClientGroupObjectImplementView groupObject, ClientGroupObjectValue objectValue) throws IOException {
@@ -450,7 +456,7 @@ public class ClientForm extends JPanel {
 
     }
 
-    void addObject(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
+    void addObject(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
         
         remoteForm.addObject(object.ID, cls.ID);
         dataChanged();
@@ -458,7 +464,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    void changeClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
+    void changeClass(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
 
         SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(object.groupObject), true);
 
@@ -747,10 +753,13 @@ public class ClientForm extends JPanel {
             comp.getActionMap().put("addObject", new AbstractAction() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    try {
-                        addObject(groupObject.get(0), objects.get(groupObject.get(0)).classModel.getDerivedClass());
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при добавлении объекта", e);
+                    ClientObjectClass addClass = objects.get(groupObject.get(0)).classModel.getDerivedClass();
+                    if(addClass instanceof ClientConcreteClass) {
+                        try {
+                            addObject(groupObject.get(0),(ClientConcreteClass)addClass);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Ошибка при добавлении объекта", e);
+                        }
                     }
                 }
             });
@@ -771,10 +780,13 @@ public class ClientForm extends JPanel {
             comp.getActionMap().put("changeObjectClass", new AbstractAction() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    try {
-                        changeClass(groupObject.get(0), objects.get(groupObject.get(0)).classModel.getSelectedClass());
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении класса объекта", e);
+                    ClientObjectClass changeClass = objects.get(groupObject.get(0)).classModel.getSelectedClass();
+                    if(changeClass instanceof ClientConcreteClass) {
+                        try {
+                            changeClass(groupObject.get(0), (ClientConcreteClass) changeClass);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Ошибка при изменении класса объекта", e);
+                        }
                     }
                 }
             });
@@ -2328,10 +2340,13 @@ public class ClientForm extends JPanel {
                     buttonAdd.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent ae) {
-                            try {
-                                addObject(object, classModel.getDerivedClass());
-                            } catch (IOException e) {
-                                throw new RuntimeException("Ошибка при добавлении объекта", e);
+                            ClientObjectClass derivedClass = classModel.getDerivedClass();
+                            if(derivedClass instanceof ClientConcreteClass) {
+                                try {
+                                    addObject(object, (ClientConcreteClass)derivedClass);
+                                } catch (IOException e) {
+                                    throw new RuntimeException("Ошибка при добавлении объекта", e);
+                                }
                             }
                         }
 
@@ -2361,10 +2376,13 @@ public class ClientForm extends JPanel {
                         buttonChangeClass.addActionListener(new ActionListener() {
 
                             public void actionPerformed(ActionEvent ae) {
-                                try {
-                                    changeClass(object, classModel.getSelectedClass());
-                                } catch (IOException e) {
-                                    throw new RuntimeException("Ошибка при изменении класса объекта", e);
+                                ClientObjectClass selectedClass = classModel.getSelectedClass();
+                                if(selectedClass instanceof ClientConcreteClass) {
+                                    try {
+                                        changeClass(object, (ClientConcreteClass)selectedClass);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Ошибка при изменении класса объекта", e);
+                                    }
                                 }
                             }
 

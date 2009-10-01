@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.interop.form.RemoteFormInterface;
 import platform.client.Log;
+import platform.base.OrderedMap;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class ClientFormView implements Serializable {
     public List<ClientGroupObjectImplementView> groupObjects;
     public List<ClientPropertyView> properties;
 
-    public final LinkedHashMap<ClientCellView,Boolean> defaultOrders = new LinkedHashMap<ClientCellView, Boolean>();
+    public final OrderedMap<ClientCellView,Boolean> defaultOrders = new OrderedMap<ClientCellView, Boolean>();
     public List<ClientRegularFilterGroupView> regularFilters;
 
     public ClientFunctionView printView;

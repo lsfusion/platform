@@ -1,15 +1,19 @@
 package platform.server.data;
 
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
+import platform.server.caches.Lazy;
+import platform.server.caches.ParamLazy;
+import platform.server.caches.TwinLazy;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.*;
-import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.data.query.translators.KeyTranslator;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
@@ -17,9 +21,6 @@ import platform.server.session.SQLSession;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.server.caches.Lazy;
-import platform.server.caches.ParamLazy;
-import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -27,9 +28,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
 public class Table implements MapKeysInterface<KeyField> {
     public final String name;
     public final Collection<KeyField> keys = new ArrayList<KeyField>();
@@ -122,7 +120,7 @@ public class Table implements MapKeysInterface<KeyField> {
 
     public void out(SQLSession session) throws SQLException {
         JoinQuery<KeyField,PropertyField> query = new JoinQuery<KeyField,PropertyField>(this);
-        Join join = joinAnd(query.mapKeys);
+        platform.server.data.query.Join<PropertyField> join = joinAnd(query.mapKeys);
         query.and(join.getWhere());
         query.properties.putAll(join.getExprs());
         query.outSelect(session);
@@ -139,7 +137,6 @@ public class Table implements MapKeysInterface<KeyField> {
         return new Join(joinImplement);
     }
 
-    @Immutable
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
 
         public Map<KeyField, AndExpr> joins;
@@ -149,7 +146,7 @@ public class Table implements MapKeysInterface<KeyField> {
             assert (joins.size()==keys.size());
         }
 
-        @Lazy
+        @TwinLazy
         Where getJoinsWhere() {
             return MapExpr.getJoinsWhere(joins);
         }
@@ -162,18 +159,21 @@ public class Table implements MapKeysInterface<KeyField> {
             return ((IsIn)getWhere()).getFollows();
         }
 
-        @Lazy
+        @TwinLazy
         public SourceExpr getExpr(PropertyField property) {
             return AndExpr.create(new Expr(property));
         }
-
-        @Lazy
+        @TwinLazy
         public Where<?> getWhere() {
-            ClassExprWhere classWhere = classes.map(joins).and(getJoinsWhere().getClassWhere());
-            if(classWhere.isFalse())
-                return Where.FALSE;
-            else
-                return new IsIn(classWhere);
+            return DataWhere.create(new IsIn());
+        }
+
+        // интерфейсы для translateDirect
+        public Expr getDirectExpr(PropertyField property) {
+            return new Expr(property);
+        }
+        public IsIn getDirectWhere() {
+            return new IsIn();
         }
 
         public Collection<PropertyField> getProperties() {
@@ -196,13 +196,6 @@ public class Table implements MapKeysInterface<KeyField> {
         @ParamLazy
         public platform.server.data.query.Join<PropertyField> translateQuery(QueryTranslator translator) {
             return join(translator.translate(joins));
-        }
-
-        public platform.server.data.query.Join<PropertyField> translate(Translator<?> translator) {
-            if(translator instanceof KeyTranslator)
-                return translateDirect((KeyTranslator)translator);
-            else
-                return translateQuery((QueryTranslator)translator);
         }
 
         public String getName(SQLSyntax syntax) {
@@ -241,12 +234,6 @@ public class Table implements MapKeysInterface<KeyField> {
                 return keys.iterator().next().toString();
             }
 
-            ClassExprWhere joinClassWhere;
-
-            public IsIn(ClassExprWhere iJoinClassWhere) {
-                joinClassWhere = iJoinClassWhere;
-            }
-
             public void fillContext(Context context) {
                 context.fill(joins);
             }
@@ -255,7 +242,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this;
             }
 
-            public Object getFJGroup() {
+            public InnerJoin getFJGroup() {
                 return Join.this;
             }
 
@@ -275,8 +262,11 @@ public class Table implements MapKeysInterface<KeyField> {
                 return "IN JOIN " + Join.this.toString();
             }
 
-            public Where translate(Translator translator) {
-                return Join.this.translate(translator).getWhere();
+            public Where translateDirect(KeyTranslator translator) {
+                return Join.this.translateDirect(translator).getDirectWhere();
+            }
+            public Where translateQuery(QueryTranslator translator) {
+                return Join.this.translateQuery(translator).getWhere();
             }
 
             protected DataWhereSet getExprFollows() {
@@ -292,12 +282,11 @@ public class Table implements MapKeysInterface<KeyField> {
             }
 
             public ClassExprWhere calculateClassWhere() {
-                return joinClassWhere;
+                return classes.map(joins).and(getJoinsWhere().getClassWhere());
             }
 
-            @Override
-            public boolean equals(Object o) {
-                return this == o || o instanceof IsIn && Join.this.equals(((IsIn) o).getJoin());
+            public boolean twins(AbstractSourceJoin o) {
+                return Join.this.equals(((IsIn) o).getJoin());
             }
 
             public int hashContext(HashContext hashContext) {
@@ -315,11 +304,11 @@ public class Table implements MapKeysInterface<KeyField> {
             }
 
             public SourceExpr translateQuery(QueryTranslator translator) {
-                return Join.this.translate(translator).getExpr(property);
+                return Join.this.translateQuery(translator).getExpr(property);
             }
 
             public Table.Join.Expr translateDirect(KeyTranslator translator) {
-                return (Expr) Join.this.translateDirect(translator).getExpr(property);
+                return Join.this.translateDirect(translator).getDirectExpr(property);
             }
 
             public void fillContext(Context context) {
@@ -330,7 +319,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this;
             }
 
-            public Object getFJGroup() {
+            public InnerJoin getFJGroup() {
                 return Join.this;
             }
 
@@ -343,13 +332,13 @@ public class Table implements MapKeysInterface<KeyField> {
             }
 
             // возвращает Where без следствий
-            protected Where calculateWhere() {
+            public Where calculateWhere() {
                 return new NotNull();
             }
 
             @Override
-            public boolean equals(Object o) {
-                return this == o || o instanceof Expr && Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
+            public boolean twins(AbstractSourceJoin o) {
+                return Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
             }
 
             public int hashContext(HashContext hashContext) {

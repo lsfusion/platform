@@ -1,17 +1,24 @@
 package platform.server.data.query.wheres;
 
+import platform.base.QuickMap;
 import platform.server.where.Where;
 
-import java.util.HashMap;
+public class MapWhere<T> extends QuickMap<T,Where> {
 
-public class MapWhere<T> extends HashMap<T,Where> {
+    protected Where addValue(Where prevValue, Where newValue) {
+        return prevValue.or(newValue);
+    }
 
-    public void add(T object, Where where) {
+    protected boolean containsAll(Where who, Where what) {
+        throw new RuntimeException("not supported");
+    }
+
+/*    public void add(T object, Where where) {
         Where inWhere = get(object);
         if(inWhere!=null)
             inWhere = inWhere.or(where);
         else
             inWhere = where;
         put(object,inWhere);
-    }
+    }*/
 }

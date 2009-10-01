@@ -1,12 +1,12 @@
 package platform.server.data.query;
 
-import platform.server.caches.MapContext;
 import platform.server.caches.Lazy;
+import platform.server.caches.MapContext;
+import platform.server.caches.MapHashIterable;
 import platform.server.caches.MapParamsIterable;
 import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
 import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.MapExpr;
 import platform.server.data.query.translators.KeyTranslator;
@@ -56,8 +56,8 @@ public class GroupJoin implements MapContext, InnerJoin {
         if(hashCode()!=groupJoin.hashCode())
             return null;
 
-        for(KeyTranslator translator : new MapParamsIterable(this,groupJoin,false))
-            if(where.translate(translator).equals(groupJoin.where) && translator.translateDirect(BaseUtils.reverse(group)).equals(BaseUtils.reverse(groupJoin.group)))
+        for(KeyTranslator translator : new MapHashIterable(this,groupJoin,false))
+            if(where.translateDirect(translator).equals(groupJoin.where) && translator.translateDirect(BaseUtils.reverse(group)).equals(BaseUtils.reverse(groupJoin.group)))
                     return translator;
         return null;
     }

@@ -1,22 +1,22 @@
 package platform.server.view.form.filter;
 
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.data.classes.CustomClass;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.logics.properties.Property;
-import platform.server.where.Where;
-import platform.server.view.form.ObjectImplement;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.session.DataSession;
+import platform.server.session.TableChanges;
 import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.RemoteForm;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.classes.CustomClass;
-import platform.server.session.TableChanges;
-import platform.server.session.DataSession;
+import platform.server.where.Where;
 
-import java.util.Map;
-import java.util.Set;
-import java.sql.SQLException;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Set;
 
 public class IsClassFilter<P extends PropertyInterface> extends PropertyFilter<P> {
 

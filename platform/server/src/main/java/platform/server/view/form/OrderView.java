@@ -1,10 +1,7 @@
 package platform.server.view.form;
 
-import platform.server.view.form.filter.CompareValue;
 import platform.server.data.types.Type;
-import platform.server.logics.properties.Property;
-
-import java.util.Set;
+import platform.server.view.form.filter.CompareValue;
 
 public interface OrderView extends CompareValue {
 

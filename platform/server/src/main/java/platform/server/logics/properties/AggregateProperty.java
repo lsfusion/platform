@@ -1,6 +1,7 @@
 package platform.server.logics.properties;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.ModifyQuery;
@@ -42,7 +43,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             System.out.println("AGGR - "+caption);
             AggrSelect.outSelect(Session);
         }*/
-        LinkedHashMap<Map<T, Object>, Map<String, Object>> aggrResult = aggrSelect.executeSelect(session);
+        OrderedMap<Map<T, Object>, Map<String, Object>> aggrResult = aggrSelect.executeSelect(session);
         DataSession.reCalculateAggr = true;
         aggrSelect = getQuery("value");
 /*        if(caption.equals("Дата 8") || caption.equals("Склад")) {
@@ -54,7 +55,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 //            AggrSelect.outSelect(Session);
 //        }
 
-        LinkedHashMap<Map<T, Object>, Map<String, Object>> calcResult = aggrSelect.executeSelect(session);
+        OrderedMap<Map<T, Object>, Map<String, Object>> calcResult = aggrSelect.executeSelect(session);
         DataSession.reCalculateAggr = false;
 
         Iterator<Map.Entry<Map<T,Object>,Map<String,Object>>> i = aggrResult.entrySet().iterator();
@@ -82,8 +83,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             for(Map.Entry<Map<T,Object>,Map<String,Object>> row : aggrResult.entrySet())
                 System.out.println(row);
             System.out.println("----Calc-----");
-            for(Map.Entry<Map<T,Object>,Map<String,Object>> Row : calcResult.entrySet())
-                System.out.println(Row);
+            for(Map.Entry<Map<T,Object>,Map<String,Object>> row : calcResult.entrySet())
+                System.out.println(row);
 //
 //            ((GroupProperty)this).outIncrementState(Session);
 //            Session = Session;
@@ -125,5 +126,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         query.properties.put(storedField,expr);
         query.and(expr.getWhere());
         return query.getClassWhere(Collections.singleton(storedField));
+    }
+
+    protected boolean usePrevious() {
+        return true;
     }
 }

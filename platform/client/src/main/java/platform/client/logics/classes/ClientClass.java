@@ -22,7 +22,7 @@ abstract public class ClientClass implements Serializable {
     public static ClientClass deserialize(DataInputStream inStream) throws IOException {
         byte type = inStream.readByte();
 
-        if(type==Data.OBJECT) return new ClientObjectClass(inStream);
+        if(type==Data.OBJECT) return ClientObjectClass.deserializeObject(inStream);
         if(type==Data.INTEGER) return new ClientIntegerClass(inStream);
         if(type==Data.LONG) return new ClientLongClass(inStream);
         if(type==Data.DOUBLE) return new ClientDoubleClass(inStream);

@@ -1,17 +1,15 @@
 package platform.server.logics.data;
 
-import platform.interop.Compare;
+import platform.base.BaseUtils;
 import platform.server.data.*;
 import platform.server.data.classes.SystemClass;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.SQLSession;
-import platform.base.BaseUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -55,7 +53,7 @@ public class IDTable extends Table {
         if(BusinessLogics.autoFillDB) return BusinessLogics.autoIDCounter++;
         // читаем
         JoinQuery<KeyField, PropertyField> query = new JoinQuery<KeyField, PropertyField>(this);
-        Join joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));
+        platform.server.data.query.Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));
         query.and(joinTable.getWhere());
         query.properties.put(value, joinTable.getExpr(value));
 

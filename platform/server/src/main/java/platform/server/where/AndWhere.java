@@ -2,13 +2,15 @@ package platform.server.where;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
+import platform.server.caches.ManualLazy;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.MeanClassWheres;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
-import platform.server.caches.ManualLazy;
 
 
 public class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
@@ -119,8 +121,11 @@ public class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements And
         return new OrWhere(not(wheres));
     }
 
-    public Where translate(Translator translator) {
-        return not().translate(translator).not();
+    public Where translateDirect(KeyTranslator translator) {
+        return not().translateDirect(translator).not();
+    }
+    public Where translateQuery(QueryTranslator translator) {
+        return not().translateQuery(translator).not();
     }
 
     int hashCoeff() {
@@ -185,7 +190,7 @@ public class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements And
         return null;
     }
 
-    public boolean equals(Object o) {
-        return this==o || o instanceof AndWhere && BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);
+    public boolean twins(AbstractSourceJoin o) {
+        return BaseUtils.equalArraySets(wheres, ((AndWhere) o).wheres);
     }
 }

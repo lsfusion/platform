@@ -1,6 +1,5 @@
 package platform.server.view.form;
 
-import platform.server.view.form.GroupObjectImplement;
 import platform.server.logics.properties.Property;
 
 import java.util.Collection;

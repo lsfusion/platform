@@ -1,6 +1,8 @@
 package platform.server.logics.constraints;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.interop.Compare;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
@@ -10,11 +12,9 @@ import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.DataSession;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
-import platform.interop.Compare;
 
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 // >= 0
@@ -54,7 +54,7 @@ class UniqueConstraint extends Constraint {
         changed.and(orDiffKeys);
         changed.properties.put("value", changedExpr);
 
-        LinkedHashMap<Map<Object, Object>, Map<String, Object>> result = changed.executeSelect(session);
+        OrderedMap<Map<Object, Object>, Map<String, Object>> result = changed.executeSelect(session);
         if(result.size()>0) {
             String resultString = "Уникальное ограничение на св-во "+ property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<Object,Object>,Map<String,Object>> row : result.entrySet()) {

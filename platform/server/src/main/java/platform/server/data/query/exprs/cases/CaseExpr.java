@@ -1,5 +1,7 @@
 package platform.server.data.query.exprs.cases;
 
+import platform.interop.Compare;
+import platform.server.caches.ParamLazy;
 import platform.server.data.classes.BaseClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.*;
@@ -7,21 +9,20 @@ import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.TranslateExprLazy;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.NullReader;
 import platform.server.data.types.Reader;
 import platform.server.data.types.Type;
 import platform.server.where.Where;
-import platform.server.caches.ParamLazy;
-import platform.interop.Compare;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
-
+@TranslateExprLazy
 public class CaseExpr extends SourceExpr {
 
     private final ExprCaseList cases;
@@ -79,7 +80,7 @@ public class CaseExpr extends SourceExpr {
     public CaseExpr translateDirect(KeyTranslator translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            translatedCases.add(new ExprCase(exprCase.where.translate(translator),exprCase.data.translateDirect(translator)));
+            translatedCases.add(new ExprCase(exprCase.where.translateDirect(translator),exprCase.data.translateDirect(translator)));
         return new CaseExpr(translatedCases);        
     }
 
@@ -87,7 +88,7 @@ public class CaseExpr extends SourceExpr {
     public SourceExpr translateQuery(QueryTranslator translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            translatedCases.add(exprCase.where.translate(translator),exprCase.data.translate(translator));
+            translatedCases.add(exprCase.where.translateQuery(translator),exprCase.data.translateQuery(translator));
         return translatedCases.getExpr();
     }
 
@@ -145,8 +146,8 @@ public class CaseExpr extends SourceExpr {
         }
     }
 
-    public boolean equals(Object obj) {
-        return this==obj || obj instanceof CaseExpr && cases.equals(((CaseExpr)obj).cases);
+    public boolean twins(AbstractSourceJoin obj) {
+        return cases.equals(((CaseExpr)obj).cases);
     }
 
     public int hashContext(HashContext hashContext) {
@@ -155,7 +156,7 @@ public class CaseExpr extends SourceExpr {
 
     // получение Where'ов
 
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return cases.getWhere(new CaseWhereInterface<AndExpr>(){
             public Where getWhere(AndExpr cCase) {
                 return cCase.getWhere();

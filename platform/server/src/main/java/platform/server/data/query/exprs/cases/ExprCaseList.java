@@ -1,8 +1,9 @@
 package platform.server.data.query.exprs.cases;
 
+import platform.base.BaseUtils;
+import platform.server.data.query.HashContext;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.HashContext;
 import platform.server.where.Where;
 
 public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
@@ -51,7 +52,7 @@ public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
             nullWhere = nullWhere.or(where);
         else {
             ExprCase lastCase = size()>0?get(size()-1):null;
-            if(lastCase!=null && lastCase.data.equals(expr)) // если повторяется то просто заor'им
+            if(lastCase!=null && BaseUtils.hashEquals(lastCase.data,expr)) // если повторяется то просто заor'им
                 lastCase.where = lastCase.where.or(where);
             else
                 add(new ExprCase(where, expr));

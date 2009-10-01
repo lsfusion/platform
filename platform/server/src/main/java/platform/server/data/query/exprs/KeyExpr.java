@@ -3,13 +3,13 @@ package platform.server.data.query.exprs;
 import platform.server.data.classes.BaseClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.IsClassWhere;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.types.Type;
-import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
 public class KeyExpr extends VariableClassExpr {
 
@@ -24,8 +24,6 @@ public class KeyExpr extends VariableClassExpr {
     }
 
     public String getSource(CompileSource compile) {
-        if(!compile.keySelect.containsKey(this))
-            compile = compile;
         assert compile.keySelect.containsKey(this);
         return compile.keySelect.get(this);
     }
@@ -42,7 +40,7 @@ public class KeyExpr extends VariableClassExpr {
     }
 
     // возвращает Where без следствий
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return Where.TRUE;
     }
 
@@ -80,5 +78,9 @@ public class KeyExpr extends VariableClassExpr {
 
     public int hashContext(HashContext hashContext) {
         return hashContext.hash(this);
+    }
+
+    public boolean twins(AbstractSourceJoin obj) {
+        return false;
     }
 }

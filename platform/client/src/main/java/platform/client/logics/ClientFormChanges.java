@@ -8,6 +8,8 @@ import java.util.*;
 
 public class ClientFormChanges {
 
+    public String message;
+
     public final Map<ClientGroupObjectImplementView,Boolean> classViews;
     public Map<ClientGroupObjectImplementView,ClientGroupObjectValue> objects;
     public Map<ClientGroupObjectImplementView, List<ClientGroupObjectValue>> gridObjects;
@@ -70,5 +72,7 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++)
             dropProperties.add(clientFormView.getPropertyView(inStream.readInt()));
+
+        message = inStream.readUTF();
     }
 }

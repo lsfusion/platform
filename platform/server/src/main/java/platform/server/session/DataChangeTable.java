@@ -9,7 +9,6 @@ import platform.server.data.PropertyField;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.logics.DataObject;
 import platform.server.logics.properties.DataProperty;
@@ -40,7 +39,7 @@ public class DataChangeTable extends ChangePropertyTable<DataPropertyInterface,D
                 session.deleteKeyRecords(this, Collections.singletonMap(BaseUtils.reverse(mapKeys).get(propertyInterface),(Integer)object.object));
         if(property.value instanceof CustomClass && removeClasses.contains((CustomClass)property.value)) {
             JoinQuery<KeyField,PropertyField> dropValues = new JoinQuery<KeyField, PropertyField>(this);
-            Join dataJoin = joinAnd(dropValues.mapKeys);
+            platform.server.data.query.Join<PropertyField> dataJoin = joinAnd(dropValues.mapKeys);
             dropValues.and(dataJoin.getExpr(value).compare(object, Compare.EQUALS));
             dropValues.properties.put(value,CaseExpr.NULL);
             session.updateRecords(new ModifyQuery(this,dropValues));

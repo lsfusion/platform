@@ -6,13 +6,14 @@
 package platform.server.view.form;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.interop.Scroll;
+import platform.interop.exceptions.ComplexQueryException;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.types.Type;
 import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.DataClass;
@@ -20,16 +21,23 @@ import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.types.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.data.IDTable;
-import platform.server.logics.properties.*;
-import platform.server.session.*;
+import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.DataPropertyInterface;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.session.DataSession;
+import platform.server.session.MapChangeDataProperty;
+import platform.server.session.TableChanges;
+import platform.server.session.ViewDataChanges;
+import platform.server.view.form.filter.CompareFilter;
+import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
-import platform.server.view.form.filter.Filter;
-import platform.server.view.form.filter.CompareFilter;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
 
@@ -282,9 +290,10 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
     public void setRegularFilter(RegularFilterGroup filterGroup, RegularFilter filter) {
 
         RegularFilter prevFilter = regularFilterValues.get(filterGroup);
-        prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
+        if(prevFilter!=null)
+            prevFilter.filter.getApplyObject().removeRegularFilter(prevFilter.filter);
 
-        if (filter == null || filter.filter == null)
+        if (filter == null)
             regularFilterValues.remove(filterGroup);
         else {
             regularFilterValues.put(filterGroup, filter);
@@ -292,10 +301,6 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
         }
 
     }
-
-    // Порядки
-
-    private Map<GroupObjectImplement,LinkedHashMap<OrderView,Boolean>> groupOrders = new HashMap<GroupObjectImplement,LinkedHashMap<OrderView, Boolean>>();
 
     // -------------------------------------- Изменение данных ----------------------------------- //
 
@@ -334,9 +339,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
 
                     subQuery.properties.put("newvalue", compareFilter.value.getSourceExpr(object.groupTo.getClassGroup(),subQuery.mapKeys, session.changes, this));
 
-                    LinkedHashMap<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> result = subQuery.executeSelectClasses(session,BL.baseClass);
+                    OrderedMap<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> result = subQuery.executeSelectClasses(session,BL.baseClass);
                     // изменяем св-ва
-                    for(Entry<Map<ObjectImplement, DataObject>, Map<String, ObjectValue>> row : result.entrySet()) {
+                    for(Map.Entry<Map<ObjectImplement,DataObject>,Map<String,ObjectValue>> row : result.entrySet()) {
                         DataProperty changeProperty = (DataProperty) compareFilter.property.property;
                         Map<DataPropertyInterface,DataObject> keys = new HashMap<DataPropertyInterface, DataObject>();
                         for(DataPropertyInterface propertyInterface : changeProperty.interfaces) {
@@ -385,6 +390,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
     public void refreshData() {
 
         for(GroupObjectImplement group : groups) {
+            for(ObjectImplement object : group.objects)
+                if(object instanceof CustomObjectImplement)
+                    object.updated |= ObjectImplement.UPDATED_GRIDCLASS; 
             group.updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
         }
     }
@@ -489,7 +497,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
             return new ViewDataChanges();
         }
     }
-    public Property.Depends<ViewDataChanges,UpdateChanges> updateDepends = new Property.Depends<ViewDataChanges,UpdateChanges>() {
+    public final Property.Depends<ViewDataChanges,UpdateChanges> updateDepends = new Property.Depends<ViewDataChanges,UpdateChanges>() {
             public UpdateChanges used(Property property, UpdateChanges usedChanges) {
                 if(hintsNoUpdate.contains(property))
                     return new UpdateChanges();
@@ -512,33 +520,54 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
 
         private class Group {
 
-            private class Object {
-                ObjectImplement object;
-                DataObject value;
+            private abstract class Object<O extends ObjectImplement> {
+                O object;
                 int updated;
-//                RemoteClass objectClass;
 
-                private Object(ObjectImplement iObject) {
-                    object = iObject;
-/*                    value = object.value;
+                private Object(O object) {
+                    this.object = object;
                     updated = object.updated;
-                    objectClass = object.currentClass;*/
                 }
 
                 void rollback() {
-/*                    object.value = value;
                     object.updated = updated;
-                    object.currentClass = objectClass;*/
+                }
+            }
+            private class Custom extends Object<CustomObjectImplement> {
+                ObjectValue value;
+                ConcreteCustomClass currentClass;
+
+                private Custom(CustomObjectImplement object) {
+                    super(object);
+                    value = object.value;
+                    currentClass = object.currentClass;
+                }
+
+                void rollback() {
+                    super.rollback();
+                    object.value = value;
+                    object.currentClass = currentClass;
+                }
+            }
+            private class Data extends Object<DataObjectImplement> {
+                java.lang.Object value;
+
+                private Data(DataObjectImplement object) {
+                    super(object);
+                    value = object.value;
+                }
+
+                void rollback() {
+                    super.rollback();
+                    object.value = value;
                 }
             }
 
             GroupObjectImplement group;
-            Set<Filter> filters;
-            LinkedHashMap<OrderView,Boolean> orders;
             boolean upKeys,downKeys;
-            List<Map<ObjectImplement,DataObject>> keys;
-            // какие ключи активны
-            Map<Map<ObjectImplement,DataObject>,Map<OrderView,ObjectValue>> keyOrders;
+            Set<Filter> filters;
+            OrderedMap<OrderView,Boolean> orders;
+            OrderedMap<Map<ObjectImplement,platform.server.logics.DataObject>,Map<OrderView,ObjectValue>> keys;
             int updated;
 
             Collection<Object> objects = new ArrayList<Object>();
@@ -549,15 +578,13 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                 group = iGroup;
 
                 filters = new HashSet<Filter>(group.filters);
-                orders = new LinkedHashMap<OrderView, Boolean>(group.orders);
-                upKeys = group.upKeys;
-                downKeys = group.downKeys;
-                keys = group.keys;
-                keyOrders = group.keyOrders;
+                orders = new OrderedMap<OrderView, Boolean>(group.orders);
+                upKeys = group.upKeys; downKeys = group.downKeys;
+                keys = new OrderedMap<Map<ObjectImplement,DataObject>,Map<OrderView, ObjectValue>>(group.keys);
                 updated = group.updated;
 
                 for(ObjectImplement object : group.objects)
-                    objects.add(new Object(object));
+                    objects.add(object instanceof CustomObjectImplement?new Custom((CustomObjectImplement) object):new Data((DataObjectImplement) object));
 
                 viewTable = groupTables.get(group);
             }
@@ -565,10 +592,8 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
             void rollback() throws SQLException {
                 group.filters = filters;
                 group.orders = orders;
-                group.upKeys = upKeys;
-                group.downKeys = downKeys;
+                group.upKeys = upKeys; group.downKeys = downKeys;
                 group.keys = keys;
-                group.keyOrders = keyOrders;
                 group.updated = updated;
 
                 for(Object object : objects)
@@ -583,7 +608,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                     }
                 } else {
                     session.deleteKeyRecords(viewTable, new HashMap<KeyField, Integer>());
-                    for(Map<ObjectImplement, DataObject> keyRow : group.keys)
+                    for(Map<ObjectImplement, DataObject> keyRow : group.keys.keySet())
                         session.insertRecord(viewTable,BaseUtils.join(viewTable.mapKeys,keyRow),new HashMap<PropertyField,ObjectValue>());
                     groupTables.put(group,viewTable);                    
                 }
@@ -593,7 +618,8 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
         Collection<Group> groups = new ArrayList<Group>();
         Map<PropertyView,Boolean> cacheInGridInterface;
         Map<PropertyView,Boolean> cacheInInterface;
-        Set<PropertyView> isDrawed; 
+        Set<PropertyView> isDrawed;
+        Map<RegularFilterGroup,RegularFilter> regularFilterValues;
 
         Map<RemoteForm, ViewDataChanges> incrementChanges;
 
@@ -605,6 +631,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
             cacheInGridInterface = new HashMap<PropertyView, Boolean>(RemoteForm.this.cacheInGridInterface);
             cacheInInterface = new HashMap<PropertyView, Boolean>(RemoteForm.this.cacheInInterface);
             isDrawed = new HashSet<PropertyView>(RemoteForm.this.isDrawed);
+            regularFilterValues = new HashMap<RegularFilterGroup, RegularFilter>(RemoteForm.this.regularFilterValues);
 
             if(dataChanged) {
                 incrementChanges = new HashMap<RemoteForm, ViewDataChanges>(session.incrementChanges);
@@ -618,6 +645,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
             RemoteForm.this.cacheInGridInterface = cacheInGridInterface;
             RemoteForm.this.cacheInInterface = cacheInInterface;
             RemoteForm.this.isDrawed = isDrawed;
+            RemoteForm.this.regularFilterValues = regularFilterValues;
 
             if(dataChanged) {
                 session.incrementChanges = incrementChanges;
@@ -636,21 +664,21 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
         changeGroupObject(group, value);
     }
 
-    private LinkedHashMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeSelectKeys(GroupObjectImplement group,Map<OrderView,ObjectValue> orderSeeks,int readSize,boolean down) throws SQLException {
+    private OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeSelectKeys(GroupObjectImplement group,Map<OrderView,ObjectValue> orderSeeks,int readSize,boolean down) throws SQLException {
         // assertion что group.orders начинается с orderSeeks
-        LinkedHashMap<OrderView,Boolean> orders;
+        OrderedMap<OrderView,Boolean> orders;
         if(orderSeeks!=null && readSize==1)
-            orders = BaseUtils.moveStart(group.orders,orderSeeks.keySet());
+            orders = group.orders.moveStart(orderSeeks.keySet());
         else
             orders = group.orders;
 
-        assert !(orderSeeks!=null && !BaseUtils.starts(orders,orderSeeks.keySet()));
+        assert !(orderSeeks!=null && !orders.starts(orderSeeks.keySet()));
 
         JoinQuery<ObjectImplement,OrderView> selectKeys = new JoinQuery<ObjectImplement,OrderView>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
         group.fillSourceSelect(selectKeys, group.getClassGroup(), session.changes, this);
 
         Where orderWhere = orderSeeks==null?Where.FALSE:Where.TRUE;
-        for(Entry<OrderView, Boolean> toOrder : BaseUtils.reverse(orders).entrySet()) {
+        for(Map.Entry<OrderView,Boolean> toOrder : orders.reverse().entrySet()) {
             SourceExpr orderExpr = toOrder.getKey().getSourceExpr(group.getClassGroup(), selectKeys.mapKeys, session.changes, this);
             selectKeys.properties.put(toOrder.getKey(), orderExpr); // надо в запрос закинуть чтобы скроллить и упорядочивать
 
@@ -666,11 +694,11 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
 
     // считывает одну запись
     private Map.Entry<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> readObjects(GroupObjectImplement group,Map<OrderView,ObjectValue> orderSeeks) throws SQLException {
-        LinkedHashMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> result = executeSelectKeys(group, orderSeeks, 1, true);
+        OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> result = executeSelectKeys(group, orderSeeks, 1, true);
         if(result.size()==0)
             result = executeSelectKeys(group, orderSeeks, 1, false);
         if(result.size()>0)
-            return BaseUtils.singleEntry(result);
+            return result.singleEntry();
         else
             return null;
     }
@@ -689,6 +717,10 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
             return new HashMap<OrderView, ObjectValue>();
     }
 
+    public static Map<ObjectImplement,DataObject> dataKeys(Map<ObjectImplement,ObjectValue> map) {
+        return (Map<ObjectImplement,DataObject>)(Map<ObjectImplement,? extends ObjectValue>)map; 
+    }
+
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Map<PropertyView,Boolean> cacheInGridInterface = new HashMap<PropertyView,Boolean>();
     protected Map<PropertyView,Boolean> cacheInInterface = new HashMap<PropertyView, Boolean>();
@@ -698,9 +730,9 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
 
         ApplyTransaction transaction = new ApplyTransaction();
 
+        FormChanges result = new FormChanges();
+
         try {
-            FormChanges result = new FormChanges();
-            
             // если изменились данные, применяем изменения
             Collection<Property> changedProps;
             Collection<CustomClass> changedClasses = new HashSet<CustomClass>();
@@ -735,12 +767,12 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                                 updateKeys |= (filt.isInInterface(group)? group.filters.add(filt): group.filters.remove(filt));
 
                 // порядки
-                LinkedHashMap<OrderView,Boolean> newOrders = new LinkedHashMap<OrderView, Boolean>();
+                OrderedMap<OrderView,Boolean> newOrders = new OrderedMap<OrderView, Boolean>();
                 if((group.updated & GroupObjectImplement.UPDATED_ORDER)!=0) {
                     for(Entry<OrderView, Boolean> setOrder : group.getSetOrders().entrySet())
                         if(setOrder.getKey().isInInterface(group))
                             newOrders.put(setOrder.getKey(),setOrder.getValue());
-                    updateKeys |= !BaseUtils.equalsLinked(group.orders,newOrders);
+                    updateKeys |= !group.orders.equals(newOrders);
                 } else { // значит setOrders не изменился
                     for(Entry<OrderView, Boolean> setOrder : group.getSetOrders().entrySet()) {
                         boolean isInInterface = group.orders.containsKey(setOrder.getKey());
@@ -792,7 +824,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                 }
 
                 if(!updateKeys && group.gridClassView && (group.updated & GroupObjectImplement.UPDATED_OBJECT)!=0) { // скроллирование
-                    int keyNum = group.keys.indexOf(currentObject);
+                    int keyNum = group.keys.indexOf(dataKeys(currentObject));
                     if(keyNum< group.pageSize && group.upKeys) { // если меньше PageSize осталось и сверху есть ключи
                         updateKeys = true;
 
@@ -801,7 +833,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                             orderSeeks = null;
                         else {
                             direction = DIRECTION_UP;
-                            orderSeeks = group.keyOrders.get(group.keys.get(lowestInd));
+                            orderSeeks = group.keys.getValue(lowestInd);
                         }
                     } else // наоборот вниз
                         if(keyNum>= group.keys.size()- group.pageSize && group.downKeys) {
@@ -812,22 +844,20 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                                 orderSeeks = new HashMap<OrderView, ObjectValue>();
                             else {
                                 direction = DIRECTION_DOWN;
-                                orderSeeks = group.keyOrders.get(group.keys.get(highestInd));
+                                orderSeeks = group.keys.getValue(highestInd);
                             }
                         }
                 }
 
                 if(updateKeys) {
-                    LinkedHashMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> keyResult;
+                    OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> keyResult;
                     if(!group.gridClassView) { // панель
                         Map<ObjectImplement,? extends ObjectValue> objects;
                         boolean read = true; // по умолчанию читаем
                         if(group.singleViewType) { // assertion что нету ни фильтров ни порядков и !gridClassView, то есть чистое изменение класса объекта (или инициализация)
                             // assert'им что должен быть или целиком CustomObjectImplement или DataObjectImplement
-                            Iterator<ObjectImplement> i = group.objects.iterator();
-                            read = i.next() instanceof CustomObjectImplement;
-                            while(i.hasNext())
-                                assert read == i.next() instanceof CustomObjectImplement;
+                            read = group.objects.iterator().next() instanceof CustomObjectImplement;
+                            assert group.isSolid();
                         }
                         if(read)
                             objects = readKeys(group,orderSeeks); // перечитываем, а то мог удалится и т.п.
@@ -835,11 +865,11 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                             objects = BaseUtils.filterKeys(orderSeeks,group.objects);
                         updateGroupObject(group,result,objects);
                     } else {
-                        if(orderSeeks!=null && !BaseUtils.starts(group.orders,orderSeeks.keySet())) // если не "хватает" спереди ключей, дочитываем
+                        if(orderSeeks!=null && !group.orders.starts(orderSeeks.keySet())) // если не "хватает" спереди ключей, дочитываем
                             orderSeeks = readValues(group,orderSeeks);
 
                         int activeRow = -1; // какой ряд выбранным будем считать
-                        keyResult = new LinkedHashMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>>();
+                        keyResult = new OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>>();
 
                         if(direction==DIRECTION_CENTER) { // оптимизируем если HOME\END то читаем одним запросом
                             if(orderSeeks==null) { // END
@@ -857,19 +887,18 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
 
                         int readSize = group.pageSize *3/(direction ==DIRECTION_CENTER?2:1);
                         if(direction==DIRECTION_UP || direction ==DIRECTION_CENTER) { // сначала Up
-                            keyResult.putAll(BaseUtils.reverse(executeSelectKeys(group, orderSeeks, readSize, false)));
+                            keyResult.putAll(executeSelectKeys(group, orderSeeks, readSize, false).reverse());
                             group.upKeys = (keyResult.size()== readSize);
                             activeRow = keyResult.size()-1; 
                         }
                         if(direction ==DIRECTION_DOWN || direction ==DIRECTION_CENTER) { // затем Down
-                            LinkedHashMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeList = executeSelectKeys(group, orderSeeks, readSize, true);
+                            OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeList = executeSelectKeys(group, orderSeeks, readSize, true);
                             if(executeList.size()>0) activeRow = keyResult.size();
                             keyResult.putAll(executeList);
                             group.downKeys = (executeList.size()== readSize);
                         }
 
-                        group.keys = new ArrayList<Map<ObjectImplement, DataObject>>();
-                        group.keyOrders = new HashMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>>();
+                        group.keys = new OrderedMap<Map<ObjectImplement, DataObject>,Map<OrderView, ObjectValue>>();
 
                         // параллельно будем обновлять ключи чтобы JoinSelect'ить
                         ViewTable insertTable = groupTables.get(group);
@@ -882,20 +911,18 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                         for(Entry<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> resultRow : keyResult.entrySet()) {
                             viewKeys.add(BaseUtils.join(insertTable.mapKeys,resultRow.getKey()));
 
-                            Map<ObjectImplement,DataObject> keyRow = new HashMap<ObjectImplement,DataObject>(resultRow.getKey());
-                            group.keys.add(keyRow);
-                            group.keyOrders.put(keyRow, BaseUtils.filterKeys(resultRow.getValue(),group.orders.keySet()));
+                            group.keys.put(new HashMap<ObjectImplement,DataObject>(resultRow.getKey()),BaseUtils.filterKeys(resultRow.getValue(),group.orders.keySet()));
                         }
 
                         groupTables.put(group, insertTable.writeKeys(session, viewKeys));
 
-                        result.gridObjects.put(group, group.keys);
+                        result.gridObjects.put(group, new ArrayList<Map<ObjectImplement, DataObject>>(group.keys.keySet()));
 
                         // если есть в новых ключах старый ключ, то делаем его активным
-                        if(keepObject && group.keys.contains(currentObject))
-                            activeRow = group.keys.indexOf(currentObject);
+                        if(keepObject && group.keys.containsKey(dataKeys(currentObject)))
+                            activeRow = group.keys.indexOf(dataKeys(currentObject));
 
-                        updateGroupObject(group,result,group.keys.isEmpty()?group.getNulls():group.keys.get(activeRow));
+                        updateGroupObject(group,result,group.keys.isEmpty()?group.getNulls():group.keys.getKey(activeRow));
                     }
                     group.updated = (group.updated | GroupObjectImplement.UPDATED_KEYS);
                 }
@@ -956,7 +983,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                 for(PropertyView<?> drawProp : panelProps)
                     selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(null,null, session.changes, this));
 
-                Map<PropertyView,Object> resultProps = BaseUtils.singleValue(selectProps.executeSelect(session));
+                Map<PropertyView,Object> resultProps = selectProps.executeSelect(session).singleValue();
                 for(PropertyView drawProp : panelProps)
                     result.panelProperties.put(drawProp,resultProps.get(drawProp));
             }
@@ -973,7 +1000,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                 for(PropertyView<?> drawProp : groupList)
                     selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(group.getClassGroup(), selectProps.mapKeys, session.changes, this));
 
-                LinkedHashMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.executeSelect(session);
+                OrderedMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.executeSelect(session);
 
                 for(PropertyView drawProp : groupList) {
                     Map<Map<ObjectImplement,DataObject>,Object> propResult = new HashMap<Map<ObjectImplement,DataObject>, Object>();
@@ -982,27 +1009,34 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
                     result.gridProperties.put(drawProp,propResult);
                 }
             }
-
-            userGroupSeeks.clear();
-
-            // сбрасываем все пометки
-            for(GroupObjectImplement group : groups) {
-                for(ObjectImplement object : group.objects)
-                    object.updated = 0;
-                group.updated = 0;
-            }
-            dataChanged = false;
-
-//        result.out(this);
-
-            return result;
-//        } catch (RuntimeException e) {
-//            transaction.rollback();
-//            throw e;
+        } catch (ComplexQueryException e) {
+            transaction.rollback();
+            if(dataChanged) { // если изменились данные cancel'им изменения
+                cancelChanges();
+                result = endApply();
+                result.message = e.getMessage()+". Изменения будут отменены";
+                return result;
+            } else
+                throw e;
+        } catch (RuntimeException e) {
+            transaction.rollback();
+            throw e;
         } catch (SQLException e) {
             transaction.rollback();
             throw e;
         }
+
+        userGroupSeeks.clear();
+
+        // сбрасываем все пометки
+        for(GroupObjectImplement group : groups) {
+            for(ObjectImplement object : group.objects)
+                object.updated = 0;
+            group.updated = 0;
+        }
+        dataChanged = false;
+
+        return result;
     }
 
     // возвращает какие объекты отчета фиксируются
@@ -1031,7 +1065,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
         // пока сделаем тупо получаем один большой запрос
 
         JoinQuery<ObjectImplement,Object> query = new JoinQuery<ObjectImplement,Object>(ObjectImplement.getMapKeys(readObjects));
-        LinkedHashMap<Object,Boolean> queryOrders = new LinkedHashMap<Object, Boolean>();
+        OrderedMap<Object,Boolean> queryOrders = new OrderedMap<Object, Boolean>();
 
         for (GroupObjectImplement group : groups) {
 
@@ -1058,7 +1092,7 @@ public class RemoteForm<T extends BusinessLogics<T>> implements Property.TableDe
         for(PropertyView<?> property : properties)
             query.properties.put(property, property.view.getSourceExpr(classGroups, query.mapKeys, session.changes, this));
 
-        LinkedHashMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.executeSelect(session,queryOrders,0);
+        OrderedMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.executeSelect(session,queryOrders,0);
         for(Entry<Map<ObjectImplement, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectImplement,Object> groupValue = new HashMap<ObjectImplement, Object>();
             for(GroupObjectImplement group : groups)

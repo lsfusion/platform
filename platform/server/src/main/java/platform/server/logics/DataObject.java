@@ -1,13 +1,13 @@
 package platform.server.logics;
 
-import platform.server.data.classes.ConcreteClass;
-import platform.server.data.classes.LogicalClass;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.where.Where;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
+import platform.server.data.classes.ConcreteClass;
+import platform.server.data.classes.LogicalClass;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;

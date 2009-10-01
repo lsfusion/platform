@@ -1,10 +1,10 @@
 package platform.server.where;
 
 import platform.base.QuickSet;
+import platform.server.data.Table;
 import platform.server.data.query.GroupJoin;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.exprs.GroupExpr;
-import platform.server.data.Table;
 
 public class DataWhereSet extends QuickSet<DataWhere> {
 

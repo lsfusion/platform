@@ -2,6 +2,7 @@ package platform.server.session;
 
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
+import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
@@ -21,10 +22,13 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.data.IDTable;
 import platform.server.logics.data.ImplementTable;
-import platform.server.logics.properties.*;
+import platform.server.logics.properties.DataProperty;
+import platform.server.logics.properties.DataPropertyInterface;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.view.form.RemoteForm;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
-import platform.server.view.form.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -177,12 +181,12 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
             JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID);
             query.and(extPropID.getSourceExpr(query.mapKeys).compare((DataObject) newValue,Compare.EQUALS));
 
-            LinkedHashMap<Map<DataPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeSelectClasses(this, baseClass);
+            OrderedMap<Map<DataPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeSelectClasses(this, baseClass);
 
             if (result.size() == 0)
                 newValue = NullValue.instance;
             else
-                newValue = BaseUtils.singleValue(BaseUtils.singleKey(result));
+                newValue = BaseUtils.singleValue(result.singleKey());
         }
 
         changes.data.put(property,dataChange.insertRecord(this,BaseUtils.join(dataChange.mapKeys,keys),Collections.singletonMap(dataChange.value,newValue),true));
@@ -208,12 +212,12 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
             Join<PropertyField> joinTable = baseClass.table.joinAnd(Collections.singletonMap(baseClass.table.key,new ValueExpr(value,baseClass.getConcrete())));
             query.and(joinTable.getWhere());
             query.properties.put("classid", joinTable.getExpr(baseClass.table.objectClass));
-            LinkedHashMap<Map<Object, Object>, Map<String, Object>> result = query.executeSelect(this);
+            OrderedMap<Map<Object, Object>, Map<String, Object>> result = query.executeSelect(this);
             if(result.size()==0)
                 dataClass = baseClass.unknown;
             else {
                 assert (result.size()==1);
-                dataClass = baseClass.findConcreteClassID((Integer) BaseUtils.singleValue(result).get("classid"));
+                dataClass = baseClass.findConcreteClassID((Integer) result.singleValue().get("classid"));
             }
         }
         return new DataObject(value,dataClass);

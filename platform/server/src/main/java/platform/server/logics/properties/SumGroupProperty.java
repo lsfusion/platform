@@ -13,4 +13,9 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
     SourceExpr getChangedExpr(SourceExpr changedExpr, SourceExpr changedPrevExpr, SourceExpr prevExpr, SourceExpr newExpr) {
         return changedExpr.sum(changedPrevExpr.scale(-1)).sum(prevExpr);
     }
+
+    @Override
+    protected boolean usePrevious() {
+        return false;
+    }
 }

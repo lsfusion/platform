@@ -1,14 +1,14 @@
 package platform.server.view.form.filter;
 
+import platform.interop.FilterType;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.logics.properties.Property;
 import platform.server.session.TableChanges;
-import platform.server.view.form.RemoteForm;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.form.Updated;
 import platform.server.where.Where;
-import platform.interop.FilterType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.util.Set;
 public abstract class Filter implements Updated {
 
     // даже если не в интерфейсе все равно ставить (то есть по сути фильтр делать false)
-    public final static boolean ignoreInInterface = false;
+    public final static boolean ignoreInInterface = true;
 
     public Filter() {
     }

@@ -1,10 +1,13 @@
 package platform.server.logics.linear.properties;
 
-import platform.server.logics.properties.*;
-import platform.server.logics.BusinessLogics;
 import platform.base.BaseUtils;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.properties.*;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class LDP extends LP<DataPropertyInterface, DataProperty> {
 

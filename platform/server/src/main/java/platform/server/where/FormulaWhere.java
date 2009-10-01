@@ -2,12 +2,12 @@ package platform.server.where;
 
 import platform.base.BaseUtils;
 import platform.server.data.classes.where.ClassExprWhere;
+import platform.server.data.query.CompileSource;
 import platform.server.data.query.Context;
 import platform.server.data.query.HashContext;
-import platform.server.data.query.CompileSource;
 
 
-abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
+public abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
 
     protected final WhereType[] wheres;
     protected FormulaWhere(WhereType[] iWheres) {
@@ -116,6 +116,6 @@ abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> ex
     public abstract WhereType[] newArray(int length);
 
     public ClassExprWhere calculateClassWhere() {
-        return getMeanClassWheres().orMeans();
+        return getMeanClassWheres().getClassWhere();
     }
 }

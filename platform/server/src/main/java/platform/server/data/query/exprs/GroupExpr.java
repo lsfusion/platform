@@ -1,27 +1,26 @@
 package platform.server.data.query.exprs;
 
+import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.caches.MapContext;
-import platform.server.caches.MapParamsIterable;
-import platform.server.caches.Lazy;
-import platform.server.caches.ParamLazy;
-import platform.server.data.classes.where.MeanClassWhere;
-import platform.server.data.query.*;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.wheres.EqualsWhere;
+import platform.server.caches.*;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.Context;
+import platform.server.data.query.GroupJoin;
+import platform.server.data.query.HashContext;
+import platform.server.data.query.InnerJoin;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.cases.ExprCaseList;
 import platform.server.data.query.exprs.cases.MapCase;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.interop.Compare;
 
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,This>> extends MapExpr implements MapContext {
@@ -34,7 +33,7 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
 
     final Context context;
 
-    @Lazy
+    @TwinLazy
     public Where getJoinsWhere() {
         return getJoinsWhere(group);
     }
@@ -106,7 +105,7 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
         } else { // еще values перетранслируем
             KeyTranslator valueTranslator = new KeyTranslator(BaseUtils.toMap(groupExpr.context.keys), mapValues);
             expr = (E) groupExpr.expr.translateDirect(valueTranslator);
-            where = groupExpr.where.translate(valueTranslator);
+            where = groupExpr.where.translateDirect(valueTranslator);
             group = new HashMap<AndExpr, AndExpr>();
             for(Map.Entry<AndExpr,AndExpr> groupJoin : groupExpr.group.entrySet())
                 group.put(groupJoin.getKey().translateDirect(valueTranslator),groupJoin.getValue().translateDirect(translator));
@@ -226,21 +225,21 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
         return new ImplementHashes().hash(hashContext);
     }
 
-    public boolean equals(Object o) {
-        if(this==o) return true;
-        if (o==null || getClass()!=o.getClass()) return false;
+    public boolean twins(AbstractSourceJoin obj) {
+        GroupExpr<?,?> groupExpr = (GroupExpr)obj;
 
-        GroupExpr<?,?> groupExpr = ((GroupExpr)o);
+        assert hashCode()==groupExpr.hashCode();
 
-        for(KeyTranslator translator : new MapParamsIterable(this, groupExpr, false))
-            if(where.translate(translator).equals(groupExpr.where) && expr.translate(translator).equals(groupExpr.expr) &&
+        for(KeyTranslator translator : new MapHashIterable(this, groupExpr, false))
+            if(where.translateDirect(translator).equals(groupExpr.where) && expr.translateDirect(translator).equals(groupExpr.expr) &&
                     translator.translateDirect(BaseUtils.reverse(group)).equals(BaseUtils.reverse(groupExpr.group)))
                 return true;
         return false;
     }
 
-    public Object getFJGroup() {
-        return this;
+    public InnerJoin getFJGroup() {
+        return getGroupJoin();
+//        return this;
     }
 
     static <K,V> Collection<InnerJoins.Entry> getInnerJoins(Map<K,AndExpr> groupKeys,SourceExpr expr,Where where) {
@@ -252,6 +251,7 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
         context.values.addAll(this.context.values);
     }
 
+    @Lazy
     public GroupJoin getGroupJoin() {
         return new GroupJoin(where, group, context.keys);  
     }

@@ -1,10 +1,10 @@
 package platform.server.view.form.filter;
 
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.GroupObjectImplement;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
+import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.RemoteForm;
 
 import java.io.DataInputStream;
 import java.io.IOException;

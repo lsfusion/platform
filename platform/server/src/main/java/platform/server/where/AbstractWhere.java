@@ -1,22 +1,21 @@
 package platform.server.where;
 
 import net.jcip.annotations.Immutable;
-import platform.server.caches.ManualLazy;
 import platform.server.caches.Lazy;
+import platform.server.caches.ManualLazy;
+import platform.server.caches.TwinLazy;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.wheres.EqualsWhere;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.interop.Compare;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Immutable
 public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
 
     private Not not = null;
@@ -137,7 +136,7 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
             classWhere = calculateClassWhere();
         return classWhere;
     }
-    protected abstract ClassExprWhere calculateClassWhere();
+    public abstract ClassExprWhere calculateClassWhere();
 
 
     public MeanClassWheres meanClassWheres = null;
@@ -147,9 +146,9 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
             meanClassWheres = calculateMeanClassWheres();
         return meanClassWheres;
     }
-    protected abstract MeanClassWheres calculateMeanClassWheres();
+    public abstract MeanClassWheres calculateMeanClassWheres();
 
-    @Lazy
+    @TwinLazy
     public Map<AndExpr, ValueExpr> getExprValues() {
         Map<AndExpr, ValueExpr> result = new HashMap<AndExpr, ValueExpr>();
         for(OrObjectWhere orWhere : getOr())

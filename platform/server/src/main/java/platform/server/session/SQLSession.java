@@ -1,6 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.data.*;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.AndExpr;
@@ -289,9 +290,9 @@ public class SQLSession {
         SourceExpr fieldExpr = table.joinAnd(keyExprs).getExpr(field);
         getQuery.properties.put("result",fieldExpr);
         getQuery.and(fieldExpr.getWhere());
-        LinkedHashMap<Map<Object, Object>, Map<String, Object>> result = getQuery.executeSelect(this);
+        OrderedMap<Map<Object, Object>, Map<String, Object>> result = getQuery.executeSelect(this);
         if(result.size()>0)
-            return BaseUtils.singleValue(result).get("result");
+            return result.singleValue().get("result");
         else
             return null;
     }
@@ -385,8 +386,8 @@ public class SQLSession {
         return expressionString;
     }
 
-    public static <T> LinkedHashMap<String,String> mapNames(Map<T,String> exprs,Map<T,String> names, List<T> order) {
-        LinkedHashMap<String,String> result = new LinkedHashMap<String, String>();
+    public static <T> OrderedMap<String,String> mapNames(Map<T,String> exprs,Map<T,String> names, List<T> order) {
+        OrderedMap<String,String> result = new OrderedMap<String, String>();
         for(Map.Entry<T,String> name : names.entrySet()) {
             result.put(name.getValue(),exprs.get(name.getKey()));
             order.add(name.getKey());

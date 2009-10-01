@@ -1,6 +1,7 @@
 package platform.server.data.query;
 
 import net.jcip.annotations.Immutable;
+import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
@@ -10,8 +11,6 @@ import platform.server.data.classes.DataClass;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
@@ -20,7 +19,10 @@ import platform.server.session.SQLSession;
 import platform.server.where.Where;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // запрос JoinSelect
 @Immutable
@@ -28,11 +30,18 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
 
     public final Map<K,KeyExpr> mapKeys;
     public Map<V, SourceExpr> properties;
-    public Where<?> where = Where.TRUE;
+    public Where<?> where;
 
     public JoinQuery(Map<K,KeyExpr> iMapKeys) {
         mapKeys = iMapKeys;
         properties = new HashMap<V, SourceExpr>();
+        where = Where.TRUE;
+    }
+
+    public JoinQuery(Map<K,KeyExpr> mapKeys,Map<V,SourceExpr> properties,Where where) {
+        this.mapKeys = mapKeys;
+        this.properties = properties;
+        this.where = where;
     }
 
     public JoinQuery(MapKeysInterface<K> mapInterface) {
@@ -65,7 +74,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
         return parse().join(joinImplement);
     }
 
-    static <K> String stringOrder(List<K> sources, int offset, LinkedHashMap<K,Boolean> orders) {
+    static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders) {
         String orderString = "";
         for(Map.Entry<K,Boolean> order : orders.entrySet())
             orderString = (orderString.length()==0?"":orderString+",") + (sources.indexOf(order.getKey())+offset+1) + " " + (order.getValue()?"DESC NULLS LAST":"ASC NULLS FIRST");
@@ -91,28 +100,28 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
     }
 
     public CompiledQuery<K,V> compile(SQLSyntax syntax) {
-        return compile(syntax, new LinkedHashMap<V, Boolean>(), 0);
+        return compile(syntax, new OrderedMap<V, Boolean>(), 0);
     }
-    CompiledQuery<K,V> compile(SQLSyntax syntax,LinkedHashMap<V,Boolean> orders,int selectTop) {
+    CompiledQuery<K,V> compile(SQLSyntax syntax,OrderedMap<V,Boolean> orders,int selectTop) {
         return parse().compileSelect(syntax,orders,selectTop);
     }
 
-    public static <V> LinkedHashMap<V,Boolean> reverseOrder(LinkedHashMap<V,Boolean> orders) {
-        LinkedHashMap<V,Boolean> result = new LinkedHashMap<V, Boolean>();
+    public static <V> OrderedMap<V,Boolean> reverseOrder(OrderedMap<V,Boolean> orders) {
+        OrderedMap<V,Boolean> result = new OrderedMap<V, Boolean>();
         for(Map.Entry<V,Boolean> order : orders.entrySet())
             result.put(order.getKey(),!order.getValue());
         return result;
     }
 
-    public LinkedHashMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session) throws SQLException {
-        return executeSelect(session,new LinkedHashMap<V, Boolean>(),0);
+    public OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session) throws SQLException {
+        return executeSelect(session,new OrderedMap<V, Boolean>(),0);
     }
-    public LinkedHashMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session,LinkedHashMap<V,Boolean> orders,int selectTop) throws SQLException {
+    public OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop) throws SQLException {
         return compile(session.syntax,orders,selectTop).executeSelect(session,false);
     }
 
-    public LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSelectClasses(SQLSession session, BaseClass baseClass) throws SQLException {
-        return executeSelectClasses(session, new LinkedHashMap<V, Boolean>(), 0, baseClass);
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSelectClasses(SQLSession session, BaseClass baseClass) throws SQLException {
+        return executeSelectClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass);
     }
 
     static class ReadClasses<T> {
@@ -142,8 +151,8 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
         }
     }
 
-    public LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSelectClasses(SQLSession session,LinkedHashMap<V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
-        LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new LinkedHashMap<Map<K, DataObject>, Map<V, ObjectValue>>();
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeSelectClasses(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
+        OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
 
         if(where.isFalse()) return result; // иначе типы ключей не узнаем
 
@@ -153,7 +162,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
         ReadClasses<K> keyClasses = new ReadClasses<K>(mapKeys,classQuery,baseClass);
         ReadClasses<V> propClasses = new ReadClasses<V>(properties,classQuery,baseClass);
 
-        LinkedHashMap<Map<K, Object>, Map<Object, Object>> rows = classQuery.executeSelect(session, (LinkedHashMap<Object,Boolean>) orders,selectTop);
+        OrderedMap<Map<K, Object>, Map<Object, Object>> rows = classQuery.executeSelect(session, (OrderedMap<Object,Boolean>) orders,selectTop);
 
         // перемаппим
         for(Map.Entry<Map<K,Object>,Map<Object,Object>> row : rows.entrySet()) {
@@ -171,7 +180,7 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
     public void outSelect(SQLSession session) throws SQLException {
         compile(session.syntax).outSelect(session);
     }
-    public void outSelect(SQLSession session,LinkedHashMap<V,Boolean> orders,int selectTop) throws SQLException {
+    public void outSelect(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop) throws SQLException {
         compile(session.syntax,orders,selectTop).outSelect(session);
     }
 

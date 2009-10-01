@@ -1,8 +1,8 @@
 package platform.server.data.classes.where;
 
 import platform.server.data.query.*;
-import platform.server.data.query.translators.Translator;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
@@ -23,7 +23,7 @@ public class MeanClassWhere extends DataWhere {
         return packWhere.getFollows();
     }
 
-    protected ClassExprWhere calculateClassWhere() {
+    public ClassExprWhere calculateClassWhere() {
         return packWhere;
     }
 
@@ -39,6 +39,10 @@ public class MeanClassWhere extends DataWhere {
         return System.identityHashCode(this);
     }
 
+    public boolean twins(AbstractSourceJoin obj) {
+        return false;
+    }
+
     public String getSource(CompileSource compile) {
         if(compile instanceof ToString)
             return packWhere.toString();
@@ -51,7 +55,10 @@ public class MeanClassWhere extends DataWhere {
         return packWhere.toString();
     }
 
-    public Where translate(Translator translator) {
+    public Where translateDirect(KeyTranslator translator) {
+        throw new RuntimeException("Not supported");
+    }
+    public Where translateQuery(QueryTranslator translator) {
         throw new RuntimeException("Not supported");
     }
 

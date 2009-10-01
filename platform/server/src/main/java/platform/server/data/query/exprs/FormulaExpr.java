@@ -1,20 +1,20 @@
 package platform.server.data.query.exprs;
 
+import platform.server.caches.ParamLazy;
 import platform.server.data.classes.ConcreteValueClass;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.TranslateExprLazy;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.server.caches.Lazy;
-import platform.server.caches.ParamLazy;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
+@TranslateExprLazy
 public class FormulaExpr extends StaticClassExpr {
 
     private final String formula;
@@ -73,7 +73,7 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     // возвращает Where без следствий
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         Where result = Where.TRUE;
         for(SourceExpr param : params.values())
             result = result.and(param.getWhere());
@@ -87,8 +87,8 @@ public class FormulaExpr extends StaticClassExpr {
         return follows;
     }
 
-    public boolean equals(Object o) {
-        return this==o || o instanceof FormulaExpr && formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
+    public boolean twins(AbstractSourceJoin o) {
+        return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 
     public int hashContext(HashContext hashContext) {

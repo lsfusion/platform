@@ -1,5 +1,7 @@
 package platform.server.data.classes;
 
+import platform.interop.Data;
+import platform.server.caches.ManualLazy;
 import platform.server.data.classes.where.ConcreteCustomClassSet;
 import platform.server.data.classes.where.CustomClassSet;
 import platform.server.data.classes.where.UpClassSet;
@@ -42,26 +44,17 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         parents = new ArrayList<CustomClass>();
         children = new ArrayList<CustomClass>();
 
-        for (CustomClass parent : iParents) addParent(parent);
+        for (CustomClass parent : iParents) {
+            parents.add(parent);
+            parent.children.add(this);
+            assert parent.childs==null;
+        }
     }
 
     public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
         ObjectTable classTable = getBaseClass().table;
         session.updateInsertRecord(classTable,Collections.singletonMap(classTable.key,value),
                 Collections.singletonMap(classTable.objectClass,(ObjectValue)new DataObject(ID, SystemClass.instance)));
-    }
-
-    public void addParent(CustomClass parentClass) {
-        // проверим что в Parent'ах нету этого класса
-        for(CustomClass parent : parents)
-            if(parent.isChild(parentClass)) return;
-
-        Iterator<CustomClass> i = parents.iterator();
-        while(i.hasNext())
-            if(parentClass.isChild(i.next())) i.remove();
-
-        parents.add(parentClass);
-        parentClass.children.add(this);
     }
 
     public UpClassSet getUpSet() {
@@ -73,12 +66,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public boolean isChild(CustomClass parentClass) {
-        if(parentClass==this) return true;
-
-        for(CustomClass parent : parents)
-            if (parent.isChild(parentClass)) return true;
-
-        return false;
+        return parentClass.getChilds().contains(this);
     }
 
     public boolean isCompatibleParent(ValueClass remoteClass) {
@@ -135,14 +123,21 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     // заполняет список классов
-    public void fillChilds(Collection<CustomClass> classSet) {
-        if (classSet.contains(this))
-            return;
-
+    public void fillChilds(Set<CustomClass> classSet) {
         classSet.add(this);
 
         for(CustomClass child : children)
             child.fillChilds(classSet);
+    }
+
+    private Set<CustomClass> childs = null;
+    @ManualLazy
+    public Set<CustomClass> getChilds() {
+        if(childs==null) {
+            childs = new HashSet<CustomClass>();
+            fillChilds(childs);
+        }
+        return childs;
     }
 
     // заполняет список классов
@@ -249,7 +244,8 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        outStream.writeByte(0);
+        outStream.writeByte(Data.OBJECT);
+        outStream.writeBoolean(this instanceof ConcreteCustomClass);
         outStream.writeUTF(caption);
         outStream.writeInt(ID);
         outStream.writeBoolean(!children.isEmpty());

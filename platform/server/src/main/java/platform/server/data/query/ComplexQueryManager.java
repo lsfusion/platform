@@ -1,8 +1,13 @@
 package platform.server.data.query;
 
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.DeclareParents;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Around;
+import platform.interop.exceptions.ComplexQueryException;
 
-/*@Aspect
+/*
+@Aspect
 public class ComplexQueryManager {
 
     public interface Counter {
@@ -19,27 +24,23 @@ public class ComplexQueryManager {
         }
 
         public void add() {
-            if(counter++>10000 && counter%100==0 && System.currentTimeMillis()-millis>4000)
+            if(counter++>100 && counter%15==0 && System.currentTimeMillis()-millis>4000)
                 throw new ComplexQueryException();
         }
     }
-    @DeclareParents(value="platform.server.data.query.JoinQuery",defaultImpl=CounterImpl.class)
+
+    @DeclareParents(value="platform.server.view.form.RemoteForm",defaultImpl=CounterImpl.class)
     private Counter counterInterface;
-
-    @Before("cflow(execution(* platform.server.view.form.RemoteForm.endApply(..))) && " +
-            "call(* platform.server.data.query.JoinQuery.executeSelect(..)) && target(query)) ")
-    public void callBeforeStart(Counter query) {
-        query.start();
+    @Before("call(* platform.server.view.form.RemoteForm.endApply(..)) && target(counter)")
+    public void callBeforeStart(Counter counter) {
+        counter.start();
+    }
+    @Before("cflow(execution(* platform.server.view.form.RemoteForm.endApply(..)) && target(counter)) && " +
+            "call(platform.server.data.classes.where.MeanClassWheres platform.server.where.AbstractWhere.calculateMeanClassWheres())")
+    public void callBeforeLazy(Counter counter) {
+        counter.add();
     }
 
-    @Before("cflow(execution(* platform.server.view.form.RemoteForm.endApply(..))) && " +
-            "cflow(execution(* platform.server.data.query.JoinQuery.executeSelect(..)) && target(query)) && (" +
-            "execution(* platform.server.where.Where.translate(..)) || " +
-            "execution(* platform.server.data.query.exprs.SourceExpr.translate(..)))")
-    public void callBeforeTranslate(Counter query) {
-        query.add();
-    }
 
 }
-
-*/
+  */

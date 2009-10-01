@@ -451,7 +451,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, iID, caption, isPrintForm);
         }
 
-        void addArticleRegularFilterGroup(PropertyObjectNavigator documentProp, Object documentValue, PropertyObjectNavigator... extraProps) {
+        void addArticleRegularFilterGroup(PropertyObjectNavigator documentProp, PropertyObjectNavigator... extraProps) {
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
 /*            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -459,7 +459,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(documentProp, Compare.NOT_EQUALS, documentValue),
+                                  new NotNullFilterNavigator(documentProp),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
 
@@ -467,7 +467,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             for (PropertyObjectNavigator extraProp : extraProps) {
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                      new CompareFilterNavigator(extraProp, Compare.NOT_EQUALS, 0),
+                                      new NotNullFilterNavigator(extraProp),
                                       extraProp.property.caption,
                                       KeyStroke.getKeyStroke(functionKey--, 0)));
             }
@@ -512,7 +512,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0);
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view);
         }
     }
 
@@ -545,8 +545,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, quantity);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0,
-                                         getPropertyView(docOutBalanceQuantity.property).view,
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
+                    getPropertyView(docOutBalanceQuantity.property).view,
                                          getPropertyView(docIncBalanceQuantity.property).view);
 
             addHintsNoUpdate(currentIncDate.property);
@@ -563,8 +563,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, quantity);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0,
-                                         getPropertyView(docOutBalanceQuantity.property).view);
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
+                    getPropertyView(docOutBalanceQuantity.property).view);
         }
     }
 
@@ -578,8 +578,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, quantity);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0,
-                                         getPropertyView(docOutBalanceQuantity.property).view);
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
+                    getPropertyView(docOutBalanceQuantity.property).view);
         }
     }
 
@@ -593,8 +593,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, quantity);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0,
-                                         getPropertyView(docOutBalanceQuantity.property).view);
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
+                    getPropertyView(docOutBalanceQuantity.property).view);
         }
     }
 
@@ -615,8 +615,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, invBalance, quantity);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0,
-                                         getPropertyView(docOutBalanceQuantity.property).view);
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
+                    getPropertyView(docOutBalanceQuantity.property).view);
 
             if (groupStore)
                 addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, objStore));
@@ -633,8 +633,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, quantity);
 
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view, 0,
-                                         getPropertyView(docOutBalanceQuantity.property).view);
+            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
+                    getPropertyView(docOutBalanceQuantity.property).view);
         }
     }
 
@@ -660,11 +660,11 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(getPropertyView(exchIncQuantity.property).view, Compare.NOT_EQUALS, 0),
+                                  new NotNullFilterNavigator(getPropertyView(exchIncQuantity.property).view),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(getPropertyView(exchOutQuantity.property).view, Compare.NOT_EQUALS, 0),
+                                  new NotNullFilterNavigator(getPropertyView(exchOutQuantity.property).view),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -683,7 +683,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));*/
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(getPropertyView(exchangeQuantity.property).view, Compare.NOT_EQUALS, 0),
+                                  new NotNullFilterNavigator(getPropertyView(exchangeQuantity.property).view),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -737,7 +737,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup, isRevalued);
 
-            addArticleRegularFilterGroup(getPropertyView(isRevalued.property).view, false);
+            addArticleRegularFilterGroup(getPropertyView(isRevalued.property).view);
         }
     }
 

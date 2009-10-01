@@ -1,17 +1,13 @@
 package platform.server.data.query;
 
 import platform.server.data.Table;
-import platform.server.data.KeyField;
+import platform.server.data.query.exprs.GroupExpr;
+import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.query.exprs.*;
-import platform.server.data.query.translators.KeyTranslator;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.where.Where;
-import platform.server.caches.MapParamsIterable;
-import platform.server.session.SQLSession;
-import platform.base.BaseUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 // класс нисколько не immutable
 public abstract class CompileSource {

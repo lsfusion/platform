@@ -1,11 +1,15 @@
 package platform.server.view.form.client;
 
-import platform.server.view.navigator.PropertyViewNavigator;
+import platform.base.OrderedMap;
 import platform.server.view.navigator.CellViewNavigator;
+import platform.server.view.navigator.PropertyViewNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class FormView implements ClientSerialize {
 
@@ -28,7 +32,7 @@ public class FormView implements ClientSerialize {
     // список фильтров
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
 
-    public LinkedHashMap<CellViewNavigator,Boolean> defaultOrders = new LinkedHashMap<CellViewNavigator, Boolean>();
+    public OrderedMap<CellViewNavigator,Boolean> defaultOrders = new OrderedMap<CellViewNavigator, Boolean>();
 
     public FunctionView printView = new FunctionView();
     public FunctionView refreshView = new FunctionView();

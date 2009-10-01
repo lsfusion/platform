@@ -1,7 +1,7 @@
 package platform.server.data.query.exprs.cases;
 
-import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.HashContext;
+import platform.server.data.query.exprs.AndExpr;
 import platform.server.where.Where;
 
 public class ExprCase extends Case<AndExpr> {

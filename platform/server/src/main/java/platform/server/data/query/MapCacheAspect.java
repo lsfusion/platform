@@ -8,19 +8,23 @@ import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
 import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
+import platform.server.caches.MapHashIterable;
 import platform.server.caches.MapParamsIterable;
 import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.properties.DataProperty;
 import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Aspect
 public class MapCacheAspect {
@@ -37,9 +41,9 @@ public class MapCacheAspect {
     private ParseInterface parseInterface;
 
     static <K,V,CK,CV> MapParsedQuery<CK,CV,K,V> cacheQuery(JoinQuery<K,V> cache,JoinQuery<CK,CV> query) {
-        for(KeyTranslator translator : new MapParamsIterable(cache, query, true)) {
+        for(KeyTranslator translator : new MapHashIterable(cache, query, true)) {
             Map<CV,V> mapProps;
-            if(cache.where.translate(translator).equals(query.where) && (mapProps=BaseUtils.mapEquals(query.properties,translator.translate(cache.properties)))!=null)
+            if(cache.where.translateDirect(translator).equals(query.where) && (mapProps=BaseUtils.mapEquals(query.properties,translator.translate(cache.properties)))!=null)
                 return new MapParsedQuery<CK,CV,K,V>((ParsedJoinQuery<K,V>) ((ParseInterface)cache).getParse(),
                         mapProps,BaseUtils.crossValues(query.mapKeys, cache.mapKeys, translator.keys),translator.values);
         }
@@ -131,7 +135,7 @@ public class MapCacheAspect {
         }
         synchronized(hashCaches) {
             for(Map.Entry<JoinImplement<K>,Join<V>> cache : hashCaches.entrySet()) {
-                for(KeyTranslator translator : new MapParamsIterable(cache.getKey(), joinImplement, true)) {
+                for(KeyTranslator translator : new MapHashIterable(cache.getKey(), joinImplement, true)) {
                     if(translator.translate(cache.getKey().exprs).equals(joinImplement.exprs)) {
                         // здесь не все values нужно докинуть их из контекста (ключи по идее все)
                         Map<ValueExpr,ValueExpr> transValues;

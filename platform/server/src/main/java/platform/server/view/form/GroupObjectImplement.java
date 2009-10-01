@@ -1,18 +1,19 @@
 package platform.server.view.form;
 
-import platform.interop.form.RemoteFormInterface;
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.interop.Order;
+import platform.interop.form.RemoteFormInterface;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.Property;
 import platform.server.session.DataSession;
 import platform.server.session.TableChanges;
 import platform.server.view.form.filter.Filter;
-import platform.base.BaseUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -51,7 +52,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
 
     // закэшированные
 
-    private Set<Filter> setFilters = null;
+    public Set<Filter> setFilters = null;
     public Set<Filter> getSetFilters() {
         if(setFilters==null)
             setFilters = BaseUtils.mergeSet(BaseUtils.mergeSet(fixedFilters,userFilters),regularFilters);
@@ -94,20 +95,20 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     public Set<Filter> filters = new HashSet<Filter>();
 
     // обертку потому как сложный assertion
-    private LinkedHashMap<OrderView,Boolean> setOrders = null;
-    public LinkedHashMap<OrderView,Boolean> getSetOrders() {
+    public OrderedMap<OrderView,Boolean> setOrders = null;
+    public OrderedMap<OrderView,Boolean> getSetOrders() {
         if(setOrders==null) {
-            setOrders = new LinkedHashMap<OrderView,Boolean>(userOrders);
+            setOrders = new OrderedMap<OrderView,Boolean>(userOrders);
             for(ObjectImplement object : objects)
                 if(!(setOrders.containsKey(object)))
                     setOrders.put(object,false);
         }
         return setOrders;
     }
-    private LinkedHashMap<OrderView,Boolean> userOrders = new LinkedHashMap<OrderView, Boolean>();
+    private OrderedMap<OrderView,Boolean> userOrders = new OrderedMap<OrderView, Boolean>();
     public void changeOrder(OrderView property, Order modiType) {
         if (modiType == Order.REPLACE)
-            userOrders = new LinkedHashMap<OrderView, Boolean>();
+            userOrders = new OrderedMap<OrderView, Boolean>();
 
         if (modiType == Order.REMOVE)
             userOrders.remove(property);
@@ -122,7 +123,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     }
 
     // с активным интерфейсом
-    LinkedHashMap<OrderView,Boolean> orders = new LinkedHashMap<OrderView, Boolean>();
+    OrderedMap<OrderView,Boolean> orders = new OrderedMap<OrderView, Boolean>();
 
     public void fillUpdateProperties(Set<Property> properties) {
         for(Filter filter : filters)
@@ -132,9 +133,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     }
 
     boolean upKeys, downKeys;
-    List<Map<ObjectImplement,DataObject>> keys = null;
-    // какие ключи активны
-    Map<Map<ObjectImplement,DataObject>,Map<OrderView,ObjectValue>> keyOrders = null;
+    OrderedMap<Map<ObjectImplement,DataObject>,Map<OrderView,ObjectValue>> keys = new OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>>();
 
     // 0 !!! - изменился объект, 1 - класс объекта, 2 !!! - отбор, 3 !!! - хоть один класс, 4 !!! - классовый вид
 
@@ -157,7 +156,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     }
 
     public Map<ObjectImplement,DataObject> findGroupObjectValue(Map<ObjectImplement,Object> map) {
-        for(Map<ObjectImplement,DataObject> keyRow : keys) {
+        for(Map<ObjectImplement,DataObject> keyRow : keys.keySet()) {
             boolean equal = true;
             for(Map.Entry<ObjectImplement,DataObject> keyEntry : keyRow.entrySet())
                 if(!keyEntry.getValue().object.equals(map.get(keyEntry.getKey()))) {
@@ -194,5 +193,14 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         for(ObjectImplement object : objects)
             result.put(object, NullValue.instance);
         return result;
+    }
+
+    boolean isSolid() {
+        Iterator<ObjectImplement> i = objects.iterator();
+        boolean read = i.next() instanceof CustomObjectImplement;
+        while(i.hasNext())
+            if(read != i.next() instanceof CustomObjectImplement)
+                return false;
+        return true;
     }
 }

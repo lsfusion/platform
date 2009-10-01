@@ -1,5 +1,6 @@
 package platform.server.data.query.exprs;
 
+import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
@@ -12,22 +13,18 @@ import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.query.exprs.cases.ExprCase;
 import platform.server.data.query.exprs.cases.ExprCaseList;
 import platform.server.data.query.exprs.cases.MapCase;
-import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.KeyTranslator;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.types.Reader;
 import platform.server.data.types.Type;
-import platform.server.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.where.Where;
 
 import java.util.Collection;
 import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
 // абстрактный класс выражений
 
-@Immutable
 abstract public class SourceExpr extends AbstractSourceJoin {
 
     public abstract Type getType(Where where);
@@ -41,7 +38,7 @@ abstract public class SourceExpr extends AbstractSourceJoin {
             where = calculateWhere();
         return where;
     }
-    abstract protected Where calculateWhere();
+    public abstract Where calculateWhere();
 
     // получает список ExprCase'ов
     public abstract ExprCaseList getCases();
@@ -56,10 +53,6 @@ abstract public class SourceExpr extends AbstractSourceJoin {
 
     public Where compare(DataObject data, Compare compare) {
         return compare(data.getExpr(),compare);
-    }
-
-    public Where greater(SourceExpr expr) {
-        return compare(expr,Compare.GREATER).or(expr.getWhere().not());
     }
 
     public abstract SourceExpr scale(int coeff);
@@ -80,7 +73,7 @@ abstract public class SourceExpr extends AbstractSourceJoin {
         return new ExprCaseList(where,this,elseExpr).getExpr();
     }
     public SourceExpr max(SourceExpr expr) {
-        return ifElse(greater(expr),expr);
+        return ifElse(compare(expr, Compare.GREATER).or(expr.getWhere().not()),expr);
     }
     public SourceExpr nvl(SourceExpr expr) {
         return ifElse(getWhere(),expr);
@@ -88,13 +81,6 @@ abstract public class SourceExpr extends AbstractSourceJoin {
 
     public abstract SourceExpr translateQuery(QueryTranslator translator);
     public abstract SourceExpr translateDirect(KeyTranslator translator);
-
-    public SourceExpr translate(Translator translator) {
-        if(translator instanceof KeyTranslator)
-            return translateDirect((KeyTranslator) translator);
-        else
-            return translateQuery((QueryTranslator) translator);
-    }
 
     private static <K> SourceExpr groupSum(Map<K,SourceExpr> implement, SourceExpr expr, Where where, Map<K, AndExpr> group) {
         SourceExpr groupExpr = CaseExpr.NULL;

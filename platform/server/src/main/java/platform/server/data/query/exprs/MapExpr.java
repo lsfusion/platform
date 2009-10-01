@@ -6,16 +6,19 @@ import platform.server.data.classes.ConcreteObjectClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.OrObjectClassSet;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.TranslateExprLazy;
 import platform.server.data.query.wheres.IsClassWhere;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.where.DataWhere;
-import platform.server.where.Where;
 import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.Collection;
+import java.util.Map;
 
+@TranslateExprLazy
 public abstract class MapExpr extends VariableClassExpr implements JoinData {
 
     private OrObjectClassSet getSet() {
@@ -68,7 +71,7 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
         return ((DataWhere)getWhere()).getFollows();
     }
 
-    protected abstract class NotNull extends DataWhere {
+    public abstract class NotNull extends DataWhere {
 
         public MapExpr getExpr() {
             return MapExpr.this;
@@ -83,8 +86,11 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
             return MapExpr.this.getSource(compile) + " IS NULL";
         }
 
-        public Where translate(Translator translator) {
-            return MapExpr.this.translate(translator).getWhere();
+        public Where translateDirect(KeyTranslator translator) {
+            return MapExpr.this.translateDirect(translator).getWhere();
+        }
+        public Where translateQuery(QueryTranslator translator) {
+            return MapExpr.this.translateQuery(translator).getWhere();
         }
 
         public void fillContext(Context context) {
@@ -100,8 +106,8 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
         }
 
         @Override
-        public boolean equals(Object o) {
-            return this == o || o instanceof NotNull && MapExpr.this.equals(((NotNull) o).getExpr());
+        public boolean twins(AbstractSourceJoin o) {
+            return MapExpr.this.equals(((NotNull) o).getExpr());
         }
     }
 

@@ -5,11 +5,11 @@ import platform.base.BaseUtils;
 import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.caches.Lazy;
 import platform.server.data.Field;
-import platform.server.data.PropertyField;
 import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
 import platform.server.data.classes.ConcreteClass;
-import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.CustomClass;
+import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.JoinQuery;
@@ -23,7 +23,10 @@ import platform.server.logics.constraints.Constraint;
 import platform.server.logics.data.MapKeysTable;
 import platform.server.logics.data.TableFactory;
 import platform.server.logics.properties.groups.AbstractNode;
-import platform.server.session.*;
+import platform.server.session.DataChanges;
+import platform.server.session.DataSession;
+import platform.server.session.MapChangeDataProperty;
+import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
 
 import java.sql.SQLException;
@@ -85,7 +88,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
                 changedExpr = CaseExpr.NULL;
             if(depends!=null && changedExpr==null && usedChanges.usedDefault.isEmpty())
                 changedExpr = depends.changed(this, joinImplement, changedExprWhere);
-            if(changedExpr==null && isStored() && this instanceof AggregateProperty) // если хранимое и изменяется - то узнаем changed а в else подставляем stored
+            if(changedExpr==null && isStored() && usePrevious()) // если хранимое и изменяется - то узнаем changed а в else подставляем stored
                 changedExpr = calculateSourceExpr(joinImplement, session, usedDefault, depends, changedExprWhere);
             if(changedExpr!=null) {
                 if(changedWhere!=null) changedWhere.add(changedExprWhere.toWhere());
@@ -309,4 +312,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
             return order.iterator();
         }
     }
+
+    // используется для оптимизации - если Stored то попытать использовать это значение
+    protected abstract boolean usePrevious();
 }

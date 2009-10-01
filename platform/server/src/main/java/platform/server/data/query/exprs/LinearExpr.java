@@ -1,20 +1,22 @@
 package platform.server.data.query.exprs;
 
+import platform.base.BaseUtils;
+import platform.server.caches.ParamLazy;
 import platform.server.data.classes.IntegralClass;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.query.translators.TranslateExprLazy;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.server.caches.ParamLazy;
-import platform.base.BaseUtils;
 
 import java.util.Map;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать AndExpr
+@TranslateExprLazy
 public class LinearExpr extends StaticClassExpr {
 
     final LinearOperandMap map;
@@ -31,7 +33,7 @@ public class LinearExpr extends StaticClassExpr {
     }
 
     // возвращает Where на notNull
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return map.getWhere();
     }
 
@@ -55,12 +57,17 @@ public class LinearExpr extends StaticClassExpr {
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
+    @Override
     public boolean equals(Object obj) {
         if(map.size()==1) {
             Map.Entry<AndExpr, Integer> singleEntry = BaseUtils.singleEntry(map);
             if(singleEntry.getValue().equals(1)) return singleEntry.getKey().equals(obj);
         }
-        return this==obj || obj instanceof LinearExpr && map.equals(((LinearExpr)obj).map);
+        return super.equals(obj);
+    }
+
+    public boolean twins(AbstractSourceJoin obj) {
+        return map.equals(((LinearExpr)obj).map);
     }
 
     public int hashContext(HashContext hashContext) {
@@ -71,7 +78,7 @@ public class LinearExpr extends StaticClassExpr {
     public SourceExpr translateQuery(QueryTranslator translator) {
         SourceExpr result = null;
         for(Map.Entry<AndExpr,Integer> operand : map.entrySet()) {
-            SourceExpr transOperand = operand.getKey().translate(translator).scale(operand.getValue());
+            SourceExpr transOperand = operand.getKey().translateQuery(translator).scale(operand.getValue());
             if(result==null)
                 result = transOperand;
             else
@@ -85,8 +92,8 @@ public class LinearExpr extends StaticClassExpr {
     public AndExpr translateDirect(KeyTranslator translator) {
         LinearOperandMap transMap = new LinearOperandMap();
         for(Map.Entry<AndExpr,Integer> operand : map.entrySet())
-            transMap.add(operand.getKey().translateDirect(translator),operand.getValue());
-        return transMap.getExpr();
+            transMap.put(operand.getKey().translateDirect(translator),operand.getValue());
+        return new LinearExpr(transMap);
     }
 
     public AndExpr packFollowFalse(Where where) {

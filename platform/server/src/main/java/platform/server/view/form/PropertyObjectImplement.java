@@ -6,7 +6,9 @@ import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.properties.*;
+import platform.server.logics.properties.Property;
+import platform.server.logics.properties.PropertyImplement;
+import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
 

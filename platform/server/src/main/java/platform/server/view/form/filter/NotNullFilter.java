@@ -4,17 +4,17 @@ import platform.server.data.query.exprs.KeyExpr;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.TableChanges;
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.RemoteForm;
 import platform.server.where.Where;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
-import java.io.DataInputStream;
-import java.io.IOException;
 
 public class NotNullFilter<P extends PropertyInterface> extends PropertyFilter<P> {
 

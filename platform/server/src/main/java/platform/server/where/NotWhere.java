@@ -3,7 +3,8 @@ package platform.server.where;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.MeanClassWheres;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
 
 class NotWhere extends ObjectWhere<DataWhere> {
@@ -27,8 +28,8 @@ class NotWhere extends ObjectWhere<DataWhere> {
 
     final static String PREFIX = "NOT ";
 
-    public boolean equals(Object o) {
-        return this==o || o instanceof NotWhere && where.equals(((NotWhere)o).where);
+    public boolean twins(AbstractSourceJoin o) {
+        return where.equals(((NotWhere)o).where);
     }
 
     public int hashContext(HashContext hashContext) {
@@ -47,10 +48,12 @@ class NotWhere extends ObjectWhere<DataWhere> {
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public Where translate(Translator translator) {
-        return where.translate(translator).not();
+    public Where translateDirect(KeyTranslator translator) {
+        return where.translateDirect(translator).not();
     }
-
+    public Where translateQuery(QueryTranslator translator) {
+        return where.translateQuery(translator).not();
+    }
 
     public void fillContext(Context context) {
         where.fillContext(context);

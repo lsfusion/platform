@@ -1,12 +1,10 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
-import platform.server.where.Where;
-import platform.server.data.query.wheres.CompareWhere;
-import platform.server.data.query.wheres.EqualsWhere;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.interop.Compare;
+import platform.server.data.query.wheres.EqualsWhere;
+import platform.server.where.Where;
 
 import java.util.ArrayList;
 import java.util.Collection;

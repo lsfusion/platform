@@ -1,13 +1,11 @@
 package platform.server.session;
 
+import platform.base.BaseUtils;
 import platform.server.data.classes.CustomClass;
 import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.Property;
-import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class TableChanges extends DataChanges<TableChanges> {
 

@@ -1,29 +1,17 @@
 package platform.server.data.query.wheres;
 
-import platform.interop.Compare;
-import platform.server.data.classes.StringClass;
-import platform.server.data.classes.where.ClassExprWhere;
-import platform.server.data.query.*;
-import platform.server.data.query.exprs.*;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.Context;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.exprs.AndExpr;
 import platform.server.where.DataWhere;
-import platform.server.where.DataWhereSet;
-import platform.server.where.Where;
 import platform.server.where.OrWhere;
-import platform.server.caches.ParamLazy;
+import platform.server.where.Where;
 
 
 public abstract class CompareWhere extends DataWhere {
 
     public final AndExpr operator1;
     public final AndExpr operator2;
-
-    protected static Where create(CompareWhere where) {
-        if(where.getClassWhere().isFalse())
-            return Where.FALSE;
-        else
-            return where;
-    }
 
     protected CompareWhere(AndExpr iOperator1, AndExpr iOperator2) {
         operator1 = iOperator1;
@@ -43,10 +31,9 @@ public abstract class CompareWhere extends DataWhere {
     public boolean checkTrue(Where where) {
         // A>B = !(A=B) AND !(B>A) AND A AND B
         // A=B = !(A>B) AND !(B>A) AND A AND B
-        return  GreaterWhere.create(operator2, operator1).means(where) &&
-                OrWhere.orTrue(operator1.getWhere(),where) &&
+        return  OrWhere.orTrue(operator1.getWhere(),where) &&
                 OrWhere.orTrue(operator2.getWhere(),where) &&
+                GreaterWhere.create(operator2, operator1).means(where) &&
                 (this instanceof GreaterWhere?EqualsWhere.create(operator1, operator2):GreaterWhere.create(operator1, operator2)).means(where);
-//                OrWhere.orTrue(operator1.getWhere().orMeans(operator2.getWhere()),where);
     }
 }

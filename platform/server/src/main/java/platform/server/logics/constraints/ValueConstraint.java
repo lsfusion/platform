@@ -1,16 +1,15 @@
 package platform.server.logics.constraints;
 
+import platform.base.OrderedMap;
+import platform.interop.Compare;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ValueExpr;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.DataSession;
 import platform.server.where.WhereBuilder;
-import platform.interop.Compare;
 
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 abstract class ValueConstraint extends Constraint {
@@ -32,7 +31,7 @@ abstract class ValueConstraint extends Constraint {
         changed.and(changedWhere.toWhere());
         changed.properties.put("value", valueExpr);
 
-        LinkedHashMap<Map<P, Object>, Map<String, Object>> result = changed.executeSelect(session);
+        OrderedMap<Map<P, Object>, Map<String, Object>> result = changed.executeSelect(session);
         if(result.size()>0) {
             String resultString = "Ограничение на св-во "+ property.caption +" нарушено"+'\n';
             for(Map.Entry<Map<P,Object>,Map<String,Object>> row : result.entrySet()) {

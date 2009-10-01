@@ -1,14 +1,11 @@
 package platform.server.data.query.translators;
 
-import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.VariableClassExpr;
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
+import platform.server.data.query.exprs.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public class KeyTranslator extends Translator<KeyExpr> {
@@ -32,4 +29,14 @@ public class KeyTranslator extends Translator<KeyExpr> {
         return transMap;
     }
 
+    public <K> Map<K, SourceExpr> translate(Map<K, ? extends SourceExpr> map) {
+        Map<K,SourceExpr> transMap = new HashMap<K,SourceExpr>();
+        for(Map.Entry<K,? extends SourceExpr> entry : map.entrySet())
+            transMap.put(entry.getKey(),entry.getValue().translateDirect(this));
+        return transMap;
+    }
+
+    public boolean identity() {
+        return BaseUtils.identity(keys) && BaseUtils.identity(values);
+    }
 }

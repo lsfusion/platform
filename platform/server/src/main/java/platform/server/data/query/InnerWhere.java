@@ -1,17 +1,15 @@
 package platform.server.data.query;
 
-import platform.server.data.Table;
-import platform.server.data.query.exprs.GroupExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.base.SetWhere;
 import platform.base.AddSet;
 import platform.base.BaseUtils;
+import platform.server.data.Table;
+import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.exprs.ValueExpr;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class InnerWhere {
 

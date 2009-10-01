@@ -1,11 +1,11 @@
 package platform.server.logics.properties;
 
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.session.TableChanges;
-import platform.server.session.DataChanges;
-import platform.server.where.WhereBuilder;
-import platform.server.where.Where;
 import platform.base.BaseUtils;
+import platform.server.data.query.exprs.SourceExpr;
+import platform.server.session.DataChanges;
+import platform.server.session.TableChanges;
+import platform.server.where.Where;
+import platform.server.where.WhereBuilder;
 
 import java.util.*;
 

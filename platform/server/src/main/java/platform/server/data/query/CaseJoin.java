@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import net.jcip.annotations.Immutable;
 import platform.server.caches.Lazy;
+import platform.server.caches.TwinLazy;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.where.Where;
 

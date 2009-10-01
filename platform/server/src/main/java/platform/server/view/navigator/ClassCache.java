@@ -1,12 +1,12 @@
 package platform.server.view.navigator;
 
+import platform.base.OrderedMap;
 import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.data.classes.CustomClass;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-class ClassCache extends LinkedHashMap<ConcreteCustomClass, Integer> {
+class ClassCache extends OrderedMap<ConcreteCustomClass, Integer> {
 
     public ClassCache() {
     }

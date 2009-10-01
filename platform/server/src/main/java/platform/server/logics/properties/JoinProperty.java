@@ -1,12 +1,12 @@
 package platform.server.logics.properties;
 
+import platform.base.BaseUtils;
 import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
 import platform.server.where.WhereBuilder;
-import platform.base.BaseUtils;
 
 import java.util.*;
 

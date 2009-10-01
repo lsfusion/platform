@@ -1,16 +1,19 @@
 package platform.server.data.query.exprs;
 
+import net.jcip.annotations.Immutable;
+import platform.server.caches.Lazy;
+import platform.server.caches.ParamLazy;
+import platform.server.caches.TwinLazy;
 import platform.server.data.Table;
 import platform.server.data.classes.BaseClass;
 import platform.server.data.classes.SystemClass;
 import platform.server.data.query.*;
-import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.server.caches.ParamLazy;
 
 import java.util.Collections;
 
@@ -19,15 +22,15 @@ public class IsClassExpr extends StaticClassExpr {
     public VariableClassExpr expr;
     BaseClass baseClass;
 
-    public final Table.Join.Expr joinExpr;
-
     public IsClassExpr(VariableClassExpr iExpr, BaseClass iBaseClass) {
         expr = iExpr;
         
         baseClass = iBaseClass;
+    }
 
-        // assertion что есть
-        joinExpr = (Table.Join.Expr) baseClass.table.joinAnd(
+    @TwinLazy
+    public Table.Join.Expr getJoinExpr() {
+        return (Table.Join.Expr) baseClass.table.joinAnd(
                 Collections.singletonMap(baseClass.table.key, expr)).getExpr(baseClass.table.objectClass);
     }
 
@@ -36,7 +39,7 @@ public class IsClassExpr extends StaticClassExpr {
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        joins.add(joinExpr,andWhere);
+        joins.add(getJoinExpr(),andWhere);
         expr.fillJoinWheres(joins,andWhere);
     }
 
@@ -50,15 +53,14 @@ public class IsClassExpr extends StaticClassExpr {
 
     @ParamLazy
     public SourceExpr translateQuery(QueryTranslator translator) {
-        return expr.translate(translator).getClassExpr(baseClass); 
+        return expr.translateQuery(translator).getClassExpr(baseClass); 
     }
-
     @ParamLazy
     public StaticClassExpr translateDirect(KeyTranslator translator) {
-        return (IsClassExpr) expr.translateDirect(translator).getClassExpr(baseClass);
+        return new IsClassExpr(expr.translateDirect(translator),baseClass);
     }
 
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return expr.getWhere();
     }
 
@@ -70,10 +72,14 @@ public class IsClassExpr extends StaticClassExpr {
         if(compile instanceof ToString)
             return "class("+expr.getSource(compile)+")";
 
-        return joinExpr.getSource(compile);
+        return getJoinExpr().getSource(compile);
     }
 
     public void fillContext(Context context) {
         expr.fillContext(context);
+    }
+
+    public boolean twins(AbstractSourceJoin obj) {
+        return expr.equals(((IsClassExpr)obj).expr) && baseClass.equals(((IsClassExpr)obj).baseClass);
     }
 }

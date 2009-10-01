@@ -1,5 +1,6 @@
 package platform.server.data.query.wheres;
 
+import platform.server.caches.ParamLazy;
 import platform.server.data.classes.DataClass;
 import platform.server.data.classes.UnknownClass;
 import platform.server.data.classes.where.AndClassSet;
@@ -8,11 +9,11 @@ import platform.server.data.classes.where.ObjectClassSet;
 import platform.server.data.query.*;
 import platform.server.data.query.exprs.IsClassExpr;
 import platform.server.data.query.exprs.VariableClassExpr;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 import platform.server.where.DataWhere;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
-import platform.server.caches.ParamLazy;
 
 
 public class IsClassWhere extends DataWhere {
@@ -48,8 +49,12 @@ public class IsClassWhere extends DataWhere {
     }
 
     @ParamLazy
-    public Where translate(Translator translator) {
-        return expr.translate(translator).getIsClassWhere(classes);
+    public Where translateDirect(KeyTranslator translator) {
+        return new IsClassWhere(expr.translateDirect(translator),classes);
+    }
+    @ParamLazy
+    public Where translateQuery(QueryTranslator translator) {
+        return expr.translateQuery(translator).getIsClassWhere(classes);
     }
 
     public ClassExprWhere calculateClassWhere() {
@@ -73,7 +78,7 @@ public class IsClassWhere extends DataWhere {
 
     public InnerJoins getInnerJoins() {
         if(!(classes instanceof UnknownClass || classes instanceof DataClass))
-            return new InnerJoins(classExpr.joinExpr.getJoin(),this);
+            return new InnerJoins(classExpr.getJoinExpr().getJoin(),this);
         return new InnerJoins(this);
     }
 
@@ -81,7 +86,7 @@ public class IsClassWhere extends DataWhere {
         return expr.hashContext(hashContext) + classes.hashCode()*31;
     }
 
-    public boolean equals(Object obj) {
-        return this==obj || (obj instanceof IsClassWhere && expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes));
+    public boolean twins(AbstractSourceJoin obj) {
+        return expr.equals(((IsClassWhere)obj).expr) && classes.equals(((IsClassWhere)obj).classes);
     }
 }

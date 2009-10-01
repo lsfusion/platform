@@ -2,7 +2,6 @@ package platform.server.session;
 
 import platform.server.data.classes.CustomClass;
 import platform.server.logics.properties.DataProperty;
-import platform.base.BaseUtils;
 
 import java.util.HashSet;
 import java.util.Set;

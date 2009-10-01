@@ -1,10 +1,10 @@
 package platform.server.data.query.exprs;
 
+import platform.server.caches.ParamLazy;
 import platform.server.data.classes.IntegralClass;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.where.Where;
-import platform.server.caches.ParamLazy;
 
 import java.util.Map;
 
@@ -38,13 +38,13 @@ public class SumGroupExpr extends GroupExpr<SourceExpr,SumGroupExpr> {
         return new SumGroupExpr(this, where);
     }
 
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return new NotNull();
     }
 
     protected class NotNull extends GroupExpr.NotNull {
 
-        protected ClassExprWhere calculateClassWhere() {
+        public ClassExprWhere calculateClassWhere() {
             Where fullWhere = getFullWhere();
             if(fullWhere.isFalse()) return ClassExprWhere.FALSE; 
             return fullWhere.getClassWhere().map(group).and(new ClassExprWhere(SumGroupExpr.this,(IntegralClass)expr.getType(fullWhere))).and(getJoinsWhere(group).getClassWhere());

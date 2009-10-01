@@ -3,7 +3,6 @@ package platform.server.data.query.exprs;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.translators.KeyTranslator;
-import platform.server.where.DataWhereSet;
 
 public abstract class VariableClassExpr extends AndExpr {
 

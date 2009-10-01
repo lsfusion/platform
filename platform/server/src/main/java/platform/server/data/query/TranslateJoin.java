@@ -19,18 +19,22 @@ public class TranslateJoin<U> extends Join<U>  {
     public TranslateJoin(Translator iTranslator,Join<U> iJoin) {
         translator = iTranslator;
         join = iJoin;
-
-        assert translator instanceof KeyTranslator || translator instanceof QueryTranslator;
     }
 
     @Lazy
     public Where getWhere() {
-        return join.getWhere().translate(translator);
+        if(translator instanceof KeyTranslator)
+            return join.getWhere().translateDirect((KeyTranslator) translator);
+        else
+            return join.getWhere().translateQuery((QueryTranslator) translator);
     }
 
     @Lazy
     public SourceExpr getExpr(U property) {
-        return join.getExpr(property).translate(translator);
+        if(translator instanceof KeyTranslator)
+            return join.getExpr(property).translateDirect((KeyTranslator) translator);
+        else
+            return join.getExpr(property).translateQuery((QueryTranslator) translator);
     }
 
     public Collection<U> getProperties() {

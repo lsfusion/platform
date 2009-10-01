@@ -1,15 +1,11 @@
 package platform.server.data.query;
 
+import platform.base.BaseUtils;
+import platform.server.data.Table;
+import platform.server.data.query.exprs.GroupExpr;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.GroupExpr;
-import platform.server.data.Table;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.BusinessLogics;
-import platform.base.BaseUtils;
-
-import java.util.Map;
-import java.util.HashMap;
 
 abstract public class AbstractSourceJoin implements SourceJoin {
 
@@ -31,6 +27,13 @@ abstract public class AbstractSourceJoin implements SourceJoin {
         }
         return hashCode;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || obj!=null && getClass() == obj.getClass() && twins((AbstractSourceJoin) obj);
+    }
+
+    public abstract boolean twins(AbstractSourceJoin obj);
 
     protected static class ToString extends CompileSource  {
         public ToString(Context context) {

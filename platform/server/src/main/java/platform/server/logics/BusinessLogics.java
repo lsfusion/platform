@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.Combinations;
 import platform.interop.Compare;
@@ -16,22 +15,20 @@ import platform.server.data.classes.*;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.sql.PostgreDataAdapter;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.data.IDTable;
 import platform.server.logics.data.ImplementTable;
 import platform.server.logics.data.TableFactory;
+import platform.server.logics.linear.properties.*;
 import platform.server.logics.properties.*;
 import platform.server.logics.properties.groups.AbstractGroup;
-import platform.server.logics.linear.properties.*;
+import platform.server.session.DataChanges;
 import platform.server.session.DataSession;
 import platform.server.session.SQLSession;
-import platform.server.session.TableChanges;
-import platform.server.session.DataChanges;
 import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.RemoteNavigator;
-import platform.server.caches.Lazy;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -1214,8 +1211,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
    */
     // случайным образом генерирует имплементацию
     void randomImplement(Random randomizer) {
-        List<CustomClass> classes = new ArrayList<CustomClass>();
-        baseClass.fillChilds(classes);
+        List<CustomClass> classes = new ArrayList<CustomClass>(baseClass.getChilds());
 
         // заполнение физ модели
         int implementCount = randomizer.nextInt(8);
@@ -1376,8 +1372,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         baseClass.fillConcreteChilds(concreteClasses);
 
         // генерируем списки ИД объектов по классам
-        List<CustomClass> classes = new ArrayList<CustomClass>();
-        baseClass.fillChilds(classes);
+        List<CustomClass> classes = new ArrayList<CustomClass>(baseClass.getChilds());
         Map<CustomClass,List<DataObject>> objects = new HashMap<CustomClass, List<DataObject>>();
         for(CustomClass fillClass : classes)
             objects.put(fillClass,new ArrayList<DataObject>());

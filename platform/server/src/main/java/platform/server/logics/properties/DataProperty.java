@@ -19,7 +19,10 @@ import platform.server.session.*;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataProperty extends Property<DataPropertyInterface> {
 
@@ -101,6 +104,10 @@ public class DataProperty extends Property<DataPropertyInterface> {
         if(changedWhere !=null) changedWhere.add(cases.getUpWhere());
         cases.add(Where.TRUE,dataExpr);
         return cases.getExpr();
+    }
+
+    protected boolean usePrevious() {
+        return false;
     }
 
     protected Map<DataPropertyInterface, ValueClass> getMapClasses() {

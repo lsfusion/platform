@@ -1,14 +1,17 @@
 package platform.server.view.form.filter;
 
+import platform.base.BaseUtils;
+import platform.interop.Compare;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.types.Type;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.TableChanges;
-import platform.server.view.form.*;
+import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.RemoteForm;
 import platform.server.where.Where;
-import platform.interop.Compare;
-import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;

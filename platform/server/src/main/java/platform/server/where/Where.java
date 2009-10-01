@@ -2,13 +2,14 @@ package platform.server.where;
 
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.classes.where.MeanClassWheres;
+import platform.server.data.query.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.query.HashContext;
+import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.translators.Translator;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
 
 import java.util.Map;
 
@@ -62,5 +63,6 @@ public interface Where<Not extends Where> extends SourceJoin {
     static Where TRUE = new AndWhere();
     static Where FALSE = new OrWhere();
 
-    public abstract Where translate(Translator translator);
+    public abstract Where translateDirect(KeyTranslator translator);
+    public abstract Where translateQuery(QueryTranslator translator);
 }

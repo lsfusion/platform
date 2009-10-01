@@ -1,10 +1,10 @@
 package platform.server.data.query.exprs;
 
 import platform.base.BaseUtils;
+import platform.server.caches.ParamLazy;
 import platform.server.data.classes.where.ClassExprWhere;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.where.Where;
-import platform.server.caches.ParamLazy;
 
 import java.util.Collections;
 import java.util.Map;
@@ -35,7 +35,7 @@ public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
         return new MaxGroupExpr(this, where);
     }
 
-    protected Where calculateWhere() {
+    public Where calculateWhere() {
         return new NotNull();
     }
 
@@ -49,7 +49,7 @@ public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
 
     protected class NotNull extends GroupExpr.NotNull {
 
-        protected ClassExprWhere calculateClassWhere() {
+        public ClassExprWhere calculateClassWhere() {
             return getFullWhere().getClassWhere().map(BaseUtils.merge(Collections.singletonMap(expr, MaxGroupExpr.this), group)).and(getJoinsWhere(group).getClassWhere());
         }
     }

@@ -1,15 +1,15 @@
 package platform.server.view.navigator;
 
+import platform.server.logics.linear.properties.LP;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyImplement;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.linear.properties.LP;
 import platform.server.view.form.filter.CompareValue;
-import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.view.navigator.filter.CompareValueNavigator;
+import platform.server.view.navigator.filter.FilterNavigator;
 
-import java.util.Set;
 import java.sql.SQLException;
+import java.util.Set;
 
 public class PropertyObjectNavigator<P extends PropertyInterface> extends PropertyImplement<ObjectNavigator,P> implements CompareValueNavigator {
 

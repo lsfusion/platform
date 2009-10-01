@@ -1,16 +1,17 @@
 package platform.server.data.query.wheres;
 
-import platform.server.data.query.exprs.*;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.InnerJoins;
-import platform.server.data.query.HashContext;
-import platform.server.data.query.translators.Translator;
-import platform.server.data.classes.StringClass;
-import platform.server.data.classes.where.ClassExprWhere;
-import platform.server.where.Where;
-import platform.server.where.DataWhereSet;
-import platform.server.caches.ParamLazy;
 import platform.interop.Compare;
+import platform.server.caches.ParamLazy;
+import platform.server.data.classes.where.ClassExprWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.HashContext;
+import platform.server.data.query.InnerJoins;
+import platform.server.data.query.exprs.AndExpr;
+import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.translators.QueryTranslator;
+import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
 // если operator1 не null и больше operator2 или operator2 null
 public class GreaterWhere extends CompareWhere {
@@ -23,8 +24,8 @@ public class GreaterWhere extends CompareWhere {
         return create(new GreaterWhere(operator1, operator2));
     }
 
-    public boolean equals(Object o) {
-        return this==o || (o instanceof GreaterWhere && operator1.equals(((GreaterWhere)o).operator1) && operator2.equals(((GreaterWhere)o).operator2));
+    public boolean twins(AbstractSourceJoin o) {
+        return operator1.equals(((GreaterWhere)o).operator1) && operator2.equals(((GreaterWhere)o).operator2);
     }
 
     public int hashContext(HashContext hashContext) {
@@ -32,8 +33,12 @@ public class GreaterWhere extends CompareWhere {
     }
 
     @ParamLazy
-    public Where translate(Translator translator) {
-        return operator1.translate(translator).compare(operator2.translate(translator),Compare.GREATER);
+    public Where translateDirect(KeyTranslator translator) {
+        return new GreaterWhere(operator1.translateDirect(translator),operator2.translateDirect(translator));
+    }
+    @ParamLazy
+    public Where translateQuery(QueryTranslator translator) {
+        return operator1.translateQuery(translator).compare(operator2.translateQuery(translator),Compare.GREATER);
     }
 
     @Override

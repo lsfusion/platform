@@ -6,12 +6,11 @@ import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
 import platform.server.data.types.ObjectType;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 import platform.server.session.ChangesSession;
 
 import java.sql.SQLException;
@@ -131,7 +130,8 @@ public class CustomObjectImplement extends ObjectImplement {
             gridClass = changeClass;
 
             // расставляем пометки
-            groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_GRIDCLASS;
+            updated |= ObjectImplement.UPDATED_GRIDCLASS;
+            groupTo.updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
         }
     }
 

@@ -4,13 +4,12 @@ import platform.server.data.classes.ConcreteValueClass;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.session.DataChanges;
 import platform.server.session.DataSession;
 import platform.server.session.TableChanges;
-import platform.server.session.DataChanges;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 

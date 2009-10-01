@@ -1,13 +1,13 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
@@ -26,8 +26,8 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         mapValues = iMapValues;
     }
 
-    public CompiledQuery<K, V> compileSelect(SQLSyntax syntax, LinkedHashMap<V, Boolean> orders, int top) {
-        return new CompiledQuery<K,V>(query.compileSelect(syntax,BaseUtils.linkedJoin(orders,mapProps),top),mapKeys,mapProps,mapValues);
+    public CompiledQuery<K, V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top) {
+        return new CompiledQuery<K,V>(query.compileSelect(syntax,orders.map(mapProps),top),mapKeys,mapProps,mapValues);
     }
 
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {

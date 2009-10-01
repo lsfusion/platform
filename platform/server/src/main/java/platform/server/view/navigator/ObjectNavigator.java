@@ -1,9 +1,9 @@
 package platform.server.view.navigator;
 
 import platform.server.data.classes.ValueClass;
-import platform.server.view.navigator.filter.FilterNavigator;
-import platform.server.view.navigator.filter.CompareValueNavigator;
 import platform.server.view.form.filter.CompareValue;
+import platform.server.view.navigator.filter.CompareValueNavigator;
+import platform.server.view.navigator.filter.FilterNavigator;
 
 import java.util.Set;
 

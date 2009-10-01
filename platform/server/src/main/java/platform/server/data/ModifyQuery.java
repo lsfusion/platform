@@ -1,11 +1,11 @@
 package platform.server.data;
 
+import platform.base.BaseUtils;
 import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.JoinQuery;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.session.SQLSession;
-import platform.base.BaseUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;

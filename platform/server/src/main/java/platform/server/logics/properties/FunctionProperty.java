@@ -3,9 +3,8 @@ package platform.server.logics.properties;
 import platform.server.session.DataChanges;
 
 import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 // свойство производное от остальных свойств
 public abstract class FunctionProperty<T extends PropertyInterface> extends AggregateProperty<T> {

@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,7 +9,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
-public class ClientGroupObjectValue extends ClientGroupObjectMap<Integer>
+public class ClientGroupObjectValue extends OrderedMap<ClientObjectImplementView,Integer>
                              implements Serializable {
 
     public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject) throws IOException {

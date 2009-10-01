@@ -1,18 +1,17 @@
 package platform.server.caches;
 
-import platform.base.Pairs;
-import platform.base.EmptyIterator;
 import platform.base.BaseUtils;
+import platform.base.EmptyIterator;
 import platform.base.MapIterable;
+import platform.base.Pairs;
+import platform.server.data.query.HashContext;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.translators.KeyTranslator;
-import platform.server.data.query.HashContext;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Collection;
 
 public class MapParamsIterable implements Iterable<KeyTranslator> {
 
@@ -76,7 +75,7 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
                     mapValues = valueIterator.next();
             } else {
                 valueIterator = new EmptyIterator<Map<ValueExpr, ValueExpr>>();
-                if(from.getContext().values.equals(to.getContext().values))
+                if(from.getContext().values.equals(to.getContext().values)) // если контексты не совпадают то сразу вываливаемся
                     mapValues = BaseUtils.toMap(from.getContext().values);
             }
 

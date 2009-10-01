@@ -11,6 +11,8 @@ import java.util.*;
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
 
+    public String message = "";
+
     public Map<GroupObjectImplement,Boolean> classViews = new HashMap<GroupObjectImplement, Boolean>();
     public Map<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>> objects = new HashMap<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>>();
     public Map<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>> gridObjects = new HashMap<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>>();
@@ -98,5 +100,7 @@ public class FormChanges {
         outStream.writeInt(dropProperties.size());
         for (PropertyView propertyView : dropProperties)
             outStream.writeInt(propertyView.ID);
+
+        outStream.writeUTF(message);
     }
 }

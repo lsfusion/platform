@@ -1,11 +1,11 @@
 package platform.server.view.navigator.filter;
 
 import platform.server.data.classes.CustomClass;
-import platform.server.view.navigator.PropertyObjectNavigator;
+import platform.server.logics.properties.PropertyInterface;
+import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.form.filter.IsClassFilter;
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.view.navigator.PropertyObjectNavigator;
 
 public class IsClassFilterNavigator<P extends PropertyInterface> extends PropertyFilterNavigator<P> {
 

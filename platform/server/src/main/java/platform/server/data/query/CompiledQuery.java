@@ -1,15 +1,16 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.server.data.KeyField;
+import platform.server.data.Table;
 import platform.server.data.query.exprs.*;
-import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.query.wheres.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.NullReader;
 import platform.server.data.types.Reader;
 import platform.server.data.types.TypeObject;
-import platform.server.data.Table;
-import platform.server.data.KeyField;
 import platform.server.session.SQLSession;
 import platform.server.where.Where;
 
@@ -92,7 +93,7 @@ public class CompiledQuery<K,V> {
         }
     }
 
-    CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, LinkedHashMap<V,Boolean> orders, int top) {
+    CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top) {
 
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
@@ -155,21 +156,22 @@ public class CompiledQuery<K,V> {
 
                 // для JoinSelect'ов узнаем при каких условиях они нужны
                 MapWhere<Object> joinWheres = new MapWhere<Object>();
-                for(Map.Entry<JoinData, Where> joinData : joinDataWheres.entrySet())
-                    joinWheres.add(joinData.getKey().getFJGroup(),joinData.getValue());
+                for(int i=0;i<joinDataWheres.size;i++)
+                    joinWheres.add(joinDataWheres.getKey(i).getFJGroup(),joinDataWheres.getValue(i));
 
                 // сначала распихиваем JoinSelect по And'ам
                 Map<Object,Collection<AndJoinQuery>> joinAnds = new HashMap<Object, Collection<AndJoinQuery>>();
-                for(Map.Entry<Object, Where> joinWhere : joinWheres.entrySet())
-                    joinAnds.put(joinWhere.getKey(),getWhereSubSet(andProps,joinWhere.getValue()));
+                for(int i=0;i<joinWheres.size;i++)
+                    joinAnds.put(joinWheres.getKey(i),getWhereSubSet(andProps,joinWheres.getValue(i)));
 
                 // затем все данные по JoinSelect'ам по вариантам
                 int joinNum = 0;
-                for(Map.Entry<JoinData, Where> joinData : joinDataWheres.entrySet()) {
+                for(int i=0;i<joinDataWheres.size;i++) {
+                    JoinData joinData = joinDataWheres.getKey(i);
                     String joinName = "join_" + (joinNum++);
                     Collection<AndJoinQuery> dataAnds = new ArrayList<AndJoinQuery>();
-                    for(AndJoinQuery and : getWhereSubSet(joinAnds.get(joinData.getKey().getFJGroup()), joinData.getValue())) {
-                        SourceExpr joinExpr = joinData.getKey().getFJExpr();
+                    for(AndJoinQuery and : getWhereSubSet(joinAnds.get(joinData.getFJGroup()), joinDataWheres.getValue(i))) {
+                        SourceExpr joinExpr = joinData.getFJExpr();
                         if(!and.where.means(joinExpr.getWhere().not())) { // проверим что не всегда null
                             and.properties.put(joinName, joinExpr);
                             dataAnds.add(and);
@@ -185,13 +187,13 @@ public class CompiledQuery<K,V> {
                             joinSource = (joinSource.length()==0?"":joinSource+",") + and.alias + '.' + joinName;
                         joinSource = "COALESCE(" + joinSource + ")";
                     }
-                    FJSelect.joinData.put(joinData.getKey(),joinData.getKey().getFJString(joinSource));
+                    FJSelect.joinData.put(joinData,joinData.getFJString(joinSource));
                 }
 
                 // order'ы отдельно обрабатываем, они нужны в каждом запросе генерируем имена для Order'ов
                 int io = 0;
-                LinkedHashMap<String,Boolean> orderAnds = new LinkedHashMap<String, Boolean>();
-                for(Map.Entry<V,Boolean> order : orders.entrySet()) {
+                OrderedMap<String,Boolean> orderAnds = new OrderedMap<String, Boolean>();
+                for(Map.Entry<V, Boolean> order : orders.entrySet()) {
                     String orderName = "order_" + (io++);
                     String orderFJ = "";
                     for(AndJoinQuery and : andProps) {
@@ -499,8 +501,10 @@ public class CompiledQuery<K,V> {
                         BaseUtils.<Object,V,K,SourceExpr>merge(BaseUtils.merge(max,sum),groupKeys),new HashMap<KeyExpr,String>(),
                         fromPropertySelect,whereSelect,BaseUtils.crossJoin(values,params),syntax);
                 else */
-                fromSelect = new ParsedJoinQuery<KeyExpr,SourceExpr>(context,BaseUtils.toMap(context.keys),BaseUtils.toMap(queryExprs), fullWhere)
-                    .compileSelect(syntax).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
+//                fromSelect = new ParsedJoinQuery<KeyExpr,SourceExpr>(context,BaseUtils.toMap(context.keys),BaseUtils.toMap(queryExprs), fullWhere)
+//                    .compileSelect(syntax).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
+                fromSelect = new JoinQuery<KeyExpr,SourceExpr>(BaseUtils.toMap(context.keys),BaseUtils.toMap(queryExprs), fullWhere)
+                    .compile(syntax).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
 
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
                 Map<String,String> propertySelect = new HashMap<String, String>();
@@ -575,9 +579,9 @@ public class CompiledQuery<K,V> {
         return fillSelect(BaseUtils.join(BaseUtils.reverse(params), mapValues), fillKeySelect, fillPropertySelect, fillWhereSelect);
     }
 
-    public LinkedHashMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session,boolean outSelect) throws SQLException {
+    public OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(SQLSession session,boolean outSelect) throws SQLException {
 
-        LinkedHashMap<Map<K,Object>,Map<V,Object>> execResult = new LinkedHashMap<Map<K, Object>, Map<V, Object>>();
+        OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
 
         if(outSelect)
             System.out.println(select);
@@ -608,7 +612,7 @@ public class CompiledQuery<K,V> {
 
     void outSelect(SQLSession session) throws SQLException {
         // выведем на экран
-        LinkedHashMap<Map<K, Object>, Map<V, Object>> result = executeSelect(session,true);
+        OrderedMap<Map<K, Object>, Map<V, Object>> result = executeSelect(session,true);
 
         for(Map.Entry<Map<K,Object>,Map<V,Object>> rowMap : result.entrySet()) {
             for(Map.Entry<K,Object> key : rowMap.getKey().entrySet()) {

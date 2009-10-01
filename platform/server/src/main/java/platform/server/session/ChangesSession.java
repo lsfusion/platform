@@ -14,7 +14,6 @@ import platform.server.view.form.RemoteForm;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public interface ChangesSession {
