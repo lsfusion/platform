@@ -11,4 +11,9 @@ abstract public class FormulaProperty<T extends FormulaPropertyInterface> extend
 
     protected void fillDepends(Set<Property> depends) {
     }
+
+    @Override
+    public boolean check() {
+        return true;
+    }
 }

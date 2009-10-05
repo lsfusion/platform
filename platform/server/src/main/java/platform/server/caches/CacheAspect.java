@@ -125,7 +125,6 @@ public class CacheAspect {
         Object result = lazyTwinExecute.get(invoke);
         if(result==null) {
             result = thisJoinPoint.proceed();
-            System.out.println(lazyTwinExecute.size());
             lazyTwinExecute.put(invoke,result);
         }
 

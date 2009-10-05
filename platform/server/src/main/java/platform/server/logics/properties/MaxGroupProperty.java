@@ -16,9 +16,4 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
         return changedExpr.ifElse(changedExpr.compare(prevExpr,Compare.GREATER).or(prevExpr.getWhere().not()),
                 newExpr.ifElse(changedPrevExpr.compare(prevExpr,Compare.EQUALS), prevExpr));
     }
-
-    @Override
-    protected boolean usePrevious() {
-        return false;
-    }
 }

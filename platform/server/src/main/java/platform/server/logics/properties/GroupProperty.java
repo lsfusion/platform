@@ -40,7 +40,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
         SourceExpr newExpr = SourceExpr.groupBy(getGroupImplements(mapKeys, session, usedDefault, depends, null),
             groupProperty.getSourceExpr(mapKeys, session, usedDefault, depends, null),Where.TRUE,operator!=1,joinImplement);
-        if(session==null || changedWhere==null) return newExpr;
+        if(session==null || (changedWhere==null && !isStored())) return newExpr;
 
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
@@ -51,7 +51,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         SourceExpr changedPrevExpr = SourceExpr.groupBy(getGroupImplements(mapKeys, null, null, depends, null),
             groupProperty.getSourceExpr(mapKeys, null, null, depends, null),changedGroupWhere.toWhere(),operator!=1,joinImplement);
 
-        changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
+        if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return getChangedExpr(changedExpr, changedPrevExpr, getSourceExpr(joinImplement), newExpr);
     }
 
@@ -61,5 +61,10 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         for(GroupPropertyInterface<T> interfaceImplement : interfaces)
             interfaceImplement.implement.mapFillDepends(depends);
         depends.add(groupProperty);
+    }
+
+    @Override
+    protected boolean usePrevious() {
+        return false;
     }
 }

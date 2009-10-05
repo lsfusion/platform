@@ -119,6 +119,10 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         return !getClassWhere().and(new ClassWhere<T>(property.getClassWhere(),map)).isFalse();
     }
 
+    public boolean check() {
+        return !getClassWhere().isFalse();
+    }
+
     @Lazy
     private ClassWhere<T> getClassWhere() {
         return getQuery("value").getClassWhere(new ArrayList<String>());

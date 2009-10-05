@@ -340,7 +340,7 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
 
 //        try {
             // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-            for(Property property : new ApplyOrder(BL)) {
+        for(Property property : new ApplyOrder(BL)) {
                 if(property.constraint!=null) {
                     String constraintResult = property.constraint.check(this,property);
                     if(constraintResult!=null) {

@@ -13,16 +13,19 @@ public class DefaultData<D extends PropertyInterface> {
 
     PropertyImplement<PropertyInterfaceImplement<DataPropertyInterface>,D> data;
     Collection<PropertyMapImplement<?,DataPropertyInterface>> onChange = new ArrayList<PropertyMapImplement<?, DataPropertyInterface>>();
+    boolean defaultChanged = false;
     
-    public DefaultData(PropertyImplement<PropertyInterfaceImplement<DataPropertyInterface>,D> data, Collection<PropertyMapImplement<?,DataPropertyInterface>> onChange) {
+    public DefaultData(PropertyImplement<PropertyInterfaceImplement<DataPropertyInterface>,D> data, Collection<PropertyMapImplement<?,DataPropertyInterface>> onChange, boolean defaultChanged) {
         this.data = data;
         this.onChange = onChange;
+        this.defaultChanged = defaultChanged;
     }
 
     public <C extends DataChanges<C>,U extends Property.UsedChanges<C,U>> U getUsedChanges(C changes, Collection<DataProperty> usedDefault, Property.Depends<C,U> depends) {
 
         Set<Property> used = new HashSet<Property>();
         FunctionProperty.fillDepends(used,BaseUtils.merge(data.mapping.values(),onChange));
+        if(defaultChanged) used.add(data.property);
         return Property.getUsedChanges(used, changes, usedDefault, depends);
     }
 
@@ -37,7 +40,10 @@ public class DefaultData<D extends PropertyInterface> {
         for(PropertyMapImplement<?,DataPropertyInterface> propChange : onChange)
             andWhere = andWhere.and(propChange.mapSourceExpr(joinImplement, session, usedDefault, depends, onChangeWhere).getWhere());
 
-        changedWhere.add(andWhere.and(onChangeWhere.toWhere()));        
-        return data.property.getSourceExpr(implementExprs);
+        changedWhere.add(andWhere.and(onChangeWhere.toWhere()));
+        if(defaultChanged)
+            return data.property.getSourceExpr(implementExprs, session, usedDefault, depends, null);
+        else
+            return data.property.getSourceExpr(implementExprs);
     }
 }

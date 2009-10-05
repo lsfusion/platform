@@ -18,7 +18,7 @@ import java.util.Map;
 
 public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
 
-    private Not not = null;
+    public Not not = null;
     @ManualLazy
     public Not not() {
         if(not==null)

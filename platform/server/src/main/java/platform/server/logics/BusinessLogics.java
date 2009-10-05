@@ -136,7 +136,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         System.out.println("Initializing stored properties...");
         initStored();
 
-        assert checkUProps();
+        assert checkProps();
 
         System.out.println("Initializing navigators...");
         initNavigators();
@@ -809,7 +809,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP[] addMGProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP groupProp, Object... params) {
-        int intNum = groupProp.listInterfaces.size();
         List<LI> li = readLI(params);
         Object[] interfaces = writeLI(li.subList(extra,li.size())); // "вырежем" группировочные интерфейсы
 
@@ -962,7 +961,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return false;
     }
 
-    private boolean checkUProps() {
+    public final static boolean checkClasses = false;
+    private boolean checkProps() {
+        if(checkClasses)
+            for(Property prop : properties)
+                assert prop.check();        
         for(LP[] props : checkCUProps)
             assert !intersect(props);
         for(LP[] props : checkSUProps)

@@ -35,7 +35,7 @@ public class InnerWhere {
         }
 
         protected boolean containsAll(InnerJoin who, InnerJoin what) {
-            return who.equals(what) || who.getJoinFollows().contains(what);
+            return BaseUtils.hashEquals(who,what) || who.getJoinFollows().contains(what);
         }
 
         protected JoinSet and(JoinSet set) {

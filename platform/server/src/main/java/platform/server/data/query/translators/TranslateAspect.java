@@ -145,4 +145,10 @@ public class TranslateAspect {
         else
             return result;
     } */
+
+    @AfterReturning(pointcut="call(* platform.server.where.AbstractWhere.calculateNot()) && target(where)",returning="notWhere")
+    public void afterDataWhereTranslate(AbstractWhere where, AbstractWhere notWhere) {
+        notWhere.not = where; 
+    }
+
 }

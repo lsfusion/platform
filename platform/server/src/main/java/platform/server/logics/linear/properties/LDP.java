@@ -4,10 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.properties.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class LDP extends LP<DataPropertyInterface, DataProperty> {
 
@@ -22,8 +19,14 @@ public class LDP extends LP<DataPropertyInterface, DataProperty> {
     }
 
     public <D extends PropertyInterface> void setDefProp(LP<D,?> defaultProperty, Object... params) {
+        boolean defaultChanged = false;
+        if(params[0] instanceof Boolean) {
+            defaultChanged = (Boolean)params[0];
+            params = Arrays.copyOfRange(params,1,params.length);
+        }
         List<PropertyInterfaceImplement<DataPropertyInterface>> defImplements = BusinessLogics.readImplements(listInterfaces,params);
         property.defaultData = new DefaultData<D>(BusinessLogics.mapImplement(defaultProperty,defImplements.subList(0,defaultProperty.listInterfaces.size())),
-                BaseUtils.<PropertyInterfaceImplement<DataPropertyInterface>, PropertyMapImplement<?, DataPropertyInterface>>immutableCast(defImplements.subList(defaultProperty.listInterfaces.size(), defImplements.size())));                    
+                BaseUtils.<PropertyInterfaceImplement<DataPropertyInterface>, PropertyMapImplement<?, DataPropertyInterface>>immutableCast(defImplements.subList(defaultProperty.listInterfaces.size(), defImplements.size())),
+                defaultChanged);                    
     }
 }
