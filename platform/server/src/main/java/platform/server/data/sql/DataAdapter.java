@@ -6,6 +6,8 @@ public abstract class DataAdapter implements SQLSyntax {
 
     String server;
     String dataBase;
+    String userID;
+    String password;
 
     // для debuga
     protected DataAdapter() {
@@ -13,10 +15,14 @@ public abstract class DataAdapter implements SQLSyntax {
 
     abstract void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String iDataBase,String iServer) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    protected DataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+
         Class.forName(getClassName());
+
         dataBase = iDataBase;
         server = iServer;
+        userID = iUserID;
+        password = iPassword;
 
         ensureDB();
     }

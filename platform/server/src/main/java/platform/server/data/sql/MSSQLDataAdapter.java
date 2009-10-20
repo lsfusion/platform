@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 class MSSQLDataAdapter extends DataAdapter {
 
-    MSSQLDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super(iDataBase, iServer);
+    MSSQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super(iDataBase, iServer, iUserID, iPassword);
     }
 
     public String getLongType() {
@@ -32,7 +32,7 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=sa;Password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=" + userID + ";Password=" + password);
         try {
         try {
             Connect.createStatement().execute("DROP DATABASE "+ dataBase);
@@ -46,7 +46,7 @@ class MSSQLDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=sa;Password=11111");
+        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=" + userID + ";Password=" + password);
         Connect.createStatement().execute("USE "+ dataBase);
 
         return Connect;

@@ -44,7 +44,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost");
+        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost","postgres","password");
         TmcBusinessLogics BL = new TmcBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))

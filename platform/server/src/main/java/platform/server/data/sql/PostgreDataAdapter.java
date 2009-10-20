@@ -10,8 +10,8 @@ public class PostgreDataAdapter extends DataAdapter {
     public PostgreDataAdapter() {
     }
 
-    public PostgreDataAdapter(String iDataBase, String iServer) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        super(iDataBase, iServer);
+    public PostgreDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+        super(iDataBase, iServer, iUserID, iPassword);
     }
 
     public String getLongType() {
@@ -32,7 +32,7 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ server +"/postgres?user=postgres&password=11111");
+        Connection connect = DriverManager.getConnection("jdbc:postgresql://"+ server +"/postgres?user=" + userID + "&password=" + password);
 /*        try {
             connect.createStatement().execute("DROP DATABASE "+ dataBase);
         } catch (SQLException e) {
@@ -45,7 +45,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://"+ server +"/"+ dataBase +"?user=postgres&password=11111");
+        return DriverManager.getConnection("jdbc:postgresql://"+ server +"/"+ dataBase +"?user=" + userID + "&password=" + password);
     }
 
     public String getCommandEnd() {

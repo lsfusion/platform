@@ -27,7 +27,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("sample5","localhost");
+        DataAdapter adapter = new PostgreDataAdapter("sample5","localhost","postgres","password");
         SampleBusinessLogics BL = new SampleBusinessLogics(adapter,7652);
         BL.fillData();
         LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
