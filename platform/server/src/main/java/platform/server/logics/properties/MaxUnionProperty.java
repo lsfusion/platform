@@ -2,6 +2,7 @@ package platform.server.logics.properties;
 
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.ArrayList;
@@ -12,11 +13,11 @@ public class MaxUnionProperty extends UnionProperty {
 
     public Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> operands = new ArrayList<PropertyMapImplement<PropertyInterface, PropertyInterface>>();
 
-    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         SourceExpr result = null;
         for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : operands) {
-            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere);
+            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, modifier, changedWhere);
             if(result==null)
                 result = operandExpr;
             else
@@ -29,7 +30,7 @@ public class MaxUnionProperty extends UnionProperty {
         return operands;
     }
 
-    public MaxUnionProperty(String iSID, int intNum) {
-        super(iSID, intNum);
+    public MaxUnionProperty(String sID, String caption, int intNum) {
+        super(sID, caption, intNum);
     }
 }

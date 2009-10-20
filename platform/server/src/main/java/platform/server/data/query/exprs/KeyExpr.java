@@ -11,7 +11,18 @@ import platform.server.data.types.Type;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
 
+import java.util.Map;
+import java.util.Collection;
+import java.util.HashMap;
+
 public class KeyExpr extends VariableClassExpr {
+
+    public static <T> Map<T, KeyExpr> getMapKeys(Collection<T> objects) {
+        Map<T,KeyExpr> result = new HashMap<T, KeyExpr>();
+        for(T object : objects)
+            result.put(object,new KeyExpr(object.toString()));
+        return result;
+    }
 
     final String name;
     @Override

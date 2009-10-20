@@ -12,6 +12,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.Property;
 import platform.server.session.ChangesSession;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -20,14 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
-public abstract class ObjectImplement extends CellView implements OrderView {
-
-    public static Map<ObjectImplement, KeyExpr> getMapKeys(Collection<ObjectImplement> objects) {
-        Map<ObjectImplement,KeyExpr> result = new HashMap<ObjectImplement, KeyExpr>();
-        for(ObjectImplement object : objects)
-            result.put(object,new KeyExpr(object.caption));
-        return result;
-    }
+public abstract class ObjectImplement extends CellView implements PropertyObjectInterface {
 
     public ObjectImplement(int iID, String iSID, String iCaption) {
         super(iID,iSID);
@@ -62,10 +56,6 @@ public abstract class ObjectImplement extends CellView implements OrderView {
         return (DataObject)getObjectValue();
     }
 
-    // может и null передаваться
-    public abstract AndClassSet getClassSet(GroupObjectImplement classGroup);
-    public abstract ConcreteClass getObjectClass();
-
     public abstract ValueClass getGridClass();
 
     public abstract void changeValue(ChangesSession session, Object changeValue) throws SQLException;
@@ -78,7 +68,7 @@ public abstract class ObjectImplement extends CellView implements OrderView {
     public boolean objectUpdated(GroupObjectImplement classGroup) { return groupTo!=classGroup && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
     public void fillProperties(Set<Property> properties) { }
-    public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) {
+    public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableModifier<? extends TableChanges> modifier) {
         return getSourceExpr(classGroup, classSource);
     }
 

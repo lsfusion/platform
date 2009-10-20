@@ -2,8 +2,8 @@ package platform.server.view.form.filter;
 
 import platform.interop.FilterType;
 import platform.server.data.query.exprs.KeyExpr;
-import platform.server.logics.properties.Property;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
@@ -38,6 +38,8 @@ public abstract class Filter implements Updated {
                 return new NotNullFilter(inStream, form);
             case FilterType.ISCLASS:
                 return new IsClassFilter(inStream, form);
+            case FilterType.NOT:
+                return new NotFilter(inStream, form);
         }
 
         throw new IOException();
@@ -45,5 +47,5 @@ public abstract class Filter implements Updated {
 
     public abstract GroupObjectImplement getApplyObject();
 
-    public abstract Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) throws SQLException;
+    public abstract Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException;
 }

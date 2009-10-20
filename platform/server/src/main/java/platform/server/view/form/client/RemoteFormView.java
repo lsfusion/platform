@@ -1,6 +1,7 @@
 package platform.server.view.form.client;
 
 import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.CompressingOutputStream;
 import platform.interop.Order;
@@ -25,12 +26,12 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
     public FormView richDesign;
     public JasperDesign reportDesign;
 
-    public RemoteFormView(RemoteForm iForm, FormView iRichDesign, JasperDesign iReportDesign, int port) throws RemoteException {
+    public RemoteFormView(RemoteForm form, FormView richDesign, JasperDesign reportDesign, int port) throws RemoteException {
         super(port);
         
-        form = iForm;
-        richDesign = iRichDesign;
-        reportDesign = iReportDesign;
+        this.form = form;
+        this.richDesign = richDesign;
+        this.reportDesign = reportDesign;
     }
 
     public byte[] getReportDesignByteArray() {
@@ -57,10 +58,6 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
             throw new RuntimeException(e);
         }
         return outStream.toByteArray();
-    }
-
-    public int getGID() {
-        return form.GID;
     }
 
     public byte[] getRichDesignByteArray() {
@@ -184,6 +181,26 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         }
     }
 
+    public RemoteFormInterface createClassForm(int objectID) throws RemoteException {
+        try {
+            return form.createClassForm((CustomObjectImplement) form.getObjectImplement(objectID),exportPort);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteFormInterface createChangeForm(int propertyID) throws RemoteException {
+        try {
+            return form.createChangeForm(form.getPropertyView(propertyID).view,exportPort);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void changeObjectOrder(int objectID, byte modiType) {
         ObjectImplement object = form.getObjectImplement(objectID);
         try {
@@ -216,7 +233,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
     }
 
     public int getID() {
-        return form.ID;
+        return form.navigatorForm.ID;
     }
 
     public void refreshData() {

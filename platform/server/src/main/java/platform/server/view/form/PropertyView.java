@@ -9,10 +9,14 @@ public class PropertyView<P extends PropertyInterface> extends CellView {
     // в какой "класс" рисоваться, ессно одмн из Object.GroupTo должен быть ToDraw
     public GroupObjectImplement toDraw;
 
-    public PropertyView(int iID, String iSID, PropertyObjectImplement<P> iView, GroupObjectImplement iToDraw) {
-        super(iID,iSID);
-        view = iView;
-        toDraw = iToDraw;
+    public PropertyView(int ID, String sID, PropertyObjectImplement<P> view, GroupObjectImplement toDraw) {
+        super(ID,sID);
+        this.view = view;
+        this.toDraw = toDraw;
+    }
+
+    public PropertyView(int ID, String sID, PropertyObjectImplement<P> view) {
+        this(ID,sID,view,view.getApplyObject());
     }
 
     public String toString() {

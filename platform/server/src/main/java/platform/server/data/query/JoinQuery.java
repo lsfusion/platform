@@ -11,6 +11,7 @@ import platform.server.data.classes.DataClass;
 import platform.server.data.classes.where.ClassWhere;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
@@ -72,6 +73,9 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
 
     public Join<V> join(Map<K, ? extends SourceExpr> joinImplement) {
         return parse().join(joinImplement);
+    }
+    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement,Map<ValueExpr, ValueExpr> mapValues) {
+        return parse().join(joinImplement,mapValues);
     }
 
     static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders) {

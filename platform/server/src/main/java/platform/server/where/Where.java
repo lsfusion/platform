@@ -8,8 +8,10 @@ import platform.server.data.query.SourceJoin;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.data.query.translators.QueryTranslator;
+import platform.base.Pair;
 
 import java.util.Map;
 
@@ -39,6 +41,7 @@ public interface Where<Not extends Where> extends SourceJoin {
     OrObjectWhere[] getOr();
 
     Map<AndExpr,ValueExpr> getExprValues();
+    Map<KeyExpr, AndExpr> getKeyExprs();    
 
     ObjectWhereSet getObjects();
 

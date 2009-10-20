@@ -78,6 +78,17 @@ public class BaseUtils {
         return result;
     }
 
+    public static <BK,K extends BK,V> Map<K,V> splitKeys(Map<BK,V> map, Collection<K> keys, Map<BK,V> rest) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<BK,V> entry : map.entrySet()) {
+            if(keys.contains(entry.getKey()))
+                result.put((K) entry.getKey(),entry.getValue());
+            else
+                rest.put(entry.getKey(),entry.getValue());
+        }
+        return result;
+    }
+
     public static <K,V> Map<V,K> reverse(Map<K,V> map) {
         Map<V,K> result = new HashMap<V, K>();
         for(Map.Entry<K,V> entry : map.entrySet()) {

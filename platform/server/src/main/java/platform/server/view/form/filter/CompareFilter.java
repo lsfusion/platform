@@ -7,6 +7,7 @@ import platform.server.data.types.Type;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
@@ -66,8 +67,8 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
         return super.objectUpdated(classGroup) || value.objectUpdated(classGroup);
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) throws SQLException {
-        return property.getSourceExpr(classGroup, mapKeys, session, depends).compare(value.getSourceExpr(classGroup, mapKeys, session, depends), compare);
+    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
+        return property.getSourceExpr(classGroup, mapKeys, modifier).compare(value.getSourceExpr(classGroup, mapKeys, modifier), compare);
     }
 
     @Override

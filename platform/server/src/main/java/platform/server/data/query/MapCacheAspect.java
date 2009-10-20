@@ -15,10 +15,10 @@ import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.query.translators.KeyTranslator;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.ArrayList;
@@ -159,16 +159,13 @@ public class MapCacheAspect {
         return join(joinExprs,joinValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
     }
 
-    static class SourceExprImplement<U extends Property.TableUsedChanges<U>> {
+    static class SourceExprImplement<U extends TableChanges<U>> {
         final U usedChanges; 
         final boolean changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
 
-        SourceExprImplement(Property<?> property,TableChanges sessionChanges,Collection<DataProperty> usedDefault, Property.TableDepends<U> depends, boolean iChanged) {
-            if(sessionChanges==null)
-                usedChanges = depends.newChanges();
-            else
-                usedChanges = property.getUsedChanges(sessionChanges, usedDefault, depends);
-            changed = iChanged;
+        SourceExprImplement(Property<?> property, TableModifier<U> modifier, boolean changed) {
+            usedChanges = property.getUsedChanges(modifier);
+            this.changed = changed;
         }
 
         public boolean equals(Object o) {
@@ -184,7 +181,7 @@ public class MapCacheAspect {
         Map getSourceExprCache();
     }
     public static class SourceExprInterfaceImplement implements SourceExprInterface {
-        Map<SourceExprImplement,JoinQuery> exprCache = new HashMap<SourceExprImplement, JoinQuery>();
+        Map<Integer,Collection<SourceExprImplement>> exprCache = new HashMap<Integer, Collection<SourceExprImplement>>();
         public Map getSourceExprCache() { return exprCache; }
     }
     @DeclareParents(value="platform.server.logics.properties.Property",defaultImpl=SourceExprInterfaceImplement.class)
@@ -193,14 +190,14 @@ public class MapCacheAspect {
     final String PROPERTY_STRING = "expr";
     final String CHANGED_STRING = "where";
 
-    public <K extends PropertyInterface,U extends Property.TableUsedChanges<U>> SourceExpr getSourceExpr(Property<K> property,Map<K,SourceExpr> joinExprs,TableChanges changes, Collection<DataProperty> usedDefault,Property.TableDepends<U> depends,WhereBuilder changedWheres,ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface,U extends TableChanges<U>> SourceExpr getSourceExpr(Property<K> property, Map<K, SourceExpr> joinExprs, TableModifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // если идет autoFillDB то не кэшируем
         if(BusinessLogics.autoFillDB) return (SourceExpr) thisJoinPoint.proceed();
 
         property.cached = true;
 
-        SourceExprImplement<U> implement = new SourceExprImplement<U>(property,changes,usedDefault,depends,changedWheres!=null);
+        SourceExprImplement<U> implement = new SourceExprImplement<U>(property,modifier,changedWheres!=null);
 
         Map<SourceExprImplement,JoinQuery<K,String>> exprCache = ((SourceExprInterface)property).getSourceExprCache();
 
@@ -210,7 +207,7 @@ public class MapCacheAspect {
             // надо проверить что с такими changes, defaultProps, noUpdateProps
             query = new JoinQuery<K,String>(property);
             WhereBuilder queryWheres = (changedWheres==null?null:new WhereBuilder());
-            query.properties.put(PROPERTY_STRING, (SourceExpr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,changes,usedDefault,depends,queryWheres}));
+            query.properties.put(PROPERTY_STRING, (SourceExpr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,modifier,queryWheres}));
             if(changedWheres!=null)
                 query.properties.put(CHANGED_STRING,new ValueExpr(true, LogicalClass.instance).and(queryWheres.toWhere()));
 
@@ -219,15 +216,16 @@ public class MapCacheAspect {
             System.out.println("getSourceExpr - cached "+property);
 
         Join<String> queryJoin = query.join(joinExprs);
+
         if(changedWheres!=null) changedWheres.add(queryJoin.getExpr(CHANGED_STRING).getWhere());
         return queryJoin.getExpr(PROPERTY_STRING);
     }
 
     // aspect который ловит getSourceExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("call(platform.server.data.query.exprs.SourceExpr platform.server.logics.properties.Property.getSourceExpr(java.util.Map,platform.server.session.TableChanges,java.util.Collection,platform.server.logics.properties.Property.TableDepends,platform.server.where.WhereBuilder)) " +
-            "&& target(property) && args(joinExprs,changes,usedDefault,depends,changedWhere)")
-    public Object callGetSourceExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, TableChanges changes, Collection usedDefault, Property.TableDepends depends,WhereBuilder changedWhere) throws Throwable {
+    @Around("call(platform.server.data.query.exprs.SourceExpr platform.server.logics.properties.Property.getSourceExpr(java.util.Map,platform.server.session.TableModifier,platform.server.where.WhereBuilder)) " +
+            "&& target(property) && args(joinExprs,modifier,changedWhere)")
+    public Object callGetSourceExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, TableModifier modifier,WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        return getSourceExpr(property, joinExprs, changes, usedDefault, depends, changedWhere, thisJoinPoint);
+        return getSourceExpr(property, joinExprs, modifier, changedWhere, thisJoinPoint);
     }
 }

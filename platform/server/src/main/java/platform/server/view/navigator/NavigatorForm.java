@@ -241,10 +241,10 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     }
 
     protected FormView richDesign;
-    FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
+    public FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
     protected JasperDesign reportDesign;
-    JasperDesign getReportDesign() throws JRException { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()).design; else return reportDesign; }
+    public JasperDesign getReportDesign() throws JRException { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()).design; else return reportDesign; }
 
     ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
     public void addRelevantElement(NavigatorElement relevantElement) {

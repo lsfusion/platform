@@ -10,6 +10,7 @@ import platform.server.view.navigator.filter.FilterNavigator;
 
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.Map;
 
 public class PropertyObjectNavigator<P extends PropertyInterface> extends PropertyImplement<ObjectNavigator,P> implements CompareValueNavigator {
 
@@ -18,6 +19,10 @@ public class PropertyObjectNavigator<P extends PropertyInterface> extends Proper
         
         for(int i=0;i<property.listInterfaces.size();i++)
             mapping.put(property.listInterfaces.get(i),objects[i]);
+    }
+
+    public PropertyObjectNavigator(Property<P> property, Map<P, ObjectNavigator> mapping) {
+        super(property, mapping);
     }
 
     public void fillObjects(Set<ObjectNavigator> objects) {

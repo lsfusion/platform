@@ -9,8 +9,6 @@ public interface RemoteFormInterface extends Remote {
     byte[] getReportDesignByteArray() throws RemoteException;
     byte[] getReportDataByteArray() throws RemoteException;
 
-    int getGID() throws RemoteException;
-
     byte[] getRichDesignByteArray() throws RemoteException;
 
     void changePageSize(int groupID, int pageSize) throws RemoteException;
@@ -37,6 +35,10 @@ public interface RemoteFormInterface extends Remote {
     void switchClassView(int groupID) throws RemoteException;
 
     void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
+
+    public RemoteFormInterface createClassForm(int objectID) throws RemoteException;
+
+    public RemoteFormInterface createChangeForm(int propertyID) throws RemoteException;
 
     void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;
 

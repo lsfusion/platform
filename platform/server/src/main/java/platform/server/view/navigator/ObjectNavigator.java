@@ -18,6 +18,7 @@ public class ObjectNavigator extends CellViewNavigator implements CompareValueNa
     public GroupObjectNavigator groupTo;
 
     public final String caption;
+    public boolean show = true;
 
     public final ValueClass baseClass;
 

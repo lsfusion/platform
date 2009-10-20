@@ -13,13 +13,14 @@ abstract public class UnionProperty extends FunctionProperty<PropertyInterface> 
         return interfaces;
     }
 
-    protected UnionProperty(String iSID, int intNum) {
-        super(iSID, getInterfaces(intNum));
+    protected UnionProperty(String sID, String caption, int intNum) {
+        super(sID, caption, getInterfaces(intNum));
     }
 
     protected abstract Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> getOperands();
 
-    protected void fillDepends(Set<Property> depends) {
+    @Override
+    public void fillDepends(Set<Property> depends) {
         fillDepends(depends,getOperands());
     }
 }

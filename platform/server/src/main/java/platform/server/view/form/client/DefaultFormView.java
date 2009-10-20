@@ -36,7 +36,7 @@ public class DefaultFormView extends FormView {
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);
 
-            ContainerView groupContainer = addContainer();
+            ContainerView groupContainer = addContainer(); // контейнер всей группы
             groupContainer.container = mainContainer;
             groupContainer.constraints.order = navigatorForm.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
@@ -44,12 +44,12 @@ public class DefaultFormView extends FormView {
 
             groupObjectContainers.put(clientGroup, groupContainer);
 
-            ContainerView gridContainer = addContainer();
+            ContainerView gridContainer = addContainer(); // контейнер грида внутрь
             gridContainer.container = groupContainer;
             gridContainer.constraints.order = 0;
             gridContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
-            ContainerView panelContainer = addContainer();
+            ContainerView panelContainer = addContainer(); // контейнер панели
             panelContainer.container = groupContainer;
             panelContainer.constraints.order = 1;
             panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
@@ -58,7 +58,7 @@ public class DefaultFormView extends FormView {
 
             panelContainers.put(clientGroup, panelContainer);
 
-            ContainerView buttonContainer = addContainer();
+            ContainerView buttonContainer = addContainer(); // контейнер кнопок
             buttonContainer.container = groupContainer;
             buttonContainer.constraints.order = 2;
             buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;

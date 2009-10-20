@@ -8,6 +8,9 @@ import platform.server.data.types.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractGroup;
+import platform.server.view.form.CustomClassView;
+import platform.server.view.form.DataObjectImplement;
+import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.io.DataInputStream;
@@ -122,5 +125,9 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = getJavaClass();
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
+    }
+
+    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView) {
+        return new DataObjectImplement(ID, SID, this, caption);
     }
 }

@@ -1,11 +1,5 @@
 package platform.server.data.query;
 
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.DeclareParents;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Around;
-import platform.interop.exceptions.ComplexQueryException;
-
 /*
 @Aspect
 public class ComplexQueryManager {

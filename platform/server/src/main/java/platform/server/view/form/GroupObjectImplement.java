@@ -13,6 +13,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.Property;
 import platform.server.session.DataSession;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.view.form.filter.Filter;
 
 import java.sql.SQLException;
@@ -41,7 +42,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     }
 
     public Map<ObjectImplement, KeyExpr> getMapKeys() {
-        return ObjectImplement.getMapKeys(objects);
+        return KeyExpr.getMapKeys(objects);
     }
 
     public Integer order = 0;
@@ -178,14 +179,14 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         return result;
     }
 
-    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) throws SQLException {
+    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
 
         for(Filter filt : filters)
-            query.and(filt.getWhere(query.mapKeys, classGroup, session, depends));
+            query.and(filt.getWhere(query.mapKeys, classGroup, modifier));
 
         // докинем JoinSelect ко всем классам, те которых не было FULL JOIN'ом остальные JoinSelect'ом
         for(ObjectImplement object : objects)
-            query.and(DataSession.getIsClassWhere(session,query.mapKeys.get(object),object.getGridClass(),null));
+            query.and(DataSession.getIsClassWhere(modifier.getSession(),query.mapKeys.get(object),object.getGridClass(),null));
     }
 
     Map<ObjectImplement,ObjectValue> getNulls() {
@@ -202,5 +203,12 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
             if(read != i.next() instanceof CustomObjectImplement)
                 return false;
         return true;
+    }
+
+    public ObjectImplement getObjectImplement(int objectID) {
+        for (ObjectImplement object : objects)
+            if (object.ID == objectID)
+                return object;
+        return null;
     }
 }

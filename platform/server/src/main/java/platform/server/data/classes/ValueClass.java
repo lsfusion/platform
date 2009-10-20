@@ -5,6 +5,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractGroup;
 import platform.server.session.SQLSession;
+import platform.server.view.form.CustomClassView;
+import platform.server.view.form.ObjectImplement;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -29,4 +31,6 @@ public interface ValueClass extends RemoteClass {
     List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects);
 
     void serialize(DataOutputStream outStream) throws IOException;
+
+    ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView);
 }

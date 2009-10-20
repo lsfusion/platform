@@ -6,6 +6,7 @@ import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.Collection;
@@ -21,8 +22,8 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     }
 
     // NotNull только если сессии нету
-    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, Property.TableDepends<? extends Property.TableUsedChanges> depends, WhereBuilder changedWhere) {
-        return property.getSourceExpr(BaseUtils.join(mapping, joinImplement), session, usedDefault, depends, changedWhere);
+    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+        return property.getSourceExpr(BaseUtils.join(mapping, joinImplement), modifier, changedWhere);
     }
 
     public void mapFillDepends(Collection<Property> depends) {

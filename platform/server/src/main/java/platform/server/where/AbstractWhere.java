@@ -1,7 +1,5 @@
 package platform.server.where;
 
-import net.jcip.annotations.Immutable;
-import platform.server.caches.Lazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.data.classes.where.ClassExprWhere;
@@ -10,8 +8,10 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.wheres.CompareWhere;
 import platform.server.data.query.wheres.EqualsWhere;
+import platform.base.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -160,4 +160,20 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
             }
         return result;
     }
+
+    @TwinLazy
+    public Map<KeyExpr, AndExpr> getKeyExprs() {
+        Map<KeyExpr, AndExpr> result = new HashMap<KeyExpr, AndExpr>();
+        for(OrObjectWhere orWhere : getOr())
+            if(orWhere instanceof EqualsWhere) {
+                CompareWhere where = (CompareWhere)orWhere;
+                if(where.operator1 instanceof KeyExpr)
+                    result.put((KeyExpr) where.operator1, where.operator2);
+                else
+                if(where.operator2 instanceof KeyExpr)
+                    result.put((KeyExpr) where.operator2, where.operator1);
+            }
+        return result;
+    }
+
 }

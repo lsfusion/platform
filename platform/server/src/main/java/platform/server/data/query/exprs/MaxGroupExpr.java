@@ -15,7 +15,7 @@ public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
         super(iWhere, iGroup, iExpr);
     }
     public static SourceExpr create(Where iWhere, Map<AndExpr, AndExpr> iGroup, AndExpr iExpr) {
-        return AndExpr.create(new MaxGroupExpr(iWhere, iGroup, iExpr));
+        return GroupExpr.create(new MaxGroupExpr(iWhere, iGroup, iExpr));
     }
 
     public MaxGroupExpr(MaxGroupExpr maxExpr, KeyTranslator translator) {

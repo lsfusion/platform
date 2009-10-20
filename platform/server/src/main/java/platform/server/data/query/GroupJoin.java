@@ -1,21 +1,20 @@
 package platform.server.data.query;
 
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
 import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
 import platform.server.caches.MapHashIterable;
 import platform.server.caches.MapParamsIterable;
-import platform.server.where.Where;
-import platform.server.where.DataWhereSet;
 import platform.server.data.query.exprs.AndExpr;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.MapExpr;
 import platform.server.data.query.translators.KeyTranslator;
-import platform.base.BaseUtils;
+import platform.server.where.DataWhereSet;
+import platform.server.where.Where;
 
-import java.util.Map;
 import java.util.Collection;
-
-import net.jcip.annotations.Immutable;
+import java.util.Map;
 
 @Immutable
 public class GroupJoin implements MapContext, InnerJoin {

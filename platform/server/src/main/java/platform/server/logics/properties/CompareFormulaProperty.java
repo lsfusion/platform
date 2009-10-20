@@ -5,6 +5,7 @@ import platform.server.data.classes.LogicalClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.ArrayList;
@@ -18,10 +19,10 @@ public class CompareFormulaProperty extends ValueFormulaProperty<FormulaProperty
     public FormulaPropertyInterface operator1;
     public FormulaPropertyInterface operator2;
 
-    public CompareFormulaProperty(String sID, Compare iCompare) {
-        super(sID, getInterfaces(2), LogicalClass.instance);
+    public CompareFormulaProperty(String sID, Compare compare) {
+        super(sID, compare.toString(), getInterfaces(2), LogicalClass.instance);
 
-        compare = iCompare;
+        this.compare = compare;
         Iterator<FormulaPropertyInterface> i = interfaces.iterator();
         operator1 = i.next();
         operator2 = i.next();
@@ -34,7 +35,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<FormulaProperty
         return interfaces;
     }
 
-    public SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
         return new ValueExpr(true, LogicalClass.instance).and(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

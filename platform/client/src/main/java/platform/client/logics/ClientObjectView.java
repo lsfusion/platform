@@ -14,9 +14,13 @@ public class ClientObjectView extends ClientCellView {
 
     public ClientObjectImplementView object;
 
+    public final boolean show;
+
     public ClientObjectView(DataInputStream inStream, Collection<ClientContainerView> containers, ClientObjectImplementView iObject) throws IOException, ClassNotFoundException {
         super(inStream, containers);
         object = iObject;
+
+        show = inStream.readBoolean();
     }
 
     public int getID() {

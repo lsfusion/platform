@@ -3,8 +3,12 @@ package platform.client.form;
 import platform.client.SwingUtils;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
+import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientObjectView;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
+import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,8 +24,8 @@ public class ClientDialog extends JDialog {
 
     private final ClientObjectClass cls;
 
-    public ClientDialog(ClientForm owner, ClientObjectClass icls, Object value) throws IOException, ClassNotFoundException {
-        super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
+    public ClientDialog(ClientForm owner, ClientCellView cellView, ClientObjectClass icls, Object value) throws IOException, ClassNotFoundException {
+        super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         setLayout(new BorderLayout());
 
@@ -32,13 +36,15 @@ public class ClientDialog extends JDialog {
         navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
 
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                setCurrentForm(element.ID);
+                setCurrentForm(navigator.remoteNavigator.createForm(element.ID,true));
             }
         };
 
+        // помечаем кэш чтобы был поиск
         if (value instanceof Integer)
             navigator.remoteNavigator.addCacheObject(cls.ID, (Integer)value);
 
+        // создаем слева навигаторы
         JPanel navigatorPanel = new JPanel();
         navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
 
@@ -56,7 +62,10 @@ public class ClientDialog extends JDialog {
 
         });
 
-        setCurrentForm(navigator.remoteNavigator.getDefaultForm(cls.ID));
+        if(cellView instanceof ClientPropertyView)
+            setCurrentForm(owner.remoteForm.createChangeForm(((ClientPropertyView)cellView).ID));
+        else
+            setCurrentForm(owner.remoteForm.createClassForm(((ClientObjectView)cellView).object.ID));
     }
 
     private boolean objectChosen = false;
@@ -75,12 +84,11 @@ public class ClientDialog extends JDialog {
         return objectID;
     }
 
-    void setCurrentForm(int formID) throws IOException, ClassNotFoundException {
-
-        if (formID == -1) return;
+    // необходим чтобы в диалоге менять формы (панели)
+    void setCurrentForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
 
         if (currentForm != null) remove(currentForm);
-        currentForm = new ClientForm(navigator.remoteNavigator.createForm(formID, true), navigator) {
+        currentForm = new ClientForm(remoteForm, navigator) {
 
             boolean okPressed() {
 //                    if (super.okPressed()) {

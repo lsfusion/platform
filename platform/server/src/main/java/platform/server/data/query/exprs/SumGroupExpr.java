@@ -14,7 +14,7 @@ public class SumGroupExpr extends GroupExpr<SourceExpr,SumGroupExpr> {
         super(iWhere, iGroup, iExpr);
     }
     public static SourceExpr create(Where iWhere, Map<AndExpr, AndExpr> iGroup, SourceExpr iExpr) {
-        return AndExpr.create(new SumGroupExpr(iWhere, iGroup, iExpr));
+        return GroupExpr.create(new SumGroupExpr(iWhere, iGroup, iExpr));
     }
 
     public SourceExpr packExpr(SourceExpr expr, Where trueWhere) {

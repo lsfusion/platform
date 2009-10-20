@@ -2,6 +2,7 @@ package platform.server.data.query.exprs;
 
 import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.server.caches.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
@@ -48,26 +49,65 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
     public abstract E packExpr(E expr, Where trueWhere);
 
     // можно использовать напрямую только заведомо зная что не null
-    private GroupExpr(Map<AndExpr, AndExpr> group, Where where, E expr, Where upWhere) {
+    private GroupExpr(Map<AndExpr, AndExpr> group, Where<?> where, E expr, Where upWhere) {
 
+        // PUSH VALUES
         Map<AndExpr,AndExpr> keepGroup = new HashMap<AndExpr, AndExpr>(); // проталкиваем values внутрь
         for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
-            if(!(groupExpr.getValue() instanceof ValueExpr))
-                keepGroup.put(groupExpr.getKey(),groupExpr.getValue());
-            else
+            if (groupExpr.getValue() instanceof ValueExpr)
                 where = where.and(new EqualsWhere(groupExpr.getKey(), (ValueExpr)groupExpr.getValue()));
+            else
+                keepGroup.put(groupExpr.getKey(),groupExpr.getValue());
+        group = keepGroup;
 
+        // PACK
         Where pushWhere = pushWhere(upWhere, keepGroup);
-        this.expr = packExpr(expr,pushWhere.and(where)); // сначала pack'аем expr
-        this.where = where.followFalse(pushWhere.and(this.expr.getWhere()).not()); // затем pack'аем where
-        Where exprWhere = this.expr.getWhere().and(this.where); // теперь pack'аем group
-        this.group = new HashMap<AndExpr, AndExpr>();
-        for(Map.Entry<AndExpr,AndExpr> entry : keepGroup.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
-            this.group.put(entry.getKey().packFollowFalse(exprWhere.and(pushWhere.or(entry.getKey().getWhere().not()))),entry.getValue());
+        expr = packExpr(expr,pushWhere.and(where)); // сначала pack'аем expr
+        where = where.followFalse(pushWhere.and(expr.getWhere()).not()); // затем pack'аем where
+        Where exprWhere = expr.getWhere().and(where); // теперь pack'аем group
+        keepGroup = new HashMap<AndExpr, AndExpr>();
+        for(Map.Entry<AndExpr,AndExpr> entry : group.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
+            keepGroup.put(entry.getKey().packFollowFalse(exprWhere.and(pushWhere.or(entry.getKey().getWhere().not()))),entry.getValue());
+        group = keepGroup;
 
+        // TRANSLATE KEYS
+        Map<KeyExpr,AndExpr> keyExprs;
+        while(!(keyExprs = where.getKeyExprs()).isEmpty()) {
+            QueryTranslator translator = new QueryTranslator(keyExprs,new HashMap<ValueExpr, ValueExpr>());
+            where = where.translateQuery(translator);
+            expr = (E)expr.translateQuery(translator);
+
+            keepGroup = new HashMap<AndExpr, AndExpr>();
+            for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
+                keepGroup.put((AndExpr)groupExpr.getKey().translateQuery(translator),groupExpr.getValue());
+            group = keepGroup;
+        }
+        assert expr.getWhere().and(where).getKeyExprs().isEmpty();
+
+        this.expr = expr;
+        this.where = where;
+        this.group = group;
         context = getContext(this.expr, this.group, this.where); // перечитаем
 
         assert checkExpr();
+    }
+
+    private SourceExpr packSingle() {
+        Map<AndExpr,AndExpr> compares = new HashMap<AndExpr, AndExpr>();
+        Map<KeyExpr,AndExpr> groupKeys = BaseUtils.splitKeys(group,context.keys,compares);
+        if(groupKeys.size()==context.keys.size()) {
+            QueryTranslator translator = new QueryTranslator(groupKeys,new HashMap<ValueExpr, ValueExpr>());
+            Where transWhere = where.translateQuery(translator);
+            for(Map.Entry<AndExpr,AndExpr> compare : compares.entrySet()) // оставшиеся
+                transWhere = transWhere.and(EqualsWhere.create((AndExpr) compare.getKey().translateQuery(translator),compare.getValue()));
+            return expr.translateQuery(translator).and(transWhere);
+        } else
+            return this;
+    }
+
+    // проверяем что keyExpr'ы все в контексте
+    protected static SourceExpr create(GroupExpr<?,?> expr) {
+        return expr.packSingle();
     }
 
     public GroupExpr(Where where, Map<AndExpr, AndExpr> group, E expr) {

@@ -9,28 +9,36 @@ import platform.server.logics.DataObject;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyImplement;
 import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<ObjectImplement,P> implements OrderView {
+public class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterface,P> implements OrderView {
 
-    public PropertyObjectImplement(Property<P> iProperty,Map<P,ObjectImplement> iMapping) {
-        super(iProperty,iMapping);
+    public PropertyObjectImplement(Property<P> property,Map<P,? extends PropertyObjectInterface> mapping) {
+        super(property, (Map<P,PropertyObjectInterface>) mapping);
     }
 
     // получает Grid в котором рисоваться
     public GroupObjectImplement getApplyObject() {
         GroupObjectImplement applyObject=null;
-        for(ObjectImplement intObject : mapping.values())
-            if(applyObject==null || intObject.groupTo.order >applyObject.order) applyObject = intObject.groupTo;
+        for(PropertyObjectInterface intObject : mapping.values())
+            if(applyObject==null || intObject.getApplyObject().order >applyObject.order)
+                applyObject = intObject.getApplyObject();
 
         return applyObject;
+    }
+
+    public Collection<ObjectImplement> getObjectImplements() {
+        Collection<ObjectImplement> result = new ArrayList<ObjectImplement>();
+        for(PropertyObjectInterface object : mapping.values())
+            if(object instanceof ObjectImplement)
+                result.add((ObjectImplement) object);
+        return result;
     }
 
     // в интерфейсе
@@ -44,14 +52,14 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
 
     // проверяет на то что изменился верхний объект
     public boolean objectUpdated(GroupObjectImplement classGroup) {
-        for(ObjectImplement intObject : mapping.values())
+        for(PropertyObjectInterface intObject : mapping.values())
             if(intObject.objectUpdated(classGroup)) return true;
 
         return false;
     }
 
     public boolean classUpdated(GroupObjectImplement classGroup) {
-        for(ObjectImplement intObject : mapping.values())
+        for(PropertyObjectInterface intObject : mapping.values())
             if(intObject.classUpdated(classGroup))
                 return true;
 
@@ -68,24 +76,24 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
 
     public Map<P, DataObject> getInterfaceValues() {
         Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
-        for(Map.Entry<P, ObjectImplement> implement : mapping.entrySet())
+        for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
             mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
         return mapInterface;
     }
     
     public MapChangeDataProperty<P> getChangeProperty(ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
         Map<P, ConcreteClass> interfaceClasses = new HashMap<P,ConcreteClass>();
-        for(Map.Entry<P, ObjectImplement> implement : mapping.entrySet())
+        for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
             interfaceClasses.put(implement.getKey(),implement.getValue().getObjectClass());
         return property.getChangeProperty(interfaceClasses,securityPolicy, externalID);
     }
 
-    public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableChanges session, Property.TableDepends<? extends Property.TableUsedChanges> depends) {
+    public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
 
         Map<P, SourceExpr> joinImplement = new HashMap<P,SourceExpr>();
         for(P propertyInterface : property.interfaces)
-            joinImplement.put(propertyInterface, mapping.get(propertyInterface).getSourceExpr(classGroup, classSource));
-        return property.getSourceExpr(joinImplement,session,depends,null);
+            joinImplement.put(propertyInterface, mapping.get(propertyInterface).getSourceExpr(classGroup, classSource, modifier));
+        return property.getSourceExpr(joinImplement,modifier,null);
     }
 
     public Type getType() {

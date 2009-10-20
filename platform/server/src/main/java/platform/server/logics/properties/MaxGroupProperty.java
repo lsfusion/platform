@@ -7,8 +7,8 @@ import java.util.Collection;
 
 public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
-    public MaxGroupProperty(String iSID, Collection<GroupPropertyInterface<T>> iInterfaces, Property<T> iProperty) {
-        super(iSID, iInterfaces, iProperty, 0);
+    public MaxGroupProperty(String sID, String caption, Collection<GroupPropertyInterface<T>> interfaces, Property<T> property) {
+        super(sID, caption, interfaces, property, 0);
     }
 
     SourceExpr getChangedExpr(SourceExpr changedExpr, SourceExpr changedPrevExpr, SourceExpr prevExpr, SourceExpr newExpr) {

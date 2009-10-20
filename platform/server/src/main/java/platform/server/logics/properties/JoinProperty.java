@@ -6,6 +6,7 @@ import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.*;
@@ -20,20 +21,21 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         return interfaces;
     }
 
-    public JoinProperty(String iSID, int intNum, Property<T> iProperty) {
-        super(iSID, getInterfaces(intNum));
+    public JoinProperty(String sID, String caption, int intNum) {
+        super(sID, caption, getInterfaces(intNum));
     }
 
-    public SourceExpr calculateSourceExpr(Map<JoinPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<JoinPropertyInterface, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         // считаем новые SourceExpr'ы и классы
         Map<T, SourceExpr> implementExprs = new HashMap<T, SourceExpr>();
         for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> interfaceImplement : implement.mapping.entrySet())
-            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere));
-        return implement.property.getSourceExpr(implementExprs, session, usedDefault, depends, changedWhere);
+            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapSourceExpr(joinImplement, modifier, changedWhere));
+        return implement.property.getSourceExpr(implementExprs, modifier, changedWhere);
     }
 
-    protected void fillDepends(Set<Property> depends) {
+    @Override
+    public void fillDepends(Set<Property> depends) {
         fillDepends(depends,implement.mapping.values());
         depends.add(implement.property);       
     }

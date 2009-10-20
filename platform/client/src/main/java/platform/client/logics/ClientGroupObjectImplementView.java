@@ -43,4 +43,12 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
         changeClassView = new ClientFunctionView(inStream, containers);
         delView = new ClientFunctionView(inStream, containers);
     }
+
+    private static int lastID = 0;
+    private String actionID = null;
+    public String getActionID() {
+        if(actionID==null)
+            actionID = "changeGroupObject" + (lastID++);
+        return actionID;
+    }
 }

@@ -79,7 +79,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 if (currentForm == null)
                     navigatorElements = new ArrayList();
                 else
-                    navigatorElements = new ArrayList(((NavigatorForm)BL.baseElement.getNavigatorElement(currentForm.ID)).relevantElements);
+                    navigatorElements = new ArrayList(currentForm.navigatorForm.relevantElements);
                 break;
             case (RemoteNavigatorInterface.NAVIGATORGROUP_RELEVANTCLASS) :
                 if (currentClass == null)
@@ -137,13 +137,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return true;
     }
 
-//    RemoteForm<T> lastOpenedForm;
     public RemoteFormInterface createForm(int formID, boolean currentSession) {
+        return createForm((NavigatorForm)BL.baseElement.getNavigatorElement(formID),currentSession);
+    }
+
+    public RemoteFormInterface createForm(NavigatorForm navigatorForm, boolean currentSession) {
 
        try {
-
-            NavigatorForm navigatorForm = (NavigatorForm)BL.baseElement.getNavigatorElement(formID);
-
             if (!securityPolicy.navigator.checkPermission(navigatorForm)) return null;
 
             DataSession session;
@@ -152,16 +152,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             else
                 session = BL.createSession(adapter);
 
-            RemoteForm<?> remoteForm = new RemoteForm<T>(formID, BL, session, securityPolicy, navigatorForm,
-                    new CustomClassView() {
-                        public void objectChanged(ConcreteCustomClass cls, int objectID) {
-                            addCacheObject(cls, objectID);
-                        }},
-                    new FocusView<T>() {
-                        public void gainedFocus(RemoteForm<T> form) {
-                            currentForm = form;
-                        }
-                    });
+            RemoteForm<?> remoteForm = new RemoteForm<T>(navigatorForm, BL, session, securityPolicy, new FocusView<T>() {
+                public void gainedFocus(RemoteForm<T> form) {
+                    currentForm = form;
+                }
+            }, new CustomClassView() {
+                public void objectChanged(ConcreteCustomClass cls, int objectID) {
+                    addCacheObject(cls, objectID);
+                }});
 
             for (GroupObjectImplement groupObject : remoteForm.groups) {
                 Map<OrderView,Object> userSeeks = new HashMap<OrderView, Object>();
@@ -205,20 +203,5 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         // инстанцирует форму
         return BL.baseElement.getNavigatorElement(formID).caption;
     }
-
-    public int getDefaultForm(int classID) {
-
-        List<NavigatorElement> relevant = BL.baseClass.findClassID(classID).relevantElements;
-
-        if (relevant == null) return -1;
-
-        for (NavigatorElement element : relevant) {
-            if (element instanceof NavigatorForm && securityPolicy.navigator.checkPermission(element))
-                return element.ID;
-        }
-
-        return -1;
-    }
-
 }
 

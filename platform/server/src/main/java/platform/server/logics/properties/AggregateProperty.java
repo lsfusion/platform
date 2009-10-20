@@ -19,8 +19,8 @@ import java.util.*;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    protected AggregateProperty(String iSID,Collection<T> iInterfaces) {
-        super(iSID,iInterfaces);
+    protected AggregateProperty(String iSID,String caption,Collection<T> iInterfaces) {
+        super(iSID,caption,iInterfaces);
     }
 
     public ValueClass getValueClass() {
@@ -128,7 +128,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return query.getClassWhere(Collections.singleton(storedField));
     }
 
-    protected boolean usePrevious() {
+    protected boolean usePreviousStored() {
         return true;
     }
 }

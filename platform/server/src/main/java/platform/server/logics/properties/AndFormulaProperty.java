@@ -2,6 +2,7 @@ package platform.server.logics.properties;
 
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
 
@@ -22,12 +23,12 @@ public class AndFormulaProperty extends FormulaProperty<FormulaPropertyInterface
         return result;
     }
 
-    public AndFormulaProperty(String iSID, boolean... nots) {
-        super(iSID, getInterfaces(nots));
+    public AndFormulaProperty(String sID, boolean... nots) {
+        super(sID, "Если", getInterfaces(nots));
         objectInterface = interfaces.iterator().next();
     }
 
-    public SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<FormulaPropertyInterface, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
         Where where = Where.TRUE;
         for(FormulaPropertyInterface propertyInterface : interfaces)
             if(propertyInterface!= objectInterface) {

@@ -1,6 +1,5 @@
 package platform.server.data.query.exprs;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
@@ -82,7 +81,7 @@ abstract public class SourceExpr extends AbstractSourceJoin {
     public abstract SourceExpr translateQuery(QueryTranslator translator);
     public abstract SourceExpr translateDirect(KeyTranslator translator);
 
-    private static <K> SourceExpr groupSum(Map<K,SourceExpr> implement, SourceExpr expr, Where where, Map<K, AndExpr> group) {
+    private static <K> SourceExpr groupSum(Map<K,? extends SourceExpr> implement, SourceExpr expr, Where where, Map<K, AndExpr> group) {
         SourceExpr groupExpr = CaseExpr.NULL;
 
         Where upWhere = where.not();
@@ -105,7 +104,7 @@ abstract public class SourceExpr extends AbstractSourceJoin {
         return groupExpr;
     }
 
-    private static <K> SourceExpr groupMax(Map<K,SourceExpr> implement, SourceExpr expr, Where where, Map<K, AndExpr> group) {
+    private static <K> SourceExpr groupMax(Map<K,? extends SourceExpr> implement, SourceExpr expr, Where where, Map<K, AndExpr> group) {
         SourceExpr groupExpr = CaseExpr.NULL;
 
         Where upWhere = where.not();
@@ -135,14 +134,14 @@ abstract public class SourceExpr extends AbstractSourceJoin {
         return groupExpr;
     }
 
-    private static <K> SourceExpr groupAndBy(Map<K,SourceExpr> implement, SourceExpr expr, Where where, boolean max, Map<K, AndExpr> group) {
+    private static <K> SourceExpr groupAndBy(Map<K,? extends SourceExpr> implement, SourceExpr expr, Where where, boolean max, Map<K, AndExpr> group) {
         if(max)
             return groupMax(implement, expr, where, group);
         else
             return groupSum(implement, expr, where, group);
     }
 
-    public static <K> SourceExpr groupBy(Map<K,SourceExpr> group,SourceExpr expr,Where where,boolean max,Map<K,? extends SourceExpr> implement) {
+    public static <K> SourceExpr groupBy(Map<K,? extends SourceExpr> group,SourceExpr expr,Where where,boolean max,Map<K,? extends SourceExpr> implement) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<K> mapCase : CaseExpr.pullCases(implement))
             result.add(mapCase.where,groupAndBy(group, expr, where, max, mapCase.data));

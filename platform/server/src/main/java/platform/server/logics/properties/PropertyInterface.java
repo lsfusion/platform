@@ -5,6 +5,7 @@ import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.Collection;
@@ -21,7 +22,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> implements Proper
         return "I/"+ID;
     }
 
-    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, Property.TableDepends<? extends Property.TableUsedChanges> depends, WhereBuilder changedWhere) {
+    public SourceExpr mapSourceExpr(Map<P, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
         return joinImplement.get((P) this);
     }
 

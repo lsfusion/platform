@@ -13,15 +13,11 @@ import java.io.IOException;
 
 public class ObjectPropertyEditor implements PropertyEditorComponent {
 
-    private final ClientForm clientForm;
-
     private ClientDialog clientDialog;
 
-    public ObjectPropertyEditor(ClientForm iclientForm, ClientCellView iproperty, ClientObjectClass cls, Object value) throws IOException, ClassNotFoundException {
+    public ObjectPropertyEditor(ClientForm clientForm, ClientCellView cellView, ClientObjectClass cls, Object value) throws IOException, ClassNotFoundException {
 
-        clientForm = iclientForm;
-
-        clientDialog = new ClientDialog(clientForm, cls, value);
+        clientDialog = new ClientDialog(clientForm, cellView, cls, value);
     }
 
     private boolean objectChosen;

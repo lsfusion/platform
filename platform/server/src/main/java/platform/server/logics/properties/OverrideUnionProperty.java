@@ -5,6 +5,7 @@ import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.session.MapChangeDataProperty;
 import platform.server.session.TableChanges;
+import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
 
 import java.util.ArrayList;
@@ -14,9 +15,8 @@ import java.util.Map;
 
 public class OverrideUnionProperty extends UnionProperty {
 
-
-    public OverrideUnionProperty(String iSID, int intNum) {
-        super(iSID, intNum);
+    public OverrideUnionProperty(String sID, String caption, int intNum) {
+        super(sID, caption, intNum);
     }
 
     public List<PropertyMapImplement<PropertyInterface,PropertyInterface>> operands = new ArrayList<PropertyMapImplement<PropertyInterface, PropertyInterface>>();
@@ -25,11 +25,11 @@ public class OverrideUnionProperty extends UnionProperty {
         return operands;
     }
 
-    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableChanges session, Collection<DataProperty> usedDefault, TableDepends<? extends TableUsedChanges> depends, WhereBuilder changedWhere) {
+    public SourceExpr calculateSourceExpr(Map<PropertyInterface, ? extends SourceExpr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         SourceExpr result = null;
         for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : operands) {
-            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, session, usedDefault, depends, changedWhere);
+            SourceExpr operandExpr = operand.mapSourceExpr(joinImplement, modifier, changedWhere);
             if(result==null)
                 result = operandExpr;
             else

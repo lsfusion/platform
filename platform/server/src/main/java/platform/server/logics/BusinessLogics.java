@@ -23,12 +23,9 @@ import platform.server.logics.data.TableFactory;
 import platform.server.logics.linear.properties.*;
 import platform.server.logics.properties.*;
 import platform.server.logics.properties.groups.AbstractGroup;
-import platform.server.session.DataChanges;
 import platform.server.session.DataSession;
 import platform.server.session.SQLSession;
-import platform.server.view.navigator.ClassNavigatorForm;
-import platform.server.view.navigator.NavigatorElement;
-import platform.server.view.navigator.RemoteNavigator;
+import platform.server.view.navigator.*;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -72,11 +69,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LCFP greater2;
     protected LJP between;
     protected LP and1;
-    protected LP equals2;
+    protected LP equals2,diff2;
 
     protected LP vtrue;
 
-    protected LDP name;
+    public LDP name;
     protected LDP date;
 
     void initBase() {
@@ -94,6 +91,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         and1 = addAFProp(false);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
+        diff2 = addCFProp(Compare.NOT_EQUALS);
         between = addJProp("Между", and1, groeq2,1,2, groeq2,3,1);
         vtrue = addCProp("Истина",LogicalClass.instance,true);
 
@@ -260,66 +258,46 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
-    public Collection<DataProperty> getDataProperties() {
-        Collection<DataProperty> result = new ArrayList<DataProperty>();
+    // получает список св-в в порядке использования
+    private void fillPropertyList(Property<?> property,LinkedHashSet<Property> set) {
+        for(Property depend : property.getDepends())
+            fillPropertyList(depend,set);
+        set.add(property);
+    }
+    Iterable<Property> getPropertyList() {
+        LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for(Property property : properties)
-            if(property instanceof DataProperty)
-                result.add((DataProperty) property);
-        return result;
+            fillPropertyList(property,linkedSet);
+        return linkedSet;
     }
 
-    public Collection<Property> getStoredProperties() {
-        Collection<Property> result = new ArrayList<Property>();
-        for(Property property : properties)
-            if(property.isStored())
+    public List<Property> getStoredProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for(Property property : getPropertyList())
+            if(persistents.contains(property) || property instanceof DataProperty)
                 result.add(property);
         return result;
     }
 
-    public Collection<Property> getConstrainedProperties() {
-        Collection<Property> result = new ArrayList<Property>();
-        for(Property property : properties)
-            if(property.constraint!=null)
+    public List<Property> getConstrainedProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for(Property property : getPropertyList())
+            if(property.isFalse)
                 result.add(property);
         return result;
     }
 
-    public Collection<Property> getAppliedProperties() {
-        return BaseUtils.join(getStoredProperties(), getConstrainedProperties());
-    }
-
-    static class DependsOrder<O extends Property> extends Property.Order<O,DependsOrder.All,DependsOrder.Changes> {
-
-        DependsOrder(Collection<O> properties) {
-            super(properties, new All());
-        }
-
-        // помечает все как измененные
-        static class All extends DataChanges<All> {
-
-            public void add(All changes) {}
-
-            public void dependsAdd(All changes, CustomClass customClass) {}
-            public void dependsRemove(All changes, CustomClass customClass) {}
-            public void dependsData(All changes, DataProperty property) {}
-
-            public boolean hasChanges() { return true; }
-        }
-
-        static class Changes extends Property.UsedChanges<All,Changes> {
-            public All newChanges() {
-                return new All();
-            }
-        }
-
-        public Changes newChanges() {
-            return new Changes();
-        }
+    public List<Property> getAppliedProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for(Property property : getPropertyList())
+            if(property.isStored() || property.isFalse)
+                result.add(property);
+        return result;
     }
 
     public void initStored() {
         // привяжем к таблицам все свойства
-        for(Property property : new DependsOrder<Property>(BaseUtils.merge(persistents, getDataProperties()))) {
+        for(Property property : getStoredProperties()) {
             System.out.println("Initializing stored - "+property+"...");
             property.markStored(tableFactory);
         }
@@ -564,9 +542,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     protected LDP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
 
-        DataProperty property = new DataProperty(sID,params,value);
-        property.sID = sID;
-        property.caption = caption;
+        DataProperty property = new DataProperty(sID,caption,params,value);
         properties.add(property);
 
         if (group != null)
@@ -575,13 +551,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new LDP(property);
     }
 
+    protected LMCP addMCProp(AbstractGroup group, LP lmax, LDP ldata) {
+
+        MaxChangeProperty property = new MaxChangeProperty(lmax.property,ldata.property);
+        properties.add(property);
+
+        if (group != null)
+            group.add(property);
+
+        return new LMCP(property);
+    }
+
     protected LCP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp(genSID(), caption, valueClass, value, params);
     }
     protected LCP addCProp(String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         
-        ClassProperty property = new ClassProperty(sID,params,valueClass,value);
-        property.caption = caption;
+        ClassProperty property = new ClassProperty(sID,caption,params,valueClass,value);
 
         properties.add(property);
         
@@ -759,12 +745,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         int intNum = getIntNum(params);
 
-        JoinProperty property = new JoinProperty(sID,intNum,mainProp.property);
-        property.sID = sID;
-        property.caption = caption;
+        JoinProperty property = new JoinProperty(sID, caption,intNum);
 
-        if (group != null)
-            group.add(property);
+        if (group != null) group.add(property);
         
         LJP listProperty = new LJP(property);
         property.implement = mapImplement(mainProp,readImplements(listProperty.listInterfaces,params));
@@ -782,11 +765,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         GroupProperty property;
         if(sum)
-            property = new SumGroupProperty(sID,interfaces,groupProp.property);
+            property = new SumGroupProperty(sID, caption, interfaces,groupProp.property);
         else
-            property = new MaxGroupProperty(sID,interfaces,groupProp.property);
+            property = new MaxGroupProperty(sID, caption, interfaces,groupProp.property);
 
-        property.caption = caption;
         properties.add(property);
 
         if (group != null)
@@ -835,14 +817,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int extra = 0;
         switch(unionType) {
             case MAX:
-                property = new MaxUnionProperty(sID,intNum);
+                property = new MaxUnionProperty(sID,caption,intNum);
                 break;
             case SUM:
-                property = new SumUnionProperty(sID,intNum);
+                property = new SumUnionProperty(sID,caption,intNum);
                 extra = 1;
                 break;
             case OVERRIDE:
-                property = new OverrideUnionProperty(sID,intNum);
+                property = new OverrideUnionProperty(sID,caption,intNum);
                 break;
         }
 
@@ -868,8 +850,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        property.sID = sID;
-        property.caption = caption;
         properties.add(property);
 
         if (group != null)
@@ -1476,11 +1456,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void recalculateAggregations(SQLSession session,Collection<AggregateProperty> recalculateProperties) throws SQLException {
 
-        for(AggregateProperty dependProperty : new DependsOrder<AggregateProperty>(recalculateProperties)) {
-            System.out.print("Идет перерасчет аггрегированного св-ва ("+dependProperty+")... ");
-            dependProperty.recalculateAggregation(session);
-            System.out.println("Done");
-        }
+        for(Property property : getPropertyList())
+            if(property instanceof AggregateProperty) {
+                AggregateProperty dependProperty = (AggregateProperty)property;
+                if(recalculateProperties.contains(dependProperty)) {
+                    System.out.print("Идет перерасчет аггрегированного св-ва ("+dependProperty+")... ");
+                    dependProperty.recalculateAggregation(session);
+                    System.out.println("Done");
+                }
+            }
     }
 
     public void createDefaultClassForms(CustomClass cls, NavigatorElement parent) {
@@ -1497,5 +1481,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         for (CustomClass child : cls.children)
             createDefaultClassForms(child, node);
+    }
+
+    public DataChangeNavigatorForm getDataChangeForm(DataProperty property) {
+        DataChangeNavigatorForm navigatorForm = new DataChangeNavigatorForm(this, property);
+//        baseElement.add(navigatorForm);
+        return navigatorForm;        
     }
 }

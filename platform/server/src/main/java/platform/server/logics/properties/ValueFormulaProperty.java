@@ -9,9 +9,9 @@ abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends 
 
     ConcreteValueClass value;
 
-    protected ValueFormulaProperty(String iSID, Collection<T> iInterfaces, ConcreteValueClass iValue) {
-        super(iSID, iInterfaces);
+    protected ValueFormulaProperty(String sID, String caption, Collection<T> interfaces, ConcreteValueClass value) {
+        super(sID, caption, interfaces);
 
-        value = iValue;
+        this.value = value;
     }
 }

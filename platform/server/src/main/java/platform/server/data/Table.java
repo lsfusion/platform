@@ -1,8 +1,6 @@
 package platform.server.data;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.caches.Lazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.data.classes.LogicalClass;

@@ -6,8 +6,8 @@ import java.util.Collection;
 
 public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
-    public SumGroupProperty(String iSID, Collection<GroupPropertyInterface<T>> iInterfaces, Property<T> iProperty) {
-        super(iSID, iInterfaces, iProperty, 1);
+    public SumGroupProperty(String sID, String caption, Collection<GroupPropertyInterface<T>> interfaces, Property<T> property) {
+        super(sID, caption, interfaces, property, 1);
     }
 
     SourceExpr getChangedExpr(SourceExpr changedExpr, SourceExpr changedPrevExpr, SourceExpr prevExpr, SourceExpr newExpr) {

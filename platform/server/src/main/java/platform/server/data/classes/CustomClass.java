@@ -16,7 +16,12 @@ import platform.server.logics.data.ObjectTable;
 import platform.server.logics.properties.DataProperty;
 import platform.server.logics.properties.groups.AbstractNode;
 import platform.server.session.SQLSession;
+import platform.server.view.form.CustomClassView;
+import platform.server.view.form.CustomObjectImplement;
+import platform.server.view.form.ObjectImplement;
 import platform.server.view.navigator.NavigatorElement;
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.auth.SecurityPolicy;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -252,6 +257,12 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
+    public NavigatorForm getClassForm(SecurityPolicy securityPolicy) {
+        for (NavigatorElement element : relevantElements)
+            if (element instanceof NavigatorForm && securityPolicy.navigator.checkPermission(element))
+                return (NavigatorForm) element;
+        throw new RuntimeException("Для класса отсутствует соответствующая форма");
+    }
 
     // проверяет находятся ли он и все верхние в OrObjectClassSet'е
     public boolean upInSet(UpClassSet upSet, ConcreteCustomClassSet set) {
@@ -263,4 +274,8 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public abstract ConcreteCustomClass getSingleClass();
+
+    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView) {
+        return new CustomObjectImplement(ID, SID, this, caption, classView);
+    }
 }

@@ -19,6 +19,8 @@ public class ObjectImplementView extends CellView {
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 
+        outStream.writeBoolean(view.show);
+
         outStream.writeInt(view.ID);
         classView.serialize(outStream);
     }

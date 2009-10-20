@@ -4,15 +4,19 @@ import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.LogicalClass;
+import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.types.Type;
 import platform.server.where.Where;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.GroupObjectImplement;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DataObject extends ObjectValue {
+public class DataObject extends ObjectValue implements PropertyObjectInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -54,6 +58,13 @@ public class DataObject extends ObjectValue {
         return object;
     }
 
+    public static <K> Map<K,Object> getMapValues(Map<K,DataObject> map) {
+        Map<K,Object> mapClasses = new HashMap<K,Object>();
+        for(Map.Entry<K,DataObject> keyField : map.entrySet())
+            mapClasses.put(keyField.getKey(), keyField.getValue().object);
+        return mapClasses;
+    }
+
     public static <K> Map<K,ConcreteClass> getMapClasses(Map<K,DataObject> map) {
         Map<K,ConcreteClass> mapClasses = new HashMap<K,ConcreteClass>();
         for(Map.Entry<K,DataObject> keyField : map.entrySet())
@@ -65,4 +76,25 @@ public class DataObject extends ObjectValue {
         Where greater = expr.compare(this,Compare.GREATER);
         return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
     }
+
+    public AndClassSet getClassSet(GroupObjectImplement classGroup) {
+        return getObjectClass();
+    }
+
+    public ConcreteClass getObjectClass() {
+        return objectClass;
+    }
+
+    public DataObject getDataObject() {
+        return this;
+    }
+
+    public GroupObjectImplement getApplyObject() {
+        return null;
+    }
+
+    public Type getType() {
+        return getObjectClass().getType();
+    }
+
 }

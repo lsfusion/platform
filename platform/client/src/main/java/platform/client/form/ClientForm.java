@@ -68,9 +68,6 @@ public class ClientForm extends JPanel {
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
-    private final int GID;
-    private int getGroupObjectGID(ClientGroupObjectImplementView group) { return GID * RemoteFormInterface.GID_SHIFT + group.ID; }
-
     public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) throws IOException, ClassNotFoundException {
 //        super(app);
 
@@ -78,7 +75,6 @@ public class ClientForm extends JPanel {
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
-        GID = remoteForm.getGID();
 
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         clientNavigator = iclientNavigator;
@@ -434,7 +430,7 @@ public class ClientForm extends JPanel {
 
     void changeProperty(ClientCellView property, Object value, boolean externalID) throws IOException {
 
-        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(property.getGroupObject()), true);
+        SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
 
         if (property instanceof ClientPropertyView) {
 
@@ -466,7 +462,7 @@ public class ClientForm extends JPanel {
 
     void changeClass(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
 
-        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(object.groupObject), true);
+        SwingUtils.stopSingleAction(object.groupObject.getActionID(), true);
 
         remoteForm.changeClass(object.ID, (cls == null) ? -1 : cls.ID);
         dataChanged();
@@ -482,7 +478,7 @@ public class ClientForm extends JPanel {
 
     public void switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
 
-        SwingUtils.stopSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), true);
+        SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         remoteForm.switchClassView(groupObject.ID);
 
@@ -637,11 +633,11 @@ public class ClientForm extends JPanel {
 
         }
         
-        public void setClassView(Boolean iclassView) {
+        public void setClassView(Boolean setClassView) {
             
-            if (classView == null || classView != iclassView) {
+            if (classView == null || classView != setClassView) {
                 
-                classView = iclassView;
+                classView = setClassView;
                 if (classView) {
                     panel.removeGroupObjectID();
                     grid.addGroupObjectID();
@@ -655,7 +651,8 @@ public class ClientForm extends JPanel {
                     grid.removeGroupObjectID();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            panel.getObjectIDView(0).requestFocusInWindow();
+                            Component component = panel.getVisibleComponent();
+                            if(component!=null) component.requestFocusInWindow();
                         }
                     });
 //                    panel.requestFocusInWindow();
@@ -1071,14 +1068,13 @@ public class ClientForm extends JPanel {
 
             public void addGroupObjectID() {
                 
-                for (ClientObjectImplementView object : groupObject) {
-                    
-                    PanelCellModel idmodel = new PanelCellModel(object.objectIDView);
-                    formLayout.add(idmodel.key, idmodel.view);
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show) {                    
+                        PanelCellModel idmodel = new PanelCellModel(object.objectIDView);
+                        formLayout.add(idmodel.key, idmodel.view);
 
-                    models.put(object.objectIDView, idmodel);
-
-                }
+                        models.put(object.objectIDView, idmodel);
+                    }
 
                 if (currentObject != null)
                     setGroupObjectIDValue(currentObject);
@@ -1087,29 +1083,31 @@ public class ClientForm extends JPanel {
             
             public void removeGroupObjectID() {
                 
-                for (ClientObjectImplementView object : groupObject) {
-                    
-                    PanelCellModel idmodel = models.get(object.objectIDView);
-                    if (idmodel != null) {
-                        formLayout.remove(idmodel.key, idmodel.view);
-                        models.remove(object.objectIDView);
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show) { 
+                        PanelCellModel idmodel = models.get(object.objectIDView);
+                        if (idmodel != null) {
+                            formLayout.remove(idmodel.key, idmodel.view);
+                            models.remove(object.objectIDView);
+                        }
                     }
-                }
             }
 
-            private Component getObjectIDView(int ind) {
-                return models.get(groupObject.get(ind).objectIDView).view.table;
+            private Component getVisibleComponent() {
+                for(ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show)
+                        return models.get(object.objectIDView).view.table;
+                return null;
             }
 
             private void setGroupObjectIDValue(ClientGroupObjectValue value) {
 
-                for (ClientObjectImplementView object : groupObject) {
-                    
-                    PanelCellModel idmodel = models.get(object.objectIDView);
-                    if (idmodel != null)
-                        idmodel.setValue(value.get(object));
-                }
-                
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show) {
+                        PanelCellModel idmodel = models.get(object.objectIDView);
+                        if (idmodel != null)
+                            idmodel.setValue(value.get(object));
+                    }
             }
 
             private void selectObject(ClientGroupObjectValue value) {
@@ -1242,10 +1240,10 @@ public class ClientForm extends JPanel {
 
             private void addGroupObjectID() {
 //                System.out.println("addGroupObjectID");
-                for (ClientObjectImplementView object : groupObject) {
-                    table.addColumn(object.objectIDView);
-                }
-                
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show)
+                       table.addColumn(object.objectIDView);
+
                 // здесь еще добавить значения идентификаторов
                 fillTableObjectID();
                 
@@ -1254,9 +1252,9 @@ public class ClientForm extends JPanel {
 
             private void removeGroupObjectID() {
 //                System.out.println("removeGroupObjectID");
-                for (ClientObjectImplementView object : groupObject) {
-                    table.removeColumn(object.objectIDView);
-                }
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show)
+                        table.removeColumn(object.objectIDView);
                 updateTable();
             }
 
@@ -1288,12 +1286,13 @@ public class ClientForm extends JPanel {
             }
 
             private void fillTableObjectID() {
-                for (ClientObjectImplementView object : groupObject) {
-                    Map<ClientGroupObjectValue, Object> values = new HashMap();
-                    for (ClientGroupObjectValue value : table.gridRows)
-                        values.put(value, value.get(object));
-                    table.setColumnValues(object.objectIDView, values);
-                }
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show) {
+                        Map<ClientGroupObjectValue, Object> values = new HashMap<ClientGroupObjectValue, Object>();
+                        for (ClientGroupObjectValue value : table.gridRows)
+                            values.put(value, value.get(object));
+                        table.setColumnValues(object.objectIDView, values);
+                    }
             }
             
             private void updateTable() {
@@ -1446,7 +1445,8 @@ public class ClientForm extends JPanel {
 //                            System.out.println("changeSel");
                             final ClientGroupObjectValue changeObject = model.getSelectedObject();
                             assert changeObject!=null;
-                            SwingUtils.invokeLaterSingleAction("changeGroupObject" + getGroupObjectGID(groupObject), new ActionListener() {
+                            SwingUtils.invokeLaterSingleAction(groupObject.getActionID()
+                                    , new ActionListener() {
                                 public void actionPerformed(ActionEvent ae) {
                                     try {
                                         if(changeObject.equals(model.getSelectedObject()))
@@ -2331,7 +2331,7 @@ public class ClientForm extends JPanel {
 
                 classModel = new ClassModel(object.classView);
 
-                if (classModel.rootClass instanceof ClientObjectClass) {
+                if (classModel.rootClass instanceof ClientObjectClass && object.objectIDView.show) {
 
                     String extraCaption = ((groupObject.size() > 1) ? ("(" + object.objectIDView.caption + ")") : "");
 

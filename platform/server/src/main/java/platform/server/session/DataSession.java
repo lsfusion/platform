@@ -33,11 +33,11 @@ import platform.server.where.WhereBuilder;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DataSession extends SQLSession implements ChangesSession, Property.TableDepends<DataSession.UsedChanges> {
+public class DataSession extends SQLSession implements ChangesSession {
 
     public Map<RemoteForm,ViewDataChanges> incrementChanges = new HashMap<RemoteForm, ViewDataChanges>();
 
-    public TableChanges changes = new TableChanges();
+    public SessionChanges changes = new SessionChanges();
 
     public final BaseClass baseClass;
     public final CustomClass namedObject;
@@ -48,9 +48,9 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
     // для отладки
     public static boolean reCalculateAggr = false;
 
-    public static Where getIsClassWhere(TableChanges session,SourceExpr expr, ValueClass isClass, WhereBuilder changedWheres) {
+    public static Where getIsClassWhere(SessionChanges session,SourceExpr expr, ValueClass isClass, WhereBuilder changedWheres) {
         Where isClassWhere = expr.getIsClassWhere(isClass.getUpSet());
-        if(session!=null && isClass instanceof CustomClass) {
+        if(isClass instanceof CustomClass && session!=null) {
             RemoveClassTable removeTable = session.remove.get((CustomClass)isClass);
             if(removeTable!=null) {
                 Where removeWhere = removeTable.getJoinWhere(expr);
@@ -95,7 +95,7 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
         for(DataChangeTable dataTable : changes.data.values())
             dropTemporaryTable(dataTable);
 
-        changes = new TableChanges();
+        changes = new SessionChanges();
     }
 
     public DataObject addObject(ConcreteCustomClass customClass) throws SQLException {
@@ -235,7 +235,7 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
         Collection<Property> result = new ArrayList<Property>();
-        
+
         ViewDataChanges incrementChange = incrementChanges.get(form);
         if(incrementChange==null)
             incrementChange = new ViewDataChanges(changes);
@@ -243,92 +243,126 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
 
         updateClasses.addAll(incrementChange.addClasses);
         updateClasses.addAll(incrementChange.removeClasses);
-        
+
+        ViewModifier formUpdate = form.update(incrementChange);
         for(Property<?> property : form.getUpdateProperties())
-            if(property.getUsedChanges(incrementChange,form.updateDepends).hasChanges())
+            if(property.getUsedChanges(formUpdate).hasChanges())
                 result.add(property);
         return result;
     }
 
-    private IncrementChangeTable readIncrementChanges(Collection<Property> properties) throws SQLException {
-        // создаем таблицу
-        IncrementChangeTable changeTable = new IncrementChangeTable(properties);
+    private static class Increment extends TableModifier<Increment.UsedChanges> {
 
-        // подготавливаем запрос
-        JoinQuery<KeyField,PropertyField> changesQuery = new JoinQuery<KeyField, PropertyField>(changeTable);
-        WhereBuilder changedWhere = new WhereBuilder();
-        for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
-            changesQuery.properties.put(change.getValue(),
-                    change.getKey().getIncrementExpr(BaseUtils.join(changeTable.mapKeys, changesQuery.mapKeys), changes, this, changedWhere));
-        changesQuery.and(changedWhere.toWhere());
+        Map<Property, IncrementChangeTable> tables = new HashMap<Property, IncrementChangeTable>(); 
 
-        // подготовили - теперь надо сохранить в курсор и записать классы
-        createTemporaryTable(changeTable);
-        insertSelect(new ModifyQuery(changeTable,changesQuery));
-        changeTable.classes = changesQuery.getClassWhere(new ArrayList<PropertyField>());
-        for(PropertyField field : changeTable.changes.values())
-            changeTable.propertyClasses.put(field,changesQuery.<Field>getClassWhere(Collections.singleton(field)));
+        public final DataSession session;
 
-        return changeTable;
-    }
-
-    public Map<Property, IncrementChangeTable> increment = new HashMap<Property, IncrementChangeTable>();
-
-    static class UsedChanges extends Property.TableUsedChanges<UsedChanges> {
-        final Map<Property, IncrementChangeTable> increment = new HashMap<Property, IncrementChangeTable>();
-
-        @Override
-        public boolean hasChanges() {
-            return super.hasChanges() || !increment.isEmpty();
+        public SessionChanges getSession() {
+            return session.changes;
         }
 
-        @Override
-        public void add(UsedChanges add, DataProperty exclude) {
-            super.add(add, exclude);
-            increment.putAll(add.increment);
+        private Increment(DataSession session) {
+            this.session = session;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            return this==o || o instanceof UsedChanges && increment.equals(((UsedChanges)o).increment) && super.equals(o);
+        static class UsedChanges extends TableChanges<UsedChanges> {
+            final Map<Property, IncrementChangeTable> increment = new HashMap<Property, IncrementChangeTable>();
+
+            @Override
+            public boolean hasChanges() {
+                return super.hasChanges() || !increment.isEmpty();
+            }
+
+            @Override
+            public void add(UsedChanges add) {
+                super.add(add);
+                increment.putAll(add.increment);
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return this==o || o instanceof UsedChanges && increment.equals(((UsedChanges)o).increment) && super.equals(o);
+            }
+
+            @Override
+            public int hashCode() {
+                return 31 * super.hashCode() + increment.hashCode();
+            }
         }
 
-        @Override
-        public int hashCode() {
-            return 31 * super.hashCode() + increment.hashCode();
+        public <P extends PropertyInterface> SourceExpr changed(Property<P> property, Map<P, ? extends SourceExpr> joinImplement, WhereBuilder changedWhere) {
+            IncrementChangeTable incrementTable = tables.get(property);
+            if(incrementTable!=null) { // если уже все посчитано - просто возвращаем его
+                Join<PropertyField> incrementJoin = incrementTable.join(BaseUtils.join(BaseUtils.reverse(BaseUtils.join(property.mapTable.mapKeys, incrementTable.mapKeys)), joinImplement));
+                changedWhere.add(incrementJoin.getWhere());
+                return incrementJoin.getExpr(incrementTable.changes.get(property));
+            } else
+                return null;
         }
-    }
 
-    public <P extends PropertyInterface> SourceExpr changed(Property<P> property, Map<P, ? extends SourceExpr> joinImplement, WhereBuilder changedWhere) {
-        IncrementChangeTable incrementTable = increment.get(property);
-        if(incrementTable!=null) { // если уже все посчитано - просто возвращаем его
-            Join<PropertyField> incrementJoin = incrementTable.join(BaseUtils.join(BaseUtils.reverse(BaseUtils.join(property.mapTable.mapKeys, incrementTable.mapKeys)), joinImplement));
-            changedWhere.add(incrementJoin.getWhere());
-            return incrementJoin.getExpr(incrementTable.changes.get(property));
-        } else
+        public UsedChanges used(Property property, UsedChanges usedChanges) {
+            IncrementChangeTable incrementTable = tables.get(property);
+            if(incrementTable!=null) {
+                usedChanges = new UsedChanges();
+                usedChanges.increment.put(property,incrementTable);
+            }
+            return usedChanges;
+        }
+
+        public UsedChanges newChanges() {
+            return new UsedChanges();
+        }
+
+        public IncrementChangeTable read(Collection<Property> properties) throws SQLException {
+            // создаем таблицу
+            IncrementChangeTable changeTable = new IncrementChangeTable(properties);
+
+            // подготавливаем запрос
+            JoinQuery<KeyField,PropertyField> changesQuery = new JoinQuery<KeyField, PropertyField>(changeTable);
+            WhereBuilder changedWhere = new WhereBuilder();
+            for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
+                changesQuery.properties.put(change.getValue(),
+                        change.getKey().getIncrementExpr(BaseUtils.join(changeTable.mapKeys, changesQuery.mapKeys), this, changedWhere));
+            changesQuery.and(changedWhere.toWhere());
+
+            // подготовили - теперь надо сохранить в курсор и записать классы
+            session.createTemporaryTable(changeTable);
+            session.insertSelect(new ModifyQuery(changeTable,changesQuery));
+            changeTable.classes = changesQuery.getClassWhere(new ArrayList<PropertyField>());
+            for(PropertyField field : changeTable.changes.values())
+                changeTable.propertyClasses.put(field,changesQuery.<Field>getClassWhere(Collections.singleton(field)));
+
+            for(Property property : properties)
+                tables.put(property,changeTable);
+
+            return changeTable;
+        }
+
+        public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
+            if(property.isFalse) {
+                JoinQuery<T,String> changed = new JoinQuery<T,String>(property);
+
+                WhereBuilder changedWhere = new WhereBuilder();
+                SourceExpr valueExpr = property.getSourceExpr(changed.mapKeys,this,changedWhere);
+                changed.and(valueExpr.getWhere());
+                changed.and(changedWhere.toWhere()); // только на измененные смотрим
+                changed.properties.put("value", valueExpr);
+
+                OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.executeSelect(session);
+                if(result.size()>0) {
+                    String resultString = "Ограничение на св-во "+ property +" нарушено"+'\n';
+                    for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
+                        resultString += "   Объекты : ";
+                        for(T propertyInterface : property.interfaces)
+                            resultString += row.getKey().get(propertyInterface)+" ";
+                        resultString += "Значение : "+row.getValue().get("value") + '\n';
+                    }
+
+                    return resultString;
+                }
+            }
+
             return null;
-    }
-
-    public UsedChanges used(Property property, UsedChanges usedChanges) {
-        IncrementChangeTable incrementTable = increment.get(property);
-        if(incrementTable!=null) { 
-            usedChanges = new UsedChanges();
-            usedChanges.increment.put(property,incrementTable);
-        }
-        return usedChanges;
-    }
-
-    public UsedChanges newChanges() {
-        return new UsedChanges();
-    }
-
-    class ApplyOrder extends Property.Order<Property,TableChanges,Property.DefaultChanges> {
-        ApplyOrder(BusinessLogics<?> BL) {
-            super(BL.getAppliedProperties(), changes);
-        }
-
-        public Property.DefaultChanges newChanges() {
-            return new Property.DefaultChanges();
         }
     }
 
@@ -336,68 +370,63 @@ public class DataSession extends SQLSession implements ChangesSession, Property.
         // делается UpdateAggregations (для мн-ва persistent+constraints)
         startTransaction();
 
+        Increment increment = new Increment(this);
         Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
 
-//        try {
-            // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for(Property property : new ApplyOrder(BL)) {
-                if(property.constraint!=null) {
-                    String constraintResult = property.constraint.check(this,property);
-                    if(constraintResult!=null) {
-                        // откатим транзакцию
-                        rollbackTransaction();
-                        return constraintResult;
-                    }
+        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
+        for(Property<?> property : BL.getAppliedProperties()) {
+            if(property.getUsedChanges(increment).hasChanges()) {
+                String constraintResult = increment.check(property);
+                if(constraintResult!=null) {
+                    // откатим транзакцию
+                    rollbackTransaction();
+                    return constraintResult;
                 }
 
-                if(property.isStored()) { // сохраним изменения в таблицы
-                    IncrementChangeTable changeTable = readIncrementChanges(Collections.singleton(property));
-                    increment.put(property, changeTable);
-                    temporary.add(changeTable);
-                }
+                if(property.isStored()) // сохраним изменения в таблицы
+                    temporary.add(increment.read(Collections.<Property>singleton(property)));
+            }
+        }
+
+        // записываем в базу
+        for(Collection<Property> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable,Property>(){public ImplementTable group(Property key) {return key.mapTable.table;}},
+                increment.tables.keySet()).values()) {
+            IncrementChangeTable changeTable;
+            if(groupTable.size()==1) // временно так - если одна берем старую иначе группой
+                changeTable = increment.tables.get(groupTable.iterator().next());
+            else {
+                changeTable = increment.read(groupTable);
+                temporary.add(changeTable);
             }
 
-            // записываем в базу
-            for(Collection<Property> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable,Property>(){public ImplementTable group(Property key) {return key.mapTable.table;}},
-                    increment.keySet()).values()) {
-                IncrementChangeTable changeTable;
-                if(groupTable.size()==1) // временно так - если одна берем старую иначе группой
-                    changeTable = increment.get(groupTable.iterator().next());
-                else {
-                    changeTable = readIncrementChanges(groupTable);
-                    temporary.add(changeTable);
-                }
+            JoinQuery<KeyField, PropertyField> modifyQuery = new JoinQuery<KeyField, PropertyField>(changeTable.table);
+            Join<PropertyField> join = changeTable.join(BaseUtils.join(BaseUtils.reverse(changeTable.mapKeys), modifyQuery.mapKeys));
+            for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
+                modifyQuery.properties.put(change.getKey().field,join.getExpr(change.getValue()));
+            modifyQuery.and(join.getWhere());
+            modifyRecords(new ModifyQuery(changeTable.table, modifyQuery));
+        }
 
-                JoinQuery<KeyField, PropertyField> modifyQuery = new JoinQuery<KeyField, PropertyField>(changeTable.table);
-                Join<PropertyField> join = changeTable.join(BaseUtils.join(BaseUtils.reverse(changeTable.mapKeys), modifyQuery.mapKeys));
-                for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
-                    modifyQuery.properties.put(change.getKey().field,join.getExpr(change.getValue()));
-                modifyQuery.and(join.getWhere());
-                modifyRecords(new ModifyQuery(changeTable.table, modifyQuery));
-            }
+        for(Map.Entry<DataObject,ConcreteObjectClass> newClass : newClasses.entrySet())
+            newClass.getValue().saveClassChanges(this,newClass.getKey());
 
-            for(Map.Entry<DataObject,ConcreteObjectClass> newClass : newClasses.entrySet())
-                newClass.getValue().saveClassChanges(this,newClass.getKey());
+        commitTransaction();
 
-            commitTransaction();
-            restart(false);
+        for(IncrementChangeTable addTable : temporary)
+            dropTemporaryTable(addTable);
 
-//        } finally { // удаляем changeTables (на каждое св-во будет одна таблица)
-            for(IncrementChangeTable addTable : temporary)
-                dropTemporaryTable(addTable);
-            increment = new HashMap<Property, IncrementChangeTable>();
-//        }
+        restart(false);
 
         return null;
     }
 
-    private final Map<Integer,Integer> sessionIDs = new HashMap<Integer, Integer>();
-    public int generateSessionID(int ID) {
+    private final Map<Integer,Integer> viewIDs = new HashMap<Integer, Integer>();
+    public int generateViewID(int ID) {
         Integer idCounter;
-        synchronized(sessionIDs) {
-            idCounter = sessionIDs.get(ID);
+        synchronized(viewIDs) {
+            idCounter = viewIDs.get(ID);
             if(idCounter==null) idCounter = 0;
-            sessionIDs.put(ID,idCounter+1);
+            viewIDs.put(ID,idCounter+1);
         }
         return ID << 4 + idCounter;
     }

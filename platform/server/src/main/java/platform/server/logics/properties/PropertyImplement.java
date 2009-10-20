@@ -5,13 +5,13 @@ import java.util.Map;
 
 public class PropertyImplement<T,P extends PropertyInterface> {
 
-    public PropertyImplement(Property<P> iProperty,Map<P,T> iMapping) {
-        property = iProperty;
-        mapping = iMapping;
+    public PropertyImplement(Property<P> property,Map<P,T> mapping) {
+        this.property = property;
+        this.mapping = mapping;
     }
 
-    public PropertyImplement(Property<P> iProperty) {
-        property = iProperty;
+    public PropertyImplement(Property<P> property) {
+        this.property = property;
         mapping = new HashMap<P,T>();
     }
 

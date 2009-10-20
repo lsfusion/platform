@@ -1,28 +1,24 @@
 package platform.server.logics.properties;
 
 import platform.server.session.DataChanges;
+import platform.server.session.Modifier;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 // свойство производное от остальных свойств
 public abstract class FunctionProperty<T extends PropertyInterface> extends AggregateProperty<T> {
 
-    protected FunctionProperty(String iSID, Collection<T> iInterfaces) {
-        super(iSID, iInterfaces);
+    protected FunctionProperty(String sID, String caption, Collection<T> interfaces) {
+        super(sID, caption, interfaces);
     }
-
-    protected abstract void fillDepends(Set<Property> depends);
 
     public static void fillDepends(Set<Property> depends, Collection<? extends PropertyInterfaceImplement> propImplements) {
         for(PropertyInterfaceImplement propImplement : propImplements)
             propImplement.mapFillDepends(depends);
     }
 
-    <C extends DataChanges<C>,U extends UsedChanges<C,U>> U calculateUsedChanges(C changes, Collection<DataProperty> usedDefault, Depends<C, U> depends) {
-        Set<Property> dependProps = new HashSet<Property>();
-        fillDepends(dependProps);
-        return Property.getUsedChanges(dependProps,changes, usedDefault, depends);
+    <U extends DataChanges<U>> U calculateUsedChanges(Modifier<U> modifier) {
+        return Property.getUsedChanges(getDepends(), modifier);
     }
 }
