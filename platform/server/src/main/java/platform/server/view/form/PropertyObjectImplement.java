@@ -26,8 +26,8 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     // получает Grid в котором рисоваться
     public GroupObjectImplement getApplyObject() {
         GroupObjectImplement applyObject=null;
-        for(PropertyObjectInterface intObject : mapping.values())
-            if(applyObject==null || intObject.getApplyObject().order >applyObject.order)
+        for(ObjectImplement intObject : getObjectImplements())
+            if(applyObject==null || intObject.groupTo.order >applyObject.order)
                 applyObject = intObject.getApplyObject();
 
         return applyObject;

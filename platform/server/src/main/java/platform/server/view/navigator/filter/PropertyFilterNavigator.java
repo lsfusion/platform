@@ -5,6 +5,7 @@ import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.ObjectNavigator;
 import platform.server.view.navigator.PropertyObjectNavigator;
+import platform.server.view.navigator.Mapper;
 
 import java.sql.SQLException;
 import java.util.Set;

@@ -12,11 +12,15 @@ import platform.server.data.types.Type;
 import platform.server.where.Where;
 import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
+import platform.server.view.navigator.PropertyInterfaceNavigator;
+import platform.server.view.navigator.Mapper;
+import platform.server.view.navigator.ObjectNavigator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-public class DataObject extends ObjectValue implements PropertyObjectInterface {
+public class DataObject extends ObjectValue implements PropertyObjectInterface, PropertyInterfaceNavigator {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -97,4 +101,11 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface {
         return getObjectClass().getType();
     }
 
+    public PropertyObjectInterface doMapping(Mapper mapper) {
+        return this;
+    }
+
+    public void fillObjects(Set<ObjectNavigator> objects) {
+    }
+    
 }

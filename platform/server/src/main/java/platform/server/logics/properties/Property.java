@@ -217,4 +217,9 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
     // используется для оптимизации - если Stored то попытать использовать это значение
     protected abstract boolean usePreviousStored();
+
+    @Lazy
+    public Property getMaxChangeProperty(DataProperty change) {
+        return new MaxChangeProperty(this,change);
+    }
 }

@@ -6,6 +6,7 @@ import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.form.filter.IsClassFilter;
 import platform.server.view.navigator.PropertyObjectNavigator;
+import platform.server.view.navigator.Mapper;
 
 public class IsClassFilterNavigator<P extends PropertyInterface> extends PropertyFilterNavigator<P> {
 

@@ -1482,10 +1482,4 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (CustomClass child : cls.children)
             createDefaultClassForms(child, node);
     }
-
-    public DataChangeNavigatorForm getDataChangeForm(DataProperty property) {
-        DataChangeNavigatorForm navigatorForm = new DataChangeNavigatorForm(this, property);
-//        baseElement.add(navigatorForm);
-        return navigatorForm;        
-    }
 }

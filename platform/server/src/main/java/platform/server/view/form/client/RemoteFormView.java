@@ -181,26 +181,6 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         }
     }
 
-    public RemoteFormInterface createClassForm(int objectID) throws RemoteException {
-        try {
-            return form.createClassForm((CustomObjectImplement) form.getObjectImplement(objectID),exportPort);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public RemoteFormInterface createChangeForm(int propertyID) throws RemoteException {
-        try {
-            return form.createChangeForm(form.getPropertyView(propertyID).view,exportPort);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (JRException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void changeObjectOrder(int objectID, byte modiType) {
         ObjectImplement object = form.getObjectImplement(objectID);
         try {

@@ -13,6 +13,8 @@ public interface RemoteNavigatorInterface extends Remote {
     int getCacheObject(int classID) throws RemoteException;
 
     public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException;
+    public RemoteFormInterface createClassForm(int objectID) throws RemoteException;
+    public RemoteFormInterface createChangeForm(int viewID) throws RemoteException;
 
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
 

@@ -1290,7 +1290,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         exchangeDocument.relevantElements.set(0, exchangeForm);
         revalDocument.relevantElements.set(0, revalueForm);
 
-        extIncDetailForm.addRelevantElement(extIncPrintForm);
+        extIncDetailForm.relevantElements.add(extIncPrintForm);
     }
 
     private class TmcNavigatorForm extends NavigatorForm {

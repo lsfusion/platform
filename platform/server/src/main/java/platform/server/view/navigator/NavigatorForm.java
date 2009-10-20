@@ -154,7 +154,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
     PropertyViewNavigator addPropertyView(GroupObjectNavigator groupObject, PropertyObjectNavigator propertyImplement) {
 
-        PropertyViewNavigator propertyView = new PropertyViewNavigator(IDShift(1),propertyImplement,(groupObject == null) ? getApplyObject(propertyImplement.mapping.values()) : groupObject);
+        PropertyViewNavigator propertyView = new PropertyViewNavigator(IDShift(1),propertyImplement,(groupObject == null) ? getApplyObject(propertyImplement.getObjectImplements()) : groupObject);
 
         if (propertyImplement.property.sID != null) {
 
@@ -246,10 +246,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     protected JasperDesign reportDesign;
     public JasperDesign getReportDesign() throws JRException { if (reportDesign == null) return new DefaultJasperDesign(getRichDesign()).design; else return reportDesign; }
 
-    ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
-    public void addRelevantElement(NavigatorElement relevantElement) {
-        relevantElements.add(relevantElement);
-    }
+    public ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
 
     public byte getTypeID() {
         return 0;

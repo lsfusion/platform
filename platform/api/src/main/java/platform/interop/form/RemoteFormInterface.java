@@ -36,10 +36,6 @@ public interface RemoteFormInterface extends Remote {
 
     void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
 
-    public RemoteFormInterface createClassForm(int objectID) throws RemoteException;
-
-    public RemoteFormInterface createChangeForm(int propertyID) throws RemoteException;
-
     void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;
 
     void clearUserFilters() throws RemoteException;

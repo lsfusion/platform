@@ -2,12 +2,11 @@ package platform.server.view.navigator;
 
 import platform.server.data.classes.ValueClass;
 import platform.server.view.form.filter.CompareValue;
-import platform.server.view.navigator.filter.CompareValueNavigator;
-import platform.server.view.navigator.filter.FilterNavigator;
+import platform.server.view.form.PropertyObjectInterface;
 
 import java.util.Set;
 
-public class ObjectNavigator extends CellViewNavigator implements CompareValueNavigator {
+public class ObjectNavigator extends CellViewNavigator implements PropertyInterfaceNavigator {
 
     public ObjectNavigator(int iID, ValueClass iBaseClass, String iCaption) {
         super(iID);
@@ -22,7 +21,7 @@ public class ObjectNavigator extends CellViewNavigator implements CompareValueNa
 
     public final ValueClass baseClass;
 
-    public CompareValue doMapping(FilterNavigator.Mapper mapper) {
+    public PropertyObjectInterface doMapping(Mapper mapper) {
         return mapper.mapObject(this);
     }
 

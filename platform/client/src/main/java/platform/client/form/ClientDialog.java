@@ -1,7 +1,6 @@
 package platform.client.form;
 
 import platform.client.SwingUtils;
-import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.ClientCellView;
 import platform.client.logics.ClientPropertyView;
@@ -63,9 +62,9 @@ public class ClientDialog extends JDialog {
         });
 
         if(cellView instanceof ClientPropertyView)
-            setCurrentForm(owner.remoteForm.createChangeForm(((ClientPropertyView)cellView).ID));
+            setCurrentForm(navigator.remoteNavigator.createChangeForm(((ClientPropertyView)cellView).ID));
         else
-            setCurrentForm(owner.remoteForm.createClassForm(((ClientObjectView)cellView).object.ID));
+            setCurrentForm(navigator.remoteNavigator.createClassForm(((ClientObjectView)cellView).object.ID));
     }
 
     private boolean objectChosen = false;

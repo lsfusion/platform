@@ -20,7 +20,6 @@ import platform.server.data.query.JoinQuery;
 import platform.server.data.query.exprs.KeyExpr;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.data.types.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -88,85 +87,6 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
     public final NavigatorForm navigatorForm;
 
-    public RemoteFormInterface createClassForm(CustomObjectImplement object,int exportPort) throws RemoteException, SQLException, JRException {
-
-        NavigatorForm navigatorForm = object.baseClass.getClassForm(securityPolicy);
-
-        RemoteForm<?> remoteForm = new RemoteForm<T>(navigatorForm,BL,session,securityPolicy,focusView,classView);
-
-        return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort);
-    }
-
-    public <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement,int exportPort) throws SQLException, JRException, RemoteException {
-
-        MapChangeDataProperty<P> change = implement.getChangeProperty(securityPolicy.property.change, false);
-        DataChangeNavigatorForm navigatorForm = BL.getDataChangeForm(change.property);
-
-        Mapper mapper = new Mapper(session);
-        RemoteForm<T> remoteForm = new RemoteForm<T>(navigatorForm,BL,session,securityPolicy,focusView,classView,mapper);
-
-        Map<DataPropertyInterface, DataObject> interfaceValues = BaseUtils.join(change.mapping,implement.getInterfaceValues());
-        navigatorForm.seekObjects(remoteForm, mapper, change.property.read(session,interfaceValues,remoteForm), DataObject.getMapValues(interfaceValues));
-
-        return new RemoteFormView(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort);
-    }
-
-    public static class Mapper implements FilterNavigator.Mapper {
-
-        private ChangesSession readValue; // чисто для mapValue
-        public Mapper(ChangesSession readValue) {
-            this.readValue = readValue;
-        }
-
-        public final Map<ObjectNavigator, ObjectImplement> objectMapper = new HashMap<ObjectNavigator, ObjectImplement>();
-
-        private ObjectImplement mapObject(ObjectNavigator objKey,CustomClassView classView) {
-
-            ObjectImplement objValue = objKey.baseClass.newObject(objKey.ID,objKey.getSID(),objKey.caption,classView);
-            objectMapper.put(objKey, objValue);
-            return objValue;
-        }
-
-        public ObjectImplement mapObject(ObjectNavigator navigator) {
-            return objectMapper.get(navigator);
-        }
-
-        public final Map<GroupObjectNavigator, GroupObjectImplement> groupMapper = new HashMap<GroupObjectNavigator, GroupObjectImplement>();
-
-        private GroupObjectImplement mapGroup(GroupObjectNavigator groupKey,int order,CustomClassView classView) {
-
-            Collection<ObjectImplement> objects = new ArrayList<ObjectImplement>();
-            for (ObjectNavigator object : groupKey)
-                objects.add(mapObject(object,classView));
-
-            GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID,objects,order,
-                    groupKey.pageSize,groupKey.gridClassView,groupKey.singleViewType);
-
-            groupMapper.put(groupKey, groupValue);
-            return groupValue;
-        }
-
-        private final Map<PropertyObjectNavigator, PropertyObjectImplement> propertyMapper = new HashMap<PropertyObjectNavigator, PropertyObjectImplement>();
-
-        public <P extends PropertyInterface> PropertyObjectImplement<P> mapProperty(PropertyObjectNavigator<P> propKey) {
-
-            if (propertyMapper.containsKey(propKey)) return propertyMapper.get(propKey);
-
-            PropertyObjectImplement<P> propValue = new PropertyObjectImplement<P>(propKey.property,BaseUtils.join(propKey.mapping,objectMapper));
-
-            propertyMapper.put(propKey, propValue);
-            return propValue;
-        }
-
-        <P extends PropertyInterface> PropertyView mapPropertyView(PropertyViewNavigator<P> propKey) {
-            return new PropertyView<P>(propKey.ID, propKey.getSID(), mapProperty(propKey.view), groupMapper.get(propKey.toDraw));
-        }
-
-        public ObjectValue mapValue(java.lang.Object value, Type type) throws SQLException {
-            return readValue.getObjectValue(value,type);
-        }
-    }
-
     private RemoteForm(NavigatorForm<?> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, Mapper mapper) throws SQLException {
         this.navigatorForm = navigatorForm;
         this.BL = BL;
@@ -204,7 +124,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
     }
 
     public RemoteForm(NavigatorForm<?> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView) throws SQLException {
-        this(navigatorForm, BL, session, securityPolicy, focusView, classView, new Mapper(session));
+        this(navigatorForm, BL, session, securityPolicy, focusView, classView, new Mapper());
     }
 
     public List<GroupObjectImplement> groups = new ArrayList<GroupObjectImplement>();

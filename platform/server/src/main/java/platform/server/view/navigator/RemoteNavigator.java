@@ -16,9 +16,12 @@ import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.DataSession;
+import platform.server.session.MapChangeDataProperty;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
+import platform.base.BaseUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -29,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.sql.SQLException;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
@@ -139,6 +143,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public RemoteFormInterface createForm(int formID, boolean currentSession) {
         return createForm((NavigatorForm)BL.baseElement.getNavigatorElement(formID),currentSession);
+    }
+
+    public RemoteFormInterface createClassForm(int objectID) {
+        return createForm(((CustomObjectImplement)currentForm.getObjectImplement(objectID)).baseClass.getClassForm(securityPolicy),true);
+    }
+
+    public RemoteFormInterface createChangeForm(int viewID) {
+        try {
+            return createChangeForm(currentForm.getPropertyView(viewID).view);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement) throws SQLException {
+        MapChangeDataProperty<P> change = implement.getChangeProperty(securityPolicy.property.change, false);
+        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change.property, BaseUtils.join(change.mapping, implement.getInterfaceValues()));
+        navigatorForm.relevantElements.addAll(((CustomClass)change.property.value).relevantElements);
+        return createForm(navigatorForm,true);
     }
 
     public RemoteFormInterface createForm(NavigatorForm navigatorForm, boolean currentSession) {
