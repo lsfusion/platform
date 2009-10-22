@@ -68,7 +68,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LCFP groeq2;
     protected LCFP greater2;
     protected LJP between;
-    protected LP and1;
+    protected LP and1, andNot1;
     protected LP equals2,diff2;
 
     protected LP vtrue;
@@ -89,6 +89,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
         and1 = addAFProp(false);
+        andNot1 = addAFProp(true);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
         diff2 = addCFProp(Compare.NOT_EQUALS);

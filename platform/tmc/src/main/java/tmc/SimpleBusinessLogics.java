@@ -43,7 +43,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("testplat","server","postgres","sergtsop");
+        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost","postgres","11111");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -121,10 +121,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LDP artGroup, incStore, outStore, extIncSupplier, extIncPriceIn, extIncVATIn, invDBBalance,
             returnSupplier, clearingSaleCustomer, articleQuantity, extIncDetailDocument;
 
-    LP quantity, roundm1, addPercent, docIncBalanceQuantity, docOutBalanceQuantity, revalFormat, storeFormat, locTaxRegion, storeRegion,
+    LP quantity, roundm1, addPercent, docIncBalanceQuantity, docOutBalanceQuantity, revalFormat, storeFormat, locTaxRegion, storeRegion, currentSupplier,
             invBalance, exchangeQuantity, exchIncQuantity, exchOutQuantity, priceOutChange, balanceStoreQuantity, revalAdd, taxVatOut, locTaxValue;
-    LP currentIncDate, currentIncDoc, currentRevalDate, currentRevalDoc, currentTaxDate, currentTaxDoc, currentLocTaxDate, currentLocTaxDoc,
-            currentExtIncDate, currentExtIncDoc, currentSupplier, docOutPriceOut;
+    LP currentIncDate;
+    LP currentIncDoc;
+    LP currentRevalDate;
+    LP currentRevalDoc;
+    LP currentTaxDate;
+    LP currentTaxDoc;
+    LP currentLocTaxDate;
+    LP currentLocTaxDoc;
+    LP currentExtIncDate;
+    LP currentExtIncDoc;
+    LP docOutPriceOut;
 
     LP contractSupplier, specContract;
     LP storeSpecIncl, specArticleIncl;
@@ -132,7 +141,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP remainStoreArticleStartQuantity, remainStoreArticleEndQuantity, incBetweenDateQuantity, outBetweenDateQuantity,
         saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity;
 
-    LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut;
+    LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut,storeInRange;
 
     LP initDateBalance(LP dateAnd, String caption) {
         LP dateQuantity = addJProp("Кол-во "+caption, and1, quantity, 1, 2, dateAnd, 1, 3);
@@ -254,12 +263,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleStoreArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. на скл. за интервал", saleBetweenDateQuantity, outStore, 1, 2, 3, 4);
         saleArticleBetweenDateQuantity = addSGProp(baseGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, 2, 3, 4);
 
-        // посл. документ прихода от вн. пост.
-        LP[] maxExtIncProps = addMGProp(lastDocumentGroup, new String[]{"currentExtIncDate","currentExtIncDoc"}, new String[]{"Дата посл. вн. прих.","Посл. вн. прих."}, 1,
-                addJProp("Дата прих. (кол-во)",and1, addJProp("Дата (кол-во)", and1, date, 1, quantity, 1, 2), 1, 2, extIncSupplier, 1), 1, 2);
-        currentExtIncDate = maxExtIncProps[0]; currentExtIncDoc = maxExtIncProps[1];
-        currentSupplier = addJProp(currentGroup, "currentSupplier", "Тек. пост.", extIncSupplier, currentExtIncDoc, 1);
-        
         // Надбавка
         revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
         LP[] maxRevalProps = addMGProp(lastDocumentGroup, new String[]{"currentRevalDate","currentRevalDoc"}, new String[]{"Дата посл. переоц.","Посл. док. переоц."}, 1,
@@ -360,6 +363,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                         addJProp("Цена розн. по скл. (прих.)", and1,  // цена для прихода склада - вытащим склад в интерфейс, для объединения с reval
                                                 incPriceOutChange, 1, 3,
                                             addJProp("Склад документа", equals2, incStore, 1, 2), 1, 2));
+
+        LP inRange = addDProp(baseGroup, "inRange", "В ассорт.", LogicalClass.instance, format, article);
+        currentSupplier = addDProp("currentSupplier", "Тек. пост.", supplier, store, article);
+        addJProp(supplierGroup, "Имя тек. пост.", name, currentSupplier, 1, 2);
+
+        storeInRange = addJProp(baseGroup, "В ассорт.", inRange, storeFormat, 1, 2);
+
+        // ограничение что текущий поставщик есть в спецификации
+        LP storeArtSpec = addJProp("Спец. пост.", storeSuppSpec, 1, currentSupplier, 1, 2);
+        LP storeArtIncl = addJProp("Вкл. в спец.", specArticleIncl, storeArtSpec, 1, 2, 2); 
+
+        LP currentSupplierInSpec = addJProp("Есть спец.", andNot1, currentSupplier, 1, 2, storeArtIncl, 1, 2);
+        currentSupplierInSpec.property.isFalse = true;
     }
 
     protected void initConstraints() {
@@ -372,8 +388,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 //        persistents.add((AggregateProperty)quantity.property);
         persistents.add((AggregateProperty)balanceStoreQuantity.property);
 
-        persistents.add((AggregateProperty)currentExtIncDate.property);
-        persistents.add((AggregateProperty)currentExtIncDoc.property);
         persistents.add((AggregateProperty)currentIncDate.property);
         persistents.add((AggregateProperty)currentIncDoc.property);
         persistents.add((AggregateProperty)currentRevalDate.property);
@@ -429,6 +443,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(supplyManagement, 1200, "Внешний приход");
             NavigatorForm returnForm = new ReturnNavigatorForm(supplyManagement, 1300, "Возврат поставщику");
             NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(supplyManagement, 1400, "Остатки по складам");
+            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1500, "Товары без поставщиков");
 
         NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
             NavigatorForm rangeForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент");
@@ -896,7 +911,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addPropertyView(objStore, objArt, properties, baseGroup);
 
             // установить фильтр по умолчанию на поставщик товара = поставщик
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(currentSupplier, objArt), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(currentSupplier, objStore, objArt), Compare.EQUALS, objSupplier));
 
             // добавить стандартные фильтры
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
@@ -935,12 +950,35 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         }
     }
 
+    private class SupplyRangeNavigatorForm extends NavigatorForm {
+
+        public SupplyRangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+
+            addPropertyView(objStore, objArticle, properties, baseGroup, currentGroup, supplierGroup);
+
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeInRange, objStore, objArticle)));
+            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(currentSupplier, objStore, objArticle))));
+        }
+    }
+
     private class RangeNavigatorForm extends NavigatorForm {
 
         public RangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-//            throw new RuntimeException("");
+            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
+
+            addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
+            addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
+
+            PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
+            addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
         }
     }
 
