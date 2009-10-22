@@ -53,11 +53,14 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         System.out.println("Server has successfully started");
     }
 
-
+    AbstractGroup supplierGroup, contractGroup;
     AbstractGroup documentGroup, fixedGroup, currentGroup, lastDocumentGroup;
 
     protected void initGroups() {
 
+        supplierGroup = new AbstractGroup("Поставщик");
+        contractGroup = new AbstractGroup("Договор");
+        
         documentGroup = new AbstractGroup("Параметры транзакции");
         fixedGroup = new AbstractGroup("Текущие Параметры транзакции");
         currentGroup = new AbstractGroup("Текущие параметры");
@@ -170,7 +173,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // Управление поставками
 
-        contractSupplier = addDProp(baseGroup, "contractSupplier", "Поставщик дог.", supplier, contract);
+        contractSupplier = addDProp(supplierGroup, "contractSupplier", "Поставщик", supplier, contract);
+        LJP contractSupplierName = addJProp(supplierGroup, "contractSupplierName", "Имя поставщика", name, contractSupplier, 1);
 
         specContract = addDProp(baseGroup, "specSupplier", "Договор спец." , contract, specification);
         LJP specSupplier = addJProp("Поставщик спец.", contractSupplier, specContract, 1);
@@ -949,7 +953,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
-            ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", properties, baseGroup);
+            ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", properties, baseGroup, supplierGroup);
             ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup);
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
             ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
@@ -967,10 +971,10 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objSupplier.groupTo.singleViewType = true;
             objSupplier.groupTo.gridClassView = false;
 
-            objContract.groupTo.singleViewType = true;
+//            objContract.groupTo.singleViewType = true;
             objContract.groupTo.gridClassView = false;
 
-            objSpec.groupTo.singleViewType = true;
+//            objSpec.groupTo.singleViewType = true;
             objSpec.groupTo.gridClassView = false;
 
             // Кастомайзим форму отображения
