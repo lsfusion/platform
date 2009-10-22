@@ -8,13 +8,15 @@ import java.rmi.RemoteException;
 
 public interface RemoteNavigatorInterface extends Remote {
 
-    void addCacheObject(int classID, int value) throws RemoteException;
+    RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException;
 
-    int getCacheObject(int classID) throws RemoteException;
+    // диалоги
+    RemoteFormInterface createObjectForm(int objectID) throws RemoteException;
+    RemoteFormInterface createObjectForm(int objectID, int value) throws RemoteException;
+    RemoteFormInterface createPropertyForm(int viewID, int value) throws RemoteException;
+    RemoteFormInterface createChangeForm(int viewID) throws RemoteException;
 
-    public RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException;
-    public RemoteFormInterface createClassForm(int objectID) throws RemoteException;
-    public RemoteFormInterface createChangeForm(int viewID) throws RemoteException;
+    int getDialogObject() throws RemoteException;
 
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
 

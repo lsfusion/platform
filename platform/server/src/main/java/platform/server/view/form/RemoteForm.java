@@ -14,6 +14,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
+import platform.server.data.types.TypeSerializer;
 import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.query.JoinQuery;
@@ -27,7 +28,6 @@ import platform.server.logics.properties.*;
 import platform.server.session.*;
 import platform.server.view.form.filter.CompareFilter;
 import platform.server.view.form.filter.Filter;
-import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.where.Where;
@@ -38,9 +38,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.rmi.RemoteException;
-
-import net.sf.jasperreports.engine.JRException;
 
 // класс в котором лежит какие изменения произошли
 
@@ -163,12 +160,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         return null;
     }
 
-    public void serializePropertyEditorObjectValue(DataOutputStream outStream, PropertyView propertyView, boolean externalID) throws SQLException, IOException {
+    public void serializePropertyEditorType(DataOutputStream outStream, PropertyView propertyView, boolean externalID) throws SQLException, IOException {
 
-        MapChangeDataProperty<?> change = propertyView.view.getChangeProperty(securityPolicy.property.change, externalID);
+        ChangeProperty change = propertyView.view.getChangeProperty(session, this, securityPolicy.property.change, externalID);
         outStream.writeBoolean(change==null);
         if(change!=null)
-            change.serializeChange(outStream, session, propertyView.view.getInterfaceValues(), this);
+            TypeSerializer.serialize(outStream,change.getType());
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -291,14 +288,10 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         dataChanged = true;
     }
 
-    public void changePropertyView(PropertyView property, Object value, boolean externalID) throws SQLException {
-        changeProperty(property.view, value, externalID);
-    }
-
-    private void changeProperty(PropertyObjectImplement property, Object value, boolean externalID) throws SQLException {
+    public <P extends PropertyInterface> void changeProperty(PropertyObjectImplement<P> property, Object value, boolean externalID) throws SQLException {
 
         // изменяем св-во
-        property.getChangeProperty(securityPolicy.property.change, externalID).change(session,property.getInterfaceValues(),value,externalID);
+        property.getChangeProperty(session, this, securityPolicy.property.change, externalID).change(session,value,externalID);
 
         dataChanged = true;
     }

@@ -31,10 +31,10 @@ class ClassCache extends OrderedMap<ConcreteCustomClass, Integer> {
 
     public Integer getObject(CustomClass cls) {
 
-        Integer objectID = -1;
-        for (Map.Entry<ConcreteCustomClass,Integer> entry : entrySet()) {
-            if (entry.getKey().isChild(cls)) objectID = entry.getValue();
-        }
+        Integer objectID = null;
+        for (Map.Entry<ConcreteCustomClass,Integer> entry : entrySet())
+            if (entry.getKey().isChild(cls))
+                objectID = entry.getValue();
 
         return objectID;
     }

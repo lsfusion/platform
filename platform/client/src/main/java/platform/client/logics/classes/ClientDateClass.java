@@ -3,7 +3,6 @@ package platform.client.logics.classes;
 import platform.client.form.*;
 import platform.client.form.renderer.DatePropertyRenderer;
 import platform.client.form.editor.DatePropertyEditor;
-import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,6 +23,6 @@ public class ClientDateClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new DatePropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new DatePropertyEditor(value, (SimpleDateFormat) format); }
+    public PropertyEditorComponent getComponent(Object value, Format format) { return new DatePropertyEditor(value, (SimpleDateFormat) format); }
 
 }

@@ -17,6 +17,7 @@ import platform.server.data.query.translators.KeyTranslator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.properties.AndFormulaProperty;
 import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.where.WhereBuilder;
@@ -192,8 +193,8 @@ public class MapCacheAspect {
 
     public <K extends PropertyInterface,U extends TableChanges<U>> SourceExpr getSourceExpr(Property<K> property, Map<K, SourceExpr> joinExprs, TableModifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
-        // если идет autoFillDB то не кэшируем
-        if(BusinessLogics.autoFillDB) return (SourceExpr) thisJoinPoint.proceed();
+        // если свойство AndFormulaProperty - то есть нарушается инвариант что все входные не null идет autoFillDB то не кэшируем
+        if(property instanceof AndFormulaProperty || BusinessLogics.autoFillDB) return (SourceExpr) thisJoinPoint.proceed();
 
         property.cached = true;
 

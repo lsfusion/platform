@@ -2,12 +2,16 @@ package platform.client.logics;
 
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientTypeSerializer;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.util.Collection;
+import java.rmi.RemoteException;
 
 public class ClientPropertyView extends ClientCellView {
 
@@ -37,19 +41,23 @@ public class ClientPropertyView extends ClientCellView {
         return groupObject;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
 
-        ClientObjectValue objectValue;
-        if (isDataChanging) {
-            ClientChangeValue changeValue = ClientChangeValue.deserialize(new DataInputStream(new ByteArrayInputStream(
-                    form.remoteForm.getPropertyChangeValueByteArray(this.ID, externalID))));
-            if (changeValue == null) return null;
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(this.ID, externalID)));
+        if(inStream.readBoolean()) return null;
 
-            objectValue = changeValue.getObjectValue(value);
-        } else
-            objectValue = new ClientObjectValue(ClientClass.deserialize(new DataInputStream(new ByteArrayInputStream(
-                    form.remoteForm.getPropertyValueClassByteArray(this.ID)))),value);
+        return ClientTypeSerializer.deserialize(inStream).getEditorComponent(form, this, value, getFormat());
+    }
 
-        return objectValue.cls.getEditorComponent(form, this, objectValue.object, getFormat());
+    public PropertyEditorComponent getClassComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
+        return baseType.getClassComponent(form, this, value, getFormat());
+    }
+
+    public RemoteFormInterface createForm(RemoteNavigatorInterface navigator) throws RemoteException {
+        return navigator.createChangeForm(ID);
+    }
+
+    public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, Integer value) throws RemoteException {
+        return navigator.createPropertyForm(ID, BaseUtils.objectToInt(value));
     }
 }

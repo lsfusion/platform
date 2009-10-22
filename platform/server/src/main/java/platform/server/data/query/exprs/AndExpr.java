@@ -80,8 +80,8 @@ public abstract class AndExpr extends SourceExpr {
                     return GreaterWhere.create((AndExpr)expr,this);
                 case LESS_EQUALS:
                     return GreaterWhere.create((AndExpr)expr,this).or(EqualsWhere.create(this,(AndExpr)expr));
-                case NOT_EQUALS:
-                    return EqualsWhere.create(this,(AndExpr)expr).not();                 
+                case NOT_EQUALS: // оба заданы и не равно
+                    return getWhere().and(expr.getWhere()).and(EqualsWhere.create(this,(AndExpr)expr).not());
             }
             throw new RuntimeException("should not be");
         } else {

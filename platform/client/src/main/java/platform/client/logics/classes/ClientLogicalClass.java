@@ -3,7 +3,6 @@ package platform.client.logics.classes;
 import platform.client.form.*;
 import platform.client.form.renderer.LogicalPropertyRenderer;
 import platform.client.form.editor.LogicalPropertyEditor;
-import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -22,5 +21,5 @@ public class ClientLogicalClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new LogicalPropertyRenderer(); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new LogicalPropertyEditor(value); }
+    public PropertyEditorComponent getComponent(Object value, Format format) { return new LogicalPropertyEditor(value); }
 }

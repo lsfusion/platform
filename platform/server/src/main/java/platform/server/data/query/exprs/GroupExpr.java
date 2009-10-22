@@ -130,7 +130,7 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
     public GroupExpr(This groupExpr,Where<?> falseWhere) { // в отличии от joins, expr нельзя проталкивать потому как повлияет на результат !!!
         this(pushValues(groupExpr.group,falseWhere.not()), groupExpr.where, groupExpr.expr,falseWhere.not());
 
-        assert !getFullWhere().isFalse();
+//        assert !getFullWhere().isFalse();
     }
 
     // трансляция

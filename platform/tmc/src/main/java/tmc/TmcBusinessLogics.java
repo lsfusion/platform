@@ -1572,11 +1572,11 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(getPropertyView(exchIncQuantity.property).view, Compare.NOT_EQUALS, 0),
+                                  new NotNullFilterNavigator(getPropertyView(exchIncQuantity.property).view),
                                   "Приход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(getPropertyView(exchOutQuantity.property).view, Compare.NOT_EQUALS, 0),
+                                  new NotNullFilterNavigator(getPropertyView(exchOutQuantity.property).view),
                                   "Расход",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -1595,7 +1595,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                   "Все",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));*/
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new CompareFilterNavigator(getPropertyView(exchangeQuantity.property).view, Compare.NOT_EQUALS, 0),
+                                  new NotNullFilterNavigator(getPropertyView(exchangeQuantity.property).view),
                                   "Документ",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, InputEvent.SHIFT_DOWN_MASK)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),

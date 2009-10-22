@@ -7,6 +7,8 @@ import platform.server.view.form.client.report.ReportDrawField;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public interface Type<T> extends Reader<T> {
 

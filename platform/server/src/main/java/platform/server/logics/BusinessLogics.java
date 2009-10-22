@@ -434,7 +434,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             // делаем запрос на перенос
                             System.out.print("Идет перенос колонки "+property.field+" из таблицы "+prevTable.name+" в таблицу "+property.mapTable.table.name+"... ");
                             JoinQuery<KeyField,PropertyField> moveColumn = new JoinQuery<KeyField, PropertyField>(property.mapTable.table);
-                            SourceExpr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces,property.mapTable.mapKeys),moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
+                            SourceExpr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces,((Property<PropertyInterface>)property).mapTable.mapKeys),moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
                             moveColumn.and(moveExpr.getWhere());
                             session.modifyRecords(new ModifyQuery(property.mapTable.table,moveColumn));

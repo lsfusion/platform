@@ -35,7 +35,7 @@ public class BaseUtils {
         return true;
     }
 
-    public static <K,E,V> Map<K,V> join(Map<K,? extends E> map, Map<? extends E,V> joinMap) {
+    public static <K,E,V> Map<K,V> join(Map<K,? extends E> map, Map<E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,? extends E> entry : map.entrySet())
             result.put(entry.getKey(),joinMap.get(entry.getValue()));
@@ -571,5 +571,19 @@ public class BaseUtils {
         List<K> result = new ArrayList<K>();
         reverse(col.iterator(),result);
         return result;
+    }
+
+    public static int objectToInt(Integer value) {
+        if(value==null)
+            return -1;
+        else
+            return value;
+    }
+
+    public static Integer intToObject(int value) {
+        if(value==-1)
+            return null;
+        else
+            return value;
     }
 }

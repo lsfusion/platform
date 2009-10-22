@@ -14,8 +14,6 @@ abstract public class ClientClass implements Serializable {
 
     public abstract boolean hasChilds();
 
-    abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
-
     protected ClientClass(DataInputStream inStream) throws IOException {
     }
 

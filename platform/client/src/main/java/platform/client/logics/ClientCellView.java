@@ -3,9 +3,10 @@ package platform.client.logics;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.Format;
 import java.util.Collection;
+import java.rmi.RemoteException;
 
 abstract public class ClientCellView extends ClientComponentView {
 
@@ -21,6 +23,10 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public abstract int getID();
     public abstract ClientGroupObjectImplementView getGroupObject();
+
+    // диалог для получения возможных значений
+    public abstract RemoteFormInterface createForm(RemoteNavigatorInterface navigator) throws RemoteException;
+    public abstract RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, Integer value) throws RemoteException;
 
     private Dimension minimumSize;
     private Dimension maximumSize;
@@ -90,7 +96,8 @@ abstract public class ClientCellView extends ClientComponentView {
         return renderer;
     }
 
-    public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) throws IOException, ClassNotFoundException;
+    public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException;
+    public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException;
 
     private Format format;
     Format getFormat() {

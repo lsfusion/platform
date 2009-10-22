@@ -3,7 +3,6 @@ package platform.client.logics.classes;
 import platform.client.form.*;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.form.editor.StringPropertyEditor;
-import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -27,5 +26,5 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new StringPropertyEditor(length, value); }
+    public PropertyEditorComponent getComponent(Object value, Format format) { return new StringPropertyEditor(length, value); }
 }

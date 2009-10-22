@@ -1,7 +1,6 @@
 package platform.server.view.form;
 
 import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.query.exprs.SourceExpr;
 import platform.server.data.types.Type;
@@ -9,10 +8,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.properties.Property;
 import platform.server.logics.properties.PropertyImplement;
 import platform.server.logics.properties.PropertyInterface;
-import platform.server.logics.properties.DataPropertyInterface;
-import platform.server.session.MapChangeDataProperty;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -81,11 +77,8 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return mapInterface;
     }
     
-    public MapChangeDataProperty<P> getChangeProperty(ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
-        Map<P, ConcreteClass> interfaceClasses = new HashMap<P,ConcreteClass>();
-        for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
-            interfaceClasses.put(implement.getKey(),implement.getValue().getObjectClass());
-        return property.getChangeProperty(interfaceClasses,securityPolicy, externalID);
+    public ChangeProperty getChangeProperty(DataSession session, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
+        return property.getChangeProperty(session, getInterfaceValues(), modifier, securityPolicy, externalID);
     }
 
     public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {

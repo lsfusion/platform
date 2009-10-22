@@ -2,15 +2,15 @@ package platform.server.logics.properties;
 
 import platform.base.BaseUtils;
 import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.session.MapChangeDataProperty;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.*;
 import platform.server.where.WhereBuilder;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.Collection;
 import java.util.Map;
+import java.sql.SQLException;
 
 public class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterface> extends PropertyImplement<P,T> implements PropertyInterfaceImplement<P> {
 
@@ -30,11 +30,15 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
         depends.add(property);
     }
 
-    public MapChangeDataProperty<P> mapGetChangeProperty(Map<P, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
-        MapChangeDataProperty<T> operandChange = property.getChangeProperty(BaseUtils.join(mapping,interfaceClasses), securityPolicy, externalID);
-        if(operandChange!=null)
-            return new MapChangeDataProperty<P>(operandChange,mapping,false);
-        else
-            return null;
+    public ChangeProperty mapGetChangeProperty(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
+        return property.getChangeProperty(session, BaseUtils.join(mapping, interfaceValues), modifier, securityPolicy, externalID);
+    }
+
+    public ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier) throws SQLException {
+        return session.getObjectValue(property.read(session,BaseUtils.join(mapping,interfaceValues),modifier),property.getType());
+    }
+
+    public DataChangeProperty mapGetJoinChangeProperty(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
+        return property.getJoinChangeProperty(session, BaseUtils.join(mapping, interfaceValues), modifier, securityPolicy, externalID);
     }
 }

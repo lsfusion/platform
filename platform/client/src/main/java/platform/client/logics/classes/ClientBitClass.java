@@ -2,12 +2,8 @@ package platform.client.logics.classes;
 
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.ClientForm;
-import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.editor.BitPropertyEditor;
-import platform.client.form.renderer.LogicalPropertyRenderer;
 import platform.client.form.renderer.BitPropertyRenderer;
-import platform.client.logics.ClientCellView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -26,5 +22,5 @@ public class ClientBitClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); }
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) { return new BitPropertyEditor(value); }
+    public PropertyEditorComponent getComponent(Object value, Format format) { return new BitPropertyEditor(value); }
 }

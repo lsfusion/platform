@@ -1,7 +1,6 @@
 package platform.server.view.form.client;
 
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.CompressingOutputStream;
 import platform.interop.Order;
@@ -133,7 +132,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
 
     public void changePropertyView(int propertyID, byte[] object, boolean externalID) {
         try {
-            form.changePropertyView(form.getPropertyView(propertyID), BaseUtils.deserializeObject(object), externalID);
+            form.changeProperty(form.getPropertyView(propertyID).view, BaseUtils.deserializeObject(object), externalID);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -266,26 +265,13 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         return outStream.toByteArray();
     }
 
-    public byte[] getPropertyChangeValueByteArray(int propertyID, boolean externalID) {
+    public byte[] getPropertyChangeType(int propertyID, boolean externalID) {
 
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
-            form.serializePropertyEditorObjectValue(dataStream,form.getPropertyView(propertyID), externalID);
-
-            return outStream.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public byte[] getPropertyValueClassByteArray(int propertyID) throws RemoteException {
-        try {
-            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            DataOutputStream dataStream = new DataOutputStream(outStream);
-
-            form.getPropertyView(propertyID).view.property.getValueClass().serialize(dataStream);
+            form.serializePropertyEditorType(dataStream,form.getPropertyView(propertyID), externalID);
 
             return outStream.toByteArray();
         } catch (Exception e) {

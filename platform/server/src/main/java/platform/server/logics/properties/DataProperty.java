@@ -5,7 +5,6 @@ import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.AndClassSet;
@@ -18,6 +17,7 @@ import platform.server.data.types.Type;
 import platform.server.session.*;
 import platform.server.where.Where;
 import platform.server.where.WhereBuilder;
+import platform.server.logics.DataObject;
 
 import java.util.*;
 
@@ -55,13 +55,17 @@ public class DataProperty extends Property<DataPropertyInterface> {
     }
 
     @Override
-    public MapChangeDataProperty<DataPropertyInterface> getChangeProperty(Map<DataPropertyInterface, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
-        if(allInInterface(interfaceClasses) && (securityPolicy == null || securityPolicy.checkPermission(this)))
-            return new MapChangeDataProperty<DataPropertyInterface>(this,BaseUtils.toMap(interfaces),false);
+    public ChangeProperty getChangeProperty(DataSession session, Map<DataPropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
+        return getJoinChangeProperty(session, interfaceValues, modifier, securityPolicy, externalID);
+    }
+
+    @Override
+    public DataChangeProperty getJoinChangeProperty(DataSession session, Map<DataPropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
+        if(allInInterface(session.getCurrentClasses(interfaceValues)) && (securityPolicy == null || securityPolicy.checkPermission(this)))
+            return new DataChangeProperty(this,interfaceValues);
         else
             return null;
     }
-
 
     @Override
     protected void fillDepends(Set<Property> depends) {

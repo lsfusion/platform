@@ -2,13 +2,14 @@ package platform.client.logics;
 
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.classes.ClientDataClass;
-import platform.client.logics.classes.ClientClass;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
 import java.util.Collection;
+import java.rmi.RemoteException;
 
 public class ClientObjectView extends ClientCellView {
 
@@ -35,22 +36,26 @@ public class ClientObjectView extends ClientCellView {
         return getPreferredWidth();
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean isDataChanging, boolean externalID) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
 
         if (externalID) return null;
 
         if (!object.groupObject.singleViewType) {
             form.switchClassView(object.groupObject);
             return null;
-        } else {
-            ClientClass cls;
-            if(baseType instanceof ClientDataClass)
-                cls = (ClientDataClass)baseType;
-            else // идиотизм конечно но пока ладно
-                cls = form.models.get(object.groupObject).objects.get(object).classModel.currentClass;
-
-            return cls.getEditorComponent(form, this, value, getFormat());
-        }
+        } else
+            return baseType.getEditorComponent(form, this, value, getFormat());
     }
 
+    public PropertyEditorComponent getClassComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
+        return baseType.getClassComponent(form, this, value, getFormat());
+    }
+
+    public RemoteFormInterface createForm(RemoteNavigatorInterface navigator) throws RemoteException {
+        return navigator.createObjectForm(object.ID);
+    }
+
+    public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, Integer value) throws RemoteException {
+        return navigator.createObjectForm(object.ID, BaseUtils.objectToInt(value));
+    }
 }

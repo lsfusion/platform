@@ -7,7 +7,6 @@ import platform.server.caches.Lazy;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.classes.ConcreteClass;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.AndClassSet;
 import platform.server.data.classes.where.ClassWhere;
@@ -193,7 +192,11 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
     public boolean isFalse = false;
 
-    public MapChangeDataProperty<T> getChangeProperty(Map<T, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
+    public ChangeProperty getChangeProperty(DataSession session, Map<T, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
+        return null;
+    }
+
+    public DataChangeProperty getJoinChangeProperty(DataSession session, Map<T, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
         return null;
     }
 

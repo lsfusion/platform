@@ -1,15 +1,15 @@
 package platform.server.logics.properties;
 
 import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.session.MapChangeDataProperty;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.*;
 import platform.server.where.WhereBuilder;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.Collection;
 import java.util.Map;
+import java.sql.SQLException;
 
 public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
@@ -17,5 +17,9 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
     abstract void mapFillDepends(Collection<Property> depends);
 
-    MapChangeDataProperty<P> mapGetChangeProperty(Map<P, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID);
+    ChangeProperty mapGetChangeProperty(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException;
+
+    ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier) throws SQLException;
+
+    DataChangeProperty mapGetJoinChangeProperty(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException;
 }

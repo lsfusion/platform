@@ -884,7 +884,10 @@ public class ClientForm extends JPanel {
                 ClientCellView property = cellTable.getCellView(column);
 
                 try {
-                    currentComp = property.getEditorComponent(ClientForm.this, ivalue, cellTable.isDataChanging(), externalID);
+                    if(cellTable.isDataChanging())
+                        currentComp = property.getEditorComponent(ClientForm.this, ivalue, externalID);
+                    else
+                        currentComp = property.getClassComponent(ClientForm.this, ivalue, externalID);
                 } catch (Exception e) {
                     throw new RuntimeException("Ошибка при получении редактируемого значения", e);
                 }

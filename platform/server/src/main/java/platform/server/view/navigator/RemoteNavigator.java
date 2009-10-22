@@ -15,10 +15,13 @@ import platform.server.auth.User;
 import platform.server.data.classes.ConcreteCustomClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.types.ObjectType;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.properties.PropertyInterface;
 import platform.server.session.DataSession;
-import platform.server.session.MapChangeDataProperty;
+import platform.server.session.DataChangeProperty;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
 import platform.base.BaseUtils;
@@ -129,7 +132,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     //используется для RelevantFormNavigator
-    RemoteForm currentForm;
+    RemoteForm<T> currentForm;
 
     //используется для RelevantClassNavigator
     CustomClass currentClass;
@@ -145,8 +148,41 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return createForm((NavigatorForm)BL.baseElement.getNavigatorElement(formID),currentSession);
     }
 
-    public RemoteFormInterface createClassForm(int objectID) {
-        return createForm(((CustomObjectImplement)currentForm.getObjectImplement(objectID)).baseClass.getClassForm(securityPolicy),true);
+    // диалоги
+
+    // обеспечивает синхронность вызова
+    private CustomClass dialogClass = null;
+    void setDialogClass(CustomClass setClass) {
+        dialogClass = setClass;
+    }
+    public int getDialogObject() throws RemoteException {
+        return getCacheObject(dialogClass);
+    }
+
+    private void addCacheObject(Integer object) throws SQLException {
+        ObjectValue objectValue = currentForm.session.getObjectValue(object, ObjectType.instance);
+        if(objectValue instanceof DataObject)
+            addCacheObject((ConcreteCustomClass)currentForm.session.getCurrentClass((DataObject) objectValue),
+                    (Integer)((DataObject)objectValue).object);
+    }
+
+    public RemoteFormInterface createObjectForm(int objectID) {
+        CustomObjectImplement objectImplement = (CustomObjectImplement) currentForm.getObjectImplement(objectID);
+        setDialogClass(objectImplement.baseClass);
+        if(objectImplement.currentClass!=null)
+            addCacheObject(objectImplement.currentClass, (Integer) objectImplement.getObjectValue().getValue());
+        return createForm(objectImplement.baseClass.getClassForm(securityPolicy),true);
+    }
+
+    public RemoteFormInterface createObjectForm(int objectID, int value) throws RemoteException {
+        try {
+            addCacheObject(BaseUtils.intToObject(value));
+            CustomObjectImplement objectImplement = (CustomObjectImplement) currentForm.getObjectImplement(objectID);
+            setDialogClass(objectImplement.baseClass);
+            return createForm(objectImplement.baseClass.getClassForm(securityPolicy),true);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public RemoteFormInterface createChangeForm(int viewID) {
@@ -158,10 +194,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement) throws SQLException {
-        MapChangeDataProperty<P> change = implement.getChangeProperty(securityPolicy.property.change, false);
-        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change.property, BaseUtils.join(change.mapping, implement.getInterfaceValues()));
+        DataChangeProperty change = (DataChangeProperty)implement.getChangeProperty(currentForm.session, currentForm, securityPolicy.property.change, false);
+        addCacheObject((Integer)change.property.read(currentForm.session,change.mapping,currentForm)); // считываем значение чтобы закинуть в кэш
+        setDialogClass((CustomClass) change.property.value);
+
+        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change.property, change.mapping);
         navigatorForm.relevantElements.addAll(((CustomClass)change.property.value).relevantElements);
+
         return createForm(navigatorForm,true);
+    }
+
+    public RemoteFormInterface createPropertyForm(int viewID, int value) throws RemoteException {
+        try {
+            addCacheObject(BaseUtils.intToObject(value));
+            CustomClass propertyClass = (CustomClass) currentForm.getPropertyView(viewID).view.property.getValueClass();
+            setDialogClass(propertyClass);
+            return createForm(propertyClass.getClassForm(securityPolicy),true);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public RemoteFormInterface createForm(NavigatorForm navigatorForm, boolean currentSession) {
@@ -188,8 +239,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 Map<OrderView,Object> userSeeks = new HashMap<OrderView, Object>();
                 for (ObjectImplement object : groupObject.objects)
                     if(object instanceof CustomObjectImplement) {
-                        int objectID = classCache.getObject(((CustomObjectImplement)object).baseClass);
-                        if (objectID != -1)
+                        Integer objectID = classCache.getObject(((CustomObjectImplement)object).baseClass);
+                        if (objectID != null)
                             userSeeks.put(object, objectID);
                     }
                 if(!userSeeks.isEmpty())
@@ -205,20 +256,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     private ClassCache classCache;
 
-    public void addCacheObject(int classID, int value) {
-        addCacheObject(BL.baseClass.findConcreteClassID(classID), value);
-    }
-
     public void addCacheObject(ConcreteCustomClass cls, int value) {
         classCache.put(cls, value);
     }
 
-    public int getCacheObject(int classID) {
-        return getCacheObject(BL.baseClass.findClassID(classID));
-    }
-
     public int getCacheObject(CustomClass cls) {
-        return classCache.getObject(cls);
+        return BaseUtils.objectToInt(classCache.getObject(cls));
     }
 
     public String getCaption(int formID){

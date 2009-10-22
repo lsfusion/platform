@@ -1,17 +1,16 @@
 package platform.server.logics.properties;
 
 import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.data.classes.ConcreteClass;
 import platform.server.data.query.exprs.SourceExpr;
-import platform.server.session.MapChangeDataProperty;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.*;
 import platform.server.where.WhereBuilder;
+import platform.server.logics.DataObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.sql.SQLException;
 
 public class OverrideUnionProperty extends UnionProperty {
 
@@ -39,9 +38,9 @@ public class OverrideUnionProperty extends UnionProperty {
     }
 
     @Override
-    public MapChangeDataProperty<PropertyInterface> getChangeProperty(Map<PropertyInterface, ConcreteClass> interfaceClasses, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
+    public ChangeProperty getChangeProperty(DataSession session, Map<PropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
         for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : operands) {
-            MapChangeDataProperty<PropertyInterface> operandChange = operand.mapGetChangeProperty(interfaceClasses, securityPolicy, externalID);
+            ChangeProperty operandChange = operand.mapGetChangeProperty(session, interfaceValues, modifier, securityPolicy, externalID);
             if(operandChange!=null) return operandChange;
         }
         return null;

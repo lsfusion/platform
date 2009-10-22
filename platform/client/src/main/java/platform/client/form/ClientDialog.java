@@ -1,113 +1,96 @@
 package platform.client.form;
 
-import platform.client.SwingUtils;
-import platform.client.logics.classes.ClientObjectClass;
-import platform.client.logics.ClientCellView;
-import platform.client.logics.ClientPropertyView;
-import platform.client.logics.ClientObjectView;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
+import platform.client.SwingUtils;
 import platform.interop.form.RemoteFormInterface;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
+import java.io.IOException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
-import java.io.IOException;
 
 public class ClientDialog extends JDialog {
 
     private final ClientNavigator navigator;
     private ClientForm currentForm;
 
-    private final ClientObjectClass cls;
+    public ClientDialog(ClientForm owner, RemoteFormInterface dialog) throws IOException, ClassNotFoundException {
+       super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
-    public ClientDialog(ClientForm owner, ClientCellView cellView, ClientObjectClass icls, Object value) throws IOException, ClassNotFoundException {
-        super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
+       setLayout(new BorderLayout());
 
-        setLayout(new BorderLayout());
+       setBounds(owner.getBounds());
 
-        setBounds(owner.getBounds());
+    //        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).sID);
+       navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
 
-        cls = icls;
-//        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).sID);
-        navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
+           public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
+               setCurrentForm(navigator.remoteNavigator.createForm(element.ID,true));
+           }
+       };
 
-            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                setCurrentForm(navigator.remoteNavigator.createForm(element.ID,true));
-            }
-        };
+       // создаем слева навигаторы
+       JPanel navigatorPanel = new JPanel();
+       navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
 
-        // помечаем кэш чтобы был поиск
-        if (value instanceof Integer)
-            navigator.remoteNavigator.addCacheObject(cls.ID, (Integer)value);
+       navigatorPanel.add(navigator);
+       navigatorPanel.add(navigator.relevantFormNavigator);
+       navigatorPanel.add(navigator.relevantClassNavigator);
 
-        // создаем слева навигаторы
-        JPanel navigatorPanel = new JPanel();
-        navigatorPanel.setLayout(new BoxLayout(navigatorPanel, BoxLayout.Y_AXIS));
+       add(navigatorPanel, BorderLayout.LINE_START);
 
-        navigatorPanel.add(navigator);
-        navigatorPanel.add(navigator.relevantFormNavigator);
-        navigatorPanel.add(navigator.relevantClassNavigator);
+       addWindowListener(new WindowAdapter() {
 
-        add(navigatorPanel, BorderLayout.LINE_START);
+           public void windowActivated(WindowEvent e) {
+               KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm);
+           }
 
-        addWindowListener(new WindowAdapter() {
+       });
 
-            public void windowActivated(WindowEvent e) {
-                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm);
-            }
-
-        });
-
-        if(cellView instanceof ClientPropertyView)
-            setCurrentForm(navigator.remoteNavigator.createChangeForm(((ClientPropertyView)cellView).ID));
-        else
-            setCurrentForm(navigator.remoteNavigator.createClassForm(((ClientObjectView)cellView).object.ID));
-    }
-
-    private boolean objectChosen = false;
-
-    public boolean showObjectDialog() {
-
-        setVisible(true);
-        return objectChosen;
+       setCurrentForm(dialog);
     }
 
     public Object objectChosen() throws RemoteException {
-
-        int objectID = navigator.remoteNavigator.getCacheObject(cls.ID); //navigator.remoteNavigator.getLeadObject();
-        if (objectID == -1) return null;
-
-        return objectID;
+       return BaseUtils.intToObject(navigator.remoteNavigator.getDialogObject());
     }
 
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
 
-        if (currentForm != null) remove(currentForm);
-        currentForm = new ClientForm(remoteForm, navigator) {
+       if (currentForm != null) remove(currentForm);
+       currentForm = new ClientForm(remoteForm, navigator) {
 
-            boolean okPressed() {
-//                    if (super.okPressed()) {
-                    objectChosen = true;
-                    ClientDialog.this.setVisible(false);
-                    return true;
-//                    } else
-//                        return false;
-            }
+           boolean okPressed() {
+    //                    if (super.okPressed()) {
+                   objectChosen = true;
+                   ClientDialog.this.setVisible(false);
+                   return true;
+    //                    } else
+    //                        return false;
+           }
 
-            boolean closePressed() {
-//                    if (super.closePressed()) {
-                    ClientDialog.this.setVisible(false);
-                    return true;
-//                    } else
-//                        return false;
-            }
-        };
-        add(currentForm, BorderLayout.CENTER);
+           boolean closePressed() {
+    //                    if (super.closePressed()) {
+                   ClientDialog.this.setVisible(false);
+                   return true;
+    //                    } else
+    //                        return false;
+           }
+       };
+       add(currentForm, BorderLayout.CENTER);
 
-        validate();
+       validate();
+    }
+
+    public boolean objectChosen;
+    public Component getComponent() {
+
+       setVisible(true);
+
+       return null;
     }
 }
