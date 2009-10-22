@@ -19,14 +19,18 @@ public class DefaultFormView extends FormView {
     private transient Map<ObjectNavigator, ObjectImplementView> mobjects = new HashMap<ObjectNavigator, ObjectImplementView>();
     public ObjectImplementView get(ObjectNavigator object) { return mobjects.get(object); }
 
-    private transient Map<GroupObjectImplementView, ContainerView> groupObjectContainers = new HashMap<GroupObjectImplementView, ContainerView>();
+    private transient ContainerView mainContainer;
+    public ContainerView getMainContainer() { return mainContainer; }
+
     private transient Map<GroupObjectImplementView, ContainerView> panelContainers = new HashMap<GroupObjectImplementView, ContainerView>();
+    public ContainerView getPanelContainer(GroupObjectImplementView groupObject) { return panelContainers.get(groupObject); }
+
     private transient Map<GroupObjectImplementView, ContainerView> buttonContainers = new HashMap<GroupObjectImplementView, ContainerView>();
     private transient Map<GroupObjectImplementView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectImplementView, Map<AbstractGroup, ContainerView>>();
 
     public DefaultFormView(NavigatorForm<?> navigatorForm) {
 
-        ContainerView mainContainer = addContainer();
+        mainContainer = addContainer();
         mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
         for (GroupObjectNavigator group : navigatorForm.groups) {
@@ -41,8 +45,6 @@ public class DefaultFormView extends FormView {
             groupContainer.constraints.order = navigatorForm.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
             groupContainer.constraints.insetsInside = new Insets(0,0,4,0);
-
-            groupObjectContainers.put(clientGroup, groupContainer);
 
             ContainerView gridContainer = addContainer(); // контейнер грида внутрь
             gridContainer.container = groupContainer;

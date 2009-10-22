@@ -1,7 +1,6 @@
 package tmc;
 
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
@@ -19,7 +18,6 @@ import platform.server.logics.linear.properties.*;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
-import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -69,7 +67,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     AbstractCustomClass document, quantityDocument, incomeDocument, outcomeDocument, extOutcomeDocument,
                         saleDocument, articleDocument, priceOutDocument;
 
-    ConcreteCustomClass article, articleGroup, store, customer, supplier, extIncomeDocument, intraDocument, exchangeDocument, specification,
+    ConcreteCustomClass article, articleGroup, store, customer, supplier, extIncomeDocument, intraDocument, exchangeDocument, specification, contract,
                         cashSaleDocument, clearingSaleDocument, invDocument, returnDocument, revalDocument, taxDocument, locTaxDocument, format, region;
     
     protected void initClasses() {
@@ -109,7 +107,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         taxDocument = addConcreteClass("Изменение НДС", priceOutDocument);
         locTaxDocument = addConcreteClass("Изменение местн. нал.", priceOutDocument);
 
-        specification = addConcreteClass("Спецификация",namedObject);
+        contract = addConcreteClass("Договор", namedObject);
+        specification = addConcreteClass("Спецификация", namedObject);
     }
 
     LDP artGroup, incStore, outStore, extIncSupplier, extIncPriceIn, extIncVATIn, invDBBalance,
@@ -119,6 +118,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             invBalance, exchangeQuantity, exchIncQuantity, exchOutQuantity, priceOutChange, balanceStoreQuantity, revalAdd, taxVatOut, locTaxValue;
     LP currentIncDate, currentIncDoc, currentRevalDate, currentRevalDoc, currentTaxDate, currentTaxDoc, currentLocTaxDate, currentLocTaxDoc,
             currentExtIncDate, currentExtIncDoc, currentSupplier, docOutPriceOut;
+
+    LP contractSupplier, specContract;
 
     LP remainStoreArticleStartQuantity, remainStoreArticleEndQuantity, incBetweenDateQuantity, outBetweenDateQuantity,
         saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity;
@@ -130,18 +131,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP incDateQuantity = addSGProp("Прих. на скл. "+caption, dateQuantity, incStore, 1, 2, 3);
         LP outDateQuantity = addSGProp("Расх. со скл. "+caption, dateQuantity, outStore, 1, 2, 3);
         return addDUProp("Ост. на скл. "+caption, incDateQuantity, outDateQuantity);
-    }
-
-    private LP calcPriceOut(AbstractGroup group, String caption, LP priceIn, LP add, LP vatOut, Object[] priceParams, Object[] addParams) {
-        int intNum = getIntNum(BaseUtils.add(priceParams,addParams));
-        Object[] interfaces = new Object[intNum];
-        for(int i=0;i<intNum;i++)
-            interfaces[i] = i+1;
-        LJP priceAdd = addJProp("Цена с надбавкой", addPercent, BaseUtils.add(
-                BaseUtils.add(new Object[]{priceIn}, priceParams), BaseUtils.add(new Object[]{add}, addParams)));
-        LJP priceVatOut = addJProp("Цена с НДС", addPercent, BaseUtils.add(
-                BaseUtils.add(new Object[]{priceAdd}, interfaces), BaseUtils.add(new Object[]{vatOut}, addParams)));
-        return addJProp(group, caption, roundm1, BaseUtils.add(new Object[]{priceVatOut}, interfaces));
     }
 
     protected void initProperties() {
@@ -179,12 +168,25 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         locTaxRegion = addDProp(baseGroup, "locTaxRegion","Регион", region, locTaxDocument);
         storeRegion = addDProp(baseGroup, "storeRegion","Регион склада", region, store);
 
-        LDP specSupplier = addDProp(baseGroup, "specSupplier", "Спец. пост." , supplier, specification);
-        LDP storeSpec = addDProp(baseGroup, "storeSpec", "Спец. скл. пост.", specification, store, supplier);
+        // Управление поставками
+
+        contractSupplier = addDProp(baseGroup, "contractSupplier", "Поставщик дог.", supplier, contract);
+
+        specContract = addDProp(baseGroup, "specSupplier", "Договор спец." , contract, specification);
+        LJP specSupplier = addJProp("Поставщик спец.", contractSupplier, specContract, 1);
+
+        LDP storeSuppSpec = addDProp(baseGroup, "storeSuppSpec", "Спец. скл. пост.", specification, store, supplier);
+
+        // ограничение на то, что спецификация поставщика соответствует спецификации по складу/поставщику
         LP storeSpecAggr = addJProp(baseGroup, "storeSpecAggr", "В спец. пост.", diff2, 2,
-                                addJProp("",specSupplier,storeSpec, 1, 2), 1, 2);
+                                addJProp("",specSupplier, storeSuppSpec, 1, 2), 1, 2);
         storeSpecAggr.property.isFalse = true;
-        addMCProp(baseGroup,storeSpecAggr,storeSpec);
+
+        LP storeSpecIncl = addJProp(baseGroup, "storeSpecIncl", "Вкл. спец.", equals2, 2,
+                                addJProp("", storeSuppSpec, 1, specSupplier, 2), 1, 2);
+
+        LDP specArticleIncl = addDProp(baseGroup, "specArticleIncl", "Вкл. спец.", LogicalClass.instance, specification, article);
+        LDP specArticlePrice = addDProp(baseGroup, "specArticlePrice", "Цена по спец.", DoubleClass.instance, specification, article);
 
         // сравнение дат
         LP groeqDocDate = addJProp("Дата док.>=Дата", groeq2, date, 1, object(DateClass.instance), 2);
@@ -410,6 +412,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         createDefaultClassForms(baseClass, baseElement);
 
+        NavigatorElement supplierRelationships = new NavigatorElement(baseElement, 1000, "Управление поставками");
+            NavigatorElement suppliers = new StoreSupplierSpecNavigatorForm(supplierRelationships, 1100, "Поставщики");
+
         NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
             NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(primaryData, 110, "Внешний приход");
 //                NavigatorForm extIncPrintForm = new ExtIncPrintNavigatorForm(extIncDetailForm, 117, "Реестр цен");
@@ -441,7 +446,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             NavigatorElement dateIntervalForms = new NavigatorElement(analyticsData, 310, "За интервал дат");
                 NavigatorForm salesArticleStoreForm = new SalesArticleStoreNavigatorForm(dateIntervalForms, 313, "Реализация товара по складам");
 
-        NavigatorForm storeSupplierSpec = new StoreSupplierSpecNavigatorForm(baseElement, 400, "Тест");
+//        NavigatorForm storeSupplierSpec = new StoreSupplierSpecNavigatorForm(baseElement, 400, "Тест");
 
         extIncomeDocument.relevantElements.set(0, extIncDetailForm);
         intraDocument.relevantElements.set(0, intraForm);
@@ -938,6 +943,47 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         }
     }
 
+    private class StoreSupplierSpecNavigatorForm extends NavigatorForm {
+
+        public StoreSupplierSpecNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
+            ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", properties, baseGroup);
+            ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
+
+            PropertyObjectNavigator contractSupplierImplement = addPropertyObjectImplement(contractSupplier, objContract);
+            addFixedFilter(new CompareFilterNavigator(contractSupplierImplement, Compare.EQUALS, objSupplier));
+
+            PropertyObjectNavigator specContractImplement = addPropertyObjectImplement(specContract, objSpec);
+            addFixedFilter(new CompareFilterNavigator(specContractImplement, Compare.EQUALS, objContract));
+
+            addPropertyView(objStore, objSpec, properties, baseGroup);
+            addPropertyView(objSpec, objArticle, properties, baseGroup);
+
+            // указываем, что верхние три товара будут идти в панель
+            objSupplier.groupTo.singleViewType = true;
+            objSupplier.groupTo.gridClassView = false;
+
+            objContract.groupTo.singleViewType = true;
+            objContract.groupTo.gridClassView = false;
+
+            objSpec.groupTo.singleViewType = true;
+            objSpec.groupTo.gridClassView = false;
+
+            // Кастомайзим форму отображения
+//            DefaultFormView formView = new DefaultFormView(this);
+
+//            ContainerView mainContainer = formView.getMainContainer();
+//            mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
+
+//            richDesign = formView;
+
+        }
+    }
+
     protected void initAuthentication() {
 
         SecurityPolicy securityPolicy;
@@ -1021,18 +1067,4 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         autoFillDB(classQuantity, propQuantity,propNotNulls);
     }
 
-    private class StoreSupplierSpecNavigatorForm extends NavigatorForm {
-
-        public StoreSupplierSpecNavigatorForm(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
-
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
-            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
-            ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup);
-
-            addPropertyView(objStore, objSupplier, properties, baseGroup);
-            addPropertyView(objStore, objSpec, properties, baseGroup);
-            addPropertyView(objStore, objSupplier, objSpec, properties, baseGroup);
-        }
-    }
 }
