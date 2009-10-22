@@ -141,7 +141,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP remainStoreArticleStartQuantity, remainStoreArticleEndQuantity, incBetweenDateQuantity, outBetweenDateQuantity,
         saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity;
 
-    LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut,storeInRange;
+    LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut,storeInRange,storeSupplArt,storeSupplIsCurrent;
 
     LP initDateBalance(LP dateAnd, String caption) {
         LP dateQuantity = addJProp("Кол-во "+caption, and1, quantity, 1, 2, dateAnd, 1, 3);
@@ -371,9 +371,12 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         storeInRange = addJProp(baseGroup, "В ассорт.", inRange, storeFormat, 1, 2);
 
         // ограничение что текущий поставщик есть в спецификации
-        LP storeArtSpec = addJProp("Спец. пост.", storeSuppSpec, 1, currentSupplier, 1, 2);
-        LP storeArtIncl = addJProp("Вкл. в спец.", specArticleIncl, storeArtSpec, 1, 2, 2); 
+        storeSupplArt = addJProp("Вкл. в спец.", specArticleIncl, storeSuppSpec, 1, 2, 3);
+        addJProp(supplierGroup, "Цена по спец.", specArticlePrice, storeSuppSpec, 1, 2, 3);
+        LP storeArtIncl = addJProp("Вкл. в спец.", storeSupplArt, 1, currentSupplier, 1, 2, 2);
 
+        storeSupplIsCurrent = addJProp("Тек.", equals2, currentSupplier, 1, 3, 2);
+        
         LP currentSupplierInSpec = addJProp("Есть спец.", andNot1, currentSupplier, 1, 2, storeArtIncl, 1, 2);
         currentSupplierInSpec.property.isFalse = true;
     }
@@ -443,7 +446,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(supplyManagement, 1200, "Внешний приход");
             NavigatorForm returnForm = new ReturnNavigatorForm(supplyManagement, 1300, "Возврат поставщику");
             NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(supplyManagement, 1400, "Остатки по складам");
-            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1500, "Товары без поставщиков");
+            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1500, "Обеспечение поставок");
 
         NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
             NavigatorForm rangeForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент");
@@ -957,11 +960,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
             ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup, currentGroup);
 
             addPropertyView(objStore, objArticle, properties, baseGroup, currentGroup, supplierGroup);
+            addPropertyView(objStore, objSupplier, objArticle, properties, baseGroup, currentGroup, supplierGroup, storeSupplIsCurrent);
 
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeInRange, objStore, objArticle)));
-            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(currentSupplier, objStore, objArticle))));
+            addSingleRegularFilterGroup(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(currentSupplier, objStore, objArticle))),
+                                        "Без поставщиков",
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
+
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeSupplArt, objStore, objSupplier, objArticle)));
+
+            objStore.groupTo.singleViewType = true;
         }
     }
 
@@ -979,6 +990,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
+
+            objFormat.groupTo.singleViewType = true;
         }
     }
 
