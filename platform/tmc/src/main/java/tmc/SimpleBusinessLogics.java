@@ -53,10 +53,14 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         System.out.println("Server has successfully started");
     }
 
+    AbstractGroup formatGroup, regionGroup;
     AbstractGroup supplierGroup, contractGroup;
     AbstractGroup documentGroup, fixedGroup, currentGroup, lastDocumentGroup;
 
     protected void initGroups() {
+
+        formatGroup = new AbstractGroup("Формат");
+        regionGroup = new AbstractGroup("Регион");
 
         supplierGroup = new AbstractGroup("Поставщик");
         contractGroup = new AbstractGroup("Договор");
@@ -123,6 +127,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             currentExtIncDate, currentExtIncDoc, currentSupplier, docOutPriceOut;
 
     LP contractSupplier, specContract;
+    LP storeSpecIncl, specArticleIncl;
 
     LP remainStoreArticleStartQuantity, remainStoreArticleEndQuantity, incBetweenDateQuantity, outBetweenDateQuantity,
         saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity;
@@ -165,11 +170,13 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         returnSupplier = addDProp("returnSupplier","Поставщик", supplier, returnDocument); // возврат поставщику
         LP returnSupplierName = addJProp(baseGroup, "Имя поставщика", name, returnSupplier, 1);
 
-        revalFormat = addDProp(baseGroup, "revalFormat","Формат", format, revalDocument);
-        storeFormat = addDProp(baseGroup, "storeFormat","Формат склада", format, store);
+        revalFormat = addDProp(formatGroup, "revalFormat","Формат", format, revalDocument);
+        storeFormat = addDProp(formatGroup, "storeFormat","Формат", format, store);
+        LJP storeFormatName = addJProp(formatGroup, "storeFormatName", "Название формата", name, storeFormat, 1);
 
-        locTaxRegion = addDProp(baseGroup, "locTaxRegion","Регион", region, locTaxDocument);
-        storeRegion = addDProp(baseGroup, "storeRegion","Регион склада", region, store);
+        locTaxRegion = addDProp(regionGroup, "locTaxRegion","Регион", region, locTaxDocument);
+        storeRegion = addDProp(regionGroup, "storeRegion","Регион", region, store);
+        LJP storeRegionName = addJProp(regionGroup, "storeRegionName", "Название региона", name, storeRegion, 1);
 
         // Управление поставками
 
@@ -187,10 +194,10 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                 addJProp("",specSupplier, storeSuppSpec, 1, 2), 1, 2);
         storeSpecAggr.property.isFalse = true;
 
-        LP storeSpecIncl = addJProp(baseGroup, "storeSpecIncl", "Вкл. спец.", equals2, 2,
+        storeSpecIncl = addJProp(baseGroup, "storeSpecIncl", "Вкл. спец.", equals2, 2,
                                 addJProp("", storeSuppSpec, 1, specSupplier, 2), 1, 2);
 
-        LDP specArticleIncl = addDProp(baseGroup, "specArticleIncl", "Вкл. спец.", LogicalClass.instance, specification, article);
+        specArticleIncl = addDProp(baseGroup, "specArticleIncl", "Вкл. спец.", LogicalClass.instance, specification, article);
         LDP specArticlePrice = addDProp(baseGroup, "specArticlePrice", "Цена по спец.", DoubleClass.instance, specification, article);
 
         // сравнение дат
@@ -965,15 +972,26 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
             ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", properties, baseGroup, supplierGroup);
             ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup, contractGroup);
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, formatGroup, regionGroup);
             ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
+            // связываем объекты друг с другом
             PropertyObjectNavigator contractSupplierImplement = addPropertyObjectImplement(contractSupplier, objContract);
             addFixedFilter(new CompareFilterNavigator(contractSupplierImplement, Compare.EQUALS, objSupplier));
 
             PropertyObjectNavigator specContractImplement = addPropertyObjectImplement(specContract, objSpec);
             addFixedFilter(new CompareFilterNavigator(specContractImplement, Compare.EQUALS, objContract));
 
+            // добавляем фильтров по умолчанию
+            addSingleRegularFilterGroup(new NotNullFilterNavigator(addPropertyObjectImplement(storeSpecIncl, objStore, objSpec)),
+                                        "В спецификации",
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
+
+            addSingleRegularFilterGroup(new NotNullFilterNavigator(addPropertyObjectImplement(specArticleIncl, objSpec, objArticle)),
+                                        "В спецификации",
+                                        KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
+
+            // добавляем множественные свойства
             addPropertyView(objStore, objSpec, properties, baseGroup);
             addPropertyView(objSpec, objArticle, properties, baseGroup);
 
@@ -981,19 +999,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objSupplier.groupTo.singleViewType = true;
             objSupplier.groupTo.gridClassView = false;
 
-//            objContract.groupTo.singleViewType = true;
             objContract.groupTo.gridClassView = false;
 
-//            objSpec.groupTo.singleViewType = true;
             objSpec.groupTo.gridClassView = false;
-
-            // Кастомайзим форму отображения
-//            DefaultFormView formView = new DefaultFormView(this);
-
-//            ContainerView mainContainer = formView.getMainContainer();
-//            mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
-
-//            richDesign = formView;
 
         }
     }

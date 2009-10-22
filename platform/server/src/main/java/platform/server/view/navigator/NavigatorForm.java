@@ -17,6 +17,7 @@ import platform.server.view.form.client.FormView;
 import platform.server.view.form.client.report.DefaultJasperDesign;
 import platform.server.view.navigator.filter.FilterNavigator;
 
+import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -34,6 +35,15 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
     public List<RegularFilterGroupNavigator> regularFilterGroups = new ArrayList<RegularFilterGroupNavigator>();
     public void addRegularFilterGroup(RegularFilterGroupNavigator group) { regularFilterGroups.add(group); }
+
+    protected RegularFilterGroupNavigator addSingleRegularFilterGroup(FilterNavigator ifilter, String iname, KeyStroke ikey) {
+
+        RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+        filterGroup.addFilter(new RegularFilterNavigator(IDShift(1), ifilter, iname, ikey));
+        addRegularFilterGroup(filterGroup);
+
+        return filterGroup;
+    }
 
     // счетчик идентификаторов
     int IDCount = 0;
