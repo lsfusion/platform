@@ -27,14 +27,10 @@ public class DataObjectImplement extends ObjectImplement {
     }
 
     public AndClassSet getClassSet(GroupObjectImplement classGroup) {
-        return getObjectClass();
-    }
-
-    public ValueClass getGridClass() {
         return dataClass;
     }
 
-    public DataClass getObjectClass() {
+    public ValueClass getGridClass() {
         return dataClass;
     }
 

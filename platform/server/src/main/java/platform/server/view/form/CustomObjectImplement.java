@@ -1,7 +1,6 @@
 package platform.server.view.form;
 
 import platform.server.data.classes.ConcreteCustomClass;
-import platform.server.data.classes.ConcreteObjectClass;
 import platform.server.data.classes.CustomClass;
 import platform.server.data.classes.ValueClass;
 import platform.server.data.classes.where.AndClassSet;
@@ -41,18 +40,14 @@ public class CustomObjectImplement extends ObjectImplement {
         if(groupTo==classGroup)
             return getGridClass().getUpSet();
         else
-            return getObjectClass();
-    }
-
-    public ValueClass getGridClass() {
-        return gridClass;
-    }
-
-    public ConcreteObjectClass getObjectClass() {
         if(currentClass==null) // нету объекта
             return baseClass.getBaseClass().unknown;
         else
             return currentClass;
+    }
+
+    public ValueClass getGridClass() {
+        return gridClass;
     }
 
     ObjectValue value;

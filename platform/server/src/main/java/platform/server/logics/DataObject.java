@@ -82,10 +82,6 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
     }
 
     public AndClassSet getClassSet(GroupObjectImplement classGroup) {
-        return getObjectClass();
-    }
-
-    public ConcreteClass getObjectClass() {
         return objectClass;
     }
 
@@ -98,7 +94,7 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
     }
 
     public Type getType() {
-        return getObjectClass().getType();
+        return objectClass.getType();
     }
 
     public PropertyObjectInterface doMapping(Mapper mapper) {

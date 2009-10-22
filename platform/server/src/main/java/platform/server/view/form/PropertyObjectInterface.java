@@ -9,6 +9,5 @@ public interface PropertyObjectInterface extends OrderView {
 
     AndClassSet getClassSet(GroupObjectImplement classGroup);
 
-    ConcreteClass getObjectClass();
     DataObject getDataObject();
 }

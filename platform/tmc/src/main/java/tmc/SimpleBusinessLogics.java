@@ -416,41 +416,41 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         createDefaultClassForms(baseClass, baseElement);
 
-        NavigatorElement supplierRelationships = new NavigatorElement(baseElement, 1000, "Управление поставками");
-            NavigatorElement suppliers = new StoreSupplierSpecNavigatorForm(supplierRelationships, 1100, "Поставщики");
+        NavigatorElement supplyManagement = new NavigatorElement(baseElement, 1000, "Управление поставками");
+            NavigatorElement suppliers = new StoreSupplierSpecNavigatorForm(supplyManagement, 1100, "Поставщики");
+            NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(supplyManagement, 1200, "Внешний приход");
+            NavigatorForm returnForm = new ReturnNavigatorForm(supplyManagement, 1300, "Возврат поставщику");
+            NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(supplyManagement, 1400, "Остатки по складам");
 
-        NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
-            NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(primaryData, 110, "Внешний приход");
-//                NavigatorForm extIncPrintForm = new ExtIncPrintNavigatorForm(extIncDetailForm, 117, "Реестр цен");
-            NavigatorForm intraForm = new IntraNavigatorForm(primaryData, 120, "Внутреннее перемещение");
-            NavigatorForm extOutForm = new ExtOutNavigatorForm(primaryData, 130, "Внешний расход");
-                NavigatorForm cashSaleForm = new CashSaleNavigatorForm(extOutForm, 131, "Реализация по кассе");
-                NavigatorForm clearingSaleForm = new ClearingSaleNavigatorForm(extOutForm, 132, "Реализация по б/н расчету");
-                NavigatorForm invForm = new InvNavigatorForm(extOutForm, 134, "Инвентаризация", false);
-                NavigatorForm returnForm = new ReturnNavigatorForm(extOutForm, 136, "Возврат поставщику");
-            NavigatorForm exchangeForm = new ExchangeNavigatorForm(primaryData, 140, "Пересорт");
-                NavigatorForm exchangeMForm = new ExchangeMNavigatorForm(exchangeForm, 142, "Сводный пересорт");
-            NavigatorForm revalueForm = new RevalueNavigatorForm(primaryData, 150, "Переоценка");
-            NavigatorForm taxForm = new TaxNavigatorForm(primaryData, 160, "Изменение НДС");
-            NavigatorForm locTaxForm = new LocTaxNavigatorForm(primaryData, 170, "Изменение местн. нал.");
+        NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
+            NavigatorForm rangeForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент");
 
+        NavigatorElement distrManagement = new NavigatorElement(baseElement, 3000, "Управление распределением");
+            NavigatorForm intraForm = new IntraNavigatorForm(distrManagement, 3100, "Внутреннее перемещение");
+            NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(distrManagement, 3200, "Товары по складам");
 
-        NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
-            NavigatorElement aggrStoreData = new NavigatorElement(aggregateData, 210, "Склады");
-                NavigatorForm storeArticleForm = new StoreArticleNavigatorForm(aggrStoreData, 211, "Товары по складам");
-                    NavigatorForm storeArticlePrimDocForm = new StoreArticlePrimDocNavigatorForm(storeArticleForm, 2111, "Товары по складам (изм. цен)");
-                    NavigatorForm storeArticleDocForm = new StoreArticleDocNavigatorForm(storeArticleForm, 2112, "Товары по складам (док.)");
-            NavigatorElement aggrArticleData = new NavigatorElement(aggregateData, 220, "Товары");
-                NavigatorForm articleStoreForm = new ArticleStoreNavigatorForm(aggrArticleData, 221, "Склады по товарам");
-                NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(aggrArticleData, 222, "Товары*Склады");
-            NavigatorElement aggrSupplierData = new NavigatorElement(aggregateData, 230, "Поставщики");
-                NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(aggrSupplierData, 231, "Остатки по складам");
+        NavigatorElement storeManagement = new NavigatorElement(baseElement, 4000, "Управление хранением");
+            NavigatorForm invForm = new InvNavigatorForm(storeManagement, 4100, "Инвентаризация", false);
+            NavigatorForm exchangeForm = new ExchangeNavigatorForm(storeManagement, 4200, "Пересорт");
+                NavigatorForm exchangeMForm = new ExchangeMNavigatorForm(exchangeForm, 4210, "Сводный пересорт");
 
-        analyticsData = new NavigatorElement(baseElement, 300, "Аналитические данные");
-            NavigatorElement dateIntervalForms = new NavigatorElement(analyticsData, 310, "За интервал дат");
-                NavigatorForm salesArticleStoreForm = new SalesArticleStoreNavigatorForm(dateIntervalForms, 313, "Реализация товара по складам");
+        NavigatorElement saleManagement = new NavigatorElement(baseElement, 5000, "Управление продажами");
+            NavigatorForm cashSaleForm = new CashSaleNavigatorForm(saleManagement, 5100, "Реализация по кассе");
+            NavigatorForm clearingSaleForm = new ClearingSaleNavigatorForm(saleManagement, 5200, "Реализация по б/н расчету");
+            NavigatorForm salesArticleStoreForm = new SalesArticleStoreNavigatorForm(saleManagement, 5300, "Реализация товара по складам");
 
-//        NavigatorForm storeSupplierSpec = new StoreSupplierSpecNavigatorForm(baseElement, 400, "Тест");
+        NavigatorElement valueManagement = new NavigatorElement(baseElement, 6000, "Управление ценообразованием");
+            NavigatorForm revalueForm = new RevalueNavigatorForm(valueManagement, 6100, "Переоценка");
+            NavigatorForm storeArticlePrimDocForm = new StoreArticlePrimDocNavigatorForm(valueManagement, 6200, "Изменение цен по товарам");
+
+        NavigatorElement taxManagement = new NavigatorElement(baseElement, 7000, "Управление налогами");
+            NavigatorForm taxForm = new TaxNavigatorForm(taxManagement, 7100, "Изменение НДС");
+            NavigatorForm locTaxForm = new LocTaxNavigatorForm(taxManagement, 7200, "Изменение местн. нал.");
+
+        NavigatorElement aggregateData = new NavigatorElement(baseElement, 8000, "Сводная информация");
+            NavigatorForm storeArticleDocForm = new StoreArticleDocNavigatorForm(aggregateData, 8100, "Движение товара");
+            NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(aggregateData, 8200, "Сводные остатки");
+        NavigatorForm articleStoreForm = new ArticleStoreNavigatorForm(aggrArticleData, 8300, "Склады по товарам");
 
         extIncomeDocument.relevantElements.set(0, extIncDetailForm);
         intraDocument.relevantElements.set(0, intraForm);
@@ -927,6 +927,15 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         }
     }
 
+    private class RangeNavigatorForm extends NavigatorForm {
+
+        public RangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+//            throw new RuntimeException("");
+        }
+    }
+
     private class SalesArticleStoreNavigatorForm extends DateIntervalNavigatorForm {
 
         public SalesArticleStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
@@ -1002,7 +1011,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 //        securityPolicy.property.change.deny(extIncDetailArticle.property);
 //        securityPolicy.property.change.deny(extIncDetailQuantity.property);
 
-        securityPolicy.navigator.deny(analyticsData.getChildren(true));
+//        securityPolicy.navigator.deny(analyticsData.getChildren(true));
 //        securityPolicy.navigator.deny(extIncPrintForm);
 
         securityPolicy.cls.edit.add.deny(document.getConcreteChildren());
