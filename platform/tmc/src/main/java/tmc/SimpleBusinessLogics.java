@@ -43,7 +43,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost","postgres","11111");
+        DataAdapter adapter = new PostgreDataAdapter("testplat","server","postgres","sergtsop");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -174,9 +174,10 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         // Управление поставками
 
         contractSupplier = addDProp(supplierGroup, "contractSupplier", "Поставщик", supplier, contract);
-        LJP contractSupplierName = addJProp(supplierGroup, "contractSupplierName", "Имя поставщика", name, contractSupplier, 1);
+        LJP contractSupplierName = addJProp(supplierGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
 
-        specContract = addDProp(baseGroup, "specSupplier", "Договор спец." , contract, specification);
+        specContract = addDProp(contractGroup, "specContract", "Договор" , contract, specification);
+        LJP specContractName = addJProp(contractGroup, "specContractName", "Название договора", name, specContract, 1);
         LJP specSupplier = addJProp("Поставщик спец.", contractSupplier, specContract, 1);
 
         LDP storeSuppSpec = addDProp(baseGroup, "storeSuppSpec", "Спец. скл. пост.", specification, store, supplier);
@@ -963,7 +964,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
             ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", properties, baseGroup, supplierGroup);
-            ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup);
+            ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup, contractGroup);
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
             ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
