@@ -74,7 +74,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     AbstractCustomClass document, quantityDocument, incomeDocument, outcomeDocument, extOutcomeDocument,
                         saleDocument, articleDocument, priceOutDocument;
 
-    ConcreteCustomClass article, articleGroup, store, customer, supplier, extIncomeDocument, intraDocument, exchangeDocument, specification, contract,
+    ConcreteCustomClass article, articleGroup, store, customer, supplier, extIncomeOrder, extIncomeDocument, intraDocument, exchangeDocument, specification, contract,
                         cashSaleDocument, clearingSaleDocument, invDocument, returnDocument, revalDocument, taxDocument, locTaxDocument, format, region;
     
     protected void initClasses() {
@@ -96,6 +96,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         outcomeDocument = addAbstractClass("Расходный документ", quantityDocument);
         articleDocument = addAbstractClass("Перемещение товара", quantityDocument);
 
+        extIncomeOrder = addConcreteClass("Заказ", document);
         extIncomeDocument = addConcreteClass("Внешний приход", incomeDocument, articleDocument);
 
         intraDocument = addConcreteClass("Внутреннее перемещение", incomeDocument, outcomeDocument, articleDocument);
@@ -118,12 +119,12 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         specification = addConcreteClass("Спецификация", namedObject);
     }
 
-    LDP artGroup, incStore, outStore, extIncSupplier, extIncPriceIn, extIncVATIn, invDBBalance,
+    LDP artGroup, outStore, extIncPriceIn, extIncVATIn, invDBBalance,
             returnSupplier, clearingSaleCustomer, articleQuantity, extIncDetailDocument;
 
     LP quantity, roundm1, addPercent, docIncBalanceQuantity, docOutBalanceQuantity, revalFormat, storeFormat, locTaxRegion, storeRegion, currentSupplier,
             invBalance, exchangeQuantity, exchIncQuantity, exchOutQuantity, priceOutChange, balanceStoreQuantity, revalAdd, taxVatOut, locTaxValue;
-    LP currentIncDate;
+    LP currentIncDate, incStore, orderQuantity, orderInSpec, orderAllow;
     LP currentIncDoc;
     LP currentRevalDate;
     LP currentRevalDoc;
@@ -170,20 +171,17 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         article.externalID = (DataProperty)artBarCode.property;
 
-        extIncSupplier = addDProp("Поставщик", supplier, extIncomeDocument); // внешний приход
-        LP extIncSupplierName = addJProp(baseGroup, "extIncSupplierName", "Имя поставщика", name, extIncSupplier, 1);
-
         clearingSaleCustomer = addDProp("clearingSaleCustomer","Покупатель", customer, clearingSaleDocument); // реализация по б\н расчету
         LP clearingSaleCustomerName = addJProp(baseGroup, "Имя покупателя", name, clearingSaleCustomer, 1);
 
         returnSupplier = addDProp("returnSupplier","Поставщик", supplier, returnDocument); // возврат поставщику
         LP returnSupplierName = addJProp(baseGroup, "Имя поставщика", name, returnSupplier, 1);
 
-        revalFormat = addDProp(formatGroup, "revalFormat","Формат", format, revalDocument);
+        revalFormat = addDProp(baseGroup, "revalFormat","Формат", format, revalDocument);
         storeFormat = addDProp(formatGroup, "storeFormat","Формат", format, store);
         LJP storeFormatName = addJProp(formatGroup, "storeFormatName", "Название формата", name, storeFormat, 1);
 
-        locTaxRegion = addDProp(regionGroup, "locTaxRegion","Регион", region, locTaxDocument);
+        locTaxRegion = addDProp(baseGroup, "locTaxRegion","Регион", region, locTaxDocument);
         storeRegion = addDProp(regionGroup, "storeRegion","Регион", region, store);
         LJP storeRegionName = addJProp(regionGroup, "storeRegionName", "Название региона", name, storeRegion, 1);
 
@@ -209,19 +207,61 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         specArticleIncl = addDProp(baseGroup, "specArticleIncl", "Вкл. спец.", LogicalClass.instance, specification, article);
         LDP specArticlePrice = addDProp(baseGroup, "specArticlePrice", "Цена по спец.", DoubleClass.instance, specification, article);
 
+        LP inRange = addDProp(baseGroup, "inRange", "В ассорт.", LogicalClass.instance, format, article);
+        currentSupplier = addDProp("currentSupplier", "Тек. пост.", supplier, store, article);
+        addJProp(supplierGroup, "Имя тек. пост.", name, currentSupplier, 1, 2);
+
+        storeInRange = addJProp(baseGroup, "В ассорт.", inRange, storeFormat, 1, 2);
+
+        // ограничение что текущий поставщик есть в спецификации
+        storeSupplArt = addJProp("Вкл. в спец.", specArticleIncl, storeSuppSpec, 1, 2, 3);
+        LP storeSupplPrice = addJProp(supplierGroup, "Цена по спец.", specArticlePrice, storeSuppSpec, 1, 2, 3);
+        LP storeArtIncl = addJProp("Вкл. в спец.", storeSupplArt, 1, currentSupplier, 1, 2, 2);
+
+        storeSupplIsCurrent = addJProp("Тек.", equals2, currentSupplier, 1, 3, 2);
+
+        LP currentSupplierInSpec = addJProp("Есть спец.", andNot1, currentSupplier, 1, 2, storeArtIncl, 1, 2);
+        currentSupplierInSpec.property.isFalse = true;
+        
+        LP extIncOrderSupplier = addDProp("extIncOrderSupplier", "Поставщик", supplier, extIncomeOrder); // внешний приход
+        addJProp(baseGroup, "Имя поставщика", name, extIncOrderSupplier, 1);
+        LP extIncOrderStore = addDProp("extIncOrderStore", "Склад (прих.)", store, extIncomeOrder); // внешний приход
+        addJProp(baseGroup, "Имя склада", name, extIncOrderStore, 1);
+
+        orderQuantity = addDProp(baseGroup, "Кол-во заказа", DoubleClass.instance, extIncomeOrder, article);
+        LDP orderPrice = addDProp("Цена заказа (док. фикс.)", DoubleClass.instance, extIncomeOrder, article);
+        orderPrice.setDefProp(storeSupplPrice, extIncOrderStore, 1, extIncOrderSupplier, 1, 2, orderQuantity, 1, 2);
+        addSUProp(baseGroup, "Цена заказа (док.)", Union.OVERRIDE, addJProp("Цена заказа (тек.)", storeSupplPrice, extIncOrderStore, 1, extIncOrderSupplier, 1, 2), orderPrice);
+
+        orderAllow = addJProp("Актив.", equals2, extIncOrderSupplier, 1, addJProp("Тек. пост.", currentSupplier, extIncOrderStore, 1, 2), 1, 2); 
+        orderInSpec = addJProp("В спец. и ассорт.", and1, addJProp("В спец.", storeSupplArt, extIncOrderStore, 1, extIncOrderSupplier, 1, 2), 1, 2,
+                            addJProp("В ассорт.", storeInRange, extIncOrderStore, 1, 2), 1, 2);
+
+        LP extIncDocumentOrder = addDProp("Поставщик", extIncomeOrder, extIncomeDocument); // внешний приход
+
+        LP extIncSupplier = addJProp("Поставщик", extIncOrderSupplier, extIncDocumentOrder, 1); // внешний приход
+        addJProp(baseGroup, "Имя поставщика", name, extIncSupplier, 1);
+        LP extIncStore = addJProp("Склад (прих.)", extIncOrderStore, extIncDocumentOrder, 1); // внешний приход
+
+        addJProp(baseGroup, "Кол-во заказа", orderQuantity, extIncDocumentOrder, 1, 2);
+        addJProp(baseGroup, "Цена заказа", orderPrice, extIncDocumentOrder, 1, 2);
+
         // сравнение дат
         LP groeqDocDate = addJProp("Дата док.>=Дата", groeq2, date, 1, object(DateClass.instance), 2);
         LP greaterDocDate = addJProp("Дата док.>Дата", greater2, date, 1, object(DateClass.instance), 2);
         LP betweenDocDate = addJProp("Дата док. между Дата", between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
         LP equalDocDate = addJProp("Дата док.=Дата", equals2, date, 1, object(DateClass.instance), 2);
 
-        incStore = addDProp("incStore", "Склад (прих.)", store, incomeDocument);
+        LP intraIncStore = addDProp("intraIncStore", "Склад (прих.)", store, intraDocument); 
+
+        incStore = addCUProp("Склад (прих.)", extIncStore, intraIncStore);
         LP incStoreName = addJProp(baseGroup, "Имя склада (прих.)", name, incStore, 1);
         outStore = addDProp("outStore", "Склад (расх.)", store, outcomeDocument);
         LP outStoreName = addJProp(baseGroup, "Имя склада (расх.)", name, outStore, 1);
 
         // количества
         articleQuantity = addDProp("Кол-во товара", DoubleClass.instance, articleDocument, article);
+        articleQuantity.setDefProp(orderQuantity, extIncDocumentOrder, 1, 2);
 
         exchangeQuantity = addDProp(baseGroup, "exchangeQuantity", "Кол-во перес.", DoubleClass.instance, exchangeDocument, article, article);
         exchIncQuantity = addSGProp(baseGroup, "Прих. перес.", exchangeQuantity, 1, 3);
@@ -290,6 +330,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // цены поставщика
         extIncPriceIn = addDProp(baseGroup, "extIncPriceIn", "Цена пост.", DoubleClass.instance, extIncomeDocument, article);
+        extIncPriceIn.setDefProp(orderPrice, extIncDocumentOrder, 1, 2, quantity, 1, 2);
         extIncVATIn = addDProp(baseGroup, "extIncVATIn", "НДС (пост.)", DoubleClass.instance, extIncomeDocument, article);
         extIncVATIn.setDefProp(currentVatOut, 2, articleQuantity, 1, 2);
 
@@ -303,8 +344,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         outPriceIn.setDefProp(currentPriceIn, outStore, 1, 2, quantity, 1, 2); // подставляем тек. цену со склада расх
         addSUProp(baseGroup, "Цена пост. (док. расх.)",Union.OVERRIDE, addJProp("Цена пост. (док. расх. тек.)", currentPriceIn, outStore, 1, 2), outPriceIn);
-
-        extIncPriceIn.setDefProp(currentPriceIn, incStore, 1, 2, quantity, 1, 2);
 
         // розничная цена
         currentPriceOut = addJProp(currentGroup, "currentPriceOut", "Цена розн. (тек.)", roundm1,
@@ -363,22 +402,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                         addJProp("Цена розн. по скл. (прих.)", and1,  // цена для прихода склада - вытащим склад в интерфейс, для объединения с reval
                                                 incPriceOutChange, 1, 3,
                                             addJProp("Склад документа", equals2, incStore, 1, 2), 1, 2));
-
-        LP inRange = addDProp(baseGroup, "inRange", "В ассорт.", LogicalClass.instance, format, article);
-        currentSupplier = addDProp("currentSupplier", "Тек. пост.", supplier, store, article);
-        addJProp(supplierGroup, "Имя тек. пост.", name, currentSupplier, 1, 2);
-
-        storeInRange = addJProp(baseGroup, "В ассорт.", inRange, storeFormat, 1, 2);
-
-        // ограничение что текущий поставщик есть в спецификации
-        storeSupplArt = addJProp("Вкл. в спец.", specArticleIncl, storeSuppSpec, 1, 2, 3);
-        addJProp(supplierGroup, "Цена по спец.", specArticlePrice, storeSuppSpec, 1, 2, 3);
-        LP storeArtIncl = addJProp("Вкл. в спец.", storeSupplArt, 1, currentSupplier, 1, 2, 2);
-
-        storeSupplIsCurrent = addJProp("Тек.", equals2, currentSupplier, 1, 3, 2);
-        
-        LP currentSupplierInSpec = addJProp("Есть спец.", andNot1, currentSupplier, 1, 2, storeArtIncl, 1, 2);
-        currentSupplierInSpec.property.isFalse = true;
     }
 
     protected void initConstraints() {
@@ -443,10 +466,11 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         NavigatorElement supplyManagement = new NavigatorElement(baseElement, 1000, "Управление поставками");
             NavigatorElement suppliers = new StoreSupplierSpecNavigatorForm(supplyManagement, 1100, "Поставщики");
-            NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(supplyManagement, 1200, "Внешний приход");
-            NavigatorForm returnForm = new ReturnNavigatorForm(supplyManagement, 1300, "Возврат поставщику");
-            NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(supplyManagement, 1400, "Остатки по складам");
-            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1500, "Обеспечение ассортимента");
+            NavigatorForm extIncOrderForm = new ExtIncOrderNavigatorForm(supplyManagement, 1200, "Заказы поставщику");
+            NavigatorForm extIncForm = new ExtIncNavigatorForm(supplyManagement, 1300, "Приходы от поставщика");
+            NavigatorForm returnForm = new ReturnNavigatorForm(supplyManagement, 1400, "Возврат поставщику");
+            NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(supplyManagement, 1500, "Остатки по складам");
+            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1600, "Обеспечение ассортимента");
 
         NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
             NavigatorForm rangeFormatForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент по форматам", true);
@@ -524,21 +548,30 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         }
     }
 
-    private class ExtIncDocumentNavigatorForm extends TmcNavigatorForm {
+    private class ExtIncOrderNavigatorForm extends TmcNavigatorForm {
 
-        protected ObjectNavigator objDoc;
+        public ExtIncOrderNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption, false);
 
-        ExtIncDocumentNavigatorForm(NavigatorElement parent, int iID, String caption, boolean isPrintForm) {
-            super(parent, iID, caption, isPrintForm);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(extIncomeOrder, "Заказ", properties, baseGroup);
 
-            objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
+
+            addPropertyView(objDoc, objArt, properties, baseGroup);
+
+            PropertyObjectNavigator orderImp = addPropertyObjectImplement(orderQuantity, objDoc, objArt);
+            addFixedFilter(new OrFilterNavigator(new NotNullFilterNavigator(orderImp),
+                    new NotNullFilterNavigator(addPropertyObjectImplement(orderAllow, objDoc, objArt))));
+            addArticleRegularFilterGroup(orderImp);
         }
     }
 
-    private class ExtIncNavigatorForm extends ExtIncDocumentNavigatorForm {
+    private class ExtIncNavigatorForm extends TmcNavigatorForm {
 
         public ExtIncNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
+
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", properties, baseGroup);
 
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
@@ -1127,9 +1160,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         Map<DataProperty, Set<DataPropertyInterface>> propNotNulls = new HashMap<DataProperty, Set<DataPropertyInterface>>();
         artGroup.putNotNulls(propNotNulls,0);
-        incStore.putNotNulls(propNotNulls,0);
         outStore.putNotNulls(propNotNulls,0);
-        extIncSupplier.putNotNulls(propNotNulls,0);
         extIncDetailDocument.putNotNulls(propNotNulls,0);
 //        extIncDetailArticle.putNotNulls(propNotNulls,0);
 //        extIncDetailQuantity.putNotNulls(propNotNulls,0);
