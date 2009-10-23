@@ -142,7 +142,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP remainStoreArticleStartQuantity, remainStoreArticleEndQuantity, incBetweenDateQuantity, outBetweenDateQuantity,
         saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity;
 
-    LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut,storeInRange,storeSupplArt,storeSupplIsCurrent;
+    LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut,storeInRange,storeSupplArt,storeSupplIsCurrent,revalCurrentAdd,locCurrentTax;
 
     LP initDateBalance(LP dateAnd, String caption) {
         LP dateQuantity = addJProp("Кол-во "+caption, and1, quantity, 1, 2, dateAnd, 1, 3);
@@ -310,7 +310,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         currentRevalDate = maxRevalProps[0]; currentRevalDoc = maxRevalProps[1];
         currentAdd = addJProp(currentGroup, "currentAdd", "Надбавка (тек. форм.)", revalAdd, currentRevalDoc, 1, 2, 1);
         LP currentStoreAdd = addJProp(currentGroup, "Надбавка (тек. скл.)",currentAdd, 2, storeFormat, 1);
-        addJProp(baseGroup, "Надбавка (тек. док.)", currentAdd, 2, revalFormat, 1);
+        revalCurrentAdd = addJProp(baseGroup, "Надбавка (тек. док.)", currentAdd, 2, revalFormat, 1);
 
         // НДС
         taxVatOut = addDProp(baseGroup, "taxVatOut", "НДС розн.", DoubleClass.instance, taxDocument, article);
@@ -326,7 +326,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         currentLocTaxDate = maxLocTaxProps[0]; currentLocTaxDoc = maxLocTaxProps[1];
         currentLocTax = addJProp(currentGroup, "currentLocTax", "Местн. нал. (тек. рег.)", locTaxValue, currentLocTaxDoc, 1, 2, 1);
         LP currentStoreLocTax = addJProp(currentGroup, "Местн. нал. (тек. скл.)",currentLocTax, 2, storeRegion, 1);
-        addJProp(baseGroup, "Местн. нал. (тек. док.)", currentLocTax, 2, locTaxRegion, 1);
+        locCurrentTax = addJProp(baseGroup, "Местн. нал. (тек. док.)", currentLocTax, 2, locTaxRegion, 1);
 
         // цены поставщика
         extIncPriceIn = addDProp(baseGroup, "extIncPriceIn", "Цена пост.", DoubleClass.instance, extIncomeDocument, article);
@@ -503,9 +503,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(aggregateData, 8200, "Сводные остатки");
         NavigatorForm articleStoreForm = new ArticleStoreNavigatorForm(aggrArticleData, 8300, "Склады по товарам");
 
-        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
         intraDocument.relevantElements.set(0, intraForm);
-        extOutcomeDocument.relevantElements.set(0, extOutForm);
         clearingSaleDocument.relevantElements.set(0, clearingSaleForm);
         invDocument.relevantElements.set(0, invForm);
         exchangeDocument.relevantElements.set(0, exchangeForm);
@@ -527,10 +525,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         void addArticleRegularFilterGroup(PropertyObjectNavigator documentProp, PropertyObjectNavigator... extraProps) {
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
-/*            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  null,
-                                  "Все",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));*/
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(documentProp),
                                   "Документ",
@@ -792,10 +786,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(revalAdd.property).view);
-
             addHintsNoUpdate(currentRevalDate.property);
             addHintsNoUpdate(currentRevalDoc.property);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(addPropertyObjectImplement(revalAdd, objDoc, objArt)),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(revalCurrentAdd, objDoc, objArt))),
+                                  "Не заданы значения",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroup);
         }
     }
 
@@ -809,10 +812,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(taxVatOut.property).view);
-
             addHintsNoUpdate(currentTaxDate.property);
             addHintsNoUpdate(currentTaxDoc.property);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(addPropertyObjectImplement(taxVatOut, objDoc, objArt)),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(currentVatOut, objArt))),
+                                  "Не заданы значения",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroup);
         }
     }
 
@@ -826,10 +838,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objDoc, objArt, properties, baseGroup);
 
-            addArticleRegularFilterGroup(getPropertyView(locTaxValue.property).view);
-
             addHintsNoUpdate(currentLocTaxDate.property);
             addHintsNoUpdate(currentLocTaxDoc.property);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(addPropertyObjectImplement(locTaxValue, objDoc, objArt)),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(locCurrentTax, objDoc, objArt))),
+                                  "Не заданы значения",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroup);
         }
     }
 
