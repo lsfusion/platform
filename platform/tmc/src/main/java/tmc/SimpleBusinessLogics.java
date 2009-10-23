@@ -43,7 +43,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost","postgres","11111");
+        DataAdapter adapter = new PostgreDataAdapter("testplat","server","postgres","sergtsop");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -115,8 +115,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         taxDocument = addConcreteClass("Изменение НДС", priceOutDocument);
         locTaxDocument = addConcreteClass("Изменение местн. нал.", priceOutDocument);
 
-        contract = addConcreteClass("Договор", namedObject);
-        specification = addConcreteClass("Спецификация", namedObject);
+        contract = addConcreteClass("Договор", document);
+        specification = addConcreteClass("Спецификация", document);
     }
 
     LDP artGroup, outStore, extIncPriceIn, extIncVATIn, invDBBalance,
@@ -187,8 +187,15 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // Управление поставками
 
+        LDP contractDateEnd = addDProp(baseGroup, "contractDateEnd", "Действует до", DateClass.instance, contract);
+        LDP contractPayTerms = addDProp(baseGroup, "contractPayTerms", "По реализации", LogicalClass.instance, contract);
+        LDP contractPayDelay = addDProp(baseGroup, "contractPayDelay", "Отсрочка", IntegerClass.instance, contract);        
+
         contractSupplier = addDProp(supplierGroup, "contractSupplier", "Поставщик", supplier, contract);
         LJP contractSupplierName = addJProp(supplierGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
+
+        LDP specDateEnd = addDProp(baseGroup, "specDateEnd", "Действует до", DateClass.instance, specification);
+        LDP specPriceVolatility = addDProp(baseGroup, "specPriceVolatility", "Отклонение цены", DoubleClass.instance, specification);
 
         specContract = addDProp(contractGroup, "specContract", "Договор" , contract, specification);
         LJP specContractName = addJProp(contractGroup, "specContractName", "Название договора", name, specContract, 1);
