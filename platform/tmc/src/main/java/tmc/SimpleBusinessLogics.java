@@ -446,10 +446,11 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             NavigatorForm extIncDetailForm = new ExtIncNavigatorForm(supplyManagement, 1200, "Внешний приход");
             NavigatorForm returnForm = new ReturnNavigatorForm(supplyManagement, 1300, "Возврат поставщику");
             NavigatorForm supplierStoreArticleForm = new SupplierStoreArticleNavigatorForm(supplyManagement, 1400, "Остатки по складам");
-            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1500, "Обеспечение поставок");
+            NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1500, "Обеспечение ассортимента");
 
         NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
-            NavigatorForm rangeForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент");
+            NavigatorForm rangeFormatForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент по форматам", true);
+            NavigatorForm rangeArticleForm = new RangeNavigatorForm(rangeManagement, 2200, "Ассортимент по товарам", false);
 
         NavigatorElement distrManagement = new NavigatorElement(baseElement, 3000, "Управление распределением");
             NavigatorForm intraForm = new IntraNavigatorForm(distrManagement, 3100, "Внутреннее перемещение");
@@ -906,18 +907,29 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objSupplier.groupTo.gridClassView = false;
             objSupplier.groupTo.singleViewType = true;
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
-            objStore.groupTo.gridClassView = false;
+            GroupObjectNavigator gobjArtStore = new GroupObjectNavigator(IDShift(1));
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
+            ObjectNavigator objArt = new ObjectNavigator(IDShift(1), article, "Товар");
+            ObjectNavigator objStore = new ObjectNavigator(IDShift(1), store, "Склад");
 
-            addPropertyView(objStore, objArt, properties, baseGroup);
+            gobjArtStore.add(objArt);
+            gobjArtStore.add(objStore);
+            addGroup(gobjArtStore);
+
+            addPropertyView(objStore, properties, baseGroup);
+            addPropertyView(objArt, properties, baseGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup, supplierGroup);
+            addPropertyView(objStore, objSupplier, objArt, properties, storeSupplIsCurrent);
 
             // установить фильтр по умолчанию на поставщик товара = поставщик
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(currentSupplier, objStore, objArt), Compare.EQUALS, objSupplier));
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeSupplArt, objStore, objSupplier, objArt)));
 
             // добавить стандартные фильтры
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(addPropertyObjectImplement(storeSupplIsCurrent, objStore, objSupplier, objArt)),
+                                  "Текущий этого пост.",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new CompareFilterNavigator(getPropertyView(balanceStoreQuantity.property).view, Compare.GREATER, 0),
                                   "Есть на складе",
@@ -929,8 +941,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addRegularFilterGroup(filterGroup);
         }
     }
-
-
 
     private class DateIntervalNavigatorForm extends TmcNavigatorForm {
 
@@ -978,11 +988,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     private class RangeNavigatorForm extends NavigatorForm {
 
-        public RangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
+        public RangeNavigatorForm(NavigatorElement parent, int ID, String caption, boolean upFormat) {
             super(parent, ID, caption);
 
-            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
-            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+            ObjectNavigator objFormat, objArticle;
+            if(upFormat) {
+                objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
+                objFormat.groupTo.gridClassView = false;
+                objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+            } else {
+                objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+                objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
+            }
+
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
 
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
@@ -990,8 +1008,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
-
-            objFormat.groupTo.singleViewType = true;
         }
     }
 
