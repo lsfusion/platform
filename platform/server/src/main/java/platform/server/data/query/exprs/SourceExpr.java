@@ -93,7 +93,7 @@ abstract public class SourceExpr extends AbstractSourceJoin {
                 Collection<InnerJoins.Entry> innerJoins = GroupExpr.inner?GroupExpr.getInnerJoins(mapCase.data,expr,groupWhere):null;
                 Where innerWhere = !GroupExpr.inner || innerJoins.size()==1?groupWhere:innerJoins.iterator().next().where; // если один innerJoin то все ок, иначе нужен "полный" where
 
-                groupExpr = groupExpr.sum(SumGroupExpr.create(innerWhere,BaseUtils.crossJoin(mapCase.data,group),expr));
+                groupExpr = groupExpr.sum(SumGroupExpr.create(BaseUtils.crossJoin(mapCase.data,group), innerWhere, expr));
 
                 if(!GroupExpr.inner || innerJoins.size()==1) break;
                 groupWhere = groupWhere.and(innerWhere.not()); // важно чтобы where не "повторился"
@@ -120,7 +120,7 @@ abstract public class SourceExpr extends AbstractSourceJoin {
                     Collection<InnerJoins.Entry> innerJoins = GroupExpr.inner?GroupExpr.getInnerJoins(mapCase.data,exprCase.data,fullWhere):null;
                     Where innerWhere = !GroupExpr.inner || innerJoins.size()==1?fullWhere:innerJoins.iterator().next().where; // если один innerJoin то все ок, иначе нужен "полный" where
 
-                    groupExpr = groupExpr.max(MaxGroupExpr.create(innerWhere,BaseUtils.crossJoin(mapCase.data,group),exprCase.data));
+                    groupExpr = groupExpr.max(MaxGroupExpr.create(BaseUtils.crossJoin(mapCase.data,group), innerWhere, exprCase.data));
 
                     if(!GroupExpr.inner || innerJoins.size()==1) break;
                     fullWhere = fullWhere.and(innerWhere.not()); // важно чтобы where не "повторился"

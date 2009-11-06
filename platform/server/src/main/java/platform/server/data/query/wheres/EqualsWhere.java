@@ -13,27 +13,24 @@ import platform.server.data.query.translators.KeyTranslator;
 import platform.server.data.query.translators.QueryTranslator;
 import platform.server.where.DataWhereSet;
 import platform.server.where.Where;
+import platform.base.BaseUtils;
 
 public class EqualsWhere extends CompareWhere {
 
-    private EqualsWhere(AndExpr iOperator1, AndExpr iOperator2) {
-        super(iOperator1, iOperator2);
+    private EqualsWhere(AndExpr operator1, AndExpr operator2) {
+        super(operator1, operator2);
     }
 
     public static Where create(AndExpr operator1, AndExpr operator2) {
+        if(operator1 instanceof ValueExpr && operator2 instanceof ValueExpr)
+            return BaseUtils.hashEquals(operator1,operator2)?Where.TRUE:Where.FALSE;
+        if(BaseUtils.hashEquals(operator1,operator2))
+            return Where.TRUE;
         return create(new EqualsWhere(operator1, operator2));
     }
 
-    public EqualsWhere(KeyExpr iOperator1, KeyExpr iOperator2) {
-        super(iOperator1, iOperator2);
-    }
-
-    public EqualsWhere(KeyExpr iOperator1, ValueExpr iOperator2) {
-        super(iOperator1, iOperator2);
-    }
-
-    public EqualsWhere(AndExpr iOperator1, ValueExpr iOperator2) {
-        super(iOperator1, iOperator2);
+    public EqualsWhere(KeyExpr operator1, ValueExpr operator2) {
+        super(operator1, operator2);
     }
 
     static boolean containsMask(String string) {

@@ -96,7 +96,7 @@ public class MaxChangeProperty<T extends PropertyInterface> extends AggregatePro
                 Where where = Where.TRUE;
                 for(DataPropertyInterface changeInterface : toChange.interfaces)
                     where = where.and(joinImplement.get((P)changeInterface).compare(changeInterface.keyExpr, Compare.EQUALS));
-                changedWhere.add(where);
+                if(changedWhere!=null) changedWhere.add(where);
                 return toChange.valueInterface.keyExpr;
             } else // иначе не трогаем
                 return null;

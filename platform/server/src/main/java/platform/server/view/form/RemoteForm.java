@@ -242,7 +242,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
             if(filter instanceof CompareFilter && (!Filter.ignoreInInterface || filter.isInInterface(object.groupTo))) { // если ignoreInInterface проверить что в интерфейсе 
                 CompareFilter<?> compareFilter = (CompareFilter)filter;
                 if(compareFilter.compare==Compare.EQUALS && compareFilter.property.property instanceof DataProperty) {
-                    JoinQuery<PropertyObjectInterface,String> subQuery = new JoinQuery<PropertyObjectInterface,String>(KeyExpr.getMapKeys(compareFilter.property.mapping.values()));
+                    JoinQuery<PropertyObjectInterface,String> subQuery = new JoinQuery<PropertyObjectInterface,String>(compareFilter.property.mapping.values());
                     Map<PropertyObjectInterface,DataObject> fixedObjects = new HashMap<PropertyObjectInterface, DataObject>();
                     for(PropertyObjectInterface mapObject : compareFilter.property.mapping.values())
                         if(mapObject.getApplyObject() !=object.groupTo)
@@ -956,7 +956,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
         // пока сделаем тупо получаем один большой запрос
 
-        JoinQuery<ObjectImplement,Object> query = new JoinQuery<ObjectImplement,Object>(KeyExpr.getMapKeys(readObjects));
+        JoinQuery<ObjectImplement,Object> query = new JoinQuery<ObjectImplement,Object>(readObjects);
         OrderedMap<Object,Boolean> queryOrders = new OrderedMap<Object, Boolean>();
 
         for (GroupObjectImplement group : groups) {

@@ -7,7 +7,6 @@ import platform.server.logics.properties.DataPropertyInterface;
 import platform.server.logics.properties.Property;
 import platform.server.view.navigator.filter.NotNullFilterNavigator;
 import platform.server.view.navigator.filter.NotFilterNavigator;
-import platform.server.data.classes.CustomClass;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -43,11 +42,12 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
 
         Map<DataPropertyInterface, PropertyInterfaceNavigator> mapObjects = new HashMap<DataPropertyInterface, PropertyInterfaceNavigator>(interfaceValues);
         mapObjects.put(change.valueInterface,valueObject);
-        for(Property property : BL.getConstrainedProperties()) // добавляем все констрейнты
+        for(Property property : BL.getChangeConstrainedProperties(change)) // добавляем все констрейнты
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator<DataPropertyInterface>(
-                    new PropertyObjectNavigator<DataPropertyInterface>(property.getMaxChangeProperty(change),mapObjects))));
+                    new PropertyObjectNavigator<DataPropertyInterface>(property,mapObjects))));
 
         addPropertyView(BL.properties, BL.baseGroup, true, valueObject);
+        addPropertyView(BL.properties, BL.aggrGroup, true, valueObject);
     }
 
 /*    public <T extends BusinessLogics<T>> void seekObjects(RemoteForm<T> remoteForm, Mapper mapper, Object dataValue, Map<DataPropertyInterface, Object> interfaceValues) {

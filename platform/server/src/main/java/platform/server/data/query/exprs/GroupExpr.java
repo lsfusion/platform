@@ -2,7 +2,6 @@ package platform.server.data.query.exprs;
 
 import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.base.Pair;
 import platform.server.caches.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
@@ -49,13 +48,13 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
     public abstract E packExpr(E expr, Where trueWhere);
 
     // можно использовать напрямую только заведомо зная что не null
-    private GroupExpr(Map<AndExpr, AndExpr> group, Where<?> where, E expr, Where upWhere) {
+    protected GroupExpr(Map<AndExpr, AndExpr> group, Where<?> where, E expr, Where upWhere) {
 
         // PUSH VALUES
         Map<AndExpr,AndExpr> keepGroup = new HashMap<AndExpr, AndExpr>(); // проталкиваем values внутрь
         for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
             if (groupExpr.getValue() instanceof ValueExpr)
-                where = where.and(new EqualsWhere(groupExpr.getKey(), (ValueExpr)groupExpr.getValue()));
+                where = where.and(EqualsWhere.create(groupExpr.getKey(), (ValueExpr)groupExpr.getValue()));
             else
                 keepGroup.put(groupExpr.getKey(),groupExpr.getValue());
         group = keepGroup;
@@ -92,7 +91,20 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
         assert checkExpr();
     }
 
-    private SourceExpr packSingle() {
+    protected GroupExpr(Map<AndExpr, AndExpr> group, Where<?> where, E expr) {
+        this.expr = expr;
+        this.where = where;
+        this.group = group;
+        context = getContext(this.expr, this.group, this.where); // перечитаем
+
+        assert checkExpr();
+    }
+
+    protected abstract GroupExpr createPacked(Map<AndExpr, AndExpr> group, Where<?> where, E expr);
+
+    // вообще нужен для всяких MaxChangeProperty, которые изначально создают "странные" GroupExpr, пользователь такие вряд ли создаст
+    protected SourceExpr packCreate() {
+        // проверка что не целиком context идет
         Map<AndExpr,AndExpr> compares = new HashMap<AndExpr, AndExpr>();
         Map<KeyExpr,AndExpr> groupKeys = BaseUtils.splitKeys(group,context.keys,compares);
         if(groupKeys.size()==context.keys.size()) {
@@ -101,17 +113,18 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
             for(Map.Entry<AndExpr,AndExpr> compare : compares.entrySet()) // оставшиеся
                 transWhere = transWhere.and(EqualsWhere.create((AndExpr) compare.getKey().translateQuery(translator),compare.getValue()));
             return expr.translateQuery(translator).and(transWhere);
-        } else
-            return this;
-    }
+        }
 
-    // проверяем что keyExpr'ы все в контексте
-    protected static SourceExpr create(GroupExpr<?,?> expr) {
-        return expr.packSingle();
-    }
+        Map<KeyExpr,AndExpr> freeKeys = new HashMap<KeyExpr, AndExpr>();
+        Map<KeyExpr,AndExpr> usedKeys = BaseUtils.splitKeys(groupKeys, getContext(expr,compares,where).keys, freeKeys);
+        if(freeKeys.size()>0) {
+            Where keyWhere = Where.TRUE;
+            for(Map.Entry<KeyExpr,AndExpr> groupExpr : freeKeys.entrySet())
+                keyWhere = keyWhere.and(groupExpr.getValue().getWhere());
+            return createPacked(BaseUtils.merge(usedKeys,compares),where,expr).and(keyWhere);
+        }
 
-    public GroupExpr(Where where, Map<AndExpr, AndExpr> group, E expr) {
-        this(group, where, expr, Where.TRUE);
+        return AndExpr.create(this);
     }
 
     private static Map<AndExpr,AndExpr> pushValues(Map<AndExpr,AndExpr> group,Where<?> trueWhere) {
@@ -129,8 +142,6 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
 
     public GroupExpr(This groupExpr,Where<?> falseWhere) { // в отличии от joins, expr нельзя проталкивать потому как повлияет на результат !!!
         this(pushValues(groupExpr.group,falseWhere.not()), groupExpr.where, groupExpr.expr,falseWhere.not());
-
-//        assert !getFullWhere().isFalse();
     }
 
     // трансляция
@@ -151,7 +162,8 @@ public abstract class GroupExpr<E extends SourceExpr,This extends GroupExpr<E,Th
                 group.put(groupJoin.getKey().translateDirect(valueTranslator),groupJoin.getValue().translateDirect(translator));
         }
 
-        context = new Context(new HashSet<KeyExpr>(groupExpr.context.keys),new HashSet<ValueExpr>(mapValues.values()));
+        context = getContext(this.expr, this.group, this.where); // перечитаем
+        // new Context(new HashSet<KeyExpr>(groupExpr.context.keys),new HashSet<ValueExpr>(mapValues.values()));
 
         assert checkExpr();
     }

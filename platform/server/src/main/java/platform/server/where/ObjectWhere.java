@@ -2,6 +2,7 @@ package platform.server.where;
 
 import platform.server.data.query.JoinData;
 import platform.server.data.query.wheres.MapWhere;
+import platform.base.BaseUtils;
 
 
 abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> implements OrObjectWhere<Not>,AndObjectWhere<Not> {
@@ -28,11 +29,16 @@ abstract class ObjectWhere<Not extends ObjectWhere> extends AbstractWhere<Not> i
 
     public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
         // исходим из предположения что что !(not()=>falseWhere) то есть !(op,this,true).checkTrue
-        if(!sureNotTrue && OrWhere.orTrue(this,falseWhere)) return TRUE;
+        if(!sureNotTrue && OrWhere.orTrue(this,falseWhere))
+            return TRUE;
         if(means(falseWhere))
             return FALSE;
-        else
-            return packFollowFalse(falseWhere);
+        else {
+            Where result = packFollowFalse(falseWhere);
+            if(!BaseUtils.hashEquals(this,result) && !sureNotTrue && OrWhere.orTrue(result,falseWhere)) // если упаковался еще раз на orTrue проверим
+                return TRUE;
+            return result;
+        }
     }
 
     public Where packFollowFalse(Where falseWhere) {

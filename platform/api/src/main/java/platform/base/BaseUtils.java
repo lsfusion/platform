@@ -525,6 +525,18 @@ public class BaseUtils {
         return add(array1,array2,objectInstancer);
     }
 
+    public static Object[] add(List<Object[]> list) {
+        int totLength = 0;
+        for(Object[] array : list)
+            totLength += array.length;
+        Object[] result = new Object[totLength];
+        int off = 0;
+        for(Object[] array : list)
+            for(Object object : array)
+                result[off++] = object;
+        return result;        
+    }
+
     public final static ArrayInstancer<Object> objectInstancer = new ArrayInstancer<Object>() {
         public Object[] newArray(int size) {
             return new Object[size];
@@ -585,5 +597,12 @@ public class BaseUtils {
             return null;
         else
             return value;
+    }
+
+    public static String nullString(String name) {
+        if(name==null)
+            return "";
+        else
+            return name;
     }
 }

@@ -27,7 +27,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("sample5","localhost","postgres","password");
+        DataAdapter adapter = new PostgreDataAdapter("sample5","localhost","postgres","11111");
         SampleBusinessLogics BL = new SampleBusinessLogics(adapter,7652);
         BL.fillData();
         LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
@@ -62,30 +62,19 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP less = addCFProp(Compare.LESS);
         multiply2 = addMFProp(quantityClass,2);
 
-        quantity = addDProp(baseGroup, "quantity", "Кол-во", quantityClass, transaction, article);
+        quantity = addDProp(baseGroup, "quantity", "Кол-во", quantityClass, document, article);
         outInQuantity = addDProp(baseGroup, "outInQuantity", "Кол-во расх. док.", quantityClass, outDocument, article, inDocument);
 
-        inQuantity = addJProp("Кол-во прихода",and1, quantity,1,2,is(inDocument),1);
+        inQuantity = addJProp("Кол-во прихода",and1, quantity, 1, 2, is(inDocument), 1);
 
         outSumInQuantity = addSGProp(baseGroup, "Кол-во расх.", outInQuantity, 1, 2);
         sumOutQuantity = addSGProp(baseGroup, "Всего расх.", outInQuantity, 3, 2);
 
         remains = addDUProp(baseGroup,"Ост. по парт.",inQuantity,sumOutQuantity);
 
-        LP remainPrev = addSGProp(baseGroup, "Всего до", addJProp(baseGroup, "Остаток до",multiply2,
-                addJProp("Документ до",and1,
-                        addJProp("Дата до",lessEquals, date,1,date,2),1,2,
-                                lessEquals,1,2),1,2,
-                        remains,1,3),2,3);
-
-        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",and1, quantity,1,2,is(outDocument),1);
+        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",and1, quantity, 1, 2, is(outDocument), 1);
         
-        LP calcQuantity = addJProp(baseGroup, "Расч. кол-во",addSFProp("prm1+LEAST(prm3,prm2)-prm3", quantityClass, 4),
-                remains,3,2,outQuantity,1,2, remainPrev,3,2,
-            addJProp(baseGroup, "Есть ост.",less,
-                    addJProp(baseGroup, "Всего пред",addSFProp("prm1-prm2", quantityClass, 2),
-                            remainPrev,1,2,remains,1,2),3,2,
-                outQuantity,1,2),1,2,3);
+//        addUGProp(baseGroup, "Расч. кол-во", 1, remains, outQuantity, 3, 2);
 
 //        setDefProp(outInQuantity,calcQuantity,true);
     }

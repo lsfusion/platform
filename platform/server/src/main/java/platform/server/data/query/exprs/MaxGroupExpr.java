@@ -11,11 +11,18 @@ import java.util.Map;
 
 public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
 
-    private MaxGroupExpr(Where iWhere, Map<AndExpr, AndExpr> iGroup, AndExpr iExpr) {
-        super(iWhere, iGroup, iExpr);
+    private MaxGroupExpr(Map<AndExpr, AndExpr> group, Where where, AndExpr expr, Where upWhere) {
+        super(group, where, expr, upWhere);
     }
-    public static SourceExpr create(Where iWhere, Map<AndExpr, AndExpr> iGroup, AndExpr iExpr) {
-        return GroupExpr.create(new MaxGroupExpr(iWhere, iGroup, iExpr));
+    public static SourceExpr create(Map<AndExpr, AndExpr> group, Where where, AndExpr expr) {
+        return new MaxGroupExpr(group, where, expr, Where.TRUE).packCreate();
+    }
+
+    private MaxGroupExpr(Map<AndExpr, AndExpr> group, Where where, AndExpr expr) {
+        super(group, where, expr);
+    }
+    protected GroupExpr createPacked(Map<AndExpr, AndExpr> group, Where<?> where, AndExpr expr) {
+        return new MaxGroupExpr(group, where, expr);
     }
 
     public MaxGroupExpr(MaxGroupExpr maxExpr, KeyTranslator translator) {
@@ -40,7 +47,7 @@ public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
     }
 
     protected SourceExpr createThis(Where iWhere, Map<AndExpr, AndExpr> iGroup, AndExpr iExpr) {
-        return create(iWhere, iGroup, iExpr);
+        return create(iGroup, iWhere, iExpr);
     }
 
     public AndExpr packExpr(AndExpr expr, Where trueWhere) {

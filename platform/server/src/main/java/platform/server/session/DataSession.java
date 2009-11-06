@@ -175,7 +175,6 @@ public class DataSession extends SQLSession implements ChangesSession {
         
         // если изменяем по внешнему коду, но сначала надо найти внутренний код, а затем менять
         if (externalID) {
-
             DataProperty extPropID = property.value.getExternalID();
 
             JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID);
@@ -345,6 +344,10 @@ public class DataSession extends SQLSession implements ChangesSession {
             return changeTable;
         }
 
+        private SourceExpr getNameExpr(SourceExpr expr) {
+            return session.name.getSourceExpr(Collections.singletonMap(BaseUtils.single(session.name.interfaces),expr),this,null);            
+        }
+
         public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
             if(property.isFalse) {
                 JoinQuery<T,String> changed = new JoinQuery<T,String>(property);
@@ -353,16 +356,19 @@ public class DataSession extends SQLSession implements ChangesSession {
                 SourceExpr valueExpr = property.getSourceExpr(changed.mapKeys,this,changedWhere);
                 changed.and(valueExpr.getWhere());
                 changed.and(changedWhere.toWhere()); // только на измененные смотрим
-                changed.properties.put("value", valueExpr);
+
+                // сюда надо name'ы вставить
+                for(T propertyInterface : property.interfaces)
+                   changed.properties.put("int"+propertyInterface.ID,getNameExpr(changed.mapKeys.get(propertyInterface)));
 
                 OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.executeSelect(session);
                 if(result.size()>0) {
-                    String resultString = "Ограничение на св-во "+ property +" нарушено"+'\n';
+                    String resultString = property.toString() + '\n';
                     for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
-                        resultString += "   Объекты : ";
+                        String objects = "";
                         for(T propertyInterface : property.interfaces)
-                            resultString += row.getKey().get(propertyInterface)+" ";
-                        resultString += "Значение : "+row.getValue().get("value") + '\n';
+                            objects = (objects.length()==0?"":objects+", ") + row.getKey().get(propertyInterface)+" "+BaseUtils.nullString((String) row.getValue().get("int"+propertyInterface.ID)).trim();
+                        resultString += "    " + objects + '\n';
                     }
 
                     return resultString;
@@ -435,6 +441,6 @@ public class DataSession extends SQLSession implements ChangesSession {
             if(idCounter==null) idCounter = 0;
             viewIDs.put(ID,idCounter+1);
         }
-        return ID << 4 + idCounter;
+        return (ID << 6) + idCounter;
     }
 }

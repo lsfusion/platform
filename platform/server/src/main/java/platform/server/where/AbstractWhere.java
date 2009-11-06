@@ -154,7 +154,9 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
         for(OrObjectWhere orWhere : getOr())
             if(orWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)orWhere;
-                assert !(where.operator1 instanceof ValueExpr);
+                if(where.operator1 instanceof ValueExpr)
+                    result.put(where.operator2, (ValueExpr) where.operator1);
+                else
                 if(where.operator2 instanceof ValueExpr)
                     result.put(where.operator1, (ValueExpr) where.operator2);
             }

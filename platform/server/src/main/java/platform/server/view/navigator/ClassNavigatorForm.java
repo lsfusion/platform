@@ -5,7 +5,7 @@ import platform.server.logics.BusinessLogics;
 
 public class ClassNavigatorForm extends NavigatorForm {
 
-    public ClassNavigatorForm(BusinessLogics BL, CustomClass cls) {
+    public ClassNavigatorForm(BusinessLogics<?> BL, CustomClass cls) {
         super(cls.ID + 43132, cls.caption);
 
         ObjectNavigator object = new ObjectNavigator(IDShift(1),cls,cls.caption);
@@ -16,5 +16,6 @@ public class ClassNavigatorForm extends NavigatorForm {
         addGroup(groupObject);
 
         addPropertyView(BL.properties, BL.baseGroup, true, object);
+        addPropertyView(BL.properties, BL.aggrGroup, true, object);
     }
 }

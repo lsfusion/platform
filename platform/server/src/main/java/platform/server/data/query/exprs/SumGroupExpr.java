@@ -10,11 +10,18 @@ import java.util.Map;
 
 public class SumGroupExpr extends GroupExpr<SourceExpr,SumGroupExpr> {
 
-    private SumGroupExpr(Where iWhere, Map<AndExpr, AndExpr> iGroup, SourceExpr iExpr) {
-        super(iWhere, iGroup, iExpr);
+    private SumGroupExpr(Map<AndExpr, AndExpr> group, Where where, SourceExpr expr, Where upWhere) {
+        super(group, where, expr, upWhere);
     }
-    public static SourceExpr create(Where iWhere, Map<AndExpr, AndExpr> iGroup, SourceExpr iExpr) {
-        return GroupExpr.create(new SumGroupExpr(iWhere, iGroup, iExpr));
+    public static SourceExpr create(Map<AndExpr, AndExpr> group, Where where, SourceExpr expr) {
+        return new SumGroupExpr(group, where, expr, Where.TRUE).packCreate();
+    }
+
+    private SumGroupExpr(Map<AndExpr, AndExpr> group, Where where, SourceExpr expr) {
+        super(group, where, expr);
+    }
+    protected GroupExpr createPacked(Map<AndExpr, AndExpr> group, Where<?> where, SourceExpr expr) {
+        return new SumGroupExpr(group, where, expr);
     }
 
     public SourceExpr packExpr(SourceExpr expr, Where trueWhere) {
@@ -52,7 +59,7 @@ public class SumGroupExpr extends GroupExpr<SourceExpr,SumGroupExpr> {
     }
 
     protected SourceExpr createThis(Where iWhere, Map<AndExpr, AndExpr> iGroup, SourceExpr iExpr) {
-        return create(iWhere, iGroup, iExpr);
+        return create(iGroup, iWhere, iExpr);
     }
 
     public boolean isMax() {

@@ -33,10 +33,14 @@ public class JoinQuery<K,V> implements MapKeysInterface<K>, MapContext {
     public Map<V, SourceExpr> properties;
     public Where<?> where;
 
-    public JoinQuery(Map<K,KeyExpr> iMapKeys) {
-        mapKeys = iMapKeys;
+    public JoinQuery(Map<K,KeyExpr> mapKeys) {
+        this.mapKeys = mapKeys;
         properties = new HashMap<V, SourceExpr>();
         where = Where.TRUE;
+    }
+
+    public JoinQuery(Collection<K> keys) {
+        this(KeyExpr.getMapKeys(keys));
     }
 
     public JoinQuery(Map<K,KeyExpr> mapKeys,Map<V,SourceExpr> properties,Where where) {
