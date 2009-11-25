@@ -4,13 +4,13 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Order;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.data.query.JoinQuery;
+import platform.server.data.query.Query;
 import platform.server.data.query.MapKeysInterface;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.properties.Property;
+import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
 import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
@@ -179,7 +179,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         return result;
     }
 
-    void fillSourceSelect(JoinQuery<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    void fillSourceSelect(Query<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
 
         for(Filter filt : filters)
             query.and(filt.getWhere(query.mapKeys, classGroup, modifier));

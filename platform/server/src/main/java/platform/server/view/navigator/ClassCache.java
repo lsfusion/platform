@@ -1,8 +1,8 @@
 package platform.server.view.navigator;
 
 import platform.base.OrderedMap;
-import platform.server.data.classes.ConcreteCustomClass;
-import platform.server.data.classes.CustomClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
 
 import java.util.Map;
 

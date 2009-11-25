@@ -2,10 +2,10 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.server.data.query.CompiledQuery;
-import platform.server.data.query.JoinQuery;
+import platform.server.data.query.Query;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.session.SQLSession;
+import platform.server.data.SQLSession;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,9 +14,9 @@ import java.util.Map;
 
 public class ModifyQuery {
     public Table table;
-    JoinQuery<KeyField, PropertyField> change;
+    Query<KeyField, PropertyField> change;
 
-    public ModifyQuery(Table iTable, JoinQuery<KeyField, PropertyField> iChange) {
+    public ModifyQuery(Table iTable, Query<KeyField, PropertyField> iChange) {
         table = iTable;
         change = iChange;
     }
@@ -54,8 +54,8 @@ public class ModifyQuery {
         } else {
             if(updateModel==1) {
                 // SQL-серверная модель когда она подхватывает первый JoinSelect и старую таблицу уже не вилит
-                // построим JoinQuery куда переJoin'им все эти поля (оптимизатор уберет все дублирующиеся таблицы)
-                JoinQuery<KeyField, PropertyField> updateQuery = new JoinQuery<KeyField, PropertyField>(change);
+                // построим Query куда переJoin'им все эти поля (оптимизатор уберет все дублирующиеся таблицы)
+                Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(change);
                 updateQuery.and(table.joinAnd(updateQuery.mapKeys).getWhere());
                 changeCompile = updateQuery.compile(syntax);
                 whereSelect = changeCompile.whereSelect;
@@ -84,7 +84,7 @@ public class ModifyQuery {
     public SQLExecute getInsertLeftKeys(SQLSyntax syntax) {
 
         // делаем для этого еще один запрос
-        JoinQuery<KeyField, PropertyField> leftKeysQuery = new JoinQuery<KeyField, PropertyField>(change.mapKeys);
+        Query<KeyField, PropertyField> leftKeysQuery = new Query<KeyField, PropertyField>(change.mapKeys);
         leftKeysQuery.and(change.where);
         // исключим ключи которые есть
         leftKeysQuery.and(table.joinAnd(leftKeysQuery.mapKeys).getWhere().not());

@@ -5,17 +5,17 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.caches.Lazy;
 import platform.server.caches.SynchronizedLazy;
-import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.data.query.exprs.cases.MapCase;
-import platform.server.data.query.translators.KeyTranslator;
-import platform.server.data.query.translators.QueryTranslator;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.cases.MapCase;
+import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.where.Where;
+import platform.server.data.where.Where;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,12 +25,12 @@ import java.util.Map;
 class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public final Map<K,KeyExpr> mapKeys;
-    public final Map<V, SourceExpr> properties;
+    public final Map<V, Expr> properties;
     protected final Where where;
 
     protected final Context context;
 
-    ParsedJoinQuery(JoinQuery<K,V> query) {
+    ParsedJoinQuery(Query<K,V> query) {
         mapKeys = query.mapKeys;
         context = query.getContext();
 
@@ -46,16 +46,16 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return new CompiledQuery<K,V>(this, syntax, orders, top);
     }
 
-    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement) {
+    public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         assert joinImplement.size()==mapKeys.size();
         return join(joinImplement,BaseUtils.toMap(context.values));
     }
 
-    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
+    public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
         assert joinImplement.size()==mapKeys.size();
 
         Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
-        for(Map.Entry<K,? extends SourceExpr> joinExpr : joinImplement.entrySet()) {
+        for(Map.Entry<K,? extends Expr> joinExpr : joinImplement.entrySet()) {
             if(!(joinExpr.getValue() instanceof KeyExpr) || joinKeys.values().contains((KeyExpr)joinExpr.getValue()))
                 return joinExprs(joinImplement, mapValues);
            joinKeys.put(joinExpr.getKey(), (KeyExpr) joinExpr.getValue());
@@ -63,16 +63,16 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return new TranslateJoin<V>(new KeyTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
     }
 
-    public Join<V> joinExprs(Map<K, ? extends SourceExpr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
+    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
         assert joinImplement.size()==mapKeys.size();
 
         Where joinWhere = Where.TRUE; // надо еще where join'ов закинуть
-        for(SourceExpr joinExpr : joinImplement.values())
+        for(Expr joinExpr : joinImplement.values())
             joinWhere = joinWhere.and(joinExpr.getWhere());
         return new CaseJoin<V>(joinWhere, new TranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement), mapValues), this));
     }
 
-    public ParsedJoinQuery(Context iContext,Map<K,KeyExpr> iMapKeys,Map<V,SourceExpr> iProperties, Where iWhere) { // для groupQuery full join'ов
+    public ParsedJoinQuery(Context iContext,Map<K,KeyExpr> iMapKeys,Map<V, Expr> iProperties, Where iWhere) { // для groupQuery full join'ов
         mapKeys = iMapKeys;
 
         properties = iProperties;
@@ -99,7 +99,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     }
 
     @Lazy
-    public SourceExpr getExpr(V property) {
+    public Expr getExpr(V property) {
         return properties.get(property).and(where);
     }
 

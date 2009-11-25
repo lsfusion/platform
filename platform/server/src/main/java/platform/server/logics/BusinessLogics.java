@@ -11,25 +11,21 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
 import platform.server.auth.User;
 import platform.server.data.*;
-import platform.server.data.classes.*;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.query.Query;
+import platform.server.data.expr.Expr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.data.IDTable;
-import platform.server.logics.data.ImplementTable;
-import platform.server.logics.data.TableFactory;
-import platform.server.logics.linear.properties.*;
-import platform.server.logics.properties.*;
-import platform.server.logics.properties.groups.AbstractGroup;
+import platform.server.logics.table.IDTable;
+import platform.server.logics.table.ImplementTable;
+import platform.server.logics.table.TableFactory;
+import platform.server.logics.property.*;
+import platform.server.logics.property.linear.*;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
-import platform.server.session.SQLSession;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.data.SQLSession;
 import platform.server.view.navigator.*;
-import platform.server.where.WhereBuilder;
+import platform.server.classes.*;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -142,7 +138,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initImplements();
 
         // сначала инициализируем stored потому как используется для определения интерфейса
-        System.out.println("Initializing stored properties...");
+        System.out.println("Initializing stored property...");
         initStored();
 
         assert checkProps();
@@ -303,7 +299,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<Property> getChangeConstrainedProperties(DataProperty change) {
         List<Property> result = new ArrayList<Property>();
         for(Property property : getPropertyList())
-            if(property.isFalse && depends(property,change))
+            if(property.isFalse && property.checkChange && depends(property,change))
                 result.add(property.getMaxChangeProperty(change));
         return result;
     }
@@ -454,8 +450,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             session.addColumn(property.mapTable.table.name,property.field);
                             // делаем запрос на перенос
                             System.out.print("Идет перенос колонки "+property.field+" из таблицы "+prevTable.name+" в таблицу "+property.mapTable.table.name+"... ");
-                            JoinQuery<KeyField,PropertyField> moveColumn = new JoinQuery<KeyField, PropertyField>(property.mapTable.table);
-                            SourceExpr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces,((Property<PropertyInterface>)property).mapTable.mapKeys),moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
+                            Query<KeyField,PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
+                            Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces,((Property<PropertyInterface>)property).mapTable.mapKeys),moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
                             moveColumn.and(moveExpr.getWhere());
                             session.modifyRecords(new ModifyQuery(property.mapTable.table,moveColumn));
@@ -564,22 +560,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LDP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
 
         DataProperty property = new DataProperty(sID,caption,params,value);
+
         properties.add(property);
-
-        if (group != null)
-            group.add(property);
-
+        if (group != null) group.add(property);
         return new LDP(property);
     }
 
     protected LMCP addMCProp(AbstractGroup group, LP lmax, LDP ldata) {
 
         MaxChangeProperty property = new MaxChangeProperty(lmax.property,ldata.property);
+
         properties.add(property);
-
-        if (group != null)
-            group.add(property);
-
+        if (group != null) group.add(property);
         return new LMCP(property);
     }
 
@@ -587,11 +579,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addCProp(genSID(), caption, valueClass, value, params);
     }
     protected LCP addCProp(String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
-        
+        return addCProp(null, sID, caption, valueClass, value, params);
+    }
+
+    protected LCP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         ClassProperty property = new ClassProperty(sID,caption,params,valueClass,value);
 
         properties.add(property);
-        
+        if (group != null) group.add(property);
         return new LCP(property);
     }
 
@@ -605,16 +600,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LCFP addCFProp(Compare compare) {
         CompareFormulaProperty property = new CompareFormulaProperty(genSID(),compare);
-        LCFP listProperty = new LCFP(property);
+        
         properties.add(property);
-        return listProperty;
+        return new LCFP(property);
     }
 
     protected LMFP addMFProp(ConcreteValueClass value,int paramCount) {
         MultiplyFormulaProperty property = new MultiplyFormulaProperty(genSID(),value,paramCount);
-        LMFP listProperty = new LMFP(property);
+        
         properties.add(property);
-        return listProperty;
+        return new LMFP(property);
     }
 
     protected LAFP addAFProp(boolean... nots) {
@@ -622,6 +617,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }    
     protected LAFP addAFProp(String sID, boolean... nots) {
         AndFormulaProperty property = new AndFormulaProperty(sID,nots);
+        
         properties.add(property);
         return new LAFP(property);
     }
@@ -787,22 +783,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         JoinProperty property = new JoinProperty(sID, caption,intNum);
 
-        if (group != null) group.add(property);
-
         LJP listProperty = new LJP(property);
         property.implement = mapImplement(mainProp,readImplements(listProperty.listInterfaces,params));
-        properties.add(property);
 
+        properties.add(property);
+        if (group != null) group.add(property);
         return listProperty;
     }
 
+    private List<GroupPropertyInterface> readGroupInterfaces(LP groupProp, Object... params) {
+        List<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
+        for(PropertyInterfaceImplement implement : (List<PropertyInterfaceImplement>) readImplements(groupProp.listInterfaces,params))
+            interfaces.add(new GroupPropertyInterface(interfaces.size(),implement));
+        return interfaces;
+    }
     private LGP addGProp(AbstractGroup group, String sID, String caption, LP groupProp, boolean sum, Object... params) {
 
-        List<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
-        List<PropertyInterfaceImplement> propImpl = readImplements(groupProp.listInterfaces,params);
-        for(PropertyInterfaceImplement implement : propImpl)
-            interfaces.add(new GroupPropertyInterface(interfaces.size(),implement));
-
+        List<GroupPropertyInterface> interfaces = readGroupInterfaces(groupProp, params);
         GroupProperty property;
         if(sum)
             property = new SumGroupProperty(sID, caption, interfaces,groupProp.property);
@@ -810,10 +807,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             property = new MaxGroupProperty(sID, caption, interfaces,groupProp.property);
 
         properties.add(property);
-
-        if (group != null)
-            group.add(property);
-
+        if (group != null) group.add(property);
         return new LGP(property,interfaces);
     }
 
@@ -910,6 +904,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
+    protected LP addCGProp(AbstractGroup group, String sID, String caption, LP groupProp, LDP dataProp, Object... params) {
+        List<GroupPropertyInterface> interfaces = readGroupInterfaces(groupProp, params);
+        GroupProperty property = new CycleGroupProperty(sID, caption, interfaces, groupProp.property, dataProp.property);
+        
+
+        properties.add(property);
+        if (group != null) group.add(property);
+        return new LGP(property,interfaces);
+    }
+
     protected LUP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {
 
         int intNum = ((LP)params[unionType==Union.SUM?1:0]).listInterfaces.size();
@@ -952,10 +956,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         properties.add(property);
-
-        if (group != null)
-            group.add(property);
-
+        if (group != null) group.add(property);
         return listProperty;
     }
 
@@ -1035,6 +1036,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         } while (i++<extra);
         return result;
+    }
+
+    protected void addConstraint(LP lp, boolean checkChange) {
+        lp.property.isFalse = true;
+        lp.property.checkChange = checkChange;
     }
 
     private boolean intersect(LP[] props) {
@@ -1291,7 +1297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        properties.addAll(randProps);
+        property.addAll(randProps);
 
         System.out.println();
     }

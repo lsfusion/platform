@@ -1,6 +1,6 @@
 package platform.server.session;
 
-import platform.server.data.classes.ConcreteValueClass;
+import platform.server.classes.ConcreteValueClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

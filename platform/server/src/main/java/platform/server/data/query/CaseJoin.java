@@ -2,8 +2,8 @@ package platform.server.data.query;
 
 import net.jcip.annotations.Immutable;
 import platform.server.caches.Lazy;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.where.Where;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 
 import java.util.Collection;
 
@@ -29,7 +29,7 @@ public class CaseJoin<U> extends Join<U> {
     }
 
     @Lazy
-    public SourceExpr getExpr(U property) {
+    public Expr getExpr(U property) {
         return cases.getExpr(property);
     }
 

@@ -1,9 +1,8 @@
 package platform.server.logics;
 
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.where.Where;
+import platform.server.data.where.Where;
 
 public class NullValue extends ObjectValue {
 
@@ -19,8 +18,8 @@ public class NullValue extends ObjectValue {
         return true;
     }
 
-    public SourceExpr getExpr() {
-        return CaseExpr.NULL;
+    public Expr getExpr() {
+        return Expr.NULL;
     }
 
     public Object getValue() {
@@ -35,7 +34,7 @@ public class NullValue extends ObjectValue {
         return 0;
     }
 
-    public Where order(SourceExpr expr, boolean desc, Where orderWhere) {
+    public Where order(Expr expr, boolean desc, Where orderWhere) {
         Where greater = expr.getWhere();
         if(desc)
             return greater.not().and(orderWhere);

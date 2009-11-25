@@ -1,6 +1,6 @@
 package platform.server.data;
 
-import platform.server.data.types.Type;
+import platform.server.data.type.Type;
 
 import java.io.DataInputStream;
 import java.io.IOException;

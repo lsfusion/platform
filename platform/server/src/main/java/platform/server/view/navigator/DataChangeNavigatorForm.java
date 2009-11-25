@@ -1,15 +1,8 @@
 package platform.server.view.navigator;
 
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.DataPropertyInterface;
-import platform.server.logics.properties.Property;
-import platform.server.view.navigator.filter.NotNullFilterNavigator;
-import platform.server.view.navigator.filter.NotFilterNavigator;
-
-import java.util.Map;
-import java.util.HashMap;
+import platform.server.view.navigator.filter.FilterNavigator;
+import platform.server.session.PropertyChange;
 
 public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends NavigatorForm<T> {
 
@@ -19,8 +12,8 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
     final ObjectNavigator valueObject;
     final GroupObjectNavigator valueGroup;
 
-    public DataChangeNavigatorForm(T BL, DataProperty change, Map<DataPropertyInterface, DataObject> interfaceValues) {
-        super(change.ID + 54555, change.caption);
+    public DataChangeNavigatorForm(T BL, PropertyChange<?,?> change) {
+        super(54555+change.property.ID, change.toString());
 
 /*        // добавляем элементы для которых меняем на форму
         interfaceGroup = new GroupObjectNavigator(IDShift(1));
@@ -36,15 +29,12 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
 
         // сам объект который ищем вешаем на форму
         valueGroup = new GroupObjectNavigator(IDShift(1));
-        valueObject = new ObjectNavigator(change.ID, change.value, change.toString());
+        valueObject = new ObjectNavigator(IDShift(1), change.getDialogClass(), "Код");
         valueGroup.add(valueObject);
         addGroup(valueGroup);
 
-        Map<DataPropertyInterface, PropertyInterfaceNavigator> mapObjects = new HashMap<DataPropertyInterface, PropertyInterfaceNavigator>(interfaceValues);
-        mapObjects.put(change.valueInterface,valueObject);
-        for(Property property : BL.getChangeConstrainedProperties(change)) // добавляем все констрейнты
-            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator<DataPropertyInterface>(
-                    new PropertyObjectNavigator<DataPropertyInterface>(property,mapObjects))));
+        for(FilterNavigator filter : change.getFilters(valueObject, BL))
+            addFixedFilter(filter);
 
         addPropertyView(BL.properties, BL.baseGroup, true, valueObject);
         addPropertyView(BL.properties, BL.aggrGroup, true, valueObject);

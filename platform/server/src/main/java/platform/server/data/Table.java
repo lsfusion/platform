@@ -3,22 +3,21 @@ package platform.server.data;
 import platform.base.BaseUtils;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
-import platform.server.data.classes.LogicalClass;
-import platform.server.data.classes.where.ClassExprWhere;
-import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.*;
-import platform.server.data.query.exprs.*;
-import platform.server.data.query.exprs.cases.CaseExpr;
-import platform.server.data.query.exprs.cases.MapCase;
-import platform.server.data.query.translators.KeyTranslator;
-import platform.server.data.query.translators.QueryTranslator;
-import platform.server.data.query.wheres.MapWhere;
+import platform.server.data.expr.*;
+import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.cases.MapCase;
+import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
-import platform.server.session.SQLSession;
-import platform.server.where.DataWhere;
-import platform.server.where.DataWhereSet;
-import platform.server.where.Where;
+import platform.server.data.type.Type;
+import platform.server.data.SQLSession;
+import platform.server.data.where.DataWhere;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -117,14 +116,14 @@ public class Table implements MapKeysInterface<KeyField> {
     }
 
     public void out(SQLSession session) throws SQLException {
-        JoinQuery<KeyField,PropertyField> query = new JoinQuery<KeyField,PropertyField>(this);
+        Query<KeyField,PropertyField> query = new Query<KeyField,PropertyField>(this);
         platform.server.data.query.Join<PropertyField> join = joinAnd(query.mapKeys);
         query.and(join.getWhere());
         query.properties.putAll(join.getExprs());
         query.outSelect(session);
     }
 
-    public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends SourceExpr> joinImplement) {
+    public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
         JoinCaseList<PropertyField> result = new JoinCaseList<PropertyField>();
         for(MapCase<KeyField> caseJoin : CaseExpr.pullCases(joinImplement))
             result.add(new JoinCase<PropertyField>(caseJoin.where,joinAnd(caseJoin.data)));
@@ -158,7 +157,7 @@ public class Table implements MapKeysInterface<KeyField> {
         }
 
         @TwinLazy
-        public SourceExpr getExpr(PropertyField property) {
+        public platform.server.data.expr.Expr getExpr(PropertyField property) {
             return AndExpr.create(new Expr(property));
         }
         @TwinLazy
@@ -271,8 +270,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return getJoinFollows();
             }
 
-            public SourceExpr getFJExpr() {
-                return new ValueExpr(true, LogicalClass.instance).and(this);
+            public platform.server.data.expr.Expr getFJExpr() {
+                return ValueExpr.get(this);
             }
 
             public String getFJString(String exprFJ) {
@@ -301,11 +300,11 @@ public class Table implements MapKeysInterface<KeyField> {
                 property = iProperty;
             }
 
-            public SourceExpr translateQuery(QueryTranslator translator) {
+            public platform.server.data.expr.Expr translateQuery(QueryTranslator translator) {
                 return Join.this.translateQuery(translator).getExpr(property);
             }
 
-            public Table.Join.Expr translateDirect(KeyTranslator translator) {
+            public Expr translateDirect(KeyTranslator translator) {
                 return Join.this.translateDirect(translator).getDirectExpr(property);
             }
 
@@ -358,7 +357,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 }
 
                 public ClassExprWhere calculateClassWhere() {
-                    return propertyClasses.get(property).map(BaseUtils.merge(joins,Collections.singletonMap(property,Expr.this))).and(Join.this.getJoinsWhere().getClassWhere());
+                    return propertyClasses.get(property).map(BaseUtils.merge(joins,Collections.singletonMap(property, Expr.this))).and(Join.this.getJoinsWhere().getClassWhere());
                 }
             }
         }

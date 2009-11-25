@@ -9,7 +9,7 @@ import platform.base.SoftHashMap;
 import platform.base.WeakIdentityHashMap;
 import platform.base.WeakIdentityHashSet;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.exprs.GroupExpr;
+import platform.server.data.expr.GroupExpr;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

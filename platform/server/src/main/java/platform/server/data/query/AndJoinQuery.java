@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.where.Where;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,5 +18,5 @@ class AndJoinQuery {
     final InnerWhere inner;
     final Where where;
     final String alias;
-    final Map<String, SourceExpr> properties = new HashMap<String, SourceExpr>();
+    final Map<String, Expr> properties = new HashMap<String, Expr>();
 }

@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.cases.Case;
-import platform.server.where.Where;
+import platform.server.data.expr.cases.Case;
+import platform.server.data.where.Where;
              
 public class JoinCase<U> extends Case<Join<U>> {
 

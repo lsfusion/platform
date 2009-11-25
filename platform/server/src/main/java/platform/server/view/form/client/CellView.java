@@ -1,7 +1,7 @@
 package platform.server.view.form.client;
 
-import platform.server.data.types.Type;
-import platform.server.data.types.TypeSerializer;
+import platform.server.data.type.Type;
+import platform.server.data.type.TypeSerializer;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.awt.*;

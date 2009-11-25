@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
-import platform.server.data.query.wheres.MapWhere;
-import platform.server.where.Where;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.Where;
 
 public interface SourceJoin {
 

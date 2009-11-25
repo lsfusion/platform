@@ -1,8 +1,8 @@
 package platform.server.view.form;
 
-import platform.server.data.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 
 public interface CustomClassView {
 
-    void objectChanged(ConcreteCustomClass cls, int objectID);    
+    void objectChanged(ConcreteCustomClass cls, int objectID);
 }

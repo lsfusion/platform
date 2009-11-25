@@ -1,7 +1,6 @@
 package platform.server.view.navigator;
 
-import platform.server.data.classes.ValueClass;
-import platform.server.view.form.filter.CompareValue;
+import platform.server.classes.ValueClass;
 import platform.server.view.form.PropertyObjectInterface;
 
 import java.util.Set;

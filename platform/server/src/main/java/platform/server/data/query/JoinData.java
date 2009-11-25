@@ -1,9 +1,9 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.SourceExpr;
+import platform.server.data.expr.Expr;
 
 public interface JoinData {
     InnerJoin getFJGroup();
-    SourceExpr getFJExpr();
+    Expr getFJExpr();
     String getFJString(String exprFJ);
 }

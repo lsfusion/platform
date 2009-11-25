@@ -1,13 +1,13 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
-import platform.server.data.classes.CustomClass;
-import platform.server.data.classes.ValueClass;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.PropertyInterface;
-import platform.server.where.WhereBuilder;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ValueClass;
+import platform.server.data.expr.Expr;
+import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.data.where.WhereBuilder;
 
 import java.util.Map;
 
@@ -31,5 +31,5 @@ public abstract class TableModifier<U extends TableChanges<U>> implements Modifi
             BaseUtils.putNotNull(property,session.data,changes.data);
     }
 
-    public abstract <P extends PropertyInterface> SourceExpr changed(Property<P> property, Map<P, ? extends SourceExpr> joinImplement, WhereBuilder changedWhere);
+    public abstract <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere);
 }

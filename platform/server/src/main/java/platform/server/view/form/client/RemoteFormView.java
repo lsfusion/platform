@@ -7,7 +7,7 @@ import platform.interop.Order;
 import platform.interop.RemoteObject;
 import platform.interop.Scroll;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.data.classes.CustomClass;
+import platform.server.classes.CustomClass;
 import platform.server.view.form.*;
 import platform.server.view.form.filter.Filter;
 

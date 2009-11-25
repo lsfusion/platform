@@ -202,9 +202,11 @@ public class Layout extends JFrame implements ComponentCollector {
         Source.close();
     }
 
+    static boolean readed = false;
+
     void read() throws IOException{
-        FileInputStream Source = new FileInputStream("layout.txt");
-        DataInputStream in = new DataInputStream(Source);
+        FileInputStream source = new FileInputStream("layout.txt");
+        DataInputStream in = new DataInputStream(source);
 
         lookAndFeels.read(in);
         themes.read(in);
@@ -213,9 +215,11 @@ public class Layout extends JFrame implements ComponentCollector {
 		setBounds(in.readInt(),in.readInt(),in.readInt(),in.readInt() );
 		setExtendedState(State);
 
+        readed = true;
         frontend.read(in);
+        readed = false;
 
-        Source.close();
+        source.close();
     }
 
     // настраивает меню

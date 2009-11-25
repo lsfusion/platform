@@ -4,31 +4,28 @@ import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.server.data.Field;
-import platform.server.data.KeyField;
-import platform.server.data.ModifyQuery;
-import platform.server.data.PropertyField;
-import platform.server.data.classes.*;
+import platform.server.data.*;
 import platform.server.data.query.Join;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.query.Query;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.types.Type;
+import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.data.IDTable;
-import platform.server.logics.data.ImplementTable;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.DataPropertyInterface;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.table.IDTable;
+import platform.server.logics.table.ImplementTable;
+import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.DataPropertyInterface;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.RemoteForm;
-import platform.server.where.Where;
-import platform.server.where.WhereBuilder;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
+import platform.server.classes.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -48,8 +45,8 @@ public class DataSession extends SQLSession implements ChangesSession {
     // для отладки
     public static boolean reCalculateAggr = false;
 
-    public static Where getIsClassWhere(SessionChanges session,SourceExpr expr, ValueClass isClass, WhereBuilder changedWheres) {
-        Where isClassWhere = expr.getIsClassWhere(isClass.getUpSet());
+    public static Where getIsClassWhere(SessionChanges session, Expr expr, ValueClass isClass, WhereBuilder changedWheres) {
+        Where isClassWhere = expr.isClass(isClass.getUpSet());
         if(isClass instanceof CustomClass && session!=null) {
             RemoveClassTable removeTable = session.remove.get((CustomClass)isClass);
             if(removeTable!=null) {
@@ -162,10 +159,6 @@ public class DataSession extends SQLSession implements ChangesSession {
         }
     }
 
-    public void changeProperty(DataProperty property, Map<DataPropertyInterface, DataObject> keys, Object newValue, boolean externalID) throws SQLException {
-        changeProperty(property, keys, getObjectValue(newValue, property.getType()) ,externalID);
-    }
-
     public void changeProperty(DataProperty property, Map<DataPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException {
         DataChangeTable dataChange = changes.data.get(property);
         if(dataChange == null) { // создадим таблицу, если не было
@@ -177,10 +170,10 @@ public class DataSession extends SQLSession implements ChangesSession {
         if (externalID) {
             DataProperty extPropID = property.value.getExternalID();
 
-            JoinQuery<DataPropertyInterface,String> query = new JoinQuery<DataPropertyInterface, String>(extPropID);
-            query.and(extPropID.getSourceExpr(query.mapKeys).compare((DataObject) newValue,Compare.EQUALS));
+            Query<DataPropertyInterface,String> query = new Query<DataPropertyInterface, String>(extPropID);
+            query.and(extPropID.getExpr(query.mapKeys).compare((DataObject) newValue,Compare.EQUALS));
 
-            OrderedMap<Map<DataPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeSelectClasses(this, baseClass);
+            OrderedMap<Map<DataPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeClasses(this, baseClass);
 
             if (result.size() == 0)
                 newValue = NullValue.instance;
@@ -214,11 +207,11 @@ public class DataSession extends SQLSession implements ChangesSession {
         if(type instanceof DataClass)
             dataClass = (DataClass)type;
         else {
-            JoinQuery<Object,String> query = new JoinQuery<Object,String>(new HashMap<Object, KeyExpr>());
+            Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
             Join<PropertyField> joinTable = baseClass.table.joinAnd(Collections.singletonMap(baseClass.table.key,new ValueExpr(value,baseClass.getConcrete())));
             query.and(joinTable.getWhere());
             query.properties.put("classid", joinTable.getExpr(baseClass.table.objectClass));
-            OrderedMap<Map<Object, Object>, Map<String, Object>> result = query.executeSelect(this);
+            OrderedMap<Map<Object, Object>, Map<String, Object>> result = query.execute(this);
             if(result.size()==0)
                 dataClass = baseClass.unknown;
             else {
@@ -296,7 +289,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
         }
 
-        public <P extends PropertyInterface> SourceExpr changed(Property<P> property, Map<P, ? extends SourceExpr> joinImplement, WhereBuilder changedWhere) {
+        public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
             IncrementChangeTable incrementTable = tables.get(property);
             if(incrementTable!=null) { // если уже все посчитано - просто возвращаем его
                 Join<PropertyField> incrementJoin = incrementTable.join(BaseUtils.join(BaseUtils.reverse(BaseUtils.join(property.mapTable.mapKeys, incrementTable.mapKeys)), joinImplement));
@@ -324,7 +317,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             IncrementChangeTable changeTable = new IncrementChangeTable(properties);
 
             // подготавливаем запрос
-            JoinQuery<KeyField,PropertyField> changesQuery = new JoinQuery<KeyField, PropertyField>(changeTable);
+            Query<KeyField,PropertyField> changesQuery = new Query<KeyField, PropertyField>(changeTable);
             WhereBuilder changedWhere = new WhereBuilder();
             for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
                 changesQuery.properties.put(change.getValue(),
@@ -344,16 +337,16 @@ public class DataSession extends SQLSession implements ChangesSession {
             return changeTable;
         }
 
-        private SourceExpr getNameExpr(SourceExpr expr) {
-            return session.name.getSourceExpr(Collections.singletonMap(BaseUtils.single(session.name.interfaces),expr),this,null);            
+        private Expr getNameExpr(Expr expr) {
+            return session.name.getExpr(Collections.singletonMap(BaseUtils.single(session.name.interfaces),expr),this,null);
         }
 
         public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
             if(property.isFalse) {
-                JoinQuery<T,String> changed = new JoinQuery<T,String>(property);
+                Query<T,String> changed = new Query<T,String>(property);
 
                 WhereBuilder changedWhere = new WhereBuilder();
-                SourceExpr valueExpr = property.getSourceExpr(changed.mapKeys,this,changedWhere);
+                Expr valueExpr = property.getExpr(changed.mapKeys,this,changedWhere);
                 changed.and(valueExpr.getWhere());
                 changed.and(changedWhere.toWhere()); // только на измененные смотрим
 
@@ -361,7 +354,7 @@ public class DataSession extends SQLSession implements ChangesSession {
                 for(T propertyInterface : property.interfaces)
                    changed.properties.put("int"+propertyInterface.ID,getNameExpr(changed.mapKeys.get(propertyInterface)));
 
-                OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.executeSelect(session);
+                OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(session);
                 if(result.size()>0) {
                     String resultString = property.toString() + '\n';
                     for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
@@ -412,7 +405,7 @@ public class DataSession extends SQLSession implements ChangesSession {
                 temporary.add(changeTable);
             }
 
-            JoinQuery<KeyField, PropertyField> modifyQuery = new JoinQuery<KeyField, PropertyField>(changeTable.table);
+            Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(changeTable.table);
             Join<PropertyField> join = changeTable.join(BaseUtils.join(BaseUtils.reverse(changeTable.mapKeys), modifyQuery.mapKeys));
             for(Map.Entry<Property,PropertyField> change : changeTable.changes.entrySet())
                 modifyQuery.properties.put(change.getKey().field,join.getExpr(change.getValue()));

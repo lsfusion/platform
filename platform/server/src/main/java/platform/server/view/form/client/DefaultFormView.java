@@ -2,7 +2,7 @@ package platform.server.view.form.client;
 
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.interop.form.layout.SingleSimplexConstraint;
-import platform.server.logics.properties.groups.AbstractGroup;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.navigator.*;
 
 import java.awt.*;

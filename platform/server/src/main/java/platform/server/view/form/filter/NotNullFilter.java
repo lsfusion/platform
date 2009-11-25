@@ -1,14 +1,14 @@
 package platform.server.view.form.filter;
 
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.data.expr.KeyExpr;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.RemoteForm;
-import platform.server.where.Where;
+import platform.server.data.where.Where;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -27,6 +27,6 @@ public class NotNullFilter<P extends PropertyInterface> extends PropertyFilter<P
     }
 
     public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
-        return property.getSourceExpr(classGroup, mapKeys, modifier).getWhere();
+        return property.getExpr(classGroup, mapKeys, modifier).getWhere();
     }
 }

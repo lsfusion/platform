@@ -1,8 +1,8 @@
 package platform.server.session;
 
-import platform.server.logics.properties.DataProperty;
-import platform.server.data.classes.ValueClass;
-import platform.server.data.classes.CustomClass;
+import platform.server.logics.property.DataProperty;
+import platform.server.classes.ValueClass;
+import platform.server.classes.CustomClass;
 
 public abstract class ViewModifier implements Modifier<ViewDataChanges> {
     public ViewDataChanges view;

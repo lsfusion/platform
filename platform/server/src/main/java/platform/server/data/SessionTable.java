@@ -1,12 +1,12 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
-import platform.server.data.classes.ConcreteClass;
-import platform.server.data.classes.where.ClassWhere;
+import platform.server.classes.ConcreteClass;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.session.SQLSession;
+import platform.server.data.SQLSession;
 
 import java.sql.SQLException;
 import java.util.Collections;

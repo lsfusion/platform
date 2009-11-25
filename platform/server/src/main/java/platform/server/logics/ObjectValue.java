@@ -1,15 +1,15 @@
 package platform.server.logics;
 
-import platform.server.data.classes.ConcreteClass;
-import platform.server.data.query.exprs.SourceExpr;
+import platform.server.classes.ConcreteClass;
+import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.properties.Property;
+import platform.server.logics.property.Property;
 import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.filter.CompareValue;
-import platform.server.where.Where;
+import platform.server.data.where.Where;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -22,7 +22,7 @@ public abstract class ObjectValue implements CompareValue {
 
     public abstract boolean isString(SQLSyntax syntax);
 
-    public abstract SourceExpr getExpr();
+    public abstract Expr getExpr();
 
     public abstract Object getValue();
 
@@ -33,7 +33,7 @@ public abstract class ObjectValue implements CompareValue {
             return new DataObject(value, objectClass);
     }
 
-    public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
         return getExpr();
     }
     
@@ -43,6 +43,6 @@ public abstract class ObjectValue implements CompareValue {
     public void fillProperties(Set<Property> properties) {}
     public boolean isInInterface(GroupObjectImplement classGroup) {return true;}
 
-    public abstract Where order(SourceExpr expr, boolean desc, Where orderWhere);
+    public abstract Where order(Expr expr, boolean desc, Where orderWhere);
 
 }

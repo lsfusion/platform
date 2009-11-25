@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.where.Where;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 
 import java.util.Collection;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class MapJoin<V,MV> extends Join<V> {
         mapProps = iMapProps;
     }
 
-    public SourceExpr getExpr(V property) {
+    public Expr getExpr(V property) {
         return join.getExpr(mapProps.get(property));
     }
 

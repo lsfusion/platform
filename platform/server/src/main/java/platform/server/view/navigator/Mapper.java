@@ -1,8 +1,7 @@
 package platform.server.view.navigator;
 
 import platform.server.view.form.*;
-import platform.server.logics.properties.PropertyInterface;
-import platform.base.BaseUtils;
+import platform.server.logics.property.PropertyInterface;
 
 import java.util.Map;
 import java.util.HashMap;

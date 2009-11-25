@@ -4,10 +4,10 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
-import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.types.ObjectType;
-import platform.server.where.Where;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.expr.Expr;
+import platform.server.data.type.ObjectType;
+import platform.server.data.where.Where;
 
 import java.util.Collections;
 import java.util.Map;
@@ -20,7 +20,7 @@ public abstract class ChangeClassTable<This extends ChangeClassTable> extends Se
     ChangeClassTable(String iTable,int iClassID) {
         super(iTable+"_"+iClassID);
 
-        object = new KeyField("object", ObjectType.instance);
+        object = new KeyField("property", ObjectType.instance);
         keys.add(object);
     }
 
@@ -31,7 +31,7 @@ public abstract class ChangeClassTable<This extends ChangeClassTable> extends Se
         keys.add(object);
     }
 
-    public Where getJoinWhere(SourceExpr expr) {
+    public Where getJoinWhere(Expr expr) {
         return join(Collections.singletonMap(object, expr)).getWhere();
     }
 }

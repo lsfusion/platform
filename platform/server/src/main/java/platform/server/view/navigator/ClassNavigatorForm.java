@@ -1,6 +1,6 @@
 package platform.server.view.navigator;
 
-import platform.server.data.classes.CustomClass;
+import platform.server.classes.CustomClass;
 import platform.server.logics.BusinessLogics;
 
 public class ClassNavigatorForm extends NavigatorForm {

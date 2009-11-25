@@ -4,7 +4,7 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
-import platform.server.data.classes.where.ClassWhere;
+import platform.server.data.where.classes.ClassWhere;
 
 import java.util.HashMap;
 import java.util.Map;

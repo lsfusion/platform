@@ -1,9 +1,7 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
-import platform.server.data.classes.CustomClass;
-import platform.server.data.classes.ValueClass;
-import platform.server.logics.properties.DataProperty;
+import platform.server.classes.CustomClass;
+import platform.server.logics.property.DataProperty;
 
 import java.util.HashMap;
 import java.util.Map;

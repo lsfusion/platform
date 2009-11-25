@@ -1,7 +1,7 @@
 package platform.server.data;
 
-import platform.server.data.classes.ByteArrayClass;
-import platform.server.data.classes.where.ClassWhere;
+import platform.server.classes.ByteArrayClass;
+import platform.server.data.where.classes.ClassWhere;
 
 public class GlobalTable extends Table {
 

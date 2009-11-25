@@ -1,13 +1,13 @@
 package platform.server.view.form;
 
 import platform.server.auth.ChangePropertySecurityPolicy;
-import platform.server.data.classes.where.AndClassSet;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.types.Type;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.Expr;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.PropertyImplement;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyImplement;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -77,16 +77,16 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return mapInterface;
     }
     
-    public ChangeProperty getChangeProperty(DataSession session, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
+    public DataChange getChangeProperty(DataSession session, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
         return property.getChangeProperty(session, getInterfaceValues(), modifier, securityPolicy, externalID);
     }
 
-    public SourceExpr getSourceExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends SourceExpr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
 
-        Map<P, SourceExpr> joinImplement = new HashMap<P,SourceExpr>();
+        Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)
-            joinImplement.put(propertyInterface, mapping.get(propertyInterface).getSourceExpr(classGroup, classSource, modifier));
-        return property.getSourceExpr(joinImplement,modifier,null);
+            joinImplement.put(propertyInterface, mapping.get(propertyInterface).getExpr(classGroup, classSource, modifier));
+        return property.getExpr(joinImplement,modifier,null);
     }
 
     public Type getType() {

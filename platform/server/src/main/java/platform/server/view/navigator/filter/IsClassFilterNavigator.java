@@ -1,7 +1,7 @@
 package platform.server.view.navigator.filter;
 
-import platform.server.data.classes.CustomClass;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.classes.CustomClass;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.form.filter.IsClassFilter;

@@ -1,6 +1,6 @@
 package platform.server.view.form.client;
 
-import platform.server.data.types.Type;
+import platform.server.data.type.Type;
 import platform.server.view.navigator.ObjectNavigator;
 
 import java.io.DataOutputStream;

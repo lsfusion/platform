@@ -6,18 +6,20 @@ import platform.interop.Compare;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.data.Union;
-import platform.server.data.classes.*;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.properties.AggregateProperty;
-import platform.server.logics.properties.DataProperty;
-import platform.server.logics.properties.DataPropertyInterface;
-import platform.server.logics.properties.groups.AbstractGroup;
-import platform.server.logics.linear.properties.*;
+import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.DataPropertyInterface;
+import platform.server.logics.property.linear.LDP;
+import platform.server.logics.property.linear.LJP;
+import platform.server.logics.property.linear.LP;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
+import platform.server.classes.*;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -190,7 +192,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         LDP contractDateEnd = addDProp(baseGroup, "contractDateEnd", "Действует до", DateClass.instance, contract);
         LDP contractPayTerms = addDProp(baseGroup, "contractPayTerms", "По реализации", LogicalClass.instance, contract);
-        LDP contractPayDelay = addDProp(baseGroup, "contractPayDelay", "Отсрочка", IntegerClass.instance, contract);        
+        LDP contractPayDelay = addDProp(baseGroup, "contractPayDelay", "Отсрочка", IntegerClass.instance, contract);
 
         contractSupplier = addDProp(aggrGroup, "contractSupplier", "Поставщик", supplier, contract);
         LJP contractSupplierName = addJProp(aggrGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
@@ -619,8 +621,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objDoc.groupTo.gridClassView = false;
             objDoc.groupTo.singleViewType = true;
 
-            addPropertyView(objDoc, properties, baseGroup);
-            addPropertyView(objDetail, properties, baseGroup);
+            addPropertyView(objDoc, property, baseGroup);
+            addPropertyView(objDetail, property, baseGroup);
 
             objDoc.sID = "objDoc";
             getPropertyView(name.property, objDoc.groupTo).sID = "docName";
@@ -953,7 +955,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", properties, baseGroup, date, incStore, outStore);
 
             addPropertyView(objDoc, objArt, properties, baseGroup);
-//            addPropertyView(properties, baseGroup, true, objDoc);
+//            addPropertyView(property, baseGroup, true, objDoc);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyView(quantity.property).view));
             addFixedFilter(new OrFilterNavigator(
@@ -977,7 +979,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
 
             addPropertyView(objStore, objArt, properties, baseGroup);
-//            addPropertyView(properties, baseGroup, false, objArt.groupTo, objStore, objArt);
+//            addPropertyView(property, baseGroup, false, objArt.groupTo, objStore, objArt);
         }
     }
 

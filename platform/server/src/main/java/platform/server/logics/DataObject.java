@@ -2,14 +2,14 @@ package platform.server.logics;
 
 import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.server.data.classes.ConcreteClass;
-import platform.server.data.classes.LogicalClass;
-import platform.server.data.classes.where.AndClassSet;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ValueExpr;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.LogicalClass;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
-import platform.server.where.Where;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.navigator.PropertyInterfaceNavigator;
@@ -76,7 +76,7 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
         return mapClasses;        
     }
 
-    public Where order(SourceExpr expr, boolean desc, Where orderWhere) {
+    public Where order(Expr expr, boolean desc, Where orderWhere) {
         Where greater = expr.compare(this,Compare.GREATER);
         return (desc?greater.not():greater).or(expr.compare(this,Compare.EQUALS).and(orderWhere));
     }

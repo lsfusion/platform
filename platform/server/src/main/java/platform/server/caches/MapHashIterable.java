@@ -2,9 +2,9 @@ package platform.server.caches;
 
 import platform.base.MapIterable;
 import platform.server.data.query.HashContext;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.KeyTranslator;
 
 import java.util.Iterator;
 

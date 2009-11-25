@@ -10,13 +10,13 @@ import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> {
 
-    public int ID;
+    public final int ID;
     public String caption = "";
 
     public NavigatorElement(int iID, String icaption) { this(null, iID, icaption); }
-    public NavigatorElement(NavigatorElement<T> parent, int iID, String icaption) {
-        ID = iID;
-        caption = icaption;
+    public NavigatorElement(NavigatorElement<T> parent, int ID, String caption) {
+        this.ID = ID;
+        this.caption = caption;
 
         if (parent != null)
             parent.add(this);

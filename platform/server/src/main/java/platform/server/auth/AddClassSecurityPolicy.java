@@ -1,6 +1,6 @@
 package platform.server.auth;
 
-import platform.server.data.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteCustomClass;
 
 public class AddClassSecurityPolicy extends AbstractSecurityPolicy<ConcreteCustomClass> {
 

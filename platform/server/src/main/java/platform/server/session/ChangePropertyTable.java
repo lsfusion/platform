@@ -4,9 +4,9 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
-import platform.server.data.classes.where.ClassWhere;
-import platform.server.logics.properties.Property;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public abstract class ChangePropertyTable<P extends PropertyInterface,This exten
 
         mapKeys = new HashMap<KeyField, P>(); 
         for(P propertyInterface : property.interfaces) {
-            KeyField objKeyField = new KeyField("object"+propertyInterface.ID, property.getInterfaceType(propertyInterface));
+            KeyField objKeyField = new KeyField("property"+propertyInterface.ID, property.getInterfaceType(propertyInterface));
             mapKeys.put(objKeyField,propertyInterface);
             keys.add(objKeyField);
         }

@@ -30,7 +30,7 @@ public class ComplexQueryManager {
         counter.start();
     }
     @Before("cflow(execution(* platform.server.view.form.RemoteForm.endApply(..)) && target(counter)) && " +
-            "call(platform.server.data.classes.where.MeanClassWheres platform.server.where.AbstractWhere.calculateMeanClassWheres())")
+            "call(platform.server.table.classes.where.MeanClassWheres platform.server.where.AbstractWhere.calculateMeanClassWheres())")
     public void callBeforeLazy(Counter counter) {
         counter.add();
     }

@@ -1,6 +1,6 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.KeyExpr;
+import platform.server.data.expr.KeyExpr;
 
 import java.util.Map;
 

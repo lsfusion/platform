@@ -1,12 +1,12 @@
 package platform.server.view.form;
 
-import platform.server.data.classes.ConcreteCustomClass;
-import platform.server.data.classes.CustomClass;
-import platform.server.data.classes.ValueClass;
-import platform.server.data.classes.where.AndClassSet;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.types.ObjectType;
-import platform.server.data.types.Type;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.Expr;
+import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
@@ -102,7 +102,7 @@ public class CustomObjectImplement extends ObjectImplement {
         return value;
     }
 
-    protected SourceExpr getExpr() {
+    protected Expr getExpr() {
         return value.getExpr();
     }
 

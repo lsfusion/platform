@@ -12,16 +12,16 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
-import platform.server.data.classes.ConcreteCustomClass;
-import platform.server.data.classes.CustomClass;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.types.ObjectType;
+import platform.server.data.type.ObjectType;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.properties.PropertyInterface;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.DataSession;
-import platform.server.session.DataChangeProperty;
+import platform.server.session.PropertyChange;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
 import platform.base.BaseUtils;
@@ -145,7 +145,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public RemoteFormInterface createForm(int formID, boolean currentSession) {
-        return createForm((NavigatorForm)BL.baseElement.getNavigatorElement(formID),currentSession);
+        NavigatorForm form = (NavigatorForm) BL.baseElement.getNavigatorElement(formID);
+        if(form==null)
+            throw new RuntimeException("Форма с заданным идентификатором не найдена");
+        return createForm(form,currentSession);
     }
 
     // диалоги
@@ -194,12 +197,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement) throws SQLException {
-        DataChangeProperty change = (DataChangeProperty)implement.getChangeProperty(currentForm.session, currentForm, securityPolicy.property.change, false);
-        addCacheObject((Integer)change.property.read(currentForm.session,change.mapping,currentForm)); // считываем значение чтобы закинуть в кэш
-        setDialogClass((CustomClass) change.property.value);
+        PropertyChange change = (PropertyChange)implement.getChangeProperty(currentForm.session, currentForm, securityPolicy.property.change, false);
+        addCacheObject(change.read(currentForm.session,currentForm)); // считываем значение чтобы закинуть в кэш
+        setDialogClass(change.getDialogClass());
 
-        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change.property, change.mapping);
-        navigatorForm.relevantElements.addAll(((CustomClass)change.property.value).relevantElements);
+        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change);
+        navigatorForm.relevantElements.addAll(change.getDialogClass().relevantElements);
 
         return createForm(navigatorForm,true);
     }

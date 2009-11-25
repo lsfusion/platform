@@ -1,8 +1,8 @@
 package platform.server.data;
 
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.types.Type;
-import platform.server.data.types.TypeSerializer;
+import platform.server.data.type.Type;
+import platform.server.data.type.TypeSerializer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

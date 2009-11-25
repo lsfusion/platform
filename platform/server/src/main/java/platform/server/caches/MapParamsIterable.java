@@ -5,9 +5,9 @@ import platform.base.EmptyIterator;
 import platform.base.MapIterable;
 import platform.base.Pairs;
 import platform.server.data.query.HashContext;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.ValueExpr;
-import platform.server.data.query.translators.KeyTranslator;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.KeyTranslator;
 
 import java.util.Collection;
 import java.util.Iterator;

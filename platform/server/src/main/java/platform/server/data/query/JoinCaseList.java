@@ -1,14 +1,14 @@
 package platform.server.data.query;
 
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseList;
-import platform.server.data.query.exprs.cases.CaseWhereInterface;
-import platform.server.data.query.exprs.cases.ExprCaseList;
-import platform.server.where.Where;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.cases.CaseList;
+import platform.server.data.expr.cases.CaseWhereInterface;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.where.Where;
 
 public class JoinCaseList<U> extends CaseList<Join<U>,JoinCase<U>> {
 
-    public SourceExpr getExpr(U property) {
+    public Expr getExpr(U property) {
         ExprCaseList result = new ExprCaseList();
         for(JoinCase<U> joinCase : this)
             result.add(joinCase.where,joinCase.data.getExpr(property));

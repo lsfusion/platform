@@ -14,24 +14,23 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.data.types.TypeSerializer;
-import platform.server.data.classes.ConcreteCustomClass;
-import platform.server.data.classes.CustomClass;
-import platform.server.data.query.JoinQuery;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.cases.CaseExpr;
+import platform.server.data.type.TypeSerializer;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.data.query.Query;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.properties.*;
+import platform.server.logics.property.*;
 import platform.server.session.*;
 import platform.server.view.form.filter.CompareFilter;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
-import platform.server.where.Where;
-import platform.server.where.WhereBuilder;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -162,7 +161,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyView propertyView, boolean externalID) throws SQLException, IOException {
 
-        ChangeProperty change = propertyView.view.getChangeProperty(session, this, securityPolicy.property.change, externalID);
+        DataChange change = propertyView.view.getChangeProperty(session, this, securityPolicy.property.change, externalID);
         outStream.writeBoolean(change==null);
         if(change!=null)
             TypeSerializer.serialize(outStream,change.getType());
@@ -236,27 +235,27 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
         boolean foundConflict = false;
 
-        // берем все текущие CompareFilter на оператор 0(=) делаем ChangeProperty на Value сразу в сессию
+        // берем все текущие CompareFilter на оператор 0(=) делаем DataChange на Value сразу в сессию
         // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение Value, GetValueExpr
         for(Filter filter : object.groupTo.filters) {
             if(filter instanceof CompareFilter && (!Filter.ignoreInInterface || filter.isInInterface(object.groupTo))) { // если ignoreInInterface проверить что в интерфейсе 
                 CompareFilter<?> compareFilter = (CompareFilter)filter;
                 if(compareFilter.compare==Compare.EQUALS && compareFilter.property.property instanceof DataProperty) {
-                    JoinQuery<PropertyObjectInterface,String> subQuery = new JoinQuery<PropertyObjectInterface,String>(compareFilter.property.mapping.values());
+                    Query<PropertyObjectInterface,String> subQuery = new Query<PropertyObjectInterface,String>(compareFilter.property.mapping.values());
                     Map<PropertyObjectInterface,DataObject> fixedObjects = new HashMap<PropertyObjectInterface, DataObject>();
                     for(PropertyObjectInterface mapObject : compareFilter.property.mapping.values())
                         if(mapObject.getApplyObject() !=object.groupTo)
                             fixedObjects.put(mapObject, mapObject.getDataObject());
                         else // assert что тогда sibObject instanceof ObjectImplement потому как ApplyObject = null а object.groupTo !=null
                             if(mapObject !=object)
-                                subQuery.and(subQuery.mapKeys.get(mapObject).getIsClassWhere(((ObjectImplement)mapObject).getGridClass().getUpSet()));
+                                subQuery.and(subQuery.mapKeys.get(mapObject).isClass(((ObjectImplement)mapObject).getGridClass().getUpSet()));
                             else
                                 fixedObjects.put(mapObject,addObject);
                     subQuery.putKeyWhere(fixedObjects);
 
-                    subQuery.properties.put("newvalue", compareFilter.value.getSourceExpr(object.groupTo.getClassGroup(),BaseUtils.filterKeys(subQuery.mapKeys,compareFilter.property.getObjectImplements()), this));
+                    subQuery.properties.put("newvalue", compareFilter.value.getExpr(object.groupTo.getClassGroup(),BaseUtils.filterKeys(subQuery.mapKeys,compareFilter.property.getObjectImplements()), this));
 
-                    OrderedMap<Map<PropertyObjectInterface, DataObject>, Map<String, ObjectValue>> result = subQuery.executeSelectClasses(session,BL.baseClass);
+                    OrderedMap<Map<PropertyObjectInterface, DataObject>, Map<String, ObjectValue>> result = subQuery.executeClasses(session,BL.baseClass);
                     // изменяем св-ва
                     for(Map.Entry<Map<PropertyObjectInterface,DataObject>,Map<String,ObjectValue>> row : result.entrySet()) {
                         DataProperty changeProperty = (DataProperty) compareFilter.property.property;
@@ -291,7 +290,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
     public <P extends PropertyInterface> void changeProperty(PropertyObjectImplement<P> property, Object value, boolean externalID) throws SQLException {
 
         // изменяем св-во
-        property.getChangeProperty(session, this, securityPolicy.property.change, externalID).change(session,value,externalID);
+        property.getChangeProperty(session, this, securityPolicy.property.change, externalID).change(session, this, value,externalID);
 
         dataChanged = true;
     }
@@ -383,9 +382,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         }
     }
 
-    public <P extends PropertyInterface> SourceExpr changed(Property<P> property, Map<P, ? extends SourceExpr> joinImplement, WhereBuilder changedWhere) {
+    public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
         if(hintsNoUpdate.contains(property)) // если так то ничего не менять 
-            return CaseExpr.NULL;
+            return Expr.NULL;
         else
             return null;
     }
@@ -557,7 +556,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         changeGroupObject(group, value);
     }
 
-    private OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeSelectKeys(GroupObjectImplement group,Map<OrderView,ObjectValue> orderSeeks,int readSize,boolean down) throws SQLException {
+    private OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeKeys(GroupObjectImplement group,Map<OrderView,ObjectValue> orderSeeks,int readSize,boolean down) throws SQLException {
         // assertion что group.orders начинается с orderSeeks
         OrderedMap<OrderView,Boolean> orders;
         if(orderSeeks!=null && readSize==1)
@@ -567,12 +566,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
         assert !(orderSeeks!=null && !orders.starts(orderSeeks.keySet()));
 
-        JoinQuery<ObjectImplement,OrderView> selectKeys = new JoinQuery<ObjectImplement,OrderView>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
+        Query<ObjectImplement,OrderView> selectKeys = new Query<ObjectImplement,OrderView>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
         group.fillSourceSelect(selectKeys, group.getClassGroup(), this);
 
         Where orderWhere = orderSeeks==null?Where.FALSE:Where.TRUE;
         for(Map.Entry<OrderView,Boolean> toOrder : orders.reverse().entrySet()) {
-            SourceExpr orderExpr = toOrder.getKey().getSourceExpr(group.getClassGroup(), selectKeys.mapKeys, this);
+            Expr orderExpr = toOrder.getKey().getExpr(group.getClassGroup(), selectKeys.mapKeys, this);
             selectKeys.properties.put(toOrder.getKey(), orderExpr); // надо в запрос закинуть чтобы скроллить и упорядочивать
 
             if(orderSeeks!=null) {
@@ -582,14 +581,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
             }
         }
         selectKeys.and(down?orderWhere:orderWhere.not());
-        return selectKeys.executeSelectClasses(session, down?orders:JoinQuery.reverseOrder(orders), readSize, BL.baseClass);
+        return selectKeys.executeClasses(session, down?orders: Query.reverseOrder(orders), readSize, BL.baseClass);
     }
 
     // считывает одну запись
     private Map.Entry<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> readObjects(GroupObjectImplement group,Map<OrderView,ObjectValue> orderSeeks) throws SQLException {
-        OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> result = executeSelectKeys(group, orderSeeks, 1, true);
+        OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> result = executeKeys(group, orderSeeks, 1, true);
         if(result.size()==0)
-            result = executeSelectKeys(group, orderSeeks, 1, false);
+            result = executeKeys(group, orderSeeks, 1, false);
         if(result.size()>0)
             return result.singleEntry();
         else
@@ -779,12 +778,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
                         int readSize = group.pageSize *3/(direction ==DIRECTION_CENTER?2:1);
                         if(direction==DIRECTION_UP || direction ==DIRECTION_CENTER) { // сначала Up
-                            keyResult.putAll(executeSelectKeys(group, orderSeeks, readSize, false).reverse());
+                            keyResult.putAll(executeKeys(group, orderSeeks, readSize, false).reverse());
                             group.upKeys = (keyResult.size()== readSize);
                             activeRow = keyResult.size()-1; 
                         }
                         if(direction ==DIRECTION_DOWN || direction ==DIRECTION_CENTER) { // затем Down
-                            OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeList = executeSelectKeys(group, orderSeeks, readSize, true);
+                            OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeList = executeKeys(group, orderSeeks, readSize, true);
                             if(executeList.size()>0) activeRow = keyResult.size();
                             keyResult.putAll(executeList);
                             group.downKeys = (executeList.size()== readSize);
@@ -871,11 +870,11 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
             }
 
             if(panelProps.size()>0) { // читаем "панельные" свойства
-                JoinQuery<Object, PropertyView> selectProps = new JoinQuery<Object, PropertyView>(new HashMap<Object, KeyExpr>());
+                Query<Object, PropertyView> selectProps = new Query<Object, PropertyView>(new HashMap<Object, KeyExpr>());
                 for(PropertyView<?> drawProp : panelProps)
-                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(null,null, this));
+                    selectProps.properties.put(drawProp, drawProp.view.getExpr(null,null, this));
 
-                Map<PropertyView,Object> resultProps = selectProps.executeSelect(session).singleValue();
+                Map<PropertyView,Object> resultProps = selectProps.execute(session).singleValue();
                 for(PropertyView drawProp : panelProps)
                     result.panelProperties.put(drawProp,resultProps.get(drawProp));
             }
@@ -884,15 +883,15 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
                 GroupObjectImplement group = mapGroup.getKey();
                 Collection<PropertyView> groupList = mapGroup.getValue();
 
-                JoinQuery<ObjectImplement, PropertyView> selectProps = new JoinQuery<ObjectImplement, PropertyView>(group);
+                Query<ObjectImplement, PropertyView> selectProps = new Query<ObjectImplement, PropertyView>(group);
 
                 ViewTable keyTable = groupTables.get(mapGroup.getKey()); // ставим фильтр на то что только из viewTable'а
                 selectProps.and(keyTable.joinAnd(BaseUtils.join(keyTable.mapKeys,selectProps.mapKeys)).getWhere());
 
                 for(PropertyView<?> drawProp : groupList)
-                    selectProps.properties.put(drawProp, drawProp.view.getSourceExpr(group.getClassGroup(), selectProps.mapKeys, this));
+                    selectProps.properties.put(drawProp, drawProp.view.getExpr(group.getClassGroup(), selectProps.mapKeys, this));
 
-                OrderedMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.executeSelect(session);
+                OrderedMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.execute(session);
 
                 for(PropertyView drawProp : groupList) {
                     Map<Map<ObjectImplement,DataObject>,Object> propResult = new HashMap<Map<ObjectImplement,DataObject>, Object>();
@@ -956,7 +955,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
         // пока сделаем тупо получаем один большой запрос
 
-        JoinQuery<ObjectImplement,Object> query = new JoinQuery<ObjectImplement,Object>(readObjects);
+        Query<ObjectImplement,Object> query = new Query<ObjectImplement,Object>(readObjects);
         OrderedMap<Object,Boolean> queryOrders = new OrderedMap<Object, Boolean>();
 
         for (GroupObjectImplement group : groups) {
@@ -968,12 +967,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
                 // закинем Order'ы
                 for(Entry<OrderView, Boolean> order : group.orders.entrySet()) {
-                    query.properties.put(order.getKey(),order.getKey().getSourceExpr(classGroups, query.mapKeys, this));
+                    query.properties.put(order.getKey(),order.getKey().getExpr(classGroups, query.mapKeys, this));
                     queryOrders.put(order.getKey(),order.getValue());
                 }
 
                 for(ObjectImplement object : group.objects) {
-                    query.properties.put(object,object.getSourceExpr(classGroups,query.mapKeys));
+                    query.properties.put(object,object.getExpr(classGroups,query.mapKeys));
                     queryOrders.put(object,false);
                 }
             }
@@ -982,9 +981,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         FormData result = new FormData();
 
         for(PropertyView<?> property : properties)
-            query.properties.put(property, property.view.getSourceExpr(classGroups, query.mapKeys, this));
+            query.properties.put(property, property.view.getExpr(classGroups, query.mapKeys, this));
 
-        OrderedMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.executeSelect(session,queryOrders,0);
+        OrderedMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.execute(session,queryOrders,0);
         for(Entry<Map<ObjectImplement, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectImplement,Object> groupValue = new HashMap<ObjectImplement, Object>();
             for(GroupObjectImplement group : groups)

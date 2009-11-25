@@ -4,9 +4,9 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.SessionTable;
-import platform.server.data.classes.where.ClassWhere;
-import platform.server.logics.data.ImplementTable;
-import platform.server.logics.properties.Property;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.table.ImplementTable;
+import platform.server.logics.property.Property;
 
 import java.util.Collection;
 import java.util.HashMap;

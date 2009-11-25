@@ -6,12 +6,12 @@ import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
 import platform.server.caches.MapHashIterable;
 import platform.server.caches.MapParamsIterable;
-import platform.server.data.query.exprs.AndExpr;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.MapExpr;
-import platform.server.data.query.translators.KeyTranslator;
-import platform.server.where.DataWhereSet;
-import platform.server.where.Where;
+import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.MapExpr;
+import platform.server.data.translator.KeyTranslator;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
 
 import java.util.Collection;
 import java.util.Map;

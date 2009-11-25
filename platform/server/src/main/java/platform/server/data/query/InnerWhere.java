@@ -3,8 +3,8 @@ package platform.server.data.query;
 import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.server.data.Table;
-import platform.server.data.query.exprs.KeyExpr;
-import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 
 import java.util.Collection;
 import java.util.Collections;

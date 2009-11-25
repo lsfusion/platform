@@ -2,9 +2,9 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.data.classes.where.ClassWhere;
-import platform.server.data.query.exprs.SourceExpr;
-import platform.server.data.query.exprs.ValueExpr;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 
 import java.util.Collection;
@@ -39,11 +39,11 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         return mapValues.keySet();
     }
 
-    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement) {
+    public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         return join(joinImplement,BaseUtils.toMap(getValues()));
     }
 
-    public Join<V> join(Map<K, ? extends SourceExpr> joinImplement, Map<ValueExpr, ValueExpr> joinValues) {
+    public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> joinValues) {
         return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),BaseUtils.crossJoin(mapValues,joinValues)),mapProps);
     }
 
