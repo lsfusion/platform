@@ -39,7 +39,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("testplat","localhost","postgres","11111");
+        DataAdapter adapter = new PostgreDataAdapter("mydb","server","postgres","sergtsop");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -133,6 +133,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP currentExtIncDate;
     LP currentExtIncDoc;
     LP docOutPriceOut;
+    LP saleFormatArticleBetweenDateQuantity, Article1SaleBestArticle2, sumSaleFormatArticleBetweenDateQuantity, saleArticle2;
 
     LP contractSupplier, specContract, extIncSupplier;
     LP storeSpecIncl, specArticleIncl;
@@ -326,6 +327,15 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP saleBetweenDateQuantity = addJProp("Кол-во реал. за интервал", and1, betweenDateQuantity, 1, 2, 3, 4, is(saleDocument), 1);
         saleStoreArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. на скл. за интервал", saleBetweenDateQuantity, outStore, 1, 2, 3, 4);
         saleArticleBetweenDateQuantity = addSGProp(baseGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, 2, 3, 4);
+
+        // добалено Bendera
+        saleFormatArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по формату за период", saleStoreArticleBetweenDateQuantity, storeFormat, 1, 2, 3, 4);
+        Article1SaleBestArticle2 = addJProp (baseGroup, "Товар 1 лучше товара 2", greater2, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 5, 2, 3, 4);
+        // sumSaleFormatArticleBetweenDateQuantity = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateQuantity, 1, 2, 3);
+        // saleArticle2 = addJProp ("Количество реал. по товару 2", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, Article1SaleBestArticle2, 1, 2, 3, 4, 5);
+        // LP sumsaleArticle2 = addJProp ("Сумма реал. по товару 2", saleArticle2, 1);
+        // LP percentOfWorseSaleAricle2 = addSFProp ("(prm1*100)/prm2", sumsaleArticle2, sumSaleFormatArticleBetweenDateQuantity); // процент продаж хуже текущего товара
+                
 
         // Надбавка
         revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
@@ -1103,8 +1113,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                     "Нет на складе",KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0));
         }
     }
-
-    private class RangeNavigatorForm extends NavigatorForm {
+  // Benderamania
+    private class RangeNavigatorForm extends DateIntervalNavigatorForm {
 
         public RangeNavigatorForm(NavigatorElement parent, int ID, String caption, boolean upFormat) {
             super(parent, ID, caption);
@@ -1115,7 +1125,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                 objFormat.groupTo.gridClassView = false;
                 objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
             } else {
-                objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+                objArticle = addSingleGroupObjectImplement(article, "Товар", properties,baseGroup, currentGroup);
                 objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
             }
 
@@ -1123,6 +1133,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
             addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateQuantity);
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
