@@ -20,6 +20,7 @@ import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.classes.*;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -75,7 +76,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                         saleDocument, articleDocument, priceOutDocument;
 
     ConcreteCustomClass article, articleGroup, store, customer, supplier, extIncomeOrder, extIncomeDocument, intraDocument, exchangeDocument, specification, contract,
-                        cashSaleDocument, clearingSaleDocument, invDocument, returnDocument, revalDocument, taxDocument, locTaxDocument, format, region;
+                        cashSaleDocument, clearingSaleDocument, invDocument, returnDocument, revalDocument, taxDocument, locTaxDocument, format, region, category;
     
     protected void initClasses() {
 
@@ -88,6 +89,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         customer = addConcreteClass("Покупатель", namedObject);
         format = addConcreteClass("Формат", namedObject);
         region = addConcreteClass("Регион", namedObject);
+        category = addConcreteClass("Категория", namedObject);
 
         document = addAbstractClass("Документ", namedObject, transaction);
         priceOutDocument = addAbstractClass("Документ изм. цены", document);
@@ -135,8 +137,15 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP currentExtIncDate;
     LP currentExtIncDoc;
     LP docOutPriceOut;
-    LP saleFormatArticleBetweenDateQuantity, Article1SaleBestArticle2, sumSaleFormatArticleBetweenDateQuantity, saleArticle2;
-
+    LP saleFormatArticleBetweenDateQuantity, sumSaleFormatArticleBetweenDateQuantity, saleArticle2;
+    LP sumsaleArticle2;
+    LP article1SaleBestArticle2;
+    LP percentForABC;
+    LP resultABC;
+    LP resultABCSum;
+    LP percentForABCSum;
+    LP saleFormatArticleBetweenDateSum;
+        
     LP contractSupplier, specContract, extIncSupplier;
     LP storeSpecIncl, specArticleIncl;
 
@@ -152,6 +161,22 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         return addDUProp("Ост. на скл. "+caption, incDateQuantity, outDateQuantity);
     }
 
+    LP initABCAnalyze(LP analizedPercent, String caption) {
+        Object[] extendedProperty = directLI(analizedPercent); // Свойство и его интерфейсы
+        int intNum = analizedPercent.listInterfaces.size(); // Количество интерфейсов свойства
+        Object[] a = new Object [intNum];
+        for(int i=0; i < intNum; i++){
+            a[i] = i + 1;}
+//        LP numberGreaterCategory = addJProp ("Число больше категории", greater2, percentForABC, 1, 2, 3, 4, categoryMark, 5));
+//        LP categoryMarkLess = addJProp("Порог категории (если меньше числа)", and1, categoryMark, 5, numberGreaterCategory, 1, 2, 3, 4, 5);
+//        storeABCCategory = addMGProp(null,new String[]{"a1","a2"},new String[]{"Max порог","Max категория"}, 1, categoryMarkLess, 5, 1, 2, 3, 4);
+        LDP categoryMark = addDProp(baseGroup, "categoryMark", "Ранговое значение", DoubleClass.instance, category);  // Категория
+        LP numberGreaterCategory = addJProp ("Число больше категории", greater2, BaseUtils.add(extendedProperty,new Object[]{categoryMark, intNum+1}));
+        LP categoryMarkLess = addJProp("Порог категории (если меньше числа)", and1, BaseUtils.add(new Object[]{categoryMark, intNum+1, numberGreaterCategory}, BaseUtils.add(a,new Object[]{intNum+1})));
+        LP[] storeABCCategory = addMGProp(null,new String[]{"a1","a2"},new String[]{"Max порог","Max категория"}, 1, categoryMarkLess, BaseUtils.add(new Object[]{intNum+1},a));
+        return addJProp(baseGroup, "Категория"+caption, name, directLI(storeABCCategory[1]));
+        }
+
     protected void initProperties() {
 
         // абстрактные св-ва объектов
@@ -161,6 +186,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP round = addSFProp("round(CAST(prm1 as numeric),0)", DoubleClass.instance, 1);
         roundm1 = addSFProp("round(CAST(prm1 as numeric),-1)", DoubleClass.instance, 1);
         LP multiplyDouble2 = addMFProp(DoubleClass.instance,2);
+        LP percentABC = addSFProp ("(prm1*100)/prm2", DoubleClass.instance, 2);
 
         // свойства товара
         artGroup = addDProp("artGroup", "Гр. тов.", articleGroup, article);
@@ -330,14 +356,13 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleStoreArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. на скл. за интервал", saleBetweenDateQuantity, outStore, 1, 2, 3, 4);
         saleArticleBetweenDateQuantity = addSGProp(baseGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, 2, 3, 4);
 
-        // добалено Bendera
+        // свойства товаров по реализации по формату
         saleFormatArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по формату за период", saleStoreArticleBetweenDateQuantity, storeFormat, 1, 2, 3, 4);
-        Article1SaleBestArticle2 = addJProp (baseGroup, "Товар 1 лучше товара 2", greater2, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 5, 2, 3, 4);
-        // sumSaleFormatArticleBetweenDateQuantity = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateQuantity, 1, 2, 3);
-        // saleArticle2 = addJProp ("Количество реал. по товару 2", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, Article1SaleBestArticle2, 1, 2, 3, 4, 5);
-        // LP sumsaleArticle2 = addJProp ("Сумма реал. по товару 2", saleArticle2, 1);
-        // LP percentOfWorseSaleAricle2 = addSFProp ("(prm1*100)/prm2", sumsaleArticle2, sumSaleFormatArticleBetweenDateQuantity); // процент продаж хуже текущего товара
-                
+        LP article1SaleWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4);
+        sumSaleFormatArticleBetweenDateQuantity = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateQuantity, 1, 3, 4);
+        saleArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, article1SaleWorsetArticle2, 1, 5, 3, 4, 2);
+        sumsaleArticle2 = addSGProp ("Сумма реал. по товару 1", saleArticle2, 1, 2, 3, 4);
+        percentForABC = addJProp ("Процент АВС", percentABC, sumsaleArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateQuantity, 1, 3, 4);
 
         // Надбавка
         revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
@@ -421,6 +446,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP documentSumOut = addSGProp(baseGroup, "documentSumOut", "Сумма розн.", detailSumOut, 1);
         LP documentSaleVatOut = addSGProp(baseGroup, "documentSaleVatOut", "Сумма НДС (розн.)", detailSumVatOut, 1);
 
+        // свойства по суммам розничным за период
+        LP saleBetweenDateSum = addJProp("Сумма розн. за период", and1, detailSumOut, 1, 2, betweenDocDate, 1, 3, 4);
+        LP saleStoreBetweenDateSum = addSGProp("Реализация по складу за период", saleBetweenDateSum, outStore, 1, 2, 3, 4);
+        saleFormatArticleBetweenDateSum = addSGProp("Реализация по формату за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
+
+        // свойства товаров по сумме реализации по формату
+        LP article1SaleSumWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4);
+        LP sumSaleFormatArticleBetweenDateSum = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateSum, 1, 3, 4);
+        LP saleSumArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, article1SaleSumWorsetArticle2, 1, 5, 3, 4, 2);
+        LP sumSaleSumArticle2 = addSGProp ("Сумма реал. по товару 1", saleSumArticle2, 1, 2, 3, 4);
+        percentForABCSum = addJProp ("Процент АВС", percentABC, sumSaleSumArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateSum, 1, 3, 4);
+        resultABCSum = initABCAnalyze(percentForABCSum," товара");
+        
         // изменение цен
         LDP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
         incPriceOutChange.setDefProp(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
@@ -440,6 +478,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                                                 incPriceOutChange, 1, 3,
                                             addJProp("Склад документа", equals2, incStore, 1, 2), 1, 2));
     }
+
 
     protected void initConstraints() {
 
@@ -1135,7 +1174,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
             addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
-            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateQuantity);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, resultABCSum);
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));

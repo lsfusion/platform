@@ -702,7 +702,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return params;
     }
 
-    Object[] directLI(LP prop) {
+    protected Object[] directLI(LP prop) {
         return getUParams(new LP[]{prop},0);
     }
 
@@ -885,7 +885,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addGProp(group, sID, caption, groupProp, true, params);
     }
 
-    protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+     protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
         return addMGProp(group,new String[]{sID},new String[]{caption}, 0, groupProp, params)[0];
     }
     protected LP[] addMGProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP groupProp, Object... params) {
