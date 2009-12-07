@@ -42,7 +42,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("mydb","server","postgres","sergtsop");
+        DataAdapter adapter = new PostgreDataAdapter("mydb2","server","postgres","sergtsop");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -160,22 +160,29 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP outDateQuantity = addSGProp("Расх. со скл. "+caption, dateQuantity, outStore, 1, 2, 3);
         return addDUProp("Ост. на скл. "+caption, incDateQuantity, outDateQuantity);
     }
-
+// Функция АВС-анализа расчитанного процента(<анализируемый процент>,<подпись>)
     LP initABCAnalyze(LP analizedPercent, String caption) {
         Object[] extendedProperty = directLI(analizedPercent); // Свойство и его интерфейсы
         int intNum = analizedPercent.listInterfaces.size(); // Количество интерфейсов свойства
         Object[] a = new Object [intNum];
         for(int i=0; i < intNum; i++){
             a[i] = i + 1;}
-//        LP numberGreaterCategory = addJProp ("Число больше категории", greater2, percentForABC, 1, 2, 3, 4, categoryMark, 5));
-//        LP categoryMarkLess = addJProp("Порог категории (если меньше числа)", and1, categoryMark, 5, numberGreaterCategory, 1, 2, 3, 4, 5);
-//        storeABCCategory = addMGProp(null,new String[]{"a1","a2"},new String[]{"Max порог","Max категория"}, 1, categoryMarkLess, 5, 1, 2, 3, 4);
-        LDP categoryMark = addDProp(baseGroup, "categoryMark", "Ранговое значение", DoubleClass.instance, category);  // Категория
         LP numberGreaterCategory = addJProp ("Число больше категории", greater2, BaseUtils.add(extendedProperty,new Object[]{categoryMark, intNum+1}));
         LP categoryMarkLess = addJProp("Порог категории (если меньше числа)", and1, BaseUtils.add(new Object[]{categoryMark, intNum+1, numberGreaterCategory}, BaseUtils.add(a,new Object[]{intNum+1})));
         LP[] storeABCCategory = addMGProp(null,new String[]{"a1","a2"},new String[]{"Max порог","Max категория"}, 1, categoryMarkLess, BaseUtils.add(new Object[]{intNum+1},a));
         return addJProp(baseGroup, "Категория"+caption, name, directLI(storeABCCategory[1]));
         }
+// Функция расчета процента для АВС-анализа (интерфейсы: документ, товар 1, дата1, дата2, товар2) (<анализируемый показатель>)
+    LP initCalculateForABCAnalyze(LP analizedScore){
+        LP scoreWorseScore2 = addJProp ("2 лучше 1", groeq2, analizedScore, 1, 5, 3, 4, analizedScore, 1, 2, 3, 4);
+        LP sumAnalizedScoreBetweenDate = addSGProp ("Общее кол-во за период", analizedScore, 1, 3, 4);
+        LP betterScore2 = addJProp ("По 1", and1, analizedScore, 1, 5, 3, 4, scoreWorseScore2, 1, 5, 3, 4, 2);
+        LP sumBetterScore2 = addSGProp ("Сумма по 1", betterScore2, 1, 2, 3, 4);
+        LP percentABC = addSFProp ("(prm1*100)/prm2", DoubleClass.instance, 2);
+        return addJProp ("Процент АВС", percentABC, sumBetterScore2, 1, 2, 3, 4, sumAnalizedScoreBetweenDate, 1, 3, 4);
+        }
+
+    LDP categoryMark;
 
     protected void initProperties() {
 
@@ -213,6 +220,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         addJProp(baseGroup, "Название региона", name, locTaxRegion, 1);
         storeRegion = addDProp("storeRegion","Регион", region, store);
         addJProp(baseGroup, "Название региона", name, storeRegion, 1);
+
+        categoryMark = addDProp(baseGroup, "categoryMark", "Ранговое значение", DoubleClass.instance, category);  // Категория
 
         // Управление поставками
 
@@ -452,13 +461,14 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleFormatArticleBetweenDateSum = addSGProp("Реализация по формату за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
 
         // свойства товаров по сумме реализации по формату
-        LP article1SaleSumWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4);
-        LP sumSaleFormatArticleBetweenDateSum = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateSum, 1, 3, 4);
-        LP saleSumArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, article1SaleSumWorsetArticle2, 1, 5, 3, 4, 2);
-        LP sumSaleSumArticle2 = addSGProp ("Сумма реал. по товару 1", saleSumArticle2, 1, 2, 3, 4);
-        percentForABCSum = addJProp ("Процент АВС", percentABC, sumSaleSumArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateSum, 1, 3, 4);
-        resultABCSum = initABCAnalyze(percentForABCSum," товара");
-        
+//        LP article1SaleSumWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4);
+//        LP sumSaleFormatArticleBetweenDateSum = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateSum, 1, 3, 4);
+//        LP saleSumArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, article1SaleSumWorsetArticle2, 1, 5, 3, 4, 2);
+//        LP sumSaleSumArticle2 = addSGProp ("Сумма реал. по товару 1", saleSumArticle2, 1, 2, 3, 4);
+//        percentForABCSum = addJProp ("Процент АВС", percentABC, sumSaleSumArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateSum, 1, 3, 4);
+//        resultABCSum = initABCAnalyze(percentForABCSum," товара");
+          resultABCSum = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateSum)," товара");
+          resultABC = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateQuantity)," кол-ва");
         // изменение цен
         LDP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
         incPriceOutChange.setDefProp(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
@@ -487,7 +497,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     protected void initPersistents() {
 
-//        persistents.add((AggregateProperty)quantity.property);
+        persistents.add((AggregateProperty)quantity.property);
         persistents.add((AggregateProperty)balanceStoreQuantity.property);
 
         persistents.add((AggregateProperty)currentIncDate.property);
@@ -1174,7 +1184,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
             addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
-            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, resultABCSum);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, saleFormatArticleBetweenDateQuantity, resultABC, resultABCSum);
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
