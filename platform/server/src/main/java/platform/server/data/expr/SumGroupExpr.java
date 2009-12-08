@@ -5,13 +5,15 @@ import platform.server.classes.IntegralClass;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.where.Where;
+import platform.server.data.type.Type;
 
 import java.util.Map;
+import java.util.HashMap;
 
 public class SumGroupExpr extends GroupExpr<Expr,SumGroupExpr> {
 
     private SumGroupExpr(Map<AndExpr, AndExpr> group, Where where, Expr expr, Where upWhere) {
-        super(group, where, expr, upWhere);
+        super(group, where, expr, upWhere, new HashMap<KeyExpr, Type>());
     }
     public static Expr create(Map<AndExpr, AndExpr> group, Where where, Expr expr) {
         return new SumGroupExpr(group, where, expr, Where.TRUE).packCreate();

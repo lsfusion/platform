@@ -68,7 +68,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LCFP groeq2;
     protected LCFP greater2;
     protected LJP between;
-    protected LP and1, andNot1;
+    protected LP object1, and1, andNot1;
     protected LP equals2,diff2;
 
     protected LP vtrue, vzero;
@@ -90,6 +90,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
+        object1 = addAFProp();
         and1 = addAFProp(false);
         andNot1 = addAFProp(true);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
@@ -907,7 +908,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addCGProp(AbstractGroup group, String sID, String caption, LP groupProp, LDP dataProp, Object... params) {
         List<GroupPropertyInterface> interfaces = readGroupInterfaces(groupProp, params);
         GroupProperty property = new CycleGroupProperty(sID, caption, interfaces, groupProp.property, dataProp.property);
-        
+
+        // нужно добавить ограничение на уникальность
 
         properties.add(property);
         if (group != null) group.add(property);
@@ -1051,7 +1053,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return false;
     }
 
-    public final static boolean checkClasses = true;
+    public final static boolean checkClasses = false;
     private boolean checkProps() {
         if(checkClasses)
             for(Property prop : properties)

@@ -60,7 +60,7 @@ public class CycleGroupProperty<T extends PropertyInterface> extends MaxGroupPro
         // берем I1=M1, I2=M2, …, In=Mn, G!=newValue and changed (and один из всех Ii - null), группируем по C1, …, Cn получаем те кого null'им в changeProperty
         Expr oldExpr = groupProperty.getExpr(mapKeys,modifier,null);
         Where oldWhere = (newValue instanceof DataObject?oldExpr.compare((DataObject) newValue,Compare.NOT_EQUALS):oldExpr.getWhere());
-        DataChangeModifier newOldModifier = new DataChangeModifier(modifier,toChange,false);
+        DataChangeModifier newOldModifier = new DataChangeModifier(modifier,toChange,true);
         WhereBuilder newOldChangedWhere = new WhereBuilder();
         Where newOldWhere = Where.FALSE;
         for(GroupPropertyInterface<T> groupInterface : interfaces) {

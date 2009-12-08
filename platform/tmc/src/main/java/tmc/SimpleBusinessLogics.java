@@ -42,7 +42,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("mydb2","server","postgres","sergtsop");
+        DataAdapter adapter = new PostgreDataAdapter("mydb2","localhost","postgres","11111");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))

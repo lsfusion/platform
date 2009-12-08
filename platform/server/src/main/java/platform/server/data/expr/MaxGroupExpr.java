@@ -5,14 +5,16 @@ import platform.server.caches.ParamLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.where.Where;
+import platform.server.data.type.Type;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.HashMap;
 
 public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
 
     private MaxGroupExpr(Map<AndExpr, AndExpr> group, Where where, AndExpr expr, Where upWhere) {
-        super(group, where, expr, upWhere);
+        super(group, where, expr, upWhere, new HashMap<KeyExpr, Type>());
     }
     public static Expr create(Map<AndExpr, AndExpr> group, Where where, AndExpr expr) {
         return new MaxGroupExpr(group, where, expr, Where.TRUE).packCreate();

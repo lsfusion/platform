@@ -126,7 +126,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     @Lazy
-    private ClassWhere<T> getClassWhere() {
+    public ClassWhere<T> getClassWhere() {
         return getQuery("value").getClassWhere(new ArrayList<String>());
     }
 

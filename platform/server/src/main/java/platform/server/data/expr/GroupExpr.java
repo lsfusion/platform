@@ -19,6 +19,8 @@ import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.classes.DataClass;
+import platform.server.classes.sets.AndClassSet;
 
 import java.util.*;
 
@@ -48,15 +50,17 @@ public abstract class GroupExpr<E extends Expr,This extends GroupExpr<E,This>> e
     public abstract E packExpr(E expr, Where trueWhere);
 
     // можно использовать напрямую только заведомо зная что не null
-    protected GroupExpr(Map<AndExpr, AndExpr> group, Where<?> where, E expr, Where upWhere) {
+    protected GroupExpr(Map<AndExpr, AndExpr> group, Where<?> where, E expr, Where upWhere, Map<KeyExpr,Type> keepTypes) {
 
         // PUSH VALUES
         Map<AndExpr,AndExpr> keepGroup = new HashMap<AndExpr, AndExpr>(); // проталкиваем values внутрь
+        Where equalsWhere = Where.TRUE; // чтобы лишних проталкиваний не было
         for(Map.Entry<AndExpr,AndExpr> groupExpr : group.entrySet())
             if (groupExpr.getValue() instanceof ValueExpr)
-                where = where.and(EqualsWhere.create(groupExpr.getKey(), (ValueExpr)groupExpr.getValue()));
+                equalsWhere = equalsWhere.and(EqualsWhere.create(groupExpr.getKey(), (ValueExpr)groupExpr.getValue()));
             else
                 keepGroup.put(groupExpr.getKey(),groupExpr.getValue());
+        where = where.and(equalsWhere);
         group = keepGroup;
 
         // PACK
@@ -83,10 +87,13 @@ public abstract class GroupExpr<E extends Expr,This extends GroupExpr<E,This>> e
         }
         assert expr.getWhere().and(where).getKeyExprs().isEmpty();
 
+        context = getContext(expr, group, where); // перечитаем
         this.expr = expr;
-        this.where = where;
         this.group = group;
-        context = getContext(this.expr, this.group, this.where); // перечитаем
+        for(Map.Entry<KeyExpr,Type> keepType : BaseUtils.filterKeys(keepTypes,context.keys).entrySet()) // сохраним типы
+            if(keepType.getValue() instanceof DataClass)
+                where = where.and(keepType.getKey().isClass((DataClass)keepType.getValue()));
+        this.where = where;
 
         assert checkExpr();
     }
@@ -109,10 +116,10 @@ public abstract class GroupExpr<E extends Expr,This extends GroupExpr<E,This>> e
         Map<KeyExpr,AndExpr> groupKeys = BaseUtils.splitKeys(group,context.keys,compares);
         if(groupKeys.size()==context.keys.size()) {
             QueryTranslator translator = new QueryTranslator(groupKeys,new HashMap<ValueExpr, ValueExpr>());
-            Where transWhere = where.translateQuery(translator);
+            Where equalsWhere = Where.TRUE; // чтобы лишних проталкиваний не было
             for(Map.Entry<AndExpr,AndExpr> compare : compares.entrySet()) // оставшиеся
-                transWhere = transWhere.and(EqualsWhere.create((AndExpr) compare.getKey().translateQuery(translator),compare.getValue()));
-            return expr.translateQuery(translator).and(transWhere);
+                equalsWhere = equalsWhere.and(EqualsWhere.create((AndExpr) compare.getKey().translateQuery(translator),compare.getValue()));
+            return expr.translateQuery(translator).and(where.translateQuery(translator).and(equalsWhere));
         }
 
         Map<KeyExpr,AndExpr> freeKeys = new HashMap<KeyExpr, AndExpr>();
@@ -140,8 +147,17 @@ public abstract class GroupExpr<E extends Expr,This extends GroupExpr<E,This>> e
         return Collections.disjoint(group.values(),trueWhere.getExprValues().keySet()) && getFullWhere().getClassWhere().means(trueWhere.getClassWhere().mapBack(group));
     }
 
+    @TwinLazy
+    private Map<KeyExpr, Type> getContextTypeWhere() {
+        Map<KeyExpr, Type> result = new HashMap<KeyExpr, Type>();
+        Where fullWhere = getFullWhere();
+        for(KeyExpr key : context.keys)
+            result.put(key,key.getType(fullWhere));
+        return result;
+    }
+
     public GroupExpr(This groupExpr,Where<?> falseWhere) { // в отличии от joins, expr нельзя проталкивать потому как повлияет на результат !!!
-        this(pushValues(groupExpr.group,falseWhere.not()), groupExpr.where, groupExpr.expr,falseWhere.not());
+        this(pushValues(groupExpr.group,falseWhere.not()), groupExpr.where, groupExpr.expr,falseWhere.not(), groupExpr.getContextTypeWhere());
     }
 
     // трансляция

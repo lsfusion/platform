@@ -8,6 +8,7 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.query.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.GroupExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhereSet;
