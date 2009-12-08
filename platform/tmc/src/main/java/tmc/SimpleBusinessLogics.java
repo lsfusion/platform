@@ -138,7 +138,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP currentExtIncDoc;
     LP docOutPriceOut;
     LP saleFormatArticleBetweenDateQuantity, sumSaleFormatArticleBetweenDateQuantity, saleArticle2;
-    LP sumsaleArticle2;
+    LP sumsaleArticle2, saleFormatGroupBetweenDateQuantity;
     LP article1SaleBestArticle2;
     LP percentForABC;
     LP resultABC;
@@ -367,12 +367,13 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleArticleBetweenDateQuantity = addSGProp(baseGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, 2, 3, 4);
 
         // свойства товаров по реализации по формату
-        saleFormatArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по формату за период", saleStoreArticleBetweenDateQuantity, storeFormat, 1, 2, 3, 4);
-        LP article1SaleWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4);
-        sumSaleFormatArticleBetweenDateQuantity = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateQuantity, 1, 3, 4);
-        saleArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, article1SaleWorsetArticle2, 1, 5, 3, 4, 2);
-        sumsaleArticle2 = addSGProp ("Сумма реал. по товару 1", saleArticle2, 1, 2, 3, 4);
-        percentForABC = addJProp ("Процент АВС", percentABC, sumsaleArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateQuantity, 1, 3, 4);
+        saleFormatArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по товару за период", saleStoreArticleBetweenDateQuantity, storeFormat, 1, 2, 3, 4);
+//        LP article1SaleWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4);
+//        sumSaleFormatArticleBetweenDateQuantity = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateQuantity, 1, 3, 4);
+//        saleArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, article1SaleWorsetArticle2, 1, 5, 3, 4, 2);
+//        sumsaleArticle2 = addSGProp ("Сумма реал. по товару 1", saleArticle2, 1, 2, 3, 4);
+//        percentForABC = addJProp ("Процент АВС", percentABC, sumsaleArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateQuantity, 1, 3, 4);
+        saleFormatGroupBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по группе за период", saleFormatArticleBetweenDateQuantity, 1, artGroup, 2, 3, 4);
 
         // Надбавка
         revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
@@ -471,8 +472,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 //        percentForABCSum = addJProp ("Процент АВС", percentABC, sumSaleSumArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateSum, 1, 3, 4);
 //        resultABCSum = initABCAnalyze(percentForABCSum," товара");
           resultABCSum = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateSum)," товара");
-          resultABCGroup = initABCAnalyze(initCalculateForABCAnalyze(saleFormatGroupBetweenDateSum)," группы");
-//          resultABC = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateQuantity)," кол-ва");
+          resultABCGroup = initABCAnalyze(initCalculateForABCAnalyze(saleFormatGroupBetweenDateSum)," группы по сумме");
+          resultABC = initABCAnalyze(initCalculateForABCAnalyze(saleFormatGroupBetweenDateQuantity)," группы по кол-ву");
         // изменение цен
         LDP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
         incPriceOutChange.setDefProp(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
@@ -1211,8 +1212,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
             addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
             addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, resultABCSum);
-            addPropertyView(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup);
+            addPropertyView(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup, saleFormatGroupBetweenDateQuantity, resultABC);
             addPropertyView(objArticle, objGroup, objDateFrom, objDateTo, properties, saleGroupBetweenDateSum);
+
             PropertyObjectNavigator artGroupImplement = addPropertyObjectImplement (artGroup, objArticle);
             addFixedFilter(new CompareFilterNavigator(artGroupImplement, Compare.EQUALS, objGroup));
 
