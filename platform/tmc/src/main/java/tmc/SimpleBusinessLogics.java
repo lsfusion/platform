@@ -42,7 +42,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("mydb2","localhost","postgres","11111");
+        DataAdapter adapter = new PostgreDataAdapter("mydb2","server","postgres","sergtsop");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -143,8 +143,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP percentForABC;
     LP resultABC;
     LP resultABCSum;
-    LP percentForABCSum;
+    LP percentForABCSum, resultABCGroup;
     LP saleFormatArticleBetweenDateSum;
+    LP saleFormatGroupBetweenDateSum, saleGroupBetweenDateSum;
         
     LP contractSupplier, specContract, extIncSupplier;
     LP storeSpecIncl, specArticleIncl;
@@ -458,7 +459,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         // свойства по суммам розничным за период
         LP saleBetweenDateSum = addJProp("Сумма розн. за период", and1, detailSumOut, 1, 2, betweenDocDate, 1, 3, 4);
         LP saleStoreBetweenDateSum = addSGProp("Реализация по складу за период", saleBetweenDateSum, outStore, 1, 2, 3, 4);
-        saleFormatArticleBetweenDateSum = addSGProp("Реализация по формату за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
+        saleFormatArticleBetweenDateSum = addSGProp("Реализ. по товару за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
+        saleFormatGroupBetweenDateSum = addSGProp("Реализ. по группе за период", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
+        saleGroupBetweenDateSum = addSGProp("Реализ. по группе за период", saleBetweenDateSum, 1, artGroup, 2, 3, 4);
 
         // свойства товаров по сумме реализации по формату
 //        LP article1SaleSumWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4);
@@ -468,7 +471,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 //        percentForABCSum = addJProp ("Процент АВС", percentABC, sumSaleSumArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateSum, 1, 3, 4);
 //        resultABCSum = initABCAnalyze(percentForABCSum," товара");
           resultABCSum = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateSum)," товара");
-          resultABC = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateQuantity)," кол-ва");
+          resultABCGroup = initABCAnalyze(initCalculateForABCAnalyze(saleFormatGroupBetweenDateSum)," группы");
+//          resultABC = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateQuantity)," кол-ва");
         // изменение цен
         LDP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
         incPriceOutChange.setDefProp(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
@@ -559,9 +563,10 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             NavigatorForm supplyRangeForm = new SupplyRangeNavigatorForm(supplyManagement, 1600, "Обеспечение ассортимента");
 
         NavigatorElement rangeManagement = new NavigatorElement(baseElement, 2000, "Управление ассортиментом");
-            NavigatorForm rangeFormatForm = new RangeNavigatorForm(rangeManagement, 2100, "Ассортимент по форматам", true);
-            NavigatorForm rangeArticleForm = new RangeNavigatorForm(rangeManagement, 2200, "Ассортимент по товарам", false);
-            NavigatorForm remainRangeForm = new RemainRangeNavigatorForm(rangeManagement, 2300, "Активные товары на складах");
+            NavigatorForm rangeGroupForm = new RangeGroupNavigatorForm(rangeManagement, 2100, "Ассортимент по группам");
+            NavigatorForm rangeFormatForm = new RangeNavigatorForm(rangeManagement, 2200, "Ассортимент по форматам", true);
+            NavigatorForm rangeArticleForm = new RangeNavigatorForm(rangeManagement, 2300, "Ассортимент по товарам", false);
+            NavigatorForm remainRangeForm = new RemainRangeNavigatorForm(rangeManagement, 2400, "Активные товары на складах");
 
         NavigatorElement distrManagement = new NavigatorElement(baseElement, 3000, "Управление распределением");
             NavigatorForm intraForm = new IntraNavigatorForm(distrManagement, 3100, "Внутреннее перемещение");
@@ -1184,12 +1189,38 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
             addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
-            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, saleFormatArticleBetweenDateQuantity, resultABC, resultABCSum);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum,  resultABCSum);
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
         }
     }
+
+    private class RangeGroupNavigatorForm extends DateIntervalNavigatorForm {
+
+        public RangeGroupNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectNavigator objFormat, objArticle, objGroup;
+            objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
+            objGroup = addSingleGroupObjectImplement(articleGroup, "Группа", properties, baseGroup, currentGroup);
+            objArticle = addSingleGroupObjectImplement(article, "Товар", properties,baseGroup, currentGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
+
+            addPropertyView(objArticle, objGroup, properties, baseGroup, currentGroup);
+            addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
+            addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, resultABCSum);
+            addPropertyView(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup);
+            addPropertyView(objArticle, objGroup, objDateFrom, objDateTo, properties, saleGroupBetweenDateSum);
+            PropertyObjectNavigator artGroupImplement = addPropertyObjectImplement (artGroup, objArticle);
+            addFixedFilter(new CompareFilterNavigator(artGroupImplement, Compare.EQUALS, objGroup));
+
+            PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
+            addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
+        }
+    }
+
 
     private class SalesArticleStoreNavigatorForm extends DateIntervalNavigatorForm {
 
