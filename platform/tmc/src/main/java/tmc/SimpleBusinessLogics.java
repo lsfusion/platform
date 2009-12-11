@@ -141,11 +141,16 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP sumsaleArticle2, saleFormatGroupBetweenDateQuantity;
     LP article1SaleBestArticle2;
     LP percentForABC;
+    LP percentForABCInsideGroupQuantity,sumSaleSameGroupArticle2, sumSaleSameGroupArticle, sumGroupSaleSameGroupArticle2, sumSaleFormatGroupBetweenDateQuantity, sumSaleSameGroupFormatArticle2;
+    LP sumSaleGroup2, percentForABCGroup, resultABCInsideGroupQuantity, resultABCInsideGroupSum;
     LP resultABC;
     LP resultABCSum;
     LP percentForABCSum, resultABCGroup;
+    LP resultABCInsideGroupQ;
     LP saleFormatArticleBetweenDateSum;
-    LP saleFormatGroupBetweenDateSum, saleGroupBetweenDateSum;
+    LP saleFormatGroupBetweenDateSum, wholesaleFormatArticleBetweenDateSum, wholesaleFormatBetweenDateSum, saleGroupBetweenDateSum, saleBetweenDateSum;
+    LDP categoryMark;
+    LP allsumSaleSameGroupArticle2;
         
     LP contractSupplier, specContract, extIncSupplier;
     LP storeSpecIncl, specArticleIncl;
@@ -182,8 +187,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP percentABC = addSFProp ("(prm1*100)/prm2", DoubleClass.instance, 2);
         return addJProp ("Процент АВС", percentABC, sumBetterScore2, 1, 2, 3, 4, sumAnalizedScoreBetweenDate, 1, 3, 4);
         }
-
-    LDP categoryMark;
 
     protected void initProperties() {
 
@@ -366,14 +369,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleStoreArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. на скл. за интервал", saleBetweenDateQuantity, outStore, 1, 2, 3, 4);
         saleArticleBetweenDateQuantity = addSGProp(baseGroup, "Реал. кол-во (по товару)", saleStoreArticleBetweenDateQuantity, 2, 3, 4);
 
-        // свойства товаров по реализации по формату
-        saleFormatArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по товару за период", saleStoreArticleBetweenDateQuantity, storeFormat, 1, 2, 3, 4);
-//        LP article1SaleWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4);
-//        sumSaleFormatArticleBetweenDateQuantity = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateQuantity, 1, 3, 4);
-//        saleArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, article1SaleWorsetArticle2, 1, 5, 3, 4, 2);
-//        sumsaleArticle2 = addSGProp ("Сумма реал. по товару 1", saleArticle2, 1, 2, 3, 4);
-//        percentForABC = addJProp ("Процент АВС", percentABC, sumsaleArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateQuantity, 1, 3, 4);
-        saleFormatGroupBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по группе за период", saleFormatArticleBetweenDateQuantity, 1, artGroup, 2, 3, 4);
 
         // Надбавка
         revalAdd = addDProp(baseGroup, "revalAdd", "Надбавка", DoubleClass.instance, revalDocument, article);
@@ -458,22 +453,62 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP documentSaleVatOut = addSGProp(baseGroup, "documentSaleVatOut", "Сумма НДС (розн.)", detailSumVatOut, 1);
 
         // свойства по суммам розничным за период
-        LP saleBetweenDateSum = addJProp("Сумма розн. за период", and1, detailSumOut, 1, 2, betweenDocDate, 1, 3, 4);
+        saleBetweenDateSum = addJProp("Сумма розн. за период", and1, detailSumOut, 1, 2, betweenDocDate, 1, 3, 4);
         LP saleStoreBetweenDateSum = addSGProp("Реализация по складу за период", saleBetweenDateSum, outStore, 1, 2, 3, 4);
-        saleFormatArticleBetweenDateSum = addSGProp("Реализ. по товару за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
-        saleFormatGroupBetweenDateSum = addSGProp("Реализ. по группе за период", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
+        saleFormatArticleBetweenDateSum = addSGProp("Сумма реализ. за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
+        wholesaleFormatArticleBetweenDateSum = addSGProp(baseGroup, "Сумма реализации за период", saleFormatArticleBetweenDateSum, 1, 3, 4);
+        wholesaleFormatBetweenDateSum = addJProp(baseGroup, "Сумма реализации за период", saleFormatArticleBetweenDateSum, storeFormat, 1, 3, 4);
+
         saleGroupBetweenDateSum = addSGProp("Реализ. по группе за период", saleBetweenDateSum, 1, artGroup, 2, 3, 4);
 
-        // свойства товаров по сумме реализации по формату
-//        LP article1SaleSumWorsetArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4);
-//        LP sumSaleFormatArticleBetweenDateSum = addSGProp ("Общее кол-во реал. за период по формату", saleFormatArticleBetweenDateSum, 1, 3, 4);
-//        LP saleSumArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, article1SaleSumWorsetArticle2, 1, 5, 3, 4, 2);
-//        LP sumSaleSumArticle2 = addSGProp ("Сумма реал. по товару 1", saleSumArticle2, 1, 2, 3, 4);
-//        percentForABCSum = addJProp ("Процент АВС", percentABC, sumSaleSumArticle2, 1, 2, 3, 4, sumSaleFormatArticleBetweenDateSum, 1, 3, 4);
-//        resultABCSum = initABCAnalyze(percentForABCSum," товара");
-          resultABCSum = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateSum)," товара");
-          resultABCGroup = initABCAnalyze(initCalculateForABCAnalyze(saleFormatGroupBetweenDateSum)," группы по сумме");
-          resultABC = initABCAnalyze(initCalculateForABCAnalyze(saleFormatGroupBetweenDateQuantity)," группы по кол-ву");
+        saleFormatArticleBetweenDateQuantity = addSGProp(baseGroup, "Кол-во реал. по товару за период", saleStoreArticleBetweenDateQuantity, storeFormat, 1, 2, 3, 4);
+
+       // свойства групп товаров по реализации по формату
+       // реализация по группе-формату
+       saleFormatGroupBetweenDateSum = addSGProp("Сумма реализ. за период", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
+       // реализация по всем группам формата за период
+       LP sumSaleFormatSum = addSGProp ("Реализ. по формату за период", saleFormatGroupBetweenDateSum, 1, 3, 4);
+       // группа 1 хуже группы 2
+       LP group1SaleWorseArticle2 = addJProp ("Группа 1 хуже группы 2", groeq2, saleFormatGroupBetweenDateSum, 1, 5, 3, 4, saleFormatGroupBetweenDateSum, 1, 2, 3, 4);
+       // сумма по группам хуже
+       LP saleGroup2 = addJProp ("Сумма реал. по группе 1", and1, saleFormatGroupBetweenDateSum, 1, 5, 3, 4, group1SaleWorseArticle2, 1, 5, 3, 4, 2);
+       // сумма по всем группам хуже
+       sumSaleGroup2 = addSGProp ("Сумма реализации по группам хуже",saleGroup2, 1, 2, 3, 4);
+       // процент для АВС-анализа по группе-формату
+       percentForABCGroup = addJProp ("Процент АВС", percentABC, sumSaleGroup2, 1, 2, 3, 4, sumSaleFormatSum, 1, 3, 4);
+       // АВС-категория группы в формате
+       resultABCGroup = initABCAnalyze(percentForABCGroup," группы");
+
+
+       // свойства товаров по реализации по группе  (по количеству)
+       LP article1SaleWorseArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4);
+       LP articleSameGroup = addJProp ("Товар 2 и товар 1 одной группы", equals2, artGroup, 1, artGroup, 2);
+       LP articleSameGroupWorseArticle2 = addJProp ("Товар 2 лучше товара 1 и одной группы", and1, article1SaleWorseArticle2, 1, 2, 3, 4, 5, articleSameGroup, 2, 5);
+        // сумма количеств по товарам группы
+       LP sumSaleGroupArticleQuantity = addSGProp ("Суммарное количество по группе-формату", saleFormatArticleBetweenDateQuantity, 1, artGroup, 2, 3, 4);
+       sumSaleSameGroupArticle = addJProp ("Суммарное количество по группе-формату", sumSaleGroupArticleQuantity, 1, artGroup, 2, 3, 4);
+        // сумма количеств по товарам хуже в группе
+       LP saleSameGroupArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, articleSameGroupWorseArticle2, 1, 2, 3, 4, 5);
+       sumSaleSameGroupArticle2 = addSGProp ("Суммарное кол-во реализации по товару 1 ", saleSameGroupArticle2, 1, 2, 3, 4);
+       // процент для АВС-анализа по товарам в группе-формате по количеству
+       percentForABCInsideGroupQuantity = addJProp ("Процент АВС", percentABC, sumSaleSameGroupArticle2, 1, 2, 3, 4, sumSaleSameGroupArticle, 1, 2, 3, 4);
+       resultABCInsideGroupQuantity = initABCAnalyze(percentForABCInsideGroupQuantity," товара по кол-ву");
+
+       // свойства товаров по реализации по группе  (по сумме)
+       LP article1SaleWorseArticle2Sum = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 2, 3, 4, saleFormatArticleBetweenDateSum, 1, 5, 3, 4);
+       LP articleSameGroupWorseArticle2Sum = addJProp ("Товар 2 лучше товара 1 и одной группы", and1, article1SaleWorseArticle2Sum, 1, 2, 3, 4, 5, articleSameGroup, 2, 5);
+        // сумма по товарам группы
+       LP sumSaleGroupArticleSum = addSGProp ("Сумма по группе-формату", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
+       LP sumSaleSameGroupArticleSum = addJProp ("Суммарное количество по группе-формату", sumSaleGroupArticleSum, 1, artGroup, 2, 3, 4);
+        // сумма количеств по товарам хуже в группе
+       LP saleSameGroupArticle2Sum = addJProp ("Сумма реал. по товару 1", and1, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, articleSameGroupWorseArticle2, 1, 2, 3, 4, 5);
+       LP sumSaleSameGroupArticle2Sum = addSGProp ("Суммарное кол-во реализации по товару 1 ", saleSameGroupArticle2Sum, 1, 2, 3, 4);
+       // процент для АВС-анализа по товарам в группе-формате по количеству
+       LP percentForABCInsideGroupSum = addJProp ("Процент АВС", percentABC, sumSaleSameGroupArticle2Sum, 1, 2, 3, 4, sumSaleSameGroupArticleSum, 1, 2, 3, 4);
+       resultABCInsideGroupSum = initABCAnalyze(percentForABCInsideGroupSum," товара по сумме");
+
+       // АВС-категория товара по формату
+       resultABCSum = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateSum)," товара");
         // изменение цен
         LDP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
         incPriceOutChange.setDefProp(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
@@ -1211,9 +1246,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addPropertyView(objArticle, objGroup, properties, baseGroup, currentGroup);
             addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
             addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
-            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum, resultABCSum);
-            addPropertyView(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup, saleFormatGroupBetweenDateQuantity, resultABC);
-            addPropertyView(objArticle, objGroup, objDateFrom, objDateTo, properties, saleGroupBetweenDateSum);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateQuantity, resultABCInsideGroupQuantity, saleFormatArticleBetweenDateSum, resultABCInsideGroupSum);
+            addPropertyView(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup);
 
             PropertyObjectNavigator artGroupImplement = addPropertyObjectImplement (artGroup, objArticle);
             addFixedFilter(new CompareFilterNavigator(artGroupImplement, Compare.EQUALS, objGroup));
