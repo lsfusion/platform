@@ -20,8 +20,8 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.DataSession;
-import platform.server.session.PropertyChange;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
 import platform.base.BaseUtils;
@@ -197,8 +197,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement) throws SQLException {
-        PropertyChange change = (PropertyChange)implement.getChangeProperty(currentForm.session, currentForm, securityPolicy.property.change, false);
-        addCacheObject(change.read(currentForm.session,currentForm)); // считываем значение чтобы закинуть в кэш
+        PropertyValueImplement<?> change = implement.getChangeProperty();
+        addCacheObject((Integer) change.read(currentForm.session,currentForm)); // считываем значение чтобы закинуть в кэш
         setDialogClass(change.getDialogClass());
 
         DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change);

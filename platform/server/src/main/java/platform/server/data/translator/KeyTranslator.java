@@ -11,12 +11,12 @@ import java.util.Map;
 public class KeyTranslator extends Translator<KeyExpr> {
 
     public KeyTranslator(Map<KeyExpr, KeyExpr> iKeys, Map<ValueExpr, ValueExpr> iValues) {
-        super(iKeys, iValues);
+        super(iKeys, iValues, true);
     }
 
-    public <K> Map<K, AndExpr> translateDirect(Map<K, ? extends AndExpr> map) {
-        Map<K,AndExpr> transMap = new HashMap<K, AndExpr>();
-        for(Map.Entry<K,? extends AndExpr> entry : map.entrySet())
+    public <K> Map<K, BaseExpr> translateDirect(Map<K, ? extends BaseExpr> map) {
+        Map<K, BaseExpr> transMap = new HashMap<K, BaseExpr>();
+        for(Map.Entry<K,? extends BaseExpr> entry : map.entrySet())
             transMap.put(entry.getKey(),entry.getValue().translateDirect(this));
         return transMap;
     }

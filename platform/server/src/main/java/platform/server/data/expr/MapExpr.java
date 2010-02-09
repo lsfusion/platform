@@ -93,8 +93,8 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
             return MapExpr.this.translateQuery(translator).getWhere();
         }
 
-        public void fillContext(Context context) {
-            MapExpr.this.fillContext(context);
+        public void enumerate(SourceEnumerator enumerator) {
+            MapExpr.this.enumerate(enumerator);
         }
 
         protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
@@ -111,22 +111,22 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
         }
     }
 
-    public static <K> DataWhereSet getExprFollows(Map<K,AndExpr> map) {
+    public static <K> DataWhereSet getExprFollows(Map<K, BaseExpr> map) {
         DataWhereSet follows = new DataWhereSet();
-        for(AndExpr expr : map.values())
+        for(BaseExpr expr : map.values())
             follows.addAll(expr.getFollows());
         return follows;        
     }
 
-    public static Where getWhere(Collection<AndExpr> col) {
+    public static Where getWhere(Collection<BaseExpr> col) {
         Where joinsWhere = Where.TRUE;
-        for(AndExpr expr : col)
+        for(BaseExpr expr : col)
             joinsWhere = joinsWhere.and(expr.getWhere());
         return joinsWhere;
 
     }
 
-    public static <K> Where getJoinsWhere(Map<K, AndExpr> map) {
+    public static <K> Where getJoinsWhere(Map<K, BaseExpr> map) {
         return getWhere(map.values());
     }
 }

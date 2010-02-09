@@ -26,7 +26,7 @@ public abstract class QuickMap<K,V> {
         indexes = new int[(int)(table.length * loadFactor)];
     }
 
-    public QuickMap(QuickMap<K,V> set) {
+    public QuickMap(QuickMap<? extends K,? extends V> set) {
         size = set.size;
         loadFactor = set.loadFactor;
 
@@ -86,7 +86,7 @@ public abstract class QuickMap<K,V> {
         return add(key,hash(key.hashCode()),value);
     }
 
-    public boolean add(int index,QuickMap<K,V> map) {
+    private boolean add(int index,QuickMap<? extends K,? extends V> map) {
         return add(map.table[map.indexes[index]],map.htable[map.indexes[index]],map.vtable[map.indexes[index]]);
     }
 
@@ -109,7 +109,7 @@ public abstract class QuickMap<K,V> {
         return true;
     }
 
-    public boolean addAll(QuickMap<K,V> set) {
+    public boolean addAll(QuickMap<? extends K,? extends V> set) {
         for(int i=0;i<set.size;i++)
             if(!add(i,set))
                 return false;
@@ -126,16 +126,24 @@ public abstract class QuickMap<K,V> {
         return true;
     }
 
-
-    private V get(K key,int hash) {
+    // в некоторых случаях из-за багов Java на instanceof не проверишь
+    private V getObject(Object key, int hash) {
         for(int i=hash & (table.length-1);table[i]!=null;i=(i==table.length-1?0:i+1))
             if(htable[i]==hash && table[i].equals(key))
                 return (V) vtable[i];
         return null;
     }
 
+    private V get(K key,int hash) {
+        return getObject(key, hash);
+    }
+
+    public V getObject(Object key) {
+        return getObject(key,hash(key.hashCode()));
+    }
+
     public V get(K key) {
-        return get(key,hash(key.hashCode()));
+        return getObject(key);
     }
 
     @Override

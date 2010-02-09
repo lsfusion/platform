@@ -11,12 +11,12 @@ import java.util.Map;
 
 public class MaxUnionProperty extends UnionProperty {
 
-    public Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> operands = new ArrayList<PropertyMapImplement<PropertyInterface, PropertyInterface>>();
+    public Collection<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 
-    public Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         Expr result = null;
-        for(PropertyMapImplement<PropertyInterface, PropertyInterface> operand : operands) {
+        for(PropertyMapImplement<?, Interface> operand : operands) {
             Expr operandExpr = operand.mapExpr(joinImplement, modifier, changedWhere);
             if(result==null)
                 result = operandExpr;
@@ -26,7 +26,7 @@ public class MaxUnionProperty extends UnionProperty {
         return result;
     }
 
-    protected Collection<PropertyMapImplement<PropertyInterface, PropertyInterface>> getOperands() {
+    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
         return operands;
     }
 

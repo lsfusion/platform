@@ -7,8 +7,7 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.HashContext;
 import platform.server.data.query.InnerJoins;
-import platform.server.data.expr.AndExpr;
-import platform.server.data.expr.GroupExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhereSet;
@@ -18,11 +17,11 @@ import platform.base.BaseUtils;
 // если operator1 не null и больше operator2 или operator2 null
 public class GreaterWhere extends CompareWhere {
 
-    private GreaterWhere(AndExpr operator1, AndExpr operator2) {
+    private GreaterWhere(BaseExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
     }
 
-    public static Where create(AndExpr operator1, AndExpr operator2) {
+    public static Where create(BaseExpr operator1, BaseExpr operator2) {
         if(BaseUtils.hashEquals(operator1,operator2))
             return Where.FALSE;
         return create(new GreaterWhere(operator1, operator2));

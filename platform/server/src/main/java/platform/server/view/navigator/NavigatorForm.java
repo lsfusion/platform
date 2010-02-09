@@ -139,9 +139,9 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
                 ValueClass propertyClass = objects[interfaceCount++].baseClass;
                 propertyInterface.put(iface, propertyClass.getUpSet());
             }
- 
+
             if ((upClasses && property.anyInInterface(propertyInterface)) || (!upClasses && property.allInInterface(propertyInterface)))
-                addPropertyView(new LP<P,Property<P>>(property, mapping), groupObject, objects);
+                addPropertyView(new LP<P>(property, mapping), groupObject, objects);
         }
     }
 

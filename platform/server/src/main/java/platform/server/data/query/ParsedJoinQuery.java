@@ -6,7 +6,7 @@ import platform.base.OrderedMap;
 import platform.server.caches.Lazy;
 import platform.server.caches.SynchronizedLazy;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -20,6 +20,7 @@ import platform.server.data.where.Where;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Immutable
 class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
@@ -28,11 +29,11 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     public final Map<V, Expr> properties;
     protected final Where where;
 
-    protected final Context context;
+    protected final Set<ValueExpr> values;
 
     ParsedJoinQuery(Query<K,V> query) {
         mapKeys = query.mapKeys;
-        context = query.getContext();
+        values = query.getValues();
 
         properties = query.where.followTrue(query.properties);
         where = query.where;
@@ -48,7 +49,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         assert joinImplement.size()==mapKeys.size();
-        return join(joinImplement,BaseUtils.toMap(context.values));
+        return join(joinImplement,BaseUtils.toMap(values));
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
@@ -69,16 +70,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         Where joinWhere = Where.TRUE; // надо еще where join'ов закинуть
         for(Expr joinExpr : joinImplement.values())
             joinWhere = joinWhere.and(joinExpr.getWhere());
-        return new CaseJoin<V>(joinWhere, new TranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement), mapValues), this));
-    }
-
-    public ParsedJoinQuery(Context iContext,Map<K,KeyExpr> iMapKeys,Map<V, Expr> iProperties, Where iWhere) { // для groupQuery full join'ов
-        mapKeys = iMapKeys;
-
-        properties = iProperties;
-        where = iWhere;
-
-        context = iContext;
+        return new CaseJoin<V>(joinWhere, new TranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement), mapValues, true), this));
     }
 
     // для заданных свойств вытягивает условия на классы для них
@@ -88,10 +80,10 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         ClassWhere<B> result = new ClassWhere<B>();
         for(MapCase<? extends V> mapCase : CaseExpr.pullCases(BaseUtils.filterKeys(properties,classProps))) {
             Where caseWhere = mapCase.where.and(upWhere.not());
-            for(AndExpr expr : mapCase.data.values()) // все следствия за and'им
+            for(BaseExpr expr : mapCase.data.values()) // все следствия за and'им
                 caseWhere = caseWhere.and(expr.getWhere());
 
-            result = result.or(caseWhere.getClassWhere().get(BaseUtils.<B, AndExpr>forceMerge(mapCase.data, mapKeys)));
+            result = result.or(caseWhere.getClassWhere().get(BaseUtils.<B, BaseExpr>forceMerge(mapCase.data, mapKeys)));
 
             upWhere = upWhere.or(mapCase.where);
         }

@@ -15,7 +15,7 @@ import platform.server.data.where.Where;
 import java.util.Map;
 
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
-// придется делать AndExpr
+// придется делать BaseExpr
 @TranslateExprLazy
 public class LinearExpr extends StaticClassExpr {
 
@@ -44,8 +44,8 @@ public class LinearExpr extends StaticClassExpr {
             return map.getSource(compile);
     }
 
-    public void fillContext(Context context) {
-        map.fillContext(context);
+    public void enumerate(SourceEnumerator enumerator) {
+        map.enumerate(enumerator);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class LinearExpr extends StaticClassExpr {
     @Override
     public boolean equals(Object obj) {
         if(map.size()==1) {
-            Map.Entry<AndExpr, Integer> singleEntry = BaseUtils.singleEntry(map);
+            Map.Entry<BaseExpr, Integer> singleEntry = BaseUtils.singleEntry(map);
             if(singleEntry.getValue().equals(1)) return singleEntry.getKey().equals(obj);
         }
         return super.equals(obj);
@@ -77,7 +77,7 @@ public class LinearExpr extends StaticClassExpr {
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
         Expr result = null;
-        for(Map.Entry<AndExpr,Integer> operand : map.entrySet()) {
+        for(Map.Entry<BaseExpr,Integer> operand : map.entrySet()) {
             Expr transOperand = operand.getKey().translateQuery(translator).scale(operand.getValue());
             if(result==null)
                 result = transOperand;
@@ -89,20 +89,20 @@ public class LinearExpr extends StaticClassExpr {
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
     @ParamLazy
-    public AndExpr translateDirect(KeyTranslator translator) {
+    public BaseExpr translateDirect(KeyTranslator translator) {
         LinearOperandMap transMap = new LinearOperandMap();
-        for(Map.Entry<AndExpr,Integer> operand : map.entrySet())
+        for(Map.Entry<BaseExpr,Integer> operand : map.entrySet())
             transMap.put(operand.getKey().translateDirect(translator),operand.getValue());
         return new LinearExpr(transMap);
     }
 
-    public AndExpr packFollowFalse(Where where) {
+    public BaseExpr packFollowFalse(Where where) {
         return map.packFollowFalse(where).getExpr();
     }
 
     public DataWhereSet getFollows() {
         DataWhereSet[] follows = new DataWhereSet[map.size()] ; int num = 0;
-        for(AndExpr expr : map.keySet())
+        for(BaseExpr expr : map.keySet())
             follows[num++] = expr.getFollows();
         return new DataWhereSet(follows);
     }

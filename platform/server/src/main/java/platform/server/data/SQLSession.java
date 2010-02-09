@@ -3,7 +3,7 @@ package platform.server.data;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.query.Query;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.DataAdapter;
@@ -247,7 +247,7 @@ public class SQLSession {
         // по сути пустое кол-во ключей
         Query<Object,String> isRecQuery = new Query<Object,String>(new HashMap<Object, KeyExpr>());
 
-        Map<KeyField, AndExpr> keyExprs = new HashMap<KeyField, AndExpr>();
+        Map<KeyField, BaseExpr> keyExprs = new HashMap<KeyField, BaseExpr>();
         for(KeyField key : table.keys)
             keyExprs.put(key,keyFields.get(key).getExpr());
 
@@ -281,7 +281,7 @@ public class SQLSession {
         // по сути пустое кол-во ключей
         Query<Object,String> getQuery = new Query<Object,String>(new HashMap<Object,KeyExpr>());
 
-        Map<KeyField,AndExpr> keyExprs = new HashMap<KeyField,AndExpr>();
+        Map<KeyField, BaseExpr> keyExprs = new HashMap<KeyField, BaseExpr>();
         for(KeyField key : table.keys)
             keyExprs.put(key,keyFields.get(key).getExpr());
 

@@ -114,7 +114,7 @@ public class CompiledQuery<K,V> {
 
         int paramCount = 0;
         params = new HashMap<ValueExpr, String>();
-        for(ValueExpr mapValue : query.context.values)
+        for(ValueExpr mapValue : query.values)
             params.put(mapValue, "qwer" + (paramCount++) + "ffd");
 
         // разделяем на JoinWhere
@@ -180,6 +180,7 @@ public class CompiledQuery<K,V> {
                     String joinSource = ""; // заполняем Source
                     if(dataAnds.size()==0)
                         throw new RuntimeException("Не должно быть");
+                    else
                     if(dataAnds.size()==1)
                         joinSource = dataAnds.iterator().next().alias +'.'+joinName;
                     else {
@@ -289,8 +290,8 @@ public class CompiledQuery<K,V> {
             super(params, syntax);
 
             this.innerWhere = innerWhere;
-            for(Map.Entry<KeyExpr,ValueExpr> exprValue : innerWhere.keyValues.entrySet())
-                keySelect.put((KeyExpr)exprValue.getKey(),params.get(exprValue.getValue()));
+            for(Map.Entry<KeyExpr, BaseExpr> exprValue : innerWhere.keyValues.entrySet())
+                keySelect.put(exprValue.getKey(),exprValue.getValue().getSource(this));
 
             // обработаем inner'ы
             Collection<Table.Join> innerTables = new ArrayList<Table.Join>(); Collection<GroupJoin> innerGroups = new ArrayList<GroupJoin>();
@@ -313,7 +314,7 @@ public class CompiledQuery<K,V> {
             final String join;
             final boolean inner;
 
-            protected abstract Map<String,AndExpr> initJoins(I innerJoin);
+            protected abstract Map<String, BaseExpr> initJoins(I innerJoin);
 
             public JoinSelect(I innerJoin) {
                 alias = "t" + (aliasNum++);
@@ -322,7 +323,7 @@ public class CompiledQuery<K,V> {
                 // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
                 String joinString = "";
                 Map<String,KeyExpr> joinKeys = new HashMap<String, KeyExpr>();
-                for(Map.Entry<String,AndExpr> keyJoin : initJoins(innerJoin).entrySet()) {
+                for(Map.Entry<String, BaseExpr> keyJoin : initJoins(innerJoin).entrySet()) {
                     String keySource = alias + "." + keyJoin.getKey();
                     if(keyJoin.getValue() instanceof KeyExpr)
                         joinKeys.put(keySource,(KeyExpr)keyJoin.getValue());
@@ -392,9 +393,9 @@ public class CompiledQuery<K,V> {
         class TableSelect extends JoinSelect<Table.Join> {
             String source;
 
-            protected Map<String, AndExpr> initJoins(Table.Join table) {
-                Map<String,AndExpr> result = new HashMap<String,AndExpr>();
-                for(Map.Entry<KeyField,AndExpr> expr : table.joins.entrySet())
+            protected Map<String, BaseExpr> initJoins(Table.Join table) {
+                Map<String, BaseExpr> result = new HashMap<String, BaseExpr>();
+                for(Map.Entry<KeyField, BaseExpr> expr : table.joins.entrySet())
                     result.put(expr.getKey().toString(),expr.getValue());
                 return result;
             }
@@ -427,15 +428,14 @@ public class CompiledQuery<K,V> {
         }
 
         class GroupSelect extends JoinSelect<GroupJoin> {
-            Map<String,AndExpr> group;
-            final Context context;
-            final Where where;
+            Map<String, BaseExpr> group;
+            final Set<KeyExpr> keys;
 
-            protected Map<String, AndExpr> initJoins(GroupJoin groupJoin) {
+            protected Map<String, BaseExpr> initJoins(GroupJoin groupJoin) {
                 int keysNum = 0;
-                Map<String,AndExpr> result = new HashMap<String, AndExpr>();
-                group = new HashMap<String, AndExpr>();
-                for(Map.Entry<AndExpr,AndExpr> join : groupJoin.group.entrySet()) {
+                Map<String, BaseExpr> result = new HashMap<String, BaseExpr>();
+                group = new HashMap<String, BaseExpr>();
+                for(Map.Entry<BaseExpr, BaseExpr> join : groupJoin.group.entrySet()) {
                     String keyName = "k" + (keysNum++);
                     result.put(keyName,join.getValue());
                     group.put(keyName,join.getKey());
@@ -445,8 +445,7 @@ public class CompiledQuery<K,V> {
 
             GroupSelect(GroupJoin groupJoin) {
                 super(groupJoin);
-                where = groupJoin.where;
-                context = groupJoin.getContext();
+                keys = groupJoin.getKeys();
             }
 
             final Map<Expr,String> exprs = new HashMap<Expr, String>();
@@ -491,7 +490,7 @@ public class CompiledQuery<K,V> {
                     exprWhere = exprWhere.or(groupExpr.expr.getWhere());
                 }
 
-                Where fullWhere = where.and(exprWhere).and(GroupExpr.getJoinsWhere(group));
+                Where fullWhere = exprWhere.and(GroupExpr.getJoinsWhere(group));
 
                 Map<platform.server.data.expr.Expr,String> fromPropertySelect = new HashMap<platform.server.data.expr.Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
@@ -503,7 +502,7 @@ public class CompiledQuery<K,V> {
                 else */
 //                fromSelect = new ParsedJoinQuery<KeyExpr,Expr>(context,BaseUtils.toMap(context.keys),BaseUtils.toMap(queryExprs), fullWhere)
 //                    .compileSelect(syntax).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
-                fromSelect = new Query<KeyExpr, platform.server.data.expr.Expr>(BaseUtils.toMap(context.keys),BaseUtils.toMap(queryExprs), fullWhere)
+                fromSelect = new Query<KeyExpr, platform.server.data.expr.Expr>(BaseUtils.toMap(keys),BaseUtils.toMap(queryExprs), fullWhere)
                     .compile(syntax).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, params);
 
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);

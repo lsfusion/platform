@@ -42,6 +42,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,V> List<V> mapList(List<K> list, Map<K,V> map) {
+        List<V> result = new ArrayList<V>();
+        for(K element : list)
+            result.add(map.get(element));
+        return result;
+    }
+
     public static <K,E,V> Map<K,V> innerJoin(Map<K,E> map, Map<E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,E> entry : map.entrySet()) {
@@ -558,6 +565,10 @@ public class BaseUtils {
         return (List<E>)(List<? extends I>)list;        
     }
 
+    public static <K,I,E extends I> Map<K,E> immutableCast(Map<K,I> map) {
+        return (Map<K,E>)(Map<K,? extends I>)map;        
+    }
+
     public static <I> I single(Collection<I> col) {
         assert col.size()==1;
         return col.iterator().next();
@@ -604,5 +615,16 @@ public class BaseUtils {
             return "";
         else
             return name;
+    }
+
+    public static <K,V> Map<K,V> buildMap(Collection<K> col1, Collection<V> col2) {
+        assert col1.size() == col2.size();
+
+        Iterator<K> it1 = col1.iterator();
+        Iterator<V> it2 = col2.iterator();
+        Map<K,V> result = new HashMap<K, V>();
+        while(it1.hasNext())
+            result.put(it1.next(),it2.next());
+        return result;
     }
 }

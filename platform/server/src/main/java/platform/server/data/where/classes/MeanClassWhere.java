@@ -27,7 +27,7 @@ public class MeanClassWhere extends DataWhere {
         return packWhere;
     }
 
-    public void fillContext(Context context) {
+    public void enumerate(SourceEnumerator enumerator) {
 //        throw new RuntimeException("Not supported");
     }
 

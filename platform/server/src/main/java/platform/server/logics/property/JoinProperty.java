@@ -1,38 +1,44 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.expr.Expr;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.interop.Compare;
 
 import java.util.*;
-import java.sql.SQLException;
 
-public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<JoinPropertyInterface> {
-    public PropertyImplement<PropertyInterfaceImplement<JoinPropertyInterface>,T> implement;
+public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<JoinProperty.Interface> {
+    public PropertyImplement<PropertyInterfaceImplement<Interface>,T> implement;
 
-    static Collection<JoinPropertyInterface> getInterfaces(int intNum) {
-        Collection<JoinPropertyInterface> interfaces = new ArrayList<JoinPropertyInterface>();
+    public static class Interface extends PropertyInterface<Interface> {
+        Interface(int ID) {
+            super(ID);
+        }
+    }
+
+    static Collection<Interface> getInterfaces(int intNum) {
+        Collection<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<intNum;i++)
-            interfaces.add(new JoinPropertyInterface(i));
+            interfaces.add(new Interface(i));
         return interfaces;
     }
 
-    public JoinProperty(String sID, String caption, int intNum) {
+    public JoinProperty(String sID, String caption, int intNum, boolean implementChange) {
         super(sID, caption, getInterfaces(intNum));
+        this.implementChange = implementChange;
     }
 
-    public Expr calculateExpr(Map<JoinPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+        Map<T, Expr> result = new HashMap<T, Expr>();
+        for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceImplement : implement.mapping.entrySet())
+            result.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, modifier, changedWhere));
+        return result;    }
 
-        // считаем новые Expr'ы и классы
-        Map<T, Expr> implementExprs = new HashMap<T, Expr>();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> interfaceImplement : implement.mapping.entrySet())
-            implementExprs.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, modifier, changedWhere));
-        return implement.property.getExpr(implementExprs, modifier, changedWhere);
+
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+        return implement.property.getExpr(getJoinImplements(joinImplement, modifier, changedWhere), modifier, changedWhere);
     }
 
     @Override
@@ -41,34 +47,64 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         depends.add(implement.property);       
     }
 
+    // разрешить менять основное свойство
+    public final boolean implementChange;
+    
     @Override
-    public DataChange getChangeProperty(DataSession session, Map<JoinPropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
-        if(implement.mapping.size()==1)
-            return BaseUtils.singleValue(implement.mapping).mapGetChangeProperty(session, interfaceValues, modifier, securityPolicy, externalID);
+    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
-            assert implement.mapping.size()==2;
-            Iterator<PropertyInterfaceImplement<JoinPropertyInterface>> i = implement.mapping.values().iterator();
-            PropertyInterfaceImplement<JoinPropertyInterface> op1 = i.next();
-            PropertyInterfaceImplement<JoinPropertyInterface> op2 = i.next();
-            PropertyChange joinProperty;
-            if((joinProperty =op1.mapGetJoinChangeProperty(session, interfaceValues, modifier, securityPolicy, externalID))!=null)
-                return new EqualsChange(joinProperty, op2.read(session, interfaceValues, modifier));
-            if((joinProperty =op2.mapGetJoinChangeProperty(session, interfaceValues, modifier, securityPolicy, externalID))!=null)
-                return new EqualsChange(joinProperty, op1.read(session, interfaceValues, modifier));
+            U result = modifier.newChanges();
+            for(Property<?> property : getDepends()) {
+                result.add(property.getUsedDataChanges(modifier));
+                result.add(property.getUsedChanges(modifier));
+            }
         }
-        return null;
+
+        if(implementChange) {
+            U result = modifier.newChanges();
+            result.add(implement.property.getUsedDataChanges(modifier));
+            Set<Property> implementProps = new HashSet<Property>();
+            fillDepends(implementProps,implement.mapping.values());
+            result.add(Property.getUsedChanges(implementProps,modifier));
+            return result;
+        }
+
+
+        return super.getUsedDataChanges(modifier);
+    }
+
+    private static DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
+        return changeImp.mapJoinDataChanges(change.mapKeys,valueImp.mapExpr(change.mapKeys,modifier,null).and(change.expr.getWhere()),change.where,changedWhere,modifier);
     }
 
     @Override
-    public PropertyChange getJoinChangeProperty(DataSession session, Map<JoinPropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
-        Map<T,DataObject> propertyImplement = new HashMap<T, DataObject>();
-        for(Map.Entry<T,PropertyInterfaceImplement<JoinPropertyInterface>> interfaceImplement : implement.mapping.entrySet()) {
-            ObjectValue implementValue = interfaceImplement.getValue().read(session, interfaceValues, modifier);
-            if(implementValue instanceof DataObject)
-                propertyImplement.put(interfaceImplement.getKey(), (DataObject) implementValue);
-            else
-                return null;
+    public DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+        if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
+            assert implement.mapping.size()==2;
+            Iterator<PropertyInterfaceImplement<Interface>> i = implement.mapping.values().iterator();
+            PropertyInterfaceImplement<Interface> op1 = i.next();
+            PropertyInterfaceImplement<Interface> op2 = i.next();
+
+            // сначала первый на второй пытаемся изменить, затем для оставшихся второй на первый второй
+            WhereBuilder changedWhere1 = new WhereBuilder();
+            DataChanges result1 = getDataChanges(change, changedWhere1, modifier, op1, op2);
+            if(changedWhere!=null) changedWhere.add(changedWhere1.toWhere());
+
+            return new DataChanges(result1, getDataChanges(change.and(changedWhere1.toWhere().not()), changedWhere, modifier, op2, op1));
         }
-        return implement.property.getJoinChangeProperty(session, propertyImplement, modifier, securityPolicy, externalID);
+
+        if(implementChange) // groupBy'им выбирая max
+            return implement.property.getJoinDataChanges(getJoinImplements(change.mapKeys, modifier, null),change.expr,change.where,modifier,changedWhere);
+
+        return super.getDataChanges(change, changedWhere, modifier);
     }
+
+    @Override
+    public PropertyValueImplement getChangeProperty(Map<Interface, DataObject> mapValues) {
+        if(implement.mapping.size()==1)
+            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapChangeProperty(mapValues);
+        else
+            return super.getChangeProperty(mapValues);
+    }
+
 }

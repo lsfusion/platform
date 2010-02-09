@@ -1,50 +1,93 @@
 package platform.server.session;
 
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.Property;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.where.Where;
+import platform.server.data.query.Query;
+import platform.server.data.query.HashContext;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.translator.KeyTranslator;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.data.type.Type;
-import platform.server.classes.CustomClass;
-import platform.server.data.SQLSession;
-import platform.server.view.navigator.filter.FilterNavigator;
-import platform.server.view.navigator.ObjectNavigator;
+import platform.server.caches.MapHashIterable;
+import platform.server.caches.MapContext;
+import platform.server.caches.MapParamsIterable;
+import platform.server.caches.Lazy;
 import platform.base.BaseUtils;
 
-import java.sql.SQLException;
 import java.util.Map;
-import java.util.Collection;
+import java.util.Set;
+import java.util.HashSet;
 
-public abstract class PropertyChange<T extends PropertyInterface,P extends Property<T>> implements DataChange {
-    public final P property;
-    protected final Map<T,DataObject> mapping;
+public class PropertyChange<T extends PropertyInterface> implements MapContext {
+    public Map<T,KeyExpr> mapKeys;
+    public Expr expr;
+    public Where where;
 
-    public PropertyChange(P property, Map<T, DataObject> mapping) {
-        this.property = property;
-        this.mapping = mapping;
+    public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr, Where where) {
+        this.mapKeys = mapKeys;
+        this.expr = expr;
+        this.where = where;
     }
 
-    public void change(DataSession session, TableModifier<? extends TableChanges> modifier, Object newValue, boolean externalID) throws SQLException {
-        change(session, session.getObjectValue(newValue, property.getType()), externalID, modifier);
+    public Set<KeyExpr> getKeys() {
+        return new HashSet<KeyExpr>(mapKeys.values());
     }
 
-    public abstract void change(DataSession session, ObjectValue newValue, boolean externalID, TableModifier<? extends TableChanges> modifier) throws SQLException;
-
-    public abstract Collection<FilterNavigator> getFilters(ObjectNavigator valueObject,BusinessLogics<?> BL);
-
-    public abstract CustomClass getDialogClass();
-
-    public Integer read(SQLSession session, TableModifier<? extends TableChanges> modifier) throws SQLException {
-        return (Integer) property.read(session, mapping, modifier);
+    @Lazy
+    public Set<ValueExpr> getValues() {
+        return AbstractSourceJoin.enumValues(expr,where);
     }
 
-    public Type getType() {
-        return property.getType();
+    public PropertyChange<T> and(Where andWhere) {
+        return new PropertyChange<T>(mapKeys, expr, where.and(andWhere));
+    }
+
+    public <P extends PropertyInterface> PropertyChange<P> map(Map<P,T> mapping) {
+        return new PropertyChange<P>(BaseUtils.join(mapping,mapKeys),expr,where);
+    }
+
+    public PropertyChange<T> add(PropertyChange<T> change) {
+        if(equals(change))
+            return this;
+        throw new RuntimeException("not supported yet");
+    }
+
+    public <V> Query<T,V> getQuery(V value) {
+        Query<T,V> query = new Query<T, V>(mapKeys); // через query для кэша
+        query.and(where);
+        query.properties.put(value,expr);
+        return query;
+   }
+
+    public int hash(HashContext hashContext) {
+        int hash = 0;
+        for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
+            hash += mapKey.getKey().hashCode() ^ mapKey.getValue().hashContext(hashContext);
+
+        return where.hashContext(hashContext)*31*31 + expr.hashContext(hashContext)*31 + hash;
     }
 
     @Override
-    public String toString() {
-        return property.toString() +" <" + BaseUtils.toString(mapping.values(),",") + ">";
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PropertyChange)) return false;
+
+        PropertyChange<?> change = (PropertyChange)o;
+        for(KeyTranslator translator : new MapHashIterable(this, change, false))
+            if(where.translateDirect(translator).equals(change.where) && expr.translateDirect(translator).equals(change.expr))
+                return true;
+        return false;
+    }
+
+    boolean hashCoded = false;
+    int hashCode;
+    @Override
+    public int hashCode() {
+        if(!hashCoded) {
+            hashCode = MapParamsIterable.hash(this,false);
+            hashCoded = true;
+        }
+        return hashCode;
     }
 }

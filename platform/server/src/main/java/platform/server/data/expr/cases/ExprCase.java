@@ -1,13 +1,17 @@
 package platform.server.data.expr.cases;
 
 import platform.server.data.query.HashContext;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.Where;
 
-public class ExprCase extends Case<AndExpr> {
+public class ExprCase extends Case<BaseExpr> {
 
-    public ExprCase(Where iWhere, AndExpr iExpr) {
-        super(iWhere,iExpr);
+    public ExprCase(Where where, BaseExpr expr) {
+        super(where,expr);
+    }
+
+    public ExprCase(BaseExpr expr) {
+        super(Where.TRUE,expr);
     }
 
     public String toString() {

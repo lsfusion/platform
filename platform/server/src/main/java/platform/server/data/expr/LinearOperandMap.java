@@ -2,23 +2,20 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.server.classes.IntegralClass;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.Context;
-import platform.server.data.query.HashContext;
-import platform.server.data.query.JoinData;
+import platform.server.data.query.*;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class LinearOperandMap extends HashMap<AndExpr,Integer> {
+public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
 
     public IntegralClass getType() {
         assert size()>0;
 
         IntegralClass type = null;
-        for(AndExpr expr : keySet()) {
+        for(BaseExpr expr : keySet()) {
             IntegralClass exprType = (IntegralClass) expr.getType(expr.getWhere());
             if(type==null)
                 type = exprType;
@@ -29,12 +26,12 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
     }
 
     void add(LinearOperandMap map, int coeff) {
-        for(Map.Entry<AndExpr,Integer> addOperand : map.entrySet())
+        for(Map.Entry<BaseExpr,Integer> addOperand : map.entrySet())
             add(addOperand.getKey(),addOperand.getValue()*coeff);
     }
 
     // !!!! он меняется при add'е, но конструктора пока нету так что все равно
-    void add(AndExpr expr,int coeff) {
+    void add(BaseExpr expr,int coeff) {
         if(expr instanceof LinearExpr)
             add(((LinearExpr)expr).map,coeff);
         else {
@@ -47,7 +44,7 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
 
     public int hashContext(HashContext hashContext) {
         int result = 0;
-        for(Map.Entry<AndExpr,Integer> operand : entrySet())
+        for(Map.Entry<BaseExpr,Integer> operand : entrySet())
             result += (operand.getValue()-1)*31 + operand.getKey().hashContext(hashContext);
         return result;
     }
@@ -55,7 +52,7 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
     // возвращает Where на notNull
     public Where getWhere() {
         Where result = Where.FALSE;
-        for(AndExpr operand : keySet())
+        for(BaseExpr operand : keySet())
             result = result.or(operand.getWhere());
         return result;
     }
@@ -63,12 +60,12 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
     public String getSource(CompileSource compile) {
 
         if(size()==1) {
-            Map.Entry<AndExpr,Integer> operand = BaseUtils.singleEntry(this);
+            Map.Entry<BaseExpr,Integer> operand = BaseUtils.singleEntry(this);
             return addToString(true, operand.getKey().getSource(compile), operand.getValue());
         }
 
         String source = "";
-        for(Map.Entry<AndExpr,Integer> operand : entrySet())
+        for(Map.Entry<BaseExpr,Integer> operand : entrySet())
             if(operand.getValue()!=0)
                 source = source + addToString(source.length() == 0, compile.syntax.isNULL(operand.getKey().getSource(compile), "0", true), operand.getValue());
         return "(CASE WHEN " + getWhere().getSource(compile) + " THEN " + (source.length()==0?"0":source) + " ELSE NULL END)";
@@ -76,17 +73,17 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
 
     public String toString() {
         String result = "";
-        for(Map.Entry<AndExpr,Integer> operand : entrySet())
+        for(Map.Entry<BaseExpr,Integer> operand : entrySet())
             result = result + addToString(result.length() == 0, operand.getKey().toString(), operand.getValue());
         return "L(" + result + ")";
     }
 
-    public void fillContext(Context context) {
-        context.fill(keySet());
+    public void enumerate(SourceEnumerator enumerator) {
+        enumerator.fill(keySet());
     }
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        for(AndExpr operand : keySet()) // просто гоним по операндам
+        for(BaseExpr operand : keySet()) // просто гоним по операндам
             operand.fillJoinWheres(joins, andWhere);
     }
 
@@ -97,9 +94,9 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
         return coeff+"*"+string; // <0
     }
 
-    private Where getSiblingsWhere(AndExpr expr) {
+    public Where getSiblingsWhere(BaseExpr expr) {
         Where result = Where.FALSE;
-        for(AndExpr sibling : keySet())
+        for(BaseExpr sibling : keySet())
             if(!sibling.equals(expr))
                 result = result.or(sibling.getWhere());    
         return result;
@@ -107,19 +104,19 @@ public class LinearOperandMap extends HashMap<AndExpr,Integer> {
 
     public LinearOperandMap packFollowFalse(Where where) {
         LinearOperandMap followedMap = new LinearOperandMap();
-        for(Map.Entry<AndExpr,Integer> operand : entrySet()) {
+        for(Map.Entry<BaseExpr,Integer> operand : entrySet()) {
             Where operandWhere = where;
             if(operand.getValue().equals(0)) // если коэффициент 0 то когда остальные не null нас тоже не интересует
                 operandWhere = operandWhere.or(getSiblingsWhere(operand.getKey()));
-            AndExpr operandFollow = operand.getKey().andFollowFalse(operandWhere);
+            BaseExpr operandFollow = operand.getKey().andFollowFalse(operandWhere);
             if(operandFollow!=null) followedMap.add(operandFollow,operand.getValue());
         }
         return followedMap;
     }
 
-    public AndExpr getExpr() {
+    public BaseExpr getExpr() {
         if(size()==1) {
-            Map.Entry<AndExpr, Integer> entry = BaseUtils.singleEntry(this);
+            Map.Entry<BaseExpr, Integer> entry = BaseUtils.singleEntry(this);
             if(entry.getValue().equals(1))
                 return entry.getKey();
         }

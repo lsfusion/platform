@@ -6,12 +6,13 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
-import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
 import platform.server.caches.MapHashIterable;
 import platform.server.caches.MapParamsIterable;
+import platform.server.caches.Lazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.Property;
@@ -21,10 +22,7 @@ import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.data.where.WhereBuilder;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Aspect
 public class MapCacheAspect {
@@ -98,19 +96,22 @@ public class MapCacheAspect {
     @Immutable
     class JoinImplement<K> implements MapContext {
         final Map<K,? extends Expr> exprs;
-        final Map<ValueExpr,ValueExpr> values; // map context'а values на те которые нужны
+        final Map<ValueExpr,ValueExpr> mapValues; // map context'а values на те которые нужны
 
         JoinImplement(Map<K, ? extends Expr> iExprs,Map<ValueExpr,ValueExpr> iValues) {
             exprs = iExprs;
-            values = iValues;
+            mapValues = iValues;
         }
 
         @Lazy
-        public Context getContext() {
-            Context context;
-            context = new Context();
-            context.fill(exprs);
-            return context;
+        public Set<KeyExpr> getKeys() {
+            return AbstractSourceJoin.enumKeys(exprs.values());
+        }
+
+        @Lazy
+        public Set<ValueExpr> getValues() {
+            // нельзя из values так как вообще не его контекст
+            return AbstractSourceJoin.enumValues(exprs.values());
         }
 
         public int hash(HashContext hashContext) {
@@ -139,7 +140,7 @@ public class MapCacheAspect {
                     if(translator.translate(cache.getKey().exprs).equals(joinImplement.exprs)) {
                         // здесь не все values нужно докинуть их из контекста (ключи по идее все)
                         Map<ValueExpr,ValueExpr> transValues;
-                        if((transValues=BaseUtils.mergeEqual(translator.values,BaseUtils.crossJoin(cache.getKey().values,joinImplement.values)))!=null) {
+                        if((transValues=BaseUtils.mergeEqual(translator.values,BaseUtils.crossJoin(cache.getKey().mapValues,joinImplement.mapValues)))!=null) {
                             System.out.println("join cached");
                             return new TranslateJoin<V>(new KeyTranslator(translator.keys,transValues),cache.getValue());
                         }

@@ -59,7 +59,7 @@ public class IsClassExpr extends StaticClassExpr {
     }
 
     public Where calculateWhere() {
-        return expr.getWhere();
+        return expr.isClass(baseClass.getUpSet());
     }
 
     public int hashContext(HashContext hashContext) {
@@ -73,8 +73,8 @@ public class IsClassExpr extends StaticClassExpr {
         return getJoinExpr().getSource(compile);
     }
 
-    public void fillContext(Context context) {
-        expr.fillContext(context);
+    public void enumerate(SourceEnumerator enumerator) {
+        expr.enumerate(enumerator);
     }
 
     public boolean twins(AbstractSourceJoin obj) {

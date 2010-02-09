@@ -6,7 +6,7 @@ import platform.server.logics.property.DataProperty;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class TableChanges<U extends TableChanges<U>> implements DataChanges<U> {
+public abstract class TableChanges<U extends TableChanges<U>> implements Changes<U> {
     
     public final Map<CustomClass,AddClassTable> add;
     public final Map<CustomClass, RemoveClassTable> remove;

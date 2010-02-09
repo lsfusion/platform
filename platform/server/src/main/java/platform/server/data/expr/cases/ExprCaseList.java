@@ -2,15 +2,15 @@ package platform.server.data.expr.cases;
 
 import platform.base.BaseUtils;
 import platform.server.data.query.HashContext;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 
-public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
+public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
 
     public ExprCaseList() {
     }
-    public ExprCaseList(AndExpr data) {
+    public ExprCaseList(BaseExpr data) {
         add(Where.TRUE,data);
     }
     public ExprCaseList(Where where, Expr data) {
@@ -43,7 +43,7 @@ public class ExprCaseList extends AddCaseList<AndExpr,ExprCase> {
 
     Where nullWhere = Where.FALSE;
 
-    public void add(Where where,AndExpr expr) {
+    public void add(Where where, BaseExpr expr) {
         where = where.and(nullWhere.not()).followFalse(upWhere);
         if(where.isFalse()) return;
 

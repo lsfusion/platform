@@ -70,19 +70,19 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
         public MapIterator() {
             mapValues = null;
             if(values) {
-                valueIterator = new ValuePairs(from.getContext().values,to.getContext().values).iterator();
+                valueIterator = new ValuePairs(from.getValues(),to.getValues()).iterator();
                 if(valueIterator.hasNext())
                     mapValues = valueIterator.next();
             } else {
                 valueIterator = new EmptyIterator<Map<ValueExpr, ValueExpr>>();
-                if(from.getContext().values.equals(to.getContext().values)) // если контексты не совпадают то сразу вываливаемся
-                    mapValues = BaseUtils.toMap(from.getContext().values);
+                if(from.getValues().equals(to.getValues())) // если контексты не совпадают то сразу вываливаемся
+                    mapValues = BaseUtils.toMap(from.getValues());
             }
 
             if(mapValues==null)
                 keysIterator = new EmptyIterator<Map<KeyExpr, KeyExpr>>();
             else {
-                keyPairs = new Pairs<KeyExpr,KeyExpr>(from.getContext().keys,to.getContext().keys);
+                keyPairs = new Pairs<KeyExpr,KeyExpr>(from.getKeys(),to.getKeys());
                 keysIterator = keyPairs.iterator();
             }
         }

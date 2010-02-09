@@ -23,7 +23,7 @@ public class MapHashIterable extends MapIterable<KeyTranslator,KeyTranslator> {
     protected KeyTranslator map(final KeyTranslator translator) {
         if(from.hash(new HashContext(){
             public int hash(KeyExpr expr) {
-                return translator.keys.get(expr).hashCode();
+                return translator.translate(expr).hashCode();
             }
             public int hash(ValueExpr expr) {
                 return (values?translator.values.get(expr):expr).hashCode();

@@ -17,11 +17,11 @@ import platform.base.BaseUtils;
 
 public class EqualsWhere extends CompareWhere {
 
-    private EqualsWhere(AndExpr operator1, AndExpr operator2) {
+    private EqualsWhere(BaseExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
     }
 
-    public static Where create(AndExpr operator1, AndExpr operator2) {
+    public static Where create(BaseExpr operator1, BaseExpr operator2) {
         if(operator1 instanceof ValueExpr && operator2 instanceof ValueExpr)
             return BaseUtils.hashEquals(operator1,operator2)?Where.TRUE:Where.FALSE;
         if(BaseUtils.hashEquals(operator1,operator2))
@@ -29,14 +29,14 @@ public class EqualsWhere extends CompareWhere {
         return create(new EqualsWhere(operator1, operator2));
     }
 
-    public EqualsWhere(KeyExpr operator1, ValueExpr operator2) {
+    public EqualsWhere(KeyExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
     }
 
     static boolean containsMask(String string) {
         return string.contains("%") || string.contains("_");
     }
-    static String getCompare(AndExpr expr) {
+    static String getCompare(BaseExpr expr) {
         if(expr instanceof ValueExpr && ((ValueExpr)expr).objectClass instanceof StringClass && containsMask((String)((ValueExpr)expr).object))
             return " LIKE ";
         else
@@ -69,19 +69,20 @@ public class EqualsWhere extends CompareWhere {
     }
 
     public InnerJoins getInnerJoins() {
-        if(operator1 instanceof KeyExpr && operator2 instanceof ValueExpr)
-            return new InnerJoins((KeyExpr)operator1,(ValueExpr)operator2);
-        if(operator2 instanceof KeyExpr && operator1 instanceof ValueExpr)
-            return new InnerJoins((KeyExpr)operator2,(ValueExpr)operator1);
+        if(operator1 instanceof KeyExpr && operator2.isValue())
+            return new InnerJoins((KeyExpr)operator1,operator2);
+        if(operator2 instanceof KeyExpr && operator1.isValue())
+            return new InnerJoins((KeyExpr)operator2,operator1);
         return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
     }
 
     public boolean twins(AbstractSourceJoin o) {
-        return operator1.equals(((EqualsWhere)o).operator1) && operator2.equals(((EqualsWhere)o).operator2);
+        return (operator1.equals(((EqualsWhere)o).operator1) && operator2.equals(((EqualsWhere)o).operator2)) ||
+               (operator1.equals(((EqualsWhere)o).operator2) && operator2.equals(((EqualsWhere)o).operator1)) ;
     }
 
     public int hashContext(HashContext hashContext) {
-        return operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31*31;
+        return operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31;
     }
 
     @ParamLazy

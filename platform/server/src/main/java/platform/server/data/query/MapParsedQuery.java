@@ -16,7 +16,7 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
 
     final Map<V,MV> mapProps;
     final Map<K,MK> mapKeys;
-    // какой нужен\какой есть в query
+    // какой есть в query -> какой нужен
     final Map<ValueExpr, ValueExpr> mapValues;
 
     MapParsedQuery(ParsedQuery<MK,MV> iQuery,Map<V,MV> iMapProps,Map<K,MK> iMapKeys,Map<ValueExpr,ValueExpr> iMapValues) {
@@ -36,7 +36,7 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     }
 
     private Collection<ValueExpr> getValues() {
-        return mapValues.keySet();
+        return mapValues.values();
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
@@ -44,7 +44,7 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> joinValues) {
-        return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),BaseUtils.crossJoin(mapValues,joinValues)),mapProps);
+        return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),BaseUtils.join(mapValues,joinValues)),mapProps);
     }
 
 }

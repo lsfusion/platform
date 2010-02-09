@@ -1,25 +1,28 @@
 package platform.server.view.navigator;
 
 import platform.server.logics.BusinessLogics;
-import platform.server.view.navigator.filter.FilterNavigator;
-import platform.server.session.PropertyChange;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.PropertyValueImplement;
+import platform.server.view.navigator.filter.NotFilterNavigator;
+import platform.server.view.navigator.filter.NotNullFilterNavigator;
 
 public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends NavigatorForm<T> {
 
 //    final GroupObjectNavigator interfaceGroup;
-//    final Map<DataPropertyInterface,ObjectNavigator> interfaceObjects;
+//    final Map<ClassPropertyInterface,ObjectNavigator> interfaceObjects;
 
     final ObjectNavigator valueObject;
     final GroupObjectNavigator valueGroup;
 
-    public DataChangeNavigatorForm(T BL, PropertyChange<?,?> change) {
-        super(54555+change.property.ID, change.toString());
+    public <P extends PropertyInterface> DataChangeNavigatorForm(T BL, PropertyValueImplement<P> implement) {
+        super(54555+implement.getID(), implement.toString());
 
 /*        // добавляем элементы для которых меняем на форму
         interfaceGroup = new GroupObjectNavigator(IDShift(1));
         interfaceGroup.singleViewType = true; interfaceGroup.gridClassView = false;
-        interfaceObjects = new HashMap<DataPropertyInterface, ObjectNavigator>();
-        for(DataPropertyInterface propertyInterface : change.interfaces) {
+        interfaceObjects = new HashMap<ClassPropertyInterface, ObjectNavigator>();
+        for(ClassPropertyInterface propertyInterface : change.interfaces) {
             ObjectNavigator interfaceObject = new ObjectNavigator(propertyInterface.ID,propertyInterface.interfaceClass,propertyInterface.toString());
             interfaceObject.show = false;
             interfaceObjects.put(propertyInterface,interfaceObject);
@@ -29,18 +32,19 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
 
         // сам объект который ищем вешаем на форму
         valueGroup = new GroupObjectNavigator(IDShift(1));
-        valueObject = new ObjectNavigator(IDShift(1), change.getDialogClass(), "Код");
+        valueObject = new ObjectNavigator(IDShift(1), implement.getDialogClass(), "Код");
         valueGroup.add(valueObject);
         addGroup(valueGroup);
 
-        for(FilterNavigator filter : change.getFilters(valueObject, BL))
-            addFixedFilter(filter);
+        for(MaxChangeProperty<?, P> constrainedProperty : BL.getChangeConstrainedProperties(implement.property)) // добавляем все констрейнты
+            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator<MaxChangeProperty.Interface<P>>(
+                    constrainedProperty.getPropertyNavigator(implement.mapping, valueObject))));
 
         addPropertyView(BL.properties, BL.baseGroup, true, valueObject);
         addPropertyView(BL.properties, BL.aggrGroup, true, valueObject);
     }
 
-/*    public <T extends BusinessLogics<T>> void seekObjects(RemoteForm<T> remoteForm, Mapper mapper, Object dataValue, Map<DataPropertyInterface, Object> interfaceValues) {
+/*    public <T extends BusinessLogics<T>> void seekObjects(RemoteForm<T> remoteForm, Mapper mapper, Object dataValue, Map<ClassPropertyInterface, Object> interfaceValues) {
 //        remoteForm.userGroupSeeks.put(mapper.groupMapper.get(interfaceGroup),BaseUtils.crossJoin(BaseUtils.join(interfaceObjects,mapper.objectMapper),interfaceValues));
         remoteForm.userGroupSeeks.put(mapper.groupMapper.get(valueGroup),Collections.singletonMap(mapper.objectMapper.get(valueObject),dataValue));
     }*/

@@ -3,7 +3,7 @@ package platform.server.data.where.classes;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -88,11 +88,11 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
         return result;
     }
 
-    public ClassExprWhere map(Map<K, AndExpr> map) {
+    public ClassExprWhere map(Map<K, BaseExpr> map) {
         ClassExprWhere result = ClassExprWhere.FALSE;
         for(And<K> andWhere : wheres) {
             ClassExprWhere joinWhere = ClassExprWhere.TRUE;
-            for(Map.Entry<K, AndExpr> joinExpr : map.entrySet())
+            for(Map.Entry<K, BaseExpr> joinExpr : map.entrySet())
                 joinWhere = joinWhere.and(joinExpr.getValue().getClassWhere(andWhere.get(joinExpr.getKey())));
             result = result.or(joinWhere);
         }

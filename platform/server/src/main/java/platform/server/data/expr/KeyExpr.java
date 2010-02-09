@@ -30,8 +30,8 @@ public class KeyExpr extends VariableClassExpr {
         return name;
     }
 
-    public KeyExpr(String iName) {
-        name = iName;
+    public KeyExpr(String name) {
+        this.name = name;
     }
 
     public String getSource(CompileSource compile) {
@@ -39,8 +39,8 @@ public class KeyExpr extends VariableClassExpr {
         return compile.keySelect.get(this);
     }
 
-    public void fillContext(Context context) {
-        context.keys.add(this);
+    public void enumerate(SourceEnumerator enumerator) {
+        enumerator.add(this);
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {

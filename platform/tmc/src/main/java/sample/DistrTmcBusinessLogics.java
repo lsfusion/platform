@@ -7,10 +7,11 @@ import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.linear.LDP;
 import platform.server.logics.property.linear.LP;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.CompareFilterNavigator;
+import platform.server.view.navigator.filter.OrFilterNavigator;
+import platform.server.view.navigator.filter.NotNullFilterNavigator;
 import platform.server.classes.CustomClass;
 import platform.server.classes.NumericClass;
 
@@ -49,8 +50,8 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
     }
 
 
-    LDP outInQuantity;
-    LP quantity,inQuantity,sumOutQuantity;
+    LP outInQuantity;
+    LP inQuantity,sumOutQuantity;
     LP outSumInQuantity,isInDocument;
     LP multiply2;
     LP remains;
@@ -63,15 +64,15 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         LP less = addCFProp(Compare.LESS);
         multiply2 = addMFProp(quantityClass,2);
 
-        quantity = addDProp(baseGroup, "quantity", "Кол-во", quantityClass, document, article);
+        inQuantity = addDProp(baseGroup, "quantity", "Кол-во прих.", quantityClass, inDocument, article);
         outInQuantity = addDProp(baseGroup, "outInQuantity", "Кол-во расх. док.", quantityClass, outDocument, article, inDocument);
 
-        inQuantity = addJProp("Кол-во прихода",and1, quantity, 1, 2, is(inDocument), 1);
-
-        outSumInQuantity = addSGProp(baseGroup, "Кол-во расх.", outInQuantity, 1, 2);
         sumOutQuantity = addSGProp(baseGroup, "Всего расх.", outInQuantity, 3, 2);
 
         remains = addDUProp(baseGroup,"Ост. по парт.",inQuantity,sumOutQuantity);
+
+        outSumInQuantity = addDGProp(baseGroup, "outSumInQuantity", "Кол-во расх.", 2, false, outInQuantity, 1, 2,
+                addJProp(and1, remains, 1, 2, is(outDocument), 3), 3, 2, 1, date, 3, 3);
 
 //        LP outQuantity = addJProp(baseGroup, "Кол-во расхода",and1, quantity, 1, 2, is(outDocument), 1);
 
@@ -134,9 +135,11 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
             addPropertyView(objArt, objInDoc, properties, baseGroup);
             addPropertyView(objOutDoc, objArt, objInDoc, properties, baseGroup);
 
-            addFixedFilter(new CompareFilterNavigator(getPropertyView(remains.property).view, Compare.NOT_EQUALS, 0));
+            addFixedFilter(new OrFilterNavigator(
+                    new CompareFilterNavigator(getPropertyView(remains.property).view, Compare.NOT_EQUALS, 0),
+                    new NotNullFilterNavigator(getPropertyView(outInQuantity.property).view)));
 
-            addHintsNoUpdate(remains.property);
+//            addHintsNoUpdate(remains.property);
         }
     }
 

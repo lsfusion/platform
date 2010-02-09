@@ -3,7 +3,6 @@ package sample;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.property.linear.LDP;
 import platform.server.logics.property.linear.LP;
 import platform.server.logics.BusinessLogics;
 import platform.server.view.navigator.*;
@@ -67,7 +66,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         outcomeDocument = addConcreteClass("Расход", document);
     }
 
-    LDP quantity, documentStore;
+    LP quantity, documentStore;
     LP balanceQuantity, incQuantity;
 
     protected void initProperties() {
@@ -85,7 +84,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         balanceQuantity = addDUProp(baseGroup, "Ост. по скл.", incStoreQuantity, outStoreQuantity);
 
-        addConstraint(addJProp("Остаток должен быть положительным", greater2, vzero, balanceQuantity, 1, 2),false);
+        addConstraint(addJProp("Остаток должен быть положительным", greater2, vzero, balanceQuantity, 1, 2), false);
 
         addJProp(baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
     }

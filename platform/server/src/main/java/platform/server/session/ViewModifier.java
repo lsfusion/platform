@@ -4,28 +4,28 @@ import platform.server.logics.property.DataProperty;
 import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
 
-public abstract class ViewModifier implements Modifier<ViewDataChanges> {
-    public ViewDataChanges view;
+public abstract class ViewModifier implements Modifier<ViewChanges> {
+    public ViewChanges view;
 
-    public ViewModifier(ViewDataChanges view) {
+    public ViewModifier(ViewChanges view) {
         this.view = view;
     }
 
-    public ViewDataChanges newChanges() {
-        return new ViewDataChanges();
+    public ViewChanges newChanges() {
+        return new ViewChanges();
     }
 
-    public void modifyAdd(ViewDataChanges changes, ValueClass customClass) {
+    public void modifyAdd(ViewChanges changes, ValueClass customClass) {
         if(customClass instanceof CustomClass && view.addClasses.contains((CustomClass)customClass))
             changes.addClasses.add((CustomClass)customClass);
     }
 
-    public void modifyRemove(ViewDataChanges changes, ValueClass customClass) {
+    public void modifyRemove(ViewChanges changes, ValueClass customClass) {
         if(customClass instanceof CustomClass && view.removeClasses.contains((CustomClass)customClass))
             changes.removeClasses.add((CustomClass)customClass);
     }
 
-    public void modifyData(ViewDataChanges changes, DataProperty property) {
+    public void modifyData(ViewChanges changes, DataProperty property) {
         if(view.properties.contains(property))
             changes.properties.add(property);
     }

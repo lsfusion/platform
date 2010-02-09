@@ -8,6 +8,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -76,9 +77,9 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
             mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
         return mapInterface;
     }
-    
-    public DataChange getChangeProperty(DataSession session, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
-        return property.getChangeProperty(session, getInterfaceValues(), modifier, securityPolicy, externalID);
+
+    public PropertyValueImplement getChangeProperty() {
+        return property.getChangeProperty(getInterfaceValues());
     }
 
     public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {

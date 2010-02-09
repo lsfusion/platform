@@ -11,7 +11,7 @@ public class SessionChanges extends TableChanges<SessionChanges> {
         super(changes);
     }
 
-    public SessionChanges(SessionChanges changes, ViewDataChanges filter) {
+    public SessionChanges(SessionChanges changes, ViewChanges filter) {
         super(BaseUtils.filterKeys(changes.add,filter.addClasses),BaseUtils.filterKeys(changes.remove,filter.removeClasses),BaseUtils.filterKeys(changes.data,filter.properties));
     }
 

@@ -2,7 +2,7 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.where.Where;
 
@@ -76,8 +76,9 @@ public class InnerJoins extends ArrayList<InnerJoins.Entry> {
         this(new InnerWhere(join),where);
     }
 
-    public InnerJoins(KeyExpr key, ValueExpr expr) {
+    public InnerJoins(KeyExpr key, BaseExpr expr) {
         this(new InnerWhere(key,expr),new EqualsWhere(key,expr));
+        assert expr.isValue();
     }
 
     public InnerJoins and(InnerJoins joins) {
@@ -96,7 +97,7 @@ public class InnerJoins extends ArrayList<InnerJoins.Entry> {
         public InnerWhere mean;
         public Where where;
 
-        Entry(InnerWhere iMean, Where iWhere) {
+        public Entry(InnerWhere iMean, Where iWhere) {
             mean = iMean;
             where = iWhere;
         }

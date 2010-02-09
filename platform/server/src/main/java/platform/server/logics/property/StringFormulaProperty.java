@@ -11,15 +11,33 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPropertyInterface> {
+public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
     String formula;
-    
-    static Collection<StringFormulaPropertyInterface> getInterfaces(int paramCount) {
-        Collection<StringFormulaPropertyInterface> interfaces = new ArrayList<StringFormulaPropertyInterface>();
+
+    public static class Interface extends PropertyInterface {
+
+        private String getString() {
+            return "prm"+(ID+1);
+        }
+
+        public Interface(int ID) {
+            super(ID);
+        }
+    }
+
+    static Collection<Interface> getInterfaces(int paramCount) {
+        Collection<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<paramCount;i++)
-            interfaces.add(new StringFormulaPropertyInterface(i));
+            interfaces.add(new Interface(i));
         return interfaces;
+    }
+
+    public Interface findInterface(String string) {
+        for(Interface propertyInterface : interfaces)
+            if(propertyInterface.getString().equals(string))
+                return propertyInterface;
+        throw new RuntimeException("not found");
     }
 
     public StringFormulaProperty(String sID, ConcreteValueClass iValue, String formula, int paramCount) {
@@ -27,11 +45,11 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         this.formula = formula;
     }
 
-    public Expr calculateExpr(Map<StringFormulaPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         Map<String, Expr> params = new HashMap<String, Expr>();
-        for(StringFormulaPropertyInterface propertyInterface : interfaces)
-            params.put("prm"+(propertyInterface.ID+1), joinImplement.get(propertyInterface));
+        for(Interface propertyInterface : interfaces)
+            params.put(propertyInterface.getString(), joinImplement.get(propertyInterface));
 
         return Expr.formula(formula,value,params);
     }

@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 
 public abstract class ObjectValue implements CompareValue {
 
@@ -36,6 +37,14 @@ public abstract class ObjectValue implements CompareValue {
     public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
         return getExpr();
     }
+
+    public static <K> Map<K,Expr> getMapExprs(Map<K,? extends ObjectValue> map) {
+        Map<K,Expr> mapExprs = new HashMap<K,Expr>();
+        for(Map.Entry<K,? extends ObjectValue> keyField : map.entrySet())
+            mapExprs.put(keyField.getKey(), keyField.getValue().getExpr());
+        return mapExprs;
+    }
+
     
     public boolean classUpdated(GroupObjectImplement classGroup) {return false;}
     public boolean objectUpdated(GroupObjectImplement classGroup) {return false;}

@@ -11,9 +11,6 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.DataPropertyInterface;
-import platform.server.logics.property.linear.LDP;
-import platform.server.logics.property.linear.LJP;
 import platform.server.logics.property.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
@@ -30,7 +27,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
-import java.util.*;
 
 public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
@@ -42,7 +38,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("mydb2","server","postgres","sergtsop");
+        DataAdapter adapter = new PostgreDataAdapter("mydb2","localhost","postgres","11111");
         SimpleBusinessLogics BL = new SimpleBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -53,7 +49,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     }
 
     AbstractGroup formatGroup, regionGroup;
-    AbstractGroup supplierGroup, contractGroup, balanceDocGroup;
+    AbstractGroup supplierGroup, contractGroup;
     AbstractGroup documentGroup, fixedGroup, currentGroup, lastDocumentGroup;
 
     protected void initGroups() {
@@ -63,8 +59,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         supplierGroup = new AbstractGroup("Поставщик");
         contractGroup = new AbstractGroup("Договор");
-
-        balanceDocGroup = new AbstractGroup("По документам");
 
         documentGroup = new AbstractGroup("Параметры транзакции");
         fixedGroup = new AbstractGroup("Текущие Параметры транзакции");
@@ -93,7 +87,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         document = addAbstractClass("Документ", namedObject, transaction);
         priceOutDocument = addAbstractClass("Документ изм. цены", document);
-        quantityDocument = addAbstractClass("Документ перемещения", document);
+        quantityDocument = addAbstractClass("Товарный документ", document);
         incomeDocument = addAbstractClass("Приходный документ", quantityDocument, priceOutDocument);
         outcomeDocument = addAbstractClass("Расходный документ", quantityDocument);
         articleDocument = addAbstractClass("Перемещение товара", quantityDocument);
@@ -121,7 +115,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         specification = addConcreteClass("Спецификация", document);
     }
 
-    LDP artGroup, outStore, extIncPriceIn, extIncVATIn, invDBBalance,
+    LP artGroup, outStore, extIncPriceIn, extIncVATIn, invDBBalance,
             returnSupplier, clearingSaleCustomer, articleQuantity, extIncDetailDocument;
 
     LP quantity, roundm1, addPercent, docIncBalanceQuantity, docOutBalanceQuantity, revalFormat, storeFormat, locTaxRegion, storeRegion, currentSupplier,
@@ -141,22 +135,21 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     LP sumsaleArticle2, saleFormatGroupBetweenDateQuantity;
     LP article1SaleBestArticle2;
     LP percentForABC;
-    LP percentForABCInsideGroupQuantity,sumSaleSameGroupArticle2, sumSaleSameGroupArticle, sumGroupSaleSameGroupArticle2, sumSaleFormatGroupBetweenDateQuantity, sumSaleSameGroupFormatArticle2;
-    LP sumSaleGroup2, percentForABCGroup, resultABCInsideGroupQuantity, resultABCInsideGroupSum;
+    LP resultABCInsideGroupQuantity, resultABCInsideGroupSum;
     LP resultABC;
     LP resultABCSum;
     LP percentForABCSum, resultABCGroup;
     LP resultABCInsideGroupQ;
     LP saleFormatArticleBetweenDateSum;
-    LP saleFormatGroupBetweenDateSum, wholesaleFormatArticleBetweenDateSum, wholesaleFormatBetweenDateSum, saleGroupBetweenDateSum, saleBetweenDateSum;
-    LDP categoryMark;
+    LP saleFormatGroupBetweenDateSum, wholesaleArticleBetweenDateSum, wholesaleFormatBetweenDateSum, saleGroupBetweenDateSum, saleBetweenDateSum;
+    LP categoryMark;
     LP allsumSaleSameGroupArticle2;
         
     LP contractSupplier, specContract, extIncSupplier;
     LP storeSpecIncl, specArticleIncl;
 
     LP remainStoreArticleStartQuantity, remainStoreArticleEndQuantity, incBetweenDateQuantity, outBetweenDateQuantity,
-        saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity, remainDocQuantity, returnQuantity;
+        saleStoreArticleBetweenDateQuantity, saleArticleBetweenDateQuantity, returnQuantity;
 
     LP currentAdd,currentVatOut,currentLocTax,currentPriceIn,currentPriceOut,storeInRange,storeSupplArt,storeSupplIsCurrent,revalCurrentAdd,locCurrentTax;
 
@@ -166,27 +159,19 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP outDateQuantity = addSGProp("Расх. со скл. "+caption, dateQuantity, outStore, 1, 2, 3);
         return addDUProp("Ост. на скл. "+caption, incDateQuantity, outDateQuantity);
     }
-// Функция АВС-анализа расчитанного процента(<анализируемый процент>,<подпись>)
+
+    // Функция АВС-анализа расчитанного процента(<анализируемый процент>,<подпись>)
     LP initABCAnalyze(LP analizedPercent, String caption) {
         Object[] extendedProperty = directLI(analizedPercent); // Свойство и его интерфейсы
         int intNum = analizedPercent.listInterfaces.size(); // Количество интерфейсов свойства
         Object[] a = new Object [intNum];
-        for(int i=0; i < intNum; i++){
-            a[i] = i + 1;}
+        for(int i=0; i < intNum; i++)
+            a[i] = i + 1;
         LP numberGreaterCategory = addJProp ("Число больше категории", greater2, BaseUtils.add(extendedProperty,new Object[]{categoryMark, intNum+1}));
         LP categoryMarkLess = addJProp("Порог категории (если меньше числа)", and1, BaseUtils.add(new Object[]{categoryMark, intNum+1, numberGreaterCategory}, BaseUtils.add(a,new Object[]{intNum+1})));
         LP[] storeABCCategory = addMGProp(null,new String[]{"a1","a2"},new String[]{"Max порог","Max категория"}, 1, categoryMarkLess, BaseUtils.add(new Object[]{intNum+1},a));
-        return addJProp(baseGroup, "Категория"+caption, name, directLI(storeABCCategory[1]));
-        }
-// Функция расчета процента для АВС-анализа (интерфейсы: документ, товар 1, дата1, дата2, товар2) (<анализируемый показатель>)
-    LP initCalculateForABCAnalyze(LP analizedScore){
-        LP scoreWorseScore2 = addJProp ("2 лучше 1", groeq2, analizedScore, 1, 5, 3, 4, analizedScore, 1, 2, 3, 4);
-        LP sumAnalizedScoreBetweenDate = addSGProp ("Общее кол-во за период", analizedScore, 1, 3, 4);
-        LP betterScore2 = addJProp ("По 1", and1, analizedScore, 1, 5, 3, 4, scoreWorseScore2, 1, 5, 3, 4, 2);
-        LP sumBetterScore2 = addSGProp ("Сумма по 1", betterScore2, 1, 2, 3, 4);
-        LP percentABC = addSFProp ("(prm1*100)/prm2", DoubleClass.instance, 2);
-        return addJProp ("Процент АВС", percentABC, sumBetterScore2, 1, 2, 3, 4, sumAnalizedScoreBetweenDate, 1, 3, 4);
-        }
+        return addJProp(baseGroup, "Категория "+caption, name, directLI(storeABCCategory[1]));
+    }
 
     protected void initProperties() {
 
@@ -229,31 +214,31 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // Управление поставками
 
-        LDP contractDateEnd = addDProp(baseGroup, "contractDateEnd", "Действует до", DateClass.instance, contract);
-        LDP contractPayTerms = addDProp(baseGroup, "contractPayTerms", "По реализации", LogicalClass.instance, contract);
-        LDP contractPayDelay = addDProp(baseGroup, "contractPayDelay", "Отсрочка", IntegerClass.instance, contract);
+        LP contractDateEnd = addDProp(baseGroup, "contractDateEnd", "Действует до", DateClass.instance, contract);
+        LP contractPayTerms = addDProp(baseGroup, "contractPayTerms", "По реализации", LogicalClass.instance, contract);
+        LP contractPayDelay = addDProp(baseGroup, "contractPayDelay", "Отсрочка", IntegerClass.instance, contract);
 
         contractSupplier = addDProp(aggrGroup, "contractSupplier", "Поставщик", supplier, contract);
-        LJP contractSupplierName = addJProp(aggrGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
+        LP contractSupplierName = addJProp(aggrGroup, "contractSupplierName", "Название поставщика", name, contractSupplier, 1);
 
-        LDP specDateEnd = addDProp(baseGroup, "specDateEnd", "Действует до", DateClass.instance, specification);
-        LDP specPriceVolatility = addDProp(baseGroup, "specPriceVolatility", "Отклонение цены", DoubleClass.instance, specification);
+        LP specDateEnd = addDProp(baseGroup, "specDateEnd", "Действует до", DateClass.instance, specification);
+        LP specPriceVolatility = addDProp(baseGroup, "specPriceVolatility", "Отклонение цены", DoubleClass.instance, specification);
 
         specContract = addDProp(aggrGroup, "specContract", "Договор" , contract, specification);
-        LJP specContractName = addJProp(aggrGroup, "specContractName", "Название договора", name, specContract, 1);
-        LJP specSupplier = addJProp("Поставщик спец.", contractSupplier, specContract, 1);
+        LP specContractName = addJProp(aggrGroup, "specContractName", "Название договора", name, specContract, 1);
+        LP specSupplier = addJProp("Поставщик спец.", contractSupplier, specContract, 1);
 
-        LDP storeSuppSpec = addDProp(baseGroup, "storeSuppSpec", "Спец. скл. пост.", specification, store, supplier);
+        LP storeSuppSpec = addDProp(baseGroup, "storeSuppSpec", "Спец. скл. пост.", specification, store, supplier);
 
         // ограничение на то, что спецификация поставщика соответствует спецификации по складу/поставщику
         addJProp("Выбранная спецификация должна быть поставщика для которого задается свойство", diff2, 2,
                 addJProp("", specSupplier, storeSuppSpec, 1, 2), 1, 2).property.isFalse = true;
 
         storeSpecIncl = addJProp(baseGroup, "storeSpecIncl", "Вкл. спец.", equals2, 2,
-                                addJProp("", storeSuppSpec, 1, specSupplier, 2), 1, 2);
+                                addJProp(true, storeSuppSpec, 1, specSupplier, 2), 1, 2);
 
         specArticleIncl = addDProp(baseGroup, "specArticleIncl", "Вкл. спец.", LogicalClass.instance, specification, article);
-        LDP specArticlePrice = addDProp(baseGroup, "specArticlePrice", "Цена по спец.", DoubleClass.instance, specification, article);
+        LP specArticlePrice = addDProp(baseGroup, "specArticlePrice", "Цена по спец.", DoubleClass.instance, specification, article);
 
         LP inRange = addDProp(baseGroup, "inRange", "В ассорт.", LogicalClass.instance, format, article);
         currentSupplier = addDProp("currentSupplier", "Тек. пост.", supplier, store, article);
@@ -276,22 +261,22 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         addJProp(baseGroup, "Имя склада", name, extIncOrderStore, 1);
 
         orderQuantity = addDProp(baseGroup, "orderQuantity", "Кол-во заказа", DoubleClass.instance, extIncomeOrder, article);
-        LDP orderPrice = addDProp("orderPrice", "Цена заказа (док. фикс.)", DoubleClass.instance, extIncomeOrder, article);
-        orderPrice.setDefProp(storeSupplPrice, extIncOrderStore, 1, extIncOrderSupplier, 1, 2, orderQuantity, 1, 2);
+        LP orderPrice = addDProp("orderPrice", "Цена заказа (док. фикс.)", DoubleClass.instance, extIncomeOrder, article);
+        orderPrice.setDerivedChange(storeSupplPrice, extIncOrderStore, 1, extIncOrderSupplier, 1, 2, orderQuantity, 1, 2);
         addSUProp(baseGroup, "Цена заказа (док.)", Union.OVERRIDE, addJProp("Цена заказа (тек.)", storeSupplPrice, extIncOrderStore, 1, extIncOrderSupplier, 1, 2), orderPrice);
-        LDP orderVolatility = addDProp(baseGroup,"orderVolatility", "Откл. заказа", DoubleClass.instance, extIncomeOrder);
-        orderVolatility.setDefProp(addJProp("Откл. скл. пост.", specPriceVolatility, storeSuppSpec, 1, 2), extIncOrderStore, 1, extIncOrderSupplier, 1);
+        LP orderVolatility = addDProp(baseGroup,"orderVolatility", "Откл. заказа", DoubleClass.instance, extIncomeOrder);
+        orderVolatility.setDerivedChange(addJProp("Откл. скл. пост.", specPriceVolatility, storeSuppSpec, 1, 2), extIncOrderStore, 1, extIncOrderSupplier, 1);
         LP orderMaxPrice = addJProp(baseGroup, "Макс. цена", addPercent, orderPrice, 1, 2, orderVolatility, 1); // ограничение что не больше заданной цены
 
         orderAllow = addJProp("Актив.", equals2, extIncOrderSupplier, 1, addJProp("Тек. пост.", currentSupplier, extIncOrderStore, 1, 2), 1, 2); 
         orderInSpec = addJProp("В спец. и ассорт.", and1, addJProp("В спец.", storeSupplArt, extIncOrderStore, 1, extIncOrderSupplier, 1, 2), 1, 2,
                             addJProp("В ассорт.", storeInRange, extIncOrderStore, 1, 2), 1, 2);
 
-        LDP orderSpec = addDProp(baseGroup, "orderSpec", "Спец. заказа", specification, extIncomeOrder);
-        orderSpec.setDefProp(storeSuppSpec, extIncOrderStore, 1, extIncOrderSupplier, 1);
+        LP orderSpec = addDProp(baseGroup, "orderSpec", "Спец. заказа", specification, extIncomeOrder);
+        orderSpec.setDerivedChange(storeSuppSpec, extIncOrderStore, 1, extIncOrderSupplier, 1);
         addJProp("Выбранный склад должен быть в спецификации поставщика", andNot1, addJProp(and1, extIncOrderStore, 1, extIncOrderSupplier, 1), 1, orderSpec, 1).property.isFalse = true;
 
-        LP extIncDocumentOrder = addDProp("extIncDocumentOrder", "Поставщик", extIncomeOrder, extIncomeDocument); // внешний приход
+        LP extIncDocumentOrder = addDProp("extIncDocumentOrder", "Заказ", extIncomeOrder, extIncomeDocument); // внешний приход
 
         extIncSupplier = addJProp("Поставщик", extIncOrderSupplier, extIncDocumentOrder, 1); // внешний приход
         addJProp(baseGroup, "Имя поставщика", name, extIncSupplier, 1);
@@ -315,7 +300,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // количества
         articleQuantity = addDProp("articleQuantity", "Кол-во товара", DoubleClass.instance, articleDocument, article);
-        articleQuantity.setDefProp(orderQuantity, extIncDocumentOrder, 1, 2);
+        articleQuantity.setDerivedChange(orderQuantity, extIncDocumentOrder, 1, 2);
 
         exchangeQuantity = addDProp(baseGroup, "exchangeQuantity", "Кол-во перес.", DoubleClass.instance, exchangeDocument, article, article);
         exchIncQuantity = addSGProp(baseGroup, "Прих. перес.", exchangeQuantity, 1, 3);
@@ -341,6 +326,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP incStoreQuantity = addSGProp("incStoreQuantity", "Прих. на скл.", quantity, incStore, 1, 2);
         LP outStoreQuantity = addSGProp("outStoreQuantity", "Расх. со скл.", quantity, outStore, 1, 2);
         balanceStoreQuantity = addDUProp(baseGroup, "balanceStoreQuantity", "Ост. на скл.", incStoreQuantity, outStoreQuantity);
+        
+        LP balanceQuantity = addSGProp(baseGroup, "balanceQuantity", "Ост. тов.", balanceStoreQuantity, 2);
 
         // остатки для документов
         docOutBalanceQuantity = addJProp(baseGroup, "Остаток (расх.)", balanceStoreQuantity, outStore, 1, 2);
@@ -351,9 +338,9 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         addJProp(baseGroup, "Остаток (прих.)", balanceStoreQuantity, extIncOrderStore, 1, 2);
         
-//        remainDocQuantity = addUGProp(balanceDocGroup, "Остаток по док.", 1, extIncRemainQuantity, docIncBalanceQuantity, 1, 2);
+//        LP remainDocQuantity = addUGProp(baseGroup, "Остаток по док.", false, extIncRemainQuantity, balanceQuantity, 2, date, 1, 1);
 
-        invDBBalance.setDefProp(balanceStoreQuantity, outStore, 1, 2);
+        invDBBalance.setDerivedChange(balanceStoreQuantity, outStore, 1, 2);
 
         // для отчетов св-ва за период
         LP dltStoreArticleGroeqDateQuantity = initDateBalance(groeqDocDate, "с даты");
@@ -397,12 +384,12 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         // цены поставщика
         extIncPriceIn = addDProp(baseGroup, "extIncPriceIn", "Цена пост.", DoubleClass.instance, extIncomeDocument, article);
-        extIncPriceIn.setDefProp(orderPrice, extIncDocumentOrder, 1, 2, quantity, 1, 2);
+        extIncPriceIn.setDerivedChange(orderPrice, extIncDocumentOrder, 1, 2, quantity, 1, 2);
         addJProp("Отклонение от цены заказа превышает допустимое значение", greater2, extIncPriceIn, 1, 2, addJProp("Макс. цена док.", orderMaxPrice, extIncDocumentOrder, 1, 2), 1, 2).property.isFalse = true;
         extIncVATIn = addDProp(baseGroup, "extIncVATIn", "НДС (пост.)", DoubleClass.instance, extIncomeDocument, article);
-        extIncVATIn.setDefProp(currentVatOut, 2, articleQuantity, 1, 2);
+        extIncVATIn.setDerivedChange(currentVatOut, 2, articleQuantity, 1, 2);
 
-        LDP outPriceIn = addDProp("outPriceIn", "Цена пост. (расх.)", DoubleClass.instance, outcomeDocument, article);
+        LP outPriceIn = addDProp("outPriceIn", "Цена пост. (расх.)", DoubleClass.instance, outcomeDocument, article);
         LP priceIn = addCUProp("priceIn", "Цена пост. (фикс.)", extIncPriceIn, outPriceIn);
 
         LP[] maxIncProps = addMGProp(lastDocumentGroup, new String[]{"currentIncDate","currentIncDoc"}, new String[]{"Дата посл. прих. по скл.","Посл. прих. по скл."}, 1,
@@ -410,7 +397,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         currentIncDate = maxIncProps[0]; currentIncDoc = maxIncProps[1];
         currentPriceIn = addJProp(currentGroup, "currentPriceIn", "Цена пост. (тек.)", priceIn, currentIncDoc, 1, 2, 2);
 
-        outPriceIn.setDefProp(currentPriceIn, outStore, 1, 2, quantity, 1, 2); // подставляем тек. цену со склада расх
+        outPriceIn.setDerivedChange(currentPriceIn, outStore, 1, 2, quantity, 1, 2); // подставляем тек. цену со склада расх
         addSUProp(baseGroup, "Цена пост. (док. расх.)",Union.OVERRIDE, addJProp("Цена пост. (док. расх. тек.)", currentPriceIn, outStore, 1, 2), outPriceIn);
 
         // розничная цена
@@ -436,11 +423,11 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         LP extIncDocumentSumPay = addSUProp(baseGroup, "Всего с НДС", Union.SUM, extIncDocumentSumIn, extIncDocumentSumVATIn);
 
         // расх. суммы по позициям
-        LDP documentVatOut = addDProp("documentVatOut", "НДС (фикс.)", DoubleClass.instance, outcomeDocument, article);
-        documentVatOut.setDefProp(currentVatOut, 2, quantity, 1, 2);
+        LP documentVatOut = addDProp("documentVatOut", "НДС (фикс.)", DoubleClass.instance, outcomeDocument, article);
+        documentVatOut.setDerivedChange(currentVatOut, 2, quantity, 1, 2);
         addSUProp(baseGroup, "НДС (док.)", Union.OVERRIDE, addJProp("",and1,currentVatOut,2,is(outcomeDocument),1), documentVatOut);
-        LDP outPriceOut = addDProp("outPriceOut", "Цена розн. (расх.)", DoubleClass.instance, outcomeDocument, article);
-        outPriceOut.setDefProp(currentPriceOut, outStore, 1, 2, quantity, 1, 2);
+        LP outPriceOut = addDProp("outPriceOut", "Цена розн. (расх.)", DoubleClass.instance, outcomeDocument, article);
+        outPriceOut.setDerivedChange(currentPriceOut, outStore, 1, 2, quantity, 1, 2);
         docOutPriceOut = addSUProp(baseGroup, "Цена розн. (док. расх.)",Union.OVERRIDE, addJProp("Цена розн. (док. расх. тек.)", currentPriceOut, outStore, 1, 2), outPriceOut);
 
         LP detailSumOut = addJProp(baseGroup, "detailSumOut", "Сумма розн. (расх.)", round,
@@ -456,8 +443,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         saleBetweenDateSum = addJProp("Сумма розн. за период", and1, detailSumOut, 1, 2, betweenDocDate, 1, 3, 4);
         LP saleStoreBetweenDateSum = addSGProp("Реализация по складу за период", saleBetweenDateSum, outStore, 1, 2, 3, 4);
         saleFormatArticleBetweenDateSum = addSGProp("Сумма реализ. за период", saleStoreBetweenDateSum, storeFormat, 1, 2, 3, 4);
-        wholesaleFormatArticleBetweenDateSum = addSGProp(baseGroup, "Сумма реализации за период", saleFormatArticleBetweenDateSum, 1, 3, 4);
-        wholesaleFormatBetweenDateSum = addJProp(baseGroup, "Сумма реализации за период", saleFormatArticleBetweenDateSum, storeFormat, 1, 3, 4);
+        wholesaleArticleBetweenDateSum = addSGProp(baseGroup, "Сумма реализации за период", saleFormatArticleBetweenDateSum, 1, 3, 4);
+        wholesaleFormatBetweenDateSum = addSGProp(baseGroup, "Сумма реализации за период", saleFormatArticleBetweenDateSum, 2, 3, 4);
 
         saleGroupBetweenDateSum = addSGProp("Реализ. по группе за период", saleBetweenDateSum, 1, artGroup, 2, 3, 4);
 
@@ -466,61 +453,31 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
        // свойства групп товаров по реализации по формату
        // реализация по группе-формату
        saleFormatGroupBetweenDateSum = addSGProp("Сумма реализ. за период", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
-       // реализация по всем группам формата за период
-       LP sumSaleFormatSum = addSGProp ("Реализ. по формату за период", saleFormatGroupBetweenDateSum, 1, 3, 4);
-       // группа 1 хуже группы 2
-       LP group1SaleWorseArticle2 = addJProp ("Группа 1 хуже группы 2", groeq2, saleFormatGroupBetweenDateSum, 1, 5, 3, 4, saleFormatGroupBetweenDateSum, 1, 2, 3, 4);
-       // сумма по группам хуже
-       LP saleGroup2 = addJProp ("Сумма реал. по группе 1", and1, saleFormatGroupBetweenDateSum, 1, 5, 3, 4, group1SaleWorseArticle2, 1, 5, 3, 4, 2);
-       // сумма по всем группам хуже
-       sumSaleGroup2 = addSGProp ("Сумма реализации по группам хуже",saleGroup2, 1, 2, 3, 4);
-       // процент для АВС-анализа по группе-формату
-       percentForABCGroup = addJProp ("Процент АВС", percentABC, sumSaleGroup2, 1, 2, 3, 4, sumSaleFormatSum, 1, 3, 4);
+        
        // АВС-категория группы в формате
-       resultABCGroup = initABCAnalyze(percentForABCGroup," группы");
+       resultABCGroup = initABCAnalyze(addOProp(null,"Процент ABC группы", saleFormatGroupBetweenDateSum, true, false, true, 3, 1, 3, 4, saleFormatGroupBetweenDateSum, 1, 2, 3, 4),"группы");
 
+        // ABC-категория по товарам в группе - кол-во
+       resultABCInsideGroupQuantity = initABCAnalyze(addOProp(null, "Процент ABC товара в группе по кол-ву", saleFormatArticleBetweenDateQuantity, true, false, true, 4, 1, artGroup, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4),"товара по кол-ву в группе");
 
-       // свойства товаров по реализации по группе  (по количеству)
-       LP article1SaleWorseArticle2 = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateQuantity, 1, 2, 3, 4, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4);
-       LP articleSameGroup = addJProp ("Товар 2 и товар 1 одной группы", equals2, artGroup, 1, artGroup, 2);
-       LP articleSameGroupWorseArticle2 = addJProp ("Товар 2 лучше товара 1 и одной группы", and1, article1SaleWorseArticle2, 1, 2, 3, 4, 5, articleSameGroup, 2, 5);
-        // сумма количеств по товарам группы
-       LP sumSaleGroupArticleQuantity = addSGProp ("Суммарное количество по группе-формату", saleFormatArticleBetweenDateQuantity, 1, artGroup, 2, 3, 4);
-       sumSaleSameGroupArticle = addJProp ("Суммарное количество по группе-формату", sumSaleGroupArticleQuantity, 1, artGroup, 2, 3, 4);
-        // сумма количеств по товарам хуже в группе
-       LP saleSameGroupArticle2 = addJProp ("Количество реал. по товару 1", and1, saleFormatArticleBetweenDateQuantity, 1, 5, 3, 4, articleSameGroupWorseArticle2, 1, 2, 3, 4, 5);
-       sumSaleSameGroupArticle2 = addSGProp ("Суммарное кол-во реализации по товару 1 ", saleSameGroupArticle2, 1, 2, 3, 4);
-       // процент для АВС-анализа по товарам в группе-формате по количеству
-       percentForABCInsideGroupQuantity = addJProp ("Процент АВС", percentABC, sumSaleSameGroupArticle2, 1, 2, 3, 4, sumSaleSameGroupArticle, 1, 2, 3, 4);
-       resultABCInsideGroupQuantity = initABCAnalyze(percentForABCInsideGroupQuantity," товара по кол-ву");
-
-       // свойства товаров по реализации по группе  (по сумме)
-       LP article1SaleWorseArticle2Sum = addJProp ("Товар 2 лучше товара 1", groeq2, saleFormatArticleBetweenDateSum, 1, 2, 3, 4, saleFormatArticleBetweenDateSum, 1, 5, 3, 4);
-       LP articleSameGroupWorseArticle2Sum = addJProp ("Товар 2 лучше товара 1 и одной группы", and1, article1SaleWorseArticle2Sum, 1, 2, 3, 4, 5, articleSameGroup, 2, 5);
-        // сумма по товарам группы
-       LP sumSaleGroupArticleSum = addSGProp ("Сумма по группе-формату", saleFormatArticleBetweenDateSum, 1, artGroup, 2, 3, 4);
-       LP sumSaleSameGroupArticleSum = addJProp ("Суммарное количество по группе-формату", sumSaleGroupArticleSum, 1, artGroup, 2, 3, 4);
-        // сумма количеств по товарам хуже в группе
-       LP saleSameGroupArticle2Sum = addJProp ("Сумма реал. по товару 1", and1, saleFormatArticleBetweenDateSum, 1, 5, 3, 4, articleSameGroupWorseArticle2, 1, 2, 3, 4, 5);
-       LP sumSaleSameGroupArticle2Sum = addSGProp ("Суммарное кол-во реализации по товару 1 ", saleSameGroupArticle2Sum, 1, 2, 3, 4);
-       // процент для АВС-анализа по товарам в группе-формате по количеству
-       LP percentForABCInsideGroupSum = addJProp ("Процент АВС", percentABC, sumSaleSameGroupArticle2Sum, 1, 2, 3, 4, sumSaleSameGroupArticleSum, 1, 2, 3, 4);
-       resultABCInsideGroupSum = initABCAnalyze(percentForABCInsideGroupSum," товара по сумме");
+        // ABC-категория по товарам в группе - сумма
+        resultABCInsideGroupSum = initABCAnalyze(addOProp(null, "Процент ABC товара в группе по сумме", saleFormatArticleBetweenDateSum, true, false, true, 4, 1, artGroup, 2, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4),"товара по сумме в группе");
 
        // АВС-категория товара по формату
-       resultABCSum = initABCAnalyze(initCalculateForABCAnalyze(saleFormatArticleBetweenDateSum)," товара");
+        resultABCSum = initABCAnalyze(addOProp(null, "Процент ABC товара", saleFormatArticleBetweenDateSum, true, false, true, 3, 1, 3, 4, saleFormatArticleBetweenDateSum, 1, 2, 3, 4),"товара");
+
         // изменение цен
-        LDP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
-        incPriceOutChange.setDefProp(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
+        LP incPriceOutChange = addDProp("incPriceOutChange", "Цена розн. (прих.)", DoubleClass.instance, incomeDocument, article);
+        incPriceOutChange.setDerivedChange(currentPriceOut, true, incStore, 1, 2, quantity, 1, 2);
 
-        LDP revalPriceOutChange = addDProp(baseGroup, "revalPriceOutChange", "Цена розн. (переоц.)", DoubleClass.instance, revalDocument, store, article);
-        revalPriceOutChange.setDefProp(currentPriceOut, true, 2, 3, revalAdd, 1, 3, addJProp("Склад документа (форм.)", equals2, revalFormat, 1, storeFormat, 2), 1, 2);
+        LP revalPriceOutChange = addDProp(baseGroup, "revalPriceOutChange", "Цена розн. (переоц.)", DoubleClass.instance, revalDocument, store, article);
+        revalPriceOutChange.setDerivedChange(currentPriceOut, true, 2, 3, revalAdd, 1, 3, addJProp("Склад документа (форм.)", equals2, revalFormat, 1, storeFormat, 2), 1, 2);
 
-        LDP taxPriceOutChange = addDProp(baseGroup, "taxPriceOutChange", "Цена розн. (НДС)", DoubleClass.instance, taxDocument, store, article);
-        taxPriceOutChange.setDefProp(currentPriceOut, true, 2, 3, taxVatOut, 1, 3);
+        LP taxPriceOutChange = addDProp(baseGroup, "taxPriceOutChange", "Цена розн. (НДС)", DoubleClass.instance, taxDocument, store, article);
+        taxPriceOutChange.setDerivedChange(currentPriceOut, true, 2, 3, taxVatOut, 1, 3);
 
-        LDP locTaxPriceOutChange = addDProp(baseGroup, "locTaxPriceOutChange", "Цена розн. (местн. нал.)", DoubleClass.instance, locTaxDocument, store, article);
-        locTaxPriceOutChange.setDefProp(currentPriceOut, true, 2, 3, locTaxValue, 1, 3, addJProp("Склад документа (рег.)", equals2, locTaxRegion, 1, storeRegion, 2), 1, 2);
+        LP locTaxPriceOutChange = addDProp(baseGroup, "locTaxPriceOutChange", "Цена розн. (местн. нал.)", DoubleClass.instance, locTaxDocument, store, article);
+        locTaxPriceOutChange.setDerivedChange(currentPriceOut, true, 2, 3, locTaxValue, 1, 3, addJProp("Склад документа (рег.)", equals2, locTaxRegion, 1, storeRegion, 2), 1, 2);
 
         // цена для документа
         priceOutChange = addCUProp(baseGroup,"Цена розн. по док.", revalPriceOutChange, taxPriceOutChange, locTaxPriceOutChange,
@@ -738,21 +695,6 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             addHintsNoUpdate(currentIncDate.property);
             addHintsNoUpdate(currentIncDoc.property);
-        }
-    }
-
-    private class ExtOutNavigatorForm extends TmcNavigatorForm {
-
-        public ExtOutNavigatorForm(NavigatorElement parent, int ID, String caption) {
-            super(parent, ID, caption);
-
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(extOutcomeDocument, "Документ", properties, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
-
-            addPropertyView(objDoc, objArt, properties, baseGroup);
-
-            addArticleRegularFilterGroup(getPropertyView(quantity.property).view,
-                    getPropertyView(docOutBalanceQuantity.property).view);
         }
     }
 
@@ -1345,7 +1287,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
     }
 
     // ------------------------------------- Временные методы --------------------------- //
-
+/*
     public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         int modifier = 10;
@@ -1372,7 +1314,7 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         classQuantity.put(exchangeDocument, modifier);
         classQuantity.put(revalDocument,((Double)(modifier *0.5)).intValue());
 
-        Map<DataProperty, Set<DataPropertyInterface>> propNotNulls = new HashMap<DataProperty, Set<DataPropertyInterface>>();
+        Map<DataProperty, Set<ClassPropertyInterface>> propNotNulls = new HashMap<DataProperty, Set<ClassPropertyInterface>>();
         artGroup.putNotNulls(propNotNulls,0);
         outStore.putNotNulls(propNotNulls,0);
         extIncDetailDocument.putNotNulls(propNotNulls,0);
@@ -1400,5 +1342,5 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         autoFillDB(classQuantity, propQuantity,propNotNulls);
     }
-
+  */
 }

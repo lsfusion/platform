@@ -129,7 +129,7 @@ public class TranslateAspect {
     }
 
     // packFollowFalse noPush
-    @Around("call(platform.server.data.expr.AndExpr platform.server.data.expr.AndExpr.packFollowFalse(platform.server.data.where.Where)) && target(groupExpr) && args(falseWhere)")
+    @Around("call(platform.server.data.expr.BaseExpr platform.server.data.expr.BaseExpr.packFollowFalse(platform.server.data.where.Where)) && target(groupExpr) && args(falseWhere)")
     public Object callPackFollowFalse(ProceedingJoinPoint thisJoinPoint, GroupExpr groupExpr, AbstractWhere falseWhere) throws Throwable {
         if(groupExpr.assertNoPush(falseWhere.not()))
             return groupExpr;

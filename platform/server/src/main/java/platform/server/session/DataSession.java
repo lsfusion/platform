@@ -19,7 +19,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.DataPropertyInterface;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.RemoteForm;
@@ -32,15 +32,15 @@ import java.util.*;
 
 public class DataSession extends SQLSession implements ChangesSession {
 
-    public Map<RemoteForm,ViewDataChanges> incrementChanges = new HashMap<RemoteForm, ViewDataChanges>();
+    public Map<RemoteForm, ViewChanges> incrementChanges = new HashMap<RemoteForm, ViewChanges>();
 
     public SessionChanges changes = new SessionChanges();
 
     public final BaseClass baseClass;
     public final CustomClass namedObject;
-    public final DataProperty name;
+    public final Property<?> name;
     public final CustomClass transaction;
-    public final DataProperty date;
+    public final Property<?> date;
 
     // для отладки
     public static boolean reCalculateAggr = false;
@@ -64,7 +64,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         return isClassWhere;
     }
 
-    public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, DataProperty name, CustomClass transaction, DataProperty date) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, Property name, CustomClass transaction, Property date) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         super(adapter);
 
         this.baseClass = baseClass;
@@ -77,7 +77,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     public void restart(boolean cancel) throws SQLException {
 
         if(cancel)
-            for(ViewDataChanges viewChanges : incrementChanges.values()) {
+            for(ViewChanges viewChanges : incrementChanges.values()) {
                 viewChanges.properties.addAll(changes.data.keySet());
                 viewChanges.addClasses.addAll(changes.add.keySet());
                 viewChanges.removeClasses.addAll(changes.remove.keySet());
@@ -95,7 +95,11 @@ public class DataSession extends SQLSession implements ChangesSession {
         changes = new SessionChanges();
     }
 
-    public DataObject addObject(ConcreteCustomClass customClass) throws SQLException {
+    public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, TableModifier<? extends TableChanges> modifier, DataObject key, Object value) throws SQLException {
+        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).change(this,modifier,value);
+    }
+
+    public DataObject addObject(ConcreteCustomClass customClass, TableModifier<? extends TableChanges> modifier) throws SQLException {
 
         DataObject object = new DataObject(IDTable.instance.generateID(this, IDTable.OBJECT),baseClass.unknown);
 
@@ -103,12 +107,10 @@ public class DataSession extends SQLSession implements ChangesSession {
         changeClass(object, customClass);
         
         if(customClass.isChild(namedObject))
-            changeProperty(name,Collections.singletonMap(BaseUtils.single(name.interfaces),object),
-                    new DataObject(customClass.caption+" "+object.object,(StringClass)name.value),false);
+            changeSingleProperty(name,modifier,object,customClass.caption+" "+object.object);
 
         if(customClass.isChild(transaction))
-            changeProperty(date,Collections.singletonMap(BaseUtils.single(date.interfaces),object),
-                    new DataObject(DateConverter.dateToInt(new Date()),(DateClass)date.value),false);
+            changeSingleProperty(date,modifier,object,DateConverter.dateToInt(new Date()));
 
         return object;
     }    
@@ -153,13 +155,13 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         newClasses.put(change,toClass);
 
-        for(ViewDataChanges viewChanges : incrementChanges.values()) {
+        for(ViewChanges viewChanges : incrementChanges.values()) {
             viewChanges.addClasses.addAll(addClasses);
             viewChanges.removeClasses.addAll(removeClasses);
         }
     }
 
-    public void changeProperty(DataProperty property, Map<DataPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException {
+    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException {
         DataChangeTable dataChange = changes.data.get(property);
         if(dataChange == null) { // создадим таблицу, если не было
             dataChange = new DataChangeTable(property);
@@ -170,10 +172,10 @@ public class DataSession extends SQLSession implements ChangesSession {
         if (externalID) {
             DataProperty extPropID = property.value.getExternalID();
 
-            Query<DataPropertyInterface,String> query = new Query<DataPropertyInterface, String>(extPropID);
+            Query<ClassPropertyInterface,String> query = new Query<ClassPropertyInterface, String>(extPropID);
             query.and(extPropID.getExpr(query.mapKeys).compare((DataObject) newValue,Compare.EQUALS));
 
-            OrderedMap<Map<DataPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeClasses(this, baseClass);
+            OrderedMap<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeClasses(this, baseClass);
 
             if (result.size() == 0)
                 newValue = NullValue.instance;
@@ -183,7 +185,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         changes.data.put(property,dataChange.insertRecord(this,BaseUtils.join(dataChange.mapKeys,keys),Collections.singletonMap(dataChange.value,newValue),true));
 
-        for(ViewDataChanges viewChanges : incrementChanges.values())
+        for(ViewChanges viewChanges : incrementChanges.values())
             viewChanges.properties.add(property);
     }
 
@@ -235,10 +237,10 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         Collection<Property> result = new ArrayList<Property>();
 
-        ViewDataChanges incrementChange = incrementChanges.get(form);
+        ViewChanges incrementChange = incrementChanges.get(form);
         if(incrementChange==null)
-            incrementChange = new ViewDataChanges(changes);
-        incrementChanges.put(form,new ViewDataChanges());
+            incrementChange = new ViewChanges(changes);
+        incrementChanges.put(form,new ViewChanges());
 
         updateClasses.addAll(incrementChange.addClasses);
         updateClasses.addAll(incrementChange.removeClasses);
@@ -338,7 +340,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         }
 
         private Expr getNameExpr(Expr expr) {
-            return session.name.getExpr(Collections.singletonMap(BaseUtils.single(session.name.interfaces),expr),this,null);
+            return session.name.getSingleExpr(this,expr);
         }
 
         public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {

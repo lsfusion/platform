@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class PropertyObjectNavigator<P extends PropertyInterface> extends PropertyImplement<PropertyInterfaceNavigator,P> implements CompareValueNavigator {
 
-    public PropertyObjectNavigator(LP<P, Property<P>> property,PropertyInterfaceNavigator... objects) {
+    public PropertyObjectNavigator(LP<P> property,PropertyInterfaceNavigator... objects) {
         super(property.property);
         
         for(int i=0;i<property.listInterfaces.size();i++)

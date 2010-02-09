@@ -5,7 +5,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.*;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -105,7 +105,7 @@ public class CaseExpr extends Expr {
             return;
 
         if(!ic.hasNext()) {
-            result.add(current.where,new HashMap<K, AndExpr>(current.data));
+            result.add(current.where,new HashMap<K, BaseExpr>(current.data));
             return;
         }
 
@@ -129,10 +129,10 @@ public class CaseExpr extends Expr {
         return result;
     }
 
-    public void fillContext(Context context) {
+    public void enumerate(SourceEnumerator enumerator) {
         for(ExprCase exprCase : cases) {
-            exprCase.where.fillContext(context);
-            exprCase.data.fillContext(context);
+            exprCase.where.enumerate(enumerator);
+            exprCase.data.enumerate(enumerator);
         }
     }
 
@@ -155,24 +155,24 @@ public class CaseExpr extends Expr {
     // получение Where'ов
 
     public Where calculateWhere() {
-        return cases.getWhere(new CaseWhereInterface<AndExpr>(){
-            public Where getWhere(AndExpr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.getWhere();
             }
         });
     }
 
     public Where isClass(final AndClassSet set) {
-        return cases.getWhere(new CaseWhereInterface<AndExpr>(){
-            public Where getWhere(AndExpr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.isClass(set);
             }
         });
     }
 
     public Where compare(final Expr expr, final Compare compare) {
-        return cases.getWhere(new CaseWhereInterface<AndExpr>(){
-            public Where getWhere(AndExpr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.compare(expr,compare);
             }
         });
@@ -203,4 +203,5 @@ public class CaseExpr extends Expr {
         result.add(Where.TRUE,expr); // если null то expr 
         return result.getExpr();
     }
+
 }

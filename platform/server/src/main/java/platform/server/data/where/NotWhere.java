@@ -55,8 +55,8 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return where.translateQuery(translator).not();
     }
 
-    public void fillContext(Context context) {
-        where.fillContext(context);
+    public void enumerate(SourceEnumerator enumerator) {
+        where.enumerate(enumerator);
     }
 
     public String getSource(CompileSource compile) {

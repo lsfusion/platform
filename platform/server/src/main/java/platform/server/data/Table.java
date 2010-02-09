@@ -130,16 +130,16 @@ public class Table implements MapKeysInterface<KeyField> {
         return new CaseJoin<PropertyField>(result, properties);
     }
 
-    public Join joinAnd(Map<KeyField, ? extends AndExpr> joinImplement) {
+    public Join joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {
         return new Join(joinImplement);
     }
 
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
 
-        public Map<KeyField, AndExpr> joins;
+        public Map<KeyField, BaseExpr> joins;
 
-        public Join(Map<KeyField, ? extends AndExpr> iJoins) {
-            joins = (Map<KeyField, AndExpr>) iJoins;
+        public Join(Map<KeyField, ? extends BaseExpr> iJoins) {
+            joins = (Map<KeyField, BaseExpr>) iJoins;
             assert (joins.size()==keys.size());
         }
 
@@ -158,7 +158,7 @@ public class Table implements MapKeysInterface<KeyField> {
 
         @TwinLazy
         public platform.server.data.expr.Expr getExpr(PropertyField property) {
-            return AndExpr.create(new Expr(property));
+            return BaseExpr.create(new Expr(property));
         }
         @TwinLazy
         public Where<?> getWhere() {
@@ -180,7 +180,7 @@ public class Table implements MapKeysInterface<KeyField> {
         public int hashContext(HashContext hashContext) {
             int hash = Table.this.hashCode()*31;
                 // нужен симметричный хэш относительно выражений
-            for(Map.Entry<KeyField,AndExpr> join : joins.entrySet())
+            for(Map.Entry<KeyField, BaseExpr> join : joins.entrySet())
                 hash += join.getKey().hashCode() ^ join.getValue().hashContext(hashContext);
             return hash;
         }
@@ -231,8 +231,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return keys.iterator().next().toString();
             }
 
-            public void fillContext(Context context) {
-                context.fill(joins);
+            public void enumerate(SourceEnumerator enumerator) {
+                enumerator.fill(joins);
             }
 
             public Join getJoin() {
@@ -308,8 +308,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.translateDirect(translator).getDirectExpr(property);
             }
 
-            public void fillContext(Context context) {
-                context.fill(joins);
+            public void enumerate(SourceEnumerator enumerator) {
+                enumerator.fill(joins);
             }
 
             public Join getJoin() {

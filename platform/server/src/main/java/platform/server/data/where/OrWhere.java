@@ -11,7 +11,7 @@ import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -318,12 +318,12 @@ public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements Or
     }
 
     static class Equal {
-        AndExpr[] exprs;
+        BaseExpr[] exprs;
         int size;
         ValueExpr value;
 
-        Equal(AndExpr expr,int max) {
-            exprs = new AndExpr[max];
+        Equal(BaseExpr expr,int max) {
+            exprs = new BaseExpr[max];
             exprs[0] = expr;
             size = 1;
             if(expr instanceof ValueExpr)
@@ -331,14 +331,14 @@ public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements Or
         }
     }
 
-    static class EqualMap extends SimpleMap<AndExpr,Equal> {
+    static class EqualMap extends SimpleMap<BaseExpr,Equal> {
 
         int max;
         EqualMap(int max) {
             this.max = max;
         }
 
-        Equal getEqual(AndExpr expr) {
+        Equal getEqual(BaseExpr expr) {
             Equal equal = get(expr);
             if(equal==null) {
                 equal = new Equal(expr,max);
@@ -347,7 +347,7 @@ public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements Or
             return equal;
         }
 
-        public boolean add(AndExpr expr1,AndExpr expr2) {
+        public boolean add(BaseExpr expr1, BaseExpr expr2) {
             Equal equal1 = getEqual(expr1);
             Equal equal2 = getEqual(expr2);
 

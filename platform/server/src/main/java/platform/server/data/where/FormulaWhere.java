@@ -3,8 +3,8 @@ package platform.server.data.where;
 import platform.base.BaseUtils;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.Context;
 import platform.server.data.query.HashContext;
+import platform.server.data.query.SourceEnumerator;
 
 
 public abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
@@ -25,9 +25,9 @@ public abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Wh
         return "("+result+")";
     }
 
-    public void fillContext(Context context) {
+    public void enumerate(SourceEnumerator enumerator) {
         for(Where where : wheres)
-            where.fillContext(context);
+            where.enumerate(enumerator);
     }
 
     public int hashContext(HashContext hashContext) {

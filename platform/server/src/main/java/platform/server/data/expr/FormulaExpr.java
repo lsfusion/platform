@@ -19,26 +19,26 @@ public class FormulaExpr extends StaticClassExpr {
 
     private final String formula;
     private final ConcreteValueClass valueClass;
-    private final Map<String, AndExpr> params;
+    private final Map<String, BaseExpr> params;
 
     // этот конструктор напрямую можно использовать только заведомо зная что getClassWhere не null или через оболочку create 
-    private FormulaExpr(String iFormula,Map<String,AndExpr> iParams, ConcreteValueClass iValueClass) {
+    private FormulaExpr(String iFormula,Map<String, BaseExpr> iParams, ConcreteValueClass iValueClass) {
         formula = iFormula;
         params = iParams;
         valueClass = iValueClass;
     }
 
-    public static Expr create(String iFormula,Map<String,AndExpr> iParams, ConcreteValueClass iValueClass) {
-        return AndExpr.create(new FormulaExpr(iFormula, iParams, iValueClass));
+    public static Expr create(String iFormula,Map<String, BaseExpr> iParams, ConcreteValueClass iValueClass) {
+        return BaseExpr.create(new FormulaExpr(iFormula, iParams, iValueClass));
     }
 
 
-    public void fillContext(Context context) {
-        context.fill(params);
+    public void enumerate(SourceEnumerator enumerator) {
+        enumerator.fill(params);
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        for(AndExpr param : params.values())
+        for(BaseExpr param : params.values())
             param.fillJoinWheres(joins, andWhere);
     }
 
@@ -59,14 +59,14 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @ParamLazy
-    public AndExpr translateDirect(KeyTranslator translator) {
+    public BaseExpr translateDirect(KeyTranslator translator) {
         return new FormulaExpr(formula,translator.translateDirect(params),valueClass);
     }
 
     @Override
-    public AndExpr packFollowFalse(Where where) {
-        Map<String,AndExpr> transParams = new HashMap<String,AndExpr>();
-        for(Map.Entry<String,AndExpr> param : params.entrySet())
+    public BaseExpr packFollowFalse(Where where) {
+        Map<String, BaseExpr> transParams = new HashMap<String, BaseExpr>();
+        for(Map.Entry<String, BaseExpr> param : params.entrySet())
             transParams.put(param.getKey(), param.getValue().packFollowFalse(where));
         assert !transParams.containsValue(null); // предпологается что сверху был andFollowFalse
         return new FormulaExpr(formula,transParams,valueClass);
@@ -82,7 +82,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     public DataWhereSet getFollows() {
         DataWhereSet follows = new DataWhereSet();
-        for(AndExpr param : params.values())
+        for(BaseExpr param : params.values())
             follows.addAll(param.getFollows());
         return follows;
     }
@@ -93,7 +93,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     public int hashContext(HashContext hashContext) {
         int hash = 0;
-        for(Map.Entry<String,AndExpr> param : params.entrySet())
+        for(Map.Entry<String, BaseExpr> param : params.entrySet())
             hash += param.getKey().hashCode() ^ param.getValue().hashContext(hashContext);
         return valueClass.hashCode()*31*31 + hash*31 + formula.hashCode();
     }

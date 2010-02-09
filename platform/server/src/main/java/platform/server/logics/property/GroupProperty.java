@@ -2,55 +2,66 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.GroupExpr;
 import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-abstract public class GroupProperty<T extends PropertyInterface> extends FunctionProperty<GroupPropertyInterface<T>> {
+abstract public class GroupProperty<T extends PropertyInterface> extends FunctionProperty<GroupProperty.Interface<T>> {
 
     // оператор
     int operator;
 
-    protected GroupProperty(String sID, String caption, Collection<GroupPropertyInterface<T>> interfaces, Property<T> property, int operator) {
-        super(sID, caption, interfaces);
+    public static class Interface<T extends PropertyInterface> extends PropertyInterface<Interface<T>> {
+        public PropertyInterfaceImplement<T> implement;
+
+        public Interface(int ID,PropertyInterfaceImplement<T> implement) {
+            super(ID);
+            this.implement = implement;
+        }
+    }
+
+    private static <T extends PropertyInterface> Collection<Interface<T>> getInterfaces(Collection<? extends PropertyInterfaceImplement<T>> interfaceImplements) {
+        Collection<Interface<T>> interfaces = new ArrayList<Interface<T>>();
+        for(PropertyInterfaceImplement<T> implement : interfaceImplements)
+            interfaces.add(new Interface<T>(interfaces.size(),implement));
+        return interfaces;
+    }
+
+    protected GroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property, int operator) {
+        super(sID, caption, getInterfaces(interfaces));
         groupProperty = property;
         this.operator = operator;
     }
 
     // группировочное св-во
-    Property<T> groupProperty;
+    protected Property<T> groupProperty;
 
     Object groupValue = "grfield";
 
-    Map<GroupPropertyInterface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
-        Map<GroupPropertyInterface<T>, Expr> group = new HashMap<GroupPropertyInterface<T>, Expr>();
-        for(GroupPropertyInterface<T> propertyInterface : interfaces)
+    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+        Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
+        for(Interface<T> propertyInterface : interfaces)
             group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier, changedWhere));
         return group;
     }
 
-    public Expr calculateExpr(Map<GroupPropertyInterface<T>, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
-        Expr newExpr = Expr.groupBy(getGroupImplements(mapKeys, modifier, null),
-            groupProperty.getExpr(mapKeys, modifier, null),Where.TRUE,operator!=1,joinImplement);
+        Expr newExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, null), groupProperty.getExpr(mapKeys, modifier, null), operator != 1, joinImplement);
         if(modifier.getSession()==null || (changedWhere==null && !isStored())) return newExpr;
 
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
-        Expr changedExpr = Expr.groupBy(getGroupImplements(mapKeys, modifier, changedGroupWhere),
-            groupProperty.getExpr(mapKeys, modifier, changedGroupWhere),changedGroupWhere.toWhere(),operator!=1,joinImplement);
+        Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, changedGroupWhere), groupProperty.getExpr(mapKeys, modifier, changedGroupWhere), changedGroupWhere.toWhere(), operator != 1, joinImplement);
 
         // старые группировочные записи
-        Expr changedPrevExpr = Expr.groupBy(getGroupImplements(mapKeys, defaultModifier, null),
-            groupProperty.getExpr(mapKeys),changedGroupWhere.toWhere(),operator!=1,joinImplement);
+        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier, null), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), operator != 1, joinImplement);
 
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return getChangedExpr(changedExpr, changedPrevExpr, getExpr(joinImplement), newExpr);
@@ -60,7 +71,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     @Override
     public void fillDepends(Set<Property> depends) {
-        for(GroupPropertyInterface<T> interfaceImplement : interfaces)
+        for(Interface<T> interfaceImplement : interfaces)
             interfaceImplement.implement.mapFillDepends(depends);
         depends.add(groupProperty);
     }
@@ -68,5 +79,12 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
     @Override
     protected boolean usePreviousStored() {
         return false;
+    }
+
+    public Map<Interface<T>,PropertyInterfaceImplement<T>> getMapInterfaces() {
+        Map<Interface<T>,PropertyInterfaceImplement<T>> mapInterfaces = new HashMap<Interface<T>, PropertyInterfaceImplement<T>>();
+        for(GroupProperty.Interface<T> propertyInterface : interfaces)
+            mapInterfaces.put(propertyInterface,propertyInterface.implement);
+        return mapInterfaces;
     }
 }

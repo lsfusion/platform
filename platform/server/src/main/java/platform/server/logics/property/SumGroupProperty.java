@@ -1,12 +1,13 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
+import platform.server.logics.property.linear.LP;
 
-import java.util.Collection;
+import java.util.*;
 
 public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
-    public SumGroupProperty(String sID, String caption, Collection<GroupPropertyInterface<T>> interfaces, Property<T> property) {
+    public SumGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
         super(sID, caption, interfaces, property, 1);
     }
 

@@ -5,26 +5,14 @@ import platform.server.caches.ParamLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.where.Where;
-import platform.server.data.type.Type;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.HashMap;
 
-public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
+public class MaxGroupExpr extends GroupExpr {
 
-    private MaxGroupExpr(Map<AndExpr, AndExpr> group, Where where, AndExpr expr, Where upWhere) {
-        super(group, where, expr, upWhere, new HashMap<KeyExpr, Type>());
-    }
-    public static Expr create(Map<AndExpr, AndExpr> group, Where where, AndExpr expr) {
-        return new MaxGroupExpr(group, where, expr, Where.TRUE).packCreate();
-    }
-
-    private MaxGroupExpr(Map<AndExpr, AndExpr> group, Where where, AndExpr expr) {
-        super(group, where, expr);
-    }
-    protected GroupExpr createPacked(Map<AndExpr, AndExpr> group, Where<?> where, AndExpr expr) {
-        return new MaxGroupExpr(group, where, expr);
+    protected MaxGroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
+        super(group, expr);
     }
 
     public MaxGroupExpr(MaxGroupExpr maxExpr, KeyTranslator translator) {
@@ -36,30 +24,18 @@ public class MaxGroupExpr extends GroupExpr<AndExpr,MaxGroupExpr> {
         return new MaxGroupExpr(this,translator);
     }
 
-    public MaxGroupExpr(MaxGroupExpr maxExpr, Where packWhere) {
-        super(maxExpr, packWhere);
-    }
-    @Override
-    public AndExpr packFollowFalse(Where where) {
-        return new MaxGroupExpr(this, where);
-    }
-
     public Where calculateWhere() {
         return new NotNull();
     }
 
-    protected Expr createThis(Where iWhere, Map<AndExpr, AndExpr> iGroup, AndExpr iExpr) {
-        return create(iGroup, iWhere, iExpr);
+    private BaseExpr getBaseExpr() {
+        return BaseUtils.single(expr.getCases()).data;
     }
-
-    public AndExpr packExpr(AndExpr expr, Where trueWhere) {
-        return expr.packFollowFalse(trueWhere.not());
-    }
-
+    
     protected class NotNull extends GroupExpr.NotNull {
 
-        public ClassExprWhere calculateClassWhere() {
-            return getFullWhere().getClassWhere().map(BaseUtils.merge(Collections.singletonMap(expr, MaxGroupExpr.this), group)).and(getJoinsWhere(group).getClassWhere());
+        protected ClassExprWhere getClassWhere(Where fullWhere) {
+            return fullWhere.getClassWhere().map(BaseUtils.merge(Collections.singletonMap(getBaseExpr(), MaxGroupExpr.this), group));
         }
     }
 

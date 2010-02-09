@@ -24,13 +24,13 @@ public class IsClassWhere extends DataWhere {
     // для того чтобы один и тот же JoinSelect все использовали
     private final IsClassExpr classExpr;
 
-    public IsClassWhere(VariableClassExpr iExpr, AndClassSet iClasses) {
-        expr = iExpr;
-        classes = iClasses;
+    public IsClassWhere(VariableClassExpr expr, AndClassSet classes) {
+        this.expr = expr;
+        this.classes = classes;
 
-        assert !classes.isEmpty();
-        if(classes instanceof ObjectClassSet)
-            classExpr = (IsClassExpr) iExpr.classExpr(((ObjectClassSet)classes).getBaseClass());
+        assert !this.classes.isEmpty();
+        if(this.classes instanceof ObjectClassSet)
+            classExpr = (IsClassExpr) expr.classExpr(((ObjectClassSet) this.classes).getBaseClass());
         else
             classExpr = null;
     }
@@ -61,8 +61,8 @@ public class IsClassWhere extends DataWhere {
         return new ClassExprWhere(expr,classes).and(expr.getWhere().getClassWhere());
     }
 
-    public void fillContext(Context context) {
-        expr.fillContext(context);
+    public void enumerate(SourceEnumerator enumerator) {
+        expr.enumerate(enumerator);
     }
 
     protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {

@@ -7,7 +7,7 @@ import java.util.Collection;
 
 public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
-    public MaxGroupProperty(String sID, String caption, Collection<GroupPropertyInterface<T>> interfaces, Property<T> property) {
+    public MaxGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
         super(sID, caption, interfaces, property, 0);
     }
 

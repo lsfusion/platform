@@ -2,13 +2,13 @@ package platform.server.data.expr.cases;
 
 import platform.server.data.where.Where;
 
-public abstract class Case<D> {
+public class Case<D> {
     public Where<?> where;
     public D data;
 
-    public Case(Where iWhere,D iData) {
-        where = iWhere;
-        data = iData;
+    public Case(Where where,D data) {
+        this.where = where;
+        this.data = data;
     }
 
     public String toString() {

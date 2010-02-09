@@ -5,7 +5,7 @@ import platform.server.classes.ConcreteValueClass;
 import java.util.Collection;
 
 // вообще Collection
-abstract class ValueFormulaProperty<T extends FormulaPropertyInterface> extends FormulaProperty<T> {
+abstract class ValueFormulaProperty<T extends PropertyInterface> extends FormulaProperty<T> {
 
     ConcreteValueClass value;
 

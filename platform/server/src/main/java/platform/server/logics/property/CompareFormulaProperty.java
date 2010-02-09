@@ -13,29 +13,36 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-public class CompareFormulaProperty extends ValueFormulaProperty<FormulaPropertyInterface> {
+public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaProperty.Interface> {
 
     Compare compare;
-    public FormulaPropertyInterface operator1;
-    public FormulaPropertyInterface operator2;
+    public Interface operator1;
+    public Interface operator2;
 
     public CompareFormulaProperty(String sID, Compare compare) {
         super(sID, compare.toString(), getInterfaces(2), LogicalClass.instance);
 
         this.compare = compare;
-        Iterator<FormulaPropertyInterface> i = interfaces.iterator();
+        Iterator<Interface> i = interfaces.iterator();
         operator1 = i.next();
         operator2 = i.next();
     }
 
-    static Collection<FormulaPropertyInterface> getInterfaces(int paramCount) {
-        Collection<FormulaPropertyInterface> interfaces = new ArrayList<FormulaPropertyInterface>();
+    public static class Interface extends PropertyInterface {
+        
+        Interface(int ID) {
+            super(ID);
+        }
+    }
+
+    static Collection<Interface> getInterfaces(int paramCount) {
+        Collection<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<paramCount;i++)
-            interfaces.add(new FormulaPropertyInterface(i));
+            interfaces.add(new Interface(i));
         return interfaces;
     }
 
-    public Expr calculateExpr(Map<FormulaPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<CompareFormulaProperty.Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

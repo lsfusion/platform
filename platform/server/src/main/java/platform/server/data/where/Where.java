@@ -5,7 +5,7 @@ import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
@@ -39,8 +39,8 @@ public interface Where<Not extends Where> extends SourceJoin {
     AndObjectWhere[] getAnd();
     OrObjectWhere[] getOr();
 
-    Map<AndExpr,ValueExpr> getExprValues();
-    Map<KeyExpr, AndExpr> getKeyExprs();    
+    Map<BaseExpr,ValueExpr> getExprValues();
+    Map<KeyExpr, BaseExpr> getKeyExprs();
 
     ObjectWhereSet getObjects();
 

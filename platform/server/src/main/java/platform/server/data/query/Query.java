@@ -14,9 +14,11 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
+import platform.server.data.type.Reader;
 import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.NullValue;
 import platform.server.data.where.Where;
 
 import java.sql.SQLException;
@@ -59,6 +61,10 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         this(mapKeys,Collections.singletonMap(value,property));
     }
 
+    public Query(Map<K, KeyExpr> mapKeys, Expr property, V value, Where where) {
+        this(mapKeys,Collections.singletonMap(value,property),where);
+    }
+
     public Query(Map<K,KeyExpr> mapKeys,Where where) {
         this.mapKeys = mapKeys;
         properties = new HashMap<V, Expr>();
@@ -77,25 +83,17 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return mapKeys.get(key).getType(where);
     }
 
-    protected static <K,V> Context getContext(Map<K,KeyExpr> mapKeys,Map<V, Expr> properties,Where where)  {
-        Context context = new Context();
-        context.fill(mapKeys);
-        context.fill(properties);
-        where.fillContext(context);
-        return context;
+    public Set<KeyExpr> getKeys() {
+        return new HashSet<KeyExpr>(mapKeys.values());
     }
 
-    // скомпилированные св-ва
     @Lazy
-    public Context getContext() {
-        return getContext(mapKeys,properties,where);
+    public Set<ValueExpr> getValues() {
+        return AbstractSourceJoin.enumValues(properties.values(),where);
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         return parse().join(joinImplement);
-    }
-    public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr, ValueExpr> mapValues) {
-        return parse().join(joinImplement,mapValues);
     }
 
     static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders) {
@@ -151,24 +149,29 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
     static class ReadClasses<T> {
         Map<T,DataClass> mapDataClasses = new HashMap<T, DataClass>();
         Map<T,Object> mapObjectClasses = new HashMap<T, Object>();
+        Set<T> setNulls = new HashSet<T>();
 
         BaseClass baseClass;
 
         ReadClasses(Map<T,? extends Expr> map, Query<?,Object> query,BaseClass iBaseClass) {
             baseClass = iBaseClass;
             for(Map.Entry<T,? extends Expr> expr : map.entrySet()) {
-                Type type = expr.getValue().getType(query.where);
-                if(type instanceof DataClass)
-                    mapDataClasses.put(expr.getKey(),(DataClass)type);
-                else {
-                    Object propertyClass = new Object();
-                    mapObjectClasses.put(expr.getKey(),propertyClass);
-                    query.properties.put(propertyClass,expr.getValue().classExpr(baseClass));
-                }
+                Reader reader = expr.getValue().getReader(query.where);
+                if(reader instanceof Type) {
+                    if(reader instanceof DataClass)
+                        mapDataClasses.put(expr.getKey(),(DataClass)reader);
+                    else {
+                        Object propertyClass = new Object();
+                        mapObjectClasses.put(expr.getKey(),propertyClass);
+                        query.properties.put(propertyClass,expr.getValue().classExpr(baseClass));
+                    }
+                } else
+                    setNulls.add(expr.getKey());
             }
         }
 
         ObjectValue read(T key,Object value,Map<Object,Object> classes) {
+            if(setNulls.contains(key)) return NullValue.instance;
             ConcreteClass propertyClass = mapDataClasses.get(key);
             if(propertyClass==null) propertyClass = baseClass.findConcreteClassID((Integer) classes.get(mapObjectClasses.get(key)));
             return ObjectValue.getValue(value,propertyClass);

@@ -7,7 +7,7 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.DataPropertyInterface;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.view.form.RemoteForm;
 import platform.server.classes.ConcreteClass;
@@ -21,11 +21,11 @@ public interface ChangesSession {
 
     public void restart(boolean cancel) throws SQLException;
 
-    public DataObject addObject(ConcreteCustomClass customClass) throws SQLException;
+    public DataObject addObject(ConcreteCustomClass customClass, TableModifier<? extends TableChanges> modifier) throws SQLException;
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException;
 
-    public void changeProperty(DataProperty property, Map<DataPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException;
+    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException;
 
     public ConcreteClass getCurrentClass(DataObject value);
     public <T> Map<T,ConcreteClass> getCurrentClasses(Map<T,DataObject> map);

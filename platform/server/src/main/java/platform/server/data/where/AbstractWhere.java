@@ -5,7 +5,7 @@ import platform.server.caches.TwinLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
@@ -148,8 +148,8 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
     public abstract MeanClassWheres calculateMeanClassWheres();
 
     @TwinLazy
-    public Map<AndExpr, ValueExpr> getExprValues() {
-        Map<AndExpr, ValueExpr> result = new HashMap<AndExpr, ValueExpr>();
+    public Map<BaseExpr, ValueExpr> getExprValues() {
+        Map<BaseExpr, ValueExpr> result = new HashMap<BaseExpr, ValueExpr>();
         for(OrObjectWhere orWhere : getOr())
             if(orWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)orWhere;
@@ -163,8 +163,8 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
     }
 
     @TwinLazy
-    public Map<KeyExpr, AndExpr> getKeyExprs() {
-        Map<KeyExpr, AndExpr> result = new HashMap<KeyExpr, AndExpr>();
+    public Map<KeyExpr, BaseExpr> getKeyExprs() {
+        Map<KeyExpr, BaseExpr> result = new HashMap<KeyExpr, BaseExpr>();
         for(OrObjectWhere orWhere : getOr())
             if(orWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)orWhere;

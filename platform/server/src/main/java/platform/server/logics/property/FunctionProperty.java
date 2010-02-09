@@ -1,6 +1,6 @@
 package platform.server.logics.property;
 
-import platform.server.session.DataChanges;
+import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
 import java.util.Collection;
@@ -18,7 +18,7 @@ public abstract class FunctionProperty<T extends PropertyInterface> extends Aggr
             propImplement.mapFillDepends(depends);
     }
 
-    <U extends DataChanges<U>> U calculateUsedChanges(Modifier<U> modifier) {
+    public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
         return Property.getUsedChanges(getDepends(), modifier);
     }
 }

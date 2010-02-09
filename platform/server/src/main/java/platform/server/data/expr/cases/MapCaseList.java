@@ -1,18 +1,18 @@
 package platform.server.data.expr.cases;
 
 import platform.base.BaseUtils;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.Where;
 
 import java.util.Map;
 
-public class MapCaseList<K> extends AddCaseList<Map<K, AndExpr>,MapCase<K>> {
+public class MapCaseList<K> extends AddCaseList<Map<K, BaseExpr>,MapCase<K>> {
 
     MapCaseList() {
     }
 
     // добавляет Case, проверяя все что можно
-    public void add(Where where,Map<K,AndExpr> map) {
+    public void add(Where where,Map<K, BaseExpr> map) {
 
         where = where.followFalse(upWhere);
         if(!where.isFalse()) {

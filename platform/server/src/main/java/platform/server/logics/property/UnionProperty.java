@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
-abstract public class UnionProperty extends FunctionProperty<PropertyInterface> {
+abstract public class UnionProperty extends FunctionProperty<UnionProperty.Interface> {
 
-    static Collection<PropertyInterface> getInterfaces(int intNum) {
-        Collection<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
+    public static class Interface extends PropertyInterface {
+        public Interface(int ID) {
+            super(ID);
+        }
+    }
+
+    static Collection<Interface> getInterfaces(int intNum) {
+        Collection<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<intNum;i++)
-            interfaces.add(new PropertyInterface(i));
+            interfaces.add(new Interface(i));
         return interfaces;
     }
 
@@ -17,7 +23,7 @@ abstract public class UnionProperty extends FunctionProperty<PropertyInterface> 
         super(sID, caption, getInterfaces(intNum));
     }
 
-    protected abstract Collection<PropertyMapImplement<PropertyInterface,PropertyInterface>> getOperands();
+    protected abstract Collection<PropertyMapImplement<?, Interface>> getOperands();
 
     @Override
     public void fillDepends(Set<Property> depends) {

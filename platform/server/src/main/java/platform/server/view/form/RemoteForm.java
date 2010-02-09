@@ -64,17 +64,17 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
     private class Update extends ViewModifier {
 
-        public Update(ViewDataChanges view) {
+        public Update(ViewChanges view) {
             super(view);
         }
 
-        public ViewDataChanges used(Property property, ViewDataChanges usedChanges) {
+        public ViewChanges used(Property property, ViewChanges usedChanges) {
             if(hintsNoUpdate.contains(property))
-                return new ViewDataChanges();
+                return new ViewChanges();
             return usedChanges;
         }
     }
-    public ViewModifier update(ViewDataChanges view) {
+    public ViewModifier update(ViewChanges view) {
         return new Update(view);
     }
 
@@ -161,10 +161,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyView propertyView, boolean externalID) throws SQLException, IOException {
 
-        DataChange change = propertyView.view.getChangeProperty(session, this, securityPolicy.property.change, externalID);
-        outStream.writeBoolean(change==null);
-        if(change!=null)
-            TypeSerializer.serialize(outStream,change.getType());
+        PropertyValueImplement change = propertyView.view.getChangeProperty();
+        if(change.canBeChanged(this)) {
+            outStream.writeBoolean(false);
+            TypeSerializer.serialize(outStream,change.property.getType());
+        } else
+            outStream.writeBoolean(true);
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -231,7 +233,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
         if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
 
-        DataObject addObject = session.addObject(cls);
+        DataObject addObject = session.addObject(cls,this);
 
         boolean foundConflict = false;
 
@@ -259,8 +261,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
                     // изменяем св-ва
                     for(Map.Entry<Map<PropertyObjectInterface,DataObject>,Map<String,ObjectValue>> row : result.entrySet()) {
                         DataProperty changeProperty = (DataProperty) compareFilter.property.property;
-                        Map<DataPropertyInterface,DataObject> keys = new HashMap<DataPropertyInterface, DataObject>();
-                        for(DataPropertyInterface propertyInterface : changeProperty.interfaces)
+                        Map<ClassPropertyInterface,DataObject> keys = new HashMap<ClassPropertyInterface, DataObject>();
+                        for(ClassPropertyInterface propertyInterface : changeProperty.interfaces)
                             keys.put(propertyInterface,row.getKey().get(compareFilter.property.mapping.get(propertyInterface)));
                         session.changeProperty(changeProperty,keys,row.getValue().get("newvalue"),false);
                     }
@@ -290,7 +292,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
     public <P extends PropertyInterface> void changeProperty(PropertyObjectImplement<P> property, Object value, boolean externalID) throws SQLException {
 
         // изменяем св-во
-        property.getChangeProperty(session, this, securityPolicy.property.change, externalID).change(session, this, value,externalID);
+        property.getChangeProperty().change(session, this, value);
 
         dataChanged = true;
     }
@@ -513,7 +515,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         Set<PropertyView> isDrawed;
         Map<RegularFilterGroup,RegularFilter> regularFilterValues;
 
-        Map<RemoteForm, ViewDataChanges> incrementChanges;
+        Map<RemoteForm, ViewChanges> incrementChanges;
 
         SessionChanges changes;
 
@@ -526,7 +528,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
             regularFilterValues = new HashMap<RegularFilterGroup, RegularFilter>(RemoteForm.this.regularFilterValues);
 
             if(dataChanged) {
-                incrementChanges = new HashMap<RemoteForm, ViewDataChanges>(session.incrementChanges);
+                incrementChanges = new HashMap<RemoteForm, ViewChanges>(session.incrementChanges);
                 changes = new SessionChanges(session.changes);
             }
         }

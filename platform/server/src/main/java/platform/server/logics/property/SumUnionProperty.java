@@ -15,16 +15,16 @@ public class SumUnionProperty extends UnionProperty {
         super(sID, caption, intNum);
     }
 
-    public Map<PropertyMapImplement<PropertyInterface,PropertyInterface>,Integer> operands = new HashMap<PropertyMapImplement<PropertyInterface, PropertyInterface>, Integer>();
+    public Map<PropertyMapImplement<?,Interface>,Integer> operands = new HashMap<PropertyMapImplement<?, Interface>, Integer>();
 
-    protected Collection<PropertyMapImplement<PropertyInterface, PropertyInterface>> getOperands() {
+    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
         return operands.keySet();
     }
 
-    public Expr calculateExpr(Map<PropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         Expr result = null;
-        for(Map.Entry<PropertyMapImplement<PropertyInterface,PropertyInterface>,Integer> operandCoeff : operands.entrySet()) {
+        for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet()) {
             Expr operandExpr = operandCoeff.getKey().mapExpr(joinImplement, modifier, changedWhere).scale(operandCoeff.getValue());
             if(result==null)
                 result = operandExpr;

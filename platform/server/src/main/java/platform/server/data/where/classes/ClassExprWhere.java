@@ -1,7 +1,7 @@
 package platform.server.data.where.classes;
 
 import platform.base.BaseUtils;
-import platform.server.data.expr.AndExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.StaticClassExpr;
 import platform.server.data.expr.VariableClassExpr;
@@ -79,12 +79,12 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return new ClassExprWhere(this, translator.translateVariable(BaseUtils.toMap(keySet())));
     }
 
-    public <K> ClassWhere<K> get(Map<K,AndExpr> map) {
+    public <K> ClassWhere<K> get(Map<K, BaseExpr> map) {
         ClassWhere<K> transWhere = ClassWhere.STATIC(false);
         for(And<VariableClassExpr> andWhere : wheres) {
             boolean isFalse = false;
             And<K> andTrans = new And<K>();
-            for(Map.Entry<K,AndExpr> mapEntry : map.entrySet()) {
+            for(Map.Entry<K, BaseExpr> mapEntry : map.entrySet()) {
                 if(!andTrans.add(mapEntry.getKey(), mapEntry.getValue() instanceof StaticClassExpr ?
                         ((StaticClassExpr) mapEntry.getValue()).getStaticClass():
                         andWhere.get((VariableClassExpr) mapEntry.getValue()))) {
@@ -109,18 +109,18 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return new DataWhereSet(follows);
     }
 
-    public ClassExprWhere map(Map<AndExpr,AndExpr> map) {
+    public ClassExprWhere map(Map<BaseExpr, BaseExpr> map) {
 //        return get(BaseUtils.reverse(map)).map(BaseUtils.toMap(map.values()));
         return mapBack(BaseUtils.reverse(map));
     }
 
-    // здесь не обязательно есть все AndExpr'ы, но здесь как map - полностью reversed
-    public ClassExprWhere mapBack(Map<AndExpr,AndExpr> map) {
+    // здесь не обязательно есть все BaseExpr'ы, но здесь как map - полностью reversed
+    public ClassExprWhere mapBack(Map<BaseExpr, BaseExpr> map) {
         ClassExprWhere transWhere = ClassExprWhere.FALSE;
         for(And<VariableClassExpr> andWhere : wheres) {
             boolean isFalse = false;
             And<VariableClassExpr> andTrans = new And<VariableClassExpr>();
-            for(Map.Entry<AndExpr,AndExpr> mapEntry : map.entrySet()) {
+            for(Map.Entry<BaseExpr, BaseExpr> mapEntry : map.entrySet()) {
                 AndClassSet mapSet;
                 if(mapEntry.getValue() instanceof StaticClassExpr)
                     mapSet = ((StaticClassExpr) mapEntry.getValue()).getStaticClass();

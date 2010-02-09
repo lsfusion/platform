@@ -11,8 +11,8 @@ import java.util.Map;
 @Immutable
 public class QueryTranslator extends Translator<Expr> {
 
-    public QueryTranslator(Map<KeyExpr, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> iValues) {
-        super((Map<KeyExpr, Expr>) joinImplement, iValues);
+    public QueryTranslator(Map<KeyExpr, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> values, boolean allKeys) {
+        super((Map<KeyExpr, Expr>) joinImplement, values, allKeys);
     }
 
     public <K> Map<K, Expr> translate(Map<K, ? extends Expr> map) {

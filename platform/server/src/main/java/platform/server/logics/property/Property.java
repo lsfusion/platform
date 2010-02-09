@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.caches.Lazy;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
@@ -13,15 +12,18 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Query;
 import platform.server.data.query.MapKeysInterface;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.Expr;
+import platform.server.data.expr.*;
+import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.Where;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -33,7 +35,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     // символьный идентификатор, с таким именем создаются поля в базе и передаются в PropertyView
     public final String sID;
 
-    public final String caption;
+    public String caption;
 
     public String toString() {
         return caption;
@@ -43,6 +45,8 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         this.sID = sID;
         this.caption = caption;
         this.interfaces = interfaces;
+
+        changeExpr = new PullExpr(toString() + " value");
     }
 
     protected void fillDepends(Set<Property> depends) {
@@ -142,12 +146,12 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов
-    abstract <U extends DataChanges<U>> U calculateUsedChanges(Modifier<U> modifier);
-    public <U extends DataChanges<U>> U getUsedChanges(Modifier<U> modifier) {
+    protected abstract <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier);
+    public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
         return modifier.used(this, calculateUsedChanges(modifier));
     }
 
-    public static <U extends DataChanges<U>> U getUsedChanges(Collection<Property> col, Modifier<U> modifier) {
+    public static <U extends Changes<U>> U getUsedChanges(Collection<Property> col, Modifier<U> modifier) {
         U result = modifier.newChanges();
         for(Property<?> property : col)
             result.add(property.getUsedChanges(modifier));
@@ -191,12 +195,9 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     public boolean isFalse = false;
     public boolean checkChange = true;
 
-    public DataChange getChangeProperty(DataSession session, Map<T, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
-        return null;
-    }
-
-    public PropertyChange getJoinChangeProperty(DataSession session, Map<T, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) throws SQLException {
-        return null;
+    // для реляционных свойств
+    public PropertyValueImplement getChangeProperty(Map<T, DataObject> mapValues) {
+        return new PropertyValueImplement<T>(this, mapValues);                                                                              
     }
 
     public Object read(SQLSession session, Map<T, DataObject> keys, TableModifier<? extends TableChanges> modifier) throws SQLException {
@@ -221,7 +222,63 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     protected abstract boolean usePreviousStored();
 
     @Lazy
-    public Property getMaxChangeProperty(DataProperty change) {
-        return new MaxChangeProperty(this,change);
+    public <P extends PropertyInterface> MaxChangeProperty<T,P> getMaxChangeProperty(Property<P> change) {
+        return new MaxChangeProperty<T,P>(this,change);
+    }
+
+    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+        return modifier.newChanges();
+    }
+    
+    public DataChanges getDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+        return new DataChanges();
+    }
+
+    public Map<T,Expr> getChangeExprs() {
+        Map<T,Expr> result = new HashMap<T, Expr>();
+        for(T propertyInterface : interfaces)
+            result.put(propertyInterface,propertyInterface.changeExpr);
+        return result;
+    }
+
+    // для того чтобы "попробовать" изменения (на самом деле для кэша)
+    public final Expr changeExpr;
+
+    private DataChanges getDataChanges(TableModifier<? extends TableChanges> modifier, boolean toNull) {
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        return getDataChanges(new PropertyChange<T>(mapKeys,toNull?CaseExpr.NULL: changeExpr,CompareWhere.compare(mapKeys, getChangeExprs())),null,modifier);
+    }
+
+    public TableModifier<? extends TableChanges> getChangeModifier(TableModifier<? extends TableChanges> modifier, boolean toNull) {
+        // строим Where для изменения
+        return new DataChangesModifier(modifier, getDataChanges(modifier,toNull));
+    }
+
+    public Collection<DataProperty> getDataChanges() {
+        return getDataChanges(defaultModifier, false).getProperties();
+    }
+
+    protected DataChanges getJoinDataChanges(Map<T,? extends Expr> implementExprs, Expr expr, Where where, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        WhereBuilder changedImplementWhere = changedWhere==null?null:new WhereBuilder();
+        DataChanges result = getDataChanges(new PropertyChange<T>(mapKeys,
+                GroupExpr.create(implementExprs, expr, where, true, mapKeys),
+                GroupExpr.create(implementExprs, ValueExpr.TRUE, where, true, mapKeys).getWhere()),
+                changedImplementWhere, modifier);
+        if(changedWhere!=null) changedWhere.add(new Query<T,Object>(mapKeys,changedImplementWhere.toWhere()).join(implementExprs).getWhere());// нужно перемаппить назад
+        return result;
+    }
+
+    public Expr getSingleExpr(TableModifier<? extends TableChanges> modifier, Expr expr) {
+        return getExpr(Collections.singletonMap(BaseUtils.single(interfaces),expr),modifier,null);
+    }
+
+    public PropertyMapImplement<T,T> getImplement() {
+        return new PropertyMapImplement<T,T>(this, BaseUtils.toMap(interfaces));
+    }
+
+    public void setConstraint(boolean checkChange) {
+        isFalse = true;
+        this.checkChange = checkChange;                
     }
 }

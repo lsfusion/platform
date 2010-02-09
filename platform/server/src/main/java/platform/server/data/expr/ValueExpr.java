@@ -48,8 +48,8 @@ public class ValueExpr extends StaticClassExpr {
         return object + " - " + objectClass;
     }
 
-    public void fillContext(Context context) {
-        context.values.add(this);
+    public void enumerate(SourceEnumerator enumerator) {
+        enumerator.add(this);
     }
 
     public Type getType(Where where) {
@@ -85,7 +85,7 @@ public class ValueExpr extends StaticClassExpr {
         return translator.translate(this);
     }
 
-    public AndExpr translateDirect(KeyTranslator translator) {
+    public BaseExpr translateDirect(KeyTranslator translator) {
         return translator.translate(this);
     }
 

@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
@@ -16,67 +15,62 @@ import platform.server.data.type.Type;
 import platform.server.session.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.DataObject;
 
 import java.util.*;
 
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public class DataProperty extends Property<DataPropertyInterface> {
+public class DataProperty extends Property<ClassPropertyInterface> {
 
     public ValueClass value;
 
-    public static Collection<DataPropertyInterface> getInterfaces(ValueClass[] classes) {
-        Collection<DataPropertyInterface> interfaces = new ArrayList<DataPropertyInterface>();
+    public static Collection<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
+        Collection<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
         for(ValueClass interfaceClass : classes)
-            interfaces.add(new DataPropertyInterface(interfaces.size(),interfaceClass));
+            interfaces.add(new ClassPropertyInterface(interfaces.size(),interfaceClass));
         return interfaces;
     }
 
     public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
         super(sID, caption, getInterfaces(classes));
         this.value = value;
-
-        valueInterface = new DataPropertyInterface(100,value);
     }
 
-    <U extends DataChanges<U>> U calculateUsedChanges(Modifier<U> modifier) {
+    public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
         U result = modifier.newChanges();
-        if(defaultData!=null) {
-            U defaultChanges = defaultData.getUsedChanges(modifier);
-            if(defaultChanges.hasChanges()) // если есть изменения по default'ам
-                ClassProperty.modifyClasses(interfaces, modifier,defaultChanges);
-            result.add(defaultChanges);
-        }
-        modifier.modifyData(result,this);
+        if(derivedChange !=null) result.add(derivedChange.getUsedChanges(modifier));
+        modifier.modifyData(result, this);
         modifier.modifyRemove(result, value);
-        for(DataPropertyInterface propertyInterface : interfaces)
+        for(ClassPropertyInterface propertyInterface : interfaces)
             modifier.modifyRemove(result,propertyInterface.interfaceClass);
         return result;
     }
 
     @Override
-    public DataChange getChangeProperty(DataSession session, Map<DataPropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
-        return getJoinChangeProperty(session, interfaceValues, modifier, securityPolicy, externalID);
+    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+        U changes = modifier.newChanges();
+        ClassProperty.modifyClasses(interfaces,modifier,changes);
+        return changes;
     }
 
     @Override
-    public PropertyChange getJoinChangeProperty(DataSession session, Map<DataPropertyInterface, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier, ChangePropertySecurityPolicy securityPolicy, boolean externalID) {
-        if(allInInterface(session.getCurrentClasses(interfaceValues)) && (securityPolicy == null || securityPolicy.checkPermission(this)))
-            return new DataPropertyChange(this,interfaceValues);
-        else
-            return null;
+    public DataChanges getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+        change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, modifier, null));//.and(DataSession.getIsClassWhere(modifier.getSession(), change.expr, value, null));
+        if(changedWhere!=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
+
+        // изменяет себя, если классы совпадают
+        return new DataChanges(this,change);
     }
 
     @Override
     protected void fillDepends(Set<Property> depends) {
-        if(defaultData!=null) defaultData.fillDepends(depends);
+        if(derivedChange !=null) derivedChange.fillDepends(depends);
     }
 
-    public DefaultData<?> defaultData = null;
+    public DerivedChange<?,?> derivedChange = null;
 
-    public Expr calculateExpr(Map<DataPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
 
         SessionChanges session = modifier.getSession();
         assert session!=null;
@@ -97,7 +91,7 @@ public class DataProperty extends Property<DataPropertyInterface> {
         if(value instanceof CustomClass && (removeTable = session.remove.get((CustomClass) value))!=null)
             removeWhere = removeWhere.or(removeTable.getJoinWhere(dataExpr));
 
-        for(DataPropertyInterface remove : interfaces)
+        for(ClassPropertyInterface remove : interfaces)
             if(remove.interfaceClass instanceof CustomClass && (removeTable = session.remove.get((CustomClass) remove.interfaceClass))!=null)
                 removeWhere = removeWhere.or(removeTable.getJoinWhere(joinImplement.get(remove)));
 
@@ -105,10 +99,12 @@ public class DataProperty extends Property<DataPropertyInterface> {
             cases.add(removeWhere.and(dataExpr.getWhere()), Expr.NULL);
 
         // свойства по умолчанию
-        if(defaultData !=null) {
-            WhereBuilder defaultChanges = new WhereBuilder();
-            Expr defaultExpr = defaultData.getExpr(joinImplement, modifier,defaultChanges);
-            cases.add(defaultChanges.toWhere().and(ClassProperty.getIsClassWhere(joinImplement, modifier, null)),defaultExpr);
+        if(derivedChange !=null) {
+            PropertyChange<ClassPropertyInterface> defaultChanges = derivedChange.getDataChanges(modifier).get(this);
+            if(defaultChanges !=null) {
+                Join<String> defaultJoin = defaultChanges.getQuery("value").join(joinImplement);
+                cases.add(defaultJoin.getWhere(),defaultJoin.getExpr("value"));
+            }
         }
 
         if(changedWhere !=null) changedWhere.add(cases.getUpWhere());
@@ -120,16 +116,16 @@ public class DataProperty extends Property<DataPropertyInterface> {
         return false;
     }
 
-    protected Map<DataPropertyInterface, ValueClass> getMapClasses() {
-        Map<DataPropertyInterface, ValueClass> result = new HashMap<DataPropertyInterface, ValueClass>();
-        for(DataPropertyInterface propertyInterface : interfaces)
+    protected Map<ClassPropertyInterface, ValueClass> getMapClasses() {
+        Map<ClassPropertyInterface, ValueClass> result = new HashMap<ClassPropertyInterface, ValueClass>();
+        for(ClassPropertyInterface propertyInterface : interfaces)
             result.put(propertyInterface,propertyInterface.interfaceClass);
         return result;
     }
 
     protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
         Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();
-        for(Map.Entry<DataPropertyInterface,KeyField> mapKey : mapTable.mapKeys.entrySet())
+        for(Map.Entry<ClassPropertyInterface,KeyField> mapKey : mapTable.mapKeys.entrySet())
             result.put(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());
         result.put(storedField, value.getUpSet());
         return new ClassWhere<Field>(result);
@@ -141,6 +137,4 @@ public class DataProperty extends Property<DataPropertyInterface> {
     public Type getType() {
         return value.getType();
     }
-
-    public final DataPropertyInterface valueInterface;
 }

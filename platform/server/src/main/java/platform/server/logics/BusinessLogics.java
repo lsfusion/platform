@@ -3,6 +3,7 @@ package platform.server.logics;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.Combinations;
+import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteObject;
@@ -20,6 +21,10 @@ import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.DerivedProperty;
+import platform.server.logics.property.derived.DistrGroupProperty;
+import platform.server.logics.property.derived.CycleGroupProperty;
+import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.linear.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
@@ -65,16 +70,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected AbstractCustomClass namedObject, transaction;
 
-    protected LCFP groeq2;
-    protected LCFP greater2;
-    protected LJP between;
+    protected LP groeq2;
+    protected LP greater2;
+    protected LP between;
     protected LP object1, and1, andNot1;
     protected LP equals2,diff2;
 
     protected LP vtrue, vzero;
 
-    public LDP name;
-    protected LDP date;
+    public LP name;
+    protected LP date;
 
     protected LP transactionLater;
 
@@ -297,9 +302,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    public List<Property> getChangeConstrainedProperties(DataProperty change) {
-        List<Property> result = new ArrayList<Property>();
-        for(Property property : getPropertyList())
+    public <P extends PropertyInterface> Collection<MaxChangeProperty<?,P>> getChangeConstrainedProperties(Property<P> change) {
+        Collection<MaxChangeProperty<?,P>> result = new ArrayList<MaxChangeProperty<?,P>>();
+        for(Property<?> property : getPropertyList())
             if(property.isFalse && property.checkChange && depends(property,change))
                 result.add(property.getMaxChangeProperty(change));
         return result;
@@ -548,79 +553,48 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // без ID
-    protected LDP addDProp(String caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(String caption, ValueClass value, ValueClass... params) {
         return addDProp((AbstractGroup)null, caption, value, params);
     }
-    protected LDP addDProp(AbstractGroup group, String caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(AbstractGroup group, String caption, ValueClass value, ValueClass... params) {
         return addDProp(group, genSID(), caption, value, params);
     }
 
-    protected LDP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
         return addDProp(null, sID, caption, value, params);
     }
-    protected LDP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
-
-        DataProperty property = new DataProperty(sID,caption,params,value);
-
-        properties.add(property);
-        if (group != null) group.add(property);
-        return new LDP(property);
+    protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
+        return addProp(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
     }
 
-    protected LMCP addMCProp(AbstractGroup group, LP lmax, LDP ldata) {
-
-        MaxChangeProperty property = new MaxChangeProperty(lmax.property,ldata.property);
-
-        properties.add(property);
-        if (group != null) group.add(property);
-        return new LMCP(property);
-    }
-
-    protected LCP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp(genSID(), caption, valueClass, value, params);
     }
-    protected LCP addCProp(String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp(null, sID, caption, valueClass, value, params);
     }
 
-    protected LCP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
-        ClassProperty property = new ClassProperty(sID,caption,params,valueClass,value);
-
-        properties.add(property);
-        if (group != null) group.add(property);
-        return new LCP(property);
+    protected LP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
+        return addProp(group,new LP<ClassPropertyInterface>(new ClassProperty(sID,caption,params,valueClass,value)));
     }
 
-    protected LSFP addSFProp(String formula, ConcreteValueClass value,int paramCount) {
-
-        StringFormulaProperty property = new StringFormulaProperty(genSID(),value,formula,paramCount);
-        properties.add(property);
-        return new LSFP(property);
+    protected LP addSFProp(String formula, ConcreteValueClass value,int paramCount) {
+        return addProp(null,new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(),value,formula,paramCount)));
     }
 
-
-    protected LCFP addCFProp(Compare compare) {
-        CompareFormulaProperty property = new CompareFormulaProperty(genSID(),compare);
-        
-        properties.add(property);
-        return new LCFP(property);
+    protected LP addCFProp(Compare compare) {
+        return addProp(null,new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(),compare)));
     }
 
-    protected LMFP addMFProp(ConcreteValueClass value,int paramCount) {
-        MultiplyFormulaProperty property = new MultiplyFormulaProperty(genSID(),value,paramCount);
-        
-        properties.add(property);
-        return new LMFP(property);
+    protected LP addMFProp(ConcreteValueClass value,int paramCount) {
+        return addProp(null,new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(),value,paramCount)));
     }
 
-    protected LAFP addAFProp(boolean... nots) {
+    protected LP addAFProp(boolean... nots) {
         return addAFProp(genSID(),nots);
     }    
-    protected LAFP addAFProp(String sID, boolean... nots) {
-        AndFormulaProperty property = new AndFormulaProperty(sID,nots);
-        
-        properties.add(property);
-        return new LAFP(property);
+    protected LP addAFProp(String sID, boolean... nots) {
+        return addProp(null,new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID,nots)));
     }
 
     // Linear Implement
@@ -653,10 +627,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private static class LMI<P extends PropertyInterface> extends LI {
-        LP<P,?> lp;
+        LP<P> lp;
         int[] mapInt;
 
-        private LMI(LP<P, ?> lp) {
+        private LMI(LP<P> lp) {
             this.lp = lp;
             this.mapInt = new int[lp.listInterfaces.size()];
         }
@@ -748,16 +722,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLI(readLI(params),listInterfaces);
     }
 
-    protected LJP addJProp(LP mainProp, Object... params) {
+    private <T extends LP> T addProp(AbstractGroup group, T lp) {
+        properties.add(lp.property);
+        if(group!=null) group.add(lp.property);
+        return lp;
+    }
+
+    protected LP addJProp(LP mainProp, Object... params) {
         return addJProp("sys", mainProp, params);
     }
 
-    protected LJP addJProp(String caption, LP mainProp, Object... params) {
+    protected LP addJProp(String caption, LP mainProp, Object... params) {
         return addJProp(null, caption, mainProp, params);
     }
 
-    protected LJP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
         return addJProp(group, genSID(), caption, mainProp, params);
+    }
+
+    protected LP addJProp(AbstractGroup group, boolean implementChange, String caption, LP mainProp, Object... params) {
+        return addJProp(group, implementChange, genSID(), caption, mainProp, params);
     }
 
     protected int getIntNum(Object[] params) {
@@ -768,7 +752,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return intNum;
     }
 
-    public static <T extends PropertyInterface,P extends PropertyInterface> PropertyImplement<PropertyInterfaceImplement<P>,T> mapImplement(LP<T,?> property,List<PropertyInterfaceImplement<P>> propImpl) {
+    public static <T extends PropertyInterface,P extends PropertyInterface> PropertyImplement<PropertyInterfaceImplement<P>,T> mapImplement(LP<T> property,List<PropertyInterfaceImplement<P>> propImpl) {
         int mainInt = 0;
         Map<T,PropertyInterfaceImplement<P>> mapping = new HashMap<T, PropertyInterfaceImplement<P>>();
         for(PropertyInterfaceImplement<P> implement : propImpl) {
@@ -778,40 +762,64 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new PropertyImplement<PropertyInterfaceImplement<P>,T>(property.property,mapping);
     }
 
-    protected LJP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
+        return addJProp(group, false, sID, caption, mainProp, params);
+    }
 
-        int intNum = getIntNum(params);
+    protected LP addJProp(boolean implementChange, LP mainProp, Object... params) {
+        return addJProp(null, implementChange, genSID(), "sys", mainProp, params);
+    }
 
-        JoinProperty property = new JoinProperty(sID, caption,intNum);
+    protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
 
-        LJP listProperty = new LJP(property);
+        JoinProperty<?> property = new JoinProperty(sID, caption, getIntNum(params), implementChange);
+
+        LP listProperty = new LP<JoinProperty.Interface>(property);
         property.implement = mapImplement(mainProp,readImplements(listProperty.listInterfaces,params));
 
-        properties.add(property);
-        if (group != null) group.add(property);
-        return listProperty;
+        return addProp(group, listProperty);
     }
 
-    private List<GroupPropertyInterface> readGroupInterfaces(LP groupProp, Object... params) {
-        List<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
-        for(PropertyInterfaceImplement implement : (List<PropertyInterfaceImplement>) readImplements(groupProp.listInterfaces,params))
-            interfaces.add(new GroupPropertyInterface(interfaces.size(),implement));
-        return interfaces;
-    }
-    private LGP addGProp(AbstractGroup group, String sID, String caption, LP groupProp, boolean sum, Object... params) {
+    private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, boolean sum, Object... params) {
 
-        List<GroupPropertyInterface> interfaces = readGroupInterfaces(groupProp, params);
-        GroupProperty property;
+        GroupProperty<T> property;
         if(sum)
-            property = new SumGroupProperty(sID, caption, interfaces,groupProp.property);
+            property = new SumGroupProperty<T>(sID, caption, readImplements(groupProp.listInterfaces,params), groupProp.property);
         else
-            property = new MaxGroupProperty(sID, caption, interfaces,groupProp.property);
+            property = new MaxGroupProperty<T>(sID, caption, readImplements(groupProp.listInterfaces,params), groupProp.property);
 
-        properties.add(property);
-        if (group != null) group.add(property);
-        return new LGP(property,interfaces);
+        return addProp(group, new LP<GroupProperty.Interface<T>>(property));
     }
 
+    private <P extends PropertyInterface,L extends PropertyInterface> LP mapLProp(AbstractGroup group,PropertyMapImplement<L, P> implement, LP<P> property) {
+        return addProp(group, new LP<L>(implement.property,BaseUtils.mapList(property.listInterfaces,BaseUtils.reverse(implement.mapping))));
+    }
+
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        List<LI> li = readLI(params);
+
+        Collection<PropertyInterfaceImplement<P>> partitions = mapLI(li.subList(0,partNum),sum.listInterfaces);
+        OrderedMap<PropertyInterfaceImplement<P>,Boolean> orders = new OrderedMap<PropertyInterfaceImplement<P>, Boolean>(mapLI(li.subList(partNum,li.size()),sum.listInterfaces), ascending);
+
+        PropertyMapImplement<?, P> orderProperty;
+        if(percent)
+            orderProperty = DerivedProperty.createPOProp(sum.property, partitions, orders, includeLast);
+        else
+            orderProperty = DerivedProperty.createOProp(sum.property, partitions, orders, includeLast);
+
+        return mapLProp(group, orderProperty, sum);
+    }
+
+    protected <R extends PropertyInterface,L extends PropertyInterface> LP addUGProp(AbstractGroup group, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
+        List<LI> li = readLI(params);
+
+        Map<L,PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
+        for(int i=0;i<ungroup.listInterfaces.size();i++)
+            groupImplement.put(ungroup.listInterfaces.get(i),li.get(i).map(restriction.listInterfaces));
+        OrderedMap<PropertyInterfaceImplement<R>,Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(),li.size()),restriction.listInterfaces), ascending);
+        return mapLProp(group, DerivedProperty.createUGProp(new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property,groupImplement), orders, restriction.property),restriction);
+    }
+    
 /*
     // свойство обратное группируещему - для этого задается ограничивающее свойство, результирующее св-во с группировочными, порядковое св-во
     protected LP addUGProp(AbstractGroup group, String caption, LP maxGroupProp, LP unGroupProp, Object... params) {
@@ -870,19 +878,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp(group, caption, andNot1, BaseUtils.add(directLI(maxRestRemain),directLI(exceed)));
     }
   */
-    protected LGP addSGProp(LP groupProp, Object... params) {
+    protected LP addSGProp(LP groupProp, Object... params) {
         return addSGProp("sys", groupProp, params);
     }
-    protected LGP addSGProp(String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(String caption, LP groupProp, Object... params) {
         return addSGProp((AbstractGroup)null, caption, groupProp, params);
     }
-    protected LGP addSGProp(AbstractGroup group, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(AbstractGroup group, String caption, LP groupProp, Object... params) {
         return addSGProp(group, genSID(), caption, groupProp, params);
     }
-    protected LGP addSGProp(String sID, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(String sID, String caption, LP groupProp, Object... params) {
         return addSGProp(null, sID, caption, groupProp, params);
     }
-    protected LGP addSGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
         return addGProp(group, sID, caption, groupProp, true, params);
     }
 
@@ -905,18 +913,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    protected LP addCGProp(AbstractGroup group, String sID, String caption, LP groupProp, LDP dataProp, Object... params) {
-        List<GroupPropertyInterface> interfaces = readGroupInterfaces(groupProp, params);
-        GroupProperty property = new CycleGroupProperty(sID, caption, interfaces, groupProp.property, dataProp.property);
+    protected <T extends PropertyInterface,P extends PropertyInterface> LP addCGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
+        CycleGroupProperty<T,P> property = new CycleGroupProperty<T,P>(sID, caption, readImplements(groupProp.listInterfaces,params), groupProp.property, dataProp.property);
 
         // нужно добавить ограничение на уникальность
+        properties.add(property.getConstrainedProperty());
 
-        properties.add(property);
-        if (group != null) group.add(property);
-        return new LGP(property,interfaces);
+        return addProp(group, new LP<GroupProperty.Interface<T>>(property));
     }
 
-    protected LUP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {
+    protected <T extends PropertyInterface,P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+        List<PropertyInterfaceImplement<T>> groupImplements = readImplements(groupProp.listInterfaces,params);
+        int intNum = groupImplements.size();
+
+        // читаем groupProp, implements его для группировки, restriction с map'ом и orders с map'ом на restriction
+        DistrGroupProperty<T,P> property = new DistrGroupProperty<T,P>(sID, caption, groupImplements.subList(0,intNum-orders-1), groupProp.property,
+                new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(groupImplements.subList(intNum-orders,intNum),ascending),
+                (PropertyMapImplement<P,T>) groupImplements.get(intNum-orders-1));
+
+        // нужно добавить ограничение на уникальность
+        return addProp(group, new LP<GroupProperty.Interface<T>>(property));
+    }
+
+    protected LP addUProp(AbstractGroup group, String sID, String caption, Union unionType, Object... params) {
 
         int intNum = ((LP)params[unionType==Union.SUM?1:0]).listInterfaces.size();
 
@@ -935,7 +954,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 break;
         }
 
-        LUP listProperty = new LUP(property);
+        LP listProperty = new LP<UnionProperty.Interface>(property);
 
         for(int i=0;i<params.length/(intNum+1+extra);i++) {
             Integer offs = i*(intNum+1+extra);
@@ -957,40 +976,38 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        properties.add(property);
-        if (group != null) group.add(property);
-        return listProperty;
+        return addProp(group, listProperty);
     }
 
     // объединение классовое (непересекающихся) свойств 
-    protected LUP addCUProp(String caption, LP... props) {
+    protected LP addCUProp(String caption, LP... props) {
         return addCUProp((AbstractGroup)null, caption, props);
     }
-    protected LUP addCUProp(AbstractGroup group, String caption, LP... props) {
+    protected LP addCUProp(AbstractGroup group, String caption, LP... props) {
         return addCUProp(group, genSID(), caption, props);
     }
-    protected LUP addCUProp(String sID, String caption, LP... props) {
+    protected LP addCUProp(String sID, String caption, LP... props) {
         return addCUProp(null, sID, caption, props);
     }
 
     Collection<LP[]> checkCUProps = new ArrayList<LP[]>();
     // объединяет разные по классам св-ва
-    protected LUP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
+    protected LP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
         assert checkCUProps.add(props);
         return addUProp(group,sID,caption,Union.OVERRIDE, getUParams(props, 0));
     }
 
     // разница
-    protected LUP addDUProp(String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(String caption, LP prop1, LP prop2) {
         return addDUProp((AbstractGroup)null, caption, prop1, prop2);
     }
-    protected LUP addDUProp(AbstractGroup group, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(AbstractGroup group, String caption, LP prop1, LP prop2) {
         return addDUProp(group, genSID(), caption, prop1, prop2);
     }
-    protected LUP addDUProp(String sID, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(String sID, String caption, LP prop1, LP prop2) {
         return addDUProp(null, sID, caption, prop1, prop2);
     }
-    protected LUP addDUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
         int intNum = prop1.listInterfaces.size();
         Object[] params = new Object[2*(2+intNum)];
         params[0] = 1; params[1] = prop1;
@@ -1003,27 +1020,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // объединение пересекающихся свойств
-    protected LUP addSUProp(Union unionType, LP... props) {
+    protected LP addSUProp(Union unionType, LP... props) {
         return addSUProp("sys", unionType, props);
     }
-    protected LUP addSUProp(String caption, Union unionType, LP... props) {
+    protected LP addSUProp(String caption, Union unionType, LP... props) {
         return addSUProp((AbstractGroup)null, caption, unionType, props);
     }
-    protected LUP addSUProp(AbstractGroup group, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(AbstractGroup group, String caption, Union unionType, LP... props) {
         return addSUProp(group, genSID(), caption, unionType, props);
     }
-    protected LUP addSUProp(String sID, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(String sID, String caption, Union unionType, LP... props) {
         return addSUProp(null, sID, caption, unionType, props);
     }
     Collection<LP[]> checkSUProps = new ArrayList<LP[]>();
     // объединяет разные по классам св-ва
-    protected LUP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
         assert checkSUProps.add(props);
         return addUProp(group,sID,caption,unionType,getUParams(props,(unionType==Union.SUM?1:0)));
     }
 
     protected LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {
-        int intNum = props[0].listInterfaces.size();
         int propNum = props.length/(1+extra);
         LP[] maxProps = Arrays.copyOfRange(props,0,propNum);
         
@@ -1041,27 +1057,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void addConstraint(LP lp, boolean checkChange) {
-        lp.property.isFalse = true;
-        lp.property.checkChange = checkChange;
+        lp.property.setConstraint(checkChange);
     }
 
     private boolean intersect(LP[] props) {
         for(int i=0;i<props.length;i++)
             for(int j=i+1;j<props.length;j++)
-                if(((LP<?, ?>) props[i]).intersect((LP<?,?>)props[j]))
+                if(((LP<?>) props[i]).intersect((LP<?>)props[j]))
                     return true;
         return false;
     }
 
-    public final static boolean checkClasses = false;
+    public final static boolean checkClasses = true;
     private boolean checkProps() {
         if(checkClasses)
-            for(Property prop : properties)
-                assert prop.check();        
-        for(LP[] props : checkCUProps)
+            for(Property prop : properties) {
+                System.out.println("Checking property : "+prop+"...");
+                assert prop.check();
+            }
+        for(LP[] props : checkCUProps) {
+            System.out.println("Checking class properties : "+props+"...");
             assert !intersect(props);
-        for(LP[] props : checkSUProps)
+        }
+        for(LP[] props : checkSUProps) {
+            System.out.println("Checking union properties : "+props+"...");
             assert intersect(props);
+        }
         return true;
     }
 
@@ -1205,7 +1226,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 else
                     groupProp = randObjProps.get(randomizer.nextInt(randObjProps.size()));
 
-                Collection<GroupPropertyInterface> interfaces = new ArrayList<GroupPropertyInterface>();
+                Collection<Interface> interfaces = new ArrayList<Interface>();
 
                 boolean correct = true;
                 List<PropertyInterface> groupInt = new ArrayList(groupProp.interfaces);
@@ -1232,7 +1253,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         implement = impProp;
                     }
 
-                    interfaces.add(new GroupPropertyInterface(j,implement));
+                    interfaces.add(new Interface(j,implement));
                 }
 
                 if(correct) {
@@ -1357,7 +1378,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for(ConcreteCustomClass addClass : addClasses) {
             int objectAdd = randomizer.nextInt(10)+1;
             for(int ia=0;ia<objectAdd;ia++)
-                session.addObject(addClass);
+                session.addObject(addClass,null);
         }
 
         session.apply(this);
@@ -1382,7 +1403,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             baseClass.fillConcreteChilds(addClasses);
             int objectAdd = randomizer.nextInt(5);
             for(int ia=0;ia<objectAdd;ia++)
-                session.addObject(addClasses.get(randomizer.nextInt(addClasses.size())));
+                session.addObject(addClasses.get(randomizer.nextInt(addClasses.size())),null);
 
             int propertiesChanged = randomizer.nextInt(8)+1;
             for(int ip=0;ip<propertiesChanged;ip++) {
@@ -1398,8 +1419,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         valueClass = ChangeProp.Value;*/
 
                     // генерим рандомные объекты этих классов
-                    Map<DataPropertyInterface, DataObject> keys = new HashMap<DataPropertyInterface, DataObject>();
-                    for(DataPropertyInterface propertyInterface : changeProp.interfaces)
+                    Map<ClassPropertyInterface, DataObject> keys = new HashMap<ClassPropertyInterface, DataObject>();
+                    for(ClassPropertyInterface propertyInterface : changeProp.interfaces)
                         keys.put(propertyInterface,propertyInterface.interfaceClass.getRandomObject(session, randomizer));
 
                     ObjectValue valueObject;
@@ -1423,14 +1444,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.close();
     }
 
-    // флаг для оптимизации
-    protected Map<DataProperty,Integer> autoQuantity(Integer quantity, LDP... properties) {
-        Map<DataProperty,Integer> result = new HashMap<DataProperty,Integer>();
-        for(LDP property : properties)
-            result.put(property.property,quantity);
-        return result;
-    }
-
     // полностью очищает базу
     protected void clean(SQLSession session) throws SQLException {
         // удаляем все объекты
@@ -1444,7 +1457,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public static boolean autoFillDB = false;
     public static int autoIDCounter = 0;
     static int autoSeed = 1400;
-    public void autoFillDB(Map<ConcreteCustomClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<DataPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void autoFillDB(Map<ConcreteCustomClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<ClassPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         System.out.print("Идет заполнение базы данных...");
 
@@ -1481,7 +1494,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
                 List<DataObject> listObjects = new ArrayList<DataObject>();
                 for(int i=0;i<quantity;i++) {
-                    DataObject idObject = session.addObject(fillClass);
+                    DataObject idObject = session.addObject(fillClass,null);
                     listObjects.add(idObject);
                     objectNames.put(idObject,fillClass.caption+" "+(i+1));
                 }
@@ -1502,12 +1515,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
                 System.out.println("Свойство : "+property.caption);
 
-                Set<DataPropertyInterface> interfaceNotNull = propNotNull.get(property);
-                if(interfaceNotNull==null) interfaceNotNull = new HashSet<DataPropertyInterface>();
+                Set<ClassPropertyInterface> interfaceNotNull = propNotNull.get(property);
+                if(interfaceNotNull==null) interfaceNotNull = new HashSet<ClassPropertyInterface>();
                 Integer quantity = propQuantity.get(property);
                 if(quantity==null) {
                     quantity = 1;
-                    for(DataPropertyInterface propertyInterface : property.interfaces)
+                    for(ClassPropertyInterface propertyInterface : property.interfaces)
                         if(!interfaceNotNull.contains(propertyInterface))
                             quantity = quantity * propertyInterface.interfaceClass.getRandomList(objects).size();
 
@@ -1515,24 +1528,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         quantity = (int)(quantity * 0.5);
                 }
 
-                Map<DataPropertyInterface,List<DataObject>> mapInterfaces = new HashMap<DataPropertyInterface, List<DataObject>>();
+                Map<ClassPropertyInterface,List<DataObject>> mapInterfaces = new HashMap<ClassPropertyInterface, List<DataObject>>();
                 if(propNotNull.containsKey(property))
-                    for(DataPropertyInterface propertyInterface : interfaceNotNull)
+                    for(ClassPropertyInterface propertyInterface : interfaceNotNull)
                         mapInterfaces.put(propertyInterface,propertyInterface.interfaceClass.getRandomList(objects));
 
                 // сначала для всех PropNotNull генерируем все возможные Map<ы>
-                for(Map<DataPropertyInterface,DataObject> notNulls : new Combinations<DataPropertyInterface,DataObject>(mapInterfaces)) { //
+                for(Map<ClassPropertyInterface,DataObject> notNulls : new Combinations<ClassPropertyInterface,DataObject>(mapInterfaces)) { //
                     int randomInterfaces = 0;
                     while(randomInterfaces<quantity) {
-                        Map<DataPropertyInterface,DataObject> randomIteration = new HashMap<DataPropertyInterface,DataObject>(notNulls);
-                        for(DataPropertyInterface propertyInterface : property.interfaces)
+                        Map<ClassPropertyInterface,DataObject> randomIteration = new HashMap<ClassPropertyInterface,DataObject>(notNulls);
+                        for(ClassPropertyInterface propertyInterface : property.interfaces)
                             if(!notNulls.containsKey(propertyInterface))
                                 randomIteration.put(propertyInterface,BaseUtils.getRandom(propertyInterface.interfaceClass.getRandomList(objects),randomizer));
 
                         DataObject valueObject = null;
                         if(property.value instanceof StringClass) {
                             String objectName = "";
-                            for(DataPropertyInterface propertyInterface : property.interfaces)
+                            for(ClassPropertyInterface propertyInterface : property.interfaces)
                                 objectName += objectNames.get(randomIteration.get(propertyInterface)) + " ";
                             valueObject = new DataObject(objectName,StringClass.get(50));
                         } else
