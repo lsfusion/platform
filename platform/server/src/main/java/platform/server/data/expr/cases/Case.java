@@ -3,7 +3,7 @@ package platform.server.data.expr.cases;
 import platform.server.data.where.Where;
 
 public class Case<D> {
-    public Where<?> where;
+    public Where where;
     public D data;
 
     public Case(Where where,D data) {

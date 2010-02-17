@@ -104,6 +104,13 @@ public class DerivedProperty {
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
         assert orders.size()>0;
+
+        if(false) {
+            OrderProperty<T> orderProperty = new OrderProperty<T>(genID(), "sys", property, partitions, orders, includeLast);
+            return new PropertyMapImplement<OrderProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
+        }
+
+
         if(orders.size()==1) return createSOProp(property, partitions, orders.singleKey(), orders.singleValue(), includeLast);
         // итеративно делаем Union, перекидывая order'ы в partition'ы
         SumUnionProperty unionProperty = new SumUnionProperty(genID(),"sys",property.interfaces.size());
@@ -285,7 +292,7 @@ public class DerivedProperty {
         // считаем пред., тут 2 варианта
         PropertyMapImplement<?, T> previous;
         // через Union
-        if(true) {
+        if(false) {
             // сум. без
             PropertyMapImplement<?, T> orderSum = createOProp(restriction, group.mapping.values(), orders, false);
 

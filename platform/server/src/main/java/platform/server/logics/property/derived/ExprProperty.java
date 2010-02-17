@@ -9,15 +9,12 @@ import platform.server.session.TableModifier;
 import platform.server.session.PropertyChange;
 import platform.base.BaseUtils;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class ExprProperty<T extends PropertyInterface> extends FunctionProperty<ExprProperty.Interface<T>> {
 
-    private static <T extends PropertyInterface> Collection<Interface<T>> getInterfaces(PropertyChange<T> change) {
-        Collection<Interface<T>> interfaces = new ArrayList<Interface<T>>();
+    private static <T extends PropertyInterface> List<Interface<T>> getInterfaces(PropertyChange<T> change) {
+        List<Interface<T>> interfaces = new ArrayList<Interface<T>>();
         for(T propertyInterface : change.mapKeys.keySet())
             interfaces.add(new Interface<T>(interfaces.size(),propertyInterface));
         return interfaces;

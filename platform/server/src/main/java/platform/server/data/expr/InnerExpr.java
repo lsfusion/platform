@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Map;
 
 @TranslateExprLazy
-public abstract class MapExpr extends VariableClassExpr implements JoinData {
+public abstract class InnerExpr extends VariableClassExpr implements JoinData {
 
     private OrObjectClassSet getSet() {
         OrObjectClassSet result = OrObjectClassSet.FALSE;
@@ -67,47 +67,48 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
         return exprFJ;
     }
 
+    @Override
     public DataWhereSet getFollows() {
         return ((DataWhere)getWhere()).getFollows();
     }
 
     public abstract class NotNull extends DataWhere {
 
-        public MapExpr getExpr() {
-            return MapExpr.this;
+        public InnerExpr getExpr() {
+            return InnerExpr.this;
         }
 
         public String getSource(CompileSource compile) {
-            return MapExpr.this.getSource(compile) + " IS NOT NULL";
+            return InnerExpr.this.getSource(compile) + " IS NOT NULL";
         }
 
         @Override
         protected String getNotSource(CompileSource compile) {
-            return MapExpr.this.getSource(compile) + " IS NULL";
+            return InnerExpr.this.getSource(compile) + " IS NULL";
         }
 
         public Where translateDirect(KeyTranslator translator) {
-            return MapExpr.this.translateDirect(translator).getWhere();
+            return InnerExpr.this.translateDirect(translator).getWhere();
         }
         public Where translateQuery(QueryTranslator translator) {
-            return MapExpr.this.translateQuery(translator).getWhere();
+            return InnerExpr.this.translateQuery(translator).getWhere();
         }
 
         public void enumerate(SourceEnumerator enumerator) {
-            MapExpr.this.enumerate(enumerator);
+            InnerExpr.this.enumerate(enumerator);
         }
 
         protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-            MapExpr.this.fillAndJoinWheres(joins,andWhere);
+            InnerExpr.this.fillAndJoinWheres(joins,andWhere);
         }
 
         public int hashContext(HashContext hashContext) {
-            return MapExpr.this.hashContext(hashContext);
+            return InnerExpr.this.hashContext(hashContext);
         }
 
         @Override
         public boolean twins(AbstractSourceJoin o) {
-            return MapExpr.this.equals(((NotNull) o).getExpr());
+            return InnerExpr.this.equals(((NotNull) o).getExpr());
         }
     }
 
@@ -116,17 +117,5 @@ public abstract class MapExpr extends VariableClassExpr implements JoinData {
         for(BaseExpr expr : map.values())
             follows.addAll(expr.getFollows());
         return follows;        
-    }
-
-    public static Where getWhere(Collection<BaseExpr> col) {
-        Where joinsWhere = Where.TRUE;
-        for(BaseExpr expr : col)
-            joinsWhere = joinsWhere.and(expr.getWhere());
-        return joinsWhere;
-
-    }
-
-    public static <K> Where getJoinsWhere(Map<K, BaseExpr> map) {
-        return getWhere(map.values());
     }
 }

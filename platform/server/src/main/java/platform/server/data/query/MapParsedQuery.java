@@ -9,6 +9,7 @@ import platform.server.data.sql.SQLSyntax;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
 
@@ -35,8 +36,8 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(BaseUtils.filterKeys(mapProps, classProps).values()), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
     }
 
-    private Collection<ValueExpr> getValues() {
-        return mapValues.values();
+    private Set<ValueExpr> getValues() {
+        return BaseUtils.reverse(mapValues).keySet();
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {

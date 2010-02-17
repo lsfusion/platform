@@ -8,10 +8,7 @@ import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.data.where.WhereBuilder;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaProperty.Interface> {
 
@@ -35,8 +32,8 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
         }
     }
 
-    static Collection<Interface> getInterfaces(int paramCount) {
-        Collection<Interface> interfaces = new ArrayList<Interface>();
+    static List<Interface> getInterfaces(int paramCount) {
+        List<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<paramCount;i++)
             interfaces.add(new Interface(i));
         return interfaces;

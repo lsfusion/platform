@@ -1,10 +1,13 @@
-package platform.server.data.expr;
+package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
 import platform.server.caches.ParamLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.where.Where;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
 
 import java.util.Collections;
 import java.util.Map;
@@ -29,7 +32,7 @@ public class MaxGroupExpr extends GroupExpr {
     }
 
     private BaseExpr getBaseExpr() {
-        return BaseUtils.single(expr.getCases()).data;
+        return BaseUtils.single(query.getCases()).data;
     }
     
     protected class NotNull extends GroupExpr.NotNull {

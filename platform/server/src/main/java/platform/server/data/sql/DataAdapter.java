@@ -101,13 +101,6 @@ public abstract class DataAdapter implements SQLSyntax {
         return true;
     }
 
-    static String clause(String clause,String data) {
-        return (data.length()==0?"":" "+ clause +" "+ data);
-    }
-    static String clause(String clause,int data) {
-        return (data ==0?"":" "+ clause +" "+ data);
-    }
-
     public String getDropSessionTable(String tableName) {
         return "DROP TABLE "+getSessionTableName(tableName);
     }

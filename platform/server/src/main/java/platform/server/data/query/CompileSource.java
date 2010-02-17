@@ -1,7 +1,8 @@
 package platform.server.data.query;
 
 import platform.server.data.Table;
-import platform.server.data.expr.GroupExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
@@ -24,4 +25,5 @@ public abstract class CompileSource {
     public abstract String getSource(Table.Join.Expr expr);
     public abstract String getSource(Table.Join.IsIn where);
     public abstract String getSource(GroupExpr groupExpr);
+    public abstract String getSource(OrderExpr orderExpr);
 }

@@ -2,9 +2,10 @@ package platform.server.data.where;
 
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.CompileSource;
+import platform.server.caches.ManualLazy;
 
 
-abstract public class DataWhere extends ObjectWhere<NotWhere> {
+abstract public class DataWhere extends ObjectWhere {
 
     // определяет все
     protected abstract DataWhereSet getExprFollows();
@@ -13,8 +14,12 @@ abstract public class DataWhere extends ObjectWhere<NotWhere> {
         return where instanceof DataWhere && ((DataWhere)where).follow(this);
     }
 
-    public NotWhere calculateNot() {
-        return new NotWhere(this);
+    public NotWhere not = null;
+    @ManualLazy
+    public NotWhere not() {  // именно здесь из-за того что типы надо перегружать без generics
+        if(not==null)
+            not = new NotWhere(this);
+        return not;
     }
 
     public boolean follow(DataWhere dataWhere) {

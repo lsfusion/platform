@@ -13,7 +13,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 
 
-public class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
+public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere, ArrayInstancer<OrObjectWhere> {
 
     AndWhere(OrObjectWhere[] iWheres) {
         super(iWheres);
@@ -106,19 +106,23 @@ public class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements And
 
     public InnerJoins getInnerJoins() {
         InnerJoins result = new InnerJoins(TRUE);
-        for(Where<?> where : wheres)
+        for(Where where : wheres)
             result = result.and(where.getInnerJoins());
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {
         MeanClassWheres result = new MeanClassWheres(ClassExprWhere.TRUE, TRUE);
-        for(Where<?> where : wheres)
+        for(Where where : wheres)
             result = result.and(where.getMeanClassWheres());
         return result;
     }
 
-    OrWhere calculateNot() {
-        return new OrWhere(not(wheres));
+    public OrWhere not = null;
+    @ManualLazy
+    public OrWhere not() { // именно здесь из-за того что типы надо перегружать без generics
+        if(not==null)
+            not = new OrWhere(not(wheres));
+        return not;
     }
 
     public Where translateDirect(KeyTranslator translator) {
@@ -149,7 +153,7 @@ public class AndWhere extends FormulaWhere<OrWhere,OrObjectWhere> implements And
         Decision[] rawDecisions = new Decision[leftWhere.wheres.length+rightWhere.wheres.length]; int decnum = 0;
         // слева not'им все и ищем справа
         for(int i=0;i<leftWhere.wheres.length;i++) {
-            OrObjectWhere notLeftInWhere = ((AndObjectWhere<?>)leftWhere.wheres[i]).not(); // или Object или That
+            OrObjectWhere notLeftInWhere = leftWhere.wheres[i].not(); // или Object или That
             AndObjectWhere[] rightNotWheres = rightWhere.substractWheres(notLeftInWhere.getAnd());
             if(rightNotWheres!=null) // нашли decision, sibling'и left + оставшиеся right из правого
                 rawDecisions[decnum++] = new Decision(leftWhere.wheres[i],siblingsWhere(leftWhere.wheres,i),toWhere(rightNotWheres),leftWhere,rightWhere);

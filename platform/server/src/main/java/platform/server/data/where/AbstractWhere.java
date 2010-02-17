@@ -5,26 +5,23 @@ import platform.server.caches.TwinLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.Query;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.where.EqualsWhere;
+import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
-public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoin implements Where<Not> {
+public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
-    public Not not = null;
-    @ManualLazy
-    public Not not() {
-        if(not==null)
-            not = calculateNot();
-        return not;
-    }
-    abstract Not calculateNot();
+    public abstract Where not();
 
     public Where and(Where where) {
         return not().or(where.not()).not(); // A AND B = not(notA OR notB)
@@ -148,16 +145,16 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
     public abstract MeanClassWheres calculateMeanClassWheres();
 
     @TwinLazy
-    public Map<BaseExpr, ValueExpr> getExprValues() {
-        Map<BaseExpr, ValueExpr> result = new HashMap<BaseExpr, ValueExpr>();
+    public Map<BaseExpr, BaseExpr> getExprValues() {
+        Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>();
         for(OrObjectWhere orWhere : getOr())
             if(orWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)orWhere;
-                if(where.operator1 instanceof ValueExpr)
-                    result.put(where.operator2, (ValueExpr) where.operator1);
+                if(where.operator1.isValue())
+                    result.put(where.operator2, where.operator1);
                 else
-                if(where.operator2 instanceof ValueExpr)
-                    result.put(where.operator1, (ValueExpr) where.operator2);
+                if(where.operator2.isValue())
+                    result.put(where.operator1, where.operator2);
             }
         return result;
     }
@@ -177,4 +174,9 @@ public abstract class AbstractWhere<Not extends Where> extends AbstractSourceJoi
         return result;
     }
 
+    public Where map(Map<KeyExpr, ? extends Expr> map) {
+        Set<KeyExpr> keys = new HashSet<KeyExpr>();
+        enumKeys(keys);
+        return new Query<KeyExpr,Object>(BaseUtils.toMap(keys),this).join(map).getWhere();
+    }
 }

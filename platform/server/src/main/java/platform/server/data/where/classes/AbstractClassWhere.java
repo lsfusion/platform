@@ -307,7 +307,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         super(initMapKeys(classes, map));
     }
 
-    protected Collection<K> keySet() {
+    protected Set<K> keySet() {
         Set<K> keys = new HashSet<K>();
         for(And<K> where : wheres)
             for(int i=0;i<where.size;i++)

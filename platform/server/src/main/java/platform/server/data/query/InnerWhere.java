@@ -6,6 +6,7 @@ import platform.server.data.Table;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.query.GroupJoin;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,7 +37,7 @@ public class InnerWhere {
         }
 
         protected boolean containsAll(InnerJoin who, InnerJoin what) {
-            return BaseUtils.hashEquals(who,what) || who.getJoinFollows().contains(what);
+            return BaseUtils.hashEquals(who,what) || what.isIn(who.getJoinFollows());
         }
 
         protected JoinSet and(JoinSet set) {

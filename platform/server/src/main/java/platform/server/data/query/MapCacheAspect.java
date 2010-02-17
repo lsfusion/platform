@@ -207,7 +207,7 @@ public class MapCacheAspect {
             System.out.println("getExpr - not cached "+property);
             // надо проверить что с такими changes, defaultProps, noUpdateProps
             query = new Query<K,String>(property);
-            WhereBuilder queryWheres = (changedWheres==null?null:new WhereBuilder());
+            WhereBuilder queryWheres = Property.cascadeWhere(changedWheres);
             query.properties.put(PROPERTY_STRING, (Expr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,modifier,queryWheres}));
             if(changedWheres!=null)
                 query.properties.put(CHANGED_STRING,ValueExpr.get(queryWheres.toWhere()));

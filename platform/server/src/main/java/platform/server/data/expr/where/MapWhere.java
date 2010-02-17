@@ -12,13 +12,4 @@ public class MapWhere<T> extends QuickMap<T,Where> {
     protected boolean containsAll(Where who, Where what) {
         throw new RuntimeException("not supported");
     }
-
-/*    public void add(T object, Where where) {
-        Where inWhere = get(object);
-        if(inWhere!=null)
-            inWhere = inWhere.or(where);
-        else
-            inWhere = where;
-        put(object,inWhere);
-    }*/
 }

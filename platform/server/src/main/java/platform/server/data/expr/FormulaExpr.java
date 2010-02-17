@@ -7,6 +7,9 @@ import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
@@ -28,10 +31,12 @@ public class FormulaExpr extends StaticClassExpr {
         valueClass = iValueClass;
     }
 
-    public static Expr create(String iFormula,Map<String, BaseExpr> iParams, ConcreteValueClass iValueClass) {
-        return BaseExpr.create(new FormulaExpr(iFormula, iParams, iValueClass));
+    public static Expr create(String formula, ConcreteValueClass value,Map<String,? extends Expr> params) {
+        ExprCaseList result = new ExprCaseList();
+        for(MapCase<String> mapCase : CaseExpr.pullCases(params))
+            result.add(mapCase.where, BaseExpr.create(new FormulaExpr(formula, mapCase.data, value)));
+        return result.getExpr();
     }
-
 
     public void enumerate(SourceEnumerator enumerator) {
         enumerator.fill(params);
@@ -55,7 +60,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        return Expr.formula(formula,valueClass,translator.translate(params));
+        return create(formula, valueClass, translator.translate(params));
     }
 
     @ParamLazy
@@ -74,10 +79,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     // возвращает Where без следствий
     public Where calculateWhere() {
-        Where result = Where.TRUE;
-        for(Expr param : params.values())
-            result = result.and(param.getWhere());
-        return result;
+        return getWhere(params);
     }
 
     public DataWhereSet getFollows() {

@@ -7,7 +7,7 @@ import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 
-class NotWhere extends ObjectWhere<DataWhere> {
+public class NotWhere extends ObjectWhere {
 
     DataWhere where;
     NotWhere(DataWhere iWhere) {
@@ -22,7 +22,7 @@ class NotWhere extends ObjectWhere<DataWhere> {
         return meanWhere instanceof NotWhere && where.follow(((NotWhere)meanWhere).where);
     }
 
-    public DataWhere calculateNot() {
+    public DataWhere not() {
         return where;
     }
 

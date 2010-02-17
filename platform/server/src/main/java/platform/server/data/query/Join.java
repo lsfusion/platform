@@ -11,7 +11,7 @@ import java.util.Map;
 public abstract class Join<U> {
 
     public abstract Expr getExpr(U property);
-    public abstract Where<?> getWhere();
+    public abstract Where getWhere();
 
     public abstract Collection<U> getProperties();
 

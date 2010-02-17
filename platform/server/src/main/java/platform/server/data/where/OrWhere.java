@@ -5,6 +5,7 @@ import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.SimpleMap;
 import platform.server.caches.ParamLazy;
+import platform.server.caches.ManualLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
@@ -18,7 +19,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.*;
 
 
-public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements OrObjectWhere<AndWhere> {
+public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
 
     // вообще надо противоположные + Object, но это наследованием не сделаешь
     OrWhere(AndObjectWhere[] iWheres) {
@@ -163,14 +164,14 @@ public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements Or
         AndObjectWhere[] staticWheres = new AndObjectWhere[wheres.length]; int statics = 0;
         for(AndObjectWhere where : wheres) {
             if(where instanceof ObjectWhere) {
-                if(falseWhere.directMeansFrom(((ObjectWhere<?>)where).not())) // проверяем если not возвращаем true
+                if(falseWhere.directMeansFrom(((ObjectWhere)where).not())) // проверяем если not возвращаем true
                     return TRUE;
                 staticWheres[statics++] = where;
             } else { // значит AndWhere
                 boolean isFalse = false;
                 OrObjectWhere[] followWheres = new OrObjectWhere[((AndWhere)where).wheres.length]; int follows = 0;
-                for(OrObjectWhere<?> orWhere : ((AndWhere)where).wheres) {
-                    if(orWhere instanceof ObjectWhere && falseWhere.directMeansFrom((ObjectWhere<?>)orWhere)) { // если из операнда следует false drop'аем весь orWhere
+                for(OrObjectWhere orWhere : ((AndWhere)where).wheres) {
+                    if(orWhere instanceof ObjectWhere && falseWhere.directMeansFrom((ObjectWhere)orWhere)) { // если из операнда следует false drop'аем весь orWhere
                         isFalse = true;
                         break;
                     }
@@ -516,8 +517,12 @@ public class OrWhere extends FormulaWhere<AndWhere,AndObjectWhere> implements Or
         return checkTrue(wheres, wheres.length);
     }
 
-    AndWhere calculateNot() {
-        return new AndWhere(not(wheres));
+    public AndWhere not = null;
+    @ManualLazy
+    public AndWhere not() { // именно здесь из-за того что типы надо перегружать без generics
+        if(not==null)
+            not = new AndWhere(not(wheres));
+        return not;
     }
 
     public AndObjectWhere[] newArray(int length) {

@@ -16,8 +16,8 @@ import java.util.*;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 
-    protected AggregateProperty(String iSID,String caption,Collection<T> iInterfaces) {
-        super(iSID,caption,iInterfaces);
+    protected AggregateProperty(String SID,String caption,List<T> interfaces) {
+        super(SID,caption,interfaces);
     }
 
     public ValueClass getValueClass() {

@@ -1,18 +1,12 @@
 package platform.server.data.expr;
 
-import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCase;
 import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
@@ -21,19 +15,18 @@ import platform.server.data.where.Where;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Collections;
 
 // абстрактный класс выражений
 
-abstract public class Expr extends AbstractSourceJoin {
-    
+abstract public class Expr extends AbstractSourceJoin<Expr> {
+
     public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
 
     public abstract Type getType(Where where);
     public abstract Reader getReader(Where where);
 
     // возвращает Where на notNull
-    private Where<?> where=null;
+    private Where where=null;
     @ManualLazy
     public Where getWhere() {
         if(where==null)
@@ -61,13 +54,6 @@ abstract public class Expr extends AbstractSourceJoin {
 
     public abstract Expr sum(Expr expr);
 
-    public static Expr formula(String formula, ConcreteValueClass value,Map<String,? extends Expr> params) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<String> mapCase : CaseExpr.pullCases(params))
-            result.add(mapCase.where,FormulaExpr.create(formula, mapCase.data, value));
-        return result.getExpr();
-    }
-
     public Expr and(Where where) {
         return new ExprCaseList(where,this).getExpr();
     }
@@ -82,6 +68,17 @@ abstract public class Expr extends AbstractSourceJoin {
     }
 
     public abstract Expr translateQuery(QueryTranslator translator);
-    public abstract Expr translateDirect(KeyTranslator translator);
+
+    public static Where getWhere(Collection<? extends Expr> col) {
+        Where where = Where.TRUE;
+        for(Expr expr : col)
+            where = where.and(expr.getWhere());
+        return where;
+
+    }
+
+    public static <K> Where getWhere(Map<K, ? extends Expr> map) {
+        return getWhere(map.values());
+    }
 }
 

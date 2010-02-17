@@ -30,7 +30,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
 
     public final Map<K,KeyExpr> mapKeys;
     public Map<V, Expr> properties;
-    public Where<?> where;
+    public Where where;
 
     public Query(Map<K,KeyExpr> mapKeys) {
         this.mapKeys = mapKeys;

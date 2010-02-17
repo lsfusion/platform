@@ -2,14 +2,12 @@ package platform.server.logics.property;
 
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.FormulaExpr;
 import platform.server.session.TableChanges;
 import platform.server.session.TableModifier;
 import platform.server.data.where.WhereBuilder;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 
@@ -26,8 +24,8 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         }
     }
 
-    static Collection<Interface> getInterfaces(int paramCount) {
-        Collection<Interface> interfaces = new ArrayList<Interface>();
+    static List<Interface> getInterfaces(int paramCount) {
+        List<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<paramCount;i++)
             interfaces.add(new Interface(i));
         return interfaces;
@@ -51,6 +49,6 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         for(Interface propertyInterface : interfaces)
             params.put(propertyInterface.getString(), joinImplement.get(propertyInterface));
 
-        return Expr.formula(formula,value,params);
+        return FormulaExpr.create(formula, value, params);
     }
 }

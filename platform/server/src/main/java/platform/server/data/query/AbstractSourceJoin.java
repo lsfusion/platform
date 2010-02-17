@@ -3,7 +3,9 @@ package platform.server.data.query;
 import platform.base.BaseUtils;
 import platform.base.ArrayInstancer;
 import platform.server.data.Table;
-import platform.server.data.expr.GroupExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.query.TranslateContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.logics.BusinessLogics;
@@ -12,8 +14,12 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collection;
 
-abstract public class AbstractSourceJoin implements SourceJoin {
+abstract public class AbstractSourceJoin<T extends TranslateContext<T>> implements SourceJoin, TranslateContext<T> {
 
+    public SourceJoin[] getEnum() {
+        return new SourceJoin[]{this};
+    }
+   
     public abstract int hashContext(HashContext hashContext);
 
     boolean hashCoded = false;
@@ -57,6 +63,10 @@ abstract public class AbstractSourceJoin implements SourceJoin {
         public String getSource(GroupExpr groupExpr) {
             return groupExpr.toString();
         }
+
+        public String getSource(OrderExpr orderExpr) {
+            return orderExpr.toString();
+        }
     }
 
     @Override
@@ -88,7 +98,7 @@ abstract public class AbstractSourceJoin implements SourceJoin {
         }
     };
 
-    private static SourceJoin[] merge(Collection<? extends SourceJoin> set,SourceJoin... array) {
+    public static SourceJoin[] merge(Collection<? extends SourceJoin> set,SourceJoin... array) {
         return BaseUtils.add(set.toArray(new SourceJoin[set.size()]),array,instancer);
     }
     

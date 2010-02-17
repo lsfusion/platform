@@ -7,7 +7,7 @@ import platform.server.data.query.HashContext;
 import platform.server.data.query.SourceEnumerator;
 
 
-public abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Where> extends AbstractWhere<Not> {
+public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
     protected final WhereType[] wheres;
     protected FormulaWhere(WhereType[] iWheres) {
@@ -53,14 +53,14 @@ public abstract class FormulaWhere<Not extends FormulaWhere,WhereType extends Wh
     static OrObjectWhere[] not(AndObjectWhere[] wheres) {
         OrObjectWhere[] result = new OrObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
-            result[i] = ((AndObjectWhere<?>)wheres[i]).not();
+            result[i] = wheres[i].not();
         return result;
     }
 
     static AndObjectWhere[] not(OrObjectWhere[] wheres) {
         AndObjectWhere[] result = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
-            result[i] = ((OrObjectWhere<?>)wheres[i]).not();
+            result[i] = wheres[i].not();
         return result;
     }
 

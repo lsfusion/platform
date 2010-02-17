@@ -42,7 +42,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K,V> List<V> mapList(List<K> list, Map<K,V> map) {
+    public static <K,V> List<V> mapList(List<? extends K> list, Map<K,V> map) {
         List<V> result = new ArrayList<V>();
         for(K element : list)
             result.add(map.get(element));
@@ -129,13 +129,26 @@ public class BaseUtils {
         return true;
     }
 
-    public static <K> Map<K,K> toMap(Collection<K> collection) {
+    public static <K> Map<K,K> toMap(Set<K> collection) {
         Map<K,K> result = new HashMap<K, K>();
         for(K object : collection)
             result.put(object,object);
         return result;
     }
 
+    public static <K> Map<Integer,K> toMap(List<K> list) {
+        Map<Integer,K> result = new HashMap<Integer, K>();
+        for(int i=0;i<list.size();i++)
+            result.put(i,list.get(i));
+        return result;
+    }
+
+    public static <K> List<K> toList(Map<Integer,K> map) {
+        List<K> result = new ArrayList<K>();
+        for(int i=0;i<map.size();i++)
+            result.add(map.get(i));
+        return result;
+    }
 
     public static Object deserializeObject(byte[] state) throws IOException {
 
@@ -298,7 +311,7 @@ public class BaseUtils {
         Map<B,V> result = new HashMap<B,V>(map1);
         for(Map.Entry<K2,? extends V> entry2 : map2.entrySet()) {
             V value1 = result.put(entry2.getKey(), entry2.getValue());
-            if(value1!=null && !entry2.equals(value1))
+            if(value1!=null && !entry2.getValue().equals(value1))
                 return null;
         }
         return result;
@@ -400,6 +413,14 @@ public class BaseUtils {
 
     public static <T> T getRandom(List<T> list,Random randomizer) {
         return list.get(randomizer.nextInt(list.size()));
+    }
+
+    public static String clause(String clause,String data) {
+        return (data.length()==0?"":" "+ clause +" "+ data);
+    }
+
+    static String clause(String clause,int data) {
+        return (data ==0?"":" "+ clause +" "+ data);
     }
 
 

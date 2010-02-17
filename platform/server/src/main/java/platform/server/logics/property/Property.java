@@ -12,6 +12,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Query;
 import platform.server.data.query.MapKeysInterface;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.cases.CaseExpr;
@@ -41,7 +42,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         return caption;
     }
     
-    Property(String sID, String caption, Collection<T> interfaces) {
+    Property(String sID, String caption, List<T> interfaces) {
         this.sID = sID;
         this.caption = caption;
         this.interfaces = interfaces;
@@ -260,7 +261,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
     protected DataChanges getJoinDataChanges(Map<T,? extends Expr> implementExprs, Expr expr, Where where, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        WhereBuilder changedImplementWhere = changedWhere==null?null:new WhereBuilder();
+        WhereBuilder changedImplementWhere = cascadeWhere(changedWhere);
         DataChanges result = getDataChanges(new PropertyChange<T>(mapKeys,
                 GroupExpr.create(implementExprs, expr, where, true, mapKeys),
                 GroupExpr.create(implementExprs, ValueExpr.TRUE, where, true, mapKeys).getWhere()),
@@ -274,11 +275,16 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public PropertyMapImplement<T,T> getImplement() {
-        return new PropertyMapImplement<T,T>(this, BaseUtils.toMap(interfaces));
+        return new PropertyMapImplement<T,T>(this, BaseUtils.toMap(new HashSet<T>(interfaces)));
     }
 
     public void setConstraint(boolean checkChange) {
         isFalse = true;
         this.checkChange = checkChange;                
+    }
+
+    // используется если создаваемый WhereBuilder нужен только если задан changed 
+    public static WhereBuilder cascadeWhere(WhereBuilder changed) {
+        return changed==null?null:new WhereBuilder();
     }
 }

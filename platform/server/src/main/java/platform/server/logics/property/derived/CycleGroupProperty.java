@@ -2,6 +2,7 @@ package platform.server.logics.property.derived;
 
 import platform.server.session.*;
 import platform.server.data.expr.*;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
 import platform.server.data.query.Join;

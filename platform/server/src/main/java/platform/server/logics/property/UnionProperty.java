@@ -1,8 +1,6 @@
 package platform.server.logics.property;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 abstract public class UnionProperty extends FunctionProperty<UnionProperty.Interface> {
 
@@ -12,8 +10,8 @@ abstract public class UnionProperty extends FunctionProperty<UnionProperty.Inter
         }
     }
 
-    static Collection<Interface> getInterfaces(int intNum) {
-        Collection<Interface> interfaces = new ArrayList<Interface>();
+    static List<Interface> getInterfaces(int intNum) {
+        List<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<intNum;i++)
             interfaces.add(new Interface(i));
         return interfaces;

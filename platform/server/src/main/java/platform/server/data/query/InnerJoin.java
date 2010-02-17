@@ -9,4 +9,6 @@ public interface InnerJoin {
     int hashContext(HashContext hashContext);
 
     InnerJoin translateDirect(KeyTranslator translator);
+
+    boolean isIn(DataWhereSet set);
 }

@@ -7,11 +7,14 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.data.expr.GroupExpr;
-import platform.server.data.expr.MapExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
+import platform.server.data.where.DataWhere;
+import platform.server.data.where.NotWhere;
 
 // аспект который заодно транслирует ManualLazy операции
 @Aspect
@@ -54,7 +57,7 @@ public class TranslateAspect {
     public static class TranslateExprLazyImplement extends TranslateLazyImplement implements TranslateExprLazyInterface {
         protected Where lazyTranslate(ProceedingJoinPoint thisJoinPoint) throws Throwable {
             Where where = ((Expr) object).getWhere();
-            if(object instanceof MapExpr) { // не translate'им чтобы бесконечный цикл разорвать
+            if(object instanceof InnerExpr && !(object instanceof OrderExpr)) { // не translate'им чтобы бесконечный цикл разорвать
                 Where result = (Where) thisJoinPoint.proceed();
                 ((TranslateClassWhereLazyInterface)result).initTranslate(where,translator,result);
                 return result;
@@ -84,7 +87,7 @@ public class TranslateAspect {
     private TranslateClassWhereLazyInterface translateClassWhereLazy;
     @AfterReturning(pointcut="call(platform.server.data.where.Where platform.server.data.where.Where.translateDirect(platform.server.data.translator.KeyTranslator)) && target(where) && args(translator)",returning="transWhere")
     public void afterDataWhereTranslate(AbstractWhere where,KeyTranslator translator, TranslateClassWhereLazyInterface transWhere) {
-        if(!(transWhere instanceof MapExpr.NotNull)) // он уже обработан
+        if(!(transWhere instanceof InnerExpr.NotNull)) // он уже обработан
            transWhere.initTranslate(where,translator,transWhere);
     }
     @Around("call(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.AbstractWhere.calculateClassWhere()) && target(where)")
@@ -146,9 +149,9 @@ public class TranslateAspect {
             return result;
     } */
 
-    @AfterReturning(pointcut="call(* platform.server.data.where.AbstractWhere.calculateNot()) && target(where)",returning="notWhere")
-    public void afterDataWhereTranslate(AbstractWhere where, AbstractWhere notWhere) {
-        notWhere.not = where; 
+    @AfterReturning(pointcut="call(* platform.server.data.where.DataWhere.not()) && target(where)",returning="notWhere")
+    public void afterDataWhereTranslate(DataWhere where, NotWhere notWhere) {
+//        notWhere.not = where; 
     }
 
 }

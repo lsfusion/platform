@@ -25,8 +25,8 @@ public class DataProperty extends Property<ClassPropertyInterface> {
 
     public ValueClass value;
 
-    public static Collection<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
-        Collection<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
+    public static List<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
+        List<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
         for(ValueClass interfaceClass : classes)
             interfaces.add(new ClassPropertyInterface(interfaces.size(),interfaceClass));
         return interfaces;

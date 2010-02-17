@@ -1,7 +1,8 @@
 package platform.server.data.where;
 
-interface AndObjectWhere<Not extends OrObjectWhere> extends Where<Not> {
+interface AndObjectWhere extends Where {
+
+    OrObjectWhere not();
 
     Where pairs(AndObjectWhere pair, boolean plainFollow);
-
 }

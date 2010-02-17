@@ -145,11 +145,11 @@ public class Table implements MapKeysInterface<KeyField> {
 
         @TwinLazy
         Where getJoinsWhere() {
-            return MapExpr.getJoinsWhere(joins);
+            return platform.server.data.expr.Expr.getWhere(joins);
         }
 
         public DataWhereSet getJoinFollows() {
-            return MapExpr.getExprFollows(joins);
+            return InnerExpr.getExprFollows(joins);
         }
 
         protected DataWhereSet getExprFollows() {
@@ -161,7 +161,7 @@ public class Table implements MapKeysInterface<KeyField> {
             return BaseExpr.create(new Expr(property));
         }
         @TwinLazy
-        public Where<?> getWhere() {
+        public Where getWhere() {
             return DataWhere.create(new IsIn());
         }
 
@@ -208,6 +208,10 @@ public class Table implements MapKeysInterface<KeyField> {
             return this == o || o instanceof Join && Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
         }
 
+        public boolean isIn(DataWhereSet set) {
+            return set.contains((DataWhere)getWhere());
+        }
+
         @Override
         public int hashCode() {
             return hashContext(new HashContext(){
@@ -219,6 +223,8 @@ public class Table implements MapKeysInterface<KeyField> {
                     return expr.hashCode();
                 }
             });
+
+
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -291,7 +297,7 @@ public class Table implements MapKeysInterface<KeyField> {
             }
         }
 
-        public class Expr extends MapExpr {
+        public class Expr extends InnerExpr {
 
             public final PropertyField property;
 
@@ -346,7 +352,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return compile.getSource(this);
             }
 
-            public class NotNull extends MapExpr.NotNull {
+            public class NotNull extends InnerExpr.NotNull {
 
                 protected DataWhereSet getExprFollows() {
                     return Join.this.getExprFollows();

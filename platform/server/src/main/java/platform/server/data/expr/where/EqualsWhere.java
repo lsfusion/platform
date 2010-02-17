@@ -108,10 +108,10 @@ public class EqualsWhere extends CompareWhere {
             if(operator1 instanceof StaticClassExpr)
                 classWhere2 = classWhere2.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));
             else {
-                if(operator1 instanceof MapExpr)
-                    classWhere1 = classWhere1.andEquals((MapExpr)operator1,(VariableClassExpr)operator2);
-                if(operator2 instanceof MapExpr)
-                    classWhere2 = classWhere2.andEquals((MapExpr)operator2,(VariableClassExpr)operator1);
+                if(operator1 instanceof InnerExpr)
+                    classWhere1 = classWhere1.andEquals((InnerExpr)operator1,(VariableClassExpr)operator2);
+                if(operator2 instanceof InnerExpr)
+                    classWhere2 = classWhere2.andEquals((InnerExpr)operator2,(VariableClassExpr)operator1);
             }
         } else
         if(operator1 instanceof VariableClassExpr)

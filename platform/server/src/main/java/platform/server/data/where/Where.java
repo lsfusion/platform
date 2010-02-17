@@ -9,23 +9,24 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.TranslateContext;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 
 import java.util.Map;
 
-public interface Where<Not extends Where> extends SourceJoin {
+public interface Where extends SourceJoin, TranslateContext<Where> {
 
     Where followFalse(Where falseWhere);
     
-    public abstract <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
+    <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
 
     // внутренние
     Where innerFollowFalse(Where falseWhere, boolean sureNotTrue);
     boolean checkTrue();
     boolean directMeansFrom(AndObjectWhere where);
 
-    Not not();
+    Where not();
 
     boolean isTrue();
     boolean isFalse();
@@ -39,7 +40,7 @@ public interface Where<Not extends Where> extends SourceJoin {
     AndObjectWhere[] getAnd();
     OrObjectWhere[] getOr();
 
-    Map<BaseExpr,ValueExpr> getExprValues();
+    Map<BaseExpr,BaseExpr> getExprValues();
     Map<KeyExpr, BaseExpr> getKeyExprs();
 
     ObjectWhereSet getObjects();
@@ -65,6 +66,7 @@ public interface Where<Not extends Where> extends SourceJoin {
     static Where TRUE = new AndWhere();
     static Where FALSE = new OrWhere();
 
-    public abstract Where translateDirect(KeyTranslator translator);
-    public abstract Where translateQuery(QueryTranslator translator);
+    Where translateQuery(QueryTranslator translator);
+
+    public Where map(Map<KeyExpr,? extends Expr> map);
 }

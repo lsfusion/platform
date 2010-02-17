@@ -1,5 +1,7 @@
 package platform.server.data.sql;
 
+import platform.base.BaseUtils;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -88,12 +90,12 @@ class MSSQLDataAdapter extends DataAdapter {
     }
 
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
-        return "SELECT " + clause("TOP", top) + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy);
+        return "SELECT " + BaseUtils.clause("TOP", top) + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {
         if(top.length()==0)
-            return union + clause("ORDER BY", orderBy);
-        return "SELECT" + clause("TOP", top) + " * FROM (" + union + ")" + clause("ORDER BY", orderBy);
+            return union + BaseUtils.clause("ORDER BY", orderBy);
+        return "SELECT" + BaseUtils.clause("TOP", top) + " * FROM (" + union + ")" + BaseUtils.clause("ORDER BY", orderBy);
     }
 }

@@ -2,7 +2,7 @@ package platform.server.logics.property.derived;
 
 import net.jcip.annotations.Immutable;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.GroupExpr;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.view.navigator.PropertyObjectNavigator;
@@ -72,8 +72,8 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     final Property<T> onChange;
     final Property<P> toChange;
 
-    public static <P extends PropertyInterface> Collection<Interface<P>> getInterfaces(Property<P> property) {
-        Collection<Interface<P>> result = new ArrayList<Interface<P>>();
+    public static <P extends PropertyInterface> List<Interface<P>> getInterfaces(Property<P> property) {
+        List<Interface<P>> result = new ArrayList<Interface<P>>();
         for(P propertyInterface : property.interfaces)
             result.add(new KeyInterface<P>(propertyInterface));
         result.add(new ValueInterface<P>(property));

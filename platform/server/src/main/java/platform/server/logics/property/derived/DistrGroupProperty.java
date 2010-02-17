@@ -8,7 +8,6 @@ import platform.server.data.where.Where;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.CaseExpr;
-import platform.server.caches.Lazy;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.*;
 
@@ -37,14 +36,8 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
         // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
-        Where<?> nullWhere = propertyChange.getQuery("value").join(getGroupImplements(mapKeys, modifier, null)).getWhere().and(
+        Where nullWhere = propertyChange.getQuery("value").join(getGroupImplements(mapKeys, modifier, null)).getWhere().and(
                 groupProperty.getExpr(mapKeys, modifier, null).getWhere());
-
-        // пойдем через производные свойства
-//        PropertyChanges<PropertyInterface,Property<PropertyInterface>> changes = new PropertyChanges<PropertyInterface, Property<PropertyInterface>>();
-//        changes.add(nullChange, propertyChange.map(nullChange.getMapInterfaces())); // меняем это свойство
-//        changes.addAll(groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), modifier, null)); // меняем все groupProperty на null, для которых идет изменение
-
         TableModifier<? extends TableChanges> changeModifier = new DataChangesModifier(modifier, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier));
 
         ExprProperty<Interface<T>> exprProperty = new ExprProperty<Interface<T>>(propertyChange);

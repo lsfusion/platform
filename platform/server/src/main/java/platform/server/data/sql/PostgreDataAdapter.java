@@ -1,5 +1,7 @@
 package platform.server.data.sql;
 
+import platform.base.BaseUtils;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -79,11 +81,11 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
-        return "SELECT " + exprs + " FROM " + from + clause("WHERE", where) + clause("GROUP BY", groupBy) + clause("ORDER BY", orderBy) + clause("LIMIT", top);
+        return "SELECT " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {
-        return union + clause("ORDER BY", orderBy) + clause("LIMIT", top);
+        return union + BaseUtils.clause("ORDER BY", orderBy) + BaseUtils.clause("LIMIT", top);
     }
 
     public String getByteArrayType() {

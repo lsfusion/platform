@@ -18,8 +18,8 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         }
     }
 
-    static Collection<Interface> getInterfaces(int intNum) {
-        Collection<Interface> interfaces = new ArrayList<Interface>();
+    static List<Interface> getInterfaces(int intNum) {
+        List<Interface> interfaces = new ArrayList<Interface>();
         for(int i=0;i<intNum;i++)
             interfaces.add(new Interface(i));
         return interfaces;
@@ -34,8 +34,8 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         Map<T, Expr> result = new HashMap<T, Expr>();
         for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceImplement : implement.mapping.entrySet())
             result.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, modifier, changedWhere));
-        return result;    }
-
+        return result;
+    }
 
     public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
         return implement.property.getExpr(getJoinImplements(joinImplement, modifier, changedWhere), modifier, changedWhere);

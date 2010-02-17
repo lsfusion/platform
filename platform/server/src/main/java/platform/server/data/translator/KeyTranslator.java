@@ -4,8 +4,7 @@ import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.server.data.expr.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Immutable
 public class KeyTranslator extends Translator<KeyExpr> {
@@ -18,6 +17,13 @@ public class KeyTranslator extends Translator<KeyExpr> {
         Map<K, BaseExpr> transMap = new HashMap<K, BaseExpr>();
         for(Map.Entry<K,? extends BaseExpr> entry : map.entrySet())
             transMap.put(entry.getKey(),entry.getValue().translateDirect(this));
+        return transMap;
+    }
+
+    public <K> Map<BaseExpr,K> translateKeys(Map<? extends BaseExpr, K> map) {
+        Map<BaseExpr, K> transMap = new HashMap<BaseExpr, K>();
+        for(Map.Entry<? extends BaseExpr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateDirect(this),entry.getValue());
         return transMap;
     }
 
@@ -34,6 +40,34 @@ public class KeyTranslator extends Translator<KeyExpr> {
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             transMap.put(entry.getKey(),entry.getValue().translateDirect(this));
         return transMap;
+    }
+
+    public List<BaseExpr> translateDirect(List<BaseExpr> list) {
+        List<BaseExpr> result = new ArrayList<BaseExpr>();
+        for(BaseExpr expr : list)
+            result.add(expr.translateDirect(this));
+        return result;
+    }
+
+    public Set<BaseExpr> translateDirect(Set<BaseExpr> set) {
+        Set<BaseExpr> result = new HashSet<BaseExpr>();
+        for(BaseExpr expr : set)
+            result.add(expr.translateDirect(this));
+        return result;
+    }
+
+    public List<Expr> translate(List<Expr> list) {
+        List<Expr> result = new ArrayList<Expr>();
+        for(Expr expr : list)
+            result.add(expr.translateDirect(this));
+        return result;
+    }
+
+    public Set<Expr> translate(Set<Expr> set) {
+        Set<Expr> result = new HashSet<Expr>();
+        for(Expr expr : set)
+            result.add(expr.translateDirect(this));
+        return result;
     }
 
     public boolean identity() {
