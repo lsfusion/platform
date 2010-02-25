@@ -21,7 +21,7 @@ public class OverrideUnionProperty extends UnionProperty {
         return operands;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         Expr result = null;
         for(PropertyMapImplement<?, Interface> operand : operands) {
@@ -43,7 +43,7 @@ public class OverrideUnionProperty extends UnionProperty {
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         DataChanges result = new DataChanges();
         for(PropertyMapImplement<?, Interface> operand : operands) {
             WhereBuilder operandWhere = new WhereBuilder();

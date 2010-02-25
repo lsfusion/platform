@@ -30,7 +30,7 @@ public class UnknownClass implements ConcreteObjectClass {
     }
 
     public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
-        session.deleteKeyRecords(baseClass.table,Collections.singletonMap(baseClass.table.key,(Integer)value.object));
+        session.deleteKeyRecords(baseClass.table,Collections.singletonMap(baseClass.table.key,value.object));
     }
 
     public boolean inSet(AndClassSet set) {

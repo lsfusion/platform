@@ -4,8 +4,8 @@ import platform.server.classes.CustomClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.DataSession;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
@@ -32,7 +32,7 @@ public class IsClassFilter<P extends PropertyInterface> extends PropertyFilter<P
         isClass = form.getCustomClass(inStream.readInt());
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return DataSession.getIsClassWhere(modifier.getSession(),property.getExpr(classGroup, mapKeys, modifier),isClass,null);
     }
 }

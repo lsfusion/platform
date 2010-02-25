@@ -13,7 +13,6 @@ import platform.interop.exceptions.ComplexQueryException;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
 import platform.server.data.type.TypeSerializer;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
@@ -30,7 +29,6 @@ import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.data.where.Where;
-import platform.server.data.where.WhereBuilder;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -44,7 +42,7 @@ import java.util.Map.Entry;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<RemoteForm.UsedChanges> {
+public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     public final int viewID;
 
@@ -62,20 +60,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         return BL.baseClass.findClassID(classID);
     }
 
-    private class Update extends ViewModifier {
-
-        public Update(ViewChanges view) {
-            super(view);
-        }
-
-        public ViewChanges used(Property property, ViewChanges usedChanges) {
-            if(hintsNoUpdate.contains(property))
-                return new ViewChanges();
-            return usedChanges;
-        }
-    }
-    public ViewModifier update(ViewChanges view) {
-        return new Update(view);
+    public Modifier<? extends Changes> update(final SessionChanges sessionChanges) {
+        return new NoUpdateModifier(hintsNoUpdate) {
+            public SessionChanges getSession() {
+                return sessionChanges;
+            }
+        };
     }
 
     final FocusView<T> focusView;
@@ -359,48 +349,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         return result;
     }
 
-    public Collection<Property> hintsNoUpdate = new HashSet<Property>();
     public Collection<Property> getNoUpdateProperties() {
         return hintsNoUpdate;
-    }
-
-    public static class UsedChanges extends TableChanges<UsedChanges> {
-        final Collection<Property> noUpdateProps = new ArrayList<Property>();
-
-        @Override
-        public void add(UsedChanges add) {
-            super.add(add);
-            noUpdateProps.addAll(add.noUpdateProps);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return this==o || o instanceof UsedChanges && noUpdateProps.equals(((UsedChanges)o).noUpdateProps) && super.equals(o);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * super.hashCode() + noUpdateProps.hashCode();
-        }
-    }
-
-    public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
-        if(hintsNoUpdate.contains(property)) // если так то ничего не менять 
-            return Expr.NULL;
-        else
-            return null;
-    }
-
-    public UsedChanges used(Property property, UsedChanges changes) {
-        if(changes.hasChanges() && hintsNoUpdate.contains(property)) {
-            changes = new UsedChanges();
-            changes.noUpdateProps.add(property);
-        }
-        return changes;
-    }
-
-    public UsedChanges newChanges() {
-        return new UsedChanges();
     }
 
     public Collection<Property> hintsSave = new HashSet<Property>();
@@ -501,9 +451,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
                         groupTables.remove(group);
                     }
                 } else {
-                    session.deleteKeyRecords(viewTable, new HashMap<KeyField, Integer>());
-                    for(Map<ObjectImplement, DataObject> keyRow : group.keys.keySet())
-                        session.insertRecord(viewTable,BaseUtils.join(viewTable.mapKeys,keyRow),new HashMap<PropertyField,ObjectValue>());
+                    viewTable.rewrite(session,group.keys.keySet());
                     groupTables.put(group,viewTable);                    
                 }
             }
@@ -515,7 +463,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
         Set<PropertyView> isDrawed;
         Map<RegularFilterGroup,RegularFilter> regularFilterValues;
 
-        Map<RemoteForm, ViewChanges> incrementChanges;
+        Map<RemoteForm, DataSession.UpdateChanges> incrementChanges;
+        Map<RemoteForm, DataSession.UpdateChanges> appliedChanges;
+        Map<RemoteForm, DataSession.UpdateChanges> updateChanges;
 
         SessionChanges changes;
 
@@ -528,7 +478,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
             regularFilterValues = new HashMap<RegularFilterGroup, RegularFilter>(RemoteForm.this.regularFilterValues);
 
             if(dataChanged) {
-                incrementChanges = new HashMap<RemoteForm, ViewChanges>(session.incrementChanges);
+                incrementChanges = new HashMap<RemoteForm, DataSession.UpdateChanges>(session.incrementChanges);
+                appliedChanges = new HashMap<RemoteForm, DataSession.UpdateChanges>(session.appliedChanges);
+                updateChanges = new HashMap<RemoteForm, DataSession.UpdateChanges>(session.updateChanges);
                 changes = new SessionChanges(session.changes);
             }
         }
@@ -543,6 +495,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends TableModifier<Remot
 
             if(dataChanged) {
                 session.incrementChanges = incrementChanges;
+                session.appliedChanges = appliedChanges;
+                session.updateChanges = updateChanges;
                 session.changes = changes;
             }
         }

@@ -31,14 +31,14 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges getDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
         // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
         Where nullWhere = propertyChange.getQuery("value").join(getGroupImplements(mapKeys, modifier, null)).getWhere().and(
                 groupProperty.getExpr(mapKeys, modifier, null).getWhere());
-        TableModifier<? extends TableChanges> changeModifier = new DataChangesModifier(modifier, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier));
+        Modifier<? extends Changes> changeModifier = new DataChangesModifier(modifier, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier));
 
         ExprProperty<Interface<T>> exprProperty = new ExprProperty<Interface<T>>(propertyChange);
         Expr distributeExpr = DerivedProperty.createUGProp(new PropertyImplement<PropertyInterfaceImplement<L>, ExprProperty.Interface<Interface<T>>>(exprProperty,

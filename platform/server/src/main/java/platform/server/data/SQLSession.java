@@ -6,6 +6,7 @@ import platform.server.data.query.Query;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
@@ -247,12 +248,8 @@ public class SQLSession {
         // по сути пустое кол-во ключей
         Query<Object,String> isRecQuery = new Query<Object,String>(new HashMap<Object, KeyExpr>());
 
-        Map<KeyField, BaseExpr> keyExprs = new HashMap<KeyField, BaseExpr>();
-        for(KeyField key : table.keys)
-            keyExprs.put(key,keyFields.get(key).getExpr());
-
         // сначала закинем KeyField'ы и прогоним Select
-        isRecQuery.and(table.joinAnd(keyExprs).getWhere());
+        isRecQuery.and(table.joinAnd(DataObject.getMapValueExprs(keyFields)).getWhere());
 
         return isRecQuery.execute(this).size()>0;
     }
@@ -267,8 +264,7 @@ public class SQLSession {
         if(isRecord(table, keyFields)) {
             Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
             updateQuery.putKeyWhere(keyFields);
-            for(Map.Entry<PropertyField,ObjectValue> mapProp : propFields.entrySet())
-                updateQuery.properties.put(mapProp.getKey(), mapProp.getValue().getExpr());
+            updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
 
             // есть запись нужно Update лупить
             updateRecords(new ModifyQuery(table,updateQuery));
@@ -281,12 +277,8 @@ public class SQLSession {
         // по сути пустое кол-во ключей
         Query<Object,String> getQuery = new Query<Object,String>(new HashMap<Object,KeyExpr>());
 
-        Map<KeyField, BaseExpr> keyExprs = new HashMap<KeyField, BaseExpr>();
-        for(KeyField key : table.keys)
-            keyExprs.put(key,keyFields.get(key).getExpr());
-
         // сначала закинем KeyField'ы и прогоним Select
-        Expr fieldExpr = table.joinAnd(keyExprs).getExpr(field);
+        Expr fieldExpr = table.joinAnd(DataObject.getMapValueExprs(keyFields)).getExpr(field);
         getQuery.properties.put("result",fieldExpr);
         getQuery.and(fieldExpr.getWhere());
         OrderedMap<Map<Object, Object>, Map<String, Object>> result = getQuery.execute(this);
@@ -296,9 +288,9 @@ public class SQLSession {
             return null;
     }
 
-    public void deleteKeyRecords(Table table,Map<KeyField,Integer> keys) throws SQLException {
+    public void deleteKeyRecords(Table table,Map<KeyField,?> keys) throws SQLException {
         String deleteWhere = "";
-        for(Map.Entry<KeyField,Integer> deleteKey : keys.entrySet())
+        for(Map.Entry<KeyField,?> deleteKey : keys.entrySet())
             deleteWhere = (deleteWhere.length()==0?"":deleteWhere+" AND ") + deleteKey.getKey().name + "=" + deleteKey.getValue();
 
         execute("DELETE FROM "+ table.getName(syntax)+(deleteWhere.length()==0?"":" WHERE "+deleteWhere));

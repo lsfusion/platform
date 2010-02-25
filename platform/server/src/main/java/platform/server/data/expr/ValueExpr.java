@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
+import platform.server.classes.IntegralClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -76,10 +77,12 @@ public class ValueExpr extends StaticClassExpr {
     public int hashContext(HashContext hashContext) {
         return hashContext.hash(this);
     }
-    
+
+    // нельзя потому как при трансляции значения потеряются
+/*    @Override
     public ValueExpr scale(int mult) {
-        return new ValueExpr(((Integer)object)*mult,objectClass);
-    }
+        return new ValueExpr(((IntegralClass)objectClass).multiply((Number) object,mult),objectClass);
+    }*/
 
     public ValueExpr translateQuery(QueryTranslator translator) {
         return translator.translate(this);

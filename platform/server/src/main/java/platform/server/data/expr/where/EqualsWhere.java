@@ -25,7 +25,7 @@ public class EqualsWhere extends CompareWhere {
         if(operator1 instanceof ValueExpr && operator2 instanceof ValueExpr)
             return BaseUtils.hashEquals(operator1,operator2)?Where.TRUE:Where.FALSE;
         if(BaseUtils.hashEquals(operator1,operator2))
-            return Where.TRUE;
+            return operator1.getWhere();
         return create(new EqualsWhere(operator1, operator2));
     }
 

@@ -55,7 +55,7 @@ public class DataProperty extends Property<ClassPropertyInterface> {
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, modifier, null));//.and(DataSession.getIsClassWhere(modifier.getSession(), change.expr, value, null));
         if(changedWhere!=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
 
@@ -70,7 +70,7 @@ public class DataProperty extends Property<ClassPropertyInterface> {
 
     public DerivedChange<?,?> derivedChange = null;
 
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         SessionChanges session = modifier.getSession();
         assert session!=null;
@@ -131,9 +131,6 @@ public class DataProperty extends Property<ClassPropertyInterface> {
         return new ClassWhere<Field>(result);
     }
 
-    public ValueClass getValueClass() {
-        return value;
-    }
     public Type getType() {
         return value.getType();
     }

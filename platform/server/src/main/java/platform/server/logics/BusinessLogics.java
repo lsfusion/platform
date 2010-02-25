@@ -1451,7 +1451,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // удаляем все св-ва
         for(ImplementTable table : tableFactory.getImplementTables().values())
-            session.deleteKeyRecords(table, new HashMap<KeyField, Integer>());
+            session.deleteKeyRecords(table, new HashMap<KeyField, Object>());
     }
 
     public static boolean autoFillDB = false;

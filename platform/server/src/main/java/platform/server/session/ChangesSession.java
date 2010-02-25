@@ -21,7 +21,7 @@ public interface ChangesSession {
 
     public void restart(boolean cancel) throws SQLException;
 
-    public DataObject addObject(ConcreteCustomClass customClass, TableModifier<? extends TableChanges> modifier) throws SQLException;
+    public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException;
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException;
 

@@ -355,7 +355,7 @@ public class CompiledQuery<K,V> {
         }
 
         // получает условия следующие из логики inner join'ов SQL
-        private Where getInnerWhere(boolean values) {
+        private Where getInnerWhere() {
             Where trueWhere = Where.TRUE;
             Collection<Table.Join> innerTables = new ArrayList<Table.Join>(); Collection<GroupJoin> innerGroups = new ArrayList<GroupJoin>();
             innerWhere.joins.fillJoins(innerTables, innerGroups);
@@ -368,17 +368,16 @@ public class CompiledQuery<K,V> {
                 assert !groupWhere.isFalse();
                 trueWhere = trueWhere.and(groupWhere);
             }
-            if(values)
-                for(Map.Entry<KeyExpr,BaseExpr> keyValue : innerWhere.keyValues.entrySet())
-                    trueWhere = trueWhere.and(EqualsWhere.create(keyValue.getKey(),keyValue.getValue()));
+            for(Map.Entry<KeyExpr,BaseExpr> keyValue : innerWhere.keyValues.entrySet())
+                trueWhere = trueWhere.and(EqualsWhere.create(keyValue.getKey(),keyValue.getValue()));
 
             return trueWhere;
         }
 
         public String getFrom(Where where,Collection<String> whereSelect) {
             // соответственно followFalse'им этими условиями
-            where.getSource(this);// сначала надо узнать общий source чтобы заполнились дополнительные groupExpr'ы
-            whereSelect.add(where.followFalse(getInnerWhere(false).not()).getSource(this));
+            where.getSource(this);// сначала надо узнать общий source чтобы заполнились groupExpr'ы в соответствующие exprs чтобы в getInnerWhere можно было бы построить общее условие 
+            whereSelect.add(where.followFalse(getInnerWhere().not()).getSource(this));
 
             if(joins.isEmpty()) return "dumb";
 
@@ -518,7 +517,7 @@ public class CompiledQuery<K,V> {
                 Query<KeyExpr,Expr> mapQuery = new Query<KeyExpr,Expr>(BaseUtils.toMap(mapKeys.keySet())); // для кэша через Query
                 mapQuery.properties.putAll(partitionMap);
                 Join<Expr> joinQuery = mapQuery.join(mapKeys);
-                return GroupExpr.create(joinQuery.getExprs(),ValueExpr.TRUE,getInnerWhere(true),true,partitionMap).getWhere();
+                return GroupExpr.create(joinQuery.getExprs(),ValueExpr.TRUE,getInnerWhere(),true,partitionMap).getWhere();
             }
 
             public String getSource() {

@@ -3,6 +3,7 @@ package platform.server.view.form;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
@@ -40,6 +41,10 @@ public class CustomObjectImplement extends ObjectImplement {
         if(groupTo==classGroup)
             return getGridClass().getUpSet();
         else
+            return getCurrentClass();
+    }
+
+    public ConcreteObjectClass getCurrentClass() {
         if(currentClass==null) // нету объекта
             return baseClass.getBaseClass().unknown;
         else

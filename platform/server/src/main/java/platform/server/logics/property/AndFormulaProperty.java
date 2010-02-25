@@ -1,8 +1,8 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 
@@ -55,7 +55,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
         objectInterface = objInterface;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Where where = Where.TRUE;
         for(Interface propertyInterface : interfaces)
             if(propertyInterface!= objectInterface) {

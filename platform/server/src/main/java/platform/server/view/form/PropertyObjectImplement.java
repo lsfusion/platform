@@ -1,7 +1,8 @@
 package platform.server.view.form;
 
-import platform.server.auth.ChangePropertySecurityPolicy;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -82,7 +83,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return property.getChangeProperty(getInterfaceValues());
     }
 
-    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
 
         Map<P, Expr> joinImplement = new HashMap<P, Expr>();
         for(P propertyInterface : property.interfaces)
@@ -92,5 +93,12 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
 
     public Type getType() {
         return property.getType();
+    }
+
+    public CustomClass getDialogClass() {
+        Map<P, ConcreteClass> mapClasses = new HashMap<P, ConcreteClass>();
+        for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
+            mapClasses.put(implement.getKey(),implement.getValue().getCurrentClass());
+        return property.getDialogClass(getInterfaceValues(), mapClasses);
     }
 }

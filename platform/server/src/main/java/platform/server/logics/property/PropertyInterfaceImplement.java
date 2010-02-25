@@ -14,13 +14,13 @@ import java.sql.SQLException;
 
 public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
-    Expr mapExpr(Map<P, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere);
+    Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
 
     abstract void mapFillDepends(Collection<Property> depends);
 
-    ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier) throws SQLException;
+    ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException;
 
-    DataChanges mapJoinDataChanges(Map<P,? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier);
+    DataChanges mapJoinDataChanges(Map<P,? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier);
 
     void fill(Set<P> interfaces, Set<PropertyMapImplement<?,P>> properties);
     public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(Map<P,K> remap);

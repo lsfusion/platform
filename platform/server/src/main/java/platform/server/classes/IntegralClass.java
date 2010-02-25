@@ -69,5 +69,4 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
     public String getString(Object value, SQLSyntax syntax) {
         return value.toString();
     }
-
 }

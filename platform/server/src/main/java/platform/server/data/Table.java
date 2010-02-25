@@ -37,22 +37,22 @@ public class Table implements MapKeysInterface<KeyField> {
         return result;
     }
 
-    public Table(String iName,ClassWhere<KeyField> iClasses) {
-        name =iName;
-        classes = iClasses;
+    public Table(String name,ClassWhere<KeyField> classes) {
+        this.name = name;
+        this.classes = classes;
         propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
     }
 
-    public Table(String iName) {
-        name =iName;
+    public Table(String name) {
+        this.name = name;
         classes = new ClassWhere<KeyField>();
         propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
     }
 
-    public Table(String iName,ClassWhere<KeyField> iClasses,Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        name =iName;
-        classes = iClasses;
-        propertyClasses = iPropertyClasses;
+    public Table(String name,ClassWhere<KeyField> classes,Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+        this.name = name;
+        this.classes = classes;
+        this.propertyClasses = propertyClasses;
     }
 
     public String getName(SQLSyntax Syntax) {
@@ -101,13 +101,13 @@ public class Table implements MapKeysInterface<KeyField> {
         propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
     }
 
-    public ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
+    protected ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
 
-    public final Map<PropertyField,ClassWhere<Field>> propertyClasses;
+    protected final Map<PropertyField,ClassWhere<Field>> propertyClasses;
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof Table && name.equals(((Table)obj).name) && classes.equals(((Table)obj).classes) && propertyClasses.equals(((Table)obj).propertyClasses);
+        return this == obj || getClass()==obj.getClass() && name.equals(((Table)obj).name) && classes.equals(((Table)obj).classes) && propertyClasses.equals(((Table)obj).propertyClasses);
     }
 
     @Override
@@ -130,7 +130,7 @@ public class Table implements MapKeysInterface<KeyField> {
         return new CaseJoin<PropertyField>(result, properties);
     }
 
-    public Join joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {
+    public platform.server.data.query.Join<PropertyField> joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {
         return new Join(joinImplement);
     }
 

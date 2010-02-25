@@ -13,6 +13,10 @@ public class BaseUtils {
             return obj1.equals(obj2);
     }
 
+    public static int nullHash(Object obj) {
+        return obj==null?0:obj.hashCode();
+    }
+
     public static <T> boolean findByReference(Collection<T> col, Object obj) {
         for (T objCol : col)
             if (objCol == obj) return true;

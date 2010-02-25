@@ -2,8 +2,8 @@ package platform.server.view.form.filter;
 
 import platform.server.data.expr.KeyExpr;
 import platform.server.logics.property.Property;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
@@ -58,7 +58,7 @@ public class OrFilter extends Filter {
             return apply2;
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return op1.getWhere(mapKeys, classGroup, modifier).or(op2.getWhere(mapKeys, classGroup, modifier));
     }
 

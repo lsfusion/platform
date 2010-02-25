@@ -18,8 +18,8 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.AndFormulaProperty;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.*;
@@ -160,11 +160,11 @@ public class MapCacheAspect {
         return join(joinExprs,joinValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
     }
 
-    static class InterfaceImplement<U extends TableChanges<U>> {
+    static class InterfaceImplement<U extends Changes<U>> {
         final U usedChanges; 
         final boolean changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
 
-        InterfaceImplement(Property<?> property, TableModifier<U> modifier, boolean changed) {
+        InterfaceImplement(Property<?> property, Modifier<U> modifier, boolean changed) {
             usedChanges = property.getUsedChanges(modifier);
             this.changed = changed;
         }
@@ -191,7 +191,7 @@ public class MapCacheAspect {
     final String PROPERTY_STRING = "expr";
     final String CHANGED_STRING = "where";
 
-    public <K extends PropertyInterface,U extends TableChanges<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, TableModifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface,U extends Changes<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // если свойство AndFormulaProperty - то есть нарушается инвариант что все входные не null идет autoFillDB то не кэшируем
         if(property instanceof AndFormulaProperty || BusinessLogics.autoFillDB) return (Expr) thisJoinPoint.proceed();
@@ -223,9 +223,9 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("call(platform.server.data.expr.Expr platform.server.logics.property.Property.getExpr(java.util.Map,platform.server.session.TableModifier,platform.server.data.where.WhereBuilder)) " +
+    @Around("call(platform.server.data.expr.Expr platform.server.logics.property.Property.getExpr(java.util.Map,platform.server.session.Modifier,platform.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,modifier,changedWhere)")
-    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, TableModifier modifier,WhereBuilder changedWhere) throws Throwable {
+    public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, Modifier modifier,WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
         return getExpr(property, joinExprs, modifier, changedWhere, thisJoinPoint);
     }

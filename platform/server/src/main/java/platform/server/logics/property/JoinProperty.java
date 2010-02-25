@@ -30,14 +30,14 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         this.implementChange = implementChange;
     }
 
-    private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    private Map<T, Expr> getJoinImplements(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Map<T, Expr> result = new HashMap<T, Expr>();
         for(Map.Entry<T,PropertyInterfaceImplement<Interface>> interfaceImplement : implement.mapping.entrySet())
             result.put(interfaceImplement.getKey(),interfaceImplement.getValue().mapExpr(joinImplement, modifier, changedWhere));
         return result;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         return implement.property.getExpr(getJoinImplements(joinImplement, modifier, changedWhere), modifier, changedWhere);
     }
 
@@ -73,12 +73,12 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         return super.getUsedDataChanges(modifier);
     }
 
-    private static DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
+    private static DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
         return changeImp.mapJoinDataChanges(change.mapKeys,valueImp.mapExpr(change.mapKeys,modifier,null).and(change.expr.getWhere()),change.where,changedWhere,modifier);
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
             Iterator<PropertyInterfaceImplement<Interface>> i = implement.mapping.values().iterator();

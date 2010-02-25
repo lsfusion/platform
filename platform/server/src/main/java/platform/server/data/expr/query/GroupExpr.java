@@ -246,7 +246,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
 
     // "определяет" разбивать на innerJoins или нет
     private static Collection<InnerJoins.Entry> getInnerJoins(Map<BaseExpr,BaseExpr> group, Expr expr,boolean max) {
-        return false?getFullWhere(group, expr).getInnerJoins().compileMeans():Collections.singleton(new InnerJoins.Entry(new InnerWhere(),Where.TRUE));
+        return true?getFullWhere(group, expr).getInnerJoins().compileMeans():Collections.singleton(new InnerJoins.Entry(new InnerWhere(),Where.TRUE));
     }
 
     private static Expr splitInner(boolean max, Map<BaseExpr, BaseExpr> group, Expr expr) {

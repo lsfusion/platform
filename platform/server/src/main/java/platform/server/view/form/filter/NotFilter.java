@@ -4,8 +4,8 @@ import platform.server.view.form.RemoteForm;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.logics.property.Property;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 
@@ -49,7 +49,7 @@ public class NotFilter extends Filter {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return filter.getWhere(mapKeys, classGroup, modifier).not();
     }
 

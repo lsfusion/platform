@@ -4,8 +4,8 @@ import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.property.Property;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.filter.CompareValue;
@@ -34,7 +34,7 @@ public abstract class ObjectValue implements CompareValue {
             return new DataObject(value, objectClass);
     }
 
-    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
         return getExpr();
     }
 

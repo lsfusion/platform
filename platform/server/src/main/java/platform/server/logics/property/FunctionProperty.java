@@ -1,7 +1,7 @@
 package platform.server.logics.property;
 
-import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.session.Changes;
 
 import java.util.Collection;
 import java.util.Set;

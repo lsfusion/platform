@@ -7,6 +7,8 @@ import platform.server.data.SessionTable;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,13 +32,13 @@ public abstract class ChangePropertyTable<P extends PropertyInterface,This exten
         properties.add(value);
     }
 
-    protected ChangePropertyTable(String iName, Map<KeyField, P> iMapKeys, PropertyField iValue, ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        super(iName, iClasses, iPropertyClasses);
+    protected ChangePropertyTable(String name, Map<KeyField, P> mapKeys, PropertyField value, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        super(name, classes, propertyClasses, rows);
 
-        mapKeys = iMapKeys;
-        keys.addAll(mapKeys.keySet());
+        this.mapKeys = mapKeys;
+        keys.addAll(this.mapKeys.keySet());
 
-        value = iValue;
-        properties.add(value);
+        this.value = value;
+        properties.add(this.value);
     }
 }

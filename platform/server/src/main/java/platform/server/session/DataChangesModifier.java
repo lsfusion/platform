@@ -10,12 +10,12 @@ import platform.server.data.query.Join;
 
 import java.util.Map;
 
-public class DataChangesModifier extends TableModifier<DataChangesModifier.UsedChanges> {
+public class DataChangesModifier extends Modifier<DataChangesModifier.UsedChanges> {
 
     final SessionChanges session;
     final DataChanges changes;
 
-    public DataChangesModifier(TableModifier modifier, DataChanges changes) {
+    public DataChangesModifier(Modifier modifier, DataChanges changes) {
         this.session = modifier.getSession();
         this.changes = changes;
     }
@@ -24,7 +24,7 @@ public class DataChangesModifier extends TableModifier<DataChangesModifier.UsedC
         return session;
     }
 
-    protected static class UsedChanges extends TableChanges<UsedChanges> {
+    protected static class UsedChanges extends Changes<UsedChanges> {
         DataChanges changes;
 
         public UsedChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) {

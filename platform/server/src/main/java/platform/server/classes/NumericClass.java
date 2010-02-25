@@ -77,5 +77,4 @@ public class NumericClass extends IntegralClass<Double> {
         return numeric;
     }
 
-
 }

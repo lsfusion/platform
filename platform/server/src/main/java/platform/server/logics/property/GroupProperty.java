@@ -3,8 +3,8 @@ package platform.server.logics.property;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.*;
@@ -41,14 +41,14 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     Object groupValue = "grfield";
 
-    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, KeyExpr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
         for(Interface<T> propertyInterface : interfaces)
             group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier, changedWhere));
         return group;
     }
 
-    public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были
 

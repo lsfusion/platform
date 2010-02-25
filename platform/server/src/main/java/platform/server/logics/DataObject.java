@@ -62,6 +62,13 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
         return object;
     }
 
+    public static <K> Map<K,ValueExpr> getMapValueExprs(Map<K,DataObject> map) {
+        Map<K,ValueExpr> mapExprs = new HashMap<K,ValueExpr>();
+        for(Map.Entry<K,DataObject> keyField : map.entrySet())
+            mapExprs.put(keyField.getKey(), keyField.getValue().getExpr());
+        return mapExprs;
+    }
+
     public static <K> Map<K,Object> getMapValues(Map<K,DataObject> map) {
         Map<K,Object> mapClasses = new HashMap<K,Object>();
         for(Map.Entry<K,DataObject> keyField : map.entrySet())
@@ -87,6 +94,10 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
 
     public DataObject getDataObject() {
         return this;
+    }
+
+    public ConcreteClass getCurrentClass() {
+        return objectClass;
     }
 
     public GroupObjectImplement getApplyObject() {

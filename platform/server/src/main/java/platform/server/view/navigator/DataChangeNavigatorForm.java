@@ -6,6 +6,7 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.view.navigator.filter.NotFilterNavigator;
 import platform.server.view.navigator.filter.NotNullFilterNavigator;
+import platform.server.classes.CustomClass;
 
 public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends NavigatorForm<T> {
 
@@ -15,7 +16,7 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
     final ObjectNavigator valueObject;
     final GroupObjectNavigator valueGroup;
 
-    public <P extends PropertyInterface> DataChangeNavigatorForm(T BL, PropertyValueImplement<P> implement) {
+    public <P extends PropertyInterface> DataChangeNavigatorForm(T BL, PropertyValueImplement<P> implement, CustomClass changeClass) {
         super(54555+implement.getID(), implement.toString());
 
 /*        // добавляем элементы для которых меняем на форму
@@ -32,7 +33,7 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
 
         // сам объект который ищем вешаем на форму
         valueGroup = new GroupObjectNavigator(IDShift(1));
-        valueObject = new ObjectNavigator(IDShift(1), implement.getDialogClass(), "Код");
+        valueObject = new ObjectNavigator(IDShift(1), changeClass, "Код");
         valueGroup.add(valueObject);
         addGroup(valueGroup);
 

@@ -12,8 +12,8 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.view.form.filter.Filter;
 
 import java.sql.SQLException;
@@ -179,7 +179,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         return result;
     }
 
-    void fillSourceSelect(Query<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    void fillSourceSelect(Query<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
 
         for(Filter filt : filters)
             query.and(filt.getWhere(query.mapKeys, classGroup, modifier));

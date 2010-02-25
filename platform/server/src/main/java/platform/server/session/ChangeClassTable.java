@@ -8,6 +8,8 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.where.Where;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.Collections;
 import java.util.Map;
@@ -24,11 +26,11 @@ public abstract class ChangeClassTable<This extends ChangeClassTable> extends Se
         keys.add(object);
     }
 
-    protected ChangeClassTable(String iName, KeyField iObject, ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        super(iName, iClasses, iPropertyClasses);
+    protected ChangeClassTable(String name, KeyField object, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        super(name, classes, propertyClasses, rows);
 
-        object = iObject;
-        keys.add(object);
+        this.object = object;
+        keys.add(this.object);
     }
 
     public Where getJoinWhere(Expr expr) {

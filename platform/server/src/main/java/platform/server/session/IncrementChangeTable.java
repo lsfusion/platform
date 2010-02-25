@@ -7,23 +7,27 @@ import platform.server.data.SessionTable;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.property.Property;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class IncrementChangeTable extends SessionTable<IncrementChangeTable> {
-/*
-    public IncrementChangeTable(String iName, Map<KeyField, P> iMapKeys, PropertyField iValue, ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        super(iName, iMapKeys, iValue, iClasses, iPropertyClasses);
+
+    public IncrementChangeTable(String name, ImplementTable table, Map<KeyField, KeyField> mapKeys, Map<Property,PropertyField> changes, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        super(name, classes, propertyClasses, rows);
+        this.table = table;
+        this.mapKeys = mapKeys;
+        this.changes = changes;
+
+        this.keys.addAll(mapKeys.values());
+        this.properties.addAll(changes.values());
     }
 
-    public IncrementChangeTable<P> createThis(ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        return new IncrementChangeTable<P>(name, mapKeys, value, iClasses, iPropertyClasses);
-    }*/
-
-    public IncrementChangeTable createThis(ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        throw new RuntimeException("not supported");
+    public IncrementChangeTable createThis(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        return new IncrementChangeTable(name, table, mapKeys, changes, classes, propertyClasses, rows);
     }
 
     public final ImplementTable table;
@@ -56,5 +60,4 @@ public class IncrementChangeTable extends SessionTable<IncrementChangeTable> {
             properties.add(field);
         }
     }
-
 }

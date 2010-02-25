@@ -4,8 +4,8 @@ import platform.server.logics.property.FunctionProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 import platform.base.BaseUtils;
 
@@ -43,7 +43,7 @@ public class ExprProperty<T extends PropertyInterface> extends FunctionProperty<
         return result;
     }
     
-    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         return change.getQuery("value").join(BaseUtils.join(getMapInterfaces(),joinImplement)).getExpr("value");
     }
 }

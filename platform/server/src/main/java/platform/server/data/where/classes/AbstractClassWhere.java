@@ -121,8 +121,10 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
     }
 
     public AndClassSet getSingleWhere(K key) {
-        assert (wheres.length == 1);
-        return wheres[0].get(key);
+        AndClassSet result = wheres[0].get(key);
+        for(int i=1;i<wheres.length;i++)
+            assert result.equals(wheres[i].get(key));
+        return result;
     }
 
     public boolean means(This where) {

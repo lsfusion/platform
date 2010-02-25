@@ -1,13 +1,16 @@
 package platform.server.view.form;
 
-import platform.server.data.Field;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.SessionTable;
+import platform.server.data.*;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.Set;
+import java.sql.SQLException;
 
 // таблица куда виды складывают свои объекты
 public class ViewTable extends SessionTable<ViewTable> {
@@ -25,14 +28,23 @@ public class ViewTable extends SessionTable<ViewTable> {
         }
     }
 
-    public ViewTable(String iName, Map<KeyField, ObjectImplement> iMapKeys, ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        super(iName, iClasses, iPropertyClasses);
+    private ViewTable(String name, Map<KeyField, ObjectImplement> mapKeys, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        super(name, classes, propertyClasses, rows);
 
-        mapKeys = iMapKeys;
-        keys.addAll(mapKeys.keySet());
+        this.mapKeys = mapKeys;
+        keys.addAll(this.mapKeys.keySet());
     }
 
-    public ViewTable createThis(ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        return new ViewTable(name, mapKeys, iClasses, iPropertyClasses);
+    public ViewTable createThis(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        return new ViewTable(name, mapKeys, classes, propertyClasses, rows);
+    }
+
+    // для rollback'а надо актуализирует базу, вообщем то можно через writeKeys было бы решить, но так быстрее
+    public void rewrite(SQLSession session, Set<Map<ObjectImplement,DataObject>> writeRows) throws SQLException {
+        if(rows==null) {
+            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
+            for(Map<ObjectImplement, DataObject> row : writeRows)
+                session.insertRecord(this, BaseUtils.join(mapKeys,row),new HashMap<PropertyField, ObjectValue>());
+        }
     }
 }

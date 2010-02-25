@@ -38,7 +38,7 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return result;
     }
 
-    public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Where classWhere = Where.TRUE;
         for(Map.Entry<ClassPropertyInterface,? extends Expr> join : joinImplement.entrySet()) // берем (нужного класса and не remove'уты) or add'уты
             classWhere = classWhere.and(DataSession.getIsClassWhere(modifier.getSession(), join.getValue(),
@@ -46,7 +46,7 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return classWhere;
     }
 
-    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         // здесь session может быть null
         return new ValueExpr(value,valueClass).and(getIsClassWhere(joinImplement, modifier, changedWhere));
     }

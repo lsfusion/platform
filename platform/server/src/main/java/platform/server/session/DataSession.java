@@ -32,7 +32,36 @@ import java.util.*;
 
 public class DataSession extends SQLSession implements ChangesSession {
 
-    public Map<RemoteForm, ViewChanges> incrementChanges = new HashMap<RemoteForm, ViewChanges>();
+    public static class UpdateChanges {
+
+        public Set<Property> properties = new HashSet<Property>();
+        public Set<CustomClass> addClasses = new HashSet<CustomClass>();
+        public Set<CustomClass> removeClasses = new HashSet<CustomClass>();
+
+        public UpdateChanges() {
+        }
+
+        public UpdateChanges(UpdateChanges changes) {
+            properties = new HashSet<Property>(changes.properties);
+            addClasses = new HashSet<CustomClass>(changes.addClasses);
+            removeClasses = new HashSet<CustomClass>(changes.removeClasses);
+        }
+
+        public void add(UpdateChanges changes) {
+            properties.addAll(changes.properties);
+            addClasses.addAll(changes.addClasses);
+            removeClasses.addAll(changes.removeClasses);
+        }
+    }
+
+    // формы, для которых с момента последнего update уже был restart, соотвественно в значениях - изменения от посл. update (prev) до посл. apply
+    public Map<RemoteForm, UpdateChanges> appliedChanges = new HashMap<RemoteForm, UpdateChanges>();
+
+    // формы для которых с момента последнего update не было restart, соответственно в значениях - изменения от посл. update (prev) до посл. изменения
+    public Map<RemoteForm, UpdateChanges> incrementChanges = new HashMap<RemoteForm, UpdateChanges>();
+
+    // assert что те же формы что и в increment, соответственно в значениях - изменения от посл. apply до посл. update (prev)
+    public Map<RemoteForm, UpdateChanges> updateChanges = new HashMap<RemoteForm, UpdateChanges>();
 
     public SessionChanges changes = new SessionChanges();
 
@@ -76,12 +105,21 @@ public class DataSession extends SQLSession implements ChangesSession {
 
     public void restart(boolean cancel) throws SQLException {
 
-        if(cancel)
-            for(ViewChanges viewChanges : incrementChanges.values()) {
-                viewChanges.properties.addAll(changes.data.keySet());
-                viewChanges.addClasses.addAll(changes.add.keySet());
-                viewChanges.removeClasses.addAll(changes.remove.keySet());
-            }
+        // apply
+        //      по кому был restart : добавляем changes -> applied
+        //      по кому не было restart : to -> applied (помечая что был restart)
+
+        // cancel
+        //    по кому не было restart :  from -> в applied (помечая что был restart)
+
+        if(!cancel)
+            for(Map.Entry<RemoteForm,UpdateChanges> appliedChange : appliedChanges.entrySet())
+                appliedChange.getValue().add(getUpdateChanges(changes,appliedChange.getKey()));
+
+        assert Collections.disjoint(appliedChanges.keySet(),(cancel?updateChanges:incrementChanges).keySet());
+        appliedChanges.putAll(cancel?updateChanges:incrementChanges);
+        incrementChanges = new HashMap<RemoteForm, UpdateChanges>();
+        updateChanges = new HashMap<RemoteForm, UpdateChanges>();
 
         newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
@@ -95,11 +133,11 @@ public class DataSession extends SQLSession implements ChangesSession {
         changes = new SessionChanges();
     }
 
-    public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, TableModifier<? extends TableChanges> modifier, DataObject key, Object value) throws SQLException {
+    public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, Modifier<? extends Changes> modifier, DataObject key, Object value) throws SQLException {
         property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).change(this,modifier,value);
     }
 
-    public DataObject addObject(ConcreteCustomClass customClass, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {
 
         DataObject object = new DataObject(IDTable.instance.generateID(this, IDTable.OBJECT),baseClass.unknown);
 
@@ -125,6 +163,8 @@ public class DataSession extends SQLSession implements ChangesSession {
         ConcreteObjectClass prevClass = (ConcreteObjectClass) getCurrentClass(change);
         toClass.getDiffSet(prevClass,addClasses,removeClasses);
 
+        assert Collections.disjoint(addClasses,removeClasses);
+
         for(CustomClass addClass : addClasses) {
             AddClassTable addTable = changes.add.get(addClass);
             if(addTable==null) { // если нету таблицы создаем
@@ -136,7 +176,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             if(BusinessLogics.autoFillDB) continue;
 
             RemoveClassTable removeTable = changes.remove.get(addClass);
-            if(removeTable!=null) deleteKeyRecords(removeTable,Collections.singletonMap(removeTable.object,(Integer)change.object));
+            if(removeTable!=null) changes.remove.put(addClass,removeTable.deleteRecords(this,Collections.singletonMap(removeTable.object,change))) ;
         }
         for(CustomClass removeClass : removeClasses) {
             RemoveClassTable removeTable = changes.remove.get(removeClass);
@@ -147,17 +187,18 @@ public class DataSession extends SQLSession implements ChangesSession {
             changes.remove.put(removeClass,removeTable.insertRecord(this,Collections.singletonMap(removeTable.object,change),new HashMap<PropertyField, ObjectValue>(), false));
 
             AddClassTable addTable = changes.add.get(removeClass);
-            if(addTable!=null) deleteKeyRecords(addTable,Collections.singletonMap(addTable.object,(Integer)change.object));
+            if(addTable!=null) changes.add.put(removeClass,addTable.deleteRecords(this,Collections.singletonMap(addTable.object,change)));
         }
 
-        for(Map.Entry<DataProperty,DataChangeTable> dataChange : changes.data.entrySet())
-            dataChange.getValue().dropChanges(this, dataChange.getKey(), change, removeClasses);
+        for(Map.Entry<DataProperty,DataChangeTable> dataChange : changes.data.entrySet()) // удаляем существующие изменения
+            dataChange.setValue(dataChange.getValue().dropChanges(this, dataChange.getKey(), change, removeClasses));
 
         newClasses.put(change,toClass);
 
-        for(ViewChanges viewChanges : incrementChanges.values()) {
-            viewChanges.addClasses.addAll(addClasses);
-            viewChanges.removeClasses.addAll(removeClasses);
+        // по тем по кому не было restart'а new -> to
+        for(UpdateChanges incrementChange : incrementChanges.values()) {
+            incrementChange.addClasses.addAll(addClasses);
+            incrementChange.removeClasses.addAll(removeClasses);
         }
     }
 
@@ -183,10 +224,31 @@ public class DataSession extends SQLSession implements ChangesSession {
                 newValue = BaseUtils.singleValue(result.singleKey());
         }
 
-        changes.data.put(property,dataChange.insertRecord(this,BaseUtils.join(dataChange.mapKeys,keys),Collections.singletonMap(dataChange.value,newValue),true));
+        DataChangeTable changeTable = dataChange.insertRecord(this, BaseUtils.join(dataChange.mapKeys, keys), Collections.singletonMap(dataChange.value, newValue), true);
+        changes.data.put(property, changeTable);
 
-        for(ViewChanges viewChanges : incrementChanges.values())
-            viewChanges.properties.add(property);
+        // по тем по кому не было restart'а new -> to
+        SessionChanges propertyChanges = new SessionChanges();
+        propertyChanges.data.put(property,changeTable);
+        for(Map.Entry<RemoteForm,UpdateChanges> incrementChange : incrementChanges.entrySet())
+            incrementChange.getValue().properties.addAll(getUpdateProperties(propertyChanges,incrementChange.getKey()));
+    }
+
+    private static UpdateChanges getUpdateChanges(SessionChanges sessionChanges, RemoteForm<?> form) {
+        UpdateChanges result = new UpdateChanges();
+        result.addClasses.addAll(sessionChanges.add.keySet());
+        result.removeClasses.addAll(sessionChanges.remove.keySet());
+        result.properties.addAll(getUpdateProperties(sessionChanges,form));
+        return result;
+    }
+
+    private static Collection<Property> getUpdateProperties(SessionChanges sessionChanges, RemoteForm<?> form) {
+        Collection<Property> properties = new HashSet<Property>();
+        Modifier<? extends Changes> propertyModifier = form.update(sessionChanges);
+        for(Property<?> updateProperty : form.getUpdateProperties())
+            if(updateProperty.getUsedChanges(propertyModifier).hasChanges())
+                properties.add(updateProperty);
+        return properties;
     }
 
     public ConcreteClass getCurrentClass(DataObject value) {
@@ -235,24 +297,29 @@ public class DataSession extends SQLSession implements ChangesSession {
     public Collection<Property> update(RemoteForm<?> form, Collection<CustomClass> updateClasses) throws SQLException {
         // мн-во св-в constraints/persistent или все св-ва формы (то есть произвольное)
 
-        Collection<Property> result = new ArrayList<Property>();
-
-        ViewChanges incrementChange = incrementChanges.get(form);
-        if(incrementChange==null)
-            incrementChange = new ViewChanges(changes);
-        incrementChanges.put(form,new ViewChanges());
+        UpdateChanges incrementChange = incrementChanges.get(form);
+        if(incrementChange!=null) // если не было restart
+            //    to -> from или from = changes, to = пустому
+            updateChanges.get(form).add(incrementChange);
+            //    возвращаем to
+        else { // иначе
+            incrementChange = appliedChanges.remove(form);
+            if(incrementChange==null) // совсем не было
+                incrementChange = new UpdateChanges();
+            UpdateChanges formChanges = getUpdateChanges(changes, form);
+            // from = changes (сбрасываем пометку что не было restart'а)
+            updateChanges.put(form, formChanges);
+            // возвращаем applied + changes
+            incrementChange.add(formChanges);
+        }
+        incrementChanges.put(form,new UpdateChanges());
 
         updateClasses.addAll(incrementChange.addClasses);
         updateClasses.addAll(incrementChange.removeClasses);
-
-        ViewModifier formUpdate = form.update(incrementChange);
-        for(Property<?> property : form.getUpdateProperties())
-            if(property.getUsedChanges(formUpdate).hasChanges())
-                result.add(property);
-        return result;
+        return incrementChange.properties;
     }
 
-    private static class Increment extends TableModifier<Increment.UsedChanges> {
+    private static class Increment extends Modifier<Increment.UsedChanges> {
 
         Map<Property, IncrementChangeTable> tables = new HashMap<Property, IncrementChangeTable>(); 
 
@@ -266,7 +333,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             this.session = session;
         }
 
-        static class UsedChanges extends TableChanges<UsedChanges> {
+        static class UsedChanges extends Changes<UsedChanges> {
             final Map<Property, IncrementChangeTable> increment = new HashMap<Property, IncrementChangeTable>();
 
             @Override
@@ -317,6 +384,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         public IncrementChangeTable read(Collection<Property> properties) throws SQLException {
             // создаем таблицу
             IncrementChangeTable changeTable = new IncrementChangeTable(properties);
+            session.createTemporaryTable(changeTable);
 
             // подготавливаем запрос
             Query<KeyField,PropertyField> changesQuery = new Query<KeyField, PropertyField>(changeTable);
@@ -327,11 +395,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             changesQuery.and(changedWhere.toWhere());
 
             // подготовили - теперь надо сохранить в курсор и записать классы
-            session.createTemporaryTable(changeTable);
-            session.insertSelect(new ModifyQuery(changeTable,changesQuery));
-            changeTable.classes = changesQuery.getClassWhere(new ArrayList<PropertyField>());
-            for(PropertyField field : changeTable.changes.values())
-                changeTable.propertyClasses.put(field,changesQuery.<Field>getClassWhere(Collections.singleton(field)));
+            changeTable = changeTable.writeKeys(session, changesQuery);
 
             for(Property property : properties)
                 tables.put(property,changeTable);

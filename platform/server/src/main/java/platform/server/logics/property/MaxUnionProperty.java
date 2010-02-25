@@ -1,8 +1,8 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class MaxUnionProperty extends UnionProperty {
 
     public Collection<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         Expr result = null;
         for(PropertyMapImplement<?, Interface> operand : operands) {

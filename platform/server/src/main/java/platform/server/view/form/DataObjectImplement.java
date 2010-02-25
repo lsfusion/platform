@@ -3,6 +3,7 @@ package platform.server.view.form;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -66,6 +67,10 @@ public class DataObjectImplement extends ObjectImplement {
 
     public ObjectValue getObjectValue() {
         return DataObject.getValue(value,dataClass);
+    }
+
+    public ConcreteClass getCurrentClass() {
+        return dataClass;
     }
 
     protected Expr getExpr() {

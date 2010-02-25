@@ -2,8 +2,8 @@ package platform.server.view.form.filter;
 
 import platform.interop.FilterType;
 import platform.server.data.expr.KeyExpr;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
@@ -47,5 +47,5 @@ public abstract class Filter implements Updated {
 
     public abstract GroupObjectImplement getApplyObject();
 
-    public abstract Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, TableModifier<? extends TableChanges> modifier) throws SQLException;
+    public abstract Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException;
 }

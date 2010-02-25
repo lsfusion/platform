@@ -2,6 +2,8 @@ package platform.server.logics.table;
 
 import platform.server.data.KeyField;
 import platform.server.data.Table;
+import platform.server.data.PropertyField;
+import platform.server.data.Field;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.classes.ValueClass;
 
@@ -22,6 +24,11 @@ public class ImplementTable extends Table {
         parents = new HashSet<ImplementTable>();
 
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
+    }
+
+    public void addField(PropertyField field,ClassWhere<Field> classes) {
+        properties.add(field);
+        propertyClasses.put(field,classes);
     }
 
     // кэшированный граф

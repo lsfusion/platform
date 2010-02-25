@@ -45,7 +45,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges getDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
 
         Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
         Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
@@ -53,13 +53,13 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),changedWhere,modifier);
     }
 
-    private Expr getChangeExpr(PropertyChange<Interface<T>> change, TableModifier<? extends TableChanges> modifier, Map<P,KeyExpr> toChangeKeys) {
+    private Expr getChangeExpr(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
         
         // для G=newValue - изменением toChange
         // сделать чтобы все\хоть один I1=M1 AND I2=M2 AND … In=Mn AND G=newValue выполнялось - !FALSE - была хоть одна
         // берем I1=M1 AND I2=M2 AND … In=Mn, G=newValue and changed, "заменяя" DataProperty (C1=J1..CN=JN,D), группируем по C1,…,Cn,D ставим getWhere - отбираем
-        TableModifier<? extends TableChanges> changeModifier = toChange.getChangeModifier(modifier, false);
+        Modifier<? extends Changes> changeModifier = toChange.getChangeModifier(modifier, false);
         WhereBuilder changedWhere = new WhereBuilder();
         Join<String> changeJoin = change.getQuery("value").join(getGroupImplements(mapKeys, changeModifier, changedWhere));
         // группируем по новому значению, интерфейсам, а также по изменению toChange
@@ -68,14 +68,14 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         return GroupExpr.create(toChange.getChangeExprs(), toChange.changeExpr, changedWhere.toWhere().and(compareWhere), true, toChangeKeys, (PullExpr)toChange.changeExpr);
     }
 
-    private Where getNullWhere(PropertyChange<Interface<T>> change, TableModifier<? extends TableChanges> modifier, Map<P,KeyExpr> toChangeKeys) {
+    private Where getNullWhere(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
 
         // для G!=newValue, изменением toChange на null
         // сделать чтобы I1=M1 AND I2=M2 … In=Mn не выполнялось == FALSE - не было вообще
         // берем I1=M1, I2=M2, …, In=Mn, G!=newValue and changed (and один из всех Ii - null), группируем по C1, …, Cn получаем те кого null'им в changeProperty
         // пока не будем проверять на G!=newValue пусть все зануляет
-        TableModifier<? extends TableChanges> changeModifier = toChange.getChangeModifier(modifier,true);
+        Modifier<? extends Changes> changeModifier = toChange.getChangeModifier(modifier,true);
         WhereBuilder newOldChangedWhere = new WhereBuilder();
 
         Where newOldWhere = Where.FALSE;

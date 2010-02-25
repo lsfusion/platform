@@ -8,8 +8,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
 import platform.server.session.ChangesSession;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -64,7 +64,7 @@ public abstract class ObjectImplement extends CellView implements PropertyObject
     public boolean objectUpdated(GroupObjectImplement classGroup) { return groupTo!=classGroup && (updated & UPDATED_OBJECT)!=0; }
     public boolean dataUpdated(Collection<Property> changedProps) { return false; }
     public void fillProperties(Set<Property> properties) { }
-    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, TableModifier<? extends TableChanges> modifier) {
+    public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {
         return getExpr(classGroup, classSource);
     }
 

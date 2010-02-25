@@ -4,12 +4,14 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.*;
 import platform.server.classes.ValueClass;
+import platform.server.classes.CustomClass;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Query;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.session.DataSession;
 import platform.server.data.SQLSession;
+import platform.server.logics.DataObject;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -18,10 +20,6 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     protected AggregateProperty(String SID,String caption,List<T> interfaces) {
         super(SID,caption,interfaces);
-    }
-
-    public ValueClass getValueClass() {
-        return getQuery("value").getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
     }
 
     Object dropZero(Object Value) {

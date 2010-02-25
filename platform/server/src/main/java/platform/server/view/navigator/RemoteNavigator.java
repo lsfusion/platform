@@ -199,10 +199,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement) throws SQLException {
         PropertyValueImplement<?> change = implement.getChangeProperty();
         addCacheObject((Integer) change.read(currentForm.session,currentForm)); // считываем значение чтобы закинуть в кэш
-        setDialogClass(change.getDialogClass());
+        CustomClass changeClass = change.getDialogClass(currentForm.session);
+        setDialogClass(changeClass);
 
-        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change);
-        navigatorForm.relevantElements.addAll(change.getDialogClass().relevantElements);
+        DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change, changeClass);
+        navigatorForm.relevantElements.addAll(changeClass.relevantElements);
 
         return createForm(navigatorForm,true);
     }
@@ -210,7 +211,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public RemoteFormInterface createPropertyForm(int viewID, int value) throws RemoteException {
         try {
             addCacheObject(BaseUtils.intToObject(value));
-            CustomClass propertyClass = (CustomClass) currentForm.getPropertyView(viewID).view.property.getValueClass();
+            CustomClass propertyClass = currentForm.getPropertyView(viewID).view.getDialogClass();
             setDialogClass(propertyClass);
             return createForm(propertyClass.getClassForm(securityPolicy),true);
         } catch (SQLException e) {

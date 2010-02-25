@@ -1,8 +1,8 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.Collection;
@@ -21,7 +21,7 @@ public class SumUnionProperty extends UnionProperty {
         return operands.keySet();
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         Expr result = null;
         for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet()) {

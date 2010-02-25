@@ -10,8 +10,8 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.base.OrderedMap;
 import platform.base.BaseUtils;
 
@@ -62,14 +62,14 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
         return mapInterfaces;
     }
 
-    private Map<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(Map<T, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    private Map<PropertyInterfaceImplement<T>,Expr> getPartitionImplements(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Map<PropertyInterfaceImplement<T>,Expr> result = new HashMap<PropertyInterfaceImplement<T>,Expr>();
         for(PropertyInterfaceImplement<T> partition : partitions)
             result.put(partition,partition.mapExpr(joinImplement, modifier, changedWhere));
         return result;
     }
 
-    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         Map<T, KeyExpr> mapKeys = property.getMapKeys();
 

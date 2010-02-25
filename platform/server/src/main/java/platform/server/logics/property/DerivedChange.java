@@ -42,7 +42,7 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         return result;
     }
 
-    public DataChanges getDataChanges(TableModifier<? extends TableChanges> modifier) {
+    public DataChanges getDataChanges(Modifier<? extends Changes> modifier) {
         Map<C,KeyExpr> mapKeys = property.getMapKeys();
 
         WhereBuilder onChangeWhere = new WhereBuilder();

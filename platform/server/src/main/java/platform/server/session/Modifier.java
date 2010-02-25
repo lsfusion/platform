@@ -1,15 +1,38 @@
 package platform.server.session;
 
+import platform.base.BaseUtils;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.expr.Expr;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.data.where.WhereBuilder;
 
-// вообщем-то вводится для ViewChanges - инкрементного обновления сессии
-public interface Modifier<U extends Changes<U>> {
-    U used(Property property,U usedChanges);
-    U newChanges();
+import java.util.Map;
 
-    void modifyAdd(U changes, ValueClass valueClass);
-    void modifyRemove(U changes, ValueClass valueClass);
-    void modifyData(U changes, DataProperty property);
+public abstract class Modifier<U extends Changes<U>> {
+
+    public abstract U used(Property property,U usedChanges);
+    public abstract U newChanges();
+
+    public abstract SessionChanges getSession();
+
+    public void modifyAdd(U changes, ValueClass valueClass) {
+        SessionChanges session = getSession();
+        if(session!=null && valueClass instanceof CustomClass)
+            BaseUtils.putNotNull((CustomClass)valueClass,session.add,changes.add);
+    }
+    public void modifyRemove(U changes, ValueClass valueClass) {
+        SessionChanges session = getSession();
+        if(session!=null && valueClass instanceof CustomClass)
+            BaseUtils.putNotNull((CustomClass)valueClass,session.remove,changes.remove);
+    }
+    public void modifyData(U changes, DataProperty property) {
+        SessionChanges session = getSession();
+        if(session!=null)
+            BaseUtils.putNotNull(property,session.data,changes.data);
+    }
+
+    public abstract <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere);
 }

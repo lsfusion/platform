@@ -4,8 +4,8 @@ import platform.interop.Compare;
 import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.session.TableChanges;
-import platform.server.session.TableModifier;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.*;
@@ -39,7 +39,7 @@ public class CompareFormulaProperty extends ValueFormulaProperty<CompareFormulaP
         return interfaces;
     }
 
-    public Expr calculateExpr(Map<CompareFormulaProperty.Interface, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr calculateExpr(Map<CompareFormulaProperty.Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         return ValueExpr.get(joinImplement.get(operator1).compare(joinImplement.get(operator2), compare));
     }
 }

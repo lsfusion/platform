@@ -4,6 +4,8 @@ import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.util.Map;
 
@@ -13,11 +15,11 @@ public class AddClassTable extends ChangeClassTable<AddClassTable> {
         super("addchange",classID);
     }
 
-    public AddClassTable(String iName, KeyField iObject,ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        super(iName, iObject, iClasses, iPropertyClasses);
+    public AddClassTable(String name, KeyField object,ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        super(name, object, classes, propertyClasses, rows);
     }
 
-    public AddClassTable createThis(ClassWhere<KeyField> iClasses, Map<PropertyField, ClassWhere<Field>> iPropertyClasses) {
-        return new AddClassTable(name,object,iClasses,iPropertyClasses);
+    public AddClassTable createThis(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        return new AddClassTable(name,object, classes, propertyClasses, rows);
     }
 }

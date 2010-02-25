@@ -23,7 +23,7 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     }
 
     // NotNull только если сессии нету
-    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, TableModifier<? extends TableChanges> modifier, WhereBuilder changedWhere) {
+    public Expr mapExpr(Map<P, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         return property.getExpr(BaseUtils.join(mapping, joinImplement), modifier, changedWhere);
     }
 
@@ -31,15 +31,15 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
         depends.add(property);
     }
 
-    public ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, TableModifier<? extends TableChanges> modifier) throws SQLException {
+    public ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException {
         return session.getObjectValue(property.read(session,BaseUtils.join(mapping,interfaceValues),modifier),property.getType());
     }
 
-    public DataChanges mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return property.getDataChanges(change.map(mapping), changedWhere, modifier);
     }
 
-    public DataChanges mapJoinDataChanges(Map<P, ? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, TableModifier<? extends TableChanges> modifier) {
+    public DataChanges mapJoinDataChanges(Map<P, ? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, modifier, changedWhere);
     }
 
