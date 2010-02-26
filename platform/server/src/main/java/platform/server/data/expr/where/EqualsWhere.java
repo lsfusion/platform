@@ -2,11 +2,11 @@ package platform.server.data.expr.where;
 
 import platform.interop.Compare;
 import platform.server.caches.ParamLazy;
+import platform.server.caches.HashContext;
 import platform.server.classes.StringClass;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.*;
 import platform.server.data.translator.KeyTranslator;

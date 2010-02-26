@@ -15,12 +15,14 @@ import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.navigator.PropertyInterfaceNavigator;
 import platform.server.view.navigator.Mapper;
 import platform.server.view.navigator.ObjectNavigator;
+import platform.server.caches.HashValues;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 
-public class DataObject extends ObjectValue implements PropertyObjectInterface, PropertyInterfaceNavigator {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, PropertyInterfaceNavigator {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -38,13 +40,13 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
         return object.hashCode()*31+objectClass.hashCode();
     }
 
-    public DataObject(Object iObject, ConcreteClass iClass) {
-        object = iObject;
+    public DataObject(Object object, ConcreteClass objectClass) {
+        this.object = object;
 
         assert BaseUtils.isData(object);
         assert !(objectClass instanceof LogicalClass && !object.equals(true));
 
-        objectClass = iClass;
+        this.objectClass = objectClass;
     }
 
     public boolean isString(SQLSyntax syntax) {
@@ -114,5 +116,20 @@ public class DataObject extends ObjectValue implements PropertyObjectInterface, 
 
     public void fillObjects(Set<ObjectNavigator> objects) {
     }
-    
+
+    public int hashValues(HashValues hashValues) {
+        return hashValues.hash(getExpr());
+    }
+
+    public Set<ValueExpr> getValues() {
+        return Collections.singleton(getExpr());
+    }
+
+    private DataObject(ValueExpr expr) {
+        this(expr.object,expr.objectClass);
+    }
+
+    public DataObject translate(Map<ValueExpr, ValueExpr> mapValues) {
+        return new DataObject(mapValues.get(getExpr()));
+    }
 }

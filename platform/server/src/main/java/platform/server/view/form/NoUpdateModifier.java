@@ -5,12 +5,10 @@ import platform.server.session.Changes;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.WhereBuilder;
 
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashSet;
+import java.util.*;
 
 public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedChanges> {
 
@@ -24,7 +22,7 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
     }
 
     public static class UsedChanges extends Changes<UsedChanges> {
-        final Collection<Property> noUpdateProps = new ArrayList<Property>();
+        final Set<Property> noUpdateProps;
 
         @Override
         public void add(UsedChanges add) {
@@ -40,6 +38,19 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         @Override
         public int hashCode() {
             return 31 * super.hashCode() + noUpdateProps.hashCode();
+        }
+
+        public UsedChanges() {
+            noUpdateProps = new HashSet<Property>();
+        }
+
+        private UsedChanges(UsedChanges usedChanges, Map<ValueExpr, ValueExpr> mapValues) {
+            super(usedChanges, mapValues);
+            noUpdateProps = usedChanges.noUpdateProps;
+        }
+
+        public UsedChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+            return new UsedChanges(this, mapValues);
         }
     }
 

@@ -1,10 +1,16 @@
 package platform.server.logics;
 
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
+import platform.server.caches.HashValues;
 
-public class NullValue extends ObjectValue {
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+
+public class NullValue extends ObjectValue<NullValue> {
 
     private NullValue() {
     }
@@ -42,4 +48,15 @@ public class NullValue extends ObjectValue {
             return greater.or(orderWhere);
     }
 
+    public int hashValues(HashValues hashValues) {
+        return 0;
+    }
+
+    public Set<ValueExpr> getValues() {
+        return new HashSet<ValueExpr>();
+    }
+
+    public NullValue translate(Map<ValueExpr, ValueExpr> mapValues) {
+        return this;
+    }
 }

@@ -2,9 +2,11 @@ package platform.server.data.query;
 
 import net.jcip.annotations.Immutable;
 import platform.base.OrderedMap;
+import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
+import platform.server.caches.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DataClass;
@@ -93,7 +95,11 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return parse().join(joinImplement);
+        return join(joinImplement, BaseUtils.toMap(getValues())); //parse().join(joinImplement);
+    }
+
+    public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr,ValueExpr> mapValues) {
+        return parse().join(joinImplement, mapValues);
     }
 
     static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders) {

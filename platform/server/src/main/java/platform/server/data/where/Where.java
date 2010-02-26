@@ -2,15 +2,13 @@ package platform.server.data.where;
 
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.TranslateContext;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.caches.TranslateContext;
 import platform.server.data.translator.QueryTranslator;
 
 import java.util.Map;
@@ -59,7 +57,7 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
 
     abstract public ClassExprWhere getClassWhere();
 
-    int hashContext(HashContext hashContext);    
+    int hashContext(HashContext hashContext);
 
     int getHeight();
 

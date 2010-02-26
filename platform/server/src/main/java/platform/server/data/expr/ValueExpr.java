@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
-import platform.server.classes.IntegralClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -11,6 +10,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.caches.HashContext;
 
 
 public class ValueExpr extends StaticClassExpr {

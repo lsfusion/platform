@@ -10,17 +10,19 @@ import platform.server.logics.ObjectValue;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.Query;
-import platform.server.data.query.InnerJoin;
-import platform.server.view.form.filter.CompareValue;
+import platform.server.caches.MapValues;
+import platform.server.caches.HashValues;
+import platform.server.caches.MapValuesIterable;
 
 import java.sql.SQLException;
 import java.util.*;
 
 // временная таблица на момент сессии
-public abstract class SessionTable<This extends SessionTable> extends Table {
+public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
 
     // конструктор чистой структуры
     protected SessionTable(String name) {
@@ -66,6 +68,34 @@ public abstract class SessionTable<This extends SessionTable> extends Table {
                 return properties;
             }
         };
+    }
+
+    public int hashValues(HashValues hashValues) {
+        int hash = 0;
+        if(rows!=null)
+            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
+                hash += MapValuesIterable.hash(row.getKey(),hashValues) ^ MapValuesIterable.hash(row.getValue(),hashValues); 
+        return hash * 31 + super.hashCode();
+    }
+
+    public Set<ValueExpr> getValues() {
+        Set<ValueExpr> result = new HashSet<ValueExpr>();
+        if(rows!=null)
+            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet()) {
+                MapValuesIterable.enumValues(result,row.getKey());
+                MapValuesIterable.enumValues(result,row.getValue());
+            }
+        return result;
+    }
+
+    public This translate(Map<ValueExpr, ValueExpr> mapValues) {
+        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> transRows = null;
+        if(rows!=null) {
+            transRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
+            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
+                transRows.put(MapValuesIterable.translate(row.getKey(),mapValues),MapValuesIterable.translate(row.getValue(),mapValues));
+        }
+        return createThis(classes, propertyClasses, transRows);
     }
 
     @Override

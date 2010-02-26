@@ -2,6 +2,7 @@ package platform.server.data.expr.cases;
 
 import platform.interop.Compare;
 import platform.server.caches.ParamLazy;
+import platform.server.caches.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.*;

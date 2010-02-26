@@ -7,6 +7,7 @@ import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.caches.HashContext;
 
 public class MeanClassWhere extends DataWhere {
 

@@ -5,6 +5,7 @@ import platform.server.classes.IntegralClass;
 import platform.server.data.query.*;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.Where;
+import platform.server.caches.HashContext;
 
 import java.util.HashMap;
 import java.util.Map;

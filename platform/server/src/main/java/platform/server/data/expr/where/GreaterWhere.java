@@ -5,7 +5,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.translator.KeyTranslator;

@@ -1,7 +1,7 @@
-package platform.server.data.expr.query;
+package platform.server.caches;
 
 import platform.server.data.translator.KeyTranslator;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.query.SourceJoin;
 
 public interface TranslateContext<This extends TranslateContext> {

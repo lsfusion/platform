@@ -5,21 +5,18 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.query.Query;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.caches.MapHashIterable;
-import platform.server.caches.MapContext;
-import platform.server.caches.MapParamsIterable;
-import platform.server.caches.Lazy;
+import platform.server.caches.*;
 import platform.base.BaseUtils;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
-public class PropertyChange<T extends PropertyInterface> implements MapContext {
+public class PropertyChange<T extends PropertyInterface> extends AbstractMapValues<PropertyChange<T>> implements MapContext {
     public Map<T,KeyExpr> mapKeys;
     public Expr expr;
     public Where where;
@@ -80,14 +77,20 @@ public class PropertyChange<T extends PropertyInterface> implements MapContext {
         return false;
     }
 
-    boolean hashCoded = false;
-    int hashCode;
-    @Override
-    public int hashCode() {
-        if(!hashCoded) {
-            hashCode = MapParamsIterable.hash(this,false);
-            hashCoded = true;
-        }
-        return hashCode;
+    public int hashValues(final HashValues hashValues) {
+        return hash(new HashContext() {
+            public int hash(KeyExpr expr) {
+                return 1;
+            }
+
+            public int hash(ValueExpr expr) {
+                return hashValues.hash(expr);
+            }
+        });
+    }
+
+    public PropertyChange<T> translate(Map<ValueExpr, ValueExpr> mapValues) {
+        KeyTranslator translator = new KeyTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues);
+        return new PropertyChange<T>(mapKeys,expr.translateDirect(translator),where.translateDirect(translator));
     }
 }

@@ -11,7 +11,8 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.query.*;
 import platform.server.data.type.Type;
 import platform.server.caches.MapContext;
-import platform.base.BaseUtils;
+import platform.server.caches.HashContext;
+import platform.server.caches.TranslateContext;
 
 import java.util.*;
 

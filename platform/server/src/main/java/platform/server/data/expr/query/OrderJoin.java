@@ -5,8 +5,8 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-import platform.server.data.query.InnerWhere;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
+import platform.server.caches.TranslateContext;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.KeyTranslator;
 

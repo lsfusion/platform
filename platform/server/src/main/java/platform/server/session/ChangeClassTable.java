@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.Map;
 
 // хранит добавляение\удаление классов
-public abstract class ChangeClassTable<This extends ChangeClassTable> extends SessionTable<This> {
+public abstract class ChangeClassTable<This extends ChangeClassTable<This>> extends SessionTable<This> {
 
     public final KeyField object;
 

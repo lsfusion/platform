@@ -52,7 +52,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return join(joinImplement,BaseUtils.toMap(values));
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
+    public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) {
         assert joinImplement.size()==mapKeys.size();
 
         Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
@@ -64,7 +64,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return new TranslateJoin<V>(new KeyTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
     }
 
-    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно
+    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
         assert joinImplement.size()==mapKeys.size();
 
         Where joinWhere = Where.TRUE; // надо еще where join'ов закинуть

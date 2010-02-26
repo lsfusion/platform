@@ -1,12 +1,9 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.MapContext;
-import platform.server.caches.MapHashIterable;
-import platform.server.caches.MapParamsIterable;
+import platform.server.caches.*;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.HashContext;
 import platform.server.data.translator.KeyTranslator;
 import platform.base.BaseUtils;
 

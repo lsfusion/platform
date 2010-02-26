@@ -2,14 +2,12 @@ package platform.server.caches;
 
 import platform.base.BaseUtils;
 import platform.base.EmptyIterator;
-import platform.base.MapIterable;
 import platform.base.Pairs;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.KeyTranslator;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -40,27 +38,7 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
         return new MapIterator();
     }
 
-    private class ValuePairs extends MapIterable<Map<ValueExpr,ValueExpr>,Map<ValueExpr,ValueExpr>> {
-        final Collection<ValueExpr> values1;
-        final Collection<ValueExpr> values2;
-
-        private ValuePairs(Collection<ValueExpr> values1, Collection<ValueExpr> values2) {
-            this.values1 = values1;
-            this.values2 = values2;
-        }
-
-        protected Map<ValueExpr, ValueExpr> map(Map<ValueExpr, ValueExpr> mapValues) {
-            for(Map.Entry<ValueExpr,ValueExpr> mapValue : mapValues.entrySet())
-                if(!(mapValue.getKey().objectClass.equals(mapValue.getValue().objectClass)))
-                    return null;
-            return mapValues;
-        }
-
-        protected Iterator<Map<ValueExpr, ValueExpr>> mapIterator() {
-            return new Pairs<ValueExpr,ValueExpr>(values1, values2).iterator();
-        }
-    }
-
+    // перебирает Map'ы KeyExpr -> KeyExpr и ValueExpr -> ValueExpr
     private class MapIterator implements Iterator<KeyTranslator> {
         private Pairs<KeyExpr,KeyExpr> keyPairs;
 

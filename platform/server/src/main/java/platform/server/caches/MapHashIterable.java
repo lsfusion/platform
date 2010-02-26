@@ -1,7 +1,7 @@
 package platform.server.caches;
 
 import platform.base.MapIterable;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.KeyTranslator;

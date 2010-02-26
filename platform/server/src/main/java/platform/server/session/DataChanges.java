@@ -2,19 +2,19 @@ package platform.server.session;
 
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.GroupProperty;
-import platform.server.logics.property.derived.DistrGroupProperty;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.PropertyChange;
+import platform.server.caches.MapValues;
+import platform.server.caches.HashValues;
+import platform.server.caches.MapValuesIterable;
+import platform.server.data.expr.ValueExpr;
 import platform.base.QuickMap;
 
 import java.sql.SQLException;
-import java.util.Map;
-import java.util.Collection;
-import java.util.ArrayList;
+import java.util.*;
 
-public class DataChanges extends QuickMap<DataProperty, PropertyChange<ClassPropertyInterface>> {
+public class DataChanges extends QuickMap<DataProperty, PropertyChange<ClassPropertyInterface>> implements MapValues<DataChanges> {
 
     public DataChanges() {
     }
@@ -54,6 +54,24 @@ public class DataChanges extends QuickMap<DataProperty, PropertyChange<ClassProp
         for(int i=0;i<size;i++)
             if(!getValue(i).where.isFalse())
                 result.add(getKey(i));
+        return result;
+    }
+
+    public int hashValues(HashValues hashValues) {
+        return MapValuesIterable.hash(this,hashValues);
+    }
+
+    public Set<ValueExpr> getValues() {
+        Set<ValueExpr> result = new HashSet<ValueExpr>();
+        for(int i=0;i<size;i++)
+            result.addAll(getValue(i).getValues());
+        return result;
+    }
+
+    public DataChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+        DataChanges result = new DataChanges();
+        for(int i=0;i<size;i++)
+            result.add(getKey(i),getValue(i).translate(mapValues));
         return result;
     }
 }

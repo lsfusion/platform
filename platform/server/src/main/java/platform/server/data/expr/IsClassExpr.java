@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
+import platform.server.caches.HashContext;
 import platform.server.data.Table;
 import platform.server.classes.BaseClass;
 import platform.server.classes.SystemClass;

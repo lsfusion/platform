@@ -1,6 +1,7 @@
 package platform.server.data.expr.where;
 
 import platform.server.caches.ParamLazy;
+import platform.server.caches.HashContext;
 import platform.server.classes.DataClass;
 import platform.server.classes.UnknownClass;
 import platform.server.classes.sets.AndClassSet;

@@ -1,6 +1,6 @@
 package platform.server.data.expr.query;
 
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;

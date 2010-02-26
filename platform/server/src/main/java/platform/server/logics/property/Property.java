@@ -95,7 +95,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         Expr changedExpr = modifier.changed(this, joinImplement, changedExprWhere);
 
         if(changedExpr==null && isStored()) {
-            if(!getUsedChanges(modifier).hasChanges()) // если нету изменений
+            if(!hasChanges(modifier)) // если нету изменений
                 return mapTable.table.join(BaseUtils.join(BaseUtils.reverse(mapTable.mapKeys), joinImplement)).getExpr(field);
             if(usePreviousStored())
                 changedExpr = calculateExpr(joinImplement, modifier, changedExprWhere);
@@ -158,6 +158,9 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
     protected abstract <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier);
     public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
         return modifier.used(this, calculateUsedChanges(modifier));
+    }
+    public boolean hasChanges(Modifier<? extends Changes> modifier) {
+        return getUsedChanges(modifier).hasChanges();
     }
 
     public static <U extends Changes<U>> U getUsedChanges(Collection<Property> col, Modifier<U> modifier) {

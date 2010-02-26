@@ -14,6 +14,6 @@ public interface ParsedQuery<K,V> {
     CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders,int top);    
     <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps);
     Join<V> join(Map<K, ? extends Expr> joinImplement);
-    Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> joinValues);
+    Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> joinValues); // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
 
 }

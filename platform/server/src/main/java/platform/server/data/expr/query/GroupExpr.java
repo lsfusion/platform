@@ -5,7 +5,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.*;
 import platform.server.data.expr.query.GroupJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.data.query.HashContext;
+import platform.server.caches.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.InnerWhere;
 import platform.server.data.expr.cases.CaseExpr;

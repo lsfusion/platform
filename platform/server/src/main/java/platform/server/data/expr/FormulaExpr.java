@@ -1,6 +1,7 @@
 package platform.server.data.expr;
 
 import platform.server.caches.ParamLazy;
+import platform.server.caches.HashContext;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;

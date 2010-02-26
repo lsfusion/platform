@@ -5,10 +5,14 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.query.Join;
+import platform.server.caches.HashValues;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 public class DataChangesModifier extends Modifier<DataChangesModifier.UsedChanges> {
 
@@ -54,6 +58,28 @@ public class DataChangesModifier extends Modifier<DataChangesModifier.UsedChange
         @Override
         public int hashCode() {
             return 31 * super.hashCode() + changes.hashCode();
+        }
+
+        @Override
+        public int hashValues(HashValues hashValues) {
+            return super.hashValues(hashValues) * 31 + changes.hashValues(hashValues);
+        }
+
+        @Override
+        public Set<ValueExpr> getValues() {
+            Set<ValueExpr> result = new HashSet<ValueExpr>();
+            result.addAll(super.getValues());
+            result.addAll(changes.getValues());
+            return result;
+        }
+
+        private UsedChanges(UsedChanges usedChanges, Map<ValueExpr, ValueExpr> mapValues) {
+            super(usedChanges, mapValues);
+            changes = usedChanges.changes.translate(mapValues);
+        }
+
+        public UsedChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+            return new UsedChanges(this, mapValues);
         }
     }
 

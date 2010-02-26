@@ -5,10 +5,11 @@ import platform.base.ArrayInstancer;
 import platform.server.data.Table;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
-import platform.server.data.expr.query.TranslateContext;
+import platform.server.caches.TranslateContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.logics.BusinessLogics;
+import platform.server.caches.HashContext;
 
 import java.util.Set;
 import java.util.HashSet;

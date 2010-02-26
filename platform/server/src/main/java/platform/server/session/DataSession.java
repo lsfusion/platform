@@ -26,6 +26,8 @@ import platform.server.view.form.RemoteForm;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.classes.*;
+import platform.server.caches.HashValues;
+import platform.server.caches.MapValuesIterable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -246,7 +248,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         Collection<Property> properties = new HashSet<Property>();
         Modifier<? extends Changes> propertyModifier = form.update(sessionChanges);
         for(Property<?> updateProperty : form.getUpdateProperties())
-            if(updateProperty.getUsedChanges(propertyModifier).hasChanges())
+            if(updateProperty.hasChanges(propertyModifier))
                 properties.add(updateProperty);
         return properties;
     }
@@ -334,7 +336,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         }
 
         static class UsedChanges extends Changes<UsedChanges> {
-            final Map<Property, IncrementChangeTable> increment = new HashMap<Property, IncrementChangeTable>();
+            final Map<Property, IncrementChangeTable> increment;
 
             @Override
             public boolean hasChanges() {
@@ -355,6 +357,32 @@ public class DataSession extends SQLSession implements ChangesSession {
             @Override
             public int hashCode() {
                 return 31 * super.hashCode() + increment.hashCode();
+            }
+
+            @Override
+            public int hashValues(HashValues hashValues) {
+                return super.hashValues(hashValues) * 31 + MapValuesIterable.hash(increment,hashValues);
+            }
+
+            @Override
+            public Set<ValueExpr> getValues() {
+                Set<ValueExpr> result = new HashSet<ValueExpr>();
+                result.addAll(super.getValues());
+                MapValuesIterable.enumValues(result, increment);
+                return result;
+            }
+
+            public UsedChanges() {
+                 increment = new HashMap<Property, IncrementChangeTable>();
+            }
+
+            private UsedChanges(UsedChanges usedChanges, Map<ValueExpr, ValueExpr> mapValues) {
+                super(usedChanges, mapValues);
+                increment = MapValuesIterable.translate(usedChanges.increment,mapValues);
+            }
+
+            public UsedChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+                return new UsedChanges(this, mapValues);
             }
         }
 
@@ -447,7 +475,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property<?> property : BL.getAppliedProperties()) {
-            if(property.getUsedChanges(increment).hasChanges()) {
+            if(property.hasChanges(increment)) {
                 String constraintResult = increment.check(property);
                 if(constraintResult!=null) {
                     // откатим транзакцию

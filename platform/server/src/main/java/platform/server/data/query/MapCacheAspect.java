@@ -6,10 +6,14 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
+import platform.server.caches.AbstractMapValues;
+import platform.server.caches.HashContext;
+import platform.server.caches.HashValues;
+import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
 import platform.server.caches.MapHashIterable;
 import platform.server.caches.MapParamsIterable;
-import platform.server.caches.Lazy;
+import platform.server.caches.MapValuesIterable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
@@ -87,7 +91,7 @@ public class MapCacheAspect {
         Map getJoinCache();
     }
     public static class JoinInterfaceImplement implements JoinInterface {
-        Map<JoinImplement,Join> joinCache = new HashMap<JoinImplement,Join>();
+        Map<Integer,Map<JoinImplement,Join>> joinCache = new HashMap<Integer, Map<JoinImplement, Join>>();
         public Map getJoinCache() { return joinCache; }
     }
     @DeclareParents(value="platform.server.data.query.ParsedJoinQuery",defaultImpl=JoinInterfaceImplement.class)
@@ -144,8 +148,7 @@ public class MapCacheAspect {
                             System.out.println("join cached");
                             return new TranslateJoin<V>(new KeyTranslator(translator.keys,transValues),cache.getValue());
                         }
-                    } else
-                        cache = cache;
+                    }
                 }
             }
             System.out.println("join not cached");
@@ -160,7 +163,7 @@ public class MapCacheAspect {
         return join(joinExprs,joinValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
     }
 
-    static class InterfaceImplement<U extends Changes<U>> {
+    static class InterfaceImplement<U extends Changes<U>> extends AbstractMapValues<InterfaceImplement<U>> {
         final U usedChanges; 
         final boolean changed; // нужно ли условие на изменение, по сути для этого св-ва и делается класс
 
@@ -173,8 +176,21 @@ public class MapCacheAspect {
             return this == o || o instanceof InterfaceImplement && changed == ((InterfaceImplement) o).changed && usedChanges.equals(((InterfaceImplement) o).usedChanges);
         }
 
-        public int hashCode() {
-            return 31 * usedChanges.hashCode() + (changed ? 1 : 0);
+        public int hashValues(HashValues hashValues) {
+            return 31 * usedChanges.hashValues(hashValues) + (changed ? 1 : 0);
+        }
+
+        public Set<ValueExpr> getValues() {
+            return usedChanges.getValues();
+        }
+
+        InterfaceImplement(InterfaceImplement<U> implement,Map<ValueExpr,ValueExpr> mapValues) {
+            usedChanges = implement.usedChanges.translate(mapValues);
+            this.changed = implement.changed;
+        }
+
+        public InterfaceImplement<U> translate(Map<ValueExpr, ValueExpr> mapValues) {
+            return new InterfaceImplement<U>(this, mapValues);
         }
     }
 
@@ -182,7 +198,7 @@ public class MapCacheAspect {
         Map getExprCache();
     }
     public static class ExprInterfaceImplement implements ExprInterface {
-        Map<Integer,Collection<InterfaceImplement>> exprCache = new HashMap<Integer, Collection<InterfaceImplement>>();
+        Map<Integer,Map<InterfaceImplement,Query>> exprCache = new HashMap<Integer, Map<InterfaceImplement, Query>>();
         public Map getExprCache() { return exprCache; }
     }
     @DeclareParents(value="platform.server.logics.property.Property",defaultImpl= ExprInterfaceImplement.class)
@@ -191,7 +207,7 @@ public class MapCacheAspect {
     final String PROPERTY_STRING = "expr";
     final String CHANGED_STRING = "where";
 
-    public <K extends PropertyInterface,U extends Changes<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface,U extends Changes<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, Map<Integer,Map<InterfaceImplement<U>,Query<K,String>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // если свойство AndFormulaProperty - то есть нарушается инвариант что все входные не null идет autoFillDB то не кэшируем
         if(property instanceof AndFormulaProperty || BusinessLogics.autoFillDB) return (Expr) thisJoinPoint.proceed();
@@ -200,23 +216,44 @@ public class MapCacheAspect {
 
         InterfaceImplement<U> implement = new InterfaceImplement<U>(property,modifier,changedWheres!=null);
 
-        Map<InterfaceImplement, Query<K,String>> exprCache = ((ExprInterface)property).getExprCache();
+        Map<InterfaceImplement<U>,Query<K,String>> hashCaches;
+        synchronized(exprCaches) {
+            int hashImplement = implement.hashValues(new HashValues() {
+                public int hash(ValueExpr expr) {
+                    return 1;
+                }
+            });
+            hashCaches = exprCaches.get(hashImplement);
+            if(hashCaches==null) {
+                hashCaches = new HashMap<InterfaceImplement<U>, Query<K, String>>();
+                exprCaches.put(hashImplement, hashCaches);
+            }
+        }
 
-        Query<K,String> query = exprCache.get(implement);
-        if(query==null) {
-            System.out.println("getExpr - not cached "+property);
-            // надо проверить что с такими changes, defaultProps, noUpdateProps
-            query = new Query<K,String>(property);
-            WhereBuilder queryWheres = Property.cascadeWhere(changedWheres);
-            query.properties.put(PROPERTY_STRING, (Expr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,modifier,queryWheres}));
-            if(changedWheres!=null)
-                query.properties.put(CHANGED_STRING,ValueExpr.get(queryWheres.toWhere()));
+        Join<String> queryJoin = null;
+        synchronized(hashCaches) {
+            for(Map.Entry<InterfaceImplement<U>,Query<K,String>> cache : hashCaches.entrySet()) {
+                for(Map<ValueExpr, ValueExpr> mapValues : new MapValuesIterable(cache.getKey(), implement)) {
+                    if(cache.getKey().translate(mapValues).equals(implement)) {
+                        System.out.println("getExpr - cached "+property);
+                        queryJoin = cache.getValue().join(joinExprs,BaseUtils.filterKeys(mapValues,cache.getValue().getValues())); // так как могут не использоваться values в Query
+                    }
+                }
+            }
+            if(queryJoin==null) {
+                // надо проверить что с такими changes, defaultProps, noUpdateProps
+                Query<K,String> query = new Query<K,String>(property);
+                WhereBuilder queryWheres = Property.cascadeWhere(changedWheres);
+                query.properties.put(PROPERTY_STRING, (Expr) thisJoinPoint.proceed(new Object[]{property,property,query.mapKeys,modifier,queryWheres}));
+                if(changedWheres!=null)
+                    query.properties.put(CHANGED_STRING,ValueExpr.get(queryWheres.toWhere()));
 
-            exprCache.put(implement,query);
-        } else
-            System.out.println("getExpr - cached "+property);
+                hashCaches.put(implement, query);
 
-        Join<String> queryJoin = query.join(joinExprs);
+                System.out.println("getExpr - not cached "+property);
+                queryJoin = query.join(joinExprs);
+            }
+        }
 
         if(changedWheres!=null) changedWheres.add(queryJoin.getExpr(CHANGED_STRING).getWhere());
         return queryJoin.getExpr(PROPERTY_STRING);
@@ -227,6 +264,6 @@ public class MapCacheAspect {
             "&& target(property) && args(joinExprs,modifier,changedWhere)")
     public Object callGetExpr(ProceedingJoinPoint thisJoinPoint, Property property, Map joinExprs, Modifier modifier,WhereBuilder changedWhere) throws Throwable {
         // сначала target в аспекте должен быть
-        return getExpr(property, joinExprs, modifier, changedWhere, thisJoinPoint);
+        return getExpr(property, joinExprs, modifier, changedWhere, ((ExprInterface)property).getExprCache(), thisJoinPoint);
     }
 }

@@ -7,6 +7,7 @@ import platform.server.data.translator.KeyTranslator;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.query.GroupJoin;
+import platform.server.caches.HashContext;
 
 import java.util.Collection;
 import java.util.Collections;
