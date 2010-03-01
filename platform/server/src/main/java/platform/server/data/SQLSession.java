@@ -3,10 +3,8 @@ package platform.server.data;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.query.Query;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
@@ -166,11 +164,7 @@ public class SQLSession {
     }
 
     private void execute(String executeString) throws SQLException {
-        executeStatement(connection.prepareStatement(executeString));
-    }
-
-    private void executeStatement(PreparedStatement statement) throws SQLException {
-//        System.out.println(statement);
+        PreparedStatement statement = connection.prepareStatement(executeString);
         try {
             statement.execute();
         } catch(SQLException e) {
@@ -181,6 +175,29 @@ public class SQLSession {
         }
 
         ensureTransaction();
+    }
+
+    private int executeDDL(SQLExecute execute) throws SQLException {
+        return executeDDL(execute.command, execute.params); 
+    }
+
+    private int executeDDL(String command, Map<String, TypeObject> paramObjects) throws SQLException {
+        PreparedStatement statement = getStatement(command,paramObjects);
+        
+//        System.out.println(statement);
+        int result;
+        try {
+            result = statement.executeUpdate();
+        } catch(SQLException e) {
+            System.out.println(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+        }
+
+        ensureTransaction();
+
+        return result;
     }
 
     private void ensureTransaction() throws SQLException {
@@ -214,7 +231,7 @@ public class SQLSession {
             }
         }
 
-        executeStatement(getStatement("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")", params));
+        executeDDL("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")", params);
     }
 
     public void insertRecord(Table table,Map<KeyField,DataObject> keyFields,Map<PropertyField,ObjectValue> propFields) throws SQLException {
@@ -296,21 +313,18 @@ public class SQLSession {
         execute("DELETE FROM "+ table.getName(syntax)+(deleteWhere.length()==0?"":" WHERE "+deleteWhere));
     }
 
-    public void updateRecords(ModifyQuery modify) throws SQLException {
-        SQLExecute update = modify.getUpdate(syntax);
-        executeStatement(getStatement(update.command, update.params));
+    public int updateRecords(ModifyQuery modify) throws SQLException {
+        return executeDDL(modify.getUpdate(syntax));
     }
 
-    public void insertSelect(ModifyQuery modify) throws SQLException {
-        SQLExecute insertSelect = modify.getInsertSelect(syntax);
-        executeStatement(getStatement(insertSelect.command, insertSelect.params));
+    public int insertSelect(ModifyQuery modify) throws SQLException {
+        return executeDDL(modify.getInsertSelect(syntax));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
-    public void modifyRecords(ModifyQuery modify) throws SQLException {
-        SQLExecute leftKeys = modify.getInsertLeftKeys(syntax);
-        executeStatement(getStatement(leftKeys.command, leftKeys.params));
-        updateRecords(modify);
+    public int modifyRecords(ModifyQuery modify) throws SQLException {
+        executeDDL(modify.getInsertLeftKeys(syntax));
+        return updateRecords(modify);
     }
 
     public void close() throws SQLException {

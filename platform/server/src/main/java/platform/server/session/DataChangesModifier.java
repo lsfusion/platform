@@ -56,11 +56,6 @@ public class DataChangesModifier extends Modifier<DataChangesModifier.UsedChange
         }
 
         @Override
-        public int hashCode() {
-            return 31 * super.hashCode() + changes.hashCode();
-        }
-
-        @Override
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + changes.hashValues(hashValues);
         }

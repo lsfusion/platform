@@ -133,10 +133,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // по умолчанию с полным стартом
-    public BusinessLogics(DataAdapter iAdapter,int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+    public BusinessLogics(DataAdapter adapter,int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(exportPort);
 
-        adapter = iAdapter;
+        this.adapter = adapter;
 
         initBase();
 

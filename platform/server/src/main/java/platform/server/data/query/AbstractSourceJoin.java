@@ -10,36 +10,18 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.logics.BusinessLogics;
 import platform.server.caches.HashContext;
+import platform.server.caches.AbstractTranslateContext;
 
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Collection;
 
-abstract public class AbstractSourceJoin<T extends TranslateContext<T>> implements SourceJoin, TranslateContext<T> {
+abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends AbstractTranslateContext<T> implements SourceJoin {
 
     public SourceJoin[] getEnum() {
         return new SourceJoin[]{this};
     }
    
-    public abstract int hashContext(HashContext hashContext);
-
-    boolean hashCoded = false;
-    int hashCode;
-    public int hashCode() {
-        if(!hashCoded) {
-            hashCode = hashContext(new HashContext() {
-                public int hash(KeyExpr expr) {
-                    return expr.hashCode();
-                }
-                public int hash(ValueExpr expr) {
-                    return expr.hashCode();
-                }
-            });
-            hashCoded = true;
-        }
-        return hashCode;
-    }
-
     @Override
     public boolean equals(Object obj) {
         return this == obj || obj!=null && getClass() == obj.getClass() && twins((AbstractSourceJoin) obj);

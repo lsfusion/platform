@@ -1,7 +1,9 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.BaseClass;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.where.Where;
 import platform.server.data.sql.SQLSyntax;
@@ -149,27 +151,49 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
 
     // "обновляет" ключи в таблице
     public This writeKeys(SQLSession session,List<Map<KeyField,DataObject>> writeRows) throws SQLException {
-        session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
+        if(rows==null)
+            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
+
+        Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> newRows = writeRows.size()>MAX_ROWS?null:new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
 
         ClassWhere<KeyField> writeClasses = new ClassWhere<KeyField>();
         for(Map<KeyField, DataObject> row : writeRows) {
             writeClasses = writeClasses.or(new ClassWhere<KeyField>(DataObject.getMapClasses(row)));
-            session.insertRecord(this,row,new HashMap<PropertyField, ObjectValue>());
+            if(newRows==null)
+                session.insertRecord(this,row,new HashMap<PropertyField, ObjectValue>());
+            else
+                newRows.put(row, new HashMap<PropertyField, ObjectValue>());
         }
-
-        return createThis(writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), null);
+        
+        return createThis(writeClasses, new HashMap<PropertyField, ClassWhere<Field>>(), newRows);
     }
 
-    public This writeKeys(SQLSession session, Query<KeyField,PropertyField> query) throws SQLException {
-        session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
+    public This writeRows(SQLSession session, Query<KeyField,PropertyField> query, BaseClass baseClass) throws SQLException {
+        if(rows==null)
+            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
         
-        session.insertSelect(new ModifyQuery(this,query));
+        int inserted = session.insertSelect(new ModifyQuery(this,query));
 
+        // читаем классы не считывая данные
         Map<PropertyField,ClassWhere<Field>> insertClasses = new HashMap<PropertyField, ClassWhere<Field>>();
         for(PropertyField field : query.properties.keySet())
             insertClasses.put(field,query.<Field>getClassWhere(Collections.singleton(field)));
 
-        return createThis(query.<KeyField>getClassWhere(new ArrayList<PropertyField>()),insertClasses, null);
+        This result = createThis(query.<KeyField>getClassWhere(new ArrayList<PropertyField>()),insertClasses, null);
+
+        // нужно прочитать то что записано
+        if(inserted <= MAX_ROWS) {
+            OrderedMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> readRows = result.read(session, baseClass);
+
+            session.deleteKeyRecords(this, new HashMap<KeyField, Object>());
+
+            // надо бы batch update сделать, то есть зная уже сколько запискй
+            result = createThis(new ClassWhere<KeyField>(),new HashMap<PropertyField, ClassWhere<Field>>(), new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>());
+            for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> writeRow : readRows.entrySet())
+                result = result.insertRecord(session, writeRow.getKey(), writeRow.getValue(), false);
+        }
+
+        return result;
     }
 
     public This deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {

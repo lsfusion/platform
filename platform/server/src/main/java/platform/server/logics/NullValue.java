@@ -36,10 +36,6 @@ public class NullValue extends ObjectValue<NullValue> {
         return this==o || o instanceof NullValue;
     }
 
-    public int hashCode() {
-        return 0;
-    }
-
     public Where order(Expr expr, boolean desc, Where orderWhere) {
         Where greater = expr.getWhere();
         if(desc)

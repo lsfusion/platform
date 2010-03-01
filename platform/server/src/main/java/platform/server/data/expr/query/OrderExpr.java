@@ -13,12 +13,13 @@ import platform.server.data.type.Type;
 import platform.server.caches.MapContext;
 import platform.server.caches.HashContext;
 import platform.server.caches.TranslateContext;
+import platform.server.caches.AbstractTranslateContext;
 
 import java.util.*;
 
-public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData, MapContext {
+public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
-    public static class Query implements TranslateContext<Query> {
+    public static class Query extends AbstractTranslateContext<Query> {
         public Expr expr;
         public List<Expr> orders;
         public Set<Expr> partitions;
@@ -49,11 +50,6 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
         public Type getType() {
             return expr.getType(getWhere());
-        }
-
-        @Override
-        public int hashCode() {
-            return (partitions.hashCode() * 31 + orders.hashCode()) * 31 + expr.hashCode();
         }
 
         @Override

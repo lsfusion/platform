@@ -28,10 +28,10 @@ import java.net.MalformedURLException;
 import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
 
-public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
+public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
-    public SimpleBusinessLogics(DataAdapter iAdapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
-        super(iAdapter,port);
+    public SimpleBusinessLogics(DataAdapter adapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
+        super(adapter,port);
     }
 
     //    static Registry registry;
@@ -496,6 +496,8 @@ public class SimpleBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         persistents.add((AggregateProperty)quantity.property);
         persistents.add((AggregateProperty)balanceStoreQuantity.property);
+
+        persistents.add((AggregateProperty)incStore.property);
 
         persistents.add((AggregateProperty)currentIncDate.property);
         persistents.add((AggregateProperty)currentIncDoc.property);

@@ -69,7 +69,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
 
     @Override
     public BaseExpr packFollowFalse(Where falseWhere) {
-        return (BaseExpr) createBase(pushValues(group,falseWhere.not()), query, isMax(), falseWhere.not(), getContextTypeWhere());
+        return (BaseExpr) createBase(pushValues(group, falseWhere.not()), query, isMax(), falseWhere.not(), getContextTypeWhere());
     }
 
     // трансляция

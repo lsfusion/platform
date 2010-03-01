@@ -7,6 +7,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.caches.HashValues;
 
 import java.util.*;
 
@@ -36,8 +37,8 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         }
 
         @Override
-        public int hashCode() {
-            return 31 * super.hashCode() + noUpdateProps.hashCode();
+        public int hashValues(HashValues hashValues) {
+            return 31 * super.hashValues(hashValues) + noUpdateProps.hashCode();
         }
 
         public UsedChanges() {

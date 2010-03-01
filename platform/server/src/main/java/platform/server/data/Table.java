@@ -1,13 +1,18 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.HashContext;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.*;
-import platform.server.data.expr.*;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.InnerExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.translator.KeyTranslator;
@@ -19,6 +24,9 @@ import platform.server.data.SQLSession;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.classes.BaseClass;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -100,6 +108,14 @@ public class Table implements MapKeysInterface<KeyField> {
 
         classes = new ClassWhere<KeyField>();
         propertyClasses = new HashMap<PropertyField, ClassWhere<Field>>();
+    }
+
+    public OrderedMap<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> read(SQLSession session, BaseClass baseClass) throws SQLException {
+        Query<KeyField, PropertyField> query = new Query<KeyField,PropertyField>(this);
+        platform.server.data.query.Join<PropertyField> tableJoin = join(query.mapKeys);
+        query.properties.putAll(tableJoin.getExprs());
+        query.and(tableJoin.getWhere());
+        return query.executeClasses(session, baseClass);
     }
 
     protected ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе

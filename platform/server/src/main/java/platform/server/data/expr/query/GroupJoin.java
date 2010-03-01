@@ -10,6 +10,7 @@ import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerWhere;
 import platform.server.caches.HashContext;
 import platform.server.caches.TranslateContext;
+import platform.server.caches.AbstractTranslateContext;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.expr.query.GroupExpr;
 
@@ -19,7 +20,7 @@ import java.util.Set;
 @Immutable
 public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin {
 
-    public static class Query implements TranslateContext<Query> {
+    public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
         private final InnerWhere innerWhere;
 
@@ -43,11 +44,6 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         @Override
         public boolean equals(Object o) {
             return this == o || o instanceof Query && innerWhere.equals(((Query) o).innerWhere) && where.equals(((Query) o).where);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * where.hashCode() + innerWhere.hashCode();
         }
     }
 

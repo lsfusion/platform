@@ -355,11 +355,6 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
 
             @Override
-            public int hashCode() {
-                return 31 * super.hashCode() + increment.hashCode();
-            }
-
-            @Override
             public int hashValues(HashValues hashValues) {
                 return super.hashValues(hashValues) * 31 + MapValuesIterable.hash(increment,hashValues);
             }
@@ -409,7 +404,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             return new UsedChanges();
         }
 
-        public IncrementChangeTable read(Collection<Property> properties) throws SQLException {
+        public IncrementChangeTable read(Collection<Property> properties,BaseClass baseClass) throws SQLException {
             // создаем таблицу
             IncrementChangeTable changeTable = new IncrementChangeTable(properties);
             session.createTemporaryTable(changeTable);
@@ -423,7 +418,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             changesQuery.and(changedWhere.toWhere());
 
             // подготовили - теперь надо сохранить в курсор и записать классы
-            changeTable = changeTable.writeKeys(session, changesQuery);
+            changeTable = changeTable.writeRows(session, changesQuery, baseClass);
 
             for(Property property : properties)
                 tables.put(property,changeTable);
@@ -484,7 +479,7 @@ public class DataSession extends SQLSession implements ChangesSession {
                 }
 
                 if(property.isStored()) // сохраним изменения в таблицы
-                    temporary.add(increment.read(Collections.<Property>singleton(property)));
+                    temporary.add(increment.read(Collections.<Property>singleton(property),baseClass));
             }
         }
 
@@ -495,7 +490,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             if(groupTable.size()==1) // временно так - если одна берем старую иначе группой
                 changeTable = increment.tables.get(groupTable.iterator().next());
             else {
-                changeTable = increment.read(groupTable);
+                changeTable = increment.read(groupTable,baseClass);
                 temporary.add(changeTable);
             }
 

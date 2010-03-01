@@ -7,6 +7,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.caches.HashContext;
 import platform.server.caches.TranslateContext;
+import platform.server.caches.AbstractTranslateContext;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.KeyTranslator;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
-    public static class Query implements TranslateContext<Query> {
+    public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
         private final Set<Expr> partitions;
 
@@ -42,11 +43,6 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
         @Override
         public boolean equals(Object o) {
             return this == o || o instanceof Query && partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * where.hashCode() + partitions.hashCode();
         }
     }
 

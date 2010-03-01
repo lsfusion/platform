@@ -32,7 +32,7 @@ public class DataChangeTable extends ChangePropertyTable<ClassPropertyInterface,
     public DataChangeTable dropChanges(SQLSession session, DataProperty property, DataObject object, Collection<CustomClass> removeClasses) throws SQLException {
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> dropRows = null;
         if(rows!=null)
-            dropRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
+            dropRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>(rows);
 
         for(ClassPropertyInterface propertyInterface : property.interfaces)
             if(propertyInterface.interfaceClass instanceof CustomClass && removeClasses.contains((CustomClass)propertyInterface.interfaceClass)) {

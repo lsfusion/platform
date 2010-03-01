@@ -36,10 +36,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return this==o || o instanceof DataObject && object.equals(((DataObject)o).object) && objectClass.equals(((DataObject)o).objectClass);
     }
 
-    public int hashCode() {
-        return object.hashCode()*31+objectClass.hashCode();
-    }
-
     public DataObject(Object object, ConcreteClass objectClass) {
         this.object = object;
 
