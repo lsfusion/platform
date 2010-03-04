@@ -35,18 +35,12 @@ public class GreaterWhere extends CompareWhere {
         return 1 + operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31*31;
     }
 
-    @ParamLazy
-    public Where translateDirect(KeyTranslator translator) {
-        return new GreaterWhere(operator1.translateDirect(translator),operator2.translateDirect(translator));
-    }
-    @ParamLazy
-    public Where translateQuery(QueryTranslator translator) {
-        return operator1.translateQuery(translator).compare(operator2.translateQuery(translator),Compare.GREATER);
+    protected CompareWhere createThis(BaseExpr operator1, BaseExpr operator2) {
+        return new GreaterWhere(operator1, operator2);
     }
 
-    @Override
-    public Where packFollowFalse(Where falseWhere) {
-        return new GreaterWhere(operator1.packFollowFalse(falseWhere),operator2.packFollowFalse(falseWhere));
+    protected Compare getCompare() {
+        return Compare.GREATER;
     }
 
     /*
@@ -103,12 +97,6 @@ public class GreaterWhere extends CompareWhere {
             return compare;
         else
             return "(" + result + " OR " + compare + ")";
-    }
-
-    public DataWhereSet getExprFollows() {
-        DataWhereSet follows = new DataWhereSet(operator1.getFollows());
-        follows.addAll(operator2.getFollows());
-        return follows;
     }
 
     public InnerJoins getInnerJoins() {

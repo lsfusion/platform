@@ -22,8 +22,8 @@ public class LinearExpr extends StaticClassExpr {
 
     final LinearOperandMap map;
 
-    public LinearExpr(LinearOperandMap iMap) {
-        map = iMap;
+    public LinearExpr(LinearOperandMap map) {
+        this.map = map;
         // повырезаем все смежные getWhere с нулевыми коэффицентами
         assert (map.size()>0);
         assert !(map.size()==1 && BaseUtils.singleValue(map).equals(1));

@@ -5,6 +5,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,7 +79,7 @@ public class InnerJoins extends ArrayList<InnerJoins.Entry> {
 
     public InnerJoins(KeyExpr key, BaseExpr expr) {
         this(new InnerWhere(key,expr),new EqualsWhere(key,expr));
-        assert expr.isValue();
+        assert !expr.hasKey(key);
     }
 
     public InnerJoins and(InnerJoins joins) {
@@ -86,8 +87,9 @@ public class InnerJoins extends ArrayList<InnerJoins.Entry> {
         // берем все пары joins'ов
         for(Entry whereJoin1 : this)
             for(Entry whereJoin2 : joins) {
-                InnerWhere andJoin = whereJoin1.mean.and(whereJoin2.mean); Where andWhere;
-                if(!(andJoin==null || (andWhere=whereJoin1.where.and(whereJoin2.where)).isFalse())) // тут isFalse'а достаточно так как AB=>!(IaIb) <=> ABIaIb==FALSE, A=>Ia,B=>Ib <=> AB==FALSE
+                InnerWhere andJoin = whereJoin1.mean.and(whereJoin2.mean); 
+                Where andWhere = whereJoin1.where.and(whereJoin2.where); //.and(equalsWhere.toWhere());
+                if(!andWhere.isFalse()) // тут isFalse'а достаточно так как AB=>!(IaIb) <=> ABIaIb==FALSE, A=>Ia,B=>Ib <=> AB==FALSE
                     result.or(andJoin, andWhere);
             }
         return result;

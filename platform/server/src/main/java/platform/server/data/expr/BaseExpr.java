@@ -129,4 +129,7 @@ public abstract class BaseExpr extends Expr {
         return enumKeys(this).isEmpty();
     }
 
+    public boolean hasKey(KeyExpr key) {
+        return enumKeys(this).contains(key);
+    }
 }

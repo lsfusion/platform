@@ -35,6 +35,10 @@ abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends 
             keySelect.putAll(BaseUtils.mapString(keys));
         }
 
+        public String getSource(KeyExpr expr) {
+            return expr.toString();
+        }
+
         public String getSource(Table.Join.Expr expr) {
             return expr.toString();
         }

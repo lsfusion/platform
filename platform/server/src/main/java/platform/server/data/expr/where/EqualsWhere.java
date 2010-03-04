@@ -15,7 +15,7 @@ import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.base.BaseUtils;
 
-public class EqualsWhere extends CompareWhere {
+public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     private EqualsWhere(BaseExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
@@ -62,16 +62,10 @@ public class EqualsWhere extends CompareWhere {
             return "(" + result + " OR " + compare + ")";
     }
 
-    public DataWhereSet getExprFollows() {
-        DataWhereSet follows = new DataWhereSet(operator1.getFollows());
-        follows.addAll(operator2.getFollows());
-        return follows;
-    }
-
     public InnerJoins getInnerJoins() {
-        if(operator1 instanceof KeyExpr && operator2.isValue())
+        if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
             return new InnerJoins((KeyExpr)operator1,operator2);
-        if(operator2 instanceof KeyExpr && operator1.isValue())
+        if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
             return new InnerJoins((KeyExpr)operator2,operator1);
         return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
     }
@@ -85,18 +79,12 @@ public class EqualsWhere extends CompareWhere {
         return operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31;
     }
 
-    @ParamLazy
-    public Where translateDirect(KeyTranslator translator) {
-        return new EqualsWhere(operator1.translateDirect(translator),operator2.translateDirect(translator));
-    }
-    @ParamLazy
-    public Where translateQuery(QueryTranslator translator) {
-        return operator1.translateQuery(translator).compare(operator2.translateQuery(translator),Compare.EQUALS);
+    protected EqualsWhere createThis(BaseExpr operator1, BaseExpr operator2) {
+        return new EqualsWhere(operator1, operator2);
     }
 
-    @Override
-    public Where packFollowFalse(Where falseWhere) {
-        return new EqualsWhere(operator1.packFollowFalse(falseWhere),operator2.packFollowFalse(falseWhere));
+    protected Compare getCompare() {
+        return Compare.EQUALS;
     }
 
     public ClassExprWhere calculateClassWhere() {

@@ -321,6 +321,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,V> boolean isSubMap(Map<? extends K,? extends V> map1,Map<K,? extends V> map2) {
+        for(Map.Entry<? extends K,? extends V> entry : map1.entrySet()) {
+            V value2 = map2.get(entry.getKey());
+            if(!(value2!=null && value2.equals(entry.getValue())))
+                return false;
+        }
+        return true;
+    }
+
     public static <B,V> Map<B,V> forceMerge(Map<?,? extends V> map1,Map<?,? extends V> map2) {
         Map<Object,V> result = new HashMap<Object,V>(map1);
         result.putAll(map2);

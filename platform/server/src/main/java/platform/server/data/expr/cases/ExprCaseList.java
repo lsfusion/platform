@@ -11,7 +11,8 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
     public ExprCaseList() {
     }
     public ExprCaseList(BaseExpr data) {
-        add(Where.TRUE,data);
+        add(new ExprCase(Where.TRUE,data));
+        upWhere = Where.TRUE;
     }
     public ExprCaseList(Where where, Expr data) {
         if(where.isTrue()) { // если where - true то по сути копирование

@@ -8,8 +8,8 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
 import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.NullReader;
 import platform.server.data.type.Reader;
@@ -290,19 +290,17 @@ public class CompiledQuery<K,V> {
     }
 
     static class InnerSelect extends CompileSource {
-        
-        final InnerWhere innerWhere;
 
-        public InnerSelect(InnerWhere innerWhere, SQLSyntax syntax, Map<ValueExpr, String> params) {
+        final JoinSet innerJoins;
+
+        public InnerSelect(JoinSet innerJoins, SQLSyntax syntax, Map<ValueExpr, String> params) {
             super(params, syntax);
 
-            this.innerWhere = innerWhere;
-            for(Map.Entry<KeyExpr, BaseExpr> exprValue : innerWhere.keyValues.entrySet())
-                keySelect.put(exprValue.getKey(),exprValue.getValue().getSource(this));
+            this.innerJoins = innerJoins;
 
             // обработаем inner'ы
             Collection<Table.Join> innerTables = new ArrayList<Table.Join>(); Collection<GroupJoin> innerGroups = new ArrayList<GroupJoin>();
-            innerWhere.joins.fillJoins(innerTables, innerGroups);
+            innerJoins.fillJoins(innerTables, innerGroups);
             for(Table.Join table : innerTables) {
                 assert !tables.containsKey(table); // assert'ы так как innerWhere должен быть взаимоисключающий
                 tables.put(table,new TableSelect(table,syntax));
@@ -327,7 +325,7 @@ public class CompiledQuery<K,V> {
             protected JoinSelect(I innerJoin) {
                 alias = "t" + (aliasNum++);
 
-                inner = innerJoin instanceof InnerJoin && innerWhere.means((InnerJoin) innerJoin); // вообще множественным наследованием надо было бы делать
+                inner = innerJoin instanceof InnerJoin && innerJoins.means((InnerJoin) innerJoin); // вообще множественным наследованием надо было бы делать
 
                 // здесь проблема что keySelect может рекурсивно использоваться 2 раза, поэтому сначала пробежим не по ключам
                 String joinString = "";
@@ -359,7 +357,7 @@ public class CompiledQuery<K,V> {
         private Where getInnerWhere() {
             Where trueWhere = Where.TRUE;
             Collection<Table.Join> innerTables = new ArrayList<Table.Join>(); Collection<GroupJoin> innerGroups = new ArrayList<GroupJoin>();
-            innerWhere.joins.fillJoins(innerTables, innerGroups);
+            innerJoins.fillJoins(innerTables, innerGroups);
             for(Table.Join table : innerTables) // все inner'ы на таблицы заведомо true
                 trueWhere = trueWhere.and(table.getWhere());
             for(GroupJoin group : innerGroups) { // для "верхних" group or всех выражений заведомо true
@@ -369,9 +367,6 @@ public class CompiledQuery<K,V> {
                 assert !groupWhere.isFalse();
                 trueWhere = trueWhere.and(groupWhere);
             }
-            for(Map.Entry<KeyExpr,BaseExpr> keyValue : innerWhere.keyValues.entrySet())
-                trueWhere = trueWhere.and(EqualsWhere.create(keyValue.getKey(),keyValue.getValue()));
-
             return trueWhere;
         }
 
@@ -595,11 +590,29 @@ public class CompiledQuery<K,V> {
 
     private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, InnerWhere innerWhere, Where where, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<ValueExpr,String> params, SQLSyntax syntax) {
 
-        InnerSelect compile = new InnerSelect(innerWhere,syntax,params);
+        Map<KeyExpr,BaseExpr> keyExprs = new HashMap<KeyExpr, BaseExpr>();
+        if(!innerWhere.keyExprs.isEmpty()) {
+            keyExprs = innerWhere.keyExprs;
+
+            for(BaseExpr keyValue : keyExprs.values())
+                for(KeyExpr keyKey : keyExprs.keySet())
+                    assert !keyValue.hasKey(keyKey);
+
+            QueryTranslator translator = new QueryTranslator(keyExprs,false);
+            compiledProps = translator.translate(compiledProps);
+            where = where.translateQuery(translator);
+            innerWhere = BaseUtils.single(where.getInnerJoins().compileMeans()).mean;
+        }
+        assert innerWhere.keyExprs.isEmpty();
+
+        InnerSelect compile = new InnerSelect(innerWhere.joins,syntax,params);
         // первым так как должны keySelect'ы и inner'ы заполнится
         for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet()) // свойства
             propertySelect.put(joinProp.getKey(), joinProp.getValue().getSource(compile));
-        keySelect.putAll(BaseUtils.join(mapKeys,compile.keySelect));
+        for(Map.Entry<K,KeyExpr> mapKey : mapKeys.entrySet()) {
+            Expr keyValue = keyExprs.get(mapKey.getValue());
+            keySelect.put(mapKey.getKey(),keyValue!=null?keyValue.getSource(compile):compile.keySelect.get(mapKey.getValue()));
+        }
 
         assert !keySelect.containsValue(null);
         assert !propertySelect.containsValue(null);

@@ -166,10 +166,10 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         for(OrObjectWhere orWhere : getOr())
             if(orWhere instanceof EqualsWhere) {
                 CompareWhere where = (CompareWhere)orWhere;
-                if(where.operator1 instanceof KeyExpr)
+                if(where.operator1 instanceof KeyExpr && !where.operator2.hasKey((KeyExpr) where.operator1))
                     result.put((KeyExpr) where.operator1, where.operator2);
                 else
-                if(where.operator2 instanceof KeyExpr)
+                if(where.operator2 instanceof KeyExpr && !where.operator1.hasKey((KeyExpr) where.operator2))
                     result.put((KeyExpr) where.operator2, where.operator1);
             }
         return result;

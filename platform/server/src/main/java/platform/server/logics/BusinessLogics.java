@@ -132,6 +132,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return objectProp;
     }
 
+    private Map<ValueClass,LP> split = new HashMap<ValueClass, LP>();
+    public LP split(ValueClass valueClass) { // избыточно так как не может сама класс определить
+        LP splitProp = split.get(valueClass);
+        if(splitProp==null) {
+            splitProp = addJProp("split " + valueClass.toString(), equals2, object(valueClass), 1, object(valueClass), 2);
+            split.put(valueClass,splitProp);
+        }
+        return splitProp;
+    }
+
     // по умолчанию с полным стартом
     public BusinessLogics(DataAdapter adapter,int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(exportPort);
@@ -1068,7 +1078,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return false;
     }
 
-    public final static boolean checkClasses = true;
+    public final static boolean checkClasses = false;
     private boolean checkProps() {
         if(checkClasses)
             for(Property prop : properties) {

@@ -54,7 +54,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
 
     // проталкивает "верхний" where внутрь
     private static Where pushWhere(Map<BaseExpr, BaseExpr> group, Where trueWhere) {
-        Where result = trueWhere.and(getWhere(group)).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getMeansWhere();
+        Where result = trueWhere.andMeans(getWhere(group)).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getMeansWhere();
         assert result.means(getWhere(group.keySet())); // надо assert'ить чтобы не and'ить
         return result;
     }
@@ -79,8 +79,10 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
 
     @Override
     protected boolean checkExpr() {
-        for(Map.Entry<BaseExpr, BaseExpr> groupExpr : group.entrySet())
+        for(Map.Entry<BaseExpr, BaseExpr> groupExpr : group.entrySet()) {
             assert !(groupExpr.getValue() instanceof ValueExpr);
+            assert !(groupExpr.getKey() instanceof ValueExpr);
+        }
 
 //        for(KeyExpr key : getKeys())
 //            assert !(key instanceof PullExpr) || group.containsKey(key) || expr.equals(key); 
@@ -265,9 +267,20 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
     }
 
     protected static Expr createBase(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max) {
-        return createBase(group, expr, max, Where.TRUE, new HashMap<KeyExpr, Type>());
+        // надо проверить что group reverse'able
+        Map<BaseExpr,BaseExpr> reversedGroup = new HashMap<BaseExpr, BaseExpr>();
+        for(Map.Entry<BaseExpr,BaseExpr> groupExpr : group.entrySet()) {
+            BaseExpr groupKey = reversedGroup.get(groupExpr.getValue());
+            if(groupKey==null)
+                reversedGroup.put(groupExpr.getValue(),groupExpr.getKey());
+            else
+                expr = expr.and(EqualsWhere.create(groupExpr.getKey(),groupKey));
+        }
+
+        return createBase(BaseUtils.reverse(reversedGroup), expr, max, Where.TRUE, new HashMap<KeyExpr, Type>());
     }
 
+    // отсюда идет ветка packFollowFalse
     private static Expr createBase(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where upWhere, Map<KeyExpr,Type> keepTypes) {
         return pushValues(group, expr, max, pushWhere(group, upWhere), keepTypes);
     }
