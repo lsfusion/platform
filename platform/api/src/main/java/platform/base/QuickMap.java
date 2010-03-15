@@ -83,24 +83,32 @@ public abstract class QuickMap<K,V> {
     }
 
     public boolean add(K key,V value) {
-        return add(key,hash(key.hashCode()),value);
+        return add(key, value, true);
     }
 
     private boolean add(int index,QuickMap<? extends K,? extends V> map) {
-        return add(map.table[map.indexes[index]],map.htable[map.indexes[index]],map.vtable[map.indexes[index]]);
+        return add(map.table[map.indexes[index]],map.htable[map.indexes[index]],map.vtable[map.indexes[index]], true);
     }
 
-    private boolean add(Object key,int hash,Object value) {
+    public void set(K key,V value) {
+        add(key, value, false);
+    }
+
+    private boolean add(K key, V value, boolean add) {
+        return add(key,hash(key.hashCode()),value, true);
+    }
+
+    private boolean add(Object key, int hash, Object value, boolean add) {
         int i=hash & (table.length-1);
         while(table[i]!=null) {
             if(htable[i]==hash && table[i].equals(key)) {
-                V addValue = addValue((V)vtable[i], (V) value);
-                if(addValue==null)
-                    return false;
-                else {
-                    vtable[i] = addValue;
-                    return true;
+                if(add) {
+                    value = addValue((V)vtable[i], (V) value);
+                    if(value==null)
+                        return false;
                 }
+                vtable[i] = value;
+                return true;
             }
             i=(i==table.length-1?0:i+1);
         }

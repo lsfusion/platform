@@ -29,8 +29,7 @@ class OracleDataAdapter extends DataAdapter {
     }
 
     public String getUpdate(String tableString, String setString, String fromString, String whereString) {
-        // идет как Select Update
-        return null;
+        throw new RuntimeException("wrong update model");
     }
 
     public String getClassName() {
@@ -68,18 +67,6 @@ class OracleDataAdapter extends DataAdapter {
 
     public String getClustered() {
         return "";
-    }
-
-    public String startTransaction() {
-        return null;
-    }
-
-    public String commitTransaction() {
-        return "COMMIT";
-    }
-
-    public String rollbackTransaction() {
-        return "ROLLBACK";
     }
 
     public String isNULL(String expr1, String expr2, boolean notSafe) {

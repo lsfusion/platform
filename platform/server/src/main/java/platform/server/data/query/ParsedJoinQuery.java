@@ -54,6 +54,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) {
         assert joinImplement.size()==mapKeys.size();
+        assert ValueExpr.noStaticEquals(mapValues.keySet(),values); // все должны быть параметры
 
         Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
         for(Map.Entry<K,? extends Expr> joinExpr : joinImplement.entrySet()) {
@@ -61,16 +62,24 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
                 return joinExprs(joinImplement, mapValues);
            joinKeys.put(joinExpr.getKey(), (KeyExpr) joinExpr.getValue());
         }
-        return new TranslateJoin<V>(new KeyTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
+        return new KeyTranslateJoin<V>(new KeyTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
     }
 
     public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
         assert joinImplement.size()==mapKeys.size();
 
-        Where joinWhere = Where.TRUE; // надо еще where join'ов закинуть
-        for(Expr joinExpr : joinImplement.values())
-            joinWhere = joinWhere.and(joinExpr.getWhere());
-        return new CaseJoin<V>(joinWhere, new TranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement), mapValues, true), this));
+        Join<V> join = this;
+
+        // сначала map'им значения
+        join = new KeyTranslateJoin<V>(new KeyTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues), join);
+
+        // затем делаем подстановку
+        join = new QueryTranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement)), join);
+
+         // затем закидываем Where что все implement не null
+        join = new CaseJoin<V>(Expr.getWhere(joinImplement), join);
+
+        return join;
     }
 
     // для заданных свойств вытягивает условия на классы для них

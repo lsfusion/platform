@@ -39,6 +39,7 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
     OrObjectWhere[] getOr();
 
     Map<BaseExpr,BaseExpr> getExprValues();
+    Map<BaseExpr,BaseExpr> getNotExprValues();
     Map<KeyExpr, BaseExpr> getKeyExprs();
 
     ObjectWhereSet getObjects();

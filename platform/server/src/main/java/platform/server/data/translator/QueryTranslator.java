@@ -1,22 +1,28 @@
 package platform.server.data.translator;
 
 import net.jcip.annotations.Immutable;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.*;
 
 import java.util.*;
 
+// в отдельный класс для allKeys и для аспектов
 @Immutable
-public class QueryTranslator extends Translator<Expr> {
+public class QueryTranslator {
 
-    public QueryTranslator(Map<KeyExpr, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> values, boolean allKeys) {
-        super((Map<KeyExpr, Expr>) joinImplement, values, allKeys);
+    public final Map<KeyExpr,? extends Expr> keys;
+
+    private final boolean allKeys;
+
+    public QueryTranslator(Map<KeyExpr, ? extends Expr> keys, boolean allKeys) {
+        this.keys = keys;
+
+        assert !keys.containsValue(null);
+
+        this.allKeys = allKeys;
     }
 
-    public QueryTranslator(Map<KeyExpr, BaseExpr> joinImplement, boolean allKeys) {
-        this(joinImplement, new HashMap<ValueExpr, ValueExpr>(), allKeys);
+    public QueryTranslator(Map<KeyExpr, ? extends Expr> joinImplement) {
+        this(joinImplement, true);
     }
 
     public <K> Map<K, Expr> translate(Map<K, ? extends Expr> map) {
@@ -40,4 +46,21 @@ public class QueryTranslator extends Translator<Expr> {
         return result;
     }
 
+    public Expr translate(KeyExpr key) {
+        Expr transExpr = keys.get(key);
+        if(transExpr==null) {
+            if(allKeys)
+                assert key instanceof PullExpr; // не должно быть
+            return key;
+        } else
+            return transExpr;
+    }
+
+    public int hashCode() {
+        return keys.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return obj==this || (obj instanceof QueryTranslator && keys.equals(((QueryTranslator)obj).keys));
+    }
 }

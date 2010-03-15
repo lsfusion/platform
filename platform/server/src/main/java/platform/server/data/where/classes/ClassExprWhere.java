@@ -7,13 +7,12 @@ import platform.server.data.expr.StaticClassExpr;
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
+import platform.server.data.where.*;
 import platform.server.classes.sets.AndClassSet;
 
 import java.util.Map;
 
-public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> {
+public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
 
     public Type getType(KeyExpr keyExpr) {
         assert wheres.length>0;
@@ -31,7 +30,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     public Where getMeansWhere() {
         if(isTrue()) return Where.TRUE;
         if(isFalse()) return Where.FALSE;
-        return new MeanClassWhere(this);
+        return new PackClassWhere(this);
     }
 
     public boolean means(Where where) {
@@ -61,11 +60,40 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return new ClassExprWhere(iWheres);
     }
 
-    public ClassExprWhere andEquals(VariableClassExpr expr, VariableClassExpr to) {
+    private static And<VariableClassExpr> andEquals(And<VariableClassExpr> and, EqualMap equals) {
+        And<VariableClassExpr> result = new And<VariableClassExpr>(and);
+        for(int i=0;i<equals.num;i++) {
+            Equal equal = equals.comps[i];
+            if(!equal.dropped) {
+                AndClassSet andClasses = null;
+                for(int j=0;j<equal.size;j++)
+                    if(equal.exprs[j] instanceof VariableClassExpr) {
+                        AndClassSet classes = and.getPartial((VariableClassExpr) equal.exprs[j]);
+                        if(classes!=null) {
+                            if(andClasses==null)
+                                andClasses = classes;
+                            else {
+                                andClasses = andClasses.and(classes);
+                                if(andClasses.isEmpty()) return null;
+                            }
+                        }
+                    }
+                if(andClasses!=null)
+                    for(int j=0;j<equal.size;j++)
+                        if(equal.exprs[j] instanceof VariableClassExpr)
+                            result.set((VariableClassExpr)equal.exprs[j], andClasses);
+            }
+        }
+        return result;
+    }
+    // нужен очень быстрый так как в checkTrue используется
+    public ClassExprWhere andEquals(EqualMap equals) {
+        if(equals.size==0) return this;
+
         And<VariableClassExpr>[] rawAndWheres = newArray(wheres.length); int num=0;
         for(And<VariableClassExpr> where : wheres) {
-            And<VariableClassExpr> andWhere = new And<VariableClassExpr>(where);
-            if (andWhere.add(to, where.get(expr)))
+            And<VariableClassExpr> andWhere = andEquals(where,equals);
+            if(andWhere!=null)
                 rawAndWheres[num++] = andWhere;
         }
         And<VariableClassExpr>[] andWheres = newArray(num); System.arraycopy(rawAndWheres,0,andWheres,0,num);

@@ -102,10 +102,10 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return parse().join(joinImplement, mapValues);
     }
 
-    static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders) {
+    static <K> String stringOrder(List<K> sources, int offset, OrderedMap<K,Boolean> orders, SQLSyntax syntax) {
         String orderString = "";
         for(Map.Entry<K,Boolean> order : orders.entrySet())
-            orderString = (orderString.length()==0?"":orderString+",") + (sources.indexOf(order.getKey())+offset+1) + " " + (order.getValue()?"DESC NULLS LAST":"ASC NULLS FIRST");
+            orderString = (orderString.length()==0?"":orderString+",") + (sources.indexOf(order.getKey())+offset+1) + " " + syntax.getOrderDirection(order.getValue());
         return orderString;
     }
 

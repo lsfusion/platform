@@ -7,6 +7,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
+import platform.server.data.where.DNFWheres;
 import platform.server.caches.HashContext;
 
 import java.util.Collections;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class InnerWhere {
+public class InnerWhere implements DNFWheres.Interface<InnerWhere> {
 
     public final JoinSet joins;
     final Map<KeyExpr, BaseExpr> keyExprs;
@@ -35,7 +36,7 @@ public class InnerWhere {
         keyExprs = Collections.singletonMap(key, expr);
     }
 
-    boolean means(InnerWhere where) {
+    public boolean means(InnerWhere where) {
         return BaseUtils.isSubMap(where.keyExprs,keyExprs) && joins.means(where.joins);
     }
 
@@ -54,8 +55,12 @@ public class InnerWhere {
         return 31 * joins.hashCode() + keyExprs.hashCode();
     }
 
-    InnerWhere and(InnerWhere where) {
-        return new InnerWhere(joins.and(where.joins), BaseUtils.merge(keyExprs,where.keyExprs)); // даже если совпадают ничего страшного, все равно зафиксировано в InnerJoins - Where 
+    public InnerWhere and(InnerWhere where) {
+        return new InnerWhere(joins.and(where.joins), BaseUtils.merge(keyExprs,where.keyExprs)); // даже если совпадают ничего страшного, все равно зафиксировано в InnerJoins - Where
+    }
+
+    public boolean isFalse() {
+        return false;
     }
 
     public int hashContext(HashContext hashContext) {

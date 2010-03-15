@@ -58,18 +58,6 @@ public class PostgreDataAdapter extends DataAdapter {
         return "";
     }
 
-    public String startTransaction() {
-        return "BEGIN TRANSACTION";
-    }
-
-    public String commitTransaction() {
-        return "COMMIT TRANSACTION";
-    }
-
-    public String rollbackTransaction() {
-        return "ROLLBACK";
-    }
-
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается
     public boolean isNullSafe() {
         return false;
@@ -90,5 +78,10 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public String getByteArrayType() {
         return "bytea";
+    }
+
+    @Override
+    public String getOrderDirection(boolean descending) {
+        return descending?"DESC NULLS LAST":"ASC NULLS FIRST";
     }
 }

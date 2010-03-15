@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
+import platform.server.classes.DoubleClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -11,6 +12,9 @@ import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.caches.HashContext;
+import platform.base.BaseUtils;
+
+import java.util.*;
 
 
 public class ValueExpr extends StaticClassExpr {
@@ -85,7 +89,7 @@ public class ValueExpr extends StaticClassExpr {
     }*/
 
     public ValueExpr translateQuery(QueryTranslator translator) {
-        return translator.translate(this);
+        return this;
     }
 
     public BaseExpr translateDirect(KeyTranslator translator) {
@@ -94,5 +98,27 @@ public class ValueExpr extends StaticClassExpr {
 
     public DataWhereSet getFollows() {
         return new DataWhereSet();
+    }
+
+    public static ValueExpr ZERO = new ValueExpr(0, DoubleClass.instance);
+
+    private static Set<ValueExpr> staticExprs;
+    {
+        staticExprs = new HashSet<ValueExpr>();
+        staticExprs.add(ValueExpr.TRUE);
+        staticExprs.add(ValueExpr.ZERO);
+    }
+
+    public static Set<? extends Expr> removeStatic(Set<? extends Expr> col) {
+        return BaseUtils.removeSet(col,staticExprs);
+    }
+
+    public static <V> Map<ValueExpr,V> removeStatic(Map<ValueExpr,V> map) {
+        return BaseUtils.filterNotKeys(map,staticExprs);
+    }
+
+    // пересечение с игнорированием ValueExpr.TRUE
+    public static boolean noStaticEquals(Set<? extends Expr> col1, Set<? extends Expr> col2) {
+        return removeStatic(col1).equals(removeStatic(col2));
     }
 }

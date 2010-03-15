@@ -58,10 +58,6 @@ public class IsClassWhere extends DataWhere {
         return expr.translateQuery(translator).isClass(classes);
     }
 
-    public ClassExprWhere calculateClassWhere() {
-        return new ClassExprWhere(expr,classes).and(expr.getWhere().getClassWhere());
-    }
-
     public void enumerate(SourceEnumerator enumerator) {
         expr.enumerate(enumerator);
     }
@@ -81,6 +77,9 @@ public class IsClassWhere extends DataWhere {
         if(!(classes instanceof UnknownClass || classes instanceof DataClass))
             return new InnerJoins(classExpr.getJoinExpr().getJoin(),this);
         return new InnerJoins(this);
+    }
+    public ClassExprWhere calculateClassWhere() {
+        return new ClassExprWhere(expr,classes).and(expr.getWhere().getClassWhere());
     }
 
     public int hashContext(HashContext hashContext) {

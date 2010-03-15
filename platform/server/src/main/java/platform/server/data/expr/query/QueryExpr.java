@@ -87,7 +87,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
     public boolean twins(AbstractSourceJoin obj) {
         QueryExpr<K,I,J> groupExpr = (QueryExpr)obj;
 
-        assert hashCode()==groupExpr.hashCode();
+//        assert hashCode()==groupExpr.hashCode();
 
         for(KeyTranslator translator : new MapHashIterable(this, groupExpr, false))
             if(query.translateDirect(translator).equals(groupExpr.query) &&

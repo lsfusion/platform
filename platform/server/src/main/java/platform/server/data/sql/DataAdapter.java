@@ -67,10 +67,6 @@ public abstract class DataAdapter implements SQLSyntax {
         return 0;
     }
 
-    public boolean noAutoCommit() {
-        return false;
-    }
-
     // по умолчанию
     public String getClustered() {
         return "CLUSTERED ";
@@ -103,5 +99,9 @@ public abstract class DataAdapter implements SQLSyntax {
 
     public String getDropSessionTable(String tableName) {
         return "DROP TABLE "+getSessionTableName(tableName);
+    }
+
+    public String getOrderDirection(boolean descending) {
+        return descending?"DESC":"ASC";
     }
 }

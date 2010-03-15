@@ -7,11 +7,41 @@ import platform.server.data.expr.*;
 import java.util.*;
 
 @Immutable
-public class KeyTranslator extends Translator<KeyExpr> {
+public class KeyTranslator {
 
-    public KeyTranslator(Map<KeyExpr, KeyExpr> iKeys, Map<ValueExpr, ValueExpr> iValues) {
-        super(iKeys, iValues, true);
+    // какой есть - какой нужен
+    public final Map<KeyExpr,KeyExpr> keys;
+    public final Map<ValueExpr,ValueExpr> values;
+
+    public KeyTranslator(Map<KeyExpr, KeyExpr> keys, Map<ValueExpr, ValueExpr> values) {
+        this.keys = keys;
+        this.values = values;
+
+        assert !keys.containsValue(null);
+        assert !ValueExpr.removeStatic(values).containsValue(null);
     }
+
+    public KeyExpr translate(KeyExpr key) {
+        KeyExpr transExpr = keys.get(key);
+        if(transExpr==null) {
+            assert key instanceof PullExpr; // не должно быть
+            return key;
+        } else
+            return transExpr;
+    }
+
+    public ValueExpr translate(ValueExpr expr) {
+        return BaseUtils.nvl(values.get(expr),expr);
+    }
+
+    public int hashCode() {
+        return keys.hashCode()*31+values.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return obj==this || (obj instanceof KeyTranslator && keys.equals(((KeyTranslator)obj).keys) && values.equals(((KeyTranslator)obj).values));
+    }
+
 
     public <K> Map<K, BaseExpr> translateDirect(Map<K, ? extends BaseExpr> map) {
         Map<K, BaseExpr> transMap = new HashMap<K, BaseExpr>();

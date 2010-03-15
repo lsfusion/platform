@@ -146,7 +146,7 @@ public class MapCacheAspect {
                         Map<ValueExpr,ValueExpr> transValues;
                         if((transValues=BaseUtils.mergeEqual(translator.values,BaseUtils.crossJoin(cache.getKey().mapValues,joinImplement.mapValues)))!=null) {
                             System.out.println("join cached");
-                            return new TranslateJoin<V>(new KeyTranslator(translator.keys,transValues),cache.getValue());
+                            return new KeyTranslateJoin<V>(new KeyTranslator(translator.keys,transValues),cache.getValue());
                         }
                     }
                 }
@@ -230,12 +230,15 @@ public class MapCacheAspect {
             }
         }
 
+
+        boolean cached = false;
+
         Join<String> queryJoin = null;
         synchronized(hashCaches) {
             for(Map.Entry<InterfaceImplement<U>,Query<K,String>> cache : hashCaches.entrySet()) {
                 for(Map<ValueExpr, ValueExpr> mapValues : new MapValuesIterable(cache.getKey(), implement)) {
                     if(cache.getKey().translate(mapValues).equals(implement)) {
-                        System.out.println("getExpr - cached "+property);
+                        cached = true;
                         queryJoin = cache.getValue().join(joinExprs,BaseUtils.filterKeys(mapValues,cache.getValue().getValues())); // так как могут не использоваться values в Query
                     }
                 }
@@ -249,6 +252,7 @@ public class MapCacheAspect {
                     query.properties.put(CHANGED_STRING,ValueExpr.get(queryWheres.toWhere()));
 
                 hashCaches.put(implement, query);
+                assert implement.getValues().containsAll(ValueExpr.removeStatic(query.getValues())); // в query не должно быть элементов не из implement.getValues
 
                 System.out.println("getExpr - not cached "+property);
                 queryJoin = query.join(joinExprs);
@@ -256,8 +260,21 @@ public class MapCacheAspect {
         }
 
         if(changedWheres!=null) changedWheres.add(queryJoin.getExpr(CHANGED_STRING).getWhere());
-        return queryJoin.getExpr(PROPERTY_STRING);
+
+        Expr result = queryJoin.getExpr(PROPERTY_STRING);
+        if(cached) {
+            System.out.println("getExpr - cached "+property);
+            if(checkCaches) {
+                WhereBuilder queryWheres = Property.cascadeWhere(changedWheres);
+                Expr notCachedResult = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,queryWheres});
+                if(!notCachedResult.equals(result))
+                    result = result;
+            }
+        }
+        return result;
     }
+
+    private static boolean checkCaches = false;
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
     @Around("call(platform.server.data.expr.Expr platform.server.logics.property.Property.getExpr(java.util.Map,platform.server.session.Modifier,platform.server.data.where.WhereBuilder)) " +

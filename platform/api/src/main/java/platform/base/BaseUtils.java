@@ -89,6 +89,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K,V> Map<K,V> filterNotKeys(Map<K,V> map, Collection<? extends K> keys) {
+        Map<K,V> result = new HashMap<K, V>();
+        for(Map.Entry<K,V> entry : map.entrySet()) {
+            if(!keys.contains(entry.getKey()))
+                result.put(entry.getKey(),entry.getValue());
+        }
+        return result;
+    }
+
     public static <BK,K extends BK,V> Map<K,V> splitKeys(Map<BK,V> map, Collection<K> keys, Map<BK,V> rest) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<BK,V> entry : map.entrySet()) {
@@ -277,8 +286,14 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> Collection<K> remove(Collection<K> set,Collection<K> remove) {
+    public static <K> Collection<K> remove(Collection<? extends K> set,Collection<? extends K> remove) {
         Collection<K> result = new ArrayList<K>(set);
+        result.removeAll(remove);
+        return result;
+    }
+
+    public static <K> Set<K> removeSet(Set<? extends K> set,Set<? extends K> remove) {
+        Set<K> result = new HashSet<K>(set);
         result.removeAll(remove);
         return result;
     }
@@ -312,11 +327,16 @@ public class BaseUtils {
     }
 
     public static <B,K1 extends B,K2 extends B,V> Map<B,V> mergeEqual(Map<K1,? extends V> map1,Map<K2,? extends V> map2) {
+        Set<? extends V> values1 = BaseUtils.reverse(map1).keySet();
         Map<B,V> result = new HashMap<B,V>(map1);
         for(Map.Entry<K2,? extends V> entry2 : map2.entrySet()) {
             V value1 = result.put(entry2.getKey(), entry2.getValue());
-            if(value1!=null && !entry2.getValue().equals(value1))
-                return null;
+            if(value1==null) {
+                if(values1.contains(entry2.getValue())) // повторяется значение - не reversed
+                    return null;
+            } else
+                if(!entry2.getValue().equals(value1)) // повторяется ключ
+                    return null;
         }
         return result;
     }

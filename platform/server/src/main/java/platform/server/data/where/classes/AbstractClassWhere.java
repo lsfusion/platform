@@ -8,6 +8,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.logics.BusinessLogics;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
+import platform.server.data.where.OrWhere;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,8 +32,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         @Override
         public AndClassSet get(K key) {
             AndClassSet result = super.get(key);
-            if(result==null && !BusinessLogics.checkClasses)
-                throw new RuntimeException();
             assert BusinessLogics.checkClasses || result!=null;
             return result;
         }

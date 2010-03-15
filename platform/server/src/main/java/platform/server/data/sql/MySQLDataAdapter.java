@@ -39,18 +39,6 @@ class MySQLDataAdapter extends DataAdapter {
         return connect;
     }
 
-    public String startTransaction() {
-        return "START TRANSACTION";
-    }
-
-    public String commitTransaction() {
-        return "COMMIT";
-    }
-
-    public String rollbackTransaction() {
-        return "ROLLBACK";
-    }
-
     public String isNULL(String expr1, String expr2, boolean notSafe) {
         return "IFNULL(" + expr1 + "," + "Expr2" + ")";
     }

@@ -2,6 +2,7 @@ package platform.server.data.where;
 
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -76,7 +77,7 @@ public class NotWhere extends ObjectWhere {
     }
 
     public MeanClassWheres calculateMeanClassWheres() {
-        return new MeanClassWheres(ClassExprWhere.TRUE,this);
+        return new MeanClassWheres(MeanClassWhere.TRUE,this);
     }
 
     public ClassExprWhere calculateClassWhere() {

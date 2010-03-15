@@ -1,69 +1,54 @@
 package platform.server.data.where.classes;
 
-import platform.server.data.query.*;
+import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.where.DNFWheres;
 import platform.server.data.translator.KeyTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
-import platform.server.caches.HashContext;
+import platform.base.BaseUtils;
 
-public class MeanClassWhere extends DataWhere {
+import java.util.Map;
+import java.util.HashMap;
 
-    ClassExprWhere packWhere;
+// не будем выделять общий функционал с InnerWhere потому как он весьма сомнительные
+public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
 
-    public MeanClassWhere(ClassExprWhere iPackWhere) {
-        packWhere = iPackWhere;
+    public final static MeanClassWhere TRUE = new MeanClassWhere(ClassExprWhere.TRUE); 
 
-        assert !packWhere.isFalse();
-        assert !packWhere.isTrue();
+    public final ClassExprWhere classWhere;
+    public final Map<VariableClassExpr, VariableClassExpr> equals;
+
+    public MeanClassWhere(ClassExprWhere classWhere) {
+        this(classWhere, new HashMap<VariableClassExpr, VariableClassExpr>());
     }
 
-    protected DataWhereSet getExprFollows() {
-        return packWhere.getFollows();
-    }
-
-    public ClassExprWhere calculateClassWhere() {
-        return packWhere;
-    }
-
-    public void enumerate(SourceEnumerator enumerator) {
-//        throw new RuntimeException("Not supported");
-    }
-
-    protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        throw new RuntimeException("Not supported");
-    }
-
-    public int hashContext(HashContext hashContext) {
-        return System.identityHashCode(this);
-    }
-
-    public boolean twins(AbstractSourceJoin obj) {
-        return false;
-    }
-
-    public String getSource(CompileSource compile) {
-        if(compile instanceof ToString)
-            return packWhere.toString();
-
-        throw new RuntimeException("Not supported");
+    public MeanClassWhere(ClassExprWhere classWhere, Map<VariableClassExpr, VariableClassExpr> equals) {
+        this.classWhere = classWhere;
+        this.equals = equals;
     }
 
     @Override
-    public String toString() {
-        return packWhere.toString();
+    public boolean equals(Object o) {
+        return this == o || o instanceof MeanClassWhere && classWhere.equals(((MeanClassWhere) o).classWhere) && equals.equals(((MeanClassWhere) o).equals);
     }
 
-    public Where translateDirect(KeyTranslator translator) {
-        throw new RuntimeException("Not supported");
-    }
-    public Where translateQuery(QueryTranslator translator) {
-        throw new RuntimeException("Not supported");
+    @Override
+    public int hashCode() {
+        return 31 * classWhere.hashCode() + equals.hashCode();
     }
 
-    public InnerJoins getInnerJoins() {
-        throw new RuntimeException("Not supported");
+    // пока так потом компоненты надо образовывать будет
+    public MeanClassWhere and(MeanClassWhere where) {
+        return new MeanClassWhere(classWhere.and(where.classWhere), BaseUtils.merge(equals,where.equals)); // даже если совпадают ничего страшного, все равно зафиксировано в InnerJoins - Where
     }
+
+    public boolean isFalse() {
+        return false;
+    }
+
+    public MeanClassWhere translate(KeyTranslator translator) {
+        Map<VariableClassExpr,VariableClassExpr> transEquals = new HashMap<VariableClassExpr, VariableClassExpr>();
+        for(Map.Entry<VariableClassExpr,VariableClassExpr> equal : equals.entrySet())
+            transEquals.put(equal.getKey().translateDirect(translator),equal.getValue().translateDirect(translator));
+        return new MeanClassWhere(classWhere.translate(translator), transEquals);
+    }
+
 }

@@ -354,6 +354,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         DataInputStream inputDB = null;
         byte[] struct = (byte[]) session.readRecord(GlobalTable.instance,new HashMap<KeyField, DataObject>(), GlobalTable.instance.struct);
         if(struct!=null) inputDB = new DataInputStream(new ByteArrayInputStream(struct));
+
+        if(struct!=null && struct.length==0) { //чисто для бага JTDS
+            session.rollbackTransaction();
+            session.close();
+            return;
+        }
 /*        try {
             FileInputStream inputDBFile = new FileInputStream("prevstruct.str");
             byte[] readInput = new byte[inputDBFile.read()*255+inputDBFile.read()];
@@ -510,8 +516,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for(List<String> index : mapIndex.getValue())
                 session.addIndex(mapIndex.getKey().name,index);
 
-        session.updateInsertRecord(GlobalTable.instance,new HashMap<KeyField, DataObject>(),
+        try {
+            session.updateInsertRecord(GlobalTable.instance,new HashMap<KeyField, DataObject>(),
                 Collections.singletonMap(GlobalTable.instance.struct,(ObjectValue)new DataObject((Object)outDBStruct.toByteArray(), ByteArrayClass.instance)));
+        }
+        catch(Exception e) {
+            session.updateInsertRecord(GlobalTable.instance,new HashMap<KeyField, DataObject>(),
+                Collections.singletonMap(GlobalTable.instance.struct,(ObjectValue)new DataObject((Object)new byte[0], ByteArrayClass.instance)));
+        }
 
         session.commitTransaction();
         

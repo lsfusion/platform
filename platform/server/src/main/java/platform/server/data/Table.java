@@ -153,10 +153,10 @@ public class Table implements MapKeysInterface<KeyField> {
 
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
 
-        public Map<KeyField, BaseExpr> joins;
+        public final Map<KeyField, BaseExpr> joins;
 
-        public Join(Map<KeyField, ? extends BaseExpr> iJoins) {
-            joins = (Map<KeyField, BaseExpr>) iJoins;
+        public Join(Map<KeyField, ? extends BaseExpr> joins) {
+            this.joins = (Map<KeyField, BaseExpr>) joins;
             assert (joins.size()==keys.size());
         }
 
@@ -266,10 +266,6 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this;
             }
 
-            public InnerJoins getInnerJoins() {
-                return new InnerJoins(Join.this,this);
-            }
-
             protected void fillDataJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
                 joins.add(this,andWhere);
             }
@@ -301,6 +297,9 @@ public class Table implements MapKeysInterface<KeyField> {
                 return exprFJ + " IS NOT NULL";
             }
 
+            public InnerJoins getInnerJoins() {
+                return new InnerJoins(Join.this,this);
+            }
             public ClassExprWhere calculateClassWhere() {
                 return classes.map(joins).and(getJoinsWhere().getClassWhere());
             }

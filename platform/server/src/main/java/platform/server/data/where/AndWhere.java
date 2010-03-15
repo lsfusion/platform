@@ -5,6 +5,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.ManualLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
@@ -13,7 +14,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 
 
-public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere, ArrayInstancer<OrObjectWhere> {
+public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
 
     AndWhere(OrObjectWhere[] iWheres) {
         super(iWheres);
@@ -111,7 +112,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {
-        MeanClassWheres result = new MeanClassWheres(ClassExprWhere.TRUE, TRUE);
+        MeanClassWheres result = new MeanClassWheres(MeanClassWhere.TRUE, TRUE);
         for(Where where : wheres)
             result = result.and(where.getMeanClassWheres());
         return result;

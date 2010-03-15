@@ -5,6 +5,8 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.HashContext;
 import platform.server.classes.StringClass;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.MeanClassWhere;
+import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.InnerJoins;
@@ -13,7 +15,11 @@ import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.data.where.EqualMap;
 import platform.base.BaseUtils;
+
+import java.util.Map;
+import java.util.HashMap;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
@@ -62,14 +68,6 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
             return "(" + result + " OR " + compare + ")";
     }
 
-    public InnerJoins getInnerJoins() {
-        if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
-            return new InnerJoins((KeyExpr)operator1,operator2);
-        if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
-            return new InnerJoins((KeyExpr)operator2,operator1);
-        return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
-    }
-
     public boolean twins(AbstractSourceJoin o) {
         return (operator1.equals(((EqualsWhere)o).operator1) && operator2.equals(((EqualsWhere)o).operator2)) ||
                (operator1.equals(((EqualsWhere)o).operator2) && operator2.equals(((EqualsWhere)o).operator1)) ;
@@ -87,24 +85,42 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         return Compare.EQUALS;
     }
 
-    public ClassExprWhere calculateClassWhere() {
+    public InnerJoins getInnerJoins() {
+        if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
+            return new InnerJoins((KeyExpr)operator1,operator2);
+        if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
+            return new InnerJoins((KeyExpr)operator2,operator1);
+        return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
+    }
 
-        ClassExprWhere classWhere1 = operator1.getWhere().getClassWhere();
-        ClassExprWhere classWhere2 = operator2.getWhere().getClassWhere();
+    @Override
+    public MeanClassWhere getMeanClassWhere() {
+        Map<VariableClassExpr,VariableClassExpr> equals = new HashMap<VariableClassExpr, VariableClassExpr>();
+        ClassExprWhere classWhere = operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());
 
         if(operator2 instanceof VariableClassExpr) {
             if(operator1 instanceof StaticClassExpr)
-                classWhere2 = classWhere2.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));
-            else {
-                if(operator1 instanceof InnerExpr)
-                    classWhere1 = classWhere1.andEquals((InnerExpr)operator1,(VariableClassExpr)operator2);
-                if(operator2 instanceof InnerExpr)
-                    classWhere2 = classWhere2.andEquals((InnerExpr)operator2,(VariableClassExpr)operator1);
-            }
+                classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));
+            else
+                equals.put((VariableClassExpr)operator1,(VariableClassExpr)operator2);
         } else
         if(operator1 instanceof VariableClassExpr)
-            classWhere1 = classWhere1.and(new ClassExprWhere((VariableClassExpr)operator1,((StaticClassExpr)operator2).getStaticClass()));
+            classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator1,((StaticClassExpr)operator2).getStaticClass()));
 
-        return classWhere1.and(classWhere2);
+        return new MeanClassWhere(classWhere, equals);
     }
+    // повторяет FormulaWhere так как должен andEquals сделать
+    public ClassExprWhere calculateClassWhere() {
+        MeanClassWhere meanWhere = getMeanClassWhere(); // именно так а не как Formula потому как иначе бесконечный цикл getMeanClassWheres -> MeanClassWhere.getClassWhere -> means(isFalse) и т.д. пойдет
+        if(operator1 instanceof VariableClassExpr && operator2 instanceof VariableClassExpr) {
+            assert meanWhere.equals.size()==1;
+            EqualMap equalMap = new EqualMap(2);
+            equalMap.add(operator1,operator2);
+            return meanWhere.classWhere.andEquals(equalMap);
+        } else {
+            assert meanWhere.equals.size()==0;
+            return meanWhere.classWhere;
+        }
+    }
+
 }

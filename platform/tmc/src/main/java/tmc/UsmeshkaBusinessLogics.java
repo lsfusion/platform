@@ -7,9 +7,10 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.rmi.registry.LocateRegistry;
+import java.awt.event.KeyEvent;
 
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.sql.PostgreDataAdapter;
+import platform.server.data.sql.MSSQLDataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.linear.LP;
 import platform.server.logics.property.AggregateProperty;
@@ -17,10 +18,11 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.DoubleClass;
 import platform.server.view.navigator.*;
-import platform.server.view.navigator.filter.OrFilterNavigator;
 import platform.server.view.navigator.filter.NotNullFilterNavigator;
 import platform.server.auth.User;
 import platform.interop.UserInfo;
+
+import javax.swing.*;
 
 
 public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogics> {
@@ -33,7 +35,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("usmeshka","localhost","postgres","11111");
+//        DataAdapter adapter = new PostgreDataAdapter("usmeshka","localhost","postgres","11111");
+        DataAdapter adapter = new MSSQLDataAdapter("usmeshka","ME2-ПК","sa","11111");
         UsmeshkaBusinessLogics BL = new UsmeshkaBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -71,9 +74,9 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
     CustomClass documentInner, orderOuter, commitOuter;
 
-    CustomClass move, moveInner, returnInner, returnOuter;
+    CustomClass move, moveInner, returnInner, returnOuter, orderInner;
 
-    CustomClass store, article, localSupplier, importSupplier, orderLocal;
+    CustomClass store, article, articleGroup, localSupplier, importSupplier, orderLocal;
     CustomClass customerWhole, customerRetail, orderWhole, orderRetail;
 
     protected void initClasses() {
@@ -92,28 +95,29 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
         documentInner = addAbstractClass("Внутренняя операция", order);
         returnInner = addAbstractClass("Возврат внутренней операции", order);
+        orderInner = addAbstractClass("Заказ", documentInner);
 
         orderExtInc = addAbstractClass("Закупка", orderOuter);
-        commitExtInc = addAbstractClass("Приход от пост.", commitOuter, orderExtInc);
+        commitExtInc = addAbstractClass("Приход от пост.", commitOuter, orderExtInc, invoiceDocument);
 
         orderWhole = addAbstractClass("Операция по безналу", order);
         orderRetail = addAbstractClass("Операция за наличный расчет", order);
 
-        orderSaleWhole = addConcreteClass("Заказ по безналу", orderOut, documentInner, orderWhole);
+        orderSaleWhole = addConcreteClass("Заказ по безналу", orderOut, orderInner, orderWhole);
         invoiceSaleWhole = addConcreteClass("Выписанный заказ по безналу", orderSaleWhole, invoiceDocument);
         commitSaleWhole = addConcreteClass("Отгруженный заказ по безналу", invoiceSaleWhole, commitOut);
 
-        orderSaleRetail = addConcreteClass("Заказ за наличный расчет", orderOut, documentInner, orderRetail);
+        orderSaleRetail = addConcreteClass("Заказ за наличный расчет", orderOut, orderInner, orderRetail);
         commitSaleRetail = addConcreteClass("Реализация за наличный расчет", orderSaleRetail, commitOut);
 
         balanceCheck = addConcreteClass("Инвентаризация", orderOut, commitOut, documentInner);
 
-        orderDistribute = addConcreteClass("Заказ на внутреннее перемещение", orderOut, orderInc, documentInner);
+        orderDistribute = addConcreteClass("Заказ на внутреннее перемещение", orderOut, orderInc, orderInner);
         invoiceDistribute = addConcreteClass("Выписанное внутреннее перемещение", orderDistribute, invoiceDocument);
         commitOutDistribute = addConcreteClass("Отгруженное внутреннее перемещение", invoiceDistribute, commitOut);
         commitIncDistribute = addConcreteClass("Принятое внутреннее перемещение", commitOutDistribute, commitInc);
 
-        orderLocal = addConcreteClass("Операция с местным поставщиком", order);
+        orderLocal = addAbstractClass("Операция с местным поставщиком", order);
 
         orderDeliveryLocal = addConcreteClass("Закупка у местного поставщика", orderExtInc, orderLocal);
         commitDeliveryLocal = addConcreteClass("Приход от местного поставщика", orderDeliveryLocal, commitExtInc);
@@ -123,54 +127,65 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
         orderReturnDeliveryLocal = addConcreteClass("Заявка на возврат местному поставщику", orderOut, orderLocal);
         invoiceReturnDeliveryLocal = addConcreteClass("Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal,invoiceDocument);
-        commitReturnDeliveryLocal = addConcreteClass("Возврат местному поставщику", invoiceReturnDeliveryLocal);
+        commitReturnDeliveryLocal = addConcreteClass("Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
 
-        returnSaleWhole = addConcreteClass("Возврат реализации по безналу", orderInc, returnInner, commitInc, orderWhole);
+        returnSaleWhole = addConcreteClass("Возврат реализации по безналу", orderInc, returnInner, commitInc, orderWhole, invoiceDocument);
         returnSaleRetail = addConcreteClass("Возврат реализации за наличный расчет", orderInc, returnInner, commitInc, orderRetail);
 
         store = addConcreteClass("Склад", namedObject);
         article = addConcreteClass("Товар", namedObject);
+        articleGroup = addConcreteClass("Группа товаров", namedObject);        
         localSupplier = addConcreteClass("Местный поставщик", namedObject);
         importSupplier = addConcreteClass("Импортный поставщик", namedObject);
         customerWhole = addConcreteClass("Оптовый покупатель", namedObject);
         customerRetail = addConcreteClass("Розничный покупатель", namedObject);
     }
 
-    LP balanceSklFreeQuantity;
+    LP balanceSklFreeQuantity, orderContragent;
 
     protected void initProperties() {
-        LP incStore = addDProp(baseGroup, "incStore", "Склад (прих.)", store, orderInc);
-        LP outStore = addDProp(baseGroup, "outStore", "Склад (расх.)", store, orderOut);
+        LP articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
-        LP orderContragent = addCUProp(baseGroup, "Контрагент", // generics
+        LP incStore = addDProp("incStore", "Склад (прих.)", store, orderInc); addJProp(baseGroup, "Склад (прих.)", name, incStore, 1);
+        LP outStore = addDProp("outStore", "Склад (расх.)", store, orderOut); addJProp(baseGroup, "Склад (расх.)", name, outStore, 1); 
+
+        orderContragent = addCUProp("Контрагент", // generics
                 addDProp("localSupplier", "Поставщик", localSupplier, orderLocal),
                 addDProp("importSupplier", "Поставщик", importSupplier, orderDeliveryImport),
                 addDProp("wholeCustomer", "Покупатель", customerWhole, orderWhole),
                 addDProp("retailCustomer", "Покупатель", customerRetail, orderRetail));
+        addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
 
         LP invoiceNumber = addDProp(baseGroup, "Накладная", StringClass.get(20), invoiceDocument);
 
-        LP outerOrderQuantity = addDProp(baseGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderOuter, article);
-        LP outerCommitedQuantity = addDProp(baseGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitOuter, article);
+        outerOrderQuantity = addDProp(baseGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderOuter, article);
+        outerCommitedQuantity = addDProp(baseGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitOuter, article);
+        outerCommitedQuantity.setDerivedChange(outerOrderQuantity, 1, 2, is(commitInc), 1);
+        LP expiryTerm = addDProp(baseGroup, "expiryTerm", "Срок годн.", DoubleClass.instance, commitOuter, article);        
 
         // для возвратных своего рода generics
-        LP returnOuterQuantity = addDProp(baseGroup, "returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
+        LP returnOuterQuantity = addDProp("returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
 
-        LP returnInnerCommitQuantity = addCUProp(baseGroup, "Кол-во возврата", // generics
+        returnInnerCommitQuantity = addCUProp(baseGroup, "Кол-во возврата", // generics
                          addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitOuter, commitSaleWhole),
                          addDProp("returnSaleRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleRetail, article, commitOuter, commitSaleRetail));
 
-        LP returnQuantity = addCUProp(baseGroup, "Кол-во возврата", returnOuterQuantity, // возвратный документ\прямой документ
-                                addSGProp("Кол-во возврата", returnInnerCommitQuantity, 1, 2, 4));
-        addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, addJProp(diff2, orderContragent, 1, orderContragent, 2), 1, 3, returnQuantity, 1, 2, 3), false);
+        returnInnerQuantity = addSGProp(baseGroup, "Кол-во возврата", returnInnerCommitQuantity, 1, 2, 4); 
+        LP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
+        addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, addJProp(diff2, orderContragent, 1, orderContragent, 2), 1, 3, returnDocumentQuantity, 1, 2, 3), false);
 
-        LP documentInnerQuantity = addDProp("outOrderQuantity", "Кол-во операции", DoubleClass.instance, documentInner, article, commitOuter);
+        LP orderInnerQuantity = addDProp("outOrderQuantity", "Кол-во операции", DoubleClass.instance, orderInner, article, commitOuter);
 
-        LP innerQuantity = addCUProp(baseGroup, "Кол-во операции", returnOuterQuantity, documentInnerQuantity,
-                                addSGProp("Кол-во операции", returnInnerCommitQuantity, 1, 2, 3));
+        // инвентаризация
+        innerBalanceCheck = addDProp(baseGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitOuter);
+        innerBalanceCheckDB = addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitOuter);
+
+        innerQuantity = addCUProp(baseGroup, "innerQuantity", "Кол-во операции", returnOuterQuantity, orderInnerQuantity,
+                                addSGProp("Кол-во операции", returnInnerCommitQuantity, 1, 2, 3),
+                                addDUProp("balanceCheckQuantity","Кол-во инв.", innerBalanceCheckDB, innerBalanceCheck));
 
         LP incCommitedQuantity = addCUProp(baseGroup, "Кол-во прихода парт.",
-                        addJProp(and1, outerCommitedQuantity, 1, 2, split(commitOuter), 1, 3), // избыточно так как не может сама класс определить
+                        addJProp(and1, outerCommitedQuantity, 1, 2, equals2, 1, 3), // избыточно так как не может сама класс определить
                         addJProp(and1, innerQuantity, 1, 2, 3, is(commitInc), 1));
         LP incSklCommitedQuantity = addSGProp(baseGroup, "Кол-во прихода парт. на скл.", incCommitedQuantity, incStore, 1, 2, 3);
 
@@ -178,22 +193,47 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         LP outSklCommitedQuantity = addSGProp(baseGroup, "Кол-во отгр. парт. на скл.", outCommitedQuantity, outStore, 1, 2, 3);
         LP outSklQuantity = addSGProp(baseGroup, "Кол-во заяв. парт. на скл.", innerQuantity, outStore, 1, 2, 3);
 
-        LP balanceSklCommitedQuantity = addDUProp(baseGroup, "Остаток парт. на скл.", incSklCommitedQuantity, outSklCommitedQuantity);
-        balanceSklFreeQuantity = addDUProp(baseGroup, "Свободное кол-во на скл.", incSklCommitedQuantity, outSklQuantity);
+        balanceSklCommitedQuantity = addDUProp(baseGroup, "balanceSklCommitedQuantity", "Остаток парт. на скл.", incSklCommitedQuantity, outSklCommitedQuantity);
+        balanceSklFreeQuantity = addDUProp(baseGroup, "balanceSklFreeQuantity", "Свободное кол-во на скл.", incSklCommitedQuantity, outSklQuantity);
         addConstraint(addJProp("Кол-во резерва должно быть не меньше нуля", greater2, vzero, balanceSklFreeQuantity, 1, 2, 3), false);
 
-        LP documentIncSklCommitedQuantity = addJProp(baseGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, incStore, 1, 2, 3);
-        LP documentOutSklCommitedQuantity = addJProp(baseGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, outStore, 1, 2, 3);
-        LP documentOutSklFreeQuantity = addJProp(baseGroup, "Свободно парт. расх.", balanceSklFreeQuantity, outStore, 1, 2, 3);
+        innerBalanceCheckDB.setDerivedChange(balanceSklCommitedQuantity, outStore, 1, 2, 3);
 
-        LP returnedInnerQuantity = addSGProp("Кол-во возвр. паст.", returnInnerCommitQuantity, 4, 2, 3);
-        LP confirmedInnerQuantity = addDUProp("Кол-во подтв. парт.", documentInnerQuantity, returnedInnerQuantity);
+        addJProp(baseGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, incStore, 1, 2, 3);
+        addJProp(baseGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, outStore, 1, 2, 3);
+        LP documentOutSklFreeQuantity = addJProp("Свободно парт. расх.", balanceSklFreeQuantity, outStore, 1, 2, 3);
+
+        LP returnedInnerQuantity = addSGProp("Кол-во возвр. парт.", returnInnerCommitQuantity, 4, 2, 3);
+        LP confirmedInnerQuantity = addDUProp("Кол-во подтв. парт.", addJProp(and1, orderInnerQuantity, 1, 2, 3, is(commitOut), 1) , returnedInnerQuantity);
         addConstraint(addJProp("Кол-во возврата должно быть не меньше кол-ва самой операции", greater2, vzero, confirmedInnerQuantity, 1, 2, 3), false);
 
-        // собственно для возврата по товару поставщику - ограничение что MIN(кол-во подтв.,кол-во остатка)
-        // для внутренней операции - кол-во остатка
-        // для возврата от покупателя - кол-во подтв. 
+        LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
+        
+        // для док. \ товара \ парт. \ док. прод.   - кол-во подтв. парт. если совпадают контрагенты
+        returnInnerFreeQuantity = addJProp(baseGroup, "Макс. кол-во по возврату парт.", and1, addJProp(and1, confirmedInnerQuantity, 4, 2, 3, sameContragent, 1, 4), 1, 2, 3, 4, is(returnInner), 1) ;
+        returnFreeQuantity = addSGProp(baseGroup, "Макс. кол-во по возврату", returnInnerFreeQuantity, 1, 2, 4);
+
+        // создаем свойства ограничения для расчета себестоимости (являются следствием addConstraint)
+        documentInnerFreeQuantity = addCUProp(baseGroup, "Макс. кол-во по парт.",
+                            addJProp(and1, documentOutSklFreeQuantity, 1, 2, 3, sameContragent, 1, 3), // возврата поставщику - ограничение что кол-во своб. (всегда меньше кол-во подтв.) + условие что партии этого поставщика
+                            addJProp(and1, documentOutSklFreeQuantity, 1, 2, 3, is(orderInner), 1), // прямого расхода - кол-во свободного для этого склада
+                            innerBalanceCheckDB, // для инвентаризации - не больше зафиксированного количества по учету
+                            addSGProp(returnInnerFreeQuantity, 1, 2, 3)); // возврата расхода  - кол-во подтв. этого контрагента
+
+        // добавляем свойства по товарам
+        articleInnerQuantity = addDGProp(baseGroup, "articleInnerQuantity", "Кол-во операции", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, date, 3, 3);
+        documentFreeQuantity = addSGProp(baseGroup, "Макс. кол-во по товару", documentInnerFreeQuantity, 1, 2);
+
+        articleBalanceCheck = addDGProp(baseGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, date, 3, 3);
+
+        LP articleBalanceSklCommitedQuantity = addSGProp(baseGroup, "articleBalanceSklCommitedQuantity", "Остаток тов. на скл.", balanceSklCommitedQuantity, 1, 2);
+        addJProp(baseGroup, "Остаток тов. прих.", articleBalanceSklCommitedQuantity, incStore, 1, 2);
+        addJProp(baseGroup, "Остаток тов. расх.", articleBalanceSklCommitedQuantity, outStore, 1, 2);
     }
+
+    LP documentFreeQuantity, documentInnerFreeQuantity, returnInnerFreeQuantity, returnFreeQuantity, innerQuantity, returnInnerCommitQuantity, returnInnerQuantity;
+    LP outerOrderQuantity, outerCommitedQuantity, articleBalanceCheck, articleBalanceCheckDB, innerBalanceCheck, innerBalanceCheckDB, balanceSklCommitedQuantity;
+    LP articleInnerQuantity;
 
     protected void initGroups() {
     }
@@ -202,7 +242,10 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     }
 
     protected void initPersistents() {
-//        persistents.add((AggregateProperty) balanceSklFreeQuantity.property);
+        persistents.add((AggregateProperty) balanceSklCommitedQuantity.property);
+        persistents.add((AggregateProperty) balanceSklFreeQuantity.property);
+
+        persistents.add((AggregateProperty) innerQuantity.property);
     }
 
     protected void initTables() {
@@ -233,16 +276,24 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                 new DistributeNavigatorForm(innerSplit, 1320, true);
                 new BalanceCheckNavigatorForm(innerSplit, 1350, true);
                 new ReturnDeliveryLocalNavigatorForm(innerSplit, 1400, true);
-                new ReturnSaleWholeNavigatorForm(innerSplit, 1450, true);
-                new ReturnSaleRetailNavigatorForm(innerSplit, 1500, true);
+                NavigatorElement innerSplitReturnSplit = new NavigatorElement(innerSplit, 1425, "Возвраты по товарам");
+                    new ReturnSaleWholeArticleNavigatorForm(innerSplitReturnSplit, 1450, true);
+                    new ReturnSaleRetailArticleNavigatorForm(innerSplitReturnSplit, 1475, true);
+                NavigatorElement innerSplitReturn = new NavigatorElement(innerSplit, 1500, "Возвраты по документам");
+                    new ReturnSaleWholeArticleNavigatorForm(innerSplitReturn, 1525, false);
+                    new ReturnSaleRetailArticleNavigatorForm(innerSplitReturn, 1550, false);
             NavigatorElement inner = new NavigatorElement(documents, 1600, "Внутренние документы по партиям");
                 new WholeNavigatorForm(inner, 1650, false);
                 new RetailNavigatorForm(inner, 1700, false);
                 new DistributeNavigatorForm(inner, 1720, false);
                 new BalanceCheckNavigatorForm(inner, 1750, false);
                 new ReturnDeliveryLocalNavigatorForm(inner, 1800, false);
-                new ReturnSaleWholeNavigatorForm(inner, 1850, false);
-                new ReturnSaleRetailNavigatorForm(inner, 1900, false);        
+                NavigatorElement innerReturnSplit = new NavigatorElement(inner, 1825, "Возвраты по партиям");
+                    new ReturnSaleWholeNavigatorForm(innerReturnSplit, 1850, true);
+                    new ReturnSaleRetailNavigatorForm(innerReturnSplit, 1875, true);
+                NavigatorElement innerReturn = new NavigatorElement(inner, 1900, "Возвраты по документам");
+                    new ReturnSaleWholeNavigatorForm(innerReturn, 1925, false);
+                    new ReturnSaleRetailNavigatorForm(innerReturn, 1950, false);
         NavigatorElement store = new NavigatorElement(baseElement, 2000, "Сводная информация");
             new StoreArticleNavigatorForm(store, 2100);
     }
@@ -257,15 +308,54 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         }
     }
 
-    private class OuterNavigatorForm extends DocumentNavigatorForm {
+    private class ArticleNavigatorForm extends DocumentNavigatorForm {
         final ObjectNavigator objArt;
 
-        protected OuterNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass) {
+        protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean splitArticle) {
             super(parent, ID, documentClass);
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addPropertyView(objDoc, objArt, properties, baseGroup, true);
+            if(splitArticle)
+                addPropertyView(objDoc, objArt, properties, baseGroup, true);
+        }
+    }
+
+    private class InnerNavigatorForm extends ArticleNavigatorForm {
+
+        protected InnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean splitArticle) {
+            super(parent, ID, documentClass, splitArticle);
+
+            if(splitArticle) {
+                RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+                filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                      new NotNullFilterNavigator(getPropertyView(articleInnerQuantity.property).view),
+                                      "Документ",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+                filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                      new NotNullFilterNavigator(getPropertyView(documentFreeQuantity.property).view),
+                                      "Макс. кол-во",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+                addRegularFilterGroup(filterGroup);
+            }
+        }
+    }
+
+    private class OuterNavigatorForm extends ArticleNavigatorForm {
+
+        protected OuterNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass) {
+            super(parent, ID, documentClass, true);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(outerOrderQuantity.property).view),
+                                  "Заявлено",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(outerCommitedQuantity.property).view),
+                                  "Выполнено",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
+            addRegularFilterGroup(filterGroup);
         }
     }
 
@@ -281,81 +371,114 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         }
     }
 
-    private class InnerNavigatorForm extends DocumentNavigatorForm {
+    private class ArticleOuterNavigatorForm extends InnerNavigatorForm {
         final ObjectNavigator objOuter;
-        final ObjectNavigator objArt;
 
-        protected InnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean split) {
-            super(parent, ID, documentClass);
+        protected ArticleOuterNavigatorForm (NavigatorElement parent, int ID, CustomClass documentClass, CustomClass commitClass, boolean splitArticle, boolean splitOuter) {
+            super(parent, ID, documentClass, splitArticle);
 
-            if(split) {
-                objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true); 
-                objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true);
+            if(splitArticle) {
+                objOuter = addSingleGroupObjectImplement(commitClass, "Партия", properties, baseGroup, true);
             } else {
-                GroupObjectNavigator gobjArtOuter = new GroupObjectNavigator(IDShift(1));
-
-                objArt = new ObjectNavigator(IDShift(1), article, "Товар");
-                objOuter = new ObjectNavigator(IDShift(1), commitOuter, "Партия");
-
-                gobjArtOuter.add(objArt);
-                gobjArtOuter.add(objOuter);
-                addGroup(gobjArtOuter);
-
-                addPropertyView(objArt, properties, baseGroup, true);
+                objOuter = new ObjectNavigator(IDShift(1), commitClass, "Партия");
+                objArt.groupTo.add(objOuter);
                 addPropertyView(objOuter, properties, baseGroup, true);
             }
 
-
-            addPropertyView(objOuter, objArt, properties, baseGroup, true);
-            addPropertyView(objOuter, objDoc, properties, baseGroup, true);
-            addPropertyView(objOuter, objDoc, objArt, properties, baseGroup, true);
+//            addPropertyView(objOuter, objArt, properties, baseGroup, true);
+            if(splitOuter) {
+                addPropertyView(objOuter, objDoc, properties, baseGroup, true);
+                addPropertyView(objOuter, objDoc, objArt, properties, baseGroup, true);
+                
+                RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+                filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                      new NotNullFilterNavigator(getPropertyView(innerQuantity.property).view),
+                                      "Документ",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+                filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                      new NotNullFilterNavigator(getPropertyView(documentInnerFreeQuantity.property).view),
+                                      "Макс. кол-во",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
+                addRegularFilterGroup(filterGroup);
+            }
         }
     }
 
-    private class WholeNavigatorForm extends InnerNavigatorForm {
+    private class ReturnDeliveryLocalNavigatorForm extends ArticleOuterNavigatorForm {
+        public ReturnDeliveryLocalNavigatorForm(NavigatorElement parent, int ID, boolean split) {
+            super(parent, ID, orderReturnDeliveryLocal, commitDeliveryLocal, split, true);
+        }
+    }
+    
+    private class ArticleInnerNavigatorForm extends ArticleOuterNavigatorForm {
+
+        protected ArticleInnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean splitArticle, boolean splitOuter) {
+            super(parent, ID, documentClass, commitOuter, splitArticle, splitOuter);
+        }
+    }
+
+    private class DocumentInnerNavigatorForm extends ArticleInnerNavigatorForm {
+
+        protected DocumentInnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean split) {
+            super(parent, ID, documentClass, split, true);
+        }
+    }
+
+    private class WholeNavigatorForm extends DocumentInnerNavigatorForm {
         public WholeNavigatorForm(NavigatorElement parent, int ID, boolean split) {
             super(parent, ID, orderWhole, split);
         }
     }
 
-    private class RetailNavigatorForm extends InnerNavigatorForm {
+    private class RetailNavigatorForm extends DocumentInnerNavigatorForm {
         public RetailNavigatorForm(NavigatorElement parent, int ID, boolean split) {
             super(parent, ID, orderRetail, split);
         }
     }
 
-    private class DistributeNavigatorForm extends InnerNavigatorForm {
+    private class DistributeNavigatorForm extends DocumentInnerNavigatorForm {
         public DistributeNavigatorForm(NavigatorElement parent, int ID, boolean split) {
             super(parent, ID, orderDistribute, split);
         }
     }
 
-    private class BalanceCheckNavigatorForm extends InnerNavigatorForm {
+    private class BalanceCheckNavigatorForm extends DocumentInnerNavigatorForm {
         public BalanceCheckNavigatorForm(NavigatorElement parent, int ID, boolean split) {
             super(parent, ID, balanceCheck, split);
         }
     }
 
-    private class ReturnDeliveryLocalNavigatorForm extends InnerNavigatorForm {
-        public ReturnDeliveryLocalNavigatorForm(NavigatorElement parent, int ID, boolean split) {
-            super(parent, ID, orderReturnDeliveryLocal, split);
-        }
-    }
-
-    private class ReturnInnerNavigatorForm extends InnerNavigatorForm {
+    private class ReturnInnerNavigatorForm extends ArticleInnerNavigatorForm {
         final ObjectNavigator objInner;
 
-        protected ReturnInnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, CustomClass commitClass, boolean split) {
-            super(parent, ID, documentClass, split);
+        protected ReturnInnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, CustomClass commitClass, boolean splitOuter) {
+            super(parent, ID, documentClass, false, splitOuter);
 
-            objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
+            if(splitOuter)
+                objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
+            else {
+                objInner = new ObjectNavigator(IDShift(1), commitClass, "Документ к возврату");
+                objOuter.groupTo.add(objInner);
+                addPropertyView(objInner, properties, baseGroup, true);
+            }
 
-            addPropertyView(objInner, objArt, properties, baseGroup, true);
-            addPropertyView(objInner, objDoc, properties, baseGroup, true);
-            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true);
-            addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
+//            addPropertyView(objInner, objArt, properties, baseGroup, true);
+//            addPropertyView(objInner, objDoc, properties, baseGroup, true);
+//            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true);
+//            addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
             addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true);
             addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(returnInnerCommitQuantity.property).view),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(returnInnerFreeQuantity.property).view),
+                                  "Макс. кол-во",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
+            addRegularFilterGroup(filterGroup);
         }
     }
 
@@ -367,6 +490,71 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
     private class ReturnSaleRetailNavigatorForm extends ReturnInnerNavigatorForm {
         private ReturnSaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean split) {
+            super(parent, ID, returnSaleRetail, commitSaleRetail, split);
+        }
+    }
+
+    private class ReturnArticleNavigatorForm extends InnerNavigatorForm {
+        final ObjectNavigator objInner;
+        final ObjectNavigator objOuter;
+
+        protected ReturnArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, CustomClass commitClass, boolean splitArticle) {
+            super(parent, ID, documentClass, splitArticle);
+
+            if(splitArticle)
+                objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
+            else {
+                objInner = new ObjectNavigator(IDShift(1), commitClass, "Документ к возврату");
+                objArt.groupTo.add(objInner);
+                addPropertyView(objInner, properties, baseGroup, true);
+            }
+
+//            addPropertyView(objInner, objArt, properties, baseGroup, true);
+            addPropertyView(objInner, objDoc, properties, baseGroup, true);
+            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(returnInnerQuantity.property).view),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(returnFreeQuantity.property).view),
+                                  "Макс. кол-во",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
+            addRegularFilterGroup(filterGroup);
+
+            objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true);
+            
+//            addPropertyView(objOuter, objArt, properties, baseGroup, true);
+//            addPropertyView(objOuter, objDoc, properties, baseGroup, true);
+//            addPropertyView(objOuter, objDoc, objArt, properties, baseGroup, true);
+//            addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
+            addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true);
+            addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true);
+
+            // тоже самое что в ReturnInnerNavigatorForm
+            RegularFilterGroupNavigator filterOutGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterOutGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(returnInnerCommitQuantity.property).view),
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
+            filterOutGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(getPropertyView(returnInnerFreeQuantity.property).view),
+                                  "Макс. кол-во",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
+            addRegularFilterGroup(filterOutGroup);
+        }
+    }
+
+    private class ReturnSaleWholeArticleNavigatorForm extends ReturnArticleNavigatorForm {
+        private ReturnSaleWholeArticleNavigatorForm(NavigatorElement parent, int ID, boolean split) {
+            super(parent, ID, returnSaleWhole, commitSaleWhole, split);
+        }
+    }
+
+    private class ReturnSaleRetailArticleNavigatorForm extends ReturnArticleNavigatorForm {
+        private ReturnSaleRetailArticleNavigatorForm(NavigatorElement parent, int ID, boolean split) {
             super(parent, ID, returnSaleRetail, commitSaleRetail, split);
         }
     }

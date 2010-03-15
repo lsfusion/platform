@@ -3,13 +3,14 @@ package platform.server.data.query;
 import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.server.data.Table;
+import platform.server.data.where.DNFWheres;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.expr.query.GroupJoin;
 import platform.server.caches.HashContext;
 
 import java.util.Collection;
 
-public class JoinSet extends AddSet<InnerJoin, JoinSet> {
+public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Interface<JoinSet> {
 
     JoinSet() {
     }
@@ -34,7 +35,7 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> {
         return BaseUtils.hashEquals(who,what) || what.isIn(who.getJoinFollows());
     }
 
-    protected JoinSet and(JoinSet set) {
+    public JoinSet and(JoinSet set) {
         return add(set);
     }
 

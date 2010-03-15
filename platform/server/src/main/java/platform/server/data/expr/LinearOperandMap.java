@@ -4,11 +4,14 @@ import platform.base.BaseUtils;
 import platform.server.classes.IntegralClass;
 import platform.server.data.query.*;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.where.Where;
 import platform.server.caches.HashContext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
 
@@ -66,10 +69,17 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
         }
 
         String source = "";
-        for(Map.Entry<BaseExpr,Integer> operand : entrySet())
+        Where linearWhere = Where.FALSE;
+        Collection<String> orderWhere = new ArrayList<String>();
+        for(Map.Entry<BaseExpr,Integer> operand : entrySet()) {
             if(operand.getValue()!=0)
                 source = source + addToString(source.length() == 0, compile.syntax.isNULL(operand.getKey().getSource(compile), "0", true), operand.getValue());
-        return "(CASE WHEN " + getWhere().getSource(compile) + " THEN " + (source.length()==0?"0":source) + " ELSE NULL END)";
+            if(operand.getKey() instanceof OrderExpr)
+                orderWhere.add(operand.getKey().getSource(compile)+" IS NOT NULL");
+            else
+                linearWhere = linearWhere.or(operand.getKey().getWhere());
+        }
+        return "(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE NULL END)";
     }
 
     public String toString() {

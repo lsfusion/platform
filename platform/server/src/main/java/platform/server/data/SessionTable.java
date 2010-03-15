@@ -16,6 +16,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.Query;
+import platform.server.data.query.Join;
 import platform.server.caches.MapValues;
 import platform.server.caches.HashValues;
 import platform.server.caches.MapValuesIterable;

@@ -21,30 +21,26 @@ public class SQLSession {
     
     private Connection connection;
 
-    private boolean inTransaction = false;
-
     public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
         connection = adapter.startConnection();
+        connection.setAutoCommit(true);
     }
 
     public void startTransaction() throws SQLException {
-        inTransaction = true;
-
-        if(!syntax.noAutoCommit())
-            execute(syntax.startTransaction());
+        connection.setAutoCommit(false);
     }
 
     public void rollbackTransaction() throws SQLException {
-        execute(syntax.rollbackTransaction());
+        connection.rollback();
 
-        inTransaction = false;
+        connection.setAutoCommit(true);
     }
 
     public void commitTransaction() throws SQLException {
-        execute(syntax.commitTransaction());
+        connection.commit();
 
-        inTransaction = false;
+        connection.setAutoCommit(true);
     }
 
     // удостоверивается что таблица есть
@@ -103,7 +99,7 @@ public class SQLSession {
     }
     public void addColumn(String table,PropertyField field) throws SQLException {
         System.out.print("Идет добавление колонки "+table+"."+field.name+"... ");
-        execute("ALTER TABLE " + table + " ADD COLUMN " + field.getDeclare(syntax));
+        execute("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN 
         System.out.println(" Done");
     }
     public void dropColumn(String table,String field) throws SQLException {
@@ -164,24 +160,24 @@ public class SQLSession {
     }
 
     private void execute(String executeString) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(executeString);
+        System.out.println(executeString);
+
+        Statement statement = connection.createStatement();
         try {
-            statement.execute();
+            statement.execute(executeString);
         } catch(SQLException e) {
             System.out.println(statement.toString());
             throw e;
         } finally {
             statement.close();
         }
-
-        ensureTransaction();
     }
 
-    private int executeDDL(SQLExecute execute) throws SQLException {
-        return executeDDL(execute.command, execute.params); 
+    private int executeDML(SQLExecute execute) throws SQLException {
+        return executeDML(execute.command, execute.params);
     }
 
-    private int executeDDL(String command, Map<String, TypeObject> paramObjects) throws SQLException {
+    private int executeDML(String command, Map<String, TypeObject> paramObjects) throws SQLException {
         PreparedStatement statement = getStatement(command,paramObjects);
         
 //        System.out.println(statement);
@@ -195,17 +191,7 @@ public class SQLSession {
             statement.close();
         }
 
-        ensureTransaction();
-
         return result;
-    }
-
-    private void ensureTransaction() throws SQLException {
-        if(!inTransaction && syntax.noAutoCommit()) {
-            Statement statement = connection.createStatement();
-            statement.execute(syntax.commitTransaction()+ syntax.getCommandEnd());
-            statement.close();
-        }
     }
 
     private void insertParamRecord(Table table,Map<KeyField,DataObject> keyFields,Map<PropertyField,ObjectValue> propFields) throws SQLException {
@@ -231,7 +217,7 @@ public class SQLSession {
             }
         }
 
-        executeDDL("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")", params);
+        executeDML("INSERT INTO "+table.getName(syntax)+" ("+insertString+") VALUES ("+valueString+")", params);
     }
 
     public void insertRecord(Table table,Map<KeyField,DataObject> keyFields,Map<PropertyField,ObjectValue> propFields) throws SQLException {
@@ -314,16 +300,16 @@ public class SQLSession {
     }
 
     public int updateRecords(ModifyQuery modify) throws SQLException {
-        return executeDDL(modify.getUpdate(syntax));
+        return executeDML(modify.getUpdate(syntax));
     }
 
     public int insertSelect(ModifyQuery modify) throws SQLException {
-        return executeDDL(modify.getInsertSelect(syntax));
+        return executeDML(modify.getInsertSelect(syntax));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
     public int modifyRecords(ModifyQuery modify) throws SQLException {
-        executeDDL(modify.getInsertLeftKeys(syntax));
+        executeDML(modify.getInsertLeftKeys(syntax));
         return updateRecords(modify);
     }
 

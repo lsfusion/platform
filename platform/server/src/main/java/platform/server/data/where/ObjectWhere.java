@@ -5,7 +5,7 @@ import platform.server.data.expr.where.MapWhere;
 import platform.base.BaseUtils;
 
 
-abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere {
+abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
 
     public abstract ObjectWhere not();
 

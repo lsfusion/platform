@@ -14,10 +14,6 @@ public interface SQLSyntax {
     String getClassName();
     Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
 
-    String startTransaction();
-    String commitTransaction();
-    String rollbackTransaction();
-
     String isNULL(String expr1, String expr2, boolean notSafe);
 
     String getClustered();
@@ -34,8 +30,6 @@ public interface SQLSyntax {
     boolean useFJ();
 
     int updateModel();
-
-    boolean noAutoCommit();
 
     abstract String getStringType(int length);
 
@@ -58,4 +52,6 @@ public interface SQLSyntax {
     String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);
 
     String getUnionOrder(String union,String orderBy, String top);
+
+    String getOrderDirection(boolean order);
 }

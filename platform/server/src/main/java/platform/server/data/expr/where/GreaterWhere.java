@@ -102,7 +102,6 @@ public class GreaterWhere extends CompareWhere {
     public InnerJoins getInnerJoins() {
         return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
     }
-
     public ClassExprWhere calculateClassWhere() {
         return operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());
     }

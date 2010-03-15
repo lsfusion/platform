@@ -105,7 +105,7 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
         assert orders.size()>0;
 
-        if(true) {
+        if(false) {
             OrderProperty<T> orderProperty = new OrderProperty<T>(genID(), "sys", property, partitions, orders, includeLast);
             return new PropertyMapImplement<OrderProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
         }
@@ -194,7 +194,8 @@ public class DerivedProperty {
         JoinProperty<StringFormulaProperty.Interface> joinProperty = new JoinProperty<StringFormulaProperty.Interface>(genID(),"sys",restriction.interfaces.size(),false);
         Map<T, JoinProperty.Interface> joinMap = BaseUtils.buildMap(restriction.interfaces, joinProperty.interfaces);
 
-        StringFormulaProperty implement = new StringFormulaProperty(genID(),formulaClass,"prm1+prm2-prm3-GREATEST(prm2-prm3,prm1)",3); // так извращенно для инварианта определенности 
+        // так извращенно для инварианта определенности
+        StringFormulaProperty implement = new StringFormulaProperty(genID(),formulaClass,"(prm1+prm2-prm3-ABS(prm1-(prm2-prm3)))/2",3); //prm1+prm2-prm3-GREATEST(prm2-prm3,prm1) (prm1+prm2-prm3-ABS(prm1-(prm2-prm3)))/2
         Map<StringFormulaProperty.Interface,PropertyInterfaceImplement<JoinProperty.Interface>> joinImplement = new HashMap<StringFormulaProperty.Interface, PropertyInterfaceImplement<JoinProperty.Interface>>();
         joinImplement.put(implement.findInterface("prm1"),new PropertyMapImplement<T,JoinProperty.Interface>(restriction,joinMap));
         joinImplement.put(implement.findInterface("prm2"),distribute.map(joinMap));

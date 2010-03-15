@@ -7,13 +7,11 @@ import platform.base.SimpleMap;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.where.classes.MeanClassWhere;
+import platform.server.data.where.classes.PackClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.*;
@@ -318,57 +316,6 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return op(toWhere(staticWheres),followWhere,false);
     }
 
-    static class Equal {
-        BaseExpr[] exprs;
-        int size;
-        ValueExpr value;
-
-        Equal(BaseExpr expr,int max) {
-            exprs = new BaseExpr[max];
-            exprs[0] = expr;
-            size = 1;
-            if(expr instanceof ValueExpr)
-                value = (ValueExpr) expr;
-        }
-    }
-
-    static class EqualMap extends SimpleMap<BaseExpr,Equal> {
-
-        int max;
-        EqualMap(int max) {
-            this.max = max;
-        }
-
-        Equal getEqual(BaseExpr expr) {
-            Equal equal = get(expr);
-            if(equal==null) {
-                equal = new Equal(expr,max);
-                add(expr,equal);
-            }
-            return equal;
-        }
-
-        public boolean add(BaseExpr expr1, BaseExpr expr2) {
-            Equal equal1 = getEqual(expr1);
-            Equal equal2 = getEqual(expr2);
-
-            if(equal1.equals(equal2))
-                return true;
-
-            if(equal1.value==null) {
-                equal1.value = equal2.value;
-            } else
-                if(equal2.value!=null && !equal1.value.equals(equal2.value)) // если равенство разных value, то false
-                    return false;
-
-            for(int i=0;i<equal2.size;i++) // "перекидываем" все компоненты в первую
-                add(equal2.exprs[i],equal1);
-            System.arraycopy(equal2.exprs,0,equal1.exprs,equal1.size,equal2.size);
-            equal1.size += equal2.size;
-            return true;
-        }
-    }
-    
     static class Compare {
         QuickSet<Compare> greater;
         QuickSet<Compare> less;
@@ -419,18 +366,6 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                 if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
                     return ((CompareWhere)wheres[i]).checkTrue(siblingsWhere(wheres,i,numWheres));
 
-            // проверяем классовую логику - если из and'а.getClassWhere() всех not'ов => or всех IsClassWhere тогда это true
-            ClassExprWhere classesNot = ClassExprWhere.TRUE;
-            ClassExprWhere classesOr = ClassExprWhere.FALSE;
-            for(int i=0;i<numWheres;i++) {
-                if(wheres[i] instanceof NotWhere)
-                    classesNot = classesNot.and(((NotWhere)wheres[i]).where.getClassWhere());
-                if(wheres[i] instanceof IsClassWhere || wheres[i] instanceof MeanClassWhere)
-                    classesOr = classesOr.or(wheres[i].getClassWhere());
-            }
-            if(classesNot.means(classesOr))
-                return true;
-
             // сначала объединим все EqualsWhere в группы - если найдем разные ValueExpr'ы в группе вывалимся, assert что нету CompareWhere
             EqualMap equals = new EqualMap(numWheres*2);
             for(int i=0;i<numWheres;i++)
@@ -439,6 +374,18 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     if(!equals.add(equalsWhere.operator1,equalsWhere.operator2)) // противоречивы значит true
                         return true;
                 }
+
+            // проверяем классовую логику - если из and'а.getClassWhere() всех not'ов => or всех IsClassWhere тогда это true
+            ClassExprWhere classesNot = ClassExprWhere.TRUE;
+            ClassExprWhere classesOr = ClassExprWhere.FALSE;
+            for(int i=0;i<numWheres;i++) {
+                if(wheres[i] instanceof NotWhere)
+                    classesNot = classesNot.and(((NotWhere)wheres[i]).where.getClassWhere());
+                if(wheres[i] instanceof IsClassWhere || wheres[i] instanceof PackClassWhere)
+                    classesOr = classesOr.or(wheres[i].getClassWhere());
+            }
+            if(classesNot.andEquals(equals).means(classesOr))
+                return true;
 
             // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
             CompareMap compare = new CompareMap();

@@ -6,9 +6,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-class MSSQLDataAdapter extends DataAdapter {
+public class MSSQLDataAdapter extends DataAdapter {
 
-    MSSQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public MSSQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer, iUserID, iPassword);
     }
 
@@ -34,36 +34,26 @@ class MSSQLDataAdapter extends DataAdapter {
 
     public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=" + userID + ";Password=" + password);
+        //namedPipe=true;
+        Connection connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;User=" + userID + ";Password=" + password);
         try {
-        try {
-            Connect.createStatement().execute("DROP DATABASE "+ dataBase);
-        } catch (Exception e) {
-
-        }
+//        try {
+//            connect.createStatement().execute("DROP DATABASE "+ dataBase);
+//        } catch (Exception e) {
+//
+//        }
+            connect.createStatement().execute("CREATE DATABASE "+ dataBase);
         } catch(Exception e) {
         }
-        Connect.createStatement().execute("CREATE DATABASE "+ dataBase);
-        Connect.close();
+        connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        Connection Connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;namedPipe=true;User=" + userID + ";Password=" + password);
-        Connect.createStatement().execute("USE "+ dataBase);
+        //namedPipe=true;
+        Connection connect = DriverManager.getConnection("jdbc:jtds:sqlserver://"+ server +":1433;User=" + userID + ";Password=" + password);
+        connect.createStatement().execute("USE "+ dataBase);
 
-        return Connect;
-    }
-
-    public String startTransaction() {
-        return "BEGIN TRANSACTION";
-    }
-
-    public String commitTransaction() {
-        return "COMMIT TRANSACTION";
-    }
-
-    public String rollbackTransaction() {
-        return "ROLLBACK";
+        return connect;
     }
 
     public String isNULL(String expr1, String expr2, boolean notSafe) {
@@ -90,12 +80,21 @@ class MSSQLDataAdapter extends DataAdapter {
     }
 
     public String getSelect(String from, String exprs, String where, String orderBy, String groupBy, String top) {
-        return "SELECT " + BaseUtils.clause("TOP", top) + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy);
+        return "SELECT" + BaseUtils.clause("TOP", top) + " " + exprs + " FROM " + from + BaseUtils.clause("WHERE", where) + BaseUtils.clause("GROUP BY", groupBy) + BaseUtils.clause("ORDER BY", orderBy);
     }
 
     public String getUnionOrder(String union, String orderBy, String top) {
         if(top.length()==0)
             return union + BaseUtils.clause("ORDER BY", orderBy);
         return "SELECT" + BaseUtils.clause("TOP", top) + " * FROM (" + union + ")" + BaseUtils.clause("ORDER BY", orderBy);
+    }
+
+    @Override
+    public String getByteArrayType() {
+        return "varbinary";
+    }
+
+    public String getCommandEnd() {
+        return ";";
     }
 }

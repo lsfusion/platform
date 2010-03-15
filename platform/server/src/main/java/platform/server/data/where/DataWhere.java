@@ -1,6 +1,7 @@
 package platform.server.data.where;
 
 import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.caches.ManualLazy;
 
@@ -57,7 +58,11 @@ abstract public class DataWhere extends ObjectWhere {
     }
 
     public MeanClassWheres calculateMeanClassWheres() {
-        return new MeanClassWheres(getClassWhere(),this);
+        return new MeanClassWheres(getMeanClassWhere(),this);
+    }
+
+    public MeanClassWhere getMeanClassWhere() {
+        return new MeanClassWhere(getClassWhere());
     }
 
     public static Where create(DataWhere where) {

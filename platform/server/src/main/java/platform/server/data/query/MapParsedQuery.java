@@ -45,6 +45,7 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> joinValues) {
+        assert ValueExpr.noStaticEquals(joinValues.keySet(),getValues());
         return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),BaseUtils.join(mapValues,joinValues)),mapProps);
     }
 

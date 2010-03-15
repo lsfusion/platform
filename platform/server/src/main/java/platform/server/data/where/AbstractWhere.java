@@ -22,7 +22,7 @@ import java.util.HashSet;
 
 public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
-    public abstract Where not();
+    public abstract AbstractWhere not();
 
     public Where and(Where where) {
         return not().or(where.not()).not(); // A AND B = not(notA OR notB)
@@ -145,12 +145,11 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
     public abstract MeanClassWheres calculateMeanClassWheres();
 
-    @TwinLazy
-    public Map<BaseExpr, BaseExpr> getExprValues() {
+    public Map<BaseExpr, BaseExpr> getExprValues(boolean and) {
         Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>();
-        for(OrObjectWhere orWhere : getOr())
-            if(orWhere instanceof EqualsWhere) {
-                CompareWhere where = (CompareWhere)orWhere;
+        for(Where opWhere : and?getOr():getAnd())
+            if(opWhere instanceof EqualsWhere) {
+                CompareWhere where = (CompareWhere)opWhere;
                 if(where.operator1.isValue())
                     result.put(where.operator2, where.operator1);
                 else
@@ -158,6 +157,16 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                     result.put(where.operator1, where.operator2);
             }
         return result;
+    }
+
+    @TwinLazy
+    public Map<BaseExpr, BaseExpr> getExprValues() {
+        return getExprValues(true);
+    }
+
+    @TwinLazy
+    public Map<BaseExpr, BaseExpr> getNotExprValues() {
+        return not().getExprValues(false);
     }
 
     @TwinLazy
