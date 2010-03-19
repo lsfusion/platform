@@ -11,12 +11,11 @@ import java.awt.event.KeyEvent;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.MSSQLDataAdapter;
+import platform.server.data.Union;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.classes.CustomClass;
-import platform.server.classes.StringClass;
-import platform.server.classes.DoubleClass;
+import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.NotNullFilterNavigator;
 import platform.server.auth.User;
@@ -76,7 +75,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
     CustomClass move, moveInner, returnInner, returnOuter, orderInner;
 
-    CustomClass store, article, articleGroup, localSupplier, importSupplier, orderLocal;
+    CustomClass store, article, articleGroup, localSupplier, importSupplier, orderLocal, format;
     CustomClass customerWhole, customerRetail, orderWhole, orderRetail;
 
     protected void initClasses() {
@@ -139,11 +138,27 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         importSupplier = addConcreteClass("Импортный поставщик", namedObject);
         customerWhole = addConcreteClass("Оптовый покупатель", namedObject);
         customerRetail = addConcreteClass("Розничный покупатель", namedObject);
+
+        format = addConcreteClass("Формат", namedObject);
+
+        documentPrice = addAbstractClass("Изменение цены", transaction);
+        documentRate = addConcreteClass("Изменение курса", documentPrice);
+        documentRRP = addConcreteClass("Изменение RRP", documentPrice);
+
+        documentStorePrice = addConcreteClass("Изменение цены в магазине", transaction);
     }
+
+    CustomClass documentPrice;
+    CustomClass documentStorePrice;
+    CustomClass documentRate;
+    CustomClass documentRRP;
 
     LP balanceSklFreeQuantity, orderContragent;
 
     protected void initProperties() {
+
+        LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
+
         LP articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
         LP incStore = addDProp("incStore", "Склад (прих.)", store, orderInc); addJProp(baseGroup, "Склад (прих.)", name, incStore, 1);
@@ -161,7 +176,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         outerOrderQuantity = addDProp(baseGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderOuter, article);
         outerCommitedQuantity = addDProp(baseGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitOuter, article);
         outerCommitedQuantity.setDerivedChange(outerOrderQuantity, 1, 2, is(commitInc), 1);
-        LP expiryTerm = addDProp(baseGroup, "expiryTerm", "Срок годн.", DoubleClass.instance, commitOuter, article);        
+        LP expiryDate = addDProp(baseGroup, "expiryDate", "Срок годн.", DateClass.instance, commitOuter, article);        
 
         // для возвратных своего рода generics
         LP returnOuterQuantity = addDProp("returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
@@ -229,7 +244,46 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         LP articleBalanceSklCommitedQuantity = addSGProp(baseGroup, "articleBalanceSklCommitedQuantity", "Остаток тов. на скл.", balanceSklCommitedQuantity, 1, 2);
         addJProp(baseGroup, "Остаток тов. прих.", articleBalanceSklCommitedQuantity, incStore, 1, 2);
         addJProp(baseGroup, "Остаток тов. расх.", articleBalanceSklCommitedQuantity, outStore, 1, 2);
+
+        // цены
+        LP storeFormat = addDProp(baseGroup, "storeFormat", "Формат", format, store);
+
+        LP documentFormat = addDProp(baseGroup, "documentFormat", "Формат", format, documentPrice);
+        LP rate = addDProp(baseGroup, "rate", "Курс", DoubleClass.instance, DateClass.instance);
+
+        LP priceRRP = addDProp(baseGroup, "priceRRP", "RRP", DoubleClass.instance, documentRRP, article);
+        LP[] maxRRPProps = addMGProp(null, new String[]{"currentRRPDate","currentRRPDoc"}, new String[]{"Дата посл. RRP","Посл. док. RRP"}, 1,
+                addJProp(and1, date, 1, priceRRP, 1, 2), 1, documentFormat, 1, 2);
+        currentRRPDate = maxRRPProps[0]; currentRRPDoc = maxRRPProps[1]; baseGroup.add(currentRRPDoc.property);
+        currentRRP = addJProp(baseGroup, "currentVatOut", "RRP (тек.)", priceRRP, currentRRPDoc, 1, 2, 2);
+
+        LP isRateChanged = addDProp(baseGroup, "isRateChanged", "Изм. курс", LogicalClass.instance, documentRate, article);
+        LP currentRateDate = addMGProp(null, "currentRateDate", "Дата изм. курса", addJProp(and1, date, 1, isRateChanged, 1, 2), documentFormat, 1, 2);
+
+        LP currentPriceDate = addSUProp(baseGroup, "currentPriceDate", "Дата курса", Union.MAX, currentRRPDate, currentRateDate);
+        LP currentPriceRate = addJProp(baseGroup, "Курс", rate, currentPriceDate, 1, 2);
+
+        LP currentPrice = addJProp(baseGroup, "Необх. цена", multiplyDouble2, currentRRP, 1, 2, currentPriceRate, 1, 2);
+
+        LP documentStore = addDProp(baseGroup, "documentStore", "Склад", store, documentStorePrice);
+        LP storePrice = addDProp(baseGroup, "storePrice", "Цена на складе", DoubleClass.instance, documentStorePrice, article);
+        LP[] maxStorePriceProps = addMGProp(baseGroup, new String[]{"currentStorePriceDate","currentStorePriceDoc"}, new String[]{"Дата посл. цены в маг.","Посл. док. цены в маг."}, 1,
+                addJProp(and1, date, 1, storePrice, 1, 2), 1, documentStore, 1, 2);
+        currentStorePriceDate = maxStorePriceProps[0]; currentStorePriceDoc = maxStorePriceProps[1];
+        currentStorePrice = addJProp(baseGroup, "currentStorePrice", "Цена на складе (тек.)", storePrice, currentStorePriceDoc, 1, 2, 2);
+
+        LP currentFormatPrice = addJProp(baseGroup, "Необх. цена", currentPrice, storeFormat, 1, 2);
+        LP outOfDatePrice = addJProp(andNot1, articleBalanceSklCommitedQuantity, 1, 2,
+                addJProp(equals2, currentFormatPrice, 1, 2, currentStorePrice, 1, 2), 1, 2);
+        storePrice.setDerivedChange(addJProp(and1, currentFormatPrice, 1, 2, outOfDatePrice, 1, 2), documentStore, 1, 2);
+        LP prevPrice = addDProp(baseGroup, "prevPrice", "Цена пред.", DoubleClass.instance, documentStorePrice, article);
+        prevPrice.setDerivedChange(addJProp(and1, currentStorePrice, 1, 2, outOfDatePrice, 1, 2), documentStore, 1, 2);
+        LP revalBalance = addDProp(baseGroup, "revalBalance", "Остаток переоц.", DoubleClass.instance, documentStorePrice, article);
+        revalBalance.setDerivedChange(addJProp(and1, articleBalanceSklCommitedQuantity, 1, 2, outOfDatePrice, 1, 2), documentStore, 1, 2);
     }
+
+    LP currentStorePriceDate, currentStorePriceDoc, currentStorePrice;
+    LP currentRRPDate, currentRRPDoc, currentRRP;
 
     LP documentFreeQuantity, documentInnerFreeQuantity, returnInnerFreeQuantity, returnFreeQuantity, innerQuantity, returnInnerCommitQuantity, returnInnerQuantity;
     LP outerOrderQuantity, outerCommitedQuantity, articleBalanceCheck, articleBalanceCheckDB, innerBalanceCheck, innerBalanceCheckDB, balanceSklCommitedQuantity;
@@ -258,6 +312,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         tableFactory.include("customerretail",customerRetail);
         tableFactory.include("articlestore",article,store);
         tableFactory.include("articleorder",article,order);
+        tableFactory.include("rates",DateClass.instance);
     }
 
     protected void initIndexes() {
@@ -296,6 +351,11 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                     new ReturnSaleRetailNavigatorForm(innerReturn, 1950, false);
         NavigatorElement store = new NavigatorElement(baseElement, 2000, "Сводная информация");
             new StoreArticleNavigatorForm(store, 2100);
+            new FormatArticleNavigatorForm(store, 2200);
+            new RatesNavigatorForm(store, 2300);
+            new DocumentRRPNavigatorForm(store, 2400);
+            new DocumentRateNavigatorForm(store, 2500);
+            new DocumentStorePriceNavigatorForm(store, 2600);
     }
 
     private class DocumentNavigatorForm extends NavigatorForm {
@@ -571,6 +631,48 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             addPropertyView(objDoc, objOuter, properties, baseGroup, true);
             addPropertyView(objOuter, objArt, properties, baseGroup, true);
             addPropertyView(objDoc, objOuter, objArt, properties, baseGroup, true);
+        }
+    }
+
+    private class FormatArticleNavigatorForm extends NavigatorForm {
+        protected FormatArticleNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, "Остатки по форматам");
+
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
+
+            addPropertyView(objDoc, objArt, properties, baseGroup, true);
+        }
+    }
+
+    private class RatesNavigatorForm extends NavigatorForm {
+        protected RatesNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, "Курсы");
+
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(DateClass.instance, "Дата", properties, baseGroup, true);
+            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.singleViewType = true;
+        }
+    }
+
+    private class DocumentRRPNavigatorForm extends ArticleNavigatorForm {
+
+        protected DocumentRRPNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, documentRRP, true);
+        }
+    }
+
+    private class DocumentRateNavigatorForm extends ArticleNavigatorForm {
+
+        protected DocumentRateNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, documentRate, true);
+        }
+    }
+
+    private class DocumentStorePriceNavigatorForm extends ArticleNavigatorForm {
+
+        protected DocumentStorePriceNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, documentStorePrice, true);
         }
     }
 

@@ -20,7 +20,6 @@ public class ImplementTable extends Table {
             keys.add(field);
             mapFields.put(field,implementClasses[fieldNum]);
         }
-        childs = new HashSet<ImplementTable>();
         parents = new HashSet<ImplementTable>();
 
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
@@ -31,8 +30,6 @@ public class ImplementTable extends Table {
         propertyClasses.put(field,classes);
     }
 
-    // кэшированный граф
-    Set<ImplementTable> childs;
     Set<ImplementTable> parents;
 
     // operation на что сравниваем
@@ -83,33 +80,28 @@ public class ImplementTable extends Table {
         return COMPARE_DIFF;
     }
 
-    void includeIntoGraph(ImplementTable includeItem,boolean toAdd,Set<ImplementTable> checks) {
+    public void include(Set<ImplementTable> tables, boolean toAdd, Set<ImplementTable> checks) {
 
-        if(checks.contains(this)) return;
-        checks.add(this);
-
-        Iterator<ImplementTable> i = parents.iterator();
+        Iterator<ImplementTable> i = tables.iterator();
         while(i.hasNext()) {
             ImplementTable item = i.next();
-            Integer relation = item.compare(includeItem.mapFields,new HashMap<KeyField,KeyField>());
+            Integer relation = item.compare(mapFields,new HashMap<KeyField,KeyField>());
             if(relation==COMPARE_DOWN) { // снизу в дереве, добавляем ее как промежуточную
-                item.childs.add(includeItem);
-                includeItem.parents.add(item);
-                if(toAdd) {
-                    item.childs.remove(this);
+                parents.add(item);
+                if(toAdd)
                     i.remove();
-                }
             } else { // сверху в дереве или никак не связаны, передаем дальше
-                if(relation!=COMPARE_EQUAL) item.includeIntoGraph(includeItem,relation==COMPARE_UP,checks);
+                if(relation!=COMPARE_EQUAL && !checks.contains(item)) {
+                    checks.add(item);
+                    include(item.parents,relation==COMPARE_UP,checks);
+                }
                 if(relation==COMPARE_UP || relation==COMPARE_EQUAL) toAdd = false;
             }
         }
 
         // если снизу добавляем Childs
-        if(toAdd) {
-            includeItem.childs.add(this);
-            parents.add(includeItem);
-        }
+        if(toAdd)
+            tables.add(this);
     }
 
     public <T> MapKeysTable<T> getMapTable(Map<T, ValueClass> findItem) {

@@ -57,9 +57,8 @@ public class DataObjectImplement extends ObjectImplement {
         return false;
     }
 
-    // собсно null быть не может (пока) поэтому проверки как в CustomObjectImplement и не надо (как и UPDATED_CLASS) 
     public boolean classUpdated(GroupObjectImplement classGroup) {
-        return false;
+        return (updated & ObjectImplement.UPDATED_GRIDCLASS)!=0; // по сути нужен чисто для инициализации и refresh'а 
     }
     public boolean isInInterface(GroupObjectImplement group) {
         return true;

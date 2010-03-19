@@ -192,7 +192,6 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         group.gridClassView = show;
 
         group.updated = group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
-
     }
 
     // сстандартные фильтры

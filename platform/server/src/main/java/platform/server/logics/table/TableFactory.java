@@ -15,17 +15,12 @@ import java.util.*;
 public class TableFactory {
 
     public static final int MAX_INTERFACE = 5;
+    Set<ImplementTable>[] implementTables = new Set[MAX_INTERFACE];
     ImplementTable[] baseTables = new ImplementTable[MAX_INTERFACE];
 
-    private final static int MAX_BEAN_OBJECTS = 3;
-
-    public TableFactory(CustomClass customClass) {
-        for(int i=0;i< MAX_INTERFACE;i++) {
-            CustomClass[] baseClasses = new CustomClass[i];
-            for(int j=0;j<i;j++)
-                baseClasses[j] = customClass;
-            baseTables[i] = new ImplementTable("base_"+i,baseClasses);
-        }
+    public TableFactory() {
+        for(int i=0;i<MAX_INTERFACE;i++)
+            implementTables[i] = new HashSet<ImplementTable>();
     }
 
     public void include(ValueClass... classes) {
@@ -36,7 +31,7 @@ public class TableFactory {
     }
 
     public void include(String name, ValueClass... classes) {
-        baseTables[classes.length].includeIntoGraph(new ImplementTable(name,classes),true,new HashSet<ImplementTable>());
+        new ImplementTable(name,classes).include(implementTables[classes.length], true, new HashSet<ImplementTable>());
     }
 
     // получает постоянные таблицы
@@ -44,7 +39,8 @@ public class TableFactory {
         Map<String,ImplementTable> result = new HashMap<String, ImplementTable>();
         for(int i=0;i<MAX_INTERFACE;i++) {
             Set<ImplementTable> intTables = new HashSet<ImplementTable>();
-            baseTables[i].fillSet(intTables);
+            for(ImplementTable implementTable : implementTables[i])
+                implementTable.fillSet(intTables);            
             for(ImplementTable intTable : intTables)
                 result.put(intTable.name,intTable);
         }
@@ -52,7 +48,11 @@ public class TableFactory {
     }
 
     public <T> MapKeysTable<T> getMapTable(Map<T, ValueClass> findItem) {
-        return baseTables[findItem.size()].getMapTable(findItem);
+        for(ImplementTable implementTable : implementTables[findItem.size()]) {
+            MapKeysTable<T> mapTable = implementTable.getMapTable(findItem);
+            if(mapTable!=null) return mapTable;
+        }
+        throw new RuntimeException("No table found");    
     }
 
     public void fillDB(DataSession session) throws SQLException {

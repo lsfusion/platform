@@ -89,7 +89,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         namedObject = addAbstractClass("Объект с именем", baseClass);
         transaction = addAbstractClass("Транзакция", baseClass);
 
-        tableFactory = new TableFactory(baseClass);
+        tableFactory = new TableFactory();
+        for(int i=0;i<TableFactory.MAX_INTERFACE;i++) { // заполним базовые таблицы
+            CustomClass[] baseClasses = new CustomClass[i];
+            for(int j=0;j<i;j++)
+                baseClasses[j] = baseClass;
+            tableFactory.include("base_"+i,baseClasses);
+        }
 
         baseElement = new NavigatorElement<T>(0, "Base Group");
 
