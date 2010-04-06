@@ -10,6 +10,8 @@ public class ClientRegularFilterGroupView extends ClientFunctionView {
     public int ID;
     public final List<ClientRegularFilterView> filters = new ArrayList<ClientRegularFilterView>();
 
+    public int defaultFilter = -1;
+
     public ClientRegularFilterGroupView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -18,5 +20,7 @@ public class ClientRegularFilterGroupView extends ClientFunctionView {
         int count = inStream.readInt();
         for(int i=0;i<count;i++)
             filters.add(new ClientRegularFilterView(inStream));
+
+        defaultFilter = inStream.readInt();
     }
 }

@@ -13,6 +13,7 @@ import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Reader;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.base.QuickMap;
 
 
 public abstract class BaseExpr extends Expr {
@@ -132,4 +133,8 @@ public abstract class BaseExpr extends Expr {
     public boolean hasKey(KeyExpr key) {
         return enumKeys(this).contains(key);
     }
+
+    // может возвращать null, оба метода для ClassExprWhere
+    public abstract AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and);
+    public abstract boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add);
 }

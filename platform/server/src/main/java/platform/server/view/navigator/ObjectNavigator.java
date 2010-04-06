@@ -7,16 +7,18 @@ import java.util.Set;
 
 public class ObjectNavigator extends CellViewNavigator implements PropertyInterfaceNavigator {
 
-    public ObjectNavigator(int iID, ValueClass iBaseClass, String iCaption) {
-        super(iID);
-        caption = iCaption;
-        baseClass = iBaseClass;
+    public ObjectNavigator(int ID, ValueClass baseClass, String caption) {
+        super(ID);
+        this.caption = caption;
+        this.baseClass = baseClass;
     }
 
     public GroupObjectNavigator groupTo;
 
     public final String caption;
     public boolean show = true;
+
+    public boolean addOnTransaction = false;
 
     public final ValueClass baseClass;
 

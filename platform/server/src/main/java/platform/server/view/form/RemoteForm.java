@@ -16,9 +16,11 @@ import platform.server.data.KeyField;
 import platform.server.data.type.TypeSerializer;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.DataClass;
 import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.where.EqualsWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -104,9 +106,10 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             RegularFilterGroup group = new RegularFilterGroup(navigatorGroup.ID);
             for (RegularFilterNavigator filter : navigatorGroup.filters)
                 group.addFilter(new RegularFilter(filter.ID, filter.filter.doMapping(mapper), filter.name, filter.key));
-
             regularFilterGroups.add(group);
         }
+
+        addObjectOnTransaction();
     }
 
     public RemoteForm(NavigatorForm<?> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView) throws SQLException {
@@ -188,7 +191,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     private void changeClassView(GroupObjectImplement group,boolean show) {
 
-        if(group.gridClassView == show || group.singleViewType) return;
+        if(group.gridClassView == show) return;
         group.gridClassView = show;
 
         group.updated = group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
@@ -297,16 +300,30 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
+    void addObjectOnTransaction() throws SQLException {
+        for(GroupObjectImplement group : groups)
+            for(ObjectImplement object : group.objects)
+                if(object instanceof CustomObjectImplement) {
+                    CustomObjectImplement customObject = (CustomObjectImplement)object;
+                    if(customObject.addOnTransaction)
+                        addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
+                }
+    }
+
     // Применение изменений
     public String saveChanges() throws SQLException {
         String applyString = session.apply(BL);
-        if(applyString==null)
+        if(applyString==null) {
+            addObjectOnTransaction();
             refreshData();
+        }
         return applyString;
     }
 
     public void cancelChanges() throws SQLException {
         session.restart(true);
+
+        addObjectOnTransaction();
 
         dataChanged = true;
     }
@@ -521,22 +538,37 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
         assert !(orderSeeks!=null && !orders.starts(orderSeeks.keySet()));
 
-        Query<ObjectImplement,OrderView> selectKeys = new Query<ObjectImplement,OrderView>(group); // object потому как нужно еще по ключам упорядочивать, а их тогда надо в св-ва кидать
-        group.fillSourceSelect(selectKeys, group.getClassGroup(), this);
+        Map<ObjectImplement, KeyExpr> mapKeys = group.getMapKeys();
+        
+        Map<OrderView, Expr> orderExprs = new HashMap<OrderView, Expr>();
+        for(Map.Entry<OrderView,Boolean> toOrder : orders.entrySet())
+            orderExprs.put(toOrder.getKey(),toOrder.getKey().getExpr(group.getClassGroup(), mapKeys, this));
 
-        Where orderWhere = orderSeeks==null?Where.FALSE:Where.TRUE;
-        for(Map.Entry<OrderView,Boolean> toOrder : orders.reverse().entrySet()) {
-            Expr orderExpr = toOrder.getKey().getExpr(group.getClassGroup(), selectKeys.mapKeys, this);
-            selectKeys.properties.put(toOrder.getKey(), orderExpr); // надо в запрос закинуть чтобы скроллить и упорядочивать
-
-            if(orderSeeks!=null) {
-                ObjectValue toSeek = orderSeeks.get(toOrder.getKey());
-                if(toSeek!=null)
-                    orderWhere = toSeek.order(orderExpr,toOrder.getValue(),orderWhere);
-            }
+        Set<KeyExpr> usedContext = null;
+        if(readSize==1 && orderSeeks!=null && down) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
+            usedContext = new HashSet<KeyExpr>();
+            group.getFilterWhere(mapKeys, group.getClassGroup(), this).enumKeys(usedContext); // именно после ff'са
+            for(Expr expr : orderExprs.values())
+                if(!(expr instanceof KeyExpr))
+                    expr.enumKeys(usedContext);
         }
-        selectKeys.and(down?orderWhere:orderWhere.not());
-        return selectKeys.executeClasses(session, down?orders: Query.reverseOrder(orders), readSize, BL.baseClass);
+
+        Where orderWhere; // строим условия на упорядочивание
+        if(orderSeeks!=null) {
+            ObjectValue toSeek;
+            orderWhere = Where.TRUE;
+            for(Map.Entry<OrderView,Boolean> toOrder : orders.reverse().entrySet())
+                if((toSeek = orderSeeks.get(toOrder.getKey()))!=null) {
+                    Expr expr = orderExprs.get(toOrder.getKey());
+                    if(readSize==1 && down && expr instanceof KeyExpr && toSeek instanceof DataObject && ((DataObject)toSeek).getType() instanceof DataClass && !usedContext.contains((KeyExpr)expr))
+                        orderWhere = orderWhere.and(new EqualsWhere((KeyExpr)expr,((DataObject)toSeek).getExpr()));
+                    else
+                        orderWhere = toSeek.order(expr,toOrder.getValue(),orderWhere);
+                }
+        } else
+            orderWhere = Where.FALSE;
+
+        return new Query<ObjectImplement,OrderView>(mapKeys,orderExprs,group.getWhere(mapKeys, group.getClassGroup(), this).and(down?orderWhere:orderWhere.not())).executeClasses(session, down?orders:Query.reverseOrder(orders), readSize, BL.baseClass);
     }
 
     // считывает одну запись
@@ -697,20 +729,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 if(updateKeys) {
                     OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> keyResult;
-                    if(!group.gridClassView) { // панель
-                        Map<ObjectImplement,? extends ObjectValue> objects;
-                        boolean read = true; // по умолчанию читаем
-                        if(group.singleViewType) { // assertion что нету ни фильтров ни порядков и !gridClassView, то есть чистое изменение класса объекта (или инициализация)
-                            // assert'им что должен быть или целиком CustomObjectImplement или DataObjectImplement
-                            read = group.objects.iterator().next() instanceof CustomObjectImplement;
-                            assert group.isSolid();
-                        }
-                        if(read)
-                            objects = readKeys(group,orderSeeks); // перечитываем, а то мог удалится и т.п.
-                        else
-                            objects = BaseUtils.filterKeys(orderSeeks,group.objects);
-                        updateGroupObject(group,result,objects);
-                    } else {
+                    if(!group.gridClassView) // панель
+                        updateGroupObject(group,result,readKeys(group,orderSeeks));
+                    else {
                         if(orderSeeks!=null && !group.orders.starts(orderSeeks.keySet())) // если не "хватает" спереди ключей, дочитываем
                             orderSeeks = readValues(group,orderSeeks);
 
@@ -918,7 +939,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             if (classGroups.contains(group)) {
 
                 // не фиксированные ключи
-                group.fillSourceSelect(query, classGroups, this);
+                query.and(group.getWhere(query.mapKeys, classGroups, this));
 
                 // закинем Order'ы
                 for(Entry<OrderView, Boolean> order : group.orders.entrySet()) {

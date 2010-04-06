@@ -40,10 +40,9 @@ public class ClientObjectView extends ClientCellView {
 
         if (externalID) return null;
 
-        if (!object.groupObject.singleViewType) {
-            form.switchClassView(object.groupObject);
+        if (form.switchClassView(object.groupObject))
             return null;
-        } else
+        else
             return baseType.getEditorComponent(form, this, value, getFormat());
     }
 

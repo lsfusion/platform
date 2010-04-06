@@ -269,23 +269,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public DataObject getDataObject(Object value, Type type) throws SQLException {
-        ConcreteClass dataClass;
-        if(type instanceof DataClass)
-            dataClass = (DataClass)type;
-        else {
-            Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
-            Join<PropertyField> joinTable = baseClass.table.joinAnd(Collections.singletonMap(baseClass.table.key,new ValueExpr(value,baseClass.getConcrete())));
-            query.and(joinTable.getWhere());
-            query.properties.put("classid", joinTable.getExpr(baseClass.table.objectClass));
-            OrderedMap<Map<Object, Object>, Map<String, Object>> result = query.execute(this);
-            if(result.size()==0)
-                dataClass = baseClass.unknown;
-            else {
-                assert (result.size()==1);
-                dataClass = baseClass.findConcreteClassID((Integer) result.singleValue().get("classid"));
-            }
-        }
-        return new DataObject(value,dataClass);
+        return new DataObject(value,type.getDataClass(value, this, baseClass));
     }
 
     public ObjectValue getObjectValue(Object value, Type type) throws SQLException {

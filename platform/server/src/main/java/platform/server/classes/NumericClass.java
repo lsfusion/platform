@@ -77,4 +77,7 @@ public class NumericClass extends IntegralClass<Double> {
         return numeric;
     }
 
+    public int getBinaryLength() {
+        return length * 2;
+    }
 }

@@ -21,40 +21,6 @@ import java.util.Map;
 @TranslateExprLazy
 public abstract class InnerExpr extends VariableClassExpr implements JoinData {
 
-    private OrObjectClassSet getSet() {
-        OrObjectClassSet result = OrObjectClassSet.FALSE;
-        for(QuickMap<VariableClassExpr,AndClassSet> where : getWhere().getClassWhere().getAnds())
-            result = result.or(where.get(this).getOr());
-        return result;
-    }
-
-    private Expr classExpr;
-    public Expr classExpr(BaseClass baseClass) {
-        if(classExpr==null) {
-            ConcreteObjectClass singleClass = getSet().getSingleClass(baseClass);
-            if(singleClass!=null)
-                classExpr = singleClass.getIDExpr().and(getWhere());
-            else
-                classExpr = new IsClassExpr(this,baseClass);
-        }
-        return classExpr;
-    }
-
-    private boolean intersect(AndClassSet set) {
-        for(QuickMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
-            if(!where.get(this).and(set).isEmpty()) return true;
-        return false;
-    }
-
-    public Where isClass(AndClassSet set) {
-        // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
-        if(!intersect(set)) // если не пересекается то false
-            return Where.FALSE;
-        if(getSet().containsAll(set.getOr())) // если set содержит все элементы, то достаточно просто что не null
-            return getWhere();
-        return new IsClassWhere(this,set);
-    }
-
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         joins.add(this, andWhere);
     }
@@ -113,9 +79,6 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
     }
 
     public static <K> DataWhereSet getExprFollows(Map<K, BaseExpr> map) {
-        DataWhereSet follows = new DataWhereSet();
-        for(BaseExpr expr : map.values())
-            follows.addAll(expr.getFollows());
-        return follows;        
+        return new DataWhereSet(map.values());
     }
 }

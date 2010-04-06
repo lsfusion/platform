@@ -20,8 +20,8 @@ public class UnknownClass implements ConcreteObjectClass {
 
     public final BaseClass baseClass;
     
-    UnknownClass(BaseClass iBaseClass) {
-        baseClass = iBaseClass;
+    UnknownClass(BaseClass baseClass) {
+        this.baseClass = baseClass;
     }
 
     public void getDiffSet(ConcreteObjectClass diffClass, Collection<CustomClass> addClasses, Collection<CustomClass> removeClasses) {

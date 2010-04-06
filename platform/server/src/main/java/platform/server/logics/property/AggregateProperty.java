@@ -105,8 +105,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
 
     public Type getType() {
-        Expr calculateExpr = calculateExpr(getMapKeys());
-        return calculateExpr.getType(calculateExpr.getWhere());
+        return calculateExpr(getMapKeys()).getSelfType();
     }
 
     protected Map<T, ValueClass> getMapClasses() {

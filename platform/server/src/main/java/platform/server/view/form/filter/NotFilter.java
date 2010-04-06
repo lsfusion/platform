@@ -6,7 +6,7 @@ import platform.server.view.form.ObjectImplement;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 
 import java.io.DataInputStream;
@@ -49,7 +49,7 @@ public class NotFilter extends Filter {
         return filter.getApplyObject();
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return filter.getWhere(mapKeys, classGroup, modifier).not();
     }
 

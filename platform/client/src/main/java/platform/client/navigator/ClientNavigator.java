@@ -1,7 +1,9 @@
 package platform.client.navigator;
 
 import platform.client.logics.DeSerializer;
+import platform.client.logics.ClientObjectImplementView;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.form.RemoteFormInterface;
 
 import java.util.List;
 import java.rmi.RemoteException;
@@ -28,6 +30,10 @@ public abstract class ClientNavigator extends AbstractNavigator {
 
     public void currentFormChanged() {
         relevantFormNavigator.tree.createRootNode();
+    }
+
+    public void changeCurrentClass(RemoteFormInterface form,ClientObjectImplementView object) throws RemoteException {
+        changeCurrentClass(form.getObjectClassID(object.ID));
     }
 
     public void changeCurrentClass(int classID) throws RemoteException {

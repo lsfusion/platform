@@ -949,7 +949,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
             objStore.groupTo.gridClassView = false;
-            objStore.groupTo.singleViewType = true;
+            objStore.groupTo.fixedClassView = true;
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
@@ -1045,7 +1045,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
             objSupplier.groupTo.gridClassView = false;
-            objSupplier.groupTo.singleViewType = true;
+            objSupplier.groupTo.fixedClassView = true;
 
             GroupObjectNavigator gobjArtStore = new GroupObjectNavigator(IDShift(1));
 
@@ -1092,7 +1092,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             gobjInterval = new GroupObjectNavigator(IDShift(1));
             gobjInterval.gridClassView = false;
-            gobjInterval.singleViewType = true;
+            gobjInterval.fixedClassView = true;
 
             objDateFrom = new ObjectNavigator(IDShift(1), DateClass.instance, "С даты :");
             objDateTo = new ObjectNavigator(IDShift(1), DateClass.instance, "По дату :");
@@ -1122,7 +1122,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeSupplArt, objStore, objSupplier, objArticle)));
 
-            objStore.groupTo.singleViewType = true;
+            objStore.groupTo.fixedClassView = true;
         }
     }
 
@@ -1254,7 +1254,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             addPropertyView(objSpec, objArticle, properties, baseGroup);
 
             // указываем, что верхние три товара будут идти в панель
-            objSupplier.groupTo.singleViewType = true;
+            objSupplier.groupTo.fixedClassView = true;
             objSupplier.groupTo.gridClassView = false;
 
             objContract.groupTo.gridClassView = false;

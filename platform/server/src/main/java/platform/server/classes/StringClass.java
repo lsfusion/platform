@@ -94,4 +94,8 @@ public class StringClass extends DataClass<String> {
         strings.add(string);
         return string;
     }
+
+    public int getBinaryLength() {
+        return length * 2;
+    }
 }

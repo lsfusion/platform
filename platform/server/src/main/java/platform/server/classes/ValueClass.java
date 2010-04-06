@@ -32,5 +32,5 @@ public interface ValueClass extends RemoteClass {
 
     void serialize(DataOutputStream outStream) throws IOException;
 
-    ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView);
+    ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction);
 }

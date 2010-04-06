@@ -12,7 +12,6 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.linear.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
@@ -1378,7 +1377,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, ID, caption, true);
 
             objDoc.groupTo.gridClassView = false;
-            objDoc.groupTo.singleViewType = true;
+            objDoc.groupTo.fixedClassView = true;
 
             addPropertyView(objDoc, properties, outSumsGroup);
             addPropertyView(objDetail, properties, outSumsGroup);
@@ -1458,7 +1457,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", properties,
                                                                         baseGroup, storeGroup, outSumsGroup, accountGroup);
             objDoc.groupTo.gridClassView = false;
-            objDoc.groupTo.singleViewType = true;
+            objDoc.groupTo.fixedClassView = true;
 
             ObjectNavigator objReceipt = addSingleGroupObjectImplement(receipt, "Чек", properties,
                                                                         baseGroup, outSumsGroup);
@@ -1509,7 +1508,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                 objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                             baseGroup, accountGroup);
                 objStore.groupTo.gridClassView = false;
-                objStore.groupTo.singleViewType = true;
+                objStore.groupTo.fixedClassView = true;
             }
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(invDocument, "Документ", properties,
@@ -1650,7 +1649,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                 objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                             baseGroup, accountGroup);
                 objStore.groupTo.gridClassView = false;
-                objStore.groupTo.singleViewType = true;
+                objStore.groupTo.fixedClassView = true;
             }
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", properties,
@@ -1681,7 +1680,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup, accountGroup);
             objStore.groupTo.gridClassView = false;
-            objStore.groupTo.singleViewType = true;
+            objStore.groupTo.fixedClassView = true;
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
@@ -1787,7 +1786,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties,
                                                                                     baseGroup);
             objSupplier.groupTo.gridClassView = false;
-            objSupplier.groupTo.singleViewType = true;
+            objSupplier.groupTo.fixedClassView = true;
 
             // создать блок "Склад"
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties,
@@ -1835,7 +1834,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             gobjInterval = new GroupObjectNavigator(IDShift(1));
             gobjInterval.gridClassView = false;
-            gobjInterval.singleViewType = true;
+            gobjInterval.fixedClassView = true;
 
             objDateFrom = new ObjectNavigator(IDShift(1), DateClass.instance, "С даты :");
             objDateTo = new ObjectNavigator(IDShift(1), DateClass.instance, "По дату :");

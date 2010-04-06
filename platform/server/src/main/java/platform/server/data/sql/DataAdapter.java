@@ -55,6 +55,10 @@ public abstract class DataAdapter implements SQLSyntax {
         return "text";
     }
 
+    public String getBinaryType(int length) {
+        return "binary(" + length + ")";
+    }
+
     public String getByteArrayType() {
         return "longvarbinary";
     }

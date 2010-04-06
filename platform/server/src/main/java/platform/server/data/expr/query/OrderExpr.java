@@ -81,7 +81,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         super(orderExpr, translator);
     }
 
-    public VariableClassExpr translateDirect(KeyTranslator translator) {
+    public OrderExpr translateDirect(KeyTranslator translator) {
         return new OrderExpr(this,translator);
     }
 

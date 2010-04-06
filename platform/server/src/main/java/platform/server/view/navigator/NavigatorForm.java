@@ -34,8 +34,10 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     }
 
     public List<RegularFilterGroupNavigator> regularFilterGroups = new ArrayList<RegularFilterGroupNavigator>();
-    public void addRegularFilterGroup(RegularFilterGroupNavigator group) { regularFilterGroups.add(group); }
-
+    public void addRegularFilterGroup(RegularFilterGroupNavigator group) {
+        regularFilterGroups.add(group);
+    }
+    
     protected RegularFilterGroupNavigator addSingleRegularFilterGroup(FilterNavigator ifilter, String iname, KeyStroke ikey) {
 
         RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));

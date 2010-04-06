@@ -8,19 +8,15 @@ import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
 import platform.server.caches.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.DataClass;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
-import platform.server.data.type.Reader;
 import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.NullValue;
 import platform.server.data.where.Where;
 
 import java.sql.SQLException;
@@ -152,38 +148,6 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass);
     }
 
-    static class ReadClasses<T> {
-        Map<T,DataClass> mapDataClasses = new HashMap<T, DataClass>();
-        Map<T,Object> mapObjectClasses = new HashMap<T, Object>();
-        Set<T> setNulls = new HashSet<T>();
-
-        BaseClass baseClass;
-
-        ReadClasses(Map<T,? extends Expr> map, Query<?,Object> query,BaseClass iBaseClass) {
-            baseClass = iBaseClass;
-            for(Map.Entry<T,? extends Expr> expr : map.entrySet()) {
-                Reader reader = expr.getValue().getReader(query.where);
-                if(reader instanceof Type) {
-                    if(reader instanceof DataClass)
-                        mapDataClasses.put(expr.getKey(),(DataClass)reader);
-                    else {
-                        Object propertyClass = new Object();
-                        mapObjectClasses.put(expr.getKey(),propertyClass);
-                        query.properties.put(propertyClass,expr.getValue().classExpr(baseClass));
-                    }
-                } else
-                    setNulls.add(expr.getKey());
-            }
-        }
-
-        ObjectValue read(T key,Object value,Map<Object,Object> classes) {
-            if(setNulls.contains(key)) return NullValue.instance;
-            ConcreteClass propertyClass = mapDataClasses.get(key);
-            if(propertyClass==null) propertyClass = baseClass.findConcreteClassID((Integer) classes.get(mapObjectClasses.get(key)));
-            return ObjectValue.getValue(value,propertyClass);
-        }
-    }
-
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session,OrderedMap<V,Boolean> orders,int selectTop, BaseClass baseClass) throws SQLException {
         OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> result = new OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>>();
 
@@ -192,19 +156,22 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         // создаем запрос с IsClassExpr'ами
         Query<K,Object> classQuery = new Query<K,Object>((Query<K,Object>) this);
 
-        ReadClasses<K> keyClasses = new ReadClasses<K>(mapKeys,classQuery,baseClass);
-        ReadClasses<V> propClasses = new ReadClasses<V>(properties,classQuery,baseClass);
+        for(KeyExpr expr : mapKeys.values())
+            expr.getReader(classQuery.where).prepareClassesQuery(expr, classQuery, baseClass);
+        for(Expr expr : properties.values())
+            expr.getReader(classQuery.where).prepareClassesQuery(expr, classQuery, baseClass);
 
         OrderedMap<Map<K, Object>, Map<Object, Object>> rows = classQuery.execute(session, (OrderedMap<Object,Boolean>) orders,selectTop);
 
         // перемаппим
         for(Map.Entry<Map<K,Object>,Map<Object,Object>> row : rows.entrySet()) {
             Map<K,DataObject> keyResult = new HashMap<K, DataObject>();
-            for(Map.Entry<K,Object> keyRow : row.getKey().entrySet())
-                keyResult.put(keyRow.getKey(), (DataObject) keyClasses.read(keyRow.getKey(),keyRow.getValue(),row.getValue()));
+            for(Map.Entry<K,KeyExpr> mapKey : mapKeys.entrySet())
+                keyResult.put(mapKey.getKey(), new DataObject(row.getKey().get(mapKey.getKey()),mapKey.getValue().getReader(classQuery.where).readClass(mapKey.getValue(), row.getValue(),baseClass,classQuery.where)));
+
             Map<V,ObjectValue> propResult = new HashMap<V, ObjectValue>();
-            for(V property : properties.keySet())
-                propResult.put(property,propClasses.read(property,row.getValue().get(property),row.getValue()));
+            for(Map.Entry<V,Expr> property : properties.entrySet())
+                propResult.put(property.getKey(),ObjectValue.getValue(row.getValue().get(property.getKey()),property.getValue().getReader(classQuery.where).readClass(property.getValue(), row.getValue(),baseClass,classQuery.where)));
             result.put(keyResult,propResult);
         }
         return result;

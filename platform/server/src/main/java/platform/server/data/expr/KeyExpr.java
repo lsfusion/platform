@@ -68,21 +68,6 @@ public class KeyExpr extends VariableClassExpr {
         return new DataWhereSet();
     }
 
-    private IsClassExpr classExpr;
-    public IsClassExpr classExpr(BaseClass baseClass) {
-        if(classExpr==null)
-            classExpr = new IsClassExpr(this,baseClass);
-        return classExpr;
-    }
-
-    public Where isClass(AndClassSet set) {
-        if(set.isEmpty())
-            return Where.FALSE;
-        else
-            return new IsClassWhere(this,set);
-    }
-
-
     @Override
     public int hashCode() {
         return System.identityHashCode(this);

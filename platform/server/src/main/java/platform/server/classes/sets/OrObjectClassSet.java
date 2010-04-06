@@ -14,14 +14,14 @@ public class OrObjectClassSet implements OrClassSet {
     public final ConcreteCustomClassSet set;
     public final boolean unknown;
 
-    private OrObjectClassSet(UpClassSet iUp, ConcreteCustomClassSet iSet, boolean iUnknown) {
-        up = iUp;
-        set = iSet;
-        unknown = iUnknown;
+    private OrObjectClassSet(UpClassSet up, ConcreteCustomClassSet set, boolean unknown) {
+        this.up = up;
+        this.set = set;
+        this.unknown = unknown;
     }
 
-    public OrObjectClassSet(UpClassSet iUp) {
-        this(iUp,new ConcreteCustomClassSet(),false);
+    public OrObjectClassSet(UpClassSet up) {
+        this(up,new ConcreteCustomClassSet(),false);
     }
 
     public OrObjectClassSet(ConcreteCustomClass customClass) {

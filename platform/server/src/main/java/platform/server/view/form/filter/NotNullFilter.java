@@ -1,6 +1,6 @@
 package platform.server.view.form.filter;
 
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
@@ -26,7 +26,7 @@ public class NotNullFilter<P extends PropertyInterface> extends PropertyFilter<P
         super(inStream, form);
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return property.getExpr(classGroup, mapKeys, modifier).getWhere();
     }
 }

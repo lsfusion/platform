@@ -35,8 +35,8 @@ public class UpClassSet extends SetWhere<CustomClass,UpClassSet> implements Obje
         return checkNode instanceof CustomClass && has((CustomClass)checkNode);
     }
 
-    protected UpClassSet createThis(CustomClass[] iWheres) {
-        return new UpClassSet(iWheres);
+    protected UpClassSet createThis(CustomClass[] wheres) {
+        return new UpClassSet(wheres);
     }
 
     protected CustomClass[] newArray(int size) {

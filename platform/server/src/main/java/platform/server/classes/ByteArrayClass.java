@@ -67,4 +67,8 @@ public class ByteArrayClass extends DataClass<byte[]> {
     public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
         statement.setBytes(num, (byte[]) value);
     }
+
+    public int getBinaryLength() {
+        throw new RuntimeException("not supported");
+    }
 }

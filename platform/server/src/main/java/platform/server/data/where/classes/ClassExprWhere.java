@@ -56,8 +56,8 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     private ClassExprWhere(And<VariableClassExpr>[] iWheres) {
         super(iWheres);
     }
-    protected ClassExprWhere createThis(And<VariableClassExpr>[] iWheres) {
-        return new ClassExprWhere(iWheres);
+    protected ClassExprWhere createThis(And<VariableClassExpr>[] wheres) {
+        return new ClassExprWhere(wheres);
     }
 
     private static And<VariableClassExpr> andEquals(And<VariableClassExpr> and, EqualMap equals) {
@@ -113,9 +113,9 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             boolean isFalse = false;
             And<K> andTrans = new And<K>();
             for(Map.Entry<K, BaseExpr> mapEntry : map.entrySet()) {
-                if(!andTrans.add(mapEntry.getKey(), mapEntry.getValue() instanceof StaticClassExpr ?
-                        ((StaticClassExpr) mapEntry.getValue()).getStaticClass():
-                        andWhere.get((VariableClassExpr) mapEntry.getValue()))) {
+                AndClassSet classSet = mapEntry.getValue().getAndClassSet(andWhere);
+                assert classSet!=null;
+                if(!andTrans.add(mapEntry.getKey(), classSet)) {
                     isFalse = true;
                     break;
                 }
@@ -149,20 +149,12 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
             boolean isFalse = false;
             And<VariableClassExpr> andTrans = new And<VariableClassExpr>();
             for(Map.Entry<BaseExpr, BaseExpr> mapEntry : map.entrySet()) {
-                AndClassSet mapSet;
-                if(mapEntry.getValue() instanceof StaticClassExpr)
-                    mapSet = ((StaticClassExpr) mapEntry.getValue()).getStaticClass();
-                else
-                    if((mapSet=andWhere.getPartial((VariableClassExpr) mapEntry.getValue()))==null)
-                        continue;
-                if(mapEntry.getKey() instanceof StaticClassExpr) {
-                    if(!((StaticClassExpr)mapEntry.getKey()).getStaticClass().inSet(mapSet)) {
-                        isFalse = true;
-                        break;
-                    }
-                } else {
-                    boolean add = andTrans.add((VariableClassExpr) mapEntry.getKey(),mapSet);
-                    assert add;
+                AndClassSet mapSet = mapEntry.getValue().getAndClassSet(andWhere);
+                if(mapSet==null)
+                    continue;
+                if(!mapEntry.getKey().addAndClassSet(andTrans,mapSet)) {
+                    isFalse = true;
+                    break;
                 }
             }
             if(!isFalse)

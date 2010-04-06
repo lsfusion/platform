@@ -43,4 +43,7 @@ public class LongClass extends IntegralClass<Long> {
         statement.setLong(num, (Long)value);
     }
 
+    public int getBinaryLength() {
+        return 8;
+    }
 }

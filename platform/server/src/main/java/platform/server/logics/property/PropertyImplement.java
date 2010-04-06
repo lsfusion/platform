@@ -23,4 +23,9 @@ public class PropertyImplement<T,P extends PropertyInterface> {
     public String toString() {
         return property.toString();
     }
+
+    public <L> PropertyImplement<L, P> mapImplement(Map<T,L> mapImplement) {
+        return new PropertyImplement<L,P>(property,BaseUtils.join(mapping,mapImplement));
+    }
+
 }

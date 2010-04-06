@@ -2,7 +2,7 @@ package platform.server.view.form.filter;
 
 import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
@@ -67,7 +67,7 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
         return super.objectUpdated(classGroup) || value.objectUpdated(classGroup);
     }
 
-    public Where getWhere(Map<ObjectImplement, KeyExpr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return property.getExpr(classGroup, mapKeys, modifier).compare(value.getExpr(classGroup, mapKeys, modifier), compare);
     }
 

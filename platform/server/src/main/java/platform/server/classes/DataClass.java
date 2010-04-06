@@ -5,6 +5,10 @@ import platform.interop.Data;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.type.Type;
+import platform.server.data.SQLSession;
+import platform.server.data.where.Where;
+import platform.server.data.expr.Expr;
+import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractGroup;
@@ -18,6 +22,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.util.Random;
+import java.util.Map;
+import java.util.List;
+import java.util.Collections;
+import java.sql.SQLException;
 
 public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndClassSet, OrClassSet {
 
@@ -127,7 +135,27 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
     }
 
-    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView) {
+    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction) {
+        assert !addOnTransaction;
         return new DataObjectImplement(ID, SID, this, caption);
+    }
+
+    public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) {
+        return this;
+    }
+
+    public ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException {
+        return this;
+    }
+
+    public void prepareClassesQuery(Expr expr, Query<?, Object> query, BaseClass baseClass) {
+    }
+
+    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, Where where) {
+        return this;
+    }
+
+    public List<AndClassSet> getUniversal(BaseClass baseClass) {
+        return Collections.<AndClassSet>singletonList(this);
     }
 }

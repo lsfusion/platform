@@ -21,10 +21,10 @@ public class DataObjectImplement extends ObjectImplement {
     DataClass dataClass;
     Object value;
 
-    public DataObjectImplement(int iID, String sID, DataClass iDataClass, String iCaption) {
-        super(iID,sID,iCaption);
-        dataClass = iDataClass;
-        value = dataClass.getDefaultValue();
+    public DataObjectImplement(int ID, String sID, DataClass dataClass, String caption) {
+        super(ID,sID,caption);
+        this.dataClass = dataClass;
+        value = this.dataClass.getDefaultValue();
     }
 
     public AndClassSet getClassSet(GroupObjectImplement classGroup) {

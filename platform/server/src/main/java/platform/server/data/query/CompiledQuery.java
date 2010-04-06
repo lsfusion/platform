@@ -84,8 +84,6 @@ public class CompiledQuery<K,V> {
         public final Map<JoinData,String> joinData = new HashMap<JoinData, String>();
 
         public String getSource(Table.Join.Expr expr) {
-            if(joinData.get(expr)==null)
-                expr = expr;
             assert joinData.get(expr)!=null;
             return joinData.get(expr);
         }
@@ -214,7 +212,8 @@ public class CompiledQuery<K,V> {
                         and.properties.put(orderName, query.properties.get(order.getKey()));
                         orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
                     }
-                    orderAnds.put(orderName,order.getValue());
+                    if(!(top==0)) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает 
+                        orderAnds.put(orderName,order.getValue());
                     propertySelect.put(order.getKey(),"COALESCE("+orderFJ+")");
                 }
 
@@ -230,7 +229,7 @@ public class CompiledQuery<K,V> {
                     List<String> propertyOrder = new ArrayList<String>();
                     String andSelect = "(" + syntax.getSelect(andFrom, SQLSession.stringExpr(SQLSession.mapNames(andKeySelect,keyNames,new ArrayList<K>()),
                             SQLSession.mapNames(andPropertySelect,BaseUtils.toMap(andPropertySelect.keySet()),propertyOrder)),
-                            BaseUtils.toString(andWhereSelect, " AND "), platform.server.data.query.Query.stringOrder(propertyOrder,query.mapKeys.size(),orderAnds,syntax),"",top==0?"":String.valueOf(top)) + ") "+ and.alias;
+                            BaseUtils.toString(andWhereSelect, " AND "), Query.stringOrder(propertyOrder,query.mapKeys.size(),orderAnds,syntax),"",top==0?"":String.valueOf(top)) + ") "+ and.alias;
 
                     if(compileFrom.length()==0) {
                         compileFrom = andSelect;
@@ -265,7 +264,7 @@ public class CompiledQuery<K,V> {
         select = syntax.getSelect(from, SQLSession.stringExpr(
                 SQLSession.mapNames(keySelect, keyNames, keyOrder),
                 SQLSession.mapNames(propertySelect, propertyNames, propertyOrder)),
-                BaseUtils.toString(whereSelect, " AND "), platform.server.data.query.Query.stringOrder(propertyOrder,query.mapKeys.size(),orders,syntax),"",top==0?"":String.valueOf(top));
+                BaseUtils.toString(whereSelect, " AND "), Query.stringOrder(propertyOrder,query.mapKeys.size(),orders,syntax),"",top==0?"":String.valueOf(top));
 
         assert checkQuery();
     }

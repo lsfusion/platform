@@ -54,4 +54,14 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
     public <K extends PropertyInterface> PropertyMapImplement<T,K> map(Map<P,K> remap) {
         return new PropertyMapImplement<T,K>(property,BaseUtils.join(mapping,remap));
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this==obj || obj instanceof PropertyMapImplement && property.equals(((PropertyMapImplement)obj).property) && mapping.equals(((PropertyMapImplement)obj).mapping); 
+    }
+
+    @Override
+    public int hashCode() {
+        return property.hashCode() * 31 + mapping.hashCode();
+    }
 }

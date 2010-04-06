@@ -156,6 +156,13 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K> Map<Integer,K> toMap(K[] list) {
+        Map<Integer,K> result = new HashMap<Integer, K>();
+        for(int i=0;i<list.length;i++)
+            result.put(i,list[i]);
+        return result;
+    }
+
     public static <K> List<K> toList(Map<Integer,K> map) {
         List<K> result = new ArrayList<K>();
         for(int i=0;i<map.size();i++)
@@ -680,5 +687,11 @@ public class BaseUtils {
         while(it1.hasNext())
             result.put(it1.next(),it2.next());
         return result;
+    }
+
+    public static <K> List<K> toList(K... elements) {
+        List<K> list = new ArrayList<K>();
+        Collections.addAll(list,elements);
+        return list;
     }
 }

@@ -47,4 +47,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         statement.setInt(num, (Integer)value);
     }
 
+    public int getBinaryLength() {
+        return 8;
+    }
 }

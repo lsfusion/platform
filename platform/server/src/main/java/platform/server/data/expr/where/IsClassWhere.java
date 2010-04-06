@@ -10,6 +10,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -19,13 +20,13 @@ import platform.server.data.where.Where;
 
 public class IsClassWhere extends DataWhere {
 
-    private final VariableClassExpr expr;
+    private final SingleClassExpr expr;
     private final AndClassSet classes;
 
     // для того чтобы один и тот же JoinSelect все использовали
     private final IsClassExpr classExpr;
 
-    public IsClassWhere(VariableClassExpr expr, AndClassSet classes) {
+    public IsClassWhere(SingleClassExpr expr, AndClassSet classes) {
         this.expr = expr;
         this.classes = classes;
 
@@ -79,7 +80,7 @@ public class IsClassWhere extends DataWhere {
         return new InnerJoins(this);
     }
     public ClassExprWhere calculateClassWhere() {
-        return new ClassExprWhere(expr,classes).and(expr.getWhere().getClassWhere());
+        return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());
     }
 
     public int hashContext(HashContext hashContext) {

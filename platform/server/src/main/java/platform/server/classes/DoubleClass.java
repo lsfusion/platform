@@ -43,4 +43,7 @@ public class DoubleClass extends IntegralClass<Double> {
         statement.setDouble(num, (Double)value);
     }
 
+    public int getBinaryLength() {
+        return 8;
+    }
 }

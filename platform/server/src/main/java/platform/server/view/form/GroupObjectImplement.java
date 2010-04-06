@@ -7,6 +7,8 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.data.query.Query;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
@@ -26,15 +28,14 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     // глобальный идентификатор чтобы писать во ViewTable
     public final int ID;
 
-    public GroupObjectImplement(int iID,Collection<ObjectImplement> objects,int iOrder,int iPageSize,boolean iGridClassView,boolean iSingleViewType) {
+    public GroupObjectImplement(int ID,Collection<ObjectImplement> objects,int order,int pageSize,boolean gridClassView) {
 
-        assert (iID < RemoteFormInterface.GID_SHIFT);
+        assert (ID < RemoteFormInterface.GID_SHIFT);
 
-        ID = iID;
-        order = iOrder;
-        pageSize = iPageSize;
-        gridClassView = iGridClassView;
-        singleViewType = iSingleViewType;
+        this.ID = ID;
+        this.order = order;
+        this.pageSize = pageSize;
+        this.gridClassView = gridClassView;
         this.objects = objects;
 
         for(ObjectImplement object : objects)
@@ -49,7 +50,6 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
 
     // классовый вид включен или нет
     public boolean gridClassView = true;
-    public boolean singleViewType = false;
 
     // закэшированные
 
@@ -179,14 +179,22 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         return result;
     }
 
-    void fillSourceSelect(Query<ObjectImplement, ?> query, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-
+    Where getFilterWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+        Where where = Where.TRUE;
         for(Filter filt : filters)
-            query.and(filt.getWhere(query.mapKeys, classGroup, modifier));
+            where = where.and(filt.getWhere(mapKeys, classGroup, modifier));
+        return where;
+    }
 
-        // докинем JoinSelect ко всем классам, те которых не было FULL JOIN'ом остальные JoinSelect'ом
+    Where getClassWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) {
+        Where where = Where.TRUE;
         for(ObjectImplement object : objects)
-            query.and(DataSession.getIsClassWhere(modifier.getSession(),query.mapKeys.get(object),object.getGridClass(),null));
+            where = where.and(DataSession.getIsClassWhere(modifier.getSession(),mapKeys.get(object),object.getGridClass(),null));
+        return where;
+    }
+
+    Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+        return getFilterWhere(mapKeys, classGroup, modifier).and(getClassWhere(mapKeys, classGroup, modifier));
     }
 
     Map<ObjectImplement,ObjectValue> getNulls() {

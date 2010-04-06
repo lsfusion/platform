@@ -15,4 +15,10 @@ public class RegularFilterGroupNavigator {
         filters.add(filter);
     }
 
+    public int defaultFilter = -1;
+    public void addFilter(RegularFilterNavigator filter, boolean setDefault) {
+        if(setDefault)
+            defaultFilter = filters.size();
+        filters.add(filter);
+    }
 }

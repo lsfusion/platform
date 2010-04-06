@@ -98,13 +98,11 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         Map<VariableClassExpr,VariableClassExpr> equals = new HashMap<VariableClassExpr, VariableClassExpr>();
         ClassExprWhere classWhere = operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());
 
-        if(operator2 instanceof VariableClassExpr) {
-            if(operator1 instanceof StaticClassExpr)
-                classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));
-            else
-                equals.put((VariableClassExpr)operator1,(VariableClassExpr)operator2);
-        } else
-        if(operator1 instanceof VariableClassExpr)
+        if(operator2 instanceof VariableClassExpr && operator1 instanceof StaticClassExpr)
+            classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator2,((StaticClassExpr)operator1).getStaticClass()));
+        if(operator2 instanceof VariableClassExpr && operator1 instanceof VariableClassExpr)
+            equals.put((VariableClassExpr)operator1,(VariableClassExpr)operator2);
+        if(operator1 instanceof VariableClassExpr && operator2 instanceof StaticClassExpr)
             classWhere = classWhere.and(new ClassExprWhere((VariableClassExpr)operator1,((StaticClassExpr)operator2).getStaticClass()));
 
         return new MeanClassWhere(classWhere, equals);

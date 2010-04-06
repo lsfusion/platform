@@ -8,8 +8,8 @@ public abstract class AddSet<T,This extends AddSet<T,This>> {
         wheres = newArray(0);
     }
 
-    protected AddSet(T[] iWheres) {
-        wheres = iWheres;
+    protected AddSet(T[] wheres) {
+        this.wheres = wheres;
     }
 
     protected AddSet(T where) {
@@ -30,7 +30,7 @@ public abstract class AddSet<T,This extends AddSet<T,This>> {
         return false;
     }
 
-    protected abstract This createThis(T[] iWheres);
+    protected abstract This createThis(T[] wheres);
     protected abstract T[] newArray(int size);
 
     // если true - what выбрасываем

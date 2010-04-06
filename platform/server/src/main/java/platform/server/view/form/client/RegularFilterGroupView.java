@@ -10,8 +10,8 @@ import java.io.ObjectOutputStream;
 public class RegularFilterGroupView extends FunctionView {
     public RegularFilterGroupNavigator view;
 
-    public RegularFilterGroupView(RegularFilterGroupNavigator iView) {
-        view = iView;
+    public RegularFilterGroupView(RegularFilterGroupNavigator view) {
+        this.view = view;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -25,5 +25,7 @@ public class RegularFilterGroupView extends FunctionView {
 
             new ObjectOutputStream(outStream).writeObject(filter.key);
         }
+
+        outStream.writeInt(view.defaultFilter);
     }
 }

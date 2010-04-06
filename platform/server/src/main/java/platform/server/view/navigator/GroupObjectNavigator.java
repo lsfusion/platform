@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class GroupObjectNavigator extends ArrayList<ObjectNavigator> {
 
     public final int ID;
+
     public GroupObjectNavigator(int iID) {
         ID = iID;
         assert (ID < RemoteFormInterface.GID_SHIFT);
@@ -19,7 +20,7 @@ public class GroupObjectNavigator extends ArrayList<ObjectNavigator> {
     }
 
     public boolean gridClassView = true;
-    public boolean singleViewType = false;
+    public boolean fixedClassView = false;
     public int pageSize = 10;
     
 }

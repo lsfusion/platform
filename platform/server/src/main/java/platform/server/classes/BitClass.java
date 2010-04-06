@@ -84,4 +84,7 @@ public class BitClass extends DataClass<Boolean> {
         statement.setByte(num, (byte) ((Boolean)value?1:0));
     }
 
+    public int getBinaryLength() {
+        return 1;
+    }
 }

@@ -1,12 +1,18 @@
 package platform.server.data.type;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.SQLSession;
+import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.BaseClass;
+import platform.server.classes.sets.AndClassSet;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
+import java.util.List;
 
 public interface Type<T> extends Reader<T> {
 
@@ -26,4 +32,11 @@ public interface Type<T> extends Reader<T> {
     void fillReportDrawField(ReportDrawField reportField);
 
     boolean isCompatible(Type type);
+
+    ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException;
+
+    List<AndClassSet> getUniversal(BaseClass baseClass);
+
+    int getBinaryLength();
+    ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException;
 }

@@ -47,6 +47,8 @@ public interface SQLSyntax {
 
     String getTextType();
 
+    String getBinaryType(int length);
+
     String getByteArrayType();
 
     String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);

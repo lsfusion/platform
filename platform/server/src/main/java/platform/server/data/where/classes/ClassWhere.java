@@ -49,8 +49,8 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
     private ClassWhere(And<K>[] iWheres) {
         super(iWheres);
     }
-    protected ClassWhere<K> createThis(And<K>[] iWheres) {
-        return new ClassWhere<K>(iWheres);
+    protected ClassWhere<K> createThis(And<K>[] wheres) {
+        return new ClassWhere<K>(wheres);
     }
 
     public ClassWhere(K key, AndClassSet classes) {

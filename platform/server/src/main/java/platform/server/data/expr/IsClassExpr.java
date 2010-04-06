@@ -18,13 +18,13 @@ import java.util.Collections;
 
 public class IsClassExpr extends StaticClassExpr {
 
-    public VariableClassExpr expr;
+    public SingleClassExpr expr;
     BaseClass baseClass;
 
-    public IsClassExpr(VariableClassExpr iExpr, BaseClass iBaseClass) {
-        expr = iExpr;
+    public IsClassExpr(SingleClassExpr expr, BaseClass baseClass) {
+        this.expr = expr;
         
-        baseClass = iBaseClass;
+        this.baseClass = baseClass;
     }
 
     @TwinLazy

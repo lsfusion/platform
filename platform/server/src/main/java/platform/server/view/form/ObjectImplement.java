@@ -19,9 +19,9 @@ import java.util.Set;
 // на самом деле нужен collection но при extend'е нужна конкретная реализация
 public abstract class ObjectImplement extends CellView implements PropertyObjectInterface {
 
-    public ObjectImplement(int iID, String iSID, String iCaption) {
-        super(iID,iSID);
-        caption = iCaption;
+    public ObjectImplement(int ID, String sID, String caption) {
+        super(ID,sID);
+        this.caption = caption;
     }
 
     // 0 !!! - изменился объект, 1 !!! - класс объекта, 3 !!! - класса, 4 - классовый вид

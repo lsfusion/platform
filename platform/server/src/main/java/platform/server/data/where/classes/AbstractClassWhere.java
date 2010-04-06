@@ -8,9 +8,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.logics.BusinessLogics;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
-import platform.server.data.where.OrWhere;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +25,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return intersect(where);
     }
 
-    protected static class And<K> extends QuickMap<K, AndClassSet> {
+    public static class And<K> extends QuickMap<K, AndClassSet> {
 
         @Override
         public AndClassSet get(K key) {
@@ -97,8 +95,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return toArray(result);
     }
 
-    protected AbstractClassWhere(And<K>[] iWheres) {
-        super(iWheres);
+    protected AbstractClassWhere(And<K>[] wheres) {
+        super(wheres);
     }
 
     protected AbstractClassWhere(K key, AndClassSet classes) {
@@ -245,8 +243,8 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return new KNF<K>(isTrue);
         }
 
-        protected KNF<K> createThis(Or<K>[] iWheres) {
-            return new KNF<K>(iWheres);
+        protected KNF<K> createThis(Or<K>[] wheres) {
+            return new KNF<K>(wheres);
         }
 
         // теоретически таже логика что и для and'ов потому как все элементы независимы и соответственно все равно, что and, что or

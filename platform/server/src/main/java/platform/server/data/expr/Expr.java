@@ -23,6 +23,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
 
     public abstract Type getType(Where where);
+    public Type getSelfType() {
+        return getType(getWhere());
+    }   
+
     public abstract Reader getReader(Where where);
 
     // возвращает Where на notNull

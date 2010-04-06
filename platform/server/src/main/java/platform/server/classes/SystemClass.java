@@ -67,4 +67,8 @@ public class SystemClass extends DataClass<Integer> {
     public String getString(Object value, SQLSyntax syntax) {
         return value.toString();
     }
+
+    public int getBinaryLength() {
+        throw new RuntimeException("not supported yet");
+    }
 }

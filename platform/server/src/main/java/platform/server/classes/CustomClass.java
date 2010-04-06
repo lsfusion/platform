@@ -275,7 +275,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public abstract ConcreteCustomClass getSingleClass();
 
-    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView) {
-        return new CustomObjectImplement(ID, SID, this, caption, classView);
+    public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction) {
+        return new CustomObjectImplement(ID, SID, this, caption, classView, addOnTransaction);
     }
 }

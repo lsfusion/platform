@@ -26,10 +26,10 @@ public class FormulaExpr extends StaticClassExpr {
     private final Map<String, BaseExpr> params;
 
     // этот конструктор напрямую можно использовать только заведомо зная что getClassWhere не null или через оболочку create 
-    private FormulaExpr(String iFormula,Map<String, BaseExpr> iParams, ConcreteValueClass iValueClass) {
-        formula = iFormula;
-        params = iParams;
-        valueClass = iValueClass;
+    private FormulaExpr(String formula,Map<String, BaseExpr> params, ConcreteValueClass valueClass) {
+        this.formula = formula;
+        this.params = params;
+        this.valueClass = valueClass;
     }
 
     public static Expr create(String formula, ConcreteValueClass value,Map<String,? extends Expr> params) {
@@ -84,10 +84,7 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     public DataWhereSet getFollows() {
-        DataWhereSet follows = new DataWhereSet();
-        for(BaseExpr param : params.values())
-            follows.addAll(param.getFollows());
-        return follows;
+        return InnerExpr.getExprFollows(params);
     }
 
     public boolean twins(AbstractSourceJoin o) {

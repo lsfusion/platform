@@ -204,6 +204,15 @@ public class ClientForm extends JPanel {
                         checkBox.setSelected(!checkBox.isSelected());
                     }
                 });
+
+                if(filterGroup.defaultFilter >= 0) {
+                    checkBox.setSelected(true);
+                    try {
+                        setRegularFilter(filterGroup, singleFilter);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
+                    }
+                }
             } else {
 
                 final JComboBox comboBox = new JComboBox(
@@ -230,6 +239,16 @@ public class ClientForm extends JPanel {
                             comboBox.setSelectedItem(singleFilter);
                         }
                     });
+                }
+
+                if(filterGroup.defaultFilter >= 0) {
+                    ClientRegularFilterView defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
+                    comboBox.setSelectedItem(defaultFilter);
+                    try {
+                        setRegularFilter(filterGroup, defaultFilter);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
+                    }
                 }
             }
 
@@ -414,7 +433,7 @@ public class ClientForm extends JPanel {
 
             applyFormChanges();
 
-            clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
+            clientNavigator.changeCurrentClass(remoteForm,groupObject.get(0));
         }
 
     }
@@ -425,7 +444,7 @@ public class ClientForm extends JPanel {
 
         applyFormChanges();
 
-        clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(groupObject.get(0).ID));
+        clientNavigator.changeCurrentClass(remoteForm,groupObject.get(0));
     }
 
     void changeProperty(ClientCellView property, Object value, boolean externalID) throws IOException {
@@ -447,7 +466,7 @@ public class ClientForm extends JPanel {
 
             applyFormChanges();
 
-            clientNavigator.changeCurrentClass(remoteForm.getObjectClassID(object.ID));
+            clientNavigator.changeCurrentClass(remoteForm,object);
         }
 
     }
@@ -468,6 +487,8 @@ public class ClientForm extends JPanel {
         dataChanged();
 
         applyFormChanges();
+
+        clientNavigator.changeCurrentClass(remoteForm, object);
     }
 
     void changeGridClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
@@ -476,13 +497,17 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    public void switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
+    public boolean switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
+
+        if(groupObject.fixedClassView) return false;
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         remoteForm.switchClassView(groupObject.ID);
 
         applyFormChanges();
+
+        return true;
     }
 
     void changeOrder(ClientCellView property, Order modiType) throws IOException {

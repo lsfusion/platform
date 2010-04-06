@@ -23,8 +23,8 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
         super(where);
     }
 
-    protected JoinSet createThis(InnerJoin[] iWheres) {
-        return new JoinSet(iWheres);
+    protected JoinSet createThis(InnerJoin[] wheres) {
+        return new JoinSet(wheres);
     }
 
     protected InnerJoin[] newArray(int size) {

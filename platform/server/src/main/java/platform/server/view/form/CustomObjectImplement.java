@@ -25,12 +25,16 @@ public class CustomObjectImplement extends ObjectImplement {
 
     private CustomClassView classView;
 
-    public CustomObjectImplement(int iID, String iSID, CustomClass iBaseClass, String iCaption, CustomClassView iClassView) {
-        super(iID,iSID,iCaption);
-        baseClass = iBaseClass;
+    final boolean addOnTransaction;
+
+    public CustomObjectImplement(int ID, String sID, CustomClass baseClass, String caption, CustomClassView classView, boolean addOnTransaction) {
+        super(ID,sID,caption);
+        this.baseClass = baseClass;
         gridClass = baseClass;
 
-        classView = iClassView;
+        this.classView = classView;
+
+        this.addOnTransaction = addOnTransaction;
     }
 
     public CustomClass getBaseClass() {
@@ -66,6 +70,10 @@ public class CustomObjectImplement extends ObjectImplement {
 
         value = changeValue;
 
+        updateValueClass(session);
+    }
+
+    public void updateValueClass(ChangesSession session) {
         // запишем класс объекта
         ConcreteCustomClass changeClass;
         if(value instanceof NullValue)
@@ -80,6 +88,7 @@ public class CustomObjectImplement extends ObjectImplement {
             updated = updated | ObjectImplement.UPDATED_CLASS;
         }
 
+        // вообще должно быть в changeValue, но так как пока в endApply отдельно не "разбирается" случай изменения класса без изменения объекта, сделано так
         updated = updated | ObjectImplement.UPDATED_OBJECT;
         groupTo.updated = groupTo.updated | GroupObjectImplement.UPDATED_OBJECT;
     }
@@ -117,8 +126,10 @@ public class CustomObjectImplement extends ObjectImplement {
         if(classID==-1) {
             session.changeClass(getDataObject(),null);
             changeValue(session, NullValue.instance);
-        } else
-            session.changeClass(getDataObject(),baseClass.findConcreteClassID(classID));
+        } else {
+            session.changeClass(getDataObject(), baseClass.findConcreteClassID(classID));
+            updateValueClass(session);
+        }
     }
 
 

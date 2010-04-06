@@ -20,7 +20,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
 
         IntegralClass type = null;
         for(BaseExpr expr : keySet()) {
-            IntegralClass exprType = (IntegralClass) expr.getType(expr.getWhere());
+            IntegralClass exprType = (IntegralClass) expr.getSelfType();
             if(type==null)
                 type = exprType;
             else

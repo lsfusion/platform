@@ -6,8 +6,8 @@ public abstract class SetWhere<T,This extends SetWhere<T,This>> extends AddSet<T
         super();
     }
 
-    protected SetWhere(T[] iWheres) {
-        super(iWheres);
+    protected SetWhere(T[] wheres) {
+        super(wheres);
     }
 
     protected SetWhere(T where) {

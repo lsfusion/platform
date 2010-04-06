@@ -22,7 +22,7 @@ public class SumGroupExpr extends GroupExpr {
         super(sumExpr, translator);
     }    
     @ParamLazy
-    public VariableClassExpr translateDirect(KeyTranslator translator) {
+    public SumGroupExpr translateDirect(KeyTranslator translator) {
         return new SumGroupExpr(this, translator); 
     }
 

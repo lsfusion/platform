@@ -24,7 +24,7 @@ public class Mapper {
 
     private ObjectImplement mapObject(ObjectNavigator objKey, CustomClassView classView) {
 
-        ObjectImplement objValue = objKey.baseClass.newObject(objKey.ID,objKey.getSID(),objKey.caption,classView);
+        ObjectImplement objValue = objKey.baseClass.newObject(objKey.ID,objKey.getSID(),objKey.caption,classView,objKey.addOnTransaction);
         objectMapper.put(objKey, objValue);
         return objValue;
     }
@@ -42,7 +42,7 @@ public class Mapper {
             objects.add(mapObject(object,classView));
 
         GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID,objects,order,
-                groupKey.pageSize,groupKey.gridClassView,groupKey.singleViewType);
+                groupKey.pageSize,groupKey.gridClassView);
 
         groupMapper.put(groupKey, groupValue);
         return groupValue;
