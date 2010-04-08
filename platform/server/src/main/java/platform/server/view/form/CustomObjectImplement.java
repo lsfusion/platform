@@ -1,9 +1,6 @@
 package platform.server.view.form;
 
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
-import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.ObjectType;
@@ -61,7 +58,6 @@ public class CustomObjectImplement extends ObjectImplement {
 
     ObjectValue value;
 
-    @Override
     public void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException {
 
         assert changeValue!=null;
@@ -73,13 +69,18 @@ public class CustomObjectImplement extends ObjectImplement {
         updateValueClass(session);
     }
 
-    public void updateValueClass(ChangesSession session) {
+    public void updateValueClass(ChangesSession session) throws SQLException {
         // запишем класс объекта
         ConcreteCustomClass changeClass;
         if(value instanceof NullValue)
             changeClass = null;
         else {
-            changeClass = (ConcreteCustomClass) session.getCurrentClass(getDataObject());
+            ConcreteClass sessionClass = session.getCurrentClass(getDataObject());
+            if(!(sessionClass instanceof ConcreteCustomClass)) {
+                changeValue(session, NullValue.instance);
+                return;
+            }
+            changeClass = (ConcreteCustomClass) sessionClass;
             classView.objectChanged(changeClass, (Integer) getDataObject().object);
         }
 

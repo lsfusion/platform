@@ -110,8 +110,6 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        createDefaultClassForms(baseClass, baseElement);
-
         NavigatorElement primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
             NavigatorForm documentForm = new DocumentNavigatorForm(primaryData, 110, "Документ");
 

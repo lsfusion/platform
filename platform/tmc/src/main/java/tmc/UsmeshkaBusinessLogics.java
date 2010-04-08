@@ -113,7 +113,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         commitOut = addAbstractClass("Отгруженная заявка", order);
         commitInc = addAbstractClass("Принятая заявка", commitOut);
 
-        commitOrderInc = addAbstractClass("Принятый приход", documentStorePrice, orderInc, commitInc); 
+        commitOrderInc = addAbstractClass("Принятый приход", documentStorePrice, orderInc, commitInc);
 
         // внутр. и внешние операции
         orderOuter = addAbstractClass("Заявка на внешнюю операцию", orderInc); // всегда прих., создает партию - элементарную единицу учета
@@ -367,8 +367,6 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        createDefaultClassForms(baseClass, baseElement);
-
         NavigatorElement delivery = new NavigatorElement(baseElement, 1000, "Управление закупками");
             NavigatorForm deliveryLocal = new DeliveryLocalNavigatorForm(delivery, true, 1100);
                 NavigatorForm deliveryLocalBrowse = new DeliveryLocalNavigatorForm(deliveryLocal, false, 1125);
@@ -396,8 +394,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                 new DocumentRRPNavigatorForm(documentRRP, false, 2500);
             NavigatorForm documentRate = new DocumentRateNavigatorForm(price, true, 2550);
                 new DocumentRateNavigatorForm(documentRate, false, 2600);
-            NavigatorForm documentStorePrice = new DocumentRevalueNavigatorForm(price, true, 2650);
-                new DocumentRevalueNavigatorForm(documentStorePrice, false, 2750);
+            NavigatorForm documentRevalue = new DocumentRevalueNavigatorForm(price, true, 2650);
+                new DocumentRevalueNavigatorForm(documentRevalue, false, 2750);
             NavigatorForm rates = new RatesNavigatorForm(price, true, 2800);
                 new RatesNavigatorForm(rates, false, 2850);
 
@@ -414,10 +412,9 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             NavigatorForm revalueAct = new RevalueActNavigatorForm(print, 4200);
             NavigatorForm pricers = new PricersNavigatorForm(print, 4300);
 
-        commitDeliveryLocal.relevantElements.add(incomePrice);
-        commitDeliveryLocal.relevantElements.add(revalueAct);
-        commitDeliveryLocal.relevantElements.add(pricers);
-
+        commitDeliveryLocal.addRelevant(incomePrice);
+        documentStorePrice.addRelevant(revalueAct);
+        documentStorePrice.addRelevant(pricers);
     }
 
     private class DocumentNavigatorForm extends NavigatorForm {
@@ -738,7 +735,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                                   "Без цены",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new NotFilterNavigator(new NotNullFilterNavigator(getPropertyView(documentFormatFreeQuantity.property).view)),
+                                  new NotNullFilterNavigator(getPropertyView(documentFormatFreeQuantity.property).view),
                                   "На остатке",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
             addRegularFilterGroup(filterGroup);
@@ -822,28 +819,10 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             addPropertyView(objDoc, objArt, properties, storePrice);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyView(storePrice.property).view));
-            addFixedFilter(new NotFilterNavigator(new CompareFilterNavigator(getPropertyView(storePrice.property).view, Compare.NOT_EQUALS, addPropertyObjectImplement(prevPrice,objDoc,objArt))));
+            addFixedFilter(new NotFilterNavigator(new CompareFilterNavigator(getPropertyView(storePrice.property).view, Compare.EQUALS, addPropertyObjectImplement(prevPrice,objDoc,objArt))));
         }
     }
 
-/*    private class PriceReestrNavigatorForm extends ArticleNavigatorForm {
-
-        protected PriceReestrNavigatorForm(NavigatorElement parent, int ID) {
-            super(parent, ID, documentStorePrice, toAdd, true);
-
-            objDoc.groupTo.gridClassView = false;
-            objDoc.groupTo.fixedClassView = true;
-            objDoc.addOnTransaction = true;
-
-            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
-            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new NotNullFilterNavigator(getPropertyView(storePrice.property).view),
-                                  "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
-            addRegularFilterGroup(filterGroup);
-        }
-    }*/
-    
     protected void initAuthentication() {
         User user1 = authPolicy.addUser("user1", "user1", new UserInfo("Петр", "Петров"));
     }

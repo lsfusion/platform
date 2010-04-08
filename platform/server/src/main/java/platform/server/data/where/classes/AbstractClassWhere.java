@@ -34,10 +34,6 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return result;
         }
 
-        public AndClassSet getPartial(K key) {
-            return super.get(key);
-        }
-
         public boolean compatible(And<K> and) {
             for(int i=0;i<size;i++)
                 if(!getValue(i).getType().isCompatible(and.get(getKey(i)).getType()))

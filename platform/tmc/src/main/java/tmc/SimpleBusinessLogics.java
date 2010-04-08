@@ -547,8 +547,6 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        createDefaultClassForms(baseClass, baseElement);
-
         NavigatorElement supplyManagement = new NavigatorElement(baseElement, 1000, "Управление поставками");
             NavigatorElement suppliers = new StoreSupplierSpecNavigatorForm(supplyManagement, 1100, "Поставщики");
             NavigatorForm extIncOrderForm = new ExtIncOrderNavigatorForm(supplyManagement, 1200, "Заказы поставщику");
@@ -590,11 +588,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             NavigatorForm articleMStoreForm = new ArticleMStoreNavigatorForm(aggregateData, 8200, "Сводные остатки");
         NavigatorForm articleStoreForm = new ArticleStoreNavigatorForm(aggrArticleData, 8300, "Склады по товарам");
 
-        intraDocument.relevantElements.set(0, intraForm);
-        clearingSaleDocument.relevantElements.set(0, clearingSaleForm);
-        invDocument.relevantElements.set(0, invForm);
-        exchangeDocument.relevantElements.set(0, exchangeForm);
-        revalDocument.relevantElements.set(0, revalueForm);
+        intraDocument.addRelevant(intraForm);
+        clearingSaleDocument.addRelevant(clearingSaleForm);
+        invDocument.addRelevant(invForm);
+        exchangeDocument.addRelevant(exchangeForm);
+        revalDocument.addRelevant(revalueForm);
 
 //        extIncDetailForm.addRelevantElement(extIncPrintForm);
     }

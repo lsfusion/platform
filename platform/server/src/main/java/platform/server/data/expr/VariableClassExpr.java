@@ -15,7 +15,7 @@ public abstract class VariableClassExpr extends SingleClassExpr {
     public abstract VariableClassExpr translateDirect(KeyTranslator translator);
 
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
-        return and.get(this);
+        return and.getPartial(this);
     }
     public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
         boolean added = and.add(this, add);

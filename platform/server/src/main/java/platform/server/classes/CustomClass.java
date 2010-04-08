@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.Lazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
@@ -21,12 +22,16 @@ import platform.server.view.form.CustomObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.auth.SecurityPolicy;
+import platform.base.BaseUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+
+import net.jcip.annotations.Immutable;
 
 public abstract class CustomClass extends AbstractNode implements ObjectClass, ValueClass {
 
@@ -256,12 +261,40 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         outStream.writeBoolean(!children.isEmpty());
     }
 
-    public ArrayList<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
-    public NavigatorForm getClassForm(SecurityPolicy securityPolicy) {
+    private List<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();
+    public void addRelevant(NavigatorElement element) {
+        relevantElements.add(element);        
+    }
+
+    public List<NavigatorElement> getRelevantElements(BusinessLogics<?> BL, SecurityPolicy securityPolicy) {
+        List<CustomClass> upParents = new ArrayList<CustomClass>();
+        fillParents(upParents);
+
+        List<NavigatorElement> result = new ArrayList<NavigatorElement>();
+        for(CustomClass parent : upParents)
+            for (NavigatorElement element : parent.relevantElements)
+                if (securityPolicy.navigator.checkPermission(element))
+                    result.add(element);
+        for(CustomClass parent : upParents)
+            result.add(parent.getBaseClassForm(BL));
+        return result;
+    }
+
+    public NavigatorForm getClassForm(BusinessLogics<?> BL, SecurityPolicy securityPolicy) {
         for (NavigatorElement element : relevantElements)
             if (element instanceof NavigatorForm && securityPolicy.navigator.checkPermission(element))
                 return (NavigatorForm) element;
-        throw new RuntimeException("Для класса отсутствует соответствующая форма");
+        return getBaseClassForm(BL);
+    }
+
+    private NavigatorForm baseClassForm = null;
+    public NavigatorForm getBaseClassForm(BusinessLogics<?> BL) {
+        if(baseClassForm==null) {
+            baseClassForm = new ClassNavigatorForm(BL,this);
+            for(CustomClass child : children)
+                baseClassForm.add(child.getBaseClassForm(BL));
+        }
+        return baseClassForm;
     }
 
     // проверяет находятся ли он и все верхние в OrObjectClassSet'е

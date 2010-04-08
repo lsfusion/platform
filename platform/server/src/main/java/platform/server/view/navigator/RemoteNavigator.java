@@ -92,7 +92,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 if (currentClass == null)
                     navigatorElements = new ArrayList();
                 else
-                    navigatorElements = new ArrayList(currentClass.relevantElements);
+                    return currentClass.getRelevantElements(BL, securityPolicy);
                 break;
             default :
                 navigatorElements = getElements(BL.baseElement.getNavigatorElement(elementID));
@@ -174,7 +174,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         setDialogClass(objectImplement.baseClass);
         if(objectImplement.currentClass!=null)
             addCacheObject(objectImplement.currentClass, (Integer) objectImplement.getObjectValue().getValue());
-        return createForm(objectImplement.baseClass.getClassForm(securityPolicy),true);
+        return createForm(objectImplement.baseClass.getClassForm(BL,securityPolicy),true);
     }
 
     public RemoteFormInterface createObjectForm(int objectID, int value) throws RemoteException {
@@ -182,7 +182,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             addCacheObject(BaseUtils.intToObject(value));
             CustomObjectImplement objectImplement = (CustomObjectImplement) currentForm.getObjectImplement(objectID);
             setDialogClass(objectImplement.baseClass);
-            return createForm(objectImplement.baseClass.getClassForm(securityPolicy),true);
+            return createForm(objectImplement.baseClass.getClassForm(BL, securityPolicy),true);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -203,7 +203,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         setDialogClass(changeClass);
 
         DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change, changeClass);
-        navigatorForm.relevantElements.addAll(changeClass.relevantElements);
+        navigatorForm.relevantElements.addAll(changeClass.getRelevantElements(BL,securityPolicy));
 
         return createForm(navigatorForm,true);
     }
@@ -213,7 +213,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             addCacheObject(BaseUtils.intToObject(value));
             CustomClass propertyClass = currentForm.getPropertyView(viewID).view.getDialogClass();
             setDialogClass(propertyClass);
-            return createForm(propertyClass.getClassForm(securityPolicy),true);
+            return createForm(propertyClass.getClassForm(BL, securityPolicy),true);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

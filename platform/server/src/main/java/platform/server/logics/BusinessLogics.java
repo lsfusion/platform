@@ -166,6 +166,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         assert checkProps();
 
         System.out.println("Initializing navigators...");
+
+        baseElement.add(baseClass.getBaseClassForm(this));
         initNavigators();
 
         initAuthentication();
@@ -1651,21 +1653,5 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     System.out.println("Done");
                 }
             }
-    }
-
-    public void createDefaultClassForms(CustomClass cls, NavigatorElement parent) {
-
-        NavigatorElement node = new ClassNavigatorForm(this, cls);
-        parent.add(node);
-
-        // Проверим, что такой формы еще не было
-        boolean found = false;
-        for (NavigatorElement relNode : cls.relevantElements)
-            if (relNode.ID == node.ID) { found = true; break; }
-        if (!found)
-            cls.relevantElements.add(node);
-
-        for (CustomClass child : cls.children)
-            createDefaultClassForms(child, node);
     }
 }

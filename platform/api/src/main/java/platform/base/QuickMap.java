@@ -153,6 +153,9 @@ public abstract class QuickMap<K,V> {
     public V get(K key) {
         return getObject(key);
     }
+    public V getPartial(K key) { // временно
+        return getObject(key);
+    }
 
     @Override
     public String toString() {

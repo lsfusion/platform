@@ -216,7 +216,11 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
     }
 
     public void refreshData() {
-        form.refreshData();
+        try {
+            form.refreshData();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean hasSessionChanges() {

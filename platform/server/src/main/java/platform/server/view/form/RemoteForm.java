@@ -290,12 +290,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     // Обновление данных
-    public void refreshData() {
+    public void refreshData() throws SQLException {
 
         for(GroupObjectImplement group : groups) {
             for(ObjectImplement object : group.objects)
-                if(object instanceof CustomObjectImplement)
-                    object.updated |= ObjectImplement.UPDATED_GRIDCLASS; 
+                if(object instanceof CustomObjectImplement) {
+                    ((CustomObjectImplement)object).updateValueClass(session);
+                    object.updated |= ObjectImplement.UPDATED_GRIDCLASS;
+                }
             group.updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
         }
     }
@@ -322,6 +324,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     public void cancelChanges() throws SQLException {
         session.restart(true);
+
+        // пробежим по всем объектам
+        for(GroupObjectImplement group : groups)
+            for(ObjectImplement object : group.objects)
+                if(object instanceof CustomObjectImplement)
+                    ((CustomObjectImplement)object).updateValueClass(session);
 
         addObjectOnTransaction();
 

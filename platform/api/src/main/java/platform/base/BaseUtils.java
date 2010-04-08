@@ -651,7 +651,7 @@ public class BaseUtils {
         }
     }
 
-    public static <K> List<K> reverse(Collection<K> col) {
+    public static <K> List<K> reverse(List<K> col) {
         List<K> result = new ArrayList<K>();
         reverse(col.iterator(),result);
         return result;

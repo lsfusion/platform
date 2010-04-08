@@ -100,8 +100,6 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        createDefaultClassForms(baseClass, baseElement);
-
         new InDocumentArticleNavigatorForm(baseElement, 100, "Прих. документы");
         new OutDocumentArticleNavigatorForm(baseElement, 101, "Расх. документы");
         new SystemNavigatorForm(baseElement, 102, "Движение (документ*товар)");

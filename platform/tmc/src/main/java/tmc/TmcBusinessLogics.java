@@ -1246,8 +1246,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
-        createDefaultClassForms(baseClass, baseElement);
-
         primaryData = new NavigatorElement(baseElement, 100, "Первичные данные");
             extIncDetailForm = new ExtIncDetailNavigatorForm(primaryData, 110, "Внешний приход");
                 extIncForm = new ExtIncNavigatorForm(extIncDetailForm, 115, "Внешний приход по товарам");
@@ -1281,13 +1279,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
                 mainAccountForm = new MainAccountNavigatorForm(dateIntervalForms, 311, "Товарный отчет");
                 salesArticleStoreForm = new SalesArticleStoreNavigatorForm(dateIntervalForms, 313, "Реализация товара по складам");
 
-        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
-        intraDocument.relevantElements.set(0, intraForm);
-        extOutcomeDocument.relevantElements.set(0, extOutForm);
-        clearingSaleDocument.relevantElements.set(0, clearingSaleForm);
-        invDocument.relevantElements.set(0, invForm);
-        exchangeDocument.relevantElements.set(0, exchangeForm);
-        revalDocument.relevantElements.set(0, revalueForm);
+        extIncomeDocument.addRelevant(extIncDetailForm);
+        intraDocument.addRelevant(intraForm);
+        extOutcomeDocument.addRelevant(extOutForm);
+        clearingSaleDocument.addRelevant(clearingSaleForm);
+        invDocument.addRelevant(invForm);
+        exchangeDocument.addRelevant(exchangeForm);
+        revalDocument.addRelevant(revalueForm);
 
         extIncDetailForm.relevantElements.add(extIncPrintForm);
     }

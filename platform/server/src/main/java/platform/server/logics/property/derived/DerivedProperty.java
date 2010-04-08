@@ -103,7 +103,7 @@ public class DerivedProperty {
         return new PropertyMapImplement<ClassPropertyInterface,T>(new ClassProperty(genID(),"sys",new ValueClass[]{}, valueClass, value),new HashMap<ClassPropertyInterface, T>());
     }
 
-    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createImplement(Property<T> property) {
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createImplement(Property<T> property) {
         return new PropertyMapImplement<T,T>(property,BaseUtils.toMap(new HashSet<T>(property.interfaces)));        
     }
 
@@ -311,7 +311,10 @@ public class DerivedProperty {
     }
     
     public static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createMGProp(Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Set<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
-        return createConcMGProp(property, baseClass, extra, group, persist);
+        if(extra.size()==0)
+            return createEqualsMGProp(property, extra, group, persist);
+        else
+            return createConcMGProp(property, baseClass, extra, group, persist);
     }
 
     private static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createEqualsMGProp(Property<T> property, List<PropertyInterfaceImplement<T>> extra, Set<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
