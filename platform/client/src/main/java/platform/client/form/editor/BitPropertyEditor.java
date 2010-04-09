@@ -8,6 +8,7 @@ import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 public class BitPropertyEditor extends JCheckBox
                         implements PropertyEditorComponent {
@@ -46,7 +47,7 @@ public class BitPropertyEditor extends JCheckBox
             setSelected((Boolean)value);
     }
 
-    public Component getComponent() {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
 

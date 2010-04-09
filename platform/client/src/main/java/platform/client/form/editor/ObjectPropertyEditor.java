@@ -1,37 +1,46 @@
 package platform.client.form.editor;
 
-import platform.client.logics.ClientCellView;
-import platform.client.logics.ClientPropertyView;
-import platform.client.logics.ClientObjectView;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
 import platform.client.form.ClientDialog;
-import platform.client.navigator.ClientNavigator;
-import platform.client.navigator.ClientNavigatorForm;
-import platform.client.SwingUtils;
+import platform.client.form.ClientNavigatorDialog;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.KeyEvent;
 import java.rmi.RemoteException;
 import java.io.IOException;
+import java.util.EventObject;
 
 public class ObjectPropertyEditor extends JDialog implements PropertyEditorComponent {
 
-    public final ClientDialog clientDialog;
+    private final ClientForm owner;
+    private final RemoteFormInterface dialog;
+
+    private ClientDialog clientDialog;
 
     public ObjectPropertyEditor(ClientForm owner, RemoteFormInterface dialog) throws IOException, ClassNotFoundException {
 
-        clientDialog = new ClientDialog(owner,dialog);
+        this.owner = owner;
+        this.dialog = dialog;
     }
 
     public Object objectChosen() throws RemoteException {
         return clientDialog.objectChosen();
     }
 
-    public Component getComponent() {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
+
+        if (editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
+            clientDialog = new ClientNavigatorDialog(owner,dialog);
+            clientDialog.setBounds(owner.getBounds());
+        } else
+        {
+            clientDialog = new ClientDialog(owner,dialog);
+            clientDialog.setLocation(new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
+            clientDialog.setSize(500, 200);
+        }
 
         clientDialog.setVisible(true);
         return null;

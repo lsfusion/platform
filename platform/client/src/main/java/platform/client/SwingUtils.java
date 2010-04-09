@@ -36,6 +36,19 @@ public class SwingUtils {
         return (Window)comp;
     }
 
+    public static Point computeAbsoluteLocation(Component comp) {
+
+        Point pt = new Point();
+        while (comp != null ) {
+            Point ptc = comp.getLocation();
+            pt.x += ptc.x;
+            pt.y += ptc.y;
+            comp = comp.getParent();
+        }
+
+        return pt;
+    }
+
     private final static Map<String, Timer> timers = new HashMap();
     public static void invokeLaterSingleAction(String actionID, ActionListener actionListener, int delay) {
 

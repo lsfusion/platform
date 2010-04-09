@@ -9,6 +9,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.EventObject;
 
 public class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
@@ -44,7 +45,7 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor
 
     }
 
-    public Component getComponent() {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
 

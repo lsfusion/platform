@@ -17,7 +17,7 @@ class ClientFormDockable extends FormDockable {
 
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
-        return new ClientForm(remoteForm, navigator);
+        return new ClientForm(remoteForm, navigator, false);
     }
 
     // закрываются пользователем

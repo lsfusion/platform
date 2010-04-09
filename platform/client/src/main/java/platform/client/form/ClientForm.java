@@ -68,7 +68,9 @@ public class ClientForm extends JPanel {
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
-    public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) throws IOException, ClassNotFoundException {
+    private boolean readOnly;
+
+    public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean ireadOnly) throws IOException, ClassNotFoundException {
 //        super(app);
 
 //        FocusOwnerTracer.installFocusTracer();
@@ -79,7 +81,7 @@ public class ClientForm extends JPanel {
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         clientNavigator = iclientNavigator;
 
-//        getFrame().setTitle(caption);
+        readOnly = ireadOnly;
 
         formView = ClientObjectProxy.retrieveClientFormView(remoteForm);
 
@@ -273,8 +275,6 @@ public class ClientForm extends JPanel {
             }
         });
 
-        formLayout.add(formView.printView, buttonPrint);
-
         buttonRefresh = new JButton("Обновить");
         buttonRefresh.addActionListener(new ActionListener() {
 
@@ -286,8 +286,6 @@ public class ClientForm extends JPanel {
                 }
             }
         });
-
-        formLayout.add(formView.refreshView, buttonRefresh);
 
         buttonApply = new JButton("Применить");
         buttonApply.addActionListener(new ActionListener() {
@@ -301,8 +299,6 @@ public class ClientForm extends JPanel {
             }
         });
 
-        formLayout.add(formView.applyView, buttonApply);
-
         buttonCancel = new JButton("Отменить");
         buttonCancel.addActionListener(new ActionListener() {
 
@@ -315,34 +311,23 @@ public class ClientForm extends JPanel {
             }
         });
 
-        formLayout.add(formView.cancelView, buttonCancel);
-
         AbstractAction okAction = new AbstractAction("OK") {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    okPressed();
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при применении изменений", e);
-                }
+                okPressed();
             }
         };
 
-        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
+        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (readOnly) ? 0 : InputEvent.ALT_DOWN_MASK);
         im.put(altEnter, "okPressed");
         am.put("okPressed", okAction);
 
         buttonOK = new JButton(okAction);
-        formLayout.add(formView.okView, buttonOK);
 
         AbstractAction closeAction = new AbstractAction("Закрыть") {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    closePressed();
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при отмене изменений", e);
-                }
+                closePressed();
             }
         };
 
@@ -351,6 +336,15 @@ public class ClientForm extends JPanel {
         am.put("closePressed", closeAction);
 
         buttonClose = new JButton(closeAction);
+
+        if (!readOnly) {
+            formLayout.add(formView.printView, buttonPrint);
+            formLayout.add(formView.refreshView, buttonRefresh);
+            formLayout.add(formView.applyView, buttonApply);
+            formLayout.add(formView.cancelView, buttonCancel);
+        }
+
+        formLayout.add(formView.okView, buttonOK);
         formLayout.add(formView.closeView, buttonClose);
     }
 
@@ -598,12 +592,20 @@ public class ClientForm extends JPanel {
         return true;
     }
 
-    boolean okPressed() throws IOException {
-        return saveChanges();
+    boolean okPressed() {
+        try {
+            return saveChanges();
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при применении изменений", e);
+        }
     }
 
-    boolean closePressed() throws IOException {
-        return cancelChanges();
+    boolean closePressed() {
+        try {
+            return cancelChanges();
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при отмене изменений", e);
+        }
     }
 
     private Color defaultApplyBackground;
@@ -851,6 +853,8 @@ public class ClientForm extends JPanel {
         class ClientAbstractCellEditor extends AbstractCellEditor 
                                  implements TableCellEditor {
 
+            EventObject editEvent;
+
             PropertyEditorComponent currentComp;
 
             boolean externalID;
@@ -864,6 +868,8 @@ public class ClientForm extends JPanel {
             }
 
             public boolean isCellEditable(EventObject e) {
+
+                editEvent = e;
 
                 if (e instanceof KeyEvent) {
 
@@ -906,6 +912,8 @@ public class ClientForm extends JPanel {
                 
                 ClientCellViewTable cellTable = (ClientCellViewTable)table;
 
+                if (readOnly && cellTable.isDataChanging()) return null;
+
                 ClientCellView property = cellTable.getCellView(column);
 
                 try {
@@ -919,7 +927,12 @@ public class ClientForm extends JPanel {
 
                 Component comp = null;
                 if (currentComp != null) {
-                    comp = currentComp.getComponent();
+
+                    try {
+                        comp = currentComp.getComponent(SwingUtils.computeAbsoluteLocation(table), table.getCellRect(row, column, false), editEvent);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Ошибка при получении редактируемого значения", e);
+                    }
 
                     if (comp == null && currentComp.valueChanged()) {
 
@@ -1177,7 +1190,7 @@ public class ClientForm extends JPanel {
                 public PanelCellModel(ClientCellView ikey) {
                     super(ikey);
 
-                    addGroupObjectActions(view);
+                    if (!readOnly) addGroupObjectActions(view);
                 }
 
                 protected void cellValueChanged(Object ivalue) {
@@ -1246,7 +1259,7 @@ public class ClientForm extends JPanel {
                 container.add(pane);
                 container.add(queriesContainer);
 
-                addGroupObjectActions(table);
+                if (!readOnly) addGroupObjectActions(table);
 
                 container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "addFind");
                 container.getActionMap().put("addFind", new AbstractAction() {
@@ -1453,6 +1466,8 @@ public class ClientForm extends JPanel {
                         throw new RuntimeException("Ошибка при переходе на запись", e);
                     }
 
+                    if (readOnly && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) return false;
+
                     return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
                 }
 
@@ -1511,6 +1526,14 @@ public class ClientForm extends JPanel {
                                     throw new RuntimeException("Ошибка при изменении размера страницы", e);
                                 }
                             }
+                        }
+                    });
+
+                    addMouseListener(new MouseAdapter() {
+
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (readOnly && e.getClickCount() > 1) okPressed();
                         }
                     });
 
@@ -2359,7 +2382,7 @@ public class ClientForm extends JPanel {
 
                 classModel = new ClassModel(object.classView);
 
-                if (classModel.rootClass instanceof ClientObjectClass && object.objectIDView.show) {
+                if (classModel.rootClass instanceof ClientObjectClass && object.objectIDView.show && !readOnly) {
 
                     String extraCaption = ((groupObject.size() > 1) ? ("(" + object.objectIDView.caption + ")") : "");
 

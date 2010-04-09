@@ -13,6 +13,7 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
+import java.util.EventObject;
 
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
@@ -80,7 +81,7 @@ public class DatePropertyEditor extends JDateChooser
         // к слову все равно это все дело очень хриво работает и все из-за долбанных popup'ов
     }
 
-    public Component getComponent() {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
 

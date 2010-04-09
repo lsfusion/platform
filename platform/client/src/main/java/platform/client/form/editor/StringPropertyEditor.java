@@ -6,6 +6,7 @@ import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
+import java.util.EventObject;
 
 public class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
@@ -29,7 +30,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor
         selectAll();
     }
 
-    public Component getComponent() {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
 

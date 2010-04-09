@@ -3,11 +3,8 @@ package platform.client.form.editor;
 import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.util.EventObject;
 
 public class LogicalPropertyEditor extends JCheckBox
                         implements PropertyEditorComponent {
@@ -23,7 +20,7 @@ public class LogicalPropertyEditor extends JCheckBox
         setSelected(value!=null);
     }
 
-    public Component getComponent() {
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         return this;
     }
 
