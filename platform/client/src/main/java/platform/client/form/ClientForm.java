@@ -1092,6 +1092,14 @@ public class ClientForm extends JPanel {
                         return key;
                     }
 
+                    @Override
+                    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+
+                        // пусть Enter обрабатывает верхний контейнер, если
+                        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed && !isDataChanging()) return false;
+
+                        return super.processKeyBinding(ks, e, condition, pressed);
+                    }
                 }
 
             }
@@ -1261,21 +1269,8 @@ public class ClientForm extends JPanel {
 
                 if (!readOnly) addGroupObjectActions(table);
 
-                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "addFind");
-                container.getActionMap().put("addFind", new AbstractAction() {
-
-                    public void actionPerformed(ActionEvent ae) {
-                        table.findModel.addCondition();
-                    }
-                });
-
-                container.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), "addFilter");
-                container.getActionMap().put("addFilter", new AbstractAction() {
-
-                    public void actionPerformed(ActionEvent ae) {
-                        table.filterModel.addCondition();
-                    }
-                });
+                table.findModel.queryView.addActions(table);
+                table.filterModel.queryView.addActions(table);
 
             }
 
@@ -1710,6 +1705,8 @@ public class ClientForm extends JPanel {
                         queryView.conditionsChanged();
                     }
 
+                    protected abstract int getKeyEvent();
+
                     protected class QueryConditionView extends JPanel {
 
                         final ClientPropertyFilter filter;
@@ -1836,7 +1833,7 @@ public class ClientForm extends JPanel {
 
                             filterChanged();
 
-                            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK), "applyQuery");
+                            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "applyQuery");
                             getActionMap().put("applyQuery", new AbstractAction() {
 
                                 public void actionPerformed(ActionEvent ae) {
@@ -2106,6 +2103,27 @@ public class ClientForm extends JPanel {
 
                         }
 
+                        public void addActions(JComponent comp) {
+
+                            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), 0), "newFilter");
+                            comp.getActionMap().put("newFilter", new AbstractAction() {
+
+                                public void actionPerformed(ActionEvent ae) {
+                                    removeAllConditions();
+                                    addCondition();
+                                }
+                            });
+
+                            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.ALT_DOWN_MASK), "addFilter");
+                            comp.getActionMap().put("addFilter", new AbstractAction() {
+
+                                public void actionPerformed(ActionEvent ae) {
+                                    addCondition();
+                                }
+                            });
+
+                        }
+
                         public Dimension getMaximumSize() {
                             return getPreferredSize();
                         }
@@ -2182,6 +2200,8 @@ public class ClientForm extends JPanel {
                         super.applyQuery();
                     }
 
+                    protected int getKeyEvent() { return KeyEvent.VK_F3; }
+
                 }
 
 
@@ -2200,6 +2220,7 @@ public class ClientForm extends JPanel {
                         super.applyQuery();
                     }
 
+                    protected int getKeyEvent() { return KeyEvent.VK_F2; }
                 }
 
 
