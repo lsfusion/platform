@@ -15,6 +15,6 @@ public class ClientObjectValueLink extends ClientValueLink {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
-        outStream.writeInt(object.ID);
+        outStream.writeInt(object.getID());
     }
 }

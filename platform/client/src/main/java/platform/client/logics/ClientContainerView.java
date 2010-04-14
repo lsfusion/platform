@@ -1,16 +1,24 @@
 package platform.client.logics;
 
-import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.Collection;
 
 public class ClientContainerView extends ClientComponentView {
 
-    int ID;
+    // идентификатор контейнера для общения с удаленной формой
+    private int ID;
 
-    public String title;
+    public int getID() {
+        return ID;
+    }
+
+    // заголовок контейнера
+    private String title;
+
+    public String getTitle() {
+        return title;
+    }
 
     public ClientContainerView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);

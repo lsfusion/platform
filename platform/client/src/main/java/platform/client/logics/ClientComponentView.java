@@ -18,7 +18,7 @@ public class ClientComponentView implements Serializable {
         if(!inStream.readBoolean()) {
             int containerID = inStream.readInt();
             for(ClientContainerView parent : containers)
-                if(parent.ID==containerID) {
+                if(parent.getID()==containerID) {
                     container = parent;
                     break;
                 }

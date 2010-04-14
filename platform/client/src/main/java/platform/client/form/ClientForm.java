@@ -8,6 +8,7 @@ package platform.client.form;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.client.*;
+import platform.client.form.classes.ClassController;
 import platform.client.logics.*;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
@@ -20,12 +21,10 @@ import platform.interop.CompressingInputStream;
 import platform.interop.Scroll;
 import platform.interop.Order;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.layout.SimplexLayout;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -97,7 +96,7 @@ public class ClientForm extends JPanel {
 
     private boolean hasFocus = false;
 
-    private FormLayout formLayout;
+    private ClientFormLayout formLayout;
 
     public Map<ClientGroupObjectImplementView, GroupObjectModel> models;
 
@@ -110,7 +109,7 @@ public class ClientForm extends JPanel {
 
     void initializeForm() throws IOException {
 
-        formLayout = new FormLayout(formView.containers);
+        formLayout = new ClientFormLayout(formView.containers);
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(formLayout.getComponent());
@@ -454,7 +453,7 @@ public class ClientForm extends JPanel {
         } else {
 
             ClientObjectImplementView object = ((ClientObjectView)property).object;
-            remoteForm.changeObject(object.ID, (Integer)value);
+            remoteForm.changeObject(object.getID(), (Integer)value);
 
             models.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
 
@@ -467,17 +466,25 @@ public class ClientForm extends JPanel {
 
     void addObject(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
         
-        remoteForm.addObject(object.ID, cls.ID);
+        remoteForm.addObject(object.getID(), cls.ID);
         dataChanged();
 
         applyFormChanges();
     }
 
-    void changeClass(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
+    public ClientClass getBaseClass(ClientObjectImplementView object) throws IOException {
+        return ClientClass.deserialize(new DataInputStream(new ByteArrayInputStream(remoteForm.getBaseClassByteArray(object.getID()))));
+    }
+
+    public List<ClientClass> getChildClasses(ClientObjectImplementView object, ClientObjectClass parentClass) throws IOException {
+        return DeSerializer.deserializeListClientClass(remoteForm.getChildClassesByteArray(object.getID(),parentClass.ID));
+    }
+
+    public void changeClass(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
 
         SwingUtils.stopSingleAction(object.groupObject.getActionID(), true);
 
-        remoteForm.changeClass(object.ID, (cls == null) ? -1 : cls.ID);
+        remoteForm.changeClass(object.getID(), (cls == null) ? -1 : cls.ID);
         dataChanged();
 
         applyFormChanges();
@@ -485,9 +492,9 @@ public class ClientForm extends JPanel {
         clientNavigator.changeCurrentClass(remoteForm, object);
     }
 
-    void changeGridClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
+    public void changeGridClass(ClientObjectImplementView object, ClientObjectClass cls) throws IOException {
 
-        remoteForm.changeGridClass(object.ID, cls.ID);
+        remoteForm.changeGridClass(object.getID(), cls.ID);
         applyFormChanges();
     }
 
@@ -777,7 +784,7 @@ public class ClientForm extends JPanel {
             comp.getActionMap().put("addObject", new AbstractAction() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    ClientObjectClass addClass = objects.get(groupObject.get(0)).classModel.getDerivedClass();
+                    ClientObjectClass addClass = objects.get(groupObject.get(0)).classController.getDerivedClass();
                     if(addClass instanceof ClientConcreteClass) {
                         try {
                             addObject(groupObject.get(0),(ClientConcreteClass)addClass);
@@ -804,7 +811,7 @@ public class ClientForm extends JPanel {
             comp.getActionMap().put("changeObjectClass", new AbstractAction() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    ClientObjectClass changeClass = objects.get(groupObject.get(0)).classModel.getSelectedClass();
+                    ClientObjectClass changeClass = objects.get(groupObject.get(0)).classController.getSelectedClass();
                     if(changeClass instanceof ClientConcreteClass) {
                         try {
                             changeClass(groupObject.get(0), (ClientConcreteClass) changeClass);
@@ -2392,18 +2399,23 @@ public class ClientForm extends JPanel {
             final ClientObjectImplementView object;
 
             JButton buttonAdd;
-            JButton buttonChangeClass;
             JButton buttonDel;
 
-            public ClassModel classModel;
+            public ClassController classController;
 
             public ObjectModel(ClientObjectImplementView iobject) throws IOException {
 
                 object = iobject;
 
-                classModel = new ClassModel(object.classView);
+                classController = new ClassController(object, ClientForm.this) {
 
-                if (classModel.rootClass instanceof ClientObjectClass && object.objectIDView.show && !readOnly) {
+                    @Override
+                    protected void currentClassChanged() {
+                        grid.table.requestFocusInWindow(); // перейдем сразу на Grid
+                    }
+                };
+
+                if (classController.allowedEditObjects() && object.objectIDView.show && !readOnly) {
 
                     String extraCaption = ((groupObject.size() > 1) ? ("(" + object.objectIDView.caption + ")") : "");
 
@@ -2412,7 +2424,7 @@ public class ClientForm extends JPanel {
                     buttonAdd.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent ae) {
-                            ClientObjectClass derivedClass = classModel.getDerivedClass();
+                            ClientObjectClass derivedClass = classController.getDerivedClass();
                             if(derivedClass instanceof ClientConcreteClass) {
                                 try {
                                     addObject(object, (ClientConcreteClass)derivedClass);
@@ -2441,27 +2453,8 @@ public class ClientForm extends JPanel {
                     });
 
                     formLayout.add(groupObject.delView, buttonDel);
-
-                    if (classModel.rootClass.hasChilds()) {
-                        buttonChangeClass = new JButton("Изменить класс" + extraCaption);
-                        buttonChangeClass.setFocusable(false);
-                        buttonChangeClass.addActionListener(new ActionListener() {
-
-                            public void actionPerformed(ActionEvent ae) {
-                                ClientObjectClass selectedClass = classModel.getSelectedClass();
-                                if(selectedClass instanceof ClientConcreteClass) {
-                                    try {
-                                        changeClass(object, (ClientConcreteClass)selectedClass);
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при изменении класса объекта", e);
-                                    }
-                                }
-                            }
-
-                        });
-
-                        formLayout.add(groupObject.changeClassView, buttonChangeClass);
-                    }
+                    formLayout.add(object.classView,  classController.getView());
+                    formLayout.add(groupObject.changeClassView, classController.getChangeClassView());
 
                 }
 
@@ -2471,383 +2464,17 @@ public class ClientForm extends JPanel {
 
                 if (classView) {
 
-                    classModel.addClassTree();
-                    if (buttonChangeClass != null)
-                        formLayout.add(groupObject.changeClassView, buttonChangeClass);
+                    if (classController != null)
+                        classController.showViews();
                 } else {
 
-                    classModel.removeClassTree();
-                    if (buttonChangeClass != null)
-                        formLayout.remove(groupObject.changeClassView, buttonChangeClass);
-                }
-
-            }
-
-            public class ClassModel {
-
-                final ClientClassView key;
-
-                DefaultMutableTreeNode rootNode;
-                ClientClass rootClass;
-
-                DefaultMutableTreeNode currentNode;
-                public ClientClass currentClass;
-
-                JScrollPane pane;
-                ClassTree view;
-
-                public ClassModel(ClientClassView ikey) throws IOException {
-
-                    key = ikey;
-
-                    rootClass = ClientClass.deserialize(new DataInputStream(new ByteArrayInputStream(remoteForm.getBaseClassByteArray(object.ID))));
-                    currentClass = rootClass;
-
-                    rootNode = new DefaultMutableTreeNode(rootClass);
-                    currentNode = rootNode;
-
-                    view = new ClassTree();
-                    pane = new JScrollPane(view);
-                }
-
-                public void addClassTree() {
-                    if (rootClass.hasChilds())
-                        formLayout.add(key, pane);
-                }
-
-                public void removeClassTree() {
-                    formLayout.remove(key, pane);
-                }
-
-                private DefaultMutableTreeNode getSelectedNode() {
-
-                    TreePath path = view.getSelectionModel().getLeadSelectionPath();
-                    if (path == null) return null;
-
-                    return (DefaultMutableTreeNode) path.getLastPathComponent();
-                }
-
-                public ClientObjectClass getDerivedClass() {
-
-                    DefaultMutableTreeNode selNode = getSelectedNode();
-                    if (selNode == null || !currentNode.isNodeChild(selNode)) return (ClientObjectClass) currentClass;
-
-                    return (ClientObjectClass) selNode.getUserObject();
-                }
-
-                public ClientObjectClass getSelectedClass() {
-
-                    DefaultMutableTreeNode selNode = getSelectedNode();
-                    if (selNode == null) return (ClientObjectClass) currentClass;
-
-                    return (ClientObjectClass) selNode.getUserObject();
-                }
-
-                public void changeCurrentClass(ClientObjectClass cls, DefaultMutableTreeNode clsNode) throws IOException {
-
-                    if (cls == null) return;
-
-                    changeGridClass(object, cls);
-                    currentClass = cls;
-                    currentNode = clsNode;
-
-                    //запускаем событие изменение фонта, чтобы сбросить кэш в дереве, который расчитывает ширину поля
-                    //собственно оно само вызывает перерисовку
-                    view.firePropertyChange("font", false, true);
-
-                }
-
-                class ClassTree extends JTree {
-
-                    final DefaultTreeModel model;
-
-                    final int ID;
-
-                    @Override
-                    public int hashCode() {
-                        return ID;
-                    }
-
-                    @Override
-                    public boolean equals(Object o) {
-                        return o instanceof ClassTree && ((ClassTree) o).ID == this.ID;
-                    }
-
-                    public ClassTree() {
-
-                        ID = object.ID;
-
-                        setToggleClickCount(-1);
-                        setBorder(new EtchedBorder(EtchedBorder.LOWERED));
-
-                        model = new DefaultTreeModel(rootNode);
-
-                        setModel(model);
-
-                        addTreeExpansionListener(new TreeExpansionListener() {
-
-                            public void treeExpanded(TreeExpansionEvent event) {
-                                try {
-                                    addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
-                                } catch (IOException e) {
-                                    throw new RuntimeException("Ошибка при получении потомков класса", e);
-                                }
-                            }
-
-                            public void treeCollapsed(TreeExpansionEvent event) {}
-
-                        });
-
-                        addMouseListener(new MouseAdapter() {
-
-                            public void mouseReleased(MouseEvent me) {
-                                if (me.getClickCount() == 2) {
-                                    try {
-                                        changeCurrentClass(getSelectedClass(), getSelectedNode());
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при изменении текущего класса", e);
-                                    }
-                                }
-                            }
-                        });
-
-                        addKeyListener(new KeyAdapter() {
-
-                            public void keyPressed(KeyEvent ke) {
-                                if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-                                    try {
-                                        changeCurrentClass(getSelectedClass(), getSelectedNode());
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при изменении текущего класса", e);
-                                    }
-                                    grid.table.requestFocusInWindow();
-                                }
-                            }
-                        });
-
-                        if (rootClass.hasChilds()) {
-                            rootNode.add(new ExpandingTreeNode());
-                            expandPath(new TreePath(rootNode));
-                        }
-
-                        this.setSelectionRow(0);
-                        
-                    }
-
-                    @Override
-                    public void updateUI() {
-                        super.updateUI();
-
-                        //приходится в updateUI это засовывать, иначе при изменении UI - нифига не перерисовывает
-                        setCellRenderer(new DefaultTreeCellRenderer() {
-
-                            Font defaultFont;
-
-                            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
-                                                                          boolean expanded, boolean leaf, int row,
-                                                                          boolean hasFocus) {
-                                if (defaultFont == null) {
-                                    Component comp = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-                                    defaultFont = comp.getFont();
-                                }
-
-                                setFont(defaultFont);
-
-                                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-                                if (node != null) {
-
-                                    if (node == currentNode)
-                                        setFont(getFont().deriveFont(Font.BOLD));
-
-                                }
-
-                                return super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-
-                            }
-
-                        });
-                    }
-
-                    private void addNodeElements(DefaultMutableTreeNode parent) throws IOException {
-
-                        DefaultMutableTreeNode firstChild = (DefaultMutableTreeNode)parent.getFirstChild();
-
-                        if (! (firstChild instanceof ExpandingTreeNode)) return;
-                        parent.removeAllChildren();
-
-                        Object nodeObject = parent.getUserObject();
-                        if (nodeObject == null || ! (nodeObject instanceof ClientClass) ) return;
-
-                        ClientObjectClass parentClass = (ClientObjectClass) nodeObject;
-
-                        List<ClientClass> classes = DeSerializer.deserializeListClientClass(
-                                                                        remoteForm.getChildClassesByteArray(object.ID,parentClass.ID));
-
-                        for (ClientClass cls : classes) {
-
-                            DefaultMutableTreeNode node;
-                            node = new DefaultMutableTreeNode(cls, cls.hasChilds());
-                            parent.add(node);
-
-                            if (cls.hasChilds())
-                                node.add(new ExpandingTreeNode());
-
-                        }
-
-                        model.reload(parent);
-                    }
-
-                    public DefaultMutableTreeNode getSelectedNode() {
-
-                        TreePath path = getSelectionPath();
-                        if (path == null) return null;
-
-                        return (DefaultMutableTreeNode) path.getLastPathComponent();
-                    }
-
-                    public ClientObjectClass getSelectedClass() {
-
-                        DefaultMutableTreeNode node = getSelectedNode();
-                        if (node == null) return null;
-                        
-                        Object nodeObject = node.getUserObject();
-                        if (! (nodeObject instanceof ClientClass)) return null;
-                        return (ClientObjectClass) nodeObject;
-                    }
-
+                    if (classController != null)
+                        classController.hideViews();
                 }
 
             }
 
         }
         
-    }
-
-    class FormLayout {
-
-        ContainerView mainContainer;
-        
-        SimplexLayout globalLayout;
-        
-        final Map<ClientContainerView, ContainerView> contviews;
-        
-        public FormLayout(List<ClientContainerView> containers) {
-        
-            contviews = new HashMap();
-            
-//            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            
-            while (true) {
-                
-                boolean found = false;
-                for (ClientContainerView container : containers) {
-                    if ((container.container == null || contviews.containsKey(container.container)) && !contviews.containsKey(container)) {
-                        
-                        ContainerView contview = new ContainerView(container);
-                        if (container.container == null) {
-                            
-                            mainContainer = contview;
-                            
-                            globalLayout = new SimplexLayout(mainContainer, container.constraints);
-                            mainContainer.setLayout(globalLayout);
-                        }
-                        else {
-                            contviews.get(container.container).add(contview, container.constraints);
-                        }
-                        contviews.put(container, contview);
-                        found = true;
-                    }
-                }
-                
-                if (!found) break;
-                
-            }
-
-        }
-        
-        public JComponent getComponent() {
-            return mainContainer;
-        }
-
-        private boolean add(ClientComponentView component, Component view) {
-            if (!contviews.get(component.container).isAncestorOf(view)) {
-                contviews.get(component.container).addComponent(view, component.constraints);
-                contviews.get(component.container).repaint();
-                return true;
-            } else
-                return false;
-        }
-
-        private boolean remove(ClientComponentView component, Component view) {
-           if (contviews.get(component.container).isAncestorOf(view)) {
-                contviews.get(component.container).removeComponent(view);
-                contviews.get(component.container).repaint();
-                return true;
-           } else
-                return false;
-        }
-        
-        class ContainerView extends JPanel {
-            
-            final ClientContainerView view;
-            
-            public ContainerView(ClientContainerView iview) {
-                
-                view = iview;
-                
-                setLayout(globalLayout);
-
-                if (view.title != null) {
-                    TitledBorder border = BorderFactory.createTitledBorder(view.title);
-                    setBorder(border);
-                }
-
-
-//                Random rnd = new Random();
-//                this.setBackground(new Color(rnd.nextInt(255),rnd.nextInt(255),rnd.nextInt(255)));
-
-                setPreferredSize(new Dimension(10000, 10000));
-
-                setVisible(false);
-
-            }
-
-            public void addComponent(Component comp, Object constraints) {
-
-                incrementComponentCount();
-                add(comp, constraints);
-            }
-
-            public void removeComponent(Component comp) {
-
-                remove(comp);
-                decrementComponentCount();
-            }
-
-            int compCount = 0;
-            private void incrementComponentCount() {
-
-                if (compCount == 0)
-                    setVisible(true);
-
-                compCount++;
-
-                Container parent = getParent();
-                if (parent instanceof ContainerView)
-                    ((ContainerView)parent).incrementComponentCount();
-            }
-
-            private void decrementComponentCount() {
-
-                compCount--;
-                if (compCount == 0)
-                    setVisible(false);
-
-                Container parent = getParent();
-                if (parent instanceof ContainerView)
-                    ((ContainerView)parent).decrementComponentCount();
-            }
-
-        }
     }
 }

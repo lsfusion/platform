@@ -7,7 +7,11 @@ import java.util.Collection;
 
 public class ClientObjectImplementView implements Serializable {
 
-    public Integer ID = 0;
+    private Integer ID = 0;
+
+    public Integer getID() {
+        return ID;
+    }
 
     // вручную заполняется
     public ClientGroupObjectImplementView groupObject;

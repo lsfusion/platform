@@ -25,7 +25,7 @@ public class ClientObjectView extends ClientCellView {
     }
 
     public int getID() {
-        return object.ID;
+        return object.getID();
     }
 
     public ClientGroupObjectImplementView getGroupObject() {
@@ -51,10 +51,10 @@ public class ClientObjectView extends ClientCellView {
     }
 
     public RemoteFormInterface createForm(RemoteNavigatorInterface navigator) throws RemoteException {
-        return navigator.createObjectForm(object.ID);
+        return navigator.createObjectForm(object.getID());
     }
 
     public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, Integer value) throws RemoteException {
-        return navigator.createObjectForm(object.ID, BaseUtils.objectToInt(value));
+        return navigator.createObjectForm(object.getID(), BaseUtils.objectToInt(value));
     }
 }
