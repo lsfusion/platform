@@ -602,7 +602,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         protected DocumentNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, (toAdd?documentClass.caption:"Документы"));
 
-            objDoc = addSingleGroupObjectImplement(documentClass, "Документ", properties, baseGroup, documentGroup, true);
+            objDoc = addSingleGroupObjectImplement(documentClass, "Документ", properties, baseGroup, true, documentGroup, true);
             if(toAdd) {
                 objDoc.groupTo.gridClassView = false;
                 objDoc.groupTo.fixedClassView = true;
@@ -619,7 +619,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             super(parent, ID, documentClass, toAdd);
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
-            addPropertyView(objDoc, objArt, properties, baseGroup, documentGroup, true);
+            addPropertyView(objDoc, objArt, properties, baseGroup, true, documentGroup, true);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -708,8 +708,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
             objOuter = addSingleGroupObjectImplement(commitClass, "Партия", properties, baseGroup, true);
 
-            addPropertyView(objOuter, objDoc, properties, baseGroup, documentGroup, true);
-            addPropertyView(objOuter, objDoc, objArt, properties, baseGroup, documentGroup, true);
+            addPropertyView(objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
             addPropertyView(objOuter, objArt, properties, baseGroup, true);
 
             NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyView(innerQuantity.property).view);
@@ -793,8 +793,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
             objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
 
-            addPropertyView(objInner, objDoc, properties, baseGroup, documentGroup, true);
-            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, documentGroup, true);
+            addPropertyView(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
             addPropertyView(objInner, objArt, properties, baseGroup, true);
 
             NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyView(returnInnerQuantity.property).view);
@@ -808,8 +808,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
             objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true);
 
-            addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, documentGroup, true);
-            addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, documentGroup, true);
+            addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
             addPropertyView(objInner, objOuter, properties, baseGroup, true);
             addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
 
@@ -842,18 +842,33 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         }
     }
 
+    private class SupplierArticleNavigatorForm extends NavigatorForm {
+        protected SupplierArticleNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, "Ассортимент поставщиков");
+
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+
+            addPropertyView(objStore, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objStore, objOuter, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objOuter, objArt, properties, baseGroup, true);
+            addPropertyView(objStore, objOuter, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+        }
+    }
+
     private class StoreArticleNavigatorForm extends NavigatorForm {
         protected StoreArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
-            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
 
-            addPropertyView(objStore, objArt, properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
-            addPropertyView(objStore, objOuter, properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
-//            addPropertyView(objOuter, objArt, properties, baseGroup, true);
-            addPropertyView(objStore, objOuter, objArt, properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
+            addPropertyView(objStore, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objStore, objOuter, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objOuter, objArt, properties, baseGroup, true);
+            addPropertyView(objStore, objOuter, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
         }
     }
 
@@ -861,10 +876,10 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         protected FormatArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по форматам");
 
-            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
+            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
 
-            addPropertyView(objFormat, objArt, properties, baseGroup, moveGroup, priceGroup, logisticsGroup, true);
+            addPropertyView(objFormat, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
         }
     }
 
