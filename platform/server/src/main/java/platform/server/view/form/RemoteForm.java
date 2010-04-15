@@ -811,26 +811,32 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 boolean read = drawProp.view.dataUpdated(changedProps) ||
                         drawProp.toDraw!=null && (drawProp.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
 
-                boolean inGridInterface; // прогоняем через кэши чтобы каждый раз не запускать isInInterface
-                if(drawProp.view.classUpdated(drawProp.toDraw)) {
-                    inGridInterface = drawProp.view.isInInterface(drawProp.toDraw);
-                    cacheInGridInterface.put(drawProp, inGridInterface);
-                } else { // пусть будут assert
-                    inGridInterface = cacheInGridInterface.get(drawProp);
-                    assert inGridInterface==drawProp.view.isInInterface(drawProp.toDraw);
-                }
+                // прогоняем через кэши чтобы каждый раз не запускать isInInterface
+                boolean inGridInterface, inInterface;
 
-                boolean inInterface; // прогоняем через кэши чтобы каждый раз не запускать isInInterface
-                if(drawProp.toDraw==null)
-                    inInterface = inGridInterface;
-                else
-                    if(drawProp.view.classUpdated(null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
-                        inInterface = drawProp.view.isInInterface(null);
-                        cacheInInterface.put(drawProp, inInterface);
-                    } else {
-                        inInterface = cacheInInterface.get(drawProp);
-                        assert inInterface==drawProp.view.isInInterface(null);
+                if(drawProp.view.mapping.isEmpty()) {
+                    inInterface = true;
+                    inGridInterface = false;
+                } else {
+                    if(drawProp.view.classUpdated(drawProp.toDraw)) {
+                        inGridInterface = drawProp.view.isInInterface(drawProp.toDraw);
+                        cacheInGridInterface.put(drawProp, inGridInterface);
+                    } else { // пусть будут assert
+                        inGridInterface = cacheInGridInterface.get(drawProp);
+                        assert inGridInterface==drawProp.view.isInInterface(drawProp.toDraw);
                     }
+
+                    if(drawProp.toDraw==null)
+                        inInterface = inGridInterface;
+                    else
+                        if(drawProp.view.classUpdated(null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
+                            inInterface = drawProp.view.isInInterface(null);
+                            cacheInInterface.put(drawProp, inInterface);
+                        } else {
+                            inInterface = cacheInInterface.get(drawProp);
+                            assert inInterface==drawProp.view.isInInterface(null);
+                        }
+                }
 
                 if(inGridInterface && drawProp.toDraw.gridClassView) { // в grid'е
                     if(read || drawProp.view.objectUpdated(drawProp.toDraw)) {

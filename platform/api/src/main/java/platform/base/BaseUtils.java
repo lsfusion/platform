@@ -574,6 +574,12 @@ public class BaseUtils {
             result = (result.length()==0?"":result+separator) + element;
         return result;
     }
+    public static <K> String toString(K[] array, String separator) {
+        String result = "";
+        for(K element : array)
+            result = (result.length()==0?"":result+separator) + element;
+        return result;
+    }
 
     public static <K,V> boolean containsAll(Map<K,V> map, Map<K,V> contains) {
         for(Map.Entry<K,V> entry : contains.entrySet())

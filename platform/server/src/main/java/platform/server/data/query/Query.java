@@ -95,6 +95,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr,ValueExpr> mapValues) {
+        assert joinImplement.size()==mapKeys.size();
         return parse().join(joinImplement, mapValues);
     }
 

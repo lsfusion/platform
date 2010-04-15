@@ -763,7 +763,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addJProp(String caption, LP mainProp, Object... params) {
-        return addJProp(null, caption, mainProp, params);
+        return addJProp((AbstractGroup)null, caption, mainProp, params);
+    }
+
+    protected LP addJProp(String sID, String caption, LP mainProp, Object... params) {
+        return addJProp(null, sID, caption, mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
@@ -834,8 +838,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLGProp(group,new PropertyImplement<PropertyInterfaceImplement<P>,GroupProperty.Interface<P>>(property,property.getMapInterfaces()),listImplements);
     }
 
-
     protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
+        return addOProp(group, genSID(), caption, sum, percent, ascending, includeLast, partNum, params);
+    }
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String sID, String caption, LP<P> sum, boolean percent, boolean ascending, boolean includeLast, int partNum, Object... params) {
         List<LI> li = readLI(params);
 
         Collection<PropertyInterfaceImplement<P>> partitions = mapLI(li.subList(0,partNum),sum.listInterfaces);
@@ -843,21 +849,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         PropertyMapImplement<?, P> orderProperty;
         if(percent)
-            orderProperty = DerivedProperty.createPOProp(sum.property, partitions, orders, includeLast);
+            orderProperty = DerivedProperty.createPOProp(sID, caption, sum.property, partitions, orders, includeLast);
         else
-            orderProperty = DerivedProperty.createOProp(sum.property, partitions, orders, includeLast);
+            orderProperty = DerivedProperty.createOProp(sID, caption, sum.property, partitions, orders, includeLast);
 
         return mapLProp(group, orderProperty, sum);
     }
 
     protected <R extends PropertyInterface,L extends PropertyInterface> LP addUGProp(AbstractGroup group, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
+        return addUGProp(group, genSID(), caption, ascending, restriction, ungroup, params);
+    }
+    protected <R extends PropertyInterface,L extends PropertyInterface> LP addUGProp(AbstractGroup group, String sID, String caption, boolean ascending, LP<R> restriction, LP<L> ungroup, Object... params) {
         List<LI> li = readLI(params);
 
         Map<L,PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
         for(int i=0;i<ungroup.listInterfaces.size();i++)
             groupImplement.put(ungroup.listInterfaces.get(i),li.get(i).map(restriction.listInterfaces));
         OrderedMap<PropertyInterfaceImplement<R>,Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(),li.size()),restriction.listInterfaces), ascending);
-        return mapLProp(group, DerivedProperty.createUGProp(new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property,groupImplement), orders, restriction.property),restriction);
+        return mapLProp(group, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property,groupImplement), orders, restriction.property),restriction);
     }
     
 /*
@@ -934,7 +943,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addGProp(group, sID, caption, groupProp, true, params);
     }
 
-     protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+    protected LP addMGProp(LP groupProp, Object... params) {
+        return addMGProp(null, genSID(), "sys", groupProp, params);
+    }
+    protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
         return addMGProp(group,new String[]{sID},new String[]{caption}, 0, groupProp, params)[0];
     }
     protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP<T> groupProp, Object... params) {
@@ -947,7 +959,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(extra, listImplements.size());
-        List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> mgProps = DerivedProperty.createMGProp(groupProp.property, baseClass,
+        List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> mgProps = DerivedProperty.createMGProp(ids, captions, groupProp.property, baseClass,
                 listImplements.subList(0,extra), new HashSet<PropertyInterfaceImplement<T>>(groupImplements), suggestPersist);
 
         if(persist)
@@ -1042,7 +1054,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProp(group, listProperty);
     }
 
-    // объединение классовое (непересекающихся) свойств 
+    // объединение классовое (непересекающихся) свойств
+    protected LP addCUProp(LP... props) {
+        return addCUProp("sys", props);
+    }
     protected LP addCUProp(String caption, LP... props) {
         return addCUProp((AbstractGroup)null, caption, props);
     }
@@ -1061,6 +1076,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // разница
+    protected LP addDUProp(LP prop1, LP prop2) {
+        return addDUProp("sys", prop1, prop2);
+    }
     protected LP addDUProp(String caption, LP prop1, LP prop2) {
         return addDUProp((AbstractGroup)null, caption, prop1, prop2);
     }

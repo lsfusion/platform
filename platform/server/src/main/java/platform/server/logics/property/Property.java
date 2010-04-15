@@ -91,6 +91,8 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
     public <U extends Changes<U>> Expr getExpr(Map<T, ? extends Expr> joinImplement, Modifier<U> modifier, WhereBuilder changedWhere) {
 
+        assert joinImplement.size()==interfaces.size();
+
         WhereBuilder changedExprWhere = new WhereBuilder();
         Expr changedExpr = modifier.changed(this, joinImplement, changedExprWhere);
 

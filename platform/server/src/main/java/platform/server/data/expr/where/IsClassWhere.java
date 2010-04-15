@@ -11,6 +11,7 @@ import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.expr.SingleClassExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;

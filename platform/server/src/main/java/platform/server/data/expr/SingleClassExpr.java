@@ -7,6 +7,7 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.OrClassSet;
 import platform.base.QuickMap;
 
 public abstract class SingleClassExpr extends BaseExpr {
@@ -16,8 +17,8 @@ public abstract class SingleClassExpr extends BaseExpr {
     private Expr classExpr;
     public Expr classExpr(BaseClass baseClass) {
         if(classExpr==null) {
-            ConcreteObjectClass singleClass = getSet().getSingleClass(baseClass);
-            if(singleClass!=null)
+            ConcreteObjectClass singleClass;
+            if(!(this instanceof KeyExpr) && ((singleClass = ((OrObjectClassSet)getSet()).getSingleClass(baseClass))!=null))
                 classExpr = singleClass.getIDExpr().and(getWhere());
             else
                 classExpr = new IsClassExpr(this,baseClass);
@@ -25,11 +26,17 @@ public abstract class SingleClassExpr extends BaseExpr {
         return classExpr;
     }
 
-    private OrObjectClassSet getSet() {
-        OrObjectClassSet result = OrObjectClassSet.FALSE;
-        if(!(this instanceof KeyExpr))
-            for(QuickMap<VariableClassExpr,AndClassSet> where : getWhere().getClassWhere().getAnds())
-                result = result.or(getAndClassSet(where).getOr());
+    private OrClassSet getSet() {
+        assert !(this instanceof KeyExpr);
+        OrClassSet result = null;
+        for(QuickMap<VariableClassExpr,AndClassSet> where : getWhere().getClassWhere().getAnds()) {
+            OrClassSet classSet = getAndClassSet(where).getOr();
+            if(result==null)
+                result = classSet;
+            else
+                result = result.or(classSet);
+        }
+        assert result!=null;
         return result;
     }
 
@@ -48,7 +55,7 @@ public abstract class SingleClassExpr extends BaseExpr {
         if(!intersect(set)) // если не пересекается то false
             return Where.FALSE;
         if(!(this instanceof KeyExpr))
-            if(getSet().containsAll(set.getOr())) // если set содержит все элементы, то достаточно просто что не null
+            if(set.getOr().containsAll(getSet())) // если set содержит все элементы, то достаточно просто что не null
                 return getWhere();
         return new IsClassWhere(this,set);
     }

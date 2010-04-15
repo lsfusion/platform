@@ -37,7 +37,7 @@ public class IncrementChangeTable extends SessionTable<IncrementChangeTable> {
     private static String getName(Collection<Property> properties) {
         String name = "";                   
         for(Property property : properties)
-            name = (name.length()==0?"":name+"_") + property.sID;
+            name = (name.length()==0?"":name+"_") + property.ID;
         return "inc_ch_" + name;
     }
 
@@ -55,7 +55,7 @@ public class IncrementChangeTable extends SessionTable<IncrementChangeTable> {
         changes = new HashMap<Property, PropertyField>();
         for(Property property : incrementProps) {
             assert property.mapTable.table == table;
-            PropertyField field = new PropertyField(property.sID, property.getType());
+            PropertyField field = new PropertyField("p"+property.ID, property.getType());
             changes.put(property, field);
             properties.add(field);
         }
