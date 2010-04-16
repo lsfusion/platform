@@ -6,9 +6,15 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
-import platform.base.Pair;
 import platform.client.*;
-import platform.client.form.classes.ClassController;
+import platform.client.form.sort.GridHeaderRenderer;
+import platform.client.form.sort.GridHeaderMouseListener;
+import platform.client.form.queries.FilterController;
+import platform.client.form.queries.FindController;
+import platform.client.form.cell.CellController;
+import platform.client.form.cell.ClientAbstractCellEditor;
+import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.cell.ClientCellViewTable;
 import platform.client.logics.*;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
@@ -16,24 +22,15 @@ import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.layout.ReportDockable;
 import platform.client.navigator.ClientNavigator;
-import platform.interop.Compare;
 import platform.interop.CompressingInputStream;
 import platform.interop.Scroll;
 import platform.interop.Order;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
@@ -54,20 +51,10 @@ public class ClientForm extends JPanel {
     public final RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;
 
-    // Icons - загружаем один раз, для экономии
-    private final ImageIcon arrowUpIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/arrowup.gif"));
-    private final ImageIcon arrowDownIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/arrowdown.gif"));
-    private final ImageIcon filtIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/filt.gif"));
-    private final ImageIcon filtAddIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/filtadd.gif"));
-    private final ImageIcon findIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/find.gif"));
-    private final ImageIcon findAddIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/findadd.gif"));
-    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/delete.gif"));
-    private final ImageIcon collapseIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/collapse.gif"));
-    private final ImageIcon expandIcon = new ImageIcon(getClass().getResource("/platform/client/form/images/expand.gif"));
-
-    private final static Dimension iconButtonDimension = new Dimension(22,22);
-
     private boolean readOnly;
+    public boolean isReadOnly() {
+        return readOnly;
+    }
 
     public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean ireadOnly) throws IOException, ClassNotFoundException {
 //        super(app);
@@ -440,14 +427,14 @@ public class ClientForm extends JPanel {
         clientNavigator.changeCurrentClass(remoteForm,groupObject.get(0));
     }
 
-    void changeProperty(ClientCellView property, Object value, boolean externalID) throws IOException {
+    void changeProperty(ClientCellView property, Object value) throws IOException {
 
         SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
 
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
-            remoteForm.changePropertyView(((ClientPropertyView)property).ID, BaseUtils.serializeObject(value), externalID);
+            remoteForm.changePropertyView(((ClientPropertyView)property).ID, BaseUtils.serializeObject(value));
             dataChanged();
             applyFormChanges();
         } else {
@@ -521,7 +508,7 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
-    private void changeFind(List<ClientPropertyFilter> conditions) {
+    public void changeFind(List<ClientPropertyFilter> conditions) {
     }
 
     private final Map<ClientGroupObjectImplementView, List<ClientPropertyFilter>> currentFilters = new HashMap();
@@ -644,7 +631,7 @@ public class ClientForm extends JPanel {
 
         final PanelModel panel;
         final GridModel grid;
-        public final Map<ClientObjectImplementView, ObjectModel> objects = new HashMap();
+        public final Map<ClientObjectImplementView, ObjectController> objects = new HashMap();
 
         ClientGroupObjectValue currentObject;
 
@@ -662,7 +649,14 @@ public class ClientForm extends JPanel {
 
             for (ClientObjectImplementView object : groupObject) {
 
-                objects.put(object, new ObjectModel(object));
+                objects.put(object, new ObjectController(object, ClientForm.this) {
+
+                    @Override
+                    protected void currentClassChanged() {
+                        grid.table.requestFocusInWindow(); // перейдем сразу на Grid
+                    }
+                });
+                objects.get(object).addView(formLayout);
             }
 
         }
@@ -685,15 +679,14 @@ public class ClientForm extends JPanel {
                     grid.removeGroupObjectID();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            Component component = panel.getVisibleComponent();
-                            if(component!=null) component.requestFocusInWindow();
+                            panel.requestFocusInWindow();
                         }
                     });
 //                    panel.requestFocusInWindow();
                 }
 
                 for (ClientObjectImplementView object : groupObject) {
-                    objects.get(object).classViewChanged();
+                    objects.get(object).changeClassView(classView);
                 }
 
             }
@@ -824,312 +817,24 @@ public class ClientForm extends JPanel {
 
         }
 
-
-        // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
-        class ClientAbstractCellRenderer extends JComponent
-                                         implements TableCellRenderer {
-
-
-            public Component getTableCellRendererComponent(JTable table,
-                                                           Object value, 
-                                                           boolean isSelected, 
-                                                           boolean hasFocus, 
-                                                           int row, 
-                                                           int column) {
-                
-                ClientCellView property = ((ClientCellViewTable)table).getCellView(column);
-                PropertyRendererComponent currentComp = property.getRendererComponent();
-                currentComp.setValue(value, isSelected, hasFocus);
-
-                JComponent comp = currentComp.getComponent();
-
-                renderers.add(comp);
-
-                return comp;
-            }
-
-            final List<JComponent> renderers = new ArrayList();
-            @Override
-            public void updateUI() {
-                for (JComponent comp : renderers)
-                    comp.updateUI();
-            }
-                        
-        }
-        
-        class ClientAbstractCellEditor extends AbstractCellEditor 
-                                 implements TableCellEditor {
-
-            EventObject editEvent;
-
-            PropertyEditorComponent currentComp;
-
-            boolean externalID;
-
-            public Object getCellEditorValue() {
-                try {
-                    return currentComp.getCellEditorValue();
-                } catch (RemoteException e) {
-                    throw new RuntimeException("Ошибка при получении выбранного значения", e);
-                }
-            }
-
-            public boolean isCellEditable(EventObject e) {
-
-                editEvent = e;
-
-                if (e instanceof KeyEvent) {
-
-                    KeyEvent event = (KeyEvent) e;
-
-                    externalID = (event.getKeyCode() == KeyEvent.VK_F12 && event.getModifiersEx() == KeyEvent.SHIFT_DOWN_MASK);
-                    if (externalID) return true;
-
-                    if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
-
-                    // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
-                    if (event.getKeyCode() == KeyEvent.VK_ESCAPE) return false;
-
-                    //будем считать, что если нажата кнопка ALT то явно пользователь не хочет вводить текст
-                    if ((event.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) return false;
-
-                    return true;
-                }
-
-                if (e instanceof MouseEvent) {
-
-                    MouseEvent event = (MouseEvent) e;
-
-                    if (event.getClickCount() < 2) return false;
-
-                    externalID = (event.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK + MouseEvent.SHIFT_DOWN_MASK);
-                    if (externalID) return true;
-
-                    return true;
-                }
-
-                return false;
-            }
-
-            public Component getTableCellEditorComponent(JTable table,
-                                                         Object ivalue, 
-                                                         boolean isSelected, 
-                                                         int row, 
-                                                         int column) {
-                
-                ClientCellViewTable cellTable = (ClientCellViewTable)table;
-
-                if (readOnly && cellTable.isDataChanging()) return null;
-
-                ClientCellView property = cellTable.getCellView(column);
-
-                try {
-                    if(cellTable.isDataChanging())
-                        currentComp = property.getEditorComponent(ClientForm.this, ivalue, externalID);
-                    else
-                        currentComp = property.getClassComponent(ClientForm.this, ivalue, externalID);
-                } catch (Exception e) {
-                    throw new RuntimeException("Ошибка при получении редактируемого значения", e);
-                }
-
-                Component comp = null;
-                if (currentComp != null) {
-
-                    try {
-                        comp = currentComp.getComponent(SwingUtils.computeAbsoluteLocation(table), table.getCellRect(row, column, false), editEvent);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Ошибка при получении редактируемого значения", e);
-                    }
-
-                    if (comp == null && currentComp.valueChanged()) {
-
-                        Object newValue = getCellEditorValue();
-                        if (!BaseUtils.nullEquals(ivalue, newValue))
-                            table.setValueAt(newValue, row, column);
-                    }
-                }
-
-                if (comp != null) {
-                    return comp;
-                } else {
-                    this.stopCellEditing();
-                    return null;
-                }
-            }
-
-        }
-
-        class CellModel {
-
-            ClientCellView key;
-            Object value;
-
-            final CellView view;
-
-            public CellModel(ClientCellView ikey) {
-
-                view = new CellView();
-
-                setKey(ikey);
-            }
-
-            public void setKey(ClientCellView ikey) {
-
-                key = ikey;
-
-                view.keyChanged();
-
-                view.repaint();
-            }
-
-            public void setValue(Object ivalue) {
-                value = ivalue;
-
-                view.repaint();
-            }
-
-            boolean isDataChanging() {
-                return true;
-            }
-
-            void cellValueChanged(Object ivalue) {
-                value = ivalue;
-            }
-
-            class CellView extends JPanel {
-
-                final JLabel label;
-                final CellTable table;
-
-                int ID;
-
-                @Override
-                public int hashCode() {
-                    return ID;
-                }
-
-                @Override
-                public boolean equals(Object o) {
-                    return o instanceof CellView && ((CellView) o).ID == this.ID;
-                }
-
-                public CellView() {
-
-                    setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-                    label = new JLabel();
-                    label.setBorder(BorderFactory.createEmptyBorder(0,4,0,4));
-                    add(label);
-
-//                    add(Box.createRigidArea(new Dimension(4,0)));
-
-                    table = new CellTable();
-                    table.setBorder(BorderFactory.createLineBorder(Color.gray));
-
-                    add(table);
-
-                }
-
-                public void keyChanged() {
-
-                    ID = key.getID();
-
-                    label.setText(key.caption);
-
-                    table.keyChanged();
-                }
-
-                class CellTable extends SingleCellTable
-                                    implements ClientCellViewTable {
-
-                    final PropertyModel model;
-
-                    public CellTable() {
-                        super();
-
-                        model = new PropertyModel();
-                        setModel(model);
-
-                        setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
-                        setDefaultEditor(Object.class, new ClientAbstractCellEditor());
-
-                    }
-
-                    public void keyChanged() {
-
-                        setMinimumSize(key.getMinimumSize());
-                        setPreferredSize(key.getPreferredSize());
-                        setMaximumSize(key.getMaximumSize());
-                    }
-
-                    class PropertyModel extends AbstractTableModel {
-
-                        public int getRowCount() {
-                            return 1;
-                        }
-
-                        public int getColumnCount() {
-                            return 1;
-                        }
-
-                        public boolean isCellEditable(int row, int col) {
-                            return true;
-                        }
-
-                        public Object getValueAt(int row, int col) {
-//                            if (value != null)
-                                return value;
-//                            else
-//                                return (String)"";
-                        }
-
-                        public void setValueAt(Object value, int row, int col) {
-//                            System.out.println("setValueAt");
-                            if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
-                            cellValueChanged(value);
-                        }
-
-                    }
-
-                    public boolean isDataChanging() {
-                        return CellModel.this.isDataChanging();
-                    }
-
-                    public ClientCellView getCellView(int col) {
-                        return key;
-                    }
-
-                    @Override
-                    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-
-                        // пусть Enter обрабатывает верхний контейнер, если
-                        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed && !isDataChanging()) return false;
-
-                        return super.processKeyBinding(ks, e, condition, pressed);
-                    }
-                }
-
-            }
-
-        }
-
         class PanelModel {
-            
-            final Map<ClientCellView, PanelCellModel> models;
-            
+
+            final Map<ClientCellView, PanelCellController> controllers;
+
             public PanelModel() {
 
-                models = new HashMap();
+                controllers = new HashMap();
             }
 
             public void addGroupObjectID() {
                 
                 for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show) {                    
-                        PanelCellModel idmodel = new PanelCellModel(object.objectIDView);
-                        formLayout.add(idmodel.key, idmodel.view);
+                    if(object.objectIDView.show) {
 
-                        models.put(object.objectIDView, idmodel);
+                        PanelCellController idController = new PanelCellController(object.objectIDView);
+                        idController.addView(formLayout);
+
+                        controllers.put(object.objectIDView, idController);
                     }
 
                 if (currentObject != null)
@@ -1141,26 +846,32 @@ public class ClientForm extends JPanel {
                 
                 for (ClientObjectImplementView object : groupObject)
                     if(object.objectIDView.show) { 
-                        PanelCellModel idmodel = models.get(object.objectIDView);
-                        if (idmodel != null) {
-                            formLayout.remove(idmodel.key, idmodel.view);
-                            models.remove(object.objectIDView);
+                        PanelCellController idController = controllers.get(object.objectIDView);
+                        if (idController != null) {
+                            idController.removeView(formLayout);
+                            controllers.remove(object.objectIDView);
                         }
                     }
             }
 
-            private Component getVisibleComponent() {
-                for(ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show)
-                        return models.get(object.objectIDView).view.table;
-                return null;
+            public void requestFocusInWindow() {
+
+                // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
+                for (ClientObjectImplementView object : groupObject)
+                    if(object.objectIDView.show) {
+                        PanelCellController idController = controllers.get(object.objectIDView);
+                        if (idController != null) {
+                            idController.getView().requestFocusInWindow();
+                            return;
+                        }
+                    }
             }
 
             private void setGroupObjectIDValue(ClientGroupObjectValue value) {
 
                 for (ClientObjectImplementView object : groupObject)
                     if(object.objectIDView.show) {
-                        PanelCellModel idmodel = models.get(object.objectIDView);
+                        PanelCellController idmodel = controllers.get(object.objectIDView);
                         if (idmodel != null)
                             idmodel.setValue(value.get(object));
                     }
@@ -1173,53 +884,50 @@ public class ClientForm extends JPanel {
             
             public void addProperty(ClientPropertyView property) {
          
-                if (models.get(property) == null) {
+                if (controllers.get(property) == null) {
                     
-                    PanelCellModel propmodel = new PanelCellModel(property);
-                    formLayout.add(propmodel.key, propmodel.view);
-
-                    models.put(property, propmodel);
+                    PanelCellController propController = new PanelCellController(property);
+                    propController.addView(formLayout);
+                    
+                    controllers.put(property, propController);
                 }
                 
             }
             
             public void removeProperty(ClientPropertyView property) {
                 
-                PanelCellModel propmodel = models.get(property);
-                if (propmodel != null) {
-                    formLayout.remove(propmodel.key, propmodel.view);
-                    models.remove(property);
+                PanelCellController propController = controllers.get(property);
+                if (propController != null) {
+                    propController.removeView(formLayout);
+                    controllers.remove(property);
                 }
                 
             }
             
             public void setPropertyValue(ClientPropertyView property, Object value) {
                 
-                PanelCellModel propmodel = models.get(property);
+                PanelCellController propmodel = controllers.get(property);
                 propmodel.setValue(value);
                 
             }
 
-            class PanelCellModel extends CellModel {
+            class PanelCellController extends CellController {
                 
-                public PanelCellModel(ClientCellView ikey) {
-                    super(ikey);
+                public PanelCellController(ClientCellView ikey) {
+                    super(ikey, ClientForm.this);
 
-                    if (!readOnly) addGroupObjectActions(view);
+                    if (!readOnly) addGroupObjectActions(getView());
                 }
 
-                protected void cellValueChanged(Object ivalue) {
-
-                    boolean externalID = false;
-                    TableCellEditor cellEditor = view.table.getCellEditor();
-                    if (cellEditor instanceof ClientAbstractCellEditor && ((ClientAbstractCellEditor)cellEditor).externalID)
-                        externalID = true;
+                protected boolean cellValueChanged(Object ivalue) {
 
                     try {
-                        changeProperty(key, ivalue, externalID);
+                        changeProperty(getKey(), ivalue);
                     } catch (IOException e) {
                         throw new RuntimeException("Ошибка при изменении значения свойства", e);
                     }
+
+                    return true;
                 }
 
             }
@@ -1266,9 +974,9 @@ public class ClientForm extends JPanel {
                 queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
 //              отключим поиски пока они не работают                
-//                queriesContainer.add(table.findModel.queryView);
+//                queriesContainer.add(table.findController.view);
 //                queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
-                queriesContainer.add(table.filterModel.queryView);
+                queriesContainer.add(table.filterController.getView());
                 queriesContainer.add(Box.createHorizontalGlue());
 
                 container.add(pane);
@@ -1276,8 +984,8 @@ public class ClientForm extends JPanel {
 
                 if (!readOnly) addGroupObjectActions(table);
 
-                table.findModel.queryView.addActions(table);
-                table.filterModel.queryView.addActions(table);
+                table.findController.getView().addActions(table);
+                table.filterController.getView().addActions(table);
 
             }
 
@@ -1290,7 +998,7 @@ public class ClientForm extends JPanel {
                 // здесь еще добавить значения идентификаторов
                 fillTableObjectID();
                 
-                updateTable();
+                table.updateTable();
             }
 
             private void removeGroupObjectID() {
@@ -1298,19 +1006,19 @@ public class ClientForm extends JPanel {
                 for (ClientObjectImplementView object : groupObject)
                     if(object.objectIDView.show)
                         table.removeColumn(object.objectIDView);
-                updateTable();
+                table.updateTable();
             }
 
             private void addProperty(ClientPropertyView property) {
 //                System.out.println("addProperty " + property.toString());
                 if (table.addColumn(property))
-                    updateTable();
+                    table.updateTable();
             }
             
             private void removeProperty(ClientPropertyView property) {
 //                System.out.println("removeProperty " + property.toString());
                 if (table.removeColumn(property))
-                    updateTable();
+                    table.updateTable();
             }
 
             private void setGridObjects(List<ClientGroupObjectValue> igridObjects) {
@@ -1336,26 +1044,6 @@ public class ClientForm extends JPanel {
                             values.put(value, value.get(object));
                         table.setColumnValues(object.objectIDView, values);
                     }
-            }
-            
-            private void updateTable() {
-
-//                System.out.println("CreateColumns");
-                table.createDefaultColumnsFromModel();
-                for (ClientCellView property : table.gridColumns) {
-
-                    TableColumn column = table.getColumnModel().getColumn(table.gridColumns.indexOf(property));
-                    column.setMinWidth(property.getMinimumWidth());
-                    column.setPreferredWidth(property.getPreferredWidth());
-                    column.setMaxWidth(property.getMaximumWidth());
-                }
-
-                if (table.gridColumns.size() != 0) {
-                    formLayout.add(view, container);
-                } else {
-                    formLayout.remove(view, container);
-                }
-                
             }
 
             final List<ClientCellView> orders = new ArrayList<ClientCellView>();
@@ -1391,7 +1079,7 @@ public class ClientForm extends JPanel {
             }
 
             public class Table extends ClientFormTable
-                               implements ClientCellViewTable {
+                               implements ClientCellViewTable, LogicsSupplier {
 
                 final List<ClientCellView> gridColumns = new ArrayList();
                 List<ClientGroupObjectValue> gridRows = new ArrayList();
@@ -1400,8 +1088,8 @@ public class ClientForm extends JPanel {
                 final Model model;
                 final JTableHeader header;
 
-                final FindModel findModel;
-                final FilterModel filterModel;
+                final FindController findController;
+                final FilterController filterController;
 
                 final int ID;
 
@@ -1415,6 +1103,62 @@ public class ClientForm extends JPanel {
                     if (!(o instanceof Table))
                         return false;
                     return ((Table)o).ID == this.ID;
+                }
+
+                private void updateTable() {
+
+                    createDefaultColumnsFromModel();
+                    for (ClientCellView property : gridColumns) {
+
+                        TableColumn column = getColumnModel().getColumn(gridColumns.indexOf(property));
+                        column.setMinWidth(property.getMinimumWidth());
+                        column.setPreferredWidth(property.getPreferredWidth());
+                        column.setMaxWidth(property.getMaximumWidth());
+                    }
+
+                    if (gridColumns.size() != 0) {
+                        formLayout.add(view, container);
+                    } else {
+                        formLayout.remove(view, container);
+                    }
+
+                }
+
+                public List<ClientObjectImplementView> getObjects() {
+
+                    ArrayList<ClientObjectImplementView> objects = new ArrayList<ClientObjectImplementView> ();
+                    for (ClientGroupObjectImplementView groupObject : formView.groupObjects)
+                        for (ClientObjectImplementView object : groupObject)
+                            objects.add(object);
+
+                    return objects;
+                }
+
+                public List<ClientPropertyView> getGroupObjectProperties() {
+
+                    ArrayList<ClientPropertyView> properties = new ArrayList<ClientPropertyView>();
+                    for (ClientPropertyView property : formView.properties) {
+                        if (groupObject.equals(property.groupObject))
+                            properties.add(property);
+                    }
+
+                    return properties;
+                }
+
+                public List<ClientPropertyView> getProperties() {
+                    return formView.properties;
+                }
+
+                public ClientPropertyView getDefaultProperty() {
+
+                    if (currentCell instanceof ClientPropertyView)
+                        return (ClientPropertyView) currentCell; 
+                    else
+                        return null;
+                }
+
+                public Object getSelectedValue(ClientPropertyView cell) {
+                    return getSelectedValue(gridColumns.indexOf(cell));
                 }
 
                 private boolean fitWidth() {
@@ -1482,8 +1226,31 @@ public class ClientForm extends JPanel {
 
                     header = getTableHeader();
 
-                    findModel = new FindModel();
-                    filterModel = new FilterModel();
+                    findController = new FindController(this) {
+
+                        protected boolean queryChanged() {
+
+                            changeFind(getConditions());
+
+                            table.requestFocusInWindow();
+                            return true;
+                        }
+                    };
+
+                    filterController = new FilterController(this) {
+
+                        protected boolean queryChanged() {
+
+                            try {
+                                changeFilter(groupObject, getConditions());
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка при применении фильтра", e);
+                            }
+
+                            table.requestFocusInWindow();
+                            return true;
+                        }
+                    };
 
                     getSelectionModel().addListSelectionListener(new ListSelectionListener() {
                         public void valueChanged(ListSelectionEvent e) {
@@ -1510,8 +1277,34 @@ public class ClientForm extends JPanel {
                         }
                     });
 
-                    header.setDefaultRenderer(new GridHeaderRenderer(header.getDefaultRenderer()));
-                    header.addMouseListener(new GridHeaderMouseListener());
+                    header.setDefaultRenderer(new GridHeaderRenderer(header.getDefaultRenderer()) {
+
+                        protected Boolean getSortDirection(int column) {
+                            return Table.this.getSortDirection(getCellView(column));
+                        }
+                    });
+
+                    header.addMouseListener(new GridHeaderMouseListener() {
+
+                        protected Boolean getSortDirection(int column) {
+                            return Table.this.getSortDirection(getCellView(column));
+                        }
+
+                        protected TableColumnModel getColumnModel() {
+                            return Table.this.getColumnModel();
+                        }
+
+                        protected void changeOrder(int column, Order modiType) {
+
+                            try {
+                                changeGridOrder(getCellView(column), modiType);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка изменении сортировки", e);
+                            }
+
+                            header.repaint();
+                        }
+                    });
 
                     setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
                     setDefaultEditor(Object.class, new ClientAbstractCellEditor());
@@ -1620,10 +1413,6 @@ public class ClientForm extends JPanel {
 
                 }
 
-                private Object getSelectedValue(ClientCellView cell) {
-                    return getSelectedValue(gridColumns.indexOf(cell));
-                }
-
 
                 private Object getSelectedValue(int col) {
 
@@ -1637,686 +1426,6 @@ public class ClientForm extends JPanel {
                 // ---------------------------------------------------------------------------------------------- //
                 // -------------------------------------- Поиски и отборы --------------------------------------- //
                 // ---------------------------------------------------------------------------------------------- //
-
-                private abstract class QueryModel {
-
-                    public final QueryView queryView;
-
-                    final List<ClientPropertyFilter> conditions;
-                    final Map<ClientPropertyFilter, QueryConditionView> conditionViews;
-
-                    boolean hasChanged = false;
-
-                    public QueryModel() {
-
-                        conditions = new ArrayList();
-                        conditionViews = new HashMap();
-
-                        queryView = new QueryView();
-                    }
-
-                    public void applyQuery() throws IOException {
-
-                        hasChanged = false;
-
-                        queryView.conditionsChanged();
-
-                        table.requestFocusInWindow();
-
-                    }
-
-                    public void addCondition() {
-
-                        queryView.collapsed = false;
-                        
-                        hasChanged = true;
-
-                        ClientPropertyFilter condition = new ClientPropertyFilter();
-                        conditions.add(condition);
-
-                        QueryConditionView conditionView = new QueryConditionView(condition);
-                        queryView.condviews.add(conditionView);
-
-                        conditionViews.put(condition, conditionView);
-
-                        queryView.conditionsChanged();
-
-                        conditionView.valueView.requestFocusInWindow();
-
-//                        container.validate();
-                    }
-
-                    public void removeCondition(ClientPropertyFilter condition) {
-
-                        hasChanged = true;
-                        
-                        conditions.remove(condition);
-
-                        queryView.condviews.remove(conditionViews.get(condition));
-                        conditionViews.remove(condition);
-                        
-                        queryView.conditionsChanged();
-
-//                        container.validate();
-                    }
-
-                    public void removeAllConditions() {
-
-                        hasChanged = true;
-
-                        conditions.clear();
-                        conditionViews.clear();
-
-                        queryView.condviews.removeAll();
-
-                        queryView.conditionsChanged();
-                    }
-
-                    protected abstract int getKeyEvent();
-
-                    protected class QueryConditionView extends JPanel {
-
-                        final ClientPropertyFilter filter;
-
-                        final JComboBox propertyView;
-
-                        final JComboBox compareView;
-
-                        final JComboBox classValueLinkView;
-
-                        ClientValueLinkView valueView;
-                        final Map<ClientValueLink, ClientValueLinkView> valueViews;
-
-                        final JButton delButton;
-
-                        public final int PREFERRED_HEIGHT = 18;
-
-                        class QueryConditionComboBox extends JComboBox {
-
-                            public Dimension getPreferredSize() {
-                                Dimension dim = super.getPreferredSize();
-                                dim.height = PREFERRED_HEIGHT;
-                                return dim;
-                            }
-
-                            public QueryConditionComboBox(Vector<?> objects) {
-                                super(objects);
-                            }
-
-                            public QueryConditionComboBox(Object[] objects) {
-                                super(objects);
-                            }
-                        }
-
-                        public QueryConditionView(ClientPropertyFilter ifilter) {
-
-                            filter = ifilter;
-
-                            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-
-                            Vector<ClientPropertyView> sources = new Vector();
-                            for (ClientPropertyView property : formView.properties)
-                                if (property.groupObject == groupObject) {
-                                    sources.add(property);
-                                }
-
-                            propertyView = new QueryConditionComboBox(sources);
-                            add(propertyView);
-
-                            if (currentCell instanceof ClientPropertyView)
-                                propertyView.setSelectedItem(currentCell);
-                            
-                            filter.property = (ClientPropertyView) propertyView.getSelectedItem();
-
-                            propertyView.addItemListener(new ItemListener() {
-
-                                public void itemStateChanged(ItemEvent ie) {
-
-                                    filter.property = (ClientPropertyView)ie.getItem();
-                                    filterChanged();
-                                }
-                            });
-
-//                            add(Box.createHorizontalStrut(4));
-
-                            Pair<String,Compare>[] comparisons = new Pair[] {new Pair("=", Compare.EQUALS), new Pair(">", Compare.GREATER), new Pair("<", Compare.LESS),
-                                                                             new Pair(">=", Compare.GREATER_EQUALS), new Pair("<=", Compare.LESS_EQUALS), new Pair("<>", Compare.NOT_EQUALS)};
-                            compareView = new QueryConditionComboBox(comparisons);
-                            add(compareView);
-
-                            filter.compare = ((Pair<String,Compare>) compareView.getSelectedItem()).second;
-
-                            compareView.addItemListener(new ItemListener() {
-
-                                public void itemStateChanged(ItemEvent e) {
-                                    filter.compare = ((Pair<String,Compare>)e.getItem()).second;
-
-                                    hasChanged = true;
-                                    queryView.dataChanged();
-                                }
-                            });
-//                            add(Box.createHorizontalStrut(4));
-
-                            valueViews = new HashMap<ClientValueLink, ClientValueLinkView>();
-                            
-                            ClientUserValueLink userValue = new ClientUserValueLink();
-//                            userValue.value = table.getSelectedValue();
-                            ClientUserValueLinkView userView = new ClientUserValueLinkView(userValue, filter.property);
-                            valueViews.put(userValue, userView);
-
-                            ClientObjectValueLink objectValue = new ClientObjectValueLink();
-                            ClientObjectValueLinkView objectView = new ClientObjectValueLinkView(objectValue);
-                            valueViews.put(objectValue, objectView);
-
-                            ClientPropertyValueLink propertyValue = new ClientPropertyValueLink();
-                            ClientPropertyValueLinkView propertyValueView = new ClientPropertyValueLinkView(propertyValue);
-                            valueViews.put(propertyValue, propertyValueView);
-
-                            ClientValueLink[] classes = new ClientValueLink[] {userValue, objectValue, propertyValue};
-                            classValueLinkView = new QueryConditionComboBox(classes);
-                            add(classValueLinkView);
-
-                            filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
-
-                            classValueLinkView.addItemListener(new ItemListener() {
-
-                                public void itemStateChanged(ItemEvent ie) {
-                                    filter.value = (ClientValueLink)classValueLinkView.getSelectedItem();
-                                    filterChanged();
-                                }
-                            });
-
-//                            add(Box.createHorizontalStrut(4));
-
-                            delButton = new JButton(deleteIcon);
-                            delButton.setFocusable(false);
-                            delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
-                            delButton.addActionListener(new ActionListener() {
-
-                                public void actionPerformed(ActionEvent e) {
-                                    removeCondition(filter);
-                                }
-                            });
-
-                            filterChanged();
-
-                            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "applyQuery");
-                            getActionMap().put("applyQuery", new AbstractAction() {
-
-                                public void actionPerformed(ActionEvent ae) {
-                                    valueView.stopEditing();
-                                    try {
-                                        applyQuery();
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при применении фильтра", e);
-                                    }
-                                }
-                            });
-
-                            getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK), "removeAll");
-                            getActionMap().put("removeAll", new AbstractAction() {
-
-                                public void actionPerformed(ActionEvent ae) {
-                                    removeAllConditions();
-                                    try {
-                                        applyQuery();
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при применении фильтра", e);
-                                    }
-                                }
-                            });
-
-                        }
-
-                        public void filterChanged() {
-
-                            if (valueView != null)
-                                remove(valueView);
-
-                            valueView = valueViews.get(filter.value);
-
-                            if (valueView != null) {
-                                add(valueView);
-                                valueView.propertyChanged(filter.property);
-                            }
-                            
-                            add(delButton);
-
-                            hasChanged = true;
-                            queryView.dataChanged();
-
-                            container.validate();
-
-                        }
-
-                        private abstract class ClientValueLinkView extends JPanel {
-
-                            public ClientValueLinkView() {
-
-                                setLayout(new BorderLayout());
-                            }
-
-                            abstract public void propertyChanged(ClientPropertyView property) ;
-
-                            public void stopEditing() {}
-
-                        }
-
-                        private class ClientUserValueLinkView extends ClientValueLinkView {
-
-                            final ClientUserValueLink valueLink;
-
-                            final CellModel cell;
-
-                            public ClientUserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty) {
-                                super();
-
-                                valueLink = ivalueLink;
-
-                                cell = new CellModel(iproperty) {
-
-                                    protected boolean isDataChanging() {
-                                        return false;
-                                    }
-
-                                    protected void cellValueChanged(Object ivalue) {
-                                        super.cellValueChanged(ivalue);
-                                        
-                                        valueLink.value = ivalue;
-
-                                        hasChanged = true;
-                                        queryView.dataChanged();
-                                    }
-
-                                };
-
-                                cell.setValue(valueLink.value);
-
-                                JComboBox compBorder = new JComboBox();
-                                setBorder(compBorder.getBorder());
-
-                                cell.view.remove(cell.view.label);
-                                cell.view.table.setBorder(new EmptyBorder(0,0,0,0));
-                                
-                                add(cell.view, BorderLayout.CENTER);
-                            }
-
-                            public boolean requestFocusInWindow() {
-                                return cell.view.table.requestFocusInWindow();
-                            }
-
-                            public void propertyChanged(ClientPropertyView property) {
-                                cell.setKey(property);
-                                cell.cellValueChanged(table.getSelectedValue(property));
-//                                cell.setValue(table.getSelectedValue(property));
-                            }
-
-                            public void stopEditing() {
-                                CellEditor editor = cell.view.table.getCellEditor();
-                                if (editor != null)
-                                    editor.stopCellEditing();
-                            }
-
-                        }
-
-                        private class ClientObjectValueLinkView extends ClientValueLinkView {
-
-                            final ClientObjectValueLink valueLink;
-
-                            final JComboBox objectView;
-
-                            public ClientObjectValueLinkView(ClientObjectValueLink ivalueLink) {
-
-                                valueLink = ivalueLink;
-
-                                Vector<ClientObjectImplementView> objects = new Vector();
-                                for (ClientGroupObjectImplementView groupObject : formView.groupObjects)
-                                    for (ClientObjectImplementView object : groupObject)
-                                        objects.add(object);
-
-                                objectView = new QueryConditionComboBox(objects);
-
-                                valueLink.object = (ClientObjectImplementView) objectView.getSelectedItem();
-
-                                objectView.addItemListener(new ItemListener() {
-
-                                    public void itemStateChanged(ItemEvent e) {
-                                        valueLink.object = (ClientObjectImplementView)e.getItem();
-
-                                        hasChanged = true;
-                                        queryView.dataChanged();
-                                    }
-                                });
-
-                                add(objectView);
-
-                            }
-
-                            public void propertyChanged(ClientPropertyView property) {
-                            }
-                        }
-
-                        private class ClientPropertyValueLinkView extends ClientValueLinkView {
-
-                            final ClientPropertyValueLink valueLink;
-
-                            final JComboBox propertyView;
-
-                            public ClientPropertyValueLinkView(ClientPropertyValueLink ivalueLink) {
-
-                                valueLink = ivalueLink;
-
-                                Vector<ClientPropertyView> properties = new Vector();
-                                for (ClientPropertyView property : formView.properties)
-                                    properties.add(property);
-
-                                propertyView = new QueryConditionComboBox(properties);
-
-                                valueLink.property = (ClientPropertyView) propertyView.getSelectedItem();
-
-                                propertyView.addItemListener(new ItemListener() {
-
-                                    public void itemStateChanged(ItemEvent e) {
-                                        valueLink.property = (ClientPropertyView)e.getItem();
-
-                                        hasChanged = true;
-                                        queryView.dataChanged();
-                                    }
-                                });
-
-                                add(propertyView);
-                            }
-
-                            public void propertyChanged(ClientPropertyView property) {
-                            }
-                        }
-
-                    }
-
-                    protected class QueryView extends JPanel {
-
-                        final JPanel buttons;
-                        final JPanel condviews;
-
-                        boolean collapsed = false;
-
-                        final Color defaultApplyBackground;
-
-                        final JButton applyButton;
-                        final Component centerGlue;
-                        final JButton addCondition;
-                        final JButton collapseButton;
-                                                         
-                        public QueryView() {
-
-                            setAlignmentY(Component.TOP_ALIGNMENT);
-
-                            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-                            buttons = new JPanel();
-                            buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
-
-                            add(buttons);
-
-                            applyButton = new JButton("");
-                            applyButton.setFocusable(false);
-                            applyButton.setPreferredSize(iconButtonDimension);
-                            applyButton.setMaximumSize(iconButtonDimension);
-                            applyButton.addActionListener(new ActionListener() {
-
-                                public void actionPerformed(ActionEvent ae) {
-                                    try {
-                                        applyQuery();
-                                    } catch (IOException e) {
-                                        throw new RuntimeException("Ошибка при применении фильтра", e);
-                                    }
-                                }
-                            });
-                            defaultApplyBackground = applyButton.getBackground();
-
-                            centerGlue = Box.createHorizontalGlue();
-
-                            addCondition = new JButton("");
-                            addCondition.setFocusable(false);
-                            addCondition.setPreferredSize(iconButtonDimension);
-                            addCondition.setMaximumSize(iconButtonDimension);
-                            addCondition.addActionListener(new ActionListener() {
-
-                                public void actionPerformed(ActionEvent ae) {
-                                    addCondition();
-                                }
-                            });
-//                            buttons.add(addCondition);
-
-                            collapseButton = new JButton();
-                            collapseButton.setFocusable(false);
-                            collapseButton.setPreferredSize(iconButtonDimension);
-                            collapseButton.setMaximumSize(iconButtonDimension);
-                            collapseButton.addActionListener(new ActionListener() {
-
-                                public void actionPerformed(ActionEvent e) {
-                                    collapsed = !collapsed;
-                                    conditionsChanged();
-                                }
-                            });
-//                            buttons.add(collapseButton);
-
-                            condviews = new JPanel();
-                            condviews.setLayout(new BoxLayout(condviews, BoxLayout.Y_AXIS));
-
-//                            add(condviews);
-
-                            conditionsChanged();
-
-                        }
-
-                        public void addActions(JComponent comp) {
-
-                            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), 0), "newFilter");
-                            comp.getActionMap().put("newFilter", new AbstractAction() {
-
-                                public void actionPerformed(ActionEvent ae) {
-                                    removeAllConditions();
-                                    addCondition();
-                                }
-                            });
-
-                            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(getKeyEvent(), InputEvent.ALT_DOWN_MASK), "addFilter");
-                            comp.getActionMap().put("addFilter", new AbstractAction() {
-
-                                public void actionPerformed(ActionEvent ae) {
-                                    addCondition();
-                                }
-                            });
-
-                        }
-
-                        public Dimension getMaximumSize() {
-                            return getPreferredSize();
-                        }
-
-                        public void updateUI() {
-
-                            if (condviews != null)
-                                condviews.updateUI();
-
-                            if (applyButton != null)
-                                applyButton.updateUI();
-
-                            if (addCondition != null)
-                                addCondition.updateUI();
-
-                            if (collapseButton != null)
-                                collapseButton.updateUI();
-                        }
-
-                        public void conditionsChanged() {
-
-                            if (!conditions.isEmpty() || hasChanged) {
-                                buttons.add(applyButton);
-                            } else {
-                                buttons.remove(applyButton);
-                            }
-
-                            buttons.add(centerGlue);
-
-                            buttons.add(addCondition);
-
-                            if (!conditions.isEmpty()) {
-                                buttons.add(collapseButton);
-                            } else {
-                                buttons.remove(collapseButton);
-                            }
-
-                            if (!collapsed) {
-                                collapseButton.setIcon(collapseIcon);
-                                add(condviews);
-                            } else {
-                                collapseButton.setIcon(expandIcon);
-                                remove(condviews);
-                            }
-
-                            dataChanged();
-
-                            container.validate();
-                        }
-
-                        public void dataChanged() {
-
-                            if (hasChanged)
-                                applyButton.setBackground(Color.green);
-                            else
-                                applyButton.setBackground(defaultApplyBackground);
-                            
-                        }
-                    }
-
-                }
-
-                private class FindModel extends QueryModel {
-
-                    public FindModel() {
-                        super();
-
-                        queryView.applyButton.setIcon(findIcon);
-                        queryView.addCondition.setIcon(findAddIcon);
-                    }
-
-                    public void applyQuery() throws IOException {
-                        changeFind(conditions);
-                        super.applyQuery();
-                    }
-
-                    protected int getKeyEvent() { return KeyEvent.VK_F3; }
-
-                }
-
-
-                private class FilterModel extends QueryModel {
-
-                    public FilterModel() {
-                        super();
-                                         
-                        queryView.applyButton.setIcon(filtIcon);
-                        queryView.addCondition.setIcon(filtAddIcon);
-
-                    }
-
-                    public void applyQuery() throws IOException {
-                        changeFilter(groupObject, conditions);
-                        super.applyQuery();
-                    }
-
-                    protected int getKeyEvent() { return KeyEvent.VK_F2; }
-                }
-
-
-                // ---------------------------------------------------------------------------------------------- //
-                // -------------------------------------- Сортировка -------------------------------------------- //
-                // ---------------------------------------------------------------------------------------------- //
-
-                private class GridHeaderRenderer implements TableCellRenderer {
-
-                    private final TableCellRenderer tableCellRenderer;
-
-                    public GridHeaderRenderer(TableCellRenderer tableCellRenderer) {
-                        this.tableCellRenderer = tableCellRenderer;
-                    }
-
-                    public Component getTableCellRendererComponent(JTable itable,
-                                                                   Object value,
-                                                                   boolean isSelected,
-                                                                   boolean hasFocus,
-                                                                   int row,
-                                                                   int column) {
-
-                        if (value instanceof String)
-                            value = "<html>" + value + "</html>";
-
-                        Component comp = tableCellRenderer.getTableCellRendererComponent(itable,
-                                value, isSelected, hasFocus, row, column);
-                        if (comp instanceof JLabel) {
-
-                            JLabel label = (JLabel) comp;
-                            label.setHorizontalAlignment(JLabel.CENTER);
-                            label.setVerticalAlignment(JLabel.TOP);
-
-                            ClientCellView property = table.getCellView(column);
-                            if (property != null) {
-
-                                int ordNum = orders.indexOf(property);
-                                if (ordNum != -1) {
-
-                                    label.setIcon((orderDirections.get(ordNum)) ? arrowUpIcon : arrowDownIcon);
-                                }
-
-                            }
-
-                       }
-                        return comp;
-                    }
-                }
-
-                private class GridHeaderMouseListener extends MouseAdapter {
-                    
-                    public void mouseClicked(MouseEvent me) {
-
-                        if (me.getClickCount() != 2) return;
-                        if (!(me.getButton() == MouseEvent.BUTTON1 || me.getButton() == MouseEvent.BUTTON3)) return;
-
-                        TableColumnModel columnModel = table.getColumnModel();
-                        int viewColumn = columnModel.getColumnIndexAtX(me.getX());
-                        int column = columnModel.getColumn(viewColumn).getModelIndex();
-
-                        if (column != -1) {
-
-                            ClientCellView property = table.getCellView(column);
-                            if (property != null) {
-
-                                try {
-                                    int ordNum = orders.indexOf(property);
-                                    if (ordNum == -1) {
-                                        if (me.getButton() == MouseEvent.BUTTON1)
-                                            changeGridOrder(property, Order.REPLACE);
-                                         else
-                                            changeGridOrder(property, Order.ADD);
-                                    } else {
-                                        if (me.getButton() == MouseEvent.BUTTON1) {
-                                            changeGridOrder(property, Order.DIR);
-                                        } else {
-                                            changeGridOrder(property, Order.REMOVE);
-                                        }
-                                    }
-                                } catch (IOException e) {
-                                    throw new RuntimeException("Ошибка при изменении сортировки", e); 
-                                }
-
-                                header.repaint();
-                            }
-                        }
-                    }
-                }
-
 
                 // ---------------------------------------------------------------------------------------------- //
                 // ------------------------------------------- Модель данных ------------------------------------ //
@@ -2350,12 +1459,8 @@ public class ClientForm extends JPanel {
                         // частный случай - не работает если меняется не само это свойство, а какое-то связанное
                         if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
 
-                        boolean externalID = false;
-                        TableCellEditor cellEditor = getCellEditor();
-                        if (cellEditor instanceof ClientAbstractCellEditor && ((ClientAbstractCellEditor)cellEditor).externalID)
-                            externalID = true;
                         try {
-                            changeProperty(gridColumns.get(col), value, externalID);
+                            changeProperty(gridColumns.get(col), value);
                         } catch (IOException e) {
                             throw new RuntimeException("Ошибка при изменении значения свойства", e);
                         }
@@ -2390,90 +1495,17 @@ public class ClientForm extends JPanel {
                 public ClientCellView getCellView(int col) {
                     return gridColumns.get(col);
                 }
+
+                public ClientForm getForm() {
+                    return ClientForm.this;
+                }
+
+                private Boolean getSortDirection(ClientCellView property) {
+                    int ordNum = orders.indexOf(property);
+                    return (ordNum != -1) ? orderDirections.get(ordNum) : null;
+                }
             }
             
-        }
-
-        public class ObjectModel {
-
-            final ClientObjectImplementView object;
-
-            JButton buttonAdd;
-            JButton buttonDel;
-
-            public ClassController classController;
-
-            public ObjectModel(ClientObjectImplementView iobject) throws IOException {
-
-                object = iobject;
-
-                classController = new ClassController(object, ClientForm.this) {
-
-                    @Override
-                    protected void currentClassChanged() {
-                        grid.table.requestFocusInWindow(); // перейдем сразу на Grid
-                    }
-                };
-
-                if (classController.allowedEditObjects() && object.objectIDView.show && !readOnly) {
-
-                    String extraCaption = ((groupObject.size() > 1) ? ("(" + object.objectIDView.caption + ")") : "");
-
-                    buttonAdd = new JButton("Добавить" + extraCaption);
-                    buttonAdd.setFocusable(false);
-                    buttonAdd.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent ae) {
-                            ClientObjectClass derivedClass = classController.getDerivedClass();
-                            if(derivedClass instanceof ClientConcreteClass) {
-                                try {
-                                    addObject(object, (ClientConcreteClass)derivedClass);
-                                } catch (IOException e) {
-                                    throw new RuntimeException("Ошибка при добавлении объекта", e);
-                                }
-                            }
-                        }
-
-                    });
-
-                    formLayout.add(groupObject.addView, buttonAdd);
-
-                    buttonDel = new JButton("Удалить" + extraCaption);
-                    buttonDel.setFocusable(false);
-                    buttonDel.addActionListener(new ActionListener() {
-
-                        public void actionPerformed(ActionEvent ae) {
-                            try {
-                                changeClass(object, null);
-                            } catch (IOException e) {
-                                throw new RuntimeException("Ошибка при удалении объекта", e);
-                            }
-                        }
-
-                    });
-
-                    formLayout.add(groupObject.delView, buttonDel);
-                    formLayout.add(object.classView,  classController.getView());
-                    formLayout.add(groupObject.changeClassView, classController.getChangeClassView());
-
-                }
-
-            }
-
-            public void classViewChanged() {
-
-                if (classView) {
-
-                    if (classController != null)
-                        classController.showViews();
-                } else {
-
-                    if (classController != null)
-                        classController.hideViews();
-                }
-
-            }
-
         }
         
     }

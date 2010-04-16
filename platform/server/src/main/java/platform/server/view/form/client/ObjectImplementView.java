@@ -15,6 +15,9 @@ public class ObjectImplementView extends CellView {
     }
 
     public ClassView classView = new ClassView();
+    public FunctionView addView = new FunctionView();
+    public FunctionView changeClassView = new FunctionView();
+    public FunctionView delView = new FunctionView();
 
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
@@ -22,7 +25,11 @@ public class ObjectImplementView extends CellView {
         outStream.writeBoolean(view.show);
 
         outStream.writeInt(view.ID);
+
         classView.serialize(outStream);
+        addView.serialize(outStream);
+        changeClassView.serialize(outStream);
+        delView.serialize(outStream);
     }
 
     Type getType() {

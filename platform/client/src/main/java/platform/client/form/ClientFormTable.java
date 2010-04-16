@@ -51,6 +51,7 @@ public class ClientFormTable extends JTable {
         boolean consumed = super.processKeyBinding(ks, e, condition, pressed);
         // Вырежем F2, чтобы startEditing не поглощало его
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0))) return false;
+        if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0))) return false;
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0))) return false;
 
         return consumed;

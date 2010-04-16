@@ -96,8 +96,8 @@ abstract public class ClientCellView extends ClientComponentView {
         return renderer;
     }
 
-    public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException;
-    public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException;
+    public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
+    public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
 
     private Format format;
     Format getFormat() {

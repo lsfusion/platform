@@ -14,10 +14,7 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
     public Boolean fixedClassView = false;
 
     public ClientGridView gridView;
-    public ClientFunctionView addView;
-    public ClientFunctionView changeClassView;
-    public ClientFunctionView delView;
-
+    
     @Override
     public boolean equals(Object o) {
         return this == o;
@@ -39,9 +36,6 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
             add(new ClientObjectImplementView(inStream,containers,this));
 
         gridView = new ClientGridView(inStream, containers);
-        addView = new ClientFunctionView(inStream, containers);
-        changeClassView = new ClientFunctionView(inStream, containers);
-        delView = new ClientFunctionView(inStream, containers);
     }
 
     private static int lastID = 0;

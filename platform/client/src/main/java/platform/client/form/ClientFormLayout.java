@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.awt.*;
 
-class ClientFormLayout {
+public class ClientFormLayout {
 
     // главный контейнер, который будет использоваться при отрисовке формы
     private ClientFormContainer mainContainer;

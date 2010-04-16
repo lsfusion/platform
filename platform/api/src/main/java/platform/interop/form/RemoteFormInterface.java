@@ -22,7 +22,7 @@ public interface RemoteFormInterface extends Remote {
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    void changePropertyView(int propertyID, byte[] object, boolean externalID) throws RemoteException;
+    void changePropertyView(int propertyID, byte[] object) throws RemoteException;
 
     void changeObject(int objectID, Integer value) throws RemoteException;
 
@@ -58,7 +58,7 @@ public interface RemoteFormInterface extends Remote {
 
     byte[] getChildClassesByteArray(int objectID, int classID) throws RemoteException;
 
-    byte[] getPropertyChangeType(int propertyID, boolean externalID) throws RemoteException;
+    byte[] getPropertyChangeType(int propertyID) throws RemoteException;
 
     final static int GID_SHIFT = 1000;
 

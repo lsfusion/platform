@@ -36,9 +36,7 @@ public class ClientObjectView extends ClientCellView {
         return getPreferredWidth();
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
-
-        if (externalID) return null;
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
 
         if (form.switchClassView(object.groupObject))
             return null;
@@ -46,7 +44,7 @@ public class ClientObjectView extends ClientCellView {
             return baseType.getEditorComponent(form, this, value, getFormat());
     }
 
-    public PropertyEditorComponent getClassComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
         return baseType.getClassComponent(form, this, value, getFormat());
     }
 

@@ -152,7 +152,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return null;
     }
 
-    public void serializePropertyEditorType(DataOutputStream outStream, PropertyView propertyView, boolean externalID) throws SQLException, IOException {
+    public void serializePropertyEditorType(DataOutputStream outStream, PropertyView propertyView) throws SQLException, IOException {
 
         PropertyValueImplement change = propertyView.view.getChangeProperty();
         if(change.canBeChanged(this)) {
@@ -281,7 +281,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         dataChanged = true;
     }
 
-    public <P extends PropertyInterface> void changeProperty(PropertyObjectImplement<P> property, Object value, boolean externalID) throws SQLException {
+    public <P extends PropertyInterface> void changeProperty(PropertyObjectImplement<P> property, Object value) throws SQLException {
 
         // изменяем св-во
         property.getChangeProperty().change(session, this, value);

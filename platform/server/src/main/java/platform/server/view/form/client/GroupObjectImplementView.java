@@ -22,9 +22,6 @@ public class GroupObjectImplementView extends ArrayList<ObjectImplementView> imp
     public Boolean fixedClassView = false;
 
     public GridView gridView = new GridView();
-    public FunctionView addView = new FunctionView();
-    public FunctionView changeClassView = new FunctionView();
-    public FunctionView delView = new FunctionView();
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(view.ID);
@@ -35,8 +32,5 @@ public class GroupObjectImplementView extends ArrayList<ObjectImplementView> imp
             object.serialize(outStream);
 
         gridView.serialize(outStream);
-        addView.serialize(outStream);
-        changeClassView.serialize(outStream);
-        delView.serialize(outStream);
     }
 }

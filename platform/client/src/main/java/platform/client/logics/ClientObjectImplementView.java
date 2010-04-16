@@ -18,6 +18,9 @@ public class ClientObjectImplementView implements Serializable {
 
     public ClientObjectView objectIDView;
     public ClientClassView classView;
+    public ClientFunctionView addView;
+    public ClientFunctionView changeClassView;
+    public ClientFunctionView delView;
 
     public ClientObjectImplementView(DataInputStream inStream, Collection<ClientContainerView> containers, ClientGroupObjectImplementView iGroupObject) throws ClassNotFoundException, IOException {
         objectIDView = new ClientObjectView(inStream,containers,this);
@@ -26,6 +29,9 @@ public class ClientObjectImplementView implements Serializable {
         ID = inStream.readInt();
 
         classView = new ClientClassView(inStream,containers);
+        addView = new ClientFunctionView(inStream, containers);
+        changeClassView = new ClientFunctionView(inStream, containers);
+        delView = new ClientFunctionView(inStream, containers);
     }
 
     public String toString() { return objectIDView.caption; }

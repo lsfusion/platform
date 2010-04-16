@@ -130,9 +130,9 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         }
     }
 
-    public void changePropertyView(int propertyID, byte[] object, boolean externalID) {
+    public void changePropertyView(int propertyID, byte[] object) {
         try {
-            form.changeProperty(form.getPropertyView(propertyID).view, BaseUtils.deserializeObject(object), externalID);
+            form.changeProperty(form.getPropertyView(propertyID).view, BaseUtils.deserializeObject(object));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -269,13 +269,13 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         return outStream.toByteArray();
     }
 
-    public byte[] getPropertyChangeType(int propertyID, boolean externalID) {
+    public byte[] getPropertyChangeType(int propertyID) {
 
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
-            form.serializePropertyEditorType(dataStream,form.getPropertyView(propertyID), externalID);
+            form.serializePropertyEditorType(dataStream,form.getPropertyView(propertyID));
 
             return outStream.toByteArray();
         } catch (Exception e) {

@@ -5,6 +5,7 @@ import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.ClientForm;
+import platform.client.form.ClientFormLayout;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -36,6 +37,16 @@ public class ClassController {
         // тут теоретически можно оптимизировать, а то получается, что при создании любой формы на каждом объекте идет обращение к серверу
         rootClass = form.getBaseClass(object);
 
+    }
+
+    public Component getView() {
+        return pane;
+    }
+
+    private JButton buttonChangeClass;
+
+    public void addView(ClientFormLayout formLayout) {
+
         // создаем дерево для отображения классов
         view = new ClassTree(object.getID(), rootClass) {
 
@@ -51,18 +62,7 @@ public class ClassController {
         pane = new JScrollPane(view);
         pane.setVisible(false); // по умолчанию компонент невидим
 
-        // создаем кнопки для добавления объектов
-        createChangeClassView();
-    }
-
-    public Component getView() {
-        return pane;
-    }
-
-    private JButton buttonChangeClass;
-
-    private void createChangeClassView() {
-
+        // добавляем кнопку для изменения классов
         buttonChangeClass = new JButton("Изменить класс");
         buttonChangeClass.setFocusable(false);
         buttonChangeClass.setVisible(false);
@@ -81,22 +81,29 @@ public class ClassController {
 
         });
 
-    }
-
-    public Component getChangeClassView() {
-        return buttonChangeClass;
+        formLayout.add(object.classView, pane);
+        formLayout.add(object.changeClassView, buttonChangeClass);
     }
 
     public void showViews() {
+
         if (rootClass.hasChilds()) {
-            getView().setVisible(true);
-            getChangeClassView().setVisible(true);
+
+            if (pane != null)
+                pane.setVisible(true);
+
+            if (buttonChangeClass != null)
+                buttonChangeClass.setVisible(true);
         }
     }
 
     public void hideViews() {
-        getView().setVisible(false);
-        getChangeClassView().setVisible(false);
+
+        if (pane != null)
+            pane.setVisible(false);
+
+        if (buttonChangeClass != null)
+            buttonChangeClass.setVisible(false);
     }
 
     // нужно для того, что если объект типа дата, то для него не будет возможностей добавлять объекты

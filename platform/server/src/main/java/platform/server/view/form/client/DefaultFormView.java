@@ -25,7 +25,6 @@ public class DefaultFormView extends FormView {
     private transient Map<GroupObjectImplementView, ContainerView> panelContainers = new HashMap<GroupObjectImplementView, ContainerView>();
     public ContainerView getPanelContainer(GroupObjectImplementView groupObject) { return panelContainers.get(groupObject); }
 
-    private transient Map<GroupObjectImplementView, ContainerView> buttonContainers = new HashMap<GroupObjectImplementView, ContainerView>();
     private transient Map<GroupObjectImplementView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectImplementView, Map<AbstractGroup, ContainerView>>();
 
     public DefaultFormView(NavigatorForm<?> navigatorForm) {
@@ -33,6 +32,7 @@ public class DefaultFormView extends FormView {
         mainContainer = addContainer();
         mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 
+        Map<ObjectImplementView, ContainerView> buttonContainers = new HashMap<ObjectImplementView, ContainerView>();
         for (GroupObjectNavigator group : navigatorForm.groups) {
 
             GroupObjectImplementView clientGroup = new GroupObjectImplementView(group);
@@ -60,26 +60,10 @@ public class DefaultFormView extends FormView {
 
             panelContainers.put(clientGroup, panelContainer);
 
-            ContainerView buttonContainer = addContainer(); // контейнер кнопок
-            buttonContainer.container = groupContainer;
-            buttonContainer.constraints.order = 2;
-            buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
-
-            buttonContainers.put(clientGroup, buttonContainer);
-
             clientGroup.gridView.container = gridContainer;
             clientGroup.gridView.constraints.order = 1;
             clientGroup.gridView.constraints.fillVertical = 1;
             clientGroup.gridView.constraints.fillHorizontal = 1;
-
-            clientGroup.addView.container = buttonContainer;
-            clientGroup.addView.constraints.order = 0;
-
-            clientGroup.delView.container = buttonContainer;
-            clientGroup.delView.constraints.order = 1;
-
-            clientGroup.changeClassView.container = buttonContainer;
-            clientGroup.changeClassView.constraints.order = 2;
 
             for (ObjectImplementView clientObject : clientGroup) {
 
@@ -93,6 +77,22 @@ public class DefaultFormView extends FormView {
                 clientObject.classView.constraints.order = 0;
                 clientObject.classView.constraints.fillVertical = 1;
                 clientObject.classView.constraints.fillHorizontal = 0.2;
+
+                ContainerView buttonContainer = addContainer(); // контейнер кнопок
+                buttonContainer.container = groupContainer;
+                buttonContainer.constraints.order = 2 + clientGroup.indexOf(clientObject);
+                buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+
+                buttonContainers.put(clientObject, buttonContainer);
+
+                clientObject.addView.container = buttonContainer;
+                clientObject.addView.constraints.order = 0;
+
+                clientObject.delView.container = buttonContainer;
+                clientObject.delView.constraints.order = 1;
+
+                clientObject.changeClassView.container = buttonContainer;
+                clientObject.changeClassView.constraints.order = 2;
 
                 mobjects.put(clientObject.view, clientObject);
 
@@ -123,7 +123,7 @@ public class DefaultFormView extends FormView {
                 groupObjects.addAll(navigatorForm.getApplyObject(regFilter.filter.getObjects()));
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
-            filterGroupView.container = buttonContainers.get(mgroupObjects.get(navigatorForm.getApplyObject(groupObjects)));
+            filterGroupView.container = buttonContainers.get(mgroupObjects.get(navigatorForm.getApplyObject(groupObjects)).get(0));
             filterGroupView.constraints.order = 3 + navigatorForm.regularFilterGroups.indexOf(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);
 

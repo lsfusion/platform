@@ -41,15 +41,15 @@ public class ClientPropertyView extends ClientCellView {
         return groupObject;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
 
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(this.ID, externalID)));
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(this.ID)));
         if(inStream.readBoolean()) return null;
 
         return ClientTypeSerializer.deserialize(inStream).getEditorComponent(form, this, value, getFormat());
     }
 
-    public PropertyEditorComponent getClassComponent(ClientForm form, Object value, boolean externalID) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
         return baseType.getClassComponent(form, this, value, getFormat());
     }
 
