@@ -32,7 +32,7 @@ public class ClientFormView implements Serializable {
 
     public ClientGroupObjectImplementView getGroupObject(int id) {
         for (ClientGroupObjectImplementView groupObject : groupObjects)
-            if (groupObject.ID == id) return groupObject;
+            if (groupObject.getID() == id) return groupObject;
         return null;
     }
 

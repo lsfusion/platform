@@ -57,7 +57,7 @@ public class ClientFormTable extends JTable {
         return consumed;
     }
 
-    void selectRow(int rowNumber) {
+    protected void selectRow(int rowNumber) {
 
         final int colSel = getColumnModel().getSelectionModel().getLeadSelectionIndex();
         if (colSel == -1)

@@ -65,7 +65,7 @@ public class ClientDialog extends JDialog {
        if (currentForm != null) remove(currentForm);
        currentForm = new ClientForm(remoteForm, navigator, isReadOnly()) {
 
-           boolean okPressed() {
+           public boolean okPressed() {
     //                    if (super.okPressed()) {
                    objectChosen = true;
                    ClientDialog.this.setVisible(false);

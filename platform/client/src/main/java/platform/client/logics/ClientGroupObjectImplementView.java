@@ -9,7 +9,10 @@ import java.util.Collection;
 public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplementView>
                                  implements Serializable {
 
-    public Integer ID = 0;
+    private Integer ID = 0;
+    public Integer getID() {
+        return ID;
+    }
 
     public Boolean fixedClassView = false;
 

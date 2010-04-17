@@ -1,7 +1,6 @@
 package platform.client.form.cell;
 
 import platform.client.logics.ClientCellView;
-import platform.client.logics.ClientPropertyView;
 import platform.client.form.ClientForm;
 import platform.client.form.ClientFormLayout;
 
@@ -21,10 +20,13 @@ public class CellController {
         return view;
     }
 
+    protected ClientForm form;
+
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    public CellController(ClientCellView ikey, final ClientForm form) {
+    public CellController(ClientCellView ikey, final ClientForm iform) {
 
         key = ikey;
+        form = iform;
 
         view = new CellView() {
 
@@ -73,4 +75,3 @@ public class CellController {
     }
 
 }
-

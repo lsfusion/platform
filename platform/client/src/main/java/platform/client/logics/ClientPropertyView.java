@@ -26,7 +26,7 @@ public class ClientPropertyView extends ClientCellView {
         if(!inStream.readBoolean()) {
             int groupID = inStream.readInt();
             for(ClientGroupObjectImplementView group : groups)
-                if(group.ID==groupID) {
+                if(group.getID() == groupID) {
                     groupObject = group;
                     break;
                 }
