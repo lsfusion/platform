@@ -10,6 +10,7 @@ import platform.client.*;
 import platform.client.form.panel.PanelCellController;
 import platform.client.form.grid.GridTable;
 import platform.client.form.grid.GridView;
+import platform.client.form.grid.GridController;
 import platform.client.form.queries.FindController;
 import platform.client.form.queries.FilterController;
 import platform.client.logics.*;
@@ -507,7 +508,7 @@ public class ClientForm extends JPanel {
 
     private final Map<ClientGroupObjectImplementView, List<ClientPropertyFilter>> currentFilters = new HashMap();
     
-    private void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientPropertyFilter> conditions) throws IOException {
+    public void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientPropertyFilter> conditions) throws IOException {
 
         currentFilters.put(groupObject, conditions);
 
@@ -619,7 +620,7 @@ public class ClientForm extends JPanel {
 
     }
 
-    public class GroupObjectModel {
+    public class GroupObjectModel implements LogicsSupplier {
 
         final ClientGroupObjectImplementView groupObject;
 
@@ -635,20 +636,16 @@ public class ClientForm extends JPanel {
 
             groupObject = igroupObject;
 
-            grid = new GridController(groupObject.gridView);
+            grid = new GridController(groupObject.gridView, this, ClientForm.this);
+            if (!isReadOnly()) addGroupObjectActions(grid.getView());
+
             grid.addView(formLayout);
 
             panel = new PanelModel();
 
             for (ClientObjectImplementView object : groupObject) {
 
-                objects.put(object, new ObjectController(object, ClientForm.this) {
-
-                    @Override
-                    protected void currentClassChanged() {
-                        grid.gridTable.requestFocusInWindow(); // перейдем сразу на Grid
-                    }
-                });
+                objects.put(object, new ObjectController(object, ClientForm.this));
                 objects.get(object).addView(formLayout);
             }
 
@@ -664,7 +661,7 @@ public class ClientForm extends JPanel {
                     grid.addGroupObjectID();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            grid.gridTable.requestFocusInWindow();
+                            grid.requestFocusInWindow();
                         }
                     });
                 } else {
@@ -908,171 +905,57 @@ public class ClientForm extends JPanel {
 
         }
 
-        class GridController implements LogicsSupplier {
+        // реализация LogicsSupplier
 
-            private final ClientGridView view;
+        public List<ClientObjectImplementView> getObjects() {
 
-            private final GridView gridView;
-
-            private final FindController findController;
-            private final FilterController filterController;
-
-            private final GridTable gridTable;
-
-            public GridController(ClientGridView iview) {
-
-                view = iview;
-
-                findController = new FindController(this) {
-
-                    protected boolean queryChanged() {
-
-                        changeFind(getConditions());
-
-                        gridView.requestFocusInWindow();
-                        return true;
-                    }
-                };
-
-                filterController = new FilterController(this) {
-
-                    protected boolean queryChanged() {
-
-                        try {
-                            changeFilter(groupObject, getConditions());
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при применении фильтра", e);
-                        }
-
-                        gridView.requestFocusInWindow();
-                        return true;
-                    }
-                };
-
-                gridView = new GridView(this, ClientForm.this, findController.getView(), filterController.getView());
-                gridTable = gridView.getTable();
-
-                if (!isReadOnly()) addGroupObjectActions(gridTable);
-
-            }
-
-            public void addView(ClientFormLayout formLayout) {
-                formLayout.add(view, gridView);
-            }
-
-            private void addGroupObjectID() {
-//                System.out.println("addGroupObjectID");
+            ArrayList<ClientObjectImplementView> objects = new ArrayList<ClientObjectImplementView> ();
+            for (ClientGroupObjectImplementView groupObject : formView.groupObjects)
                 for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show)
-                       gridTable.addColumn(object.objectIDView);
+                    objects.add(object);
 
-                // здесь еще добавить значения идентификаторов
-                fillTableObjectID();
-
-                gridTable.updateTable();
-            }
-
-            private void removeGroupObjectID() {
-//                System.out.println("removeGroupObjectID");
-                for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show)
-                        gridTable.removeColumn(object.objectIDView);
-                gridTable.updateTable();
-            }
-
-            private void addProperty(ClientPropertyView property) {
-//                System.out.println("addProperty " + property.toString());
-                if (gridTable.addColumn(property))
-                    gridTable.updateTable();
-            }
-
-            private void removeProperty(ClientPropertyView property) {
-//                System.out.println("removeProperty " + property.toString());
-                if (gridTable.removeColumn(property))
-                    gridTable.updateTable();
-            }
-
-            private void setGridObjects(List<ClientGroupObjectValue> igridObjects) {
-                gridTable.setGridObjects(igridObjects);
-
-                //здесь еще добавить значения идентификаторов
-                fillTableObjectID();
-            }
-
-            private void selectObject(ClientGroupObjectValue currentObject) {
-                gridTable.selectObject(currentObject);
-            }
-
-            private void setPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue, Object> values) {
-                gridTable.setColumnValues(property, values);
-            }
-
-            private void fillTableObjectID() {
-                for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show) {
-                        Map<ClientGroupObjectValue, Object> values = new HashMap<ClientGroupObjectValue, Object>();
-                        for (ClientGroupObjectValue value : gridTable.getGridRows())
-                            values.put(value, value.get(object));
-                        gridTable.setColumnValues(object.objectIDView, values);
-                    }
-            }
-
-            public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
-                gridTable.changeGridOrder(property, modiType);
-            }
-
-            // реализация LogicsSupplier
-
-            public List<ClientObjectImplementView> getObjects() {
-
-                ArrayList<ClientObjectImplementView> objects = new ArrayList<ClientObjectImplementView> ();
-                for (ClientGroupObjectImplementView groupObject : formView.groupObjects)
-                    for (ClientObjectImplementView object : groupObject)
-                        objects.add(object);
-
-                return objects;
-            }
-
-            public ClientGroupObjectImplementView getGroupObject() {
-                return groupObject;
-            }
-
-            public List<ClientPropertyView> getGroupObjectProperties() {
-
-                ArrayList<ClientPropertyView> properties = new ArrayList<ClientPropertyView>();
-                for (ClientPropertyView property : formView.properties) {
-                    if (groupObject.equals(property.groupObject))
-                        properties.add(property);
-                }
-
-                return properties;
-            }
-
-            public List<ClientPropertyView> getProperties() {
-                return formView.properties;
-            }
-
-            public List<ClientCellView> getCells() {
-                return formView.order;
-            }
-
-            public ClientPropertyView getDefaultProperty() {
-
-                ClientCellView currentCell = gridTable.getCurrentCell();
-                if (currentCell instanceof ClientPropertyView)
-                    return (ClientPropertyView) currentCell;
-                else
-                    return null;
-            }
-
-            public Object getSelectedValue(ClientPropertyView cell) {
-                return gridTable.getSelectedValue(cell);
-            }
-
-            public ClientForm getForm() {
-                return ClientForm.this;
-            }
-
+            return objects;
         }
+
+        public ClientGroupObjectImplementView getGroupObject() {
+            return groupObject;
+        }
+
+        public List<ClientPropertyView> getGroupObjectProperties() {
+
+            ArrayList<ClientPropertyView> properties = new ArrayList<ClientPropertyView>();
+            for (ClientPropertyView property : formView.properties) {
+                if (groupObject.equals(property.groupObject))
+                    properties.add(property);
+            }
+
+            return properties;
+        }
+
+        public List<ClientPropertyView> getProperties() {
+            return formView.properties;
+        }
+
+        public List<ClientCellView> getCells() {
+            return formView.order;
+        }
+
+        public ClientPropertyView getDefaultProperty() {
+
+            ClientCellView currentCell = grid.getCurrentCell();
+            if (currentCell instanceof ClientPropertyView)
+                return (ClientPropertyView) currentCell;
+            else
+                return null;
+        }
+
+        public Object getSelectedValue(ClientPropertyView cell) {
+            return grid.getSelectedValue(cell);
+        }
+
+        public ClientForm getForm() {
+            return ClientForm.this;
+        }
+
     }
 }

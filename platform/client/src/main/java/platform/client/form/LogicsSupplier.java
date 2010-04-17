@@ -14,10 +14,11 @@ public interface LogicsSupplier {
     List<ClientPropertyView> getGroupObjectProperties();
     List<ClientPropertyView> getProperties();
     List<ClientCellView> getCells();
-    ClientPropertyView getDefaultProperty();
 
     // пока зафигачим в этот интерфейс, хотя может быть в дальнейшем выделим в отдельный
-    ClientForm getForm();
+    // данный интерфейс отвечает за получение текущих выбранных значений
+    ClientPropertyView getDefaultProperty();
     Object getSelectedValue(ClientPropertyView property);
-
+    
+    ClientForm getForm();
 }

@@ -296,7 +296,7 @@ public abstract class GridTable extends ClientFormTable
                 final int dltpos = (newindex-oldindex) * getRowHeight();
                 ViewPos.y += dltpos;
                 if (ViewPos.y < 0) ViewPos.y = 0;
-                ((JScrollPane)getParent()).getViewport().setViewPosition(ViewPos);
+                ((JViewport)getParent()).setViewPosition(ViewPos);
             }
 
             selectRow(newindex);

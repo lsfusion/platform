@@ -37,7 +37,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
         System.out.println("Server is starting...");
 //        DataAdapter adapter = new PostgreDataAdapter("usmeshka","localhost","postgres","11111");
-        DataAdapter adapter = new MSSQLDataAdapter("usmeshka2","ME2-ПК","sa","11111");
+        DataAdapter adapter = new MSSQLDataAdapter("usmeshka2","169.254.1.25","sa","12345");
         UsmeshkaBusinessLogics BL = new UsmeshkaBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
