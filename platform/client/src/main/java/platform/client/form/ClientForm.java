@@ -7,12 +7,8 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.client.*;
-import platform.client.form.panel.PanelCellController;
-import platform.client.form.grid.GridTable;
-import platform.client.form.grid.GridView;
 import platform.client.form.grid.GridController;
-import platform.client.form.queries.FindController;
-import platform.client.form.queries.FilterController;
+import platform.client.form.panel.PanelController;
 import platform.client.logics.*;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
@@ -624,7 +620,7 @@ public class ClientForm extends JPanel {
 
         final ClientGroupObjectImplementView groupObject;
 
-        final PanelModel panel;
+        final PanelController panel;
         final GridController grid;
         public final Map<ClientObjectImplementView, ObjectController> objects = new HashMap();
 
@@ -641,7 +637,11 @@ public class ClientForm extends JPanel {
 
             grid.addView(formLayout);
 
-            panel = new PanelModel();
+            panel = new PanelController(this, ClientForm.this, formLayout) {
+                protected void addGroupObjectActions(JComponent comp) {
+                    GroupObjectModel.this.addGroupObjectActions(comp);
+                }
+            };
 
             for (ClientObjectImplementView object : groupObject) {
 
@@ -804,104 +804,6 @@ public class ClientForm extends JPanel {
                     }
                 }
             });
-
-        }
-
-        class PanelModel {
-
-            final Map<ClientCellView, PanelCellController> controllers;
-
-            public PanelModel() {
-
-                controllers = new HashMap();
-            }
-
-            public void addGroupObjectID() {
-                
-                for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show) {
-
-                        PanelCellController idController = new PanelCellController(object.objectIDView, ClientForm.this);
-                        addGroupObjectActions(idController.getView());
-                        idController.addView(formLayout);
-
-                        controllers.put(object.objectIDView, idController);
-                    }
-
-                if (currentObject != null)
-                    setGroupObjectIDValue(currentObject);
-                
-            }
-            
-            public void removeGroupObjectID() {
-                
-                for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show) { 
-                        PanelCellController idController = controllers.get(object.objectIDView);
-                        if (idController != null) {
-                            idController.removeView(formLayout);
-                            controllers.remove(object.objectIDView);
-                        }
-                    }
-            }
-
-            public void requestFocusInWindow() {
-
-                // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
-                for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show) {
-                        PanelCellController idController = controllers.get(object.objectIDView);
-                        if (idController != null) {
-                            idController.getView().requestFocusInWindow();
-                            return;
-                        }
-                    }
-            }
-
-            private void setGroupObjectIDValue(ClientGroupObjectValue value) {
-
-                for (ClientObjectImplementView object : groupObject)
-                    if(object.objectIDView.show) {
-                        PanelCellController idmodel = controllers.get(object.objectIDView);
-                        if (idmodel != null)
-                            idmodel.setValue(value.get(object));
-                    }
-            }
-
-            private void selectObject(ClientGroupObjectValue value) {
-                
-                setGroupObjectIDValue(value);
-            }
-            
-            public void addProperty(ClientPropertyView property) {
-         
-                if (controllers.get(property) == null) {
-                    
-                    PanelCellController propController = new PanelCellController(property, ClientForm.this);
-                    addGroupObjectActions(propController.getView());
-                    propController.addView(formLayout);
-                    
-                    controllers.put(property, propController);
-                }
-                
-            }
-            
-            public void removeProperty(ClientPropertyView property) {
-                
-                PanelCellController propController = controllers.get(property);
-                if (propController != null) {
-                    propController.removeView(formLayout);
-                    controllers.remove(property);
-                }
-                
-            }
-            
-            public void setPropertyValue(ClientPropertyView property, Object value) {
-                
-                PanelCellController propmodel = controllers.get(property);
-                propmodel.setValue(value);
-                
-            }
 
         }
 
