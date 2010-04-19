@@ -20,13 +20,13 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
 
     private ClientDialog clientDialog;
 
-    public ObjectPropertyEditor(ClientForm owner, RemoteFormInterface dialog) throws IOException, ClassNotFoundException {
+    public ObjectPropertyEditor(ClientForm owner, RemoteFormInterface dialog) {
 
         this.owner = owner;
         this.dialog = dialog;
     }
 
-    public Object objectChosen() throws RemoteException {
+    Object objectChosen() throws RemoteException {
         return clientDialog.objectChosen();
     }
 

@@ -17,8 +17,8 @@ public abstract class QueryView extends JPanel {
 
     private final static Dimension iconButtonDimension = new Dimension(22,22);
 
-    final JPanel buttons;
-    final JPanel condContainer;
+    private final JPanel buttons;
+    private final JPanel condContainer;
 
     private final JButton applyButton;
     private final JButton addCondition;
@@ -32,7 +32,7 @@ public abstract class QueryView extends JPanel {
         this.listener = listener;
     }
 
-    public QueryView() {
+    QueryView() {
 
         setAlignmentY(Component.TOP_ALIGNMENT);
 
@@ -142,11 +142,6 @@ public abstract class QueryView extends JPanel {
 
     }
 
-    @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        return super.processKeyBinding(ks, e, condition, pressed);
-    }
-
     public Dimension getMaximumSize() {
         return getPreferredSize();
     }
@@ -175,7 +170,7 @@ public abstract class QueryView extends JPanel {
     }
 
     // используется для того, чтобы удалять условия запросов
-    private Map<ClientPropertyFilter, QueryConditionView> condViews = new HashMap<ClientPropertyFilter, QueryConditionView>();
+    private final Map<ClientPropertyFilter, QueryConditionView> condViews = new HashMap<ClientPropertyFilter, QueryConditionView>();
 
     void addConditionView(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
 
@@ -218,7 +213,7 @@ public abstract class QueryView extends JPanel {
     }
 
 
-    public void conditionsChanged() {
+    void conditionsChanged() {
 
         applyButton.setVisible(true);
 

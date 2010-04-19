@@ -30,7 +30,7 @@ import java.io.IOException;
 public abstract class GridTable extends ClientFormTable
                                implements ClientCellViewTable {
 
-    final List<ClientCellView> gridColumns = new ArrayList<ClientCellView>();
+    private final List<ClientCellView> gridColumns = new ArrayList<ClientCellView>();
 
     private List<ClientGroupObjectValue> gridRows = new ArrayList<ClientGroupObjectValue>();
     // приходится давать доступ к gridRows, так как контроллеру нужно заполнять значения колонок на основе ключей рядов
@@ -38,14 +38,14 @@ public abstract class GridTable extends ClientFormTable
         return gridRows;
     }
 
-    ClientGroupObjectValue currentObject;
+    private ClientGroupObjectValue currentObject;
 
-    final Map<ClientCellView, Map<ClientGroupObjectValue,Object>> gridValues = new HashMap<ClientCellView, Map<ClientGroupObjectValue,Object>>();
+    private final Map<ClientCellView, Map<ClientGroupObjectValue,Object>> gridValues = new HashMap<ClientCellView, Map<ClientGroupObjectValue,Object>>();
 
-    final Model model;
-    final JTableHeader header;
+    private final Model model;
+    private final JTableHeader header;
 
-    public int getID() {
+    int getID() {
         return logicsSupplier.getGroupObject().getID();
     }
 
@@ -139,10 +139,10 @@ public abstract class GridTable extends ClientFormTable
         return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
-    GroupObjectLogicsSupplier logicsSupplier;
+    private final GroupObjectLogicsSupplier logicsSupplier;
 
     // пока пусть GridTable напрямую общается с формой, а не через Controller, так как ей много о чем надо с ней говорить, а Controller будет просто бюрократию создавать
-    ClientForm form;
+    private final ClientForm form;
     public ClientForm getForm() {
         return form;
     }
@@ -411,8 +411,8 @@ public abstract class GridTable extends ClientFormTable
         return gridColumns.get(col);
     }
 
-    final List<ClientCellView> orders = new ArrayList<ClientCellView>();
-    final List<Boolean> orderDirections = new ArrayList<Boolean>();
+    private final List<ClientCellView> orders = new ArrayList<ClientCellView>();
+    private final List<Boolean> orderDirections = new ArrayList<Boolean>();
 
     public void changeGridOrder(ClientCellView property, Order modiType) throws IOException {
 

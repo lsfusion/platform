@@ -25,9 +25,9 @@ public class GridController {
 
     private final GridTable gridTable;
 
-    ClientForm form;
+    private final ClientForm form;
 
-    GroupObjectLogicsSupplier logicsSupplier;
+    private final GroupObjectLogicsSupplier logicsSupplier;
 
     public GridController(ClientGridView iview, GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform) {
 

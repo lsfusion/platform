@@ -40,7 +40,7 @@ public class ClientForm extends JPanel {
     public final RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;
 
-    private boolean readOnly;
+    private final boolean readOnly;
 
     public boolean isReadOnly() {
         return readOnly;
@@ -72,7 +72,7 @@ public class ClientForm extends JPanel {
 
     private ClientFormLayout formLayout;
 
-    public Map<ClientGroupObjectImplementView, GroupObjectController> controllers;
+    private Map<ClientGroupObjectImplementView, GroupObjectController> controllers;
 
     private JButton buttonApply;
     private JButton buttonCancel;

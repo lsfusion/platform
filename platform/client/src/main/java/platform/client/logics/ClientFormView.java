@@ -10,7 +10,7 @@ import java.util.*;
 
 public class ClientFormView implements Serializable, LogicsSupplier {
 
-    public List<ClientContainerView> containers;
+    public final List<ClientContainerView> containers;
 
     public List<ClientGroupObjectImplementView> groupObjects;
     public List<ClientPropertyView> properties;
@@ -25,7 +25,7 @@ public class ClientFormView implements Serializable, LogicsSupplier {
     public ClientFunctionView okView;
     public ClientFunctionView closeView;
 
-    public final List<ClientCellView> order = new ArrayList<ClientCellView>();
+    private final List<ClientCellView> order = new ArrayList<ClientCellView>();
 
     public List<ClientObjectImplementView> getObjects() {
 

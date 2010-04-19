@@ -20,10 +20,10 @@ public class CellController {
         return view;
     }
 
-    protected ClientForm form;
+    protected final ClientForm form;
 
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    public CellController(ClientCellView ikey, final ClientForm iform) {
+    protected CellController(ClientCellView ikey, final ClientForm iform) {
 
         key = ikey;
         form = iform;
@@ -57,16 +57,11 @@ public class CellController {
         formLayout.remove(key, view);
     }
 
-    public void setKey(ClientCellView ikey) {
-        key = ikey;
-        view.keyChanged(ikey);
-    }
-
     public void setValue(Object ivalue) {
         view.setValue(ivalue);
     }
 
-    protected boolean isDataChanging() {
+    boolean isDataChanging() {
         return true;
     }
 

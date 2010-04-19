@@ -31,7 +31,7 @@ public class ClientAbstractCellRenderer extends JComponent
         return comp;
     }
 
-    final java.util.List<JComponent> renderers = new ArrayList<JComponent>();
+    private final java.util.List<JComponent> renderers = new ArrayList<JComponent>();
     @Override
     public void updateUI() {
         for (JComponent comp : renderers)

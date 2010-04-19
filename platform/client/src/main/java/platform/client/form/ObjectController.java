@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
-public class ObjectController {
+class ObjectController {
 
     // объект, при помощи которого будет происходить общение с внешним миром
-    private ClientForm form;
+    private final ClientForm form;
 
-    private ClientObjectImplementView object;
+    private final ClientObjectImplementView object;
 
     // управление классами
     public ClassController classController;
@@ -25,13 +25,7 @@ public class ObjectController {
         object = iobject;
         form = iform;
 
-        classController = new ClassController(object, form) {
-            @Override
-            protected void currentClassChanged() {
-                ObjectController.this.currentClassChanged();
-            }
-        };
-
+        classController = new ClassController(object, form);
     }
 
     public void addView(ClientFormLayout formLayout) {
@@ -88,7 +82,5 @@ public class ObjectController {
         }
 
     }
-
-    protected void currentClassChanged() {}
 
 }

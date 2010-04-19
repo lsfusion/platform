@@ -121,7 +121,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         valueView.requestFocusInWindow();
     }
 
-    public void filterChanged() {
+    void filterChanged() {
 
         if (valueView != null)
             remove(valueView);

@@ -16,9 +16,9 @@ import java.awt.*;
 public class ClientAbstractCellEditor extends AbstractCellEditor
                          implements TableCellEditor {
 
-    EventObject editEvent;
+    private EventObject editEvent;
 
-    PropertyEditorComponent currentComp;
+    private PropertyEditorComponent currentComp;
 
     public Object getCellEditorValue() {
         try {

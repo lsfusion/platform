@@ -14,7 +14,7 @@ abstract public class ClientClass implements Serializable {
 
     public abstract boolean hasChilds();
 
-    protected ClientClass(DataInputStream inStream) throws IOException {
+    ClientClass(DataInputStream inStream) {
     }
 
     public static ClientClass deserialize(DataInputStream inStream) throws IOException {
@@ -32,6 +32,4 @@ abstract public class ClientClass implements Serializable {
 
         throw new IOException();
     }
-
-    public abstract ClientType getType();
 }

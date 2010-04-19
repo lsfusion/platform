@@ -12,7 +12,7 @@ import java.awt.event.KeyEvent;
 public abstract class CellTable extends SingleCellTable
                         implements ClientCellViewTable {
 
-    Object value;
+    private Object value;
 
     public CellTable() {
         super();

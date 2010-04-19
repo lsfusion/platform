@@ -19,9 +19,9 @@ abstract class QueryController implements QueryListener {
         return conditions;
     }
 
-    private GroupObjectLogicsSupplier logicsSupplier;
+    private final GroupObjectLogicsSupplier logicsSupplier;
 
-    public QueryController(GroupObjectLogicsSupplier logicsSupplier) {
+    QueryController(GroupObjectLogicsSupplier logicsSupplier) {
 
         this.logicsSupplier = logicsSupplier;
 

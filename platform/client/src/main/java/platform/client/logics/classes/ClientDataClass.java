@@ -10,16 +10,12 @@ import java.text.Format;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
-    public ClientDataClass(DataInputStream inStream) throws IOException {
+    ClientDataClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }
 
     public boolean hasChilds() {
         return false;
-    }
-
-    public ClientType getType() {
-        return this;
     }
 
     public int getMinimumWidth() {
@@ -32,7 +28,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return Integer.MAX_VALUE;
     }
 
-    public abstract PropertyEditorComponent getComponent(Object value, Format format);
+    protected abstract PropertyEditorComponent getComponent(Object value, Format format);
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
         return getComponent(value, format);

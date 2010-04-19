@@ -12,13 +12,13 @@ import java.awt.*;
 
 class UserValueLinkView extends ValueLinkView {
 
-    private ClientUserValueLink valueLink;
+    private final ClientUserValueLink valueLink;
     private ClientPropertyView property;
 
-    private CellTable valueView;
+    private final CellTable valueView;
 
     // нужен для получения текущих значений в таблице
-    private GroupObjectLogicsSupplier logicsSupplier;
+    private final GroupObjectLogicsSupplier logicsSupplier;
 
     public UserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty, GroupObjectLogicsSupplier ilogicsSupplier) {
         super();
@@ -78,7 +78,7 @@ class UserValueLinkView extends ValueLinkView {
         valueView.stopEditing();
     }
 
-    public void setValue(Object value) {
+    void setValue(Object value) {
         valueLink.value = value;
         valueView.setValue(value);
     }

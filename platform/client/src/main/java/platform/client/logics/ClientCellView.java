@@ -19,7 +19,7 @@ import java.rmi.RemoteException;
 abstract public class ClientCellView extends ClientComponentView {
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
-    protected ClientType baseType;
+    ClientType baseType;
 
     public abstract int getID();
     public abstract ClientGroupObjectImplementView getGroupObject();

@@ -12,9 +12,9 @@ import java.awt.event.ItemEvent;
 
 class ObjectValueLinkView extends ValueLinkView {
 
-    final ClientObjectValueLink valueLink;
+    private final ClientObjectValueLink valueLink;
 
-    final JComboBox objectView;
+    private final JComboBox objectView;
 
     public ObjectValueLinkView(ClientObjectValueLink ivalueLink, GroupObjectLogicsSupplier logicsSupplier) {
         super();

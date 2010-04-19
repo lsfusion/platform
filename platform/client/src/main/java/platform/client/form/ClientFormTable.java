@@ -7,7 +7,7 @@ import java.awt.event.KeyEvent;
 
 public class ClientFormTable extends JTable {
 
-    public ClientFormTable() {
+    protected ClientFormTable() {
         super();
 
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -52,6 +52,7 @@ public class ClientFormTable extends JTable {
         // Вырежем F2, чтобы startEditing не поглощало его
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0))) return false;
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0))) return false;
+        //noinspection SimplifiableIfStatement
         if (ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0))) return false;
 
         return consumed;

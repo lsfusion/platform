@@ -11,7 +11,7 @@ import java.awt.event.KeyEvent;
 
 public class SingleCellTable extends ClientFormTable {
 
-    public SingleCellTable() {
+    protected SingleCellTable() {
         super();
 
         addFocusListener(new FocusListener() {

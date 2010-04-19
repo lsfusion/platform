@@ -36,7 +36,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
         changeCurrentClass(form.getObjectClassID(object.getID()));
     }
 
-    public void changeCurrentClass(int classID) throws RemoteException {
+    void changeCurrentClass(int classID) throws RemoteException {
         if (remoteNavigator.changeCurrentClass(classID))
             relevantClassNavigator.tree.createRootNode();
     }

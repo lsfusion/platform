@@ -7,15 +7,11 @@ public abstract class ClientObjectClass extends ClientClass {
 
     public final static ClientObjectType type = new ClientObjectType();
 
-    public ClientType getType() {
-        return type;
-    }
-
     public int ID;
     private String caption;
     public String toString() { return caption; }
     
-    public ClientObjectClass(DataInputStream inStream) throws IOException {
+    ClientObjectClass(DataInputStream inStream) throws IOException {
         super(inStream);
         caption = inStream.readUTF();
         ID = inStream.readInt();

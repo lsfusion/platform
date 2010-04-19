@@ -24,11 +24,11 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     private final PanelController panel;
     private GridController grid;
-    public final Map<ClientObjectImplementView, ObjectController> objects = new HashMap<ClientObjectImplementView, ObjectController>();
+    private final Map<ClientObjectImplementView, ObjectController> objects = new HashMap<ClientObjectImplementView, ObjectController>();
 
-    ClientGroupObjectValue currentObject;
+    private ClientGroupObjectValue currentObject;
 
-    Boolean classView;
+    private Boolean classView;
 
     public GroupObjectController(ClientGroupObjectImplementView igroupObject, LogicsSupplier ilogicsSupplier, ClientForm iform, ClientFormLayout formLayout) throws IOException {
 
@@ -167,7 +167,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     }
     
     // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component
-    public void addGroupObjectActions(JComponent comp) {
+    void addGroupObjectActions(JComponent comp) {
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), "switchClassView");
         comp.getActionMap().put("switchClassView", new AbstractAction() {

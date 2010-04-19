@@ -8,12 +8,12 @@ import java.awt.*;
 
 abstract class CellView extends JPanel {
 
-    private JLabel label;
-    private CellTable table;
+    private final JLabel label;
+    private final CellTable table;
 
     protected abstract ClientCellView getKey();
 
-    public int getID() { return getKey().getID(); }
+    int getID() { return getKey().getID(); }
 
     @Override
     public int hashCode() {

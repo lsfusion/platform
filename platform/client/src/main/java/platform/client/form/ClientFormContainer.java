@@ -8,9 +8,9 @@ import java.awt.*;
 
 // класс контейнеров отображения всех объектов на ClientForm
 // ведет подсчет количество child'ов и прячет/показывает себя, если их становится 0
-public class ClientFormContainer extends JPanel{
+class ClientFormContainer extends JPanel{
 
-    final ClientContainerView view;
+    private final ClientContainerView view;
 
     public ClientFormContainer(ClientContainerView iview) {
 
@@ -40,7 +40,7 @@ public class ClientFormContainer extends JPanel{
         decrementComponentCount();
     }
 
-    int compCount = 0;
+    private int compCount = 0;
     private void incrementComponentCount() {
 
         if (compCount == 0)

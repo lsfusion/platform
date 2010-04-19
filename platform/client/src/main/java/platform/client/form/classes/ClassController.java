@@ -24,10 +24,10 @@ public class ClassController {
     private ClassTree view;
 
     // данные по объекту, класс которого обрабатывается
-    private ClientObjectImplementView object;
+    private final ClientObjectImplementView object;
 
     // объект, при помощи которого будет происходить общение с внешним миром
-    private ClientForm form;
+    private final ClientForm form;
 
     public ClassController(ClientObjectImplementView iobject, ClientForm iform) throws IOException {
 
@@ -39,10 +39,6 @@ public class ClassController {
 
     }
 
-    public Component getView() {
-        return pane;
-    }
-
     private JButton buttonChangeClass;
 
     public void addView(ClientFormLayout formLayout) {
@@ -52,7 +48,6 @@ public class ClassController {
 
             protected void currentClassChanged() throws IOException {
                 form.changeGridClass(object, view.getSelectedClass());
-                ClassController.this.currentClassChanged();
             }
 
             protected java.util.List<ClientClass> getChildClasses(ClientObjectClass parentClass) throws IOException {
@@ -133,5 +128,4 @@ public class ClassController {
         return (ClientObjectClass) selNode.getUserObject();
     }
 
-    protected void currentClassChanged() {}
 }

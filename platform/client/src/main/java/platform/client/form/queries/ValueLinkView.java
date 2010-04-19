@@ -9,7 +9,7 @@ abstract class ValueLinkView extends JPanel {
 
     ValueLinkListener listener;
 
-    protected ValueLinkView() {
+    ValueLinkView() {
         setLayout(new BorderLayout());
     }
 

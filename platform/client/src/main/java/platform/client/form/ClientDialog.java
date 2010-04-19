@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
 
 public class ClientDialog extends JDialog {
 
-    protected final ClientNavigator navigator;
+    final ClientNavigator navigator;
     private ClientForm currentForm;
 
     public ClientDialog(ClientForm owner, RemoteFormInterface dialog) throws IOException, ClassNotFoundException {
@@ -57,7 +57,7 @@ public class ClientDialog extends JDialog {
 
     public boolean objectChosen;
 
-    protected boolean isReadOnly() { return true; }
+    boolean isReadOnly() { return true; }
 
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
