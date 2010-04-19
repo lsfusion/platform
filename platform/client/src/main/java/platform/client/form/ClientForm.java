@@ -137,6 +137,13 @@ public class ClientForm extends JPanel {
             GroupObjectController controller = new GroupObjectController(groupObject, formView, this, formLayout);
             controllers.put(groupObject, controller);
         }
+
+        for (ClientPropertyView properties : formView.properties) {
+            if (properties.groupObject == null) {
+                GroupObjectController controller = new GroupObjectController(null, formView, this, formLayout);
+                controllers.put(null, controller);
+            }
+        }
     }
 
     private void initializeRegularFilters() {

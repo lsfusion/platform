@@ -23,7 +23,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     private final ClientForm form;
 
     private final PanelController panel;
-    private final GridController grid;
+    private GridController grid;
     public final Map<ClientObjectImplementView, ObjectController> objects = new HashMap<ClientObjectImplementView, ObjectController>();
 
     ClientGroupObjectValue currentObject;
@@ -36,23 +36,26 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         logicsSupplier = ilogicsSupplier; 
         form = iform;
 
-        // Grid идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
-        grid = new GridController(groupObject.gridView, this, form);
-        if (!form.isReadOnly()) addGroupObjectActions(grid.getView());
+        if (groupObject != null) {
 
-        grid.addView(formLayout);
+            // Grid идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
+            grid = new GridController(groupObject.gridView, this, form);
+            if (!form.isReadOnly()) addGroupObjectActions(grid.getView());
+
+            grid.addView(formLayout);
+
+            for (ClientObjectImplementView object : groupObject) {
+
+                objects.put(object, new ObjectController(object, form));
+                objects.get(object).addView(formLayout);
+            }
+        }
 
         panel = new PanelController(this, form, formLayout) {
             protected void addGroupObjectActions(JComponent comp) {
                 GroupObjectController.this.addGroupObjectActions(comp);
             }
         };
-
-        for (ClientObjectImplementView object : groupObject) {
-
-            objects.put(object, new ObjectController(object, form));
-            objects.get(object).addView(formLayout);
-        }
 
     }
 
@@ -90,7 +93,9 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     public void addPanelProperty(ClientPropertyView property) {
 
-        grid.removeProperty(property);
+        if (grid != null)
+            grid.removeProperty(property);
+        
         panel.addProperty(property);
 
     }

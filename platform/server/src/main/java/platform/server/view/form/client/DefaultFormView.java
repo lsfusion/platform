@@ -192,7 +192,9 @@ public class DefaultFormView extends FormView {
             groupAbstract = groupAbstract.getParent();
         }
 
-        childComponent.container = panelContainers.get(groupObject);
+        // проверка на null нужна для глобальных свойств без groupObject'ов вообще
+        ContainerView groupContainer = panelContainers.get(groupObject);
+        childComponent.container = (groupContainer == null) ? mainContainer : groupContainer;  
 
     }
 
