@@ -5,7 +5,7 @@ import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyView;
 import platform.client.form.ClientForm;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ClientFormLayout;
 
 import javax.swing.*;
@@ -18,11 +18,11 @@ public abstract class PanelController {
 
     ClientForm form;
 
-    LogicsSupplier logicsSupplier;
+    GroupObjectLogicsSupplier logicsSupplier;
 
     ClientFormLayout formLayout;
 
-    public PanelController(LogicsSupplier ilogicsSupplier, ClientForm iform, ClientFormLayout iformLayout) {
+    public PanelController(GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform, ClientFormLayout iformLayout) {
 
         logicsSupplier = ilogicsSupplier;
         form = iform;

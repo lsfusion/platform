@@ -2,7 +2,7 @@ package platform.client.form.grid;
 
 import platform.client.form.ClientFormTable;
 import platform.client.form.ClientForm;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.sort.GridHeaderRenderer;
 import platform.client.form.sort.GridHeaderMouseListener;
 import platform.client.form.cell.ClientCellViewTable;
@@ -139,7 +139,7 @@ public abstract class GridTable extends ClientFormTable
         return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
-    LogicsSupplier logicsSupplier;
+    GroupObjectLogicsSupplier logicsSupplier;
 
     // пока пусть GridTable напрямую общается с формой, а не через Controller, так как ей много о чем надо с ней говорить, а Controller будет просто бюрократию создавать
     ClientForm form;
@@ -150,7 +150,7 @@ public abstract class GridTable extends ClientFormTable
     private ClientCellView currentCell;
     public ClientCellView getCurrentCell() { return currentCell; }
 
-    public GridTable(LogicsSupplier ilogicsSupplier, ClientForm iform) {
+    public GridTable(GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform) {
 
         logicsSupplier = ilogicsSupplier;
         form = iform;

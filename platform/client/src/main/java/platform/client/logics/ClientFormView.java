@@ -1,17 +1,14 @@
 package platform.client.logics;
 
-import platform.interop.form.RemoteFormInterface;
-import platform.client.Log;
+import platform.client.form.LogicsSupplier;
 import platform.base.OrderedMap;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.ByteArrayInputStream;
 import java.util.*;
-import java.rmi.RemoteException;
 
-public class ClientFormView implements Serializable {
+public class ClientFormView implements Serializable, LogicsSupplier {
 
     public List<ClientContainerView> containers;
 
@@ -30,6 +27,24 @@ public class ClientFormView implements Serializable {
 
     public final List<ClientCellView> order = new ArrayList<ClientCellView>();
 
+    public List<ClientObjectImplementView> getObjects() {
+
+         ArrayList<ClientObjectImplementView> objects = new ArrayList<ClientObjectImplementView> ();
+         for (ClientGroupObjectImplementView groupObject : groupObjects)
+             for (ClientObjectImplementView object : groupObject)
+                 objects.add(object);
+
+         return objects;
+     }
+
+     public List<ClientPropertyView> getProperties() {
+         return properties;
+     }
+
+     public List<ClientCellView> getCells() {
+         return order;
+     }
+
     public ClientGroupObjectImplementView getGroupObject(int id) {
         for (ClientGroupObjectImplementView groupObject : groupObjects)
             if (groupObject.getID() == id) return groupObject;
@@ -43,9 +58,9 @@ public class ClientFormView implements Serializable {
         return null;
     }
 
-    public ClientPropertyView getPropertyView(int id) {
+    public ClientPropertyView getProperty(int id) {
         for (ClientPropertyView property : properties)
-            if (property.ID == id) return property;
+            if (property.getID() == id) return property;
         return null;
     }
 
@@ -86,7 +101,7 @@ public class ClientFormView implements Serializable {
         for(int i=0;i<orderCount;i++) {
             ClientCellView order;
             if(inStream.readBoolean())
-                order = getPropertyView(inStream.readInt());
+                order = getProperty(inStream.readInt());
             else
                 order = getObject(inStream.readInt());    
             defaultOrders.put(order,inStream.readBoolean());
@@ -103,7 +118,7 @@ public class ClientFormView implements Serializable {
         for(int i=0;i<cellCount;i++) {
             int cellID = inStream.readInt();
             if(inStream.readBoolean()) // property
-                order.add(getPropertyView(cellID));
+                order.add(getProperty(cellID));
             else
                 order.add(getObject(cellID));
         }

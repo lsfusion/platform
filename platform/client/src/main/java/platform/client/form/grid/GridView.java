@@ -2,7 +2,7 @@ package platform.client.form.grid;
 
 import platform.client.form.queries.QueryView;
 import platform.client.form.ClientForm;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,7 +19,7 @@ public class GridView extends JPanel {
         return gridTable;
     }
 
-    public GridView(LogicsSupplier logicsSupplier, ClientForm form, QueryView findView, QueryView filterView) {
+    public GridView(GroupObjectLogicsSupplier logicsSupplier, ClientForm form, QueryView findView, QueryView filterView) {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 

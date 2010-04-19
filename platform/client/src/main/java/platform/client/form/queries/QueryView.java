@@ -1,7 +1,7 @@
 package platform.client.form.queries;
 
 import platform.client.logics.filter.ClientPropertyFilter;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -177,7 +177,7 @@ public abstract class QueryView extends JPanel {
     // используется для того, чтобы удалять условия запросов
     private Map<ClientPropertyFilter, QueryConditionView> condViews = new HashMap<ClientPropertyFilter, QueryConditionView>();
 
-    void addConditionView(ClientPropertyFilter condition, LogicsSupplier logicsSupplier) {
+    void addConditionView(ClientPropertyFilter condition, GroupObjectLogicsSupplier logicsSupplier) {
 
         QueryConditionView condView = new QueryConditionView(condition, logicsSupplier) {
 

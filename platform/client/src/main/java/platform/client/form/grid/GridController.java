@@ -1,6 +1,6 @@
 package platform.client.form.grid;
 
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientForm;
 import platform.client.form.queries.FindController;
@@ -27,9 +27,9 @@ public class GridController {
 
     ClientForm form;
 
-    LogicsSupplier logicsSupplier;
+    GroupObjectLogicsSupplier logicsSupplier;
 
-    public GridController(ClientGridView iview, LogicsSupplier ilogicsSupplier, ClientForm iform) {
+    public GridController(ClientGridView iview, GroupObjectLogicsSupplier ilogicsSupplier, ClientForm iform) {
 
         view = iview;
         logicsSupplier = ilogicsSupplier;
@@ -102,8 +102,8 @@ public class GridController {
             gridTable.updateTable();
     }
 
-    public void setGridObjects(List<ClientGroupObjectValue> igridObjects) {
-        gridTable.setGridObjects(igridObjects);
+    public void setGridObjects(List<ClientGroupObjectValue> gridObjects) {
+        gridTable.setGridObjects(gridObjects);
 
         //здесь еще добавить значения идентификаторов
         fillTableObjectID();

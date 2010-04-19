@@ -18,7 +18,7 @@ public class ClientPropertyFilter {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(FilterType.COMPARE);
 
-        outStream.writeInt(property.ID);
+        outStream.writeInt(property.getID());
         compare.serialize(outStream);
         value.serialize(outStream);
     }    

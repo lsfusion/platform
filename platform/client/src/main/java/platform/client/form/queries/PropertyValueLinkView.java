@@ -2,7 +2,7 @@ package platform.client.form.queries;
 
 import platform.client.logics.ClientPropertyValueLink;
 import platform.client.logics.ClientPropertyView;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 import javax.swing.*;
 import java.util.Vector;
@@ -13,7 +13,7 @@ class PropertyValueLinkView extends ValueLinkView {
 
     private final ClientPropertyValueLink valueLink;
 
-    public PropertyValueLinkView(ClientPropertyValueLink ivalueLink, LogicsSupplier logicsSupplier) {
+    public PropertyValueLinkView(ClientPropertyValueLink ivalueLink, GroupObjectLogicsSupplier logicsSupplier) {
         super();
 
         valueLink = ivalueLink;

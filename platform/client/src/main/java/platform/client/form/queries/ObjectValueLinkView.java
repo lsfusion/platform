@@ -3,7 +3,7 @@ package platform.client.form.queries;
 import platform.client.logics.ClientObjectValueLink;
 import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.ClientPropertyView;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 import javax.swing.*;
 import java.util.Vector;
@@ -16,7 +16,7 @@ class ObjectValueLinkView extends ValueLinkView {
 
     final JComboBox objectView;
 
-    public ObjectValueLinkView(ClientObjectValueLink ivalueLink, LogicsSupplier logicsSupplier) {
+    public ObjectValueLinkView(ClientObjectValueLink ivalueLink, GroupObjectLogicsSupplier logicsSupplier) {
         super();
 
         valueLink = ivalueLink;

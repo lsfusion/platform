@@ -7,8 +7,6 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.client.*;
-import platform.client.form.grid.GridController;
-import platform.client.form.panel.PanelController;
 import platform.client.logics.*;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
@@ -43,14 +41,12 @@ public class ClientForm extends JPanel {
     public final ClientNavigator clientNavigator;
 
     private boolean readOnly;
+
     public boolean isReadOnly() {
         return readOnly;
     }
 
     public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean ireadOnly) throws IOException, ClassNotFoundException {
-//        super(app);
-
-//        FocusOwnerTracer.installFocusTracer();
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
@@ -76,14 +72,10 @@ public class ClientForm extends JPanel {
 
     private ClientFormLayout formLayout;
 
-    public Map<ClientGroupObjectImplementView, GroupObjectModel> models;
+    public Map<ClientGroupObjectImplementView, GroupObjectController> controllers;
 
-    private JButton buttonPrint;
-    private JButton buttonRefresh;
     private JButton buttonApply;
     private JButton buttonCancel;
-    private JButton buttonOK;
-    private JButton buttonClose;
 
     void initializeForm() throws IOException {
 
@@ -138,12 +130,12 @@ public class ClientForm extends JPanel {
 
     private void initializeGroupObjects() throws IOException {
 
-        models = new HashMap();
+        controllers = new HashMap<ClientGroupObjectImplementView, GroupObjectController>();
 
         for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
 
-            GroupObjectModel model = new GroupObjectModel(groupObject);
-            models.put(groupObject, model);
+            GroupObjectController controller = new GroupObjectController(groupObject, formView, this, formLayout);
+            controllers.put(groupObject, controller);
         }
     }
 
@@ -240,7 +232,7 @@ public class ClientForm extends JPanel {
         ActionMap am = getActionMap();
 
         // Добавляем стандартные кнопки
-        buttonPrint = new JButton("Печать");
+        JButton buttonPrint = new JButton("Печать");
         buttonPrint.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -252,7 +244,7 @@ public class ClientForm extends JPanel {
             }
         });
 
-        buttonRefresh = new JButton("Обновить");
+        JButton buttonRefresh = new JButton("Обновить");
         buttonRefresh.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
@@ -299,7 +291,7 @@ public class ClientForm extends JPanel {
         im.put(altEnter, "okPressed");
         am.put("okPressed", okAction);
 
-        buttonOK = new JButton(okAction);
+        JButton buttonOK = new JButton(okAction);
 
         AbstractAction closeAction = new AbstractAction("Закрыть") {
 
@@ -312,7 +304,7 @@ public class ClientForm extends JPanel {
         im.put(escape, "closePressed");
         am.put("closePressed", closeAction);
 
-        buttonClose = new JButton(closeAction);
+        JButton buttonClose = new JButton(closeAction);
 
         if (!readOnly) {
             formLayout.add(formView.printView, buttonPrint);
@@ -328,9 +320,9 @@ public class ClientForm extends JPanel {
     private void initializeOrders() throws IOException {
         // Применяем порядки по умолчанию
         for (Map.Entry<ClientCellView, Boolean> entry : formView.defaultOrders.entrySet()) {
-            models.get(entry.getKey().getGroupObject()).grid.changeGridOrder(entry.getKey(), Order.ADD);
+            controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.ADD);
             if (!entry.getValue()) {
-                models.get(entry.getKey().getGroupObject()).grid.changeGridOrder(entry.getKey(), Order.DIR);
+                controllers.get(entry.getKey().getGroupObject()).changeGridOrder(entry.getKey(), Order.DIR);
             }
         }
     }
@@ -349,15 +341,15 @@ public class ClientForm extends JPanel {
         // Сначала меняем виды объектов
 
         for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
-            models.get(property.groupObject).addPanelProperty(property);
+            controllers.get(property.groupObject).addPanelProperty(property);
         }
 
         for (ClientPropertyView property : formChanges.gridProperties.keySet()) {
-            models.get(property.groupObject).addGridProperty(property);
+            controllers.get(property.groupObject).addGridProperty(property);
         }
 
         for (ClientPropertyView property : formChanges.dropProperties) {
-            models.get(property.groupObject).dropProperty(property);
+            controllers.get(property.groupObject).dropProperty(property);
         }
 
 
@@ -366,23 +358,23 @@ public class ClientForm extends JPanel {
         // Сначала новые объекты
 
         for (ClientGroupObjectImplementView groupObject : formChanges.gridObjects.keySet()) {
-            models.get(groupObject).grid.setGridObjects(formChanges.gridObjects.get(groupObject));
+            controllers.get(groupObject).setGridObjects(formChanges.gridObjects.get(groupObject));
         }
 
         for (Map.Entry<ClientGroupObjectImplementView,ClientGroupObjectValue> groupObject : formChanges.objects.entrySet())
-            models.get(groupObject.getKey()).setCurrentGroupObject(groupObject.getValue(),false);
+            controllers.get(groupObject.getKey()).setCurrentGroupObject(groupObject.getValue(),false);
 
         for (ClientGroupObjectImplementView groupObject : formChanges.classViews.keySet())
-            models.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
+            controllers.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
 
         // Затем их свойства
 
         for (ClientPropertyView property : formChanges.panelProperties.keySet()) {
-            models.get(property.groupObject).setPanelPropertyValue(property, formChanges.panelProperties.get(property));
+            controllers.get(property.groupObject).setPanelPropertyValue(property, formChanges.panelProperties.get(property));
         }
 
         for (ClientPropertyView property : formChanges.gridProperties.keySet()) {
-            models.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
+            controllers.get(property.groupObject).setGridPropertyValues(property, formChanges.gridProperties.get(property));
         }
 
         formLayout.getComponent().validate();
@@ -394,13 +386,13 @@ public class ClientForm extends JPanel {
 
     public void changeGroupObject(ClientGroupObjectImplementView groupObject, ClientGroupObjectValue objectValue) throws IOException {
 
-        ClientGroupObjectValue curObjectValue = models.get(groupObject).getCurrentObject();
+        ClientGroupObjectValue curObjectValue = controllers.get(groupObject).getCurrentObject();
 
         if (!objectValue.equals(curObjectValue)) {
 
             remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
 
-            models.get(groupObject).setCurrentGroupObject(objectValue,true);
+            controllers.get(groupObject).setCurrentGroupObject(objectValue,true);
 
             applyFormChanges();
 
@@ -425,7 +417,7 @@ public class ClientForm extends JPanel {
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
-            remoteForm.changePropertyView(((ClientPropertyView)property).ID, BaseUtils.serializeObject(value));
+            remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
             dataChanged();
             applyFormChanges();
         } else {
@@ -433,7 +425,7 @@ public class ClientForm extends JPanel {
             ClientObjectImplementView object = ((ClientObjectView)property).object;
             remoteForm.changeObject(object.getID(), (Integer)value);
 
-            models.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
+            controllers.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
 
             applyFormChanges();
 
@@ -492,9 +484,9 @@ public class ClientForm extends JPanel {
     public void changeOrder(ClientCellView property, Order modiType) throws IOException {
 
         if(property instanceof ClientPropertyView)
-            remoteForm.changePropertyOrder(((ClientPropertyView)property).ID, modiType.serialize());
+            remoteForm.changePropertyOrder(property.getID(), modiType.serialize());
         else
-            remoteForm.changeObjectOrder(((ClientObjectView)property).getID(), modiType.serialize());
+            remoteForm.changeObjectOrder(property.getID(), modiType.serialize());
 
         applyFormChanges();
     }
@@ -612,251 +604,6 @@ public class ClientForm extends JPanel {
             buttonApply.setBackground(defaultApplyBackground);
             buttonApply.setEnabled(false);
             buttonCancel.setEnabled(false);
-        }
-
-    }
-
-    public class GroupObjectModel implements LogicsSupplier {
-
-        final ClientGroupObjectImplementView groupObject;
-
-        final PanelController panel;
-        final GridController grid;
-        public final Map<ClientObjectImplementView, ObjectController> objects = new HashMap();
-
-        ClientGroupObjectValue currentObject;
-
-        Boolean classView;
-
-        public GroupObjectModel(ClientGroupObjectImplementView igroupObject) throws IOException {
-
-            groupObject = igroupObject;
-
-            grid = new GridController(groupObject.gridView, this, ClientForm.this);
-            if (!isReadOnly()) addGroupObjectActions(grid.getView());
-
-            grid.addView(formLayout);
-
-            panel = new PanelController(this, ClientForm.this, formLayout) {
-                protected void addGroupObjectActions(JComponent comp) {
-                    GroupObjectModel.this.addGroupObjectActions(comp);
-                }
-            };
-
-            for (ClientObjectImplementView object : groupObject) {
-
-                objects.put(object, new ObjectController(object, ClientForm.this));
-                objects.get(object).addView(formLayout);
-            }
-
-        }
-        
-        public void setClassView(Boolean setClassView) {
-            
-            if (classView == null || classView != setClassView) {
-                
-                classView = setClassView;
-                if (classView) {
-                    panel.removeGroupObjectID();
-                    grid.addGroupObjectID();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            grid.requestFocusInWindow();
-                        }
-                    });
-                } else {
-                    panel.addGroupObjectID();
-                    grid.removeGroupObjectID();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            panel.requestFocusInWindow();
-                        }
-                    });
-//                    panel.requestFocusInWindow();
-                }
-
-                for (ClientObjectImplementView object : groupObject) {
-                    objects.get(object).changeClassView(classView);
-                }
-
-            }
-            
-        }
-        
-        public void addPanelProperty(ClientPropertyView property) {
-            
-            grid.removeProperty(property);
-            panel.addProperty(property);
-            
-        }
-        
-        public void addGridProperty(ClientPropertyView property) {
-            
-            panel.removeProperty(property);
-            grid.addProperty(property);
-            
-        }
-        
-        public void dropProperty(ClientPropertyView property) {
-            
-            panel.removeProperty(property);
-            grid.removeProperty(property);
-            
-        }
-        
-        public ClientGroupObjectValue getCurrentObject() {
-            return currentObject;
-        }
-        
-        public void setCurrentGroupObject(ClientGroupObjectValue value, Boolean userChange) {
-    
-            boolean realChange = !value.equals(currentObject);
-
-/*            if (currentObject != null)
-                System.out.println("view - oldval : " + currentObject.toString() + " ; userChange " + userChange.toString() );
-            if (value != null)
-                System.out.println("view - newval : " + value.toString() + " ; userChange " + userChange.toString());*/
-            
-            currentObject = value;
-            
-            if (realChange) {
-                
-                panel.selectObject(currentObject);
-                if (!userChange) // если не сам изменил, а то пойдет по кругу
-                    grid.selectObject(currentObject);
-            }
-            
-        }
-
-        public void setCurrentObject(ClientObjectImplementView object, Integer value) {
-
-            if (currentObject == null) return;
-
-            ClientGroupObjectValue curValue = (ClientGroupObjectValue) currentObject.clone();
-
-            curValue.put(object, value);
-            setCurrentGroupObject(curValue, false);
-        }
-
-        public void setPanelPropertyValue(ClientPropertyView property, Object value) {
-            
-            panel.setPropertyValue(property, value);
-        }
-
-        public void setGridPropertyValues(ClientPropertyView property, Map<ClientGroupObjectValue,Object> values) {
-            
-            grid.setPropertyValues(property, values);
-        }
-
-        // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component
-        public void addGroupObjectActions(JComponent comp) {
-
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), "switchClassView");
-            comp.getActionMap().put("switchClassView", new AbstractAction() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    try {
-                        switchClassView(groupObject);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении вида", e);
-                    }
-                }
-            });
-
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK), "addObject");
-            comp.getActionMap().put("addObject", new AbstractAction() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    ClientObjectClass addClass = objects.get(groupObject.get(0)).classController.getDerivedClass();
-                    if(addClass instanceof ClientConcreteClass) {
-                        try {
-                            addObject(groupObject.get(0),(ClientConcreteClass)addClass);
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при добавлении объекта", e);
-                        }
-                    }
-                }
-            });
-
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK), "removeObject");
-            comp.getActionMap().put("removeObject", new AbstractAction() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    try {
-                        changeClass(groupObject.get(0), null);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при удалении объекта", e);
-                    }
-                }
-            });
-
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.ALT_DOWN_MASK), "changeObjectClass");
-            comp.getActionMap().put("changeObjectClass", new AbstractAction() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    ClientObjectClass changeClass = objects.get(groupObject.get(0)).classController.getSelectedClass();
-                    if(changeClass instanceof ClientConcreteClass) {
-                        try {
-                            changeClass(groupObject.get(0), (ClientConcreteClass) changeClass);
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при изменении класса объекта", e);
-                        }
-                    }
-                }
-            });
-
-        }
-
-        // реализация LogicsSupplier
-
-        public List<ClientObjectImplementView> getObjects() {
-
-            ArrayList<ClientObjectImplementView> objects = new ArrayList<ClientObjectImplementView> ();
-            for (ClientGroupObjectImplementView groupObject : formView.groupObjects)
-                for (ClientObjectImplementView object : groupObject)
-                    objects.add(object);
-
-            return objects;
-        }
-
-        public ClientGroupObjectImplementView getGroupObject() {
-            return groupObject;
-        }
-
-        public List<ClientPropertyView> getGroupObjectProperties() {
-
-            ArrayList<ClientPropertyView> properties = new ArrayList<ClientPropertyView>();
-            for (ClientPropertyView property : formView.properties) {
-                if (groupObject.equals(property.groupObject))
-                    properties.add(property);
-            }
-
-            return properties;
-        }
-
-        public List<ClientPropertyView> getProperties() {
-            return formView.properties;
-        }
-
-        public List<ClientCellView> getCells() {
-            return formView.order;
-        }
-
-        public ClientPropertyView getDefaultProperty() {
-
-            ClientCellView currentCell = grid.getCurrentCell();
-            if (currentCell instanceof ClientPropertyView)
-                return (ClientPropertyView) currentCell;
-            else
-                return null;
-        }
-
-        public Object getSelectedValue(ClientPropertyView cell) {
-            return grid.getSelectedValue(cell);
-        }
-
-        public ClientForm getForm() {
-            return ClientForm.this;
         }
 
     }

@@ -1,10 +1,10 @@
 package platform.client.form.queries;
 
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 public abstract class FilterController extends QueryController {
     
-    public FilterController(LogicsSupplier logicsSupplier) {
+    public FilterController(GroupObjectLogicsSupplier logicsSupplier) {
         super(logicsSupplier);
     }
 

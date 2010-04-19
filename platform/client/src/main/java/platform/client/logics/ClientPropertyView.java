@@ -15,7 +15,10 @@ import java.rmi.RemoteException;
 
 public class ClientPropertyView extends ClientCellView {
 
-    public Integer ID = 0;
+    private int ID = 0;
+    public int getID() {
+        return ID;
+    }
 
     public ClientGroupObjectImplementView groupObject;
 
@@ -31,10 +34,6 @@ public class ClientPropertyView extends ClientCellView {
                     break;
                 }
         }
-    }
-
-    public int getID() {
-        return ID;
     }
 
     public ClientGroupObjectImplementView getGroupObject() {

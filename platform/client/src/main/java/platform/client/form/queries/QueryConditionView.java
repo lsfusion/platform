@@ -2,7 +2,7 @@ package platform.client.form.queries;
 
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.*;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.interop.Compare;
 import platform.base.Pair;
 
@@ -30,7 +30,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     private final JButton delButton;
 
-    public QueryConditionView(ClientPropertyFilter ifilter, LogicsSupplier logicsSupplier) {
+    public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
 
         filter = ifilter;
 

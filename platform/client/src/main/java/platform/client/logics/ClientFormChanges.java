@@ -50,7 +50,7 @@ public class ClientFormChanges {
         gridProperties = new HashMap<ClientPropertyView, Map<ClientGroupObjectValue, Object>>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            ClientPropertyView clientPropertyView = clientFormView.getPropertyView(inStream.readInt());
+            ClientPropertyView clientPropertyView = clientFormView.getProperty(inStream.readInt());
 
             Map<ClientGroupObjectValue, Object> gridPropertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
@@ -64,14 +64,14 @@ public class ClientFormChanges {
         panelProperties = new HashMap<ClientPropertyView, Object>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            panelProperties.put(clientFormView.getPropertyView(inStream.readInt()),BaseUtils.deserializeObject(inStream));
+            panelProperties.put(clientFormView.getProperty(inStream.readInt()),BaseUtils.deserializeObject(inStream));
         }
 
         //DropProperties
         dropProperties = new HashSet<ClientPropertyView>();
         count = inStream.readInt();
         for (int i = 0; i < count; i++)
-            dropProperties.add(clientFormView.getPropertyView(inStream.readInt()));
+            dropProperties.add(clientFormView.getProperty(inStream.readInt()));
 
         message = inStream.readUTF();
     }

@@ -5,7 +5,7 @@ import platform.client.logics.ClientPropertyView;
 import platform.client.logics.ClientCellView;
 import platform.client.form.cell.CellTable;
 import platform.client.form.ClientForm;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,9 +18,9 @@ class UserValueLinkView extends ValueLinkView {
     private CellTable valueView;
 
     // нужен для получения текущих значений в таблице
-    private LogicsSupplier logicsSupplier;
+    private GroupObjectLogicsSupplier logicsSupplier;
 
-    public UserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty, LogicsSupplier ilogicsSupplier) {
+    public UserValueLinkView(ClientUserValueLink ivalueLink, ClientPropertyView iproperty, GroupObjectLogicsSupplier ilogicsSupplier) {
         super();
 
         valueLink = ivalueLink;

@@ -1,7 +1,7 @@
 package platform.client.form.queries;
 
 import platform.client.logics.filter.ClientPropertyFilter;
-import platform.client.form.LogicsSupplier;
+import platform.client.form.GroupObjectLogicsSupplier;
 
 import java.util.*;
 import java.util.List;
@@ -19,9 +19,9 @@ abstract class QueryController implements QueryListener {
         return conditions;
     }
 
-    private LogicsSupplier logicsSupplier;
+    private GroupObjectLogicsSupplier logicsSupplier;
 
-    public QueryController(LogicsSupplier logicsSupplier) {
+    public QueryController(GroupObjectLogicsSupplier logicsSupplier) {
 
         this.logicsSupplier = logicsSupplier;
 
