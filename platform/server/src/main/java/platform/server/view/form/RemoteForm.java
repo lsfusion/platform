@@ -917,6 +917,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
         dataChanged = false;
 
+//        result.out(this);
+
         return result;
     }
 

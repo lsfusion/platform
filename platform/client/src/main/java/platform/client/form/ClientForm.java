@@ -491,10 +491,11 @@ public class ClientForm extends JPanel {
         applyFormChanges();
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public void changeFind(List<ClientPropertyFilter> conditions) {
     }
 
-    private final Map<ClientGroupObjectImplementView, List<ClientPropertyFilter>> currentFilters = new HashMap();
+    private final Map<ClientGroupObjectImplementView, List<ClientPropertyFilter>> currentFilters = new HashMap<ClientGroupObjectImplementView, List<ClientPropertyFilter>>();
     
     public void changeFilter(ClientGroupObjectImplementView groupObject, List<ClientPropertyFilter> conditions) throws IOException {
 

@@ -169,8 +169,10 @@ public abstract class GridTable extends ClientFormTable
                         , new ActionListener() {
                     public void actionPerformed(ActionEvent ae) {
                         try {
-                            if(changeObject.equals(model.getSelectedObject()))
+                            if(changeObject.equals(model.getSelectedObject())) {
+                                currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
                                 form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException("Ошибка при изменении текущего объекта", e);
                         }
@@ -219,6 +221,12 @@ public abstract class GridTable extends ClientFormTable
 
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent ce) {
+
+                // Listener срабатывает в самом начале, когда компонент еще не расположен
+                // В таком случае нет смысла вызывать изменение pageSize
+                if (getParent().getHeight() == 0)
+                    return;
+
                 int newPageSize = getParent().getHeight() / getRowHeight() + 1;
 //                            System.out.println(groupObject.toString() + getParent().getViewport().getHeight() + " - " + getRowHeight() + " ; " + pageSize + " : " + newPageSize);
                 if (newPageSize != pageSize) {
@@ -311,7 +319,6 @@ public abstract class GridTable extends ClientFormTable
         if (newindex != -1 && newindex != oldindex) {
             //Выставляем именно первую активную колонку, иначе фокус на таблице - вообще нереально увидеть
             selectRow(newindex);
-            currentObject = value;
         }
     }
 
