@@ -37,7 +37,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
         System.out.println("Server is starting...");
 //        DataAdapter adapter = new PostgreDataAdapter("usmeshka","localhost","postgres","11111");
-        DataAdapter adapter = new MSSQLDataAdapter("usmeshka2","169.254.1.25","sa","12345");
+        DataAdapter adapter = new MSSQLDataAdapter("usmeshka2","ME2-ПК","sa","11111");
         UsmeshkaBusinessLogics BL = new UsmeshkaBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -83,9 +83,11 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     CustomClass order, orderInc, orderOut, orderStoreOut;
     CustomClass invoiceDocument;
     CustomClass commitOut, commitInc;
-    CustomClass orderExtInc, commitExtInc;
+    CustomClass orderSale;
 
-    CustomClass documentInner, orderOuter, commitOuter;
+    CustomClass documentInner;
+    CustomClass orderDelivery;
+    CustomClass commitDelivery;
 
     CustomClass move, moveInner, returnInner, returnOuter, orderInner;
 
@@ -116,7 +118,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         warehouse = addConcreteClass("Распред. центр", store);
         article = addConcreteClass("Товар", namedObject);
         articleGroup = addConcreteClass("Группа товаров", namedObject);
-        supplier = addConcreteClass("Поставщик", subject);
+        supplier = addAbstractClass("Поставщик", subject);
         localSupplier = addConcreteClass("Местный поставщик", supplier);
         importSupplier = addConcreteClass("Импортный поставщик", supplier);
         customerWhole = addConcreteClass("Оптовый покупатель", namedObject);
@@ -148,31 +150,30 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         commitWholeShopInc = addAbstractClass("Принятый оптовый приход на магазин", documentShopPrice, orderShopInc, commitInc);
 
         // внутр. и внешние операции
-        orderOuter = addAbstractClass("Заявка на внешнюю операцию", orderInc); // всегда прих., создает партию - элементарную единицу учета
-        commitOuter = addAbstractClass("Внешняя операция", orderOuter, commitInc);
+        orderDelivery = addAbstractClass("Закупка", orderInc); // всегда прих., создает партию - элементарную единицу учета
+        commitDelivery = addAbstractClass("Приход от пост.", orderDelivery, commitInc, invoiceDocument);
 
         documentInner = addAbstractClass("Внутренняя операция", order);
         returnInner = addAbstractClass("Возврат внутренней операции", order);
         orderInner = addAbstractClass("Заказ", documentInner);
 
-        orderExtInc = addAbstractClass("Закупка", orderOuter);
-        commitExtInc = addAbstractClass("Приход от пост.", commitOuter, orderExtInc, invoiceDocument);
+        orderSale = addAbstractClass("Продажа", orderOut);
 
         orderWhole = addAbstractClass("Оптовая операция", order);
         orderRetail = addAbstractClass("Розничная операция", order);
 
-        orderSaleWhole = addConcreteClass("Оптовый заказ", orderWarehouseOut, orderInner, orderWhole);
+        orderSaleWhole = addConcreteClass("Оптовый заказ", orderWarehouseOut, orderInner, orderWhole, orderSale);
         invoiceSaleWhole = addConcreteClass("Выписанный оптовый заказ", orderSaleWhole, invoiceDocument);
         commitSaleWhole = addConcreteClass("Отгруженный оптовый заказ", invoiceSaleWhole, commitOut);
 
-        orderSaleRetail = addConcreteClass("Розничный заказ", orderShopOut, orderInner, orderRetail);
+        orderSaleRetail = addConcreteClass("Розничный заказ", orderShopOut, orderInner, orderRetail, orderSale);
         invoiceSaleRetail = addConcreteClass("Выписанная реализация по накладной", orderSaleRetail, invoiceDocument);
         commitSaleInvoiceRetail = addConcreteClass("Отгруженная реализация по накладной", invoiceSaleRetail, commitOut);
         commitSaleCheckRetail = addConcreteClass("Реализация за наличный расчет", orderSaleRetail, commitOut);
 
         balanceCheck = addConcreteClass("Инвентаризация", orderStoreOut, commitOut, documentInner);
 
-        orderDistributeShop = addConcreteClass("Заказ на внутреннее перемещение на магазин", orderStoreOut, orderShopInc, orderInner);
+        orderDistributeShop = addConcreteClass("Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderInner);
         addConcreteClass("Принятое внутреннее перемещение на магазин", commitWholeShopInc,
                 addConcreteClass("Отгруженное внутреннее перемещение на магазин", commitOut,
                         addConcreteClass("Выписанное внутреннее перемещение на магазин", orderDistributeShop, invoiceDocument)));
@@ -183,8 +184,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
         orderLocal = addAbstractClass("Операция с местным поставщиком", order);
 
-        orderDeliveryLocal = addAbstractClass("Закупка у местного поставщика", orderExtInc, orderLocal);
-        commitDeliveryLocal = addAbstractClass("Приход от местного поставщика", orderDeliveryLocal, commitExtInc);
+        orderDeliveryLocal = addAbstractClass("Закупка у местного поставщика", orderDelivery, orderLocal);
+        commitDeliveryLocal = addAbstractClass("Приход от местного поставщика", orderDeliveryLocal, commitDelivery);
 
         orderDeliveryShopLocal = addConcreteClass("Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
         addConcreteClass("Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitWholeShopInc);
@@ -192,8 +193,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         orderDeliveryWarehouseLocal = addConcreteClass("Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
         addConcreteClass("Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
 
-        orderDeliveryImport = addConcreteClass("Закупка у импортного поставщика", orderExtInc, orderWarehouseInc);
-        addConcreteClass("Приход от импортного поставщика", orderDeliveryImport, commitExtInc);
+        orderDeliveryImport = addConcreteClass("Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
+        addConcreteClass("Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
 
         orderReturnDeliveryLocal = addConcreteClass("Заявка на возврат местному поставщику", orderStoreOut, orderLocal);
         invoiceReturnDeliveryLocal = addConcreteClass("Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal,invoiceDocument);
@@ -234,7 +235,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         orderSupplier = addCUProp("orderSupplier", "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
                 addDProp("importSupplier", "Импортный поставщик", importSupplier, orderDeliveryImport));
 
-        LP outSubject = addCUProp(addJProp(and1, orderSupplier, 1, is(orderExtInc), 1), outStore);
+        LP outSubject = addCUProp(addJProp(and1, orderSupplier, 1, is(orderDelivery), 1), outStore);
 
         LP orderContragent = addCUProp("Контрагент", // generics
                 orderSupplier,
@@ -244,28 +245,28 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
         LP invoiceNumber = addDProp(baseGroup, "invoiceNumber", "Накладная", StringClass.get(20), invoiceDocument);
 
-        outerOrderQuantity = addDProp(documentGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderOuter, article);
-        outerCommitedQuantity = addDProp(documentGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitOuter, article);
+        outerOrderQuantity = addDProp(documentGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderDelivery, article);
+        outerCommitedQuantity = addDProp(documentGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitDelivery, article);
         outerCommitedQuantity.setDerivedChange(outerOrderQuantity, 1, 2, is(commitInc), 1);
-        LP expiryDate = addDProp(baseGroup, "expiryDate", "Срок годн.", DateClass.instance, commitOuter, article);
+        LP expiryDate = addDProp(baseGroup, "expiryDate", "Срок годн.", DateClass.instance, commitDelivery, article);
 
         // для возвратных своего рода generics
         LP returnOuterQuantity = addDProp("returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
 
         returnInnerCommitQuantity = addCUProp(documentGroup, "Кол-во возврата", // generics
-                         addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitOuter, commitSaleWhole),
-                         addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitOuter, commitSaleInvoiceRetail),
-                         addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitOuter, commitSaleCheckRetail));
+                         addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitDelivery, commitSaleWhole),
+                         addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitDelivery, commitSaleInvoiceRetail),
+                         addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitDelivery, commitSaleCheckRetail));
 
         returnInnerQuantity = addSGProp(documentGroup, "Кол-во возврата", returnInnerCommitQuantity, 1, 2, 4);
         LP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
         addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, addJProp(diff2, orderContragent, 1, orderContragent, 2), 1, 3, returnDocumentQuantity, 1, 2, 3), false);
 
-        LP orderInnerQuantity = addDProp("outOrderQuantity", "Кол-во операции", DoubleClass.instance, orderInner, article, commitOuter);
+        LP orderInnerQuantity = addDProp("outOrderQuantity", "Кол-во операции", DoubleClass.instance, orderInner, article, commitDelivery);
 
         // инвентаризация
-        innerBalanceCheck = addDProp(documentGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitOuter);
-        innerBalanceCheckDB = addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitOuter);
+        innerBalanceCheck = addDProp(documentGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitDelivery);
+        innerBalanceCheckDB = addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitDelivery);
 
         innerQuantity = addCUProp(documentGroup, "innerQuantity", "Кол-во операции", returnOuterQuantity, orderInnerQuantity,
                                 addSGProp("Кол-во операции", returnInnerCommitQuantity, 1, 2, 3),
@@ -312,9 +313,10 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         documentFreeQuantity = addSGProp(documentMoveGroup, "Макс. кол-во по товару", documentInnerFreeQuantity, 1, 2);
 
         articleQuantity = addCUProp("Кол-во операции", outerCommitedQuantity, articleInnerQuantity);
+        articleOrderQuantity = addCUProp("Заяв. кол-во операции", outerOrderQuantity, articleInnerQuantity);
 
         // ожидаемый приход на склад
-        articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity" , "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(andNot1, articleQuantity, 1, 2, is(commitInc), 1), incStore, 1, 2)); // сумма по еще не пришедшим
+        articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity" , "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(andNot1, articleOrderQuantity, 1, 2, is(commitInc), 1), incStore, 1, 2)); // сумма по еще не пришедшим
 
         articleBalanceCheck = addDGProp(documentGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, date, 3, 3);
 
@@ -345,12 +347,12 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                 addJProp(and1, 1, addJProp(and1, inAction, 1, 2, isActive, 1), 1, 2), inAction, 2);
         LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp("0", DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleAction, 1));
 
-        LP currentShopDiscount = addCUProp(priceGroup, "Скидка на складе",
+        LP currentStoreDiscount = addCUProp(priceGroup, "Скидка на складе",
                 addJProp(and1, currentWarehouseDiscount, is(warehouse), 1),
                 addJProp(currentFormatDiscount, shopFormat, 1));
 
         LP requiredStorePrice = addJProp(priceGroup, "Необх. цена", removePercent,
-                addJProp(removePercent, currentPrice, 1, articleDiscount, 1), 2, currentShopDiscount, 1);
+                addJProp(removePercent, currentPrice, 1, articleDiscount, 1), 2, currentStoreDiscount, 1);
 
         balanceFormatFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
 
@@ -382,6 +384,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         isRevalued = addJProp(diff2, shopPrice, 1, 2, prevPrice, 1, 2); // для акта переоценки
         isNewPrice = addJProp(andNot1, inDocumentPrice, 1, 2, addJProp(equals2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2); // для ценников
 
+        LP saleStorePrice = addCUProp(priceGroup, "Цена прод.", addJProp(and1, requiredStorePrice, 1, 2, is(warehouse), 1), currentShopPrice);
+
         NDS = addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
         LP[] maxNDSProps = addMGProp((AbstractGroup)null, true, new String[]{"currentNDSDate","currentNDSDoc"}, new String[]{"Дата посл. НДС","Посл. док. НДС"}, 1,
                 addJProp(and1, date, 1, NDS, 1, 2), 1, 2);
@@ -391,7 +395,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         // блок с логистикой\управленческими характеристиками
 
         // текущая схема
-        LP articleSupplier = addDProp(logisticsGroup, "articleSupplier", "Поставщик товара", supplier, article);
+        articleSupplier = addDProp(logisticsGroup, "articleSupplier", "Поставщик товара", supplier, article);
         LP shopWarehouse = addDProp(logisticsGroup, "storeWarehouse", "Распред. центр", warehouse, shop);
         LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
         LP supplierCycle = addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
@@ -420,10 +424,14 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         LP articleStoreRequired = addJProp(onlyPositive, addDUProp(articleFullStoreDemand, addSupplierProperty(articleFreeOrderQuantity)), 1, 2);
 
         documentLogisticsRequired = addJProp(documentLogisticsGroup, "Необходимо", articleStoreRequired, incStore, 1, 2);
-        // является тек. пост. для товара
         documentLogisticsSupplied = addJProp(documentLogisticsGroup, "Поставляется", equals2, outSubject, 1, addJProp(articleStoreSupplier, incStore, 1, 2), 1, 2);
-        // MIN(макс. Кол-во, необходимо) и поставляется - если приход то просто необходимо и разрешено
-        documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", and1, addCUProp(addJProp(min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2),addJProp(and1, documentLogisticsRequired, 1, 2, is(orderExtInc), 1)), 1, 2, documentLogisticsSupplied, 1, 2);
+        documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
+
+        LP orderSalePrice = addDProp(baseGroup, "orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
+        orderSalePrice.setDerivedChange(saleStorePrice, outStore, 1, 2);
+
+        LP orderDeliveryPrice = addDProp(baseGroup, "orderDeliveryPrice", "Цена закуп.", DoubleClass.instance, orderDelivery, article);
+        orderDeliveryPrice.setDerivedChange(articleSupplierPrice, 2, is(orderDelivery), 1);
     }
 
     private LP addSupplierProperty(LP property) {
@@ -436,6 +444,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
     LP articleFreeOrderQuantity;
 
+    LP articleSupplier;
     LP articleStoreSupplier;
     LP articleStorePeriod;
     LP articleStoreMin;
@@ -444,6 +453,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     LP documentLogisticsSupplied, documentLogisticsRequired, documentLogisticsRecommended;
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
     LP articleQuantity, prevPrice, revalBalance;
+    LP articleOrderQuantity;
     LP shopPrice;
     LP priceStore, inDocumentPrice;
     LP isRevalued, isNewPrice, documentRevalued;
@@ -460,25 +470,33 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     AbstractGroup documentGroup;
     AbstractGroup priceGroup;
     AbstractGroup moveGroup;
+    AbstractGroup allGroup;
     AbstractGroup logisticsGroup;
     AbstractGroup documentMoveGroup;
     AbstractGroup documentPriceGroup;
     AbstractGroup documentLogisticsGroup;
 
     protected void initGroups() {
+        allGroup = new AbstractGroup("Все");
+        allGroup.add(baseGroup);
+
         documentGroup = new AbstractGroup("Параметры документа");
+        allGroup.add(documentGroup);
 
         moveGroup = new AbstractGroup("Движение товаров");
+        allGroup.add(moveGroup);
 
         documentMoveGroup = new AbstractGroup("Текущие параметры документа");
         documentGroup.add(documentMoveGroup);
 
         priceGroup = new AbstractGroup("Ценовые параметры");
+        allGroup.add(priceGroup);
         
         documentPriceGroup = new AbstractGroup("Ценовые параметры документа");
         documentGroup.add(documentPriceGroup);
 
         logisticsGroup = new AbstractGroup("Логистические параметры");
+        allGroup.add(logisticsGroup);
 
         documentLogisticsGroup = new AbstractGroup("Логистические параметры документа");
         documentGroup.add(documentLogisticsGroup);
@@ -535,6 +553,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     protected void initNavigators() throws JRException, FileNotFoundException {
 
         NavigatorElement delivery = new NavigatorElement(baseElement, 1000, "Управление закупками");
+            new SupplierArticleNavigatorForm(delivery, 1050);
             NavigatorForm deliveryShopLocal = new DeliveryShopLocalNavigatorForm(delivery, true, 1100);
                 NavigatorForm deliveryShopLocalBrowse = new DeliveryShopLocalNavigatorForm(deliveryShopLocal, false, 1125);
             NavigatorForm deliveryWarehouseLocal = new DeliveryWarehouseLocalNavigatorForm(delivery, true, 1130);
@@ -592,7 +611,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     private class GlobalNavigatorForm extends NavigatorForm {
         protected GlobalNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Глобальные параметры");
-            addPropertyView(properties, baseGroup, true);
+            addPropertyView(properties, allGroup, true);
         }
     }
 
@@ -640,15 +659,11 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(getPropertyView(documentLogisticsSupplied.property).view),
                                   "Поставляется",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(getPropertyView(documentLogisticsRequired.property).view),
                                   "Необходимо",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)));
-            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new NotNullFilterNavigator(getPropertyView(documentLogisticsRecommended.property).view),
-                                  "Рекомендовано",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)), toAdd);
         }
     }
 
@@ -732,7 +747,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     private class ArticleInnerNavigatorForm extends ArticleOuterNavigatorForm {
 
         protected ArticleInnerNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass) {
-            super(parent, ID, documentClass, toAdd, commitOuter);
+            super(parent, ID, documentClass, toAdd, commitDelivery);
         }
     }
 
@@ -806,7 +821,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)), !toAdd);
             addRegularFilterGroup(filterGroup);
 
-            objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true);
+            objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, baseGroup, true);
 
             addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
             addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
@@ -846,14 +861,12 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         protected SupplierArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Ассортимент поставщиков");
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
-            addPropertyView(objStore, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            addPropertyView(objStore, objOuter, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            addPropertyView(objOuter, objArt, properties, baseGroup, true);
-            addPropertyView(objStore, objOuter, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objSupplier, objArt, properties, allGroup, true);
+
+            addFixedFilter(new CompareFilterNavigator(getPropertyView(articleSupplier.property).view,Compare.EQUALS,objSupplier));
         }
     }
 
@@ -861,14 +874,14 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         protected StoreArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitOuter, "Партия", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
+            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, allGroup, true);
 
-            addPropertyView(objStore, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            addPropertyView(objStore, objOuter, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objStore, objArt, properties, allGroup, true);
+            addPropertyView(objStore, objOuter, properties, allGroup, true);
             addPropertyView(objOuter, objArt, properties, baseGroup, true);
-            addPropertyView(objStore, objOuter, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objStore, objOuter, objArt, properties, allGroup, true);
         }
     }
 
@@ -876,10 +889,10 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         protected FormatArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по форматам");
 
-            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
-            addPropertyView(objFormat, objArt, properties, baseGroup, true, moveGroup, true, priceGroup, true, logisticsGroup, true);
+            addPropertyView(objFormat, objArt, properties, allGroup, true);
         }
     }
 

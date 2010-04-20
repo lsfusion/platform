@@ -292,14 +292,11 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // Обновление данных
     public void refreshData() throws SQLException {
 
-        for(GroupObjectImplement group : groups) {
+        for(GroupObjectImplement group : groups)
             for(ObjectImplement object : group.objects)
-                if(object instanceof CustomObjectImplement) {
+                if(object instanceof CustomObjectImplement)
                     ((CustomObjectImplement)object).updateValueClass(session);
-                    object.updated |= ObjectImplement.UPDATED_GRIDCLASS;
-                }
-            group.updated |= GroupObjectImplement.UPDATED_GRIDCLASS;
-        }
+        refresh = true;
     }
 
     void addObjectOnTransaction() throws SQLException {
@@ -611,7 +608,21 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Map<PropertyView,Boolean> cacheInGridInterface = new HashMap<PropertyView,Boolean>();
     protected Map<PropertyView,Boolean> cacheInInterface = new HashMap<PropertyView, Boolean>();
-    protected Set<PropertyView> isDrawed = new HashSet<PropertyView>(); 
+    protected Set<PropertyView> isDrawed = new HashSet<PropertyView>();
+
+    boolean refresh = true;
+    private boolean classUpdated(Updated updated, GroupObjectImplement groupObject) {
+        assert !refresh; // refresh нужен для инициализации (например DataObjectImplement) больше чем для самого refresh
+        return updated.classUpdated(groupObject);
+    }
+    private boolean objectUpdated(Updated updated, GroupObjectImplement groupObject) {
+        assert !refresh;
+        return updated.objectUpdated(groupObject);
+    }
+    private boolean dataUpdated(Updated updated, Collection<Property> changedProps) {
+        assert !refresh;
+        return updated.dataUpdated(changedProps);
+    }
 
     public FormChanges endApply() throws SQLException {
 
@@ -631,7 +642,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             for(GroupObjectImplement group : groups) {
 
                 // если изменились класс грида или представление 
-                boolean updateKeys = (group.updated & (GroupObjectImplement.UPDATED_GRIDCLASS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0;
+                boolean updateKeys = refresh || (group.updated & (GroupObjectImplement.UPDATED_GRIDCLASS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0;
 
                 if ((group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) != 0)
                     result.classViews.put(group, group.gridClassView);
@@ -650,7 +661,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                         group.filters = newFilters;
                     } else // остались те же setFilters
                         for(Filter filt : group.getSetFilters())
-                            if(filt.classUpdated(group))
+                            if(refresh || classUpdated(filt,group))
                                 updateKeys |= (filt.isInInterface(group)? group.filters.add(filt): group.filters.remove(filt));
 
                 // порядки
@@ -663,7 +674,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 } else { // значит setOrders не изменился
                     for(Entry<OrderView, Boolean> setOrder : group.getSetOrders().entrySet()) {
                         boolean isInInterface = group.orders.containsKey(setOrder.getKey());
-                        if(setOrder.getKey().classUpdated(group) && !(setOrder.getKey().isInInterface(group)==isInInterface)) {
+                        if((refresh || classUpdated(setOrder.getKey(),group)) && !(setOrder.getKey().isInInterface(group)==isInInterface)) {
                             isInInterface = !isInInterface;
                             updateKeys = true;
                         }
@@ -675,16 +686,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 if(!updateKeys) // изменились "верхние" объекты для фильтров
                     for(Filter filt : group.filters)
-                        if(filt.objectUpdated(group)) {updateKeys = true; break;}
+                        if(objectUpdated(filt,group)) {updateKeys = true; break;}
                 if(!updateKeys) // изменились "верхние" объекты для порядков
                     for(OrderView order : group.orders.keySet())
-                        if(order.objectUpdated(group)) { updateKeys = true; break;}
+                        if(objectUpdated(order,group)) { updateKeys = true; break;}
                 if(!updateKeys) // изменились данные по фильтрам
                     for(Filter filt : group.filters)
-                        if(filt.dataUpdated(changedProps)) {updateKeys = true; break;}
+                        if(dataUpdated(filt,changedProps)) {updateKeys = true; break;}
                 if(!updateKeys) // изменились данные по порядкам
                     for(OrderView order : group.orders.keySet())
-                        if(order.dataUpdated(changedProps)) {updateKeys = true; break;}
+                        if(dataUpdated(order,changedProps)) {updateKeys = true; break;}
                 if(!updateKeys) // классы удалились\добавились
                     for(ObjectImplement object : group.objects)
                         if(object.classChanged(changedClasses)) {updateKeys = true; break;}
@@ -808,38 +819,32 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
             for(PropertyView<?> drawProp : properties) {
 
-                boolean read = drawProp.view.dataUpdated(changedProps) ||
-                        drawProp.toDraw!=null && (drawProp.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
-
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
 
-                if(drawProp.view.mapping.isEmpty()) {
-                    inInterface = true;
-                    inGridInterface = false;
-                } else {
-                    if(drawProp.view.classUpdated(drawProp.toDraw)) {
-                        inGridInterface = drawProp.view.isInInterface(drawProp.toDraw);
-                        cacheInGridInterface.put(drawProp, inGridInterface);
-                    } else { // пусть будут assert
-                        inGridInterface = cacheInGridInterface.get(drawProp);
-                        assert inGridInterface==drawProp.view.isInInterface(drawProp.toDraw);
-                    }
-
-                    if(drawProp.toDraw==null)
-                        inInterface = inGridInterface;
-                    else
-                        if(drawProp.view.classUpdated(null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
-                            inInterface = drawProp.view.isInInterface(null);
-                            cacheInInterface.put(drawProp, inInterface);
-                        } else {
-                            inInterface = cacheInInterface.get(drawProp);
-                            assert inInterface==drawProp.view.isInInterface(null);
-                        }
+                if(refresh || classUpdated(drawProp.view,drawProp.toDraw)) {
+                    inGridInterface = drawProp.view.isInInterface(drawProp.toDraw);
+                    cacheInGridInterface.put(drawProp, inGridInterface);
+                } else { // пусть будут assert
+                    inGridInterface = cacheInGridInterface.get(drawProp);
+                    assert inGridInterface==drawProp.view.isInInterface(drawProp.toDraw);
                 }
 
-                if(inGridInterface && drawProp.toDraw.gridClassView) { // в grid'е
-                    if(read || drawProp.view.objectUpdated(drawProp.toDraw)) {
+                if(drawProp.toDraw==null)
+                    inInterface = inGridInterface;
+                else
+                    if(refresh || classUpdated(drawProp.view,null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
+                        inInterface = drawProp.view.isInInterface(null);
+                        cacheInInterface.put(drawProp, inInterface);
+                    } else {
+                        inInterface = cacheInInterface.get(drawProp);
+                        assert inInterface==drawProp.view.isInInterface(null);
+                    }
+
+                boolean read = refresh || dataUpdated(drawProp.view,changedProps) ||
+                        drawProp.toDraw!=null && (drawProp.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
+                if(inGridInterface && drawProp.toDraw!=null && drawProp.toDraw.gridClassView) { // в grid'е
+                    if(read || objectUpdated(drawProp.view,drawProp.toDraw)) {
                         Collection<PropertyView> propList = groupProps.get(drawProp.toDraw);
                         if(propList==null) {
                             propList = new ArrayList<PropertyView>();
@@ -850,7 +855,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                     }
                 } else
                 if(inInterface) { // в панели
-                    if(read || drawProp.view.objectUpdated(null)) {
+                    if(read || objectUpdated(drawProp.view,null)) {
                         panelProps.add(drawProp);
                         isDrawed.add(drawProp);
                     }
@@ -915,6 +920,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 object.updated = 0;
             group.updated = 0;
         }
+        refresh = false;
         dataChanged = false;
 
 //        result.out(this);

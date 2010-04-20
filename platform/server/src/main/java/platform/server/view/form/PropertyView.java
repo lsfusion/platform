@@ -15,10 +15,6 @@ public class PropertyView<P extends PropertyInterface> extends CellView {
         this.toDraw = toDraw;
     }
 
-    public PropertyView(int ID, String sID, PropertyObjectImplement<P> view) {
-        this(ID,sID,view,view.getApplyObject());
-    }
-
     public String toString() {
         return view.toString();
     }

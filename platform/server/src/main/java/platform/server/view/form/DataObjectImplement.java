@@ -58,7 +58,7 @@ public class DataObjectImplement extends ObjectImplement {
     }
 
     public boolean classUpdated(GroupObjectImplement classGroup) {
-        return (updated & ObjectImplement.UPDATED_GRIDCLASS)!=0; // по сути нужен чисто для инициализации и refresh'а 
+        return false; 
     }
     public boolean isInInterface(GroupObjectImplement group) {
         return true;

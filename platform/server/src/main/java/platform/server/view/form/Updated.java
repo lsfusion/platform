@@ -12,6 +12,7 @@ public interface Updated {
     // изменилось что-то использующее в getExpr конкретные value (один из верхних объектов)
     boolean objectUpdated(GroupObjectImplement classGroup);
     boolean dataUpdated(Collection<Property> changedProps);
+    
     void fillProperties(Set<Property> properties);
 
     boolean isInInterface(GroupObjectImplement classGroup);
