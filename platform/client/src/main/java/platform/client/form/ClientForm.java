@@ -419,7 +419,8 @@ public class ClientForm extends JPanel {
 
     public void changeProperty(ClientCellView property, Object value) throws IOException {
 
-        SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
+        if (property.getGroupObject() != null) // для глобальных свойств пока не может быть отложенных действий
+            SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
 
         if (property instanceof ClientPropertyView) {
 
