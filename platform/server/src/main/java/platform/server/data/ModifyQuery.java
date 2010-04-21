@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class ModifyQuery {
     public Table table;
-    Query<KeyField, PropertyField> change;
+    private Query<KeyField, PropertyField> change;
 
     public ModifyQuery(Table table, Query<KeyField, PropertyField> change) {
         this.table = table;

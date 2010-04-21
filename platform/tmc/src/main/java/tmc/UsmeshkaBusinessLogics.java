@@ -334,8 +334,6 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         LP currentWarehouseDiscount = addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
         LP currentPrice = addJProp(priceGroup, "Необх. цена", multiplyDouble2, currentRRP, 1, currentPriceRate);
 
-        LP currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
-
         // простые акции
         LP actionFrom = addDProp(baseGroup, "actionFrom", "От", DateClass.instance, action);
         LP actionTo = addDProp(baseGroup, "actionTo", "До", DateClass.instance, action);
@@ -351,8 +349,8 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
                 addJProp(and1, currentWarehouseDiscount, is(warehouse), 1),
                 addJProp(currentFormatDiscount, shopFormat, 1));
 
-        LP requiredStorePrice = addJProp(priceGroup, "Необх. цена", removePercent,
-                addJProp(removePercent, currentPrice, 1, articleDiscount, 1), 2, currentStoreDiscount, 1);
+        LP actionPrice = addJProp(priceGroup, "Акц. цена", removePercent, currentPrice, 1, articleDiscount, 1);
+        LP requiredStorePrice = addJProp(priceGroup, "Необх. цена", removePercent, actionPrice, 2, currentStoreDiscount, 1);
 
         balanceFormatFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
 
@@ -371,7 +369,6 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         shopPrice.setDerivedChange(requiredStorePrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
 
         currentShopPrice = addJProp(priceGroup, "currentStorePrice", "Цена на складе (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
-        addJProp(documentPriceGroup, "Цена (расх.)", currentShopPrice, outStore, 1, 2);
 
         LP outOfDatePrice = addJProp(and1, articleBalanceSklCommitedQuantity, 1, 2, addJProp(diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
         documentRevalued.setDerivedChange(outOfDatePrice, priceStore, 1, 2);
@@ -427,11 +424,13 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         documentLogisticsSupplied = addJProp(documentLogisticsGroup, "Поставляется", equals2, outSubject, 1, addJProp(articleStoreSupplier, incStore, 1, 2), 1, 2);
         documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
 
-        LP orderSalePrice = addDProp(baseGroup, "orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
-        orderSalePrice.setDerivedChange(saleStorePrice, outStore, 1, 2);
+        LP orderSalePrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
+        orderSalePrice.setDerivedChange(saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2);
+        addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSalePrice);
 
-        LP orderDeliveryPrice = addDProp(baseGroup, "orderDeliveryPrice", "Цена закуп.", DoubleClass.instance, orderDelivery, article);
-        orderDeliveryPrice.setDerivedChange(articleSupplierPrice, 2, is(orderDelivery), 1);
+        LP orderDeliveryPrice = addDProp("orderDeliveryPrice", "Цена закуп.", DoubleClass.instance, orderDelivery, article);
+        orderDeliveryPrice.setDerivedChange(articleSupplierPrice, 2, articleQuantity, 1, 2);
+        addSUProp(documentPriceGroup, "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), orderDeliveryPrice);
     }
 
     private LP addSupplierProperty(LP property) {
@@ -591,6 +590,9 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             NavigatorForm nds = new DocumentNDSNavigatorForm(tax, true, 5800);
                 new DocumentNDSNavigatorForm(nds, false, 5850);
 
+        NavigatorElement actions = new NavigatorElement(baseElement, 7400, "Управление акциями");
+            NavigatorForm saleAction = new ActionNavigatorForm(actions, 7800);
+
         NavigatorElement balance = new NavigatorElement(baseElement, 1500, "Управление хранением");
             NavigatorForm balanceCheck = new BalanceCheckNavigatorForm(balance, 1350, true);
                 new BalanceCheckNavigatorForm(balanceCheck, 1375, false);
@@ -634,7 +636,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     private abstract class ArticleNavigatorForm extends DocumentNavigatorForm {
         final ObjectNavigator objArt;
 
-        protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
+        protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
             super(parent, ID, documentClass, toAdd);
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
@@ -644,9 +646,13 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   getDocumentArticleFilter(),
                                   "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd || filled);
             fillExtraFilters(filterGroup, toAdd);
             addRegularFilterGroup(filterGroup);
+        }
+
+        protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
+            this(parent, ID, documentClass, toAdd, false);
         }
 
         protected abstract FilterNavigator getDocumentArticleFilter();
@@ -903,7 +909,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         }
 
         protected DocumentRevalueNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, documentRevalue, toAdd);
+            super(parent, ID, documentRevalue, toAdd, true);
         }
     }
 
@@ -956,6 +962,17 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
             addPropertyView(objDoc, objArt, properties, articleQuantity, shopPrice, prevPrice, revalBalance);
 
             addFixedFilter(new CompareFilterNavigator(getPropertyView(shopPrice.property).view, Compare.NOT_EQUALS, getPropertyView(prevPrice.property).view));
+        }
+    }
+
+    private class ActionNavigatorForm extends NavigatorForm {
+        protected ActionNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, "Распродажи");
+
+            ObjectNavigator objAction = addSingleGroupObjectImplement(action, "Акция", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
+
+            addPropertyView(objAction, objArt, properties, allGroup, true);
         }
     }
 

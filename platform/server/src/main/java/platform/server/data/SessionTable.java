@@ -36,6 +36,7 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
     // конструктор добавления записей
     protected SessionTable(String name, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
         super(name,classes,propertyClasses);
+//        assert !(rows==null && keys.size()==0);
         this.rows = rows;
     }
 

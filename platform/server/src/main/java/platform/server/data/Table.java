@@ -39,6 +39,10 @@ public class Table implements MapKeysInterface<KeyField> {
     public final Collection<KeyField> keys = new ArrayList<KeyField>();
     public final Collection<PropertyField> properties = new ArrayList<PropertyField>();
 
+    public boolean isSingle() {
+        return keys.size()==0;
+    }
+
     public Map<KeyField, KeyExpr> getMapKeys() {
         Map<KeyField,KeyExpr> result = new HashMap<KeyField, KeyExpr>();
         for(KeyField key : keys)
@@ -247,10 +251,8 @@ public class Table implements MapKeysInterface<KeyField> {
         public class IsIn extends DataWhere implements JoinData {
 
             public String getFirstKey() {
-                if(keys.size()==0) {
-                    assert Table.this.name.equals("global");
-                    return "dumb";
-                }
+                if(isSingle())
+                    return "for where.getSource() в getFrom";
                 return keys.iterator().next().toString();
             }
 

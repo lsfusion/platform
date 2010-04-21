@@ -20,7 +20,7 @@ public interface SQLSyntax {
     String getCommandEnd();
 
     String getSessionTableName(String tableName);
-    String getCreateSessionTable(String tableName,String declareString,String constraintString);
+    String getCreateSessionTable(String tableName, String declareString);
     String getDropSessionTable(String tableName);
 
     // у SQL сервера что-то гдючит ISNULL (а значит скорее всего и COALESCE) когда в подзапросе просто число указывается

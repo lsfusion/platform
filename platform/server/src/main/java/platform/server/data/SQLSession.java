@@ -147,12 +147,11 @@ public class SQLSession {
             keyString = (keyString.length()==0?"":keyString+',') + key.name;
         }
         for(PropertyField prop : table.properties)
-            createString = createString+',' + prop.getDeclare(syntax);
+            createString = (createString.length()==0?"":createString+',') + prop.getDeclare(syntax);
 
-//        try { execute("DROP TABLE "+table.name +" CASCADE CONSTRAINTS"); } catch (SQLException e) {  e.getErrorCode(); }
-
-        // "CONSTRAINT PK_S_" + ID +"_T_" + table.name + "
-        execute(syntax.getCreateSessionTable(table.name,createString,"PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")"));
+        if(keyString.length()!=0)
+            createString = createString + ", PRIMARY KEY " + syntax.getClustered() + " (" + keyString + ")";
+        execute(syntax.getCreateSessionTable(table.name,createString));
     }
 
     public void dropTemporaryTable(SessionTable table) throws SQLException {
@@ -309,7 +308,11 @@ public class SQLSession {
 
     // сначала делает InsertSelect, затем UpdateRecords
     public int modifyRecords(ModifyQuery modify) throws SQLException {
-        executeDML(modify.getInsertLeftKeys(syntax));
+        if(modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
+            if(!isRecord(modify.table,new HashMap<KeyField, DataObject>()))
+                insertSelect(modify);
+        } else
+            executeDML(modify.getInsertLeftKeys(syntax));
         return updateRecords(modify);
     }
 
@@ -368,12 +371,12 @@ public class SQLSession {
     // вспомогательные методы
     public static String stringExpr(Map<String,String> keySelect,Map<String,String> propertySelect) {
         String expressionString = "";
-        for(Map.Entry<String,String> Key : keySelect.entrySet())
-            expressionString = (expressionString.length()==0?"":expressionString+",") + Key.getValue() + " AS " + Key.getKey();
-        if(keySelect.size()==0)
-            expressionString = "1 AS subkey";
-        for(Map.Entry<String,String> Property : propertySelect.entrySet())
-            expressionString = (expressionString.length()==0?"":expressionString+",") + Property.getValue() + " AS " + Property.getKey();
+        for(Map.Entry<String,String> key : keySelect.entrySet())
+            expressionString = (expressionString.length()==0?"":expressionString+",") + key.getValue() + " AS " + key.getKey();
+        for(Map.Entry<String,String> property : propertySelect.entrySet())
+            expressionString = (expressionString.length()==0?"":expressionString+",") + property.getValue() + " AS " + property.getKey();
+        if(expressionString.length()==0)
+            expressionString = "0";
         return expressionString;
     }
 

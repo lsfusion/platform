@@ -85,8 +85,8 @@ public abstract class DataAdapter implements SQLSyntax {
         return "";
     }
 
-    public String getCreateSessionTable(String tableName, String declareString, String constraintString) {
-        return "CREATE TEMPORARY TABLE "+ tableName +" ("+ declareString +","+ constraintString +")"; 
+    public String getCreateSessionTable(String tableName, String declareString) {
+        return "CREATE TEMPORARY TABLE "+ tableName +" ("+ declareString + ")"; 
     }
 
     public String getSessionTableName(String tableName) {

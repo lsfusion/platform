@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.Combinations;
 import platform.base.OrderedMap;
+import platform.base.DateConverter;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteObject;
@@ -82,6 +83,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP date;
 
     protected LP transactionLater;
+    protected LP currentDate;
 
     void initBase() {
         baseClass = new BaseClass(idShift(1), "Объект");
@@ -116,6 +118,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
+
+        currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
     }
 
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();
@@ -173,6 +177,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initAuthentication();
 
         synchronizeDB();
+
+        // запишем текущую дату
+        DataSession session = createSession(adapter);
+        session.changeProperty((DataProperty)currentDate.property, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance), false);
+        session.apply(this);
+        session.close();
     }
 
     final static Set<Integer> wereSuspicious = new HashSet<Integer>();

@@ -128,27 +128,23 @@ public class CompiledQuery<K,V> {
         for(ValueExpr mapValue : query.values)
             params.put(mapValue, "qwer" + (paramCount++) + "ffd");
 
+        keyReaders = new HashMap<K, Reader>();
+        for(Map.Entry<K,KeyExpr> key : query.mapKeys.entrySet())
+            keyReaders.put(key.getKey(),query.where.isFalse()?NullReader.instance:key.getValue().getType(query.where));
+        propertyReaders = new HashMap<V, Reader>();
+        for(Map.Entry<V,Expr> property : query.properties.entrySet())
+            propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
+
         // разделяем на JoinWhere
         Collection<InnerJoins.Entry> queryJoins = query.where.getInnerJoins().compileMeans();
 
-        keyReaders = new HashMap<K, Reader>();
-        propertyReaders = new HashMap<V, Reader>();
         if(queryJoins.size()==0) {
-            for(K key : query.mapKeys.keySet()) {
+            for(K key : query.mapKeys.keySet())
                 keySelect.put(key, SQLSyntax.NULL);
-                keyReaders.put(key, NullReader.instance);
-            }
-            for(V property : query.properties.keySet()) {
+            for(V property : query.properties.keySet())
                 propertySelect.put(property, SQLSyntax.NULL);
-                propertyReaders.put(property, NullReader.instance);
-            }
             from = "empty";
         } else {
-            for(Map.Entry<K,KeyExpr> key : query.mapKeys.entrySet())
-                keyReaders.put(key.getKey(),key.getValue().getType(query.where));
-            for(Map.Entry<V, Expr> property : query.properties.entrySet())
-                propertyReaders.put(property.getKey(),property.getValue().getReader(query.where));
-
             if(queryJoins.size()==1) { // "простой" запрос
                 InnerJoins.Entry innerJoin = queryJoins.iterator().next();
                 from = fillInnerSelect(query.mapKeys, innerJoin.mean, innerJoin.where, query.properties, keySelect, propertySelect, whereSelect, params, syntax);
@@ -212,7 +208,7 @@ public class CompiledQuery<K,V> {
                         and.properties.put(orderName, query.properties.get(order.getKey()));
                         orderFJ = (orderFJ.length()==0?"":orderFJ+",") + and.alias + "." + orderName;
                     }
-                    if(!(top==0)) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает 
+                    if(!(top==0)) // если все то не надо упорядочивать, потому как в частности MS SQL не поддерживает
                         orderAnds.put(orderName,order.getValue());
                     propertySelect.put(order.getKey(),"COALESCE("+orderFJ+")");
                 }

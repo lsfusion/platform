@@ -36,8 +36,8 @@ class OracleDataAdapter extends DataAdapter {
         return "oracle.jdbc.driver.OracleDriver";
     }
 
-    public String getCreateSessionTable(String tableName, String declareString, String constraintString) {
-        return "CREATE GLOBAL TEMPORARY TABLE "+ tableName +" ("+ declareString +","+ constraintString +") ON COMMIT PRESERVE ROWS";
+    public String getCreateSessionTable(String tableName, String declareString) {
+        return "CREATE GLOBAL TEMPORARY TABLE "+ tableName +" ("+ declareString + ") ON COMMIT PRESERVE ROWS";
     }
 
     public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {

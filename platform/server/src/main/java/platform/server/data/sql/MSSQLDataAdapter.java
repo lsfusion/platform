@@ -63,8 +63,8 @@ public class MSSQLDataAdapter extends DataAdapter {
             return "ISNULL("+ expr1 +","+ expr2 +")";
     }
 
-    public String getCreateSessionTable(String tableName, String declareString, String constraintString) {
-        return "CREATE TABLE #"+ tableName +" ("+ declareString +","+ constraintString +")";
+    public String getCreateSessionTable(String tableName, String declareString) {
+        return "CREATE TABLE #"+ tableName +" ("+ declareString + ")";
     }
 
     public String getSessionTableName(String tableName) {
