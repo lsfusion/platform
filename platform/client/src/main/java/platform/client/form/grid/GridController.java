@@ -61,7 +61,18 @@ public class GridController {
             }
         };
 
-        gridView = new GridView(logicsSupplier, form, findController.getView(), filterController.getView());
+        gridView = new GridView(logicsSupplier, form, findController.getView(), filterController.getView()) {
+
+            protected void needToBeShown() {
+                hidden = false;
+                showViews();
+            }
+
+            protected void needToBeHidden() {
+                hidden = true;
+                hideViews();
+            }
+        };
         gridTable = gridView.getTable();
 
     }
@@ -143,4 +154,13 @@ public class GridController {
         return gridTable.requestFocusInWindow();
     }
 
+    boolean hidden = false;
+    public void hideViews() {
+        gridView.setVisible(false);
+    }
+
+    public void showViews() {
+        if (!hidden)
+            gridView.setVisible(true);
+    }
 }

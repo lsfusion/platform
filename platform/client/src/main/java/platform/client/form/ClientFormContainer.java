@@ -26,6 +26,9 @@ class ClientFormContainer extends JPanel{
 
         setVisible(false);
 
+//      для тестирования расположения контейнеров
+//        setBackground(new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255)));
+
     }
 
     public void addComponent(Component comp, Object constraints) {

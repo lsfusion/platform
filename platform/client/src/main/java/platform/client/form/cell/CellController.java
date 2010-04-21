@@ -13,7 +13,7 @@ public class CellController {
         return key;
     }
 
-    private final CellView view;
+    protected final CellView view;
 
     // возвращаем только как компоненту, большего пока не надо
     public JComponent getView() {

@@ -20,6 +20,9 @@ class ObjectController {
     // управление классами
     public ClassController classController;
 
+    private JButton buttonAdd;
+    private JButton buttonDel;
+
     public ObjectController(ClientObjectImplementView iobject, ClientForm iform) throws IOException {
 
         object = iobject;
@@ -32,7 +35,7 @@ class ObjectController {
 
         if (classController.allowedEditObjects() && object.objectIDView.show && !form.isReadOnly()) {
 
-            JButton buttonAdd = new JButton("Добавить");
+            buttonAdd = new JButton("Добавить");
             buttonAdd.setFocusable(false);
             buttonAdd.addActionListener(new ActionListener() {
 
@@ -48,7 +51,7 @@ class ObjectController {
                 }
             });
 
-            JButton buttonDel = new JButton("Удалить");
+            buttonDel = new JButton("Удалить");
             buttonDel.setFocusable(false);
             buttonDel.addActionListener(new ActionListener() {
 
@@ -70,7 +73,10 @@ class ObjectController {
 
     }
 
+    Boolean classView;
     public void changeClassView(Boolean classView) {
+
+        this.classView = classView;
 
         if (classView) {
             if (classController != null)
@@ -83,4 +89,26 @@ class ObjectController {
 
     }
 
+    public void hideViews() {
+
+        classController.hideViews();
+
+        if (buttonAdd != null)
+            buttonAdd.setVisible(false);
+
+        if (buttonDel != null)
+            buttonDel.setVisible(false);
+    }
+
+    public void showViews() {
+
+        if (classView)
+            classController.showViews();
+
+        if (buttonAdd != null)
+            buttonAdd.setVisible(true);
+
+        if (buttonDel != null)
+            buttonDel.setVisible(true);
+    }
 }

@@ -10,6 +10,7 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
                                  implements Serializable {
 
     private Integer ID = 0;
+
     public Integer getID() {
         return ID;
     }
@@ -17,7 +18,8 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
     public Boolean fixedClassView = false;
 
     public ClientGridView gridView;
-    
+    public ClientShowTypeView showTypeView;
+
     @Override
     public boolean equals(Object o) {
         return this == o;
@@ -39,6 +41,7 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
             add(new ClientObjectImplementView(inStream,containers,this));
 
         gridView = new ClientGridView(inStream, containers);
+        showTypeView = new ClientShowTypeView(inStream, containers);
     }
 
     private static int lastID = 0;

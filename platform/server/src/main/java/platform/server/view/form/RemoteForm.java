@@ -189,7 +189,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         changeClassView(group, !group.gridClassView);
     }
 
-    private void changeClassView(GroupObjectImplement group,boolean show) {
+    public void changeClassView(GroupObjectImplement group,boolean show) {
 
         if(group.gridClassView == show) return;
         group.gridClassView = show;

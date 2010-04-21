@@ -6,7 +6,7 @@ import platform.client.form.ClientForm;
 import javax.swing.*;
 import java.awt.*;
 
-abstract class CellView extends JPanel {
+public abstract class CellView extends JPanel {
 
     private final JLabel label;
     private final CellTable table;
@@ -75,4 +75,5 @@ abstract class CellView extends JPanel {
     void setValue(Object ivalue) {
         table.setValue(ivalue);
     }
+
 }

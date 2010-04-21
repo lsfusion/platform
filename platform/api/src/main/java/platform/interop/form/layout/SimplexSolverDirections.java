@@ -6,7 +6,7 @@ import lpsolve.LpSolveException;
 import java.util.ArrayList;
 import java.util.List;
 
-class SimplexSolverDirections {
+public class SimplexSolverDirections {
 
     Integer L;
     Integer R;

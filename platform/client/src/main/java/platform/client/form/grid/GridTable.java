@@ -71,15 +71,15 @@ public abstract class GridTable extends ClientFormTable
         }
 
         if (gridColumns.size() != 0) {
-            neededToBeShown();
+            needToBeShown();
         } else {
-            neededToBeHidden();
+            needToBeHidden();
         }
 
     }
     
-    protected abstract void neededToBeShown();
-    protected abstract void neededToBeHidden();
+    protected abstract void needToBeShown();
+    protected abstract void needToBeHidden();
 
     private boolean fitWidth() {
 

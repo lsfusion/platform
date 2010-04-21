@@ -1,6 +1,6 @@
 package platform.client.form;
 
-import platform.interop.form.layout.SimplexLayout;
+import platform.client.form.SimplexLayout;
 import platform.client.logics.ClientContainerView;
 import platform.client.logics.ClientComponentView;
 

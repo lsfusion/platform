@@ -5,7 +5,7 @@ import lpsolve.LpSolveException;
 
 import java.awt.*;
 
-class IsInsideSimplexConstraint extends SingleSimplexConstraint {
+public class IsInsideSimplexConstraint extends SingleSimplexConstraint {
 
 
     public void fillConstraint(LpSolve solver, SimplexComponentInfo comp1, SimplexComponentInfo comp2, SimplexConstraints cons1, SimplexConstraints cons2, Component comp, Container cont) throws LpSolveException {

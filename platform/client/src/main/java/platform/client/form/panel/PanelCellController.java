@@ -23,4 +23,11 @@ public class PanelCellController extends CellController {
         return true;
     }
 
+    public void hideViews() {
+        view.setVisible(false);
+    }
+
+    public void showViews() {
+        view.setVisible(true);
+    }
 }

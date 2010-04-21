@@ -121,4 +121,17 @@ public abstract class PanelController {
 
     protected abstract void addGroupObjectActions(JComponent comp);
 
+    public void hideViews() {
+
+        for (ClientCellView property : controllers.keySet()) {
+            controllers.get(property).hideViews();
+        }
+    }
+
+    public void showViews() {
+
+        for (ClientCellView property : controllers.keySet()) {
+            controllers.get(property).showViews();
+        }
+    }
 }

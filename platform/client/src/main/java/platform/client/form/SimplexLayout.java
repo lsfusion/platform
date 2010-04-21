@@ -3,17 +3,20 @@
  * and open the template in the editor.
  */
 
-package platform.interop.form.layout;
+package platform.client.form;
 
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import platform.interop.form.layout.SimplexConstraints;
+import platform.interop.form.layout.SimplexComponentInfo;
+import platform.interop.form.layout.SingleSimplexConstraint;
+import platform.interop.form.layout.SimplexSolverDirections;
 
 /**
  *
@@ -28,7 +31,7 @@ public class SimplexLayout implements LayoutManager2 {
     Map<List<Component>,Map<Component, Rectangle>> cache = new HashMap<List<Component>, Map<Component, Rectangle>>();
 
     List<Component> allComponents = new ArrayList<Component>();
-    Map<Component,SimplexConstraints> constraints = new HashMap<Component, SimplexConstraints>();
+    Map<Component, SimplexConstraints> constraints = new HashMap<Component, SimplexConstraints>();
     
     private Container mainContainer;
     
@@ -82,12 +85,31 @@ public class SimplexLayout implements LayoutManager2 {
 
         components = new ArrayList<Component>();
         for (Component component : allComponents) {
-            if (component.isVisible())
+
+            boolean hasChild = hasNotContainerChild(component);
+
+            // таким образом прячем и показываем контейнеры в зависимости от необходимости
+            // если этого не делать, почему-то ничего не показывает - лень разбираться почему
+            if (component instanceof ClientFormContainer) component.setVisible(hasChild);
+
+            if (hasChild)
                 components.add(component);
         }
 
         return components.isEmpty();
+    }
 
+    private boolean hasNotContainerChild(Component component) {
+
+        if (! (component instanceof ClientFormContainer))
+            return component.isVisible();
+
+        ClientFormContainer container = (ClientFormContainer)component;
+        for (Component child : container.getComponents())
+            if (hasNotContainerChild(child))
+                return true;
+        
+        return false;
     }
 
     public void layoutContainer(final Container parent) {
@@ -102,9 +124,8 @@ public class SimplexLayout implements LayoutManager2 {
 
         if (parent.getSize().equals(oldDimension)) {
 
-            if (!hasChanged) return;
             Map<Component,Rectangle> cachedCoords = cache.get(components);
-            if (cachedCoords != null) {
+            if (cachedCoords != null && !hasChanged) {
                 for (Component comp : components)
                     comp.setBounds(cachedCoords.get(comp));
                 return;
@@ -159,7 +180,7 @@ public class SimplexLayout implements LayoutManager2 {
 //        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
     }
 
-    private Map<Component,SimplexComponentInfo> infos;
+    private Map<Component, SimplexComponentInfo> infos;
     private SimplexComponentInfo targetInfo;
     
     private void fillComponentVariables(LpSolve solver, Container parent) throws LpSolveException {
@@ -442,7 +463,7 @@ public class SimplexLayout implements LayoutManager2 {
     public void invalidateLayout(Container target) {
     }
 
-    
+
 }
 
 

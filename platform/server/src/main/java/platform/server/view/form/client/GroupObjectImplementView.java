@@ -22,6 +22,7 @@ public class GroupObjectImplementView extends ArrayList<ObjectImplementView> imp
     public Boolean fixedClassView = false;
 
     public GridView gridView = new GridView();
+    public ShowTypeView showTypeView = new ShowTypeView();
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(view.ID);
@@ -32,5 +33,6 @@ public class GroupObjectImplementView extends ArrayList<ObjectImplementView> imp
             object.serialize(outStream);
 
         gridView.serialize(outStream);
+        showTypeView.serialize(outStream);
     }
 }

@@ -60,6 +60,13 @@ public class DefaultFormView extends FormView {
 
             panelContainers.put(clientGroup, panelContainer);
 
+            ContainerView controlsContainer = addContainer(); // контейнер всех управляющих объектов
+            controlsContainer.container = groupContainer;
+            controlsContainer.constraints.order = 2;
+            controlsContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
+            controlsContainer.constraints.insetsInside = new Insets(0,0,0,0);
+            controlsContainer.constraints.insetsSibling = new Insets(0,0,0,0);
+
             clientGroup.gridView.container = gridContainer;
             clientGroup.gridView.constraints.order = 1;
             clientGroup.gridView.constraints.fillVertical = 1;
@@ -79,8 +86,8 @@ public class DefaultFormView extends FormView {
                 clientObject.classView.constraints.fillHorizontal = 0.2;
 
                 ContainerView buttonContainer = addContainer(); // контейнер кнопок
-                buttonContainer.container = groupContainer;
-                buttonContainer.constraints.order = 2 + clientGroup.indexOf(clientObject);
+                buttonContainer.container = controlsContainer;
+                buttonContainer.constraints.order = clientGroup.indexOf(clientObject);
                 buttonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
                 buttonContainers.put(clientObject, buttonContainer);
@@ -98,6 +105,10 @@ public class DefaultFormView extends FormView {
 
                 order.add(clientObject);
             }
+
+            clientGroup.showTypeView.container = controlsContainer;
+            clientGroup.showTypeView.constraints.order = clientGroup.size();
+//            clientGroup.showTypeView.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
         }
 
         for (PropertyViewNavigator property : navigatorForm.propertyViews) {

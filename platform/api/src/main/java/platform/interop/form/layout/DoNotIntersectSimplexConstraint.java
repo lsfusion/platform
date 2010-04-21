@@ -3,14 +3,14 @@ package platform.interop.form.layout;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
-class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
+public class DoNotIntersectSimplexConstraint extends SingleSimplexConstraint {
 
     public final static int LEFT = 1;
     public final static int RIGHT = 2;
     public final static int TOP = 4;
     public final static int BOTTOM = 8;
 
-    int forbDir;
+    public int forbDir;
 
     public DoNotIntersectSimplexConstraint () {
         forbDir = 0;

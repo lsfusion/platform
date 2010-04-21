@@ -1,10 +1,10 @@
 package platform.interop.form.layout;
 
-class SimplexComponentInfo {
+public class SimplexComponentInfo {
 
-    int T;
-    int L;
-    int B;
-    int R;
+    public int T;
+    public int L;
+    public int B;
+    public int R;
 
 }

@@ -34,6 +34,8 @@ public interface RemoteFormInterface extends Remote {
 
     void switchClassView(int groupID) throws RemoteException;
 
+    void changeClassView(int groupID, boolean show) throws RemoteException;
+
     void changePropertyOrder(int propertyID, byte modiType) throws RemoteException;
 
     void changeObjectOrder(int propertyID, byte modiType) throws RemoteException;

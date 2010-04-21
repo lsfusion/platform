@@ -7,7 +7,7 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import javax.swing.*;
 import java.awt.*;
 
-public class GridView extends JPanel {
+public abstract class GridView extends JPanel {
 
     final JPanel queriesContainer;
 
@@ -25,12 +25,12 @@ public class GridView extends JPanel {
 
         gridTable = new GridTable(logicsSupplier, form) {
 
-            protected void neededToBeShown() {
-                GridView.this.setVisible(true);
+            protected void needToBeShown() {
+                GridView.this.needToBeShown();
             }
 
-            protected void neededToBeHidden() {
-                GridView.this.setVisible(false);
+            protected void needToBeHidden() {
+                GridView.this.needToBeHidden();
             }
         };
 
@@ -65,4 +65,7 @@ public class GridView extends JPanel {
         filterView.addActions(gridTable);
 
     }
+
+    protected abstract void needToBeShown();
+    protected abstract void needToBeHidden();
 }

@@ -147,6 +147,7 @@ public class ClientForm extends JPanel {
     }
 
     private void initializeRegularFilters() {
+
         InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap am = getActionMap();
 
@@ -251,8 +252,7 @@ public class ClientForm extends JPanel {
             }
         });
 
-        JButton buttonRefresh = new JButton("Обновить");
-        buttonRefresh.addActionListener(new ActionListener() {
+        AbstractAction refreshAction = new AbstractAction("Обновить") {
 
             public void actionPerformed(ActionEvent ae) {
                 try {
@@ -261,7 +261,13 @@ public class ClientForm extends JPanel {
                     throw new RuntimeException("Ошибка при обновлении формы", e);
                 }
             }
-        });
+        };
+
+        KeyStroke keyF5 = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
+        im.put(keyF5, "refreshPressed");
+        am.put("refreshPressed", refreshAction);
+
+        JButton buttonRefresh = new JButton(refreshAction);
 
         buttonApply = new JButton("Применить");
         buttonApply.addActionListener(new ActionListener() {
@@ -483,6 +489,19 @@ public class ClientForm extends JPanel {
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
         remoteForm.switchClassView(groupObject.getID());
+
+        applyFormChanges();
+
+        return true;
+    }
+
+    public boolean changeClassView(ClientGroupObjectImplementView groupObject, boolean show) throws IOException {
+
+        if(groupObject.fixedClassView) return false;
+
+        SwingUtils.stopSingleAction(groupObject.getActionID(), true);
+
+        remoteForm.changeClassView(groupObject.getID(), show);
 
         applyFormChanges();
 

@@ -5,6 +5,7 @@ import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.panel.PanelController;
 import platform.client.form.grid.GridController;
+import platform.client.form.showtype.ShowTypeController;
 import platform.interop.Order;
 
 import javax.swing.*;
@@ -24,6 +25,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     private final PanelController panel;
     private GridController grid;
+    private ShowTypeController showType;
     private final Map<ClientObjectImplementView, ObjectController> objects = new HashMap<ClientObjectImplementView, ObjectController>();
 
     private ClientGroupObjectValue currentObject;
@@ -35,6 +37,13 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         groupObject = igroupObject;
         logicsSupplier = ilogicsSupplier; 
         form = iform;
+
+        panel = new PanelController(this, form, formLayout) {
+
+            protected void addGroupObjectActions(JComponent comp) {
+                GroupObjectController.this.addGroupObjectActions(comp);
+            }
+        };
 
         if (groupObject != null) {
 
@@ -49,14 +58,57 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                 objects.put(object, new ObjectController(object, form));
                 objects.get(object).addView(formLayout);
             }
+
+            showType = new ShowTypeController(groupObject.showTypeView, this, form) {
+
+                protected void needToBeShown() {
+                    GroupObjectController.this.showViews();
+                }
+
+                protected void needToBeHidden() {
+                    GroupObjectController.this.hideViews();
+                }
+            };
+
+            showType.setFixedClassView(groupObject.fixedClassView);
+
+            showType.addView(formLayout);
         }
 
-        panel = new PanelController(this, form, formLayout) {
-            protected void addGroupObjectActions(JComponent comp) {
-                GroupObjectController.this.addGroupObjectActions(comp);
-            }
-        };
+    }
 
+    private void hideViews() {
+
+        panel.hideViews();
+
+        if (grid != null)
+            grid.hideViews();
+
+        if (groupObject != null)
+            for (ClientObjectImplementView object : groupObject)
+                objects.get(object).hideViews();
+
+        if (showType != null)
+            showType.hideViews();
+
+        form.validate();
+    }
+
+    private void showViews() {
+
+        panel.showViews();
+
+        if (grid != null)
+            grid.showViews();
+
+        if (groupObject != null)
+            for (ClientObjectImplementView object : groupObject)
+                objects.get(object).showViews();
+
+        if (showType != null)
+            showType.showViews();
+
+        form.validate();
     }
 
     public void setClassView(Boolean setClassView) {
@@ -87,6 +139,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                 objects.get(object).changeClassView(classView);
             }
 
+            if (showType != null)
+                showType.changeClassView(classView);
         }
 
     }
