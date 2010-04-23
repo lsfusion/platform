@@ -57,7 +57,7 @@ public class NumericClass extends IntegralClass<Double> {
         return ((Number) value).doubleValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setDouble(num, (Double)value);
     }
 
@@ -77,7 +77,8 @@ public class NumericClass extends IntegralClass<Double> {
         return numeric;
     }
 
-    public int getBinaryLength() {
-        return length * 2;
+    @Override
+    public int getBinaryLength(boolean charBinary) {
+        return length * (charBinary?1:2);
     }
 }

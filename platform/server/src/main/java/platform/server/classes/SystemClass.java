@@ -56,7 +56,7 @@ public class SystemClass extends DataClass<Integer> {
         return ((Number)value).intValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, (Integer)value);
     }
 
@@ -68,7 +68,7 @@ public class SystemClass extends DataClass<Integer> {
         return value.toString();
     }
 
-    public int getBinaryLength() {
+    public int getBinaryLength(boolean charBinary) {
         throw new RuntimeException("not supported yet");
     }
 }

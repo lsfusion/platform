@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.MSSQLDataAdapter;
+import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.Union;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.linear.LP;
@@ -26,9 +27,9 @@ import platform.interop.Compare;
 import javax.swing.*;
 
 
-public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogics> {
+public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
-    public UsmeshkaBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+    public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
     }
 
@@ -36,9 +37,9 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
 
         System.out.println("Server is starting...");
-//        DataAdapter adapter = new PostgreDataAdapter("usmeshka","localhost","postgres","11111");
-        DataAdapter adapter = new MSSQLDataAdapter("usmeshka2","ME2-ПК","sa","11111");
-        UsmeshkaBusinessLogics BL = new UsmeshkaBusinessLogics(adapter,7652);
+        DataAdapter adapter = new PostgreDataAdapter("ved","localhost","postgres","11111");
+//        DataAdapter adapter = new MSSQLDataAdapter("ved2","ME2-ПК","sa","11111");
+        VEDBusinessLogics BL = new VEDBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
 //        BL.fillData();
@@ -392,8 +393,10 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
         // блок с логистикой\управленческими характеристиками
 
         // текущая схема
-        articleSupplier = addDProp(logisticsGroup, "articleSupplier", "Поставщик товара", supplier, article);
-        LP shopWarehouse = addDProp(logisticsGroup, "storeWarehouse", "Распред. центр", warehouse, shop);
+        articleSupplier = addDProp("articleSupplier", "Поставщик товара", supplier, article);
+        addJProp(logisticsGroup, "Поставщик товара", name, articleSupplier, 1);
+        LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop);
+        addJProp(logisticsGroup, "Распред. центр", name, shopWarehouse, 1);
         LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
         LP supplierCycle = addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
         LP shopCycle = addDProp(logisticsGroup, "shopCycle", "Цикл распределения", DoubleClass.instance, shop);
@@ -872,7 +875,7 @@ public class UsmeshkaBusinessLogics extends BusinessLogics<UsmeshkaBusinessLogic
 
             addPropertyView(objSupplier, objArt, properties, allGroup, true);
 
-            addFixedFilter(new CompareFilterNavigator(getPropertyView(articleSupplier.property).view,Compare.EQUALS,objSupplier));
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(articleSupplier,objArt),Compare.EQUALS,objSupplier));
         }
     }
 

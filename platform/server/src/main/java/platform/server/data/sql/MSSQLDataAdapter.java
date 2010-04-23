@@ -86,7 +86,7 @@ public class MSSQLDataAdapter extends DataAdapter {
     public String getUnionOrder(String union, String orderBy, String top) {
         if(top.length()==0)
             return union + BaseUtils.clause("ORDER BY", orderBy);
-        return "SELECT" + BaseUtils.clause("TOP", top) + " * FROM (" + union + ")" + BaseUtils.clause("ORDER BY", orderBy);
+        return "SELECT" + BaseUtils.clause("TOP", top) + " * FROM (" + union + ") UALIAS" + BaseUtils.clause("ORDER BY", orderBy);
     }
 
     @Override

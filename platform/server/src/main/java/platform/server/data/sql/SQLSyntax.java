@@ -47,12 +47,15 @@ public interface SQLSyntax {
 
     String getTextType();
 
+    String getBinaryConcatenate();
+    boolean isBinaryString();
     String getBinaryType(int length);
 
     String getByteArrayType();
 
     String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);
 
+    boolean nullUnionTrouble();
     String getUnionOrder(String union,String orderBy, String top);
 
     String getOrderDirection(boolean order);

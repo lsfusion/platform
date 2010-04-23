@@ -233,7 +233,7 @@ public class DerivedProperty {
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createOProp(String sID, String caption, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         assert orders.size()>0;
 
-        if(false) {
+        if(true) {
             OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, property, partitions, orders, includeLast);
             return new PropertyMapImplement<OrderProperty.Interface<T>,T>(orderProperty,orderProperty.getMapInterfaces());
         }

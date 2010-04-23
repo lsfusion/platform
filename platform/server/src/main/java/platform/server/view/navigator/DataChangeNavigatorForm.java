@@ -17,7 +17,7 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
     final GroupObjectNavigator valueGroup;
 
     public <P extends PropertyInterface> DataChangeNavigatorForm(T BL, PropertyValueImplement<P> implement, CustomClass changeClass) {
-        super(54555+implement.getID(), implement.toString());
+        super(54555 + implement.getID() * 33 + changeClass.ID, implement.toString()); // changeClass тоже надо чтобы propertyView те же были
 
 /*        // добавляем элементы для которых меняем на форму
         interfaceGroup = new GroupObjectNavigator(IDShift(1));

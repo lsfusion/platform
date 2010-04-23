@@ -6,6 +6,7 @@ import platform.server.data.query.Query;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.SQLSession;
+import platform.server.data.type.NullReader;
 import platform.server.data.where.Where;
 
 import java.util.ArrayList;
@@ -109,6 +110,27 @@ public class ModifyQuery {
         return (new ModifyQuery(table,leftKeysQuery)).getInsertSelect(syntax);
     }
 
+    private static String getInsertCastSelect(CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {
+        if(changeCompile.unionAll && syntax.nullUnionTrouble()) {
+            String alias = "castalias";
+            String exprs = "";
+            boolean casted = false;
+            for(KeyField keyField : changeCompile.keyOrder)
+                exprs = (exprs.length()==0?"":exprs+",") + alias + "." + changeCompile.keyNames.get(keyField);
+            for(PropertyField propertyField : changeCompile.propertyOrder) {
+                String propertyExpr = alias + "." + changeCompile.propertyNames.get(propertyField);
+                if(changeCompile.propertyReaders.get(propertyField) instanceof NullReader) { // если null, вставляем явный cast
+                    propertyExpr = "CAST(" + propertyExpr + " AS " + propertyField.type.getDB(syntax) + ")";
+                    casted = true;
+                }
+                exprs = (exprs.length()==0?"":exprs+",") + propertyExpr;
+            }
+            if(casted)
+                return "SELECT " + exprs + " FROM (" + changeCompile.select + ") " + alias; 
+        }
+        return changeCompile.select;
+    }
+
     public SQLExecute getInsertSelect(SQLSyntax syntax) {
 
         CompiledQuery<KeyField, PropertyField> changeCompile = change.compile(syntax);
@@ -119,6 +141,6 @@ public class ModifyQuery {
         for(PropertyField propertyField : changeCompile.propertyOrder)
             insertString = (insertString.length()==0?"":insertString+",") + propertyField.name;
 
-        return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") " + changeCompile.select,changeCompile.getQueryParams());
+        return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams());
     }
 }

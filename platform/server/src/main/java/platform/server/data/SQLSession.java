@@ -340,7 +340,7 @@ public class SQLSession {
             for(int p=0;p<params.length;p++) {
                 if(BaseUtils.startsWith(toparse,i,params[p])) { // нашли
                     if(values[p].isString()) { // если можно вручную пропарсить парсим
-                        parsedString = parsedString + new String(parsed,0,num) + values[p].getString(syntax);
+                        parsedString = parsedString + new String(parsed,0,num) + values[p].getString(this.syntax);
                         parsed = new char[toparse.length-i]; num = 0;
                     } else {
                         parsed[num++] = '?';
@@ -363,7 +363,7 @@ public class SQLSession {
         PreparedStatement statement = connection.prepareStatement(parsedString);
         paramNum = 1;
         for(TypeObject param : preparedParams)
-            param.writeParam(statement,paramNum++);
+            param.writeParam(statement,paramNum++,syntax);
 
         return statement;
     }
@@ -382,10 +382,14 @@ public class SQLSession {
 
     public static <T> OrderedMap<String,String> mapNames(Map<T,String> exprs,Map<T,String> names, List<T> order) {
         OrderedMap<String,String> result = new OrderedMap<String, String>();
-        for(Map.Entry<T,String> name : names.entrySet()) {
-            result.put(name.getValue(),exprs.get(name.getKey()));
-            order.add(name.getKey());
-        }
+        if(order.isEmpty())
+            for(Map.Entry<T,String> name : names.entrySet()) {
+                result.put(name.getValue(),exprs.get(name.getKey()));
+                order.add(name.getKey());
+            }
+        else // для union all
+            for(T expr : order)
+                result.put(names.get(expr), exprs.get(expr));
         return result;
     }
 }

@@ -43,11 +43,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         return ((Number)value).intValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, (Integer)value);
-    }
-
-    public int getBinaryLength() {
-        return 8;
     }
 }

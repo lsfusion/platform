@@ -1,6 +1,7 @@
 package platform.server.data.type;
 
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
@@ -30,7 +31,7 @@ public class TypeObject {
         return type.getString(object, syntax);
     }
 
-    public void writeParam(PreparedStatement statement,int paramNum) throws SQLException {
-        type.writeParam(statement, paramNum, object);
+    public void writeParam(PreparedStatement statement, int paramNum, SQLSyntax syntax) throws SQLException {
+        type.writeParam(statement, paramNum, object, syntax);
     }
 }

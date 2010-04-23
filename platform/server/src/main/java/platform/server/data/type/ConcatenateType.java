@@ -32,7 +32,7 @@ public class ConcatenateType implements Type<byte[]> {
     }
 
     public String getDB(SQLSyntax syntax) {
-        return syntax.getBinaryType(getBinaryLength());
+        return syntax.getBinaryType(getBinaryLength(syntax.isBinaryString()));
     }
 
     public boolean isSafeString(Object value) {
@@ -43,8 +43,18 @@ public class ConcatenateType implements Type<byte[]> {
         return value.toString();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
-         statement.setBytes(num,(byte[])value);
+    public byte[] read(Object value) {
+        if(value instanceof String)
+            return ((String)value).getBytes();
+        else
+            return (byte[])value;
+    }
+    
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
+         if(syntax.isBinaryString())
+            statement.setString(num,new String((byte[])value));
+         else
+            statement.setBytes(num,(byte[])value);
     }
 
     public DataObject getEmptyValueExpr() {
@@ -82,10 +92,6 @@ public class ConcatenateType implements Type<byte[]> {
         return true;
     }
 
-    public byte[] read(Object value) {
-        return (byte[])value;
-    }
-
     private ConcreteClass createConcrete(ConcreteClass[] classes) {
         return new ConcatenateClassSet(classes);
     }
@@ -93,9 +99,18 @@ public class ConcatenateType implements Type<byte[]> {
     public ConcreteClass getDataClass(Object value, SQLSession session, BaseClass baseClass) throws SQLException {
         byte[] byteValue = read(value);
 
+        int offset = 0;
         ConcreteClass[] classes = new ConcreteClass[types.length];
-        for(int i=0;i<types.length;i++)
-            classes[i] = types[i].getBinaryClass(Arrays.copyOfRange(byteValue,i,types[i].getBinaryLength()),session,baseClass);
+        for(int i=0;i<types.length;i++) {
+            int blength = types[i].getBinaryLength(session.syntax.isBinaryString());
+            byte[] typeValue;
+            if(session.syntax.isBinaryString())
+                typeValue = new String(byteValue).substring(offset,blength).getBytes();
+            else
+                typeValue = Arrays.copyOfRange(byteValue,offset,blength);
+            classes[i] = types[i].getBinaryClass(typeValue,session,baseClass);
+            offset += blength;
+        }
 
         return createConcrete(classes);
     }
@@ -103,8 +118,13 @@ public class ConcatenateType implements Type<byte[]> {
     public String getConcatenateSource(List<String> exprs,SQLSyntax syntax) {
         // сначала property и extra объединяем в одну строку
         String source = "";
-        for(int i=0;i<types.length;i++)
-            source = (source.length()==0?"":source+"+") + "CAST(" + exprs.get(i) + " AS binary(" + types[i].getBinaryLength() + "))";
+        for(int i=0;i<types.length;i++) {
+            int typeLength = types[i].getBinaryLength(syntax.isBinaryString());
+            String castString = "CAST(" + exprs.get(i) + " AS " + syntax.getBinaryType(typeLength) + ")";
+            if(syntax.isBinaryString())
+                castString = "lpad(" + castString + "," + typeLength + ")"; 
+            source = (source.length() == 0 ? "" : source + syntax.getBinaryConcatenate()) + castString;
+        }
         return "(" + source + ")";
     }
 
@@ -112,9 +132,9 @@ public class ConcatenateType implements Type<byte[]> {
 
         int offset = 0;
         for(int i=0;i<part;i++)
-            offset += types[i].getBinaryLength();
+            offset += types[i].getBinaryLength(syntax.isBinaryString());
 
-        return "CAST(SUBSTRING(" + expr + "," + (offset + 1) + "," + types[part].getBinaryLength() + ") AS " + types[part].getDB(syntax) + ")";
+        return "CAST(SUBSTRING(" + expr + "," + (offset + 1) + "," + types[part].getBinaryLength(syntax.isBinaryString()) + ") AS " + types[part].getDB(syntax) + ")";
     }
 
     public void prepareClassesQuery(Expr expr, Query<?, Object> query, BaseClass baseClass) {
@@ -144,10 +164,10 @@ public class ConcatenateType implements Type<byte[]> {
         return new ListCombinations<AndClassSet>(classSets);
     }
 
-    public int getBinaryLength() {
+    public int getBinaryLength(boolean charBinary) {
         int length = 0;
         for(Type type : types)
-            length += type.getBinaryLength();
+            length += type.getBinaryLength(charBinary);
         return length;
     }
 

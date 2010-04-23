@@ -39,11 +39,7 @@ public class DoubleClass extends IntegralClass<Double> {
         return ((Number) value).doubleValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setDouble(num, (Double)value);
-    }
-
-    public int getBinaryLength() {
-        return 8;
     }
 }

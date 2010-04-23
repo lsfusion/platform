@@ -158,4 +158,8 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public List<AndClassSet> getUniversal(BaseClass baseClass) {
         return Collections.<AndClassSet>singletonList(this);
     }
+
+    public int getBinaryLength(boolean charBinary) {
+        return 8;
+    }
 }

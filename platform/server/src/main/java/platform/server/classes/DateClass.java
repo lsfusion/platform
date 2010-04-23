@@ -72,7 +72,7 @@ public class DateClass extends DataClass<Integer> {
         return ((Number)value).intValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, (Integer)value);
     }
 
@@ -82,9 +82,5 @@ public class DateClass extends DataClass<Integer> {
 
     public String getString(Object value, SQLSyntax syntax) {
         return value.toString();
-    }
-
-    public int getBinaryLength() {
-        return 8;
     }
 }

@@ -84,4 +84,27 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getOrderDirection(boolean descending) {
         return descending?"DESC NULLS LAST":"ASC NULLS FIRST";
     }
+
+    @Override
+    public boolean isBinaryString() {
+        return true;
+    }
+    @Override
+    public String getBinaryType(int length) {
+//        return "bit(" + length * 8 + ")";
+        return getStringType(length);
+    }
+    @Override
+    public String getBinaryConcatenate() {
+        return "||";
+    }
+
+    @Override
+    public boolean useFJ() {
+        return false;
+    }
+
+    public boolean nullUnionTrouble() {
+        return true;
+    }
 }

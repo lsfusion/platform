@@ -80,7 +80,7 @@ public class StringClass extends DataClass<String> {
         return (String) value;
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setString(num, (String)value);
     }
 
@@ -95,7 +95,8 @@ public class StringClass extends DataClass<String> {
         return string;
     }
 
-    public int getBinaryLength() {
-        return length * 2;
+    @Override
+    public int getBinaryLength(boolean charBinary) {
+        return length * (charBinary?1:2);
     }
 }

@@ -6,6 +6,7 @@ import platform.server.data.query.*;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.where.Where;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.caches.HashContext;
 
 import java.util.HashMap;
@@ -79,7 +80,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
             else
                 linearWhere = linearWhere.or(operand.getKey().getWhere());
         }
-        return "(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE NULL END)";
+        return "(CASE WHEN " + linearWhere.getSource(compile) + (orderWhere.size()==0?"":" OR "+BaseUtils.toString(orderWhere," OR ")) + " THEN " + (source.length()==0?"0":source) + " ELSE " + SQLSyntax.NULL + " END)";
     }
 
     public String toString() {

@@ -39,11 +39,7 @@ public class LongClass extends IntegralClass<Long> {
         return ((Number)value).longValue();
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setLong(num, (Long)value);
-    }
-
-    public int getBinaryLength() {
-        return 8;
     }
 }

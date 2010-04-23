@@ -21,7 +21,7 @@ public interface Type<T> extends Reader<T> {
     boolean isSafeString(Object value);
     String getString(Object value, SQLSyntax syntax);
 
-    void writeParam(PreparedStatement statement, int num, Object value) throws SQLException;
+    void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;
 
     DataObject getEmptyValueExpr();
 
@@ -37,6 +37,6 @@ public interface Type<T> extends Reader<T> {
 
     List<AndClassSet> getUniversal(BaseClass baseClass);
 
-    int getBinaryLength();
+    int getBinaryLength(boolean charBinary);
     ConcreteClass getBinaryClass(byte[] value, SQLSession session, BaseClass baseClass) throws SQLException;
 }

@@ -76,7 +76,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return syntax.getBitString(true);
     }
 
-    public void writeParam(PreparedStatement statement, int num, Object value) throws SQLException {
+    public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         assert (Boolean)value;
         statement.setByte(num, (byte)1);
     }
@@ -93,7 +93,8 @@ public class LogicalClass extends DataClass<Boolean> {
     }
   */
 
-    public int getBinaryLength() {
+    @Override
+    public int getBinaryLength(boolean charBinary) {
         return 1;
     }
 }

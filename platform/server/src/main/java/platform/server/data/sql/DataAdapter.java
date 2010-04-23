@@ -55,6 +55,9 @@ public abstract class DataAdapter implements SQLSyntax {
         return "text";
     }
 
+    public boolean isBinaryString() {
+        return false;
+    }
     public String getBinaryType(int length) {
         return "binary(" + length + ")";
     }
@@ -86,7 +89,7 @@ public abstract class DataAdapter implements SQLSyntax {
     }
 
     public String getCreateSessionTable(String tableName, String declareString) {
-        return "CREATE TEMPORARY TABLE "+ tableName +" ("+ declareString + ")"; 
+        return "CREATE TEMPORARY TABLE "+ tableName +" ("+ declareString + ")";
     }
 
     public String getSessionTableName(String tableName) {
@@ -107,5 +110,13 @@ public abstract class DataAdapter implements SQLSyntax {
 
     public String getOrderDirection(boolean descending) {
         return descending?"DESC":"ASC";
+    }
+
+    public String getBinaryConcatenate() {
+        return "+";
+    }
+
+    public boolean nullUnionTrouble() {
+        return false;
     }
 }
