@@ -231,10 +231,11 @@ public class SimplexLayout implements LayoutManager2 {
             solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.GE, min.height);
 
             //приходится убирать ограничение на макс. размер, если растягивается объект, иначе ни один растягиваться не будет
-            if (constraints.get(component).fillHorizontal == 0) {
+            // upd : вилимо можно и не убирать
+//            if (constraints.get(component).fillHorizontal == 0)
                 solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.R, info.L}, LpSolve.LE, max.width+1.0);
-            }
-            if (constraints.get(component).fillVertical == 0)
+
+//            if (constraints.get(component).fillVertical == 0)
                 solver.addConstraintex(2, new double[] {1, -1}, new int[] {info.B, info.T}, LpSolve.LE, max.height);
         }
         
@@ -461,6 +462,10 @@ public class SimplexLayout implements LayoutManager2 {
     }
 
     public void invalidateLayout(Container target) {
+
+        hasChanged = true;
+        oldDimension = null;
+        cache.clear();        
     }
 
 

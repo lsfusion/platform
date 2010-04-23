@@ -12,7 +12,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.*;
 import java.io.IOException;
 import java.awt.event.*;
-import java.awt.*;
 
 public class ClassController {
 
@@ -20,7 +19,7 @@ public class ClassController {
     private ClientClass rootClass;
 
     // компоненты для отображения
-    private JScrollPane pane;
+    private ClassContainer classContainer;
     private ClassTree view;
 
     // данные по объекту, класс которого обрабатывается
@@ -54,8 +53,22 @@ public class ClassController {
                 return form.getChildClasses(object, parentClass);
             }
         };
-        pane = new JScrollPane(view);
-        pane.setVisible(false); // по умолчанию компонент невидим
+
+        classContainer = new ClassContainer(view) {
+
+            protected void needToBeValidated() {
+                form.validate();
+            }
+
+            protected void widthDecreased() {
+                object.classView.constraints.fillHorizontal *= 0.95 ;
+            }
+
+            protected void widthIncreased() {
+                object.classView.constraints.fillHorizontal = 0.95 * object.classView.constraints.fillHorizontal + 0.05;
+            }
+        };
+        classContainer.setVisible(false); // по умолчанию компонент невидим
 
         // добавляем кнопку для изменения классов
         buttonChangeClass = new JButton("Изменить класс");
@@ -76,7 +89,7 @@ public class ClassController {
 
         });
 
-        formLayout.add(object.classView, pane);
+        formLayout.add(object.classView, classContainer);
         formLayout.add(object.changeClassView, buttonChangeClass);
     }
 
@@ -84,8 +97,8 @@ public class ClassController {
 
         if (rootClass.hasChilds()) {
 
-            if (pane != null)
-                pane.setVisible(true);
+            if (classContainer != null)
+                classContainer.setVisible(true);
 
             if (buttonChangeClass != null)
                 buttonChangeClass.setVisible(true);
@@ -94,8 +107,8 @@ public class ClassController {
 
     public void hideViews() {
 
-        if (pane != null)
-            pane.setVisible(false);
+        if (classContainer != null)
+            classContainer.setVisible(false);
 
         if (buttonChangeClass != null)
             buttonChangeClass.setVisible(false);
