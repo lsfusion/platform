@@ -39,6 +39,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         System.out.println("Server is starting...");
         DataAdapter adapter = new PostgreDataAdapter("ved","localhost","postgres","11111");
+        defaultSyntax = adapter;
 //        DataAdapter adapter = new MSSQLDataAdapter("ved2","ME2-ПК","sa","11111");
         VEDBusinessLogics BL = new VEDBusinessLogics(adapter,7652);
 
