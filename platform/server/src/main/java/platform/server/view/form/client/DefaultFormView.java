@@ -121,6 +121,7 @@ public class DefaultFormView extends FormView {
 
             PropertyCellView clientProperty = new PropertyCellView(property);
             clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
+            clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             properties.add(clientProperty);
 
