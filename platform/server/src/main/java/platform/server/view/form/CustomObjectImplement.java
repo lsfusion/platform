@@ -102,6 +102,10 @@ public class CustomObjectImplement extends ObjectImplement {
         return changedClasses.contains(gridClass);
     }
 
+    public boolean classUpdated() {
+        return (updated & ObjectImplement.UPDATED_CLASS)!=0; 
+    }
+
     public boolean classUpdated(GroupObjectImplement classGroup) {
         if(groupTo!=classGroup)
             return (updated & ObjectImplement.UPDATED_CLASS)!=0;

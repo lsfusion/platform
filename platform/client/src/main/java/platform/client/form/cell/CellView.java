@@ -13,7 +13,7 @@ public abstract class CellView extends JPanel {
 
     protected abstract ClientCellView getKey();
 
-    int getID() { return getKey().getID(); }
+    int getID() { return getKey().getID() + getKey().getShiftID(); }
 
     @Override
     public int hashCode() {

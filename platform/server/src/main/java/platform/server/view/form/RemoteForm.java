@@ -14,9 +14,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.type.TypeSerializer;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.DataClass;
+import platform.server.classes.*;
 import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
@@ -529,7 +527,18 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     // оболочка изменения group, чтобы отослать клиенту
     private void updateGroupObject(GroupObjectImplement group,FormChanges changes,Map<ObjectImplement,? extends ObjectValue> value) throws SQLException {
-        changes.objects.put(group,value);
+
+        Map<ObjectImplement,ConcreteValueClass> cls = new HashMap<ObjectImplement,ConcreteValueClass>();
+        for (ObjectImplement object : value.keySet()) {
+            ObjectValue objectValue = value.get(object);
+            if (objectValue instanceof DataObject) {
+                cls.put(object, (ConcreteValueClass)session.getCurrentClass((DataObject)objectValue));
+            } // если не DataObject, а null, то можно даже не кидать в результат ничего - нету смысла
+        }
+
+        changes.objects.put(group, value);
+        changes.classes.put(group, cls);
+
         changeGroupObject(group, value);
     }
 
@@ -698,7 +707,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                         if(dataUpdated(order,changedProps)) {updateKeys = true; break;}
                 if(!updateKeys) // классы удалились\добавились
                     for(ObjectImplement object : group.objects)
-                        if(object.classChanged(changedClasses)) {updateKeys = true; break;}
+                        if(object.classChanged(changedClasses) || object.classUpdated()) {updateKeys = true; break;}
 
                 Map<ObjectImplement, ObjectValue> currentObject = group.getGroupObjectValue();
                 Map<OrderView,ObjectValue> orderSeeks = null;
@@ -802,7 +811,20 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                         groupTables.put(group, insertTable.writeKeys(session, viewKeys));
 
-                        result.gridObjects.put(group, new ArrayList<Map<ObjectImplement, DataObject>>(group.keys.keySet()));
+                        List<Map<ObjectImplement, DataObject>> resultObjects = new ArrayList<Map<ObjectImplement, DataObject>>(group.keys.keySet());
+                        List<Map<ObjectImplement, ConcreteValueClass>> resultClasses = new ArrayList<Map<ObjectImplement, ConcreteValueClass>>();
+
+                        // заполняем классы полученных рядов
+                        for (Map<ObjectImplement, DataObject> row : resultObjects) {
+                            Map<ObjectImplement, ConcreteValueClass> rowClass = new HashMap<ObjectImplement, ConcreteValueClass>();
+                            for (ObjectImplement object : row.keySet()) {
+                                rowClass.put(object, (ConcreteValueClass)session.getCurrentClass(row.get(object)));
+                            }
+                            resultClasses.add(rowClass);
+                        }
+
+                        result.gridObjects.put(group, resultObjects);
+                        result.gridClasses.put(group, resultClasses);
 
                         // если есть в новых ключах старый ключ, то делаем его активным
                         if(keepObject && group.keys.containsKey(dataKeys(currentObject)))

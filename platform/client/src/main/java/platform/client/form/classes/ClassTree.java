@@ -8,10 +8,7 @@ import javax.swing.*;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.border.EtchedBorder;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.*;
 import java.io.IOException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,7 +16,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.*;
 
-abstract class ClassTree extends JTree {
+public abstract class ClassTree extends JTree {
 
     // текущие выбранные узлы в дереве
     private DefaultMutableTreeNode currentNode;
@@ -47,7 +44,7 @@ abstract class ClassTree extends JTree {
         return o instanceof ClassTree && ((ClassTree) o).ID == this.ID;
     }
 
-    ClassTree(int treeID, ClientClass rootClass) {
+    public ClassTree(int treeID, ClientClass rootClass) {
     
         ID = treeID;
 
@@ -78,12 +75,8 @@ abstract class ClassTree extends JTree {
 
             public void mouseReleased(MouseEvent me) {
                 if (me.getClickCount() == 2) {
-                    try {
-                        changeCurrentClass(getSelectedClass(), getSelectedNode());
-                        currentClassChanged();
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении текущего класса", e);
-                    }
+                    changeCurrentClass(getSelectedClass(), getSelectedNode());
+                    currentClassChanged();
                 }
             }
         });
@@ -92,11 +85,8 @@ abstract class ClassTree extends JTree {
 
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-                    try {
-                        currentClassChanged();
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении текущего класса", e);
-                    }
+                    changeCurrentClass(getSelectedClass(), getSelectedNode());
+                    currentClassChanged();
                 }
             }
         });
@@ -106,11 +96,15 @@ abstract class ClassTree extends JTree {
             expandPath(new TreePath(currentNode));
         }
 
+        // раскрываем все дерево
+        for (int i = 0; i < getRowCount(); i++)
+            expandRow(i);
+
         this.setSelectionRow(0);
 
     }
 
-    private void changeCurrentClass(ClientObjectClass cls, DefaultMutableTreeNode clsNode) throws IOException {
+    private void changeCurrentClass(ClientObjectClass cls, DefaultMutableTreeNode clsNode) {
 
         if (cls != null) {
 
@@ -125,7 +119,7 @@ abstract class ClassTree extends JTree {
         }
     }
 
-    protected abstract void currentClassChanged() throws IOException;
+    protected abstract void currentClassChanged();
 
     @Override
     public void updateUI() {
@@ -173,7 +167,7 @@ abstract class ClassTree extends JTree {
 
         ClientObjectClass parentClass = (ClientObjectClass) nodeObject;
 
-        java.util.List<ClientClass> classes = getChildClasses(parentClass);
+        java.util.List<ClientClass> classes = parentClass.getChildren();
 
         for (ClientClass cls : classes) {
 
@@ -189,8 +183,6 @@ abstract class ClassTree extends JTree {
         model.reload(parent);
     }
 
-    protected abstract java.util.List<ClientClass> getChildClasses(ClientObjectClass parentClass) throws IOException;
-
     DefaultMutableTreeNode getSelectedNode() {
 
         TreePath path = getSelectionPath();
@@ -199,7 +191,7 @@ abstract class ClassTree extends JTree {
         return (DefaultMutableTreeNode) path.getLastPathComponent();
     }
 
-    ClientObjectClass getSelectedClass() {
+    public ClientObjectClass getSelectedClass() {
 
         DefaultMutableTreeNode node = getSelectedNode();
         if (node == null) return null;
@@ -207,6 +199,26 @@ abstract class ClassTree extends JTree {
         Object nodeObject = node.getUserObject();
         if (! (nodeObject instanceof ClientClass)) return null;
         return (ClientObjectClass) nodeObject;
+    }
+
+    public boolean setSelectedClass(ClientObjectClass cls) {
+        return setNodeSelectedClass((DefaultMutableTreeNode) getModel().getRoot(), cls);
+    }
+
+    private boolean setNodeSelectedClass(DefaultMutableTreeNode node, ClientObjectClass cls) {
+
+        if (cls.equals(node.getUserObject())) {
+            setSelectionPath(new TreePath(node.getPath()));
+            changeCurrentClass(cls, node);
+            return true;
+        }
+
+        for (int i = 0; i < node.getChildCount(); i++) {
+            if (setNodeSelectedClass((DefaultMutableTreeNode)node.getChildAt(i), cls))
+                return true;
+        }
+
+        return false;
     }
 
 }

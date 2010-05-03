@@ -58,6 +58,7 @@ public abstract class ObjectImplement extends CellView implements PropertyObject
     public abstract void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException;
 
     public abstract boolean classChanged(Collection<CustomClass> changedClasses);
+    public abstract boolean classUpdated();
 
     public abstract Type getType();
 

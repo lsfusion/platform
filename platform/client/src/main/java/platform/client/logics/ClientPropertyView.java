@@ -20,6 +20,10 @@ public class ClientPropertyView extends ClientCellView {
         return ID;
     }
 
+    public int getShiftID() {
+        return 0;
+    }
+
     public ClientGroupObjectImplementView groupObject;
 
     public ClientPropertyView(DataInputStream inStream, Collection<ClientContainerView> containers, Collection<ClientGroupObjectImplementView> groups) throws IOException, ClassNotFoundException {

@@ -80,6 +80,16 @@ public class DefaultFormView extends FormView {
 
                 addComponent(clientGroup, clientObject, clientObject.view.baseClass.getParent());
 
+                order.add(clientObject);
+
+                clientObject.classCellView.container = panelContainer;
+                clientObject.classCellView.constraints.order = -500 + clientGroup.indexOf(clientObject);
+                clientObject.classCellView.constraints.insetsSibling = new Insets(0,0,2,2);
+
+                addComponent(clientGroup, clientObject.classCellView, clientObject.view.baseClass.getParent());
+
+                order.add(clientObject.classCellView);
+
                 clientObject.classView.container = gridContainer;
                 clientObject.classView.constraints.order = 0;
                 clientObject.classView.constraints.fillVertical = 1;
@@ -102,8 +112,6 @@ public class DefaultFormView extends FormView {
                 clientObject.changeClassView.constraints.order = 2;
 
                 mobjects.put(clientObject.view, clientObject);
-
-                order.add(clientObject);
             }
 
             clientGroup.showTypeView.container = controlsContainer;

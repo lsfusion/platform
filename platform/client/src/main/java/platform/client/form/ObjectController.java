@@ -33,7 +33,7 @@ class ObjectController {
 
     public void addView(ClientFormLayout formLayout) {
 
-        if (classController.allowedEditObjects() && object.objectIDView.show && !form.isReadOnly()) {
+        if (classController.allowedEditObjects() && object.objectCellView.show && !form.isReadOnly()) {
 
             buttonAdd = new JButton("Добавить");
             buttonAdd.setFocusable(false);

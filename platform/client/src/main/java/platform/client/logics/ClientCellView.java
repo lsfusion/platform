@@ -22,6 +22,7 @@ abstract public class ClientCellView extends ClientComponentView {
     ClientType baseType;
 
     public abstract int getID();
+    public abstract int getShiftID(); // нужен для того, чтобы CellView мог генерировать уникальный ID
     public abstract ClientGroupObjectImplementView getGroupObject();
 
     // диалог для получения возможных значений
@@ -106,5 +107,4 @@ abstract public class ClientCellView extends ClientComponentView {
     }
 
     public String toString() { return caption; }
-
 }

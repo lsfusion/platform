@@ -1,7 +1,6 @@
 package platform.client.form.classes;
 
 import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.ClientForm;
@@ -14,9 +13,6 @@ import java.io.IOException;
 import java.awt.event.*;
 
 public class ClassController {
-
-    // базовый класс для объекта
-    private ClientClass rootClass;
 
     // компоненты для отображения
     private ClassContainer classContainer;
@@ -32,10 +28,6 @@ public class ClassController {
 
         this.object = iobject;
         this.form = iform;
-        
-        // тут теоретически можно оптимизировать, а то получается, что при создании любой формы на каждом объекте идет обращение к серверу
-        rootClass = form.getBaseClass(object);
-
     }
 
     private JButton buttonChangeClass;
@@ -43,14 +35,14 @@ public class ClassController {
     public void addView(ClientFormLayout formLayout) {
 
         // создаем дерево для отображения классов
-        view = new ClassTree(object.getID(), rootClass) {
+        view = new ClassTree(object.getID(), object.baseClass) {
 
-            protected void currentClassChanged() throws IOException {
-                form.changeGridClass(object, view.getSelectedClass());
-            }
-
-            protected java.util.List<ClientClass> getChildClasses(ClientObjectClass parentClass) throws IOException {
-                return form.getChildClasses(object, parentClass);
+            protected void currentClassChanged() {
+                try {
+                    form.changeGridClass(object, view.getSelectedClass());
+                } catch (IOException e) {
+                    throw new RuntimeException("Ошибка при изменении текущего класса", e);
+                }
             }
         };
 
@@ -95,7 +87,7 @@ public class ClassController {
 
     public void showViews() {
 
-        if (rootClass.hasChilds()) {
+        if (object.baseClass.hasChilds()) {
 
             if (classContainer != null)
                 classContainer.setVisible(true);
@@ -115,7 +107,7 @@ public class ClassController {
     }
 
     // нужно для того, что если объект типа дата, то для него не будет возможностей добавлять объекты
-    public boolean allowedEditObjects() { return rootClass instanceof ClientObjectClass; }
+    public boolean allowedEditObjects() { return object.baseClass instanceof ClientObjectClass; }
 
     private DefaultMutableTreeNode getSelectedNode() {
 

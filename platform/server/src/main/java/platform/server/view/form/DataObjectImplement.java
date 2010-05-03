@@ -57,9 +57,14 @@ public class DataObjectImplement extends ObjectImplement {
         return false;
     }
 
+    public boolean classUpdated() {
+        return false;
+    }
+
     public boolean classUpdated(GroupObjectImplement classGroup) {
         return false; 
     }
+
     public boolean isInInterface(GroupObjectImplement group) {
         return true;
     }

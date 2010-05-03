@@ -1,5 +1,7 @@
 package platform.client.logics;
 
+import platform.client.logics.classes.ClientClass;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -16,17 +18,28 @@ public class ClientObjectImplementView implements Serializable {
     // вручную заполняется
     public ClientGroupObjectImplementView groupObject;
 
-    public ClientObjectView objectIDView;
+    public ClientObjectCellView objectCellView;
+
+    public ClientClass baseClass;
+
+    public ClientClassCellView classCellView;
+
     public ClientClassView classView;
     public ClientFunctionView addView;
     public ClientFunctionView changeClassView;
     public ClientFunctionView delView;
 
     public ClientObjectImplementView(DataInputStream inStream, Collection<ClientContainerView> containers, ClientGroupObjectImplementView iGroupObject) throws ClassNotFoundException, IOException {
-        objectIDView = new ClientObjectView(inStream,containers,this);
+
         groupObject = iGroupObject;
 
+        objectCellView = new ClientObjectCellView(inStream, containers, this);
+
         ID = inStream.readInt();
+
+        baseClass = ClientClass.deserialize(inStream);
+
+        classCellView = new ClientClassCellView(inStream, containers, this);
 
         classView = new ClientClassView(inStream,containers);
         addView = new ClientFunctionView(inStream, containers);
@@ -34,5 +47,5 @@ public class ClientObjectImplementView implements Serializable {
         delView = new ClientFunctionView(inStream, containers);
     }
 
-    public String toString() { return objectIDView.caption; }
+    public String toString() { return objectCellView.caption; }
 }

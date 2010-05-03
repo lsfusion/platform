@@ -117,16 +117,16 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
             classView = setClassView;
             if (classView) {
-                panel.removeGroupObjectID();
-                grid.addGroupObjectID();
+                panel.removeGroupObjectCells();
+                grid.addGroupObjectCells();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         grid.requestFocusInWindow();
                     }
                 });
             } else {
-                panel.addGroupObjectID();
-                grid.removeGroupObjectID();
+                panel.addGroupObjectCells();
+                grid.removeGroupObjectCells();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         panel.requestFocusInWindow();
@@ -176,6 +176,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         grid.setGridObjects(gridObjects);
     }
 
+    public void setGridClasses(List<ClientGroupObjectClass> gridClasses) {
+        grid.setGridClasses(gridClasses);
+    }
+
     public void setCurrentGroupObject(ClientGroupObjectValue value, Boolean userChange) {
 
         boolean realChange = !value.equals(currentObject);
@@ -204,6 +208,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         curValue.put(object, value);
         setCurrentGroupObject(curValue, false);
+    }
+
+    public void setCurrentGroupObjectClass(ClientGroupObjectClass value) {
+        panel.setCurrentClass(value);
     }
 
     public void setPanelPropertyValue(ClientPropertyView property, Object value) {
@@ -324,4 +332,5 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public ClientForm getForm() {
         return form;
     }
+
 }

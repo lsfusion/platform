@@ -79,7 +79,12 @@ public class FormView implements ClientSerialize {
         outStream.writeInt(order.size());
         for(CellView orderCell : order) {
             outStream.writeInt(orderCell.getID());
-            outStream.writeBoolean(orderCell instanceof PropertyCellView);
+            if (orderCell instanceof PropertyCellView)
+                outStream.writeBoolean(true);
+            else {
+                outStream.writeBoolean(false);
+                outStream.writeBoolean(orderCell instanceof ClassCellView);
+            }
         }
     }
 }

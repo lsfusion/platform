@@ -258,7 +258,10 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
         outStream.writeUTF(caption);
         outStream.writeInt(ID);
-        outStream.writeBoolean(!children.isEmpty());
+
+        outStream.writeByte(children.size());
+        for (CustomClass cls : children)
+            cls.serialize(outStream);
     }
 
     private List<NavigatorElement> relevantElements = new ArrayList<NavigatorElement>();

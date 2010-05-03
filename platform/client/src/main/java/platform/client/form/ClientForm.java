@@ -374,11 +374,18 @@ public class ClientForm extends JPanel {
             controllers.get(groupObject).setGridObjects(formChanges.gridObjects.get(groupObject));
         }
 
+        for (ClientGroupObjectImplementView groupObject : formChanges.gridClasses.keySet()) {
+            controllers.get(groupObject).setGridClasses(formChanges.gridClasses.get(groupObject));
+        }
+
         for (Map.Entry<ClientGroupObjectImplementView,ClientGroupObjectValue> groupObject : formChanges.objects.entrySet())
             controllers.get(groupObject.getKey()).setCurrentGroupObject(groupObject.getValue(),false);
 
         for (ClientGroupObjectImplementView groupObject : formChanges.classViews.keySet())
             controllers.get(groupObject).setClassView(formChanges.classViews.get(groupObject));
+
+        for (Map.Entry<ClientGroupObjectImplementView,ClientGroupObjectClass> groupObject : formChanges.classes.entrySet())
+            controllers.get(groupObject.getKey()).setCurrentGroupObjectClass(groupObject.getValue());
 
         // Затем их свойства
 
@@ -434,16 +441,22 @@ public class ClientForm extends JPanel {
             remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
             dataChanged();
             applyFormChanges();
+
         } else {
 
-            ClientObjectImplementView object = ((ClientObjectView)property).object;
-            remoteForm.changeObject(object.getID(), (Integer)value);
+            if (property instanceof ClientClassCellView) {
+                changeClass(((ClientClassCellView)property).object, (ClientConcreteClass)value);
+            } else {
 
-            controllers.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
+                ClientObjectImplementView object = ((ClientObjectCellView)property).object;
+                remoteForm.changeObject(object.getID(), (Integer)value);
 
-            applyFormChanges();
+                controllers.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
 
-            clientNavigator.changeCurrentClass(remoteForm,object);
+                applyFormChanges();
+
+                clientNavigator.changeCurrentClass(remoteForm,object);
+            }
         }
 
     }

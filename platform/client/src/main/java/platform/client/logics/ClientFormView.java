@@ -51,10 +51,15 @@ public class ClientFormView implements Serializable, LogicsSupplier {
         return null;
     }
 
-    ClientObjectView getObject(int id) {
+    ClientCellView getObject(int id, boolean classView) {
         for (ClientGroupObjectImplementView groupObject : groupObjects)
             for (ClientObjectImplementView object : groupObject)
-                if (object.getID() == id) return object.objectIDView;
+                if (object.getID() == id) {
+                    if (classView)
+                        return object.classCellView;
+                    else
+                        return object.objectCellView;
+                }
         return null;
     }
 
@@ -103,7 +108,7 @@ public class ClientFormView implements Serializable, LogicsSupplier {
             if(inStream.readBoolean())
                 order = getProperty(inStream.readInt());
             else
-                order = getObject(inStream.readInt());    
+                order = getObject(inStream.readInt(), false);
             defaultOrders.put(order,inStream.readBoolean());
         }
 
@@ -120,7 +125,7 @@ public class ClientFormView implements Serializable, LogicsSupplier {
             if(inStream.readBoolean()) // property
                 order.add(getProperty(cellID));
             else
-                order.add(getObject(cellID));
+                order.add(getObject(cellID, inStream.readBoolean()));
         }
     }
 }

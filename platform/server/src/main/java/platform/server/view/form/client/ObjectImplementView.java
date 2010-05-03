@@ -12,8 +12,11 @@ public class ObjectImplementView extends CellView {
 
     public ObjectImplementView(ObjectNavigator iView) {
         view = iView;
+
+        classCellView = new ClassCellView(view);
     }
 
+    public ClassCellView classCellView;
     public ClassView classView = new ClassView();
     public FunctionView addView = new FunctionView();
     public FunctionView changeClassView = new FunctionView();
@@ -26,6 +29,11 @@ public class ObjectImplementView extends CellView {
 
         outStream.writeInt(view.ID);
 
+        view.baseClass.serialize(outStream);
+
+        classCellView.serialize(outStream);
+        outStream.writeBoolean(view.showClass);
+        
         classView.serialize(outStream);
         addView.serialize(outStream);
         changeClassView.serialize(outStream);

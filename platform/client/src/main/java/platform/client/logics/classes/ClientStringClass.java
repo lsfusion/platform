@@ -19,7 +19,7 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public int getMinimumWidth() { return 30; }
-    public int getPreferredWidth() { return 250; }
+    public int getPreferredWidth() { return length * 5; }
 
     public Format getDefaultFormat() {
         return null;

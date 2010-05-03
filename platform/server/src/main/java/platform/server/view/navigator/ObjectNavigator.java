@@ -1,6 +1,7 @@
 package platform.server.view.navigator;
 
 import platform.server.classes.ValueClass;
+import platform.server.classes.CustomClass;
 import platform.server.view.form.PropertyObjectInterface;
 
 import java.util.Set;
@@ -11,12 +12,16 @@ public class ObjectNavigator extends CellViewNavigator implements PropertyInterf
         super(ID);
         this.caption = caption;
         this.baseClass = baseClass;
+
+        if (baseClass instanceof CustomClass && !((CustomClass)baseClass).children.isEmpty())
+            showClass = true;
     }
 
     public GroupObjectNavigator groupTo;
 
     public final String caption;
     public boolean show = true;
+    public boolean showClass = false;
 
     public boolean addOnTransaction = false;
 

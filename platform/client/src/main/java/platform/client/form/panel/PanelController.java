@@ -1,9 +1,6 @@
 package platform.client.form.panel;
 
-import platform.client.logics.ClientCellView;
-import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.ClientGroupObjectValue;
-import platform.client.logics.ClientPropertyView;
+import platform.client.logics.*;
 import platform.client.form.ClientForm;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ClientFormLayout;
@@ -29,41 +26,61 @@ public abstract class PanelController {
         formLayout = iformLayout;
     }
 
-    public void addGroupObjectID() {
+    public void addGroupObjectCells() {
 
-        for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
-            if(object.objectIDView.show) {
+        for (ClientObjectImplementView object : logicsSupplier.getGroupObject()) {
 
-                PanelCellController idController = new PanelCellController(object.objectIDView, form);
+            if(object.objectCellView.show) {
+
+                PanelCellController idController = new PanelCellController(object.objectCellView, form);
                 addGroupObjectActions(idController.getView());
                 idController.addView(formLayout);
 
-                controllers.put(object.objectIDView, idController);
+                controllers.put(object.objectCellView, idController);
             }
+
+            if(object.classCellView.show) {
+
+                PanelCellController classController = new PanelCellController(object.classCellView, form);
+                addGroupObjectActions(classController.getView());
+                classController.addView(formLayout);
+
+                controllers.put(object.classCellView, classController);
+            }
+
+        }
 
         if (currentObject != null)
             setGroupObjectIDValue(currentObject);
 
     }
 
-    public void removeGroupObjectID() {
+    public void removeGroupObjectCells() {
 
-        for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
-            if(object.objectIDView.show) {
-                PanelCellController idController = controllers.get(object.objectIDView);
+        for (ClientObjectImplementView object : logicsSupplier.getGroupObject()) {
+            if(object.objectCellView.show) {
+                PanelCellController idController = controllers.get(object.objectCellView);
                 if (idController != null) {
                     idController.removeView(formLayout);
-                    controllers.remove(object.objectIDView);
+                    controllers.remove(object.objectCellView);
                 }
             }
+            if(object.classCellView.show) {
+                PanelCellController classController = controllers.get(object.classCellView);
+                if (classController != null) {
+                    classController.removeView(formLayout);
+                    controllers.remove(object.classCellView);
+                }
+            }
+        }
     }
 
     public void requestFocusInWindow() {
 
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
         for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
-            if(object.objectIDView.show) {
-                PanelCellController idController = controllers.get(object.objectIDView);
+            if(object.objectCellView.show) {
+                PanelCellController idController = controllers.get(object.objectCellView);
                 if (idController != null) {
                     idController.getView().requestFocusInWindow();
                     return;
@@ -74,10 +91,20 @@ public abstract class PanelController {
     private void setGroupObjectIDValue(ClientGroupObjectValue value) {
 
         for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
-            if(object.objectIDView.show) {
-                PanelCellController idmodel = controllers.get(object.objectIDView);
-                if (idmodel != null)
-                    idmodel.setValue(value.get(object));
+            if(object.objectCellView.show) {
+                PanelCellController idcontroller = controllers.get(object.objectCellView);
+                if (idcontroller != null)
+                    idcontroller.setValue(value.get(object));
+            }
+    }
+
+    public void setCurrentClass(ClientGroupObjectClass value) {
+
+        for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
+            if(object.classCellView.show) {
+                PanelCellController classController = controllers.get(object.classCellView);
+                if (classController != null)
+                    classController.setValue(value.get(object));
             }
     }
 

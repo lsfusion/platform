@@ -20,7 +20,7 @@ public class StringClass extends DataClass<String> {
 
     int length;
 
-    StringClass(int iLength) {
+    public StringClass(int iLength) {
         length = iLength;
     }
 

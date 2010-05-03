@@ -12,7 +12,9 @@ public class ClientFormChanges {
 
     public final Map<ClientGroupObjectImplementView,Boolean> classViews;
     public Map<ClientGroupObjectImplementView,ClientGroupObjectValue> objects;
-    public Map<ClientGroupObjectImplementView, List<ClientGroupObjectValue>> gridObjects;
+    public Map<ClientGroupObjectImplementView,ClientGroupObjectClass> classes;
+    public Map<ClientGroupObjectImplementView,List<ClientGroupObjectValue>> gridObjects;
+    public Map<ClientGroupObjectImplementView,List<ClientGroupObjectClass>> gridClasses;
     public Map<ClientPropertyView,Map<ClientGroupObjectValue,Object>> gridProperties;
     public Map<ClientPropertyView,Object> panelProperties;
     public Set<ClientPropertyView> dropProperties;
@@ -28,7 +30,14 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
-            objects.put(clientGroupObject,new ClientGroupObjectValue(inStream, clientGroupObject,true));
+            objects.put(clientGroupObject,new ClientGroupObjectValue(inStream, clientGroupObject, true));
+        }
+
+        classes = new HashMap<ClientGroupObjectImplementView, ClientGroupObjectClass>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
+            classes.put(clientGroupObject,new ClientGroupObjectClass(inStream, clientGroupObject, true));
         }
 
         gridObjects = new HashMap<ClientGroupObjectImplementView, List<ClientGroupObjectValue>>();
@@ -43,6 +52,20 @@ public class ClientFormChanges {
 
             gridObjects.put(clientGroupObject, clientGridObjects);
         }
+
+        gridClasses = new HashMap<ClientGroupObjectImplementView, List<ClientGroupObjectClass>>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientGroupObjectImplementView clientGroupObject = clientFormView.getGroupObject(inStream.readInt());
+
+            List<ClientGroupObjectClass> clientGridClasses = new ArrayList<ClientGroupObjectClass>();
+            int listCount = inStream.readInt();
+            for (int j = 0; j < listCount; j++)
+                clientGridClasses.add(new ClientGroupObjectClass(inStream, clientGroupObject, false));
+
+            gridClasses.put(clientGroupObject, clientGridClasses);
+        }
+
 //        for (ClientGroupObjectImplementView groupObject : gridObjects.keySet()) {
 //            System.out.println(groupObject + " : " + gridObjects.get(groupObject).size());
 //        }
