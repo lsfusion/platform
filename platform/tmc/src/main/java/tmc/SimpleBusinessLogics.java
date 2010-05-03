@@ -3,6 +3,7 @@ package tmc;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
+import platform.interop.ClassViewType;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.data.Union;
@@ -665,7 +666,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExtIncPrintNavigatorForm(NavigatorElement parent, int ID, String caption) throws JRException, FileNotFoundException {
             super(parent, ID, caption, true);
 
-            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.initClassView = false;
             objDoc.groupTo.singleViewType = true;
 
             addPropertyView(objDoc, property, baseGroup);
@@ -946,8 +947,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             super(parent, ID, caption);
 
             objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
-            objStore.groupTo.gridClassView = false;
-            objStore.groupTo.fixedClassView = true;
+            objStore.groupTo.initClassView = ClassViewType.PANEL;
+            objStore.groupTo.banClassView = ClassViewType.GRID;
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
@@ -1042,8 +1043,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
-            objSupplier.groupTo.gridClassView = false;
-            objSupplier.groupTo.fixedClassView = true;
+            objSupplier.groupTo.initClassView = ClassViewType.PANEL;
+            objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
             GroupObjectNavigator gobjArtStore = new GroupObjectNavigator(IDShift(1));
 
@@ -1089,8 +1090,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             super(parent, ID, caption);
 
             gobjInterval = new GroupObjectNavigator(IDShift(1));
-            gobjInterval.gridClassView = false;
-            gobjInterval.fixedClassView = true;
+            gobjInterval.initClassView = ClassViewType.PANEL;
+            gobjInterval.banClassView = ClassViewType.GRID;
 
             objDateFrom = new ObjectNavigator(IDShift(1), DateClass.instance, "С даты :");
             objDateTo = new ObjectNavigator(IDShift(1), DateClass.instance, "По дату :");
@@ -1120,7 +1121,6 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeSupplArt, objStore, objSupplier, objArticle)));
 
-            objStore.groupTo.fixedClassView = true;
         }
     }
 
@@ -1156,7 +1156,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             ObjectNavigator objFormat, objArticle;
             if(upFormat) {
                 objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
-                objFormat.groupTo.gridClassView = false;
+                objFormat.groupTo.initClassView = ClassViewType.PANEL;
                 objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
             } else {
                 objArticle = addSingleGroupObjectImplement(article, "Товар", properties,baseGroup, currentGroup);
@@ -1252,12 +1252,12 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             addPropertyView(objSpec, objArticle, properties, baseGroup);
 
             // указываем, что верхние три товара будут идти в панель
-            objSupplier.groupTo.fixedClassView = true;
-            objSupplier.groupTo.gridClassView = false;
+            objSupplier.groupTo.initClassView = ClassViewType.PANEL;
+            objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
-            objContract.groupTo.gridClassView = false;
+            objContract.groupTo.initClassView = ClassViewType.PANEL;
 
-            objSpec.groupTo.gridClassView = false;
+            objSpec.groupTo.initClassView = ClassViewType.PANEL;
 
         }
     }

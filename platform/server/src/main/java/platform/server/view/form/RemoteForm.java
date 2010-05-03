@@ -9,6 +9,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.interop.Scroll;
+import platform.interop.ClassViewType;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
@@ -183,16 +184,19 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             object.changeValue(session, value.get(object));
     }
 
-    public void switchClassView(GroupObjectImplement group) {
-        changeClassView(group, !group.gridClassView);
+    public boolean switchClassView(GroupObjectImplement group) {
+        return changeClassView(group, ClassViewType.switchView(group.curClassView));
     }
 
-    public void changeClassView(GroupObjectImplement group,boolean show) {
+    public boolean changeClassView(GroupObjectImplement group,byte show) {
 
-        if(group.gridClassView == show) return;
-        group.gridClassView = show;
+        if ((show & group.banClassView) != 0) return false;
+
+        if(group.curClassView == show) return false;
+        group.curClassView = show;
 
         group.updated = group.updated | GroupObjectImplement.UPDATED_CLASSVIEW;
+        return true;
     }
 
     // сстандартные фильтры
@@ -269,7 +273,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
         // меняем вид, если при добавлении может получиться, что фильтр не выполнится
         if (foundConflict)
-            changeClassView(object.groupTo, false);
+            changeClassView(object.groupTo, ClassViewType.PANEL);
 
         dataChanged = true;
     }
@@ -654,7 +658,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 boolean updateKeys = refresh || (group.updated & (GroupObjectImplement.UPDATED_GRIDCLASS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0;
 
                 if ((group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) != 0)
-                    result.classViews.put(group, group.gridClassView);
+                    result.classViews.put(group, group.curClassView);
 
                 if(Filter.ignoreInInterface) {
                     updateKeys |= (group.updated & GroupObjectImplement.UPDATED_FILTER)!=0;
@@ -729,7 +733,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                     if(updateKeys) // изменились фильтры, порядки, вид, ищем текущий объект
                         orderSeeks = new HashMap<OrderView, ObjectValue>(currentObject);
 
-                if(!updateKeys && group.gridClassView && (group.updated & GroupObjectImplement.UPDATED_OBJECT)!=0) { // скроллирование
+                if(!updateKeys && group.curClassView == ClassViewType.GRID && (group.updated & GroupObjectImplement.UPDATED_OBJECT)!=0) { // скроллирование
                     int keyNum = group.keys.indexOf(dataKeys(currentObject));
                     if(keyNum< group.pageSize && group.upKeys) { // если меньше PageSize осталось и сверху есть ключи
                         updateKeys = true;
@@ -757,7 +761,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 if(updateKeys) {
                     OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> keyResult;
-                    if(!group.gridClassView) // панель
+                    if(! (group.curClassView == ClassViewType.GRID)) // панель
                         updateGroupObject(group,result,readKeys(group,orderSeeks));
                     else {
                         if(orderSeeks!=null && !group.orders.starts(orderSeeks.keySet())) // если не "хватает" спереди ключей, дочитываем
@@ -865,7 +869,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 boolean read = refresh || dataUpdated(drawProp.view,changedProps) ||
                         drawProp.toDraw!=null && (drawProp.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
-                if(inGridInterface && drawProp.toDraw!=null && drawProp.toDraw.gridClassView) { // в grid'е
+                if(inGridInterface && drawProp.toDraw!=null && drawProp.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
                     if(read || objectUpdated(drawProp.view,drawProp.toDraw)) {
                         Collection<PropertyView> propList = groupProps.get(drawProp.toDraw);
                         if(propList==null) {
@@ -955,7 +959,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
         Set<GroupObjectImplement> reportObjects = new HashSet<GroupObjectImplement>();
         for (GroupObjectImplement group : groups)
-            if (group.gridClassView)
+            if (group.curClassView == ClassViewType.GRID)
                 reportObjects.add(group);
 
         return reportObjects;

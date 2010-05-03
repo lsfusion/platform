@@ -15,7 +15,7 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
         return ID;
     }
 
-    public Boolean fixedClassView = false;
+    public byte banClassView = 0;
 
     public ClientGridView gridView;
     public ClientShowTypeView showTypeView;
@@ -34,7 +34,7 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
 
     public ClientGroupObjectImplementView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         ID = inStream.readInt();
-        fixedClassView = inStream.readBoolean();
+        banClassView = inStream.readByte();
 
         int count = inStream.readInt();
         for(int i=0;i<count;i++)

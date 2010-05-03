@@ -10,6 +10,7 @@ import java.util.List;
 public class AbstractGroup extends AbstractNode {
 
     public String caption;
+    public boolean container = true;
 
     public AbstractGroup(String icaption) {
         caption = icaption;

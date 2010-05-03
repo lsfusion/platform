@@ -3,8 +3,8 @@ package platform.server.view.form;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Order;
+import platform.interop.ClassViewType;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.data.query.Query;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
@@ -28,14 +28,15 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     // глобальный идентификатор чтобы писать во ViewTable
     public final int ID;
 
-    public GroupObjectImplement(int ID,Collection<ObjectImplement> objects,int order,int pageSize,boolean gridClassView) {
+    public GroupObjectImplement(int ID,Collection<ObjectImplement> objects,int order,int pageSize, byte initClassView, byte banClassView) {
 
         assert (ID < RemoteFormInterface.GID_SHIFT);
 
         this.ID = ID;
         this.order = order;
         this.pageSize = pageSize;
-        this.gridClassView = gridClassView;
+        this.curClassView = initClassView;
+        this.banClassView = banClassView;
         this.objects = objects;
 
         for(ObjectImplement object : objects)
@@ -49,7 +50,8 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     public Integer order = 0;
 
     // классовый вид включен или нет
-    public boolean gridClassView = true;
+    public byte curClassView = ClassViewType.GRID;
+    public byte banClassView = 0;
 
     // закэшированные
 

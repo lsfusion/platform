@@ -10,7 +10,7 @@ public class ClientFormChanges {
 
     public String message;
 
-    public final Map<ClientGroupObjectImplementView,Boolean> classViews;
+    public final Map<ClientGroupObjectImplementView,Byte> classViews;
     public Map<ClientGroupObjectImplementView,ClientGroupObjectValue> objects;
     public Map<ClientGroupObjectImplementView,ClientGroupObjectClass> classes;
     public Map<ClientGroupObjectImplementView,List<ClientGroupObjectValue>> gridObjects;
@@ -21,10 +21,10 @@ public class ClientFormChanges {
 
     public ClientFormChanges(DataInputStream inStream,ClientFormView clientFormView) throws IOException {
         
-        classViews = new HashMap<ClientGroupObjectImplementView, Boolean>();
+        classViews = new HashMap<ClientGroupObjectImplementView, Byte>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++)
-            classViews.put(clientFormView.getGroupObject(inStream.readInt()),inStream.readBoolean());
+            classViews.put(clientFormView.getGroupObject(inStream.readInt()),inStream.readByte());
 
         objects = new HashMap<ClientGroupObjectImplementView, ClientGroupObjectValue>();
         count = inStream.readInt();

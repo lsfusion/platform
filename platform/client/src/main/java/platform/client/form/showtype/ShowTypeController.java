@@ -4,6 +4,7 @@ import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientForm;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowTypeView;
+import platform.interop.ClassViewType;
 
 import java.io.IOException;
 
@@ -23,14 +24,14 @@ public abstract class ShowTypeController {
 
                 try {
                     if (action.equals("grid")) {
-                        if (!classView)
-                            form.changeClassView(logicsSupplier.getGroupObject(), true);
+                        if (classView.equals(ClassViewType.PANEL))
+                            form.changeClassView(logicsSupplier.getGroupObject(), ClassViewType.GRID);
                         else
                             needToBeShown();
                     }
                     else if (action.equals("panel")) {
-                        if (classView)
-                            form.changeClassView(logicsSupplier.getGroupObject(), false);
+                        if (classView.equals(ClassViewType.GRID))
+                            form.changeClassView(logicsSupplier.getGroupObject(), ClassViewType.PANEL);
                         else
                             needToBeShown();
                     } else {
@@ -47,14 +48,14 @@ public abstract class ShowTypeController {
         formLayout.add(view, showView);
     }
 
-    Boolean classView;
+    Byte classView;
 
-    public void changeClassView(Boolean classView) {
+    public void changeClassView(Byte classView) {
 
         if (!classView.equals(this.classView)) {
 
             this.classView = classView;
-            showView.changeClassView(classView, fixedClassView);
+            showView.changeClassView(classView, banClassView);
             needToBeShown();
         }
     }
@@ -68,8 +69,8 @@ public abstract class ShowTypeController {
     public void showViews() {
     }
 
-    Boolean fixedClassView;
-    public void setFixedClassView(Boolean fixedClassView) {
-        this.fixedClassView = fixedClassView;
+    Byte banClassView;
+    public void setBanClassView(Byte banClassView) {
+        this.banClassView = banClassView;
     }
 }

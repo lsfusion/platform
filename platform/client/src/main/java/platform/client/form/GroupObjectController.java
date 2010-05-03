@@ -7,6 +7,7 @@ import platform.client.form.panel.PanelController;
 import platform.client.form.grid.GridController;
 import platform.client.form.showtype.ShowTypeController;
 import platform.interop.Order;
+import platform.interop.ClassViewType;
 
 import javax.swing.*;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     private ClientGroupObjectValue currentObject;
 
-    private Boolean classView;
+    private Byte classView;
 
     public GroupObjectController(ClientGroupObjectImplementView igroupObject, LogicsSupplier ilogicsSupplier, ClientForm iform, ClientFormLayout formLayout) throws IOException {
 
@@ -70,7 +71,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                 }
             };
 
-            showType.setFixedClassView(groupObject.fixedClassView);
+            showType.setBanClassView(groupObject.banClassView);
 
             showType.addView(formLayout);
         }
@@ -111,12 +112,12 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         form.validate();
     }
 
-    public void setClassView(Boolean setClassView) {
+    public void setClassView(Byte setClassView) {
 
-        if (classView == null || classView != setClassView) {
+        if (classView == null || !classView.equals(setClassView)) {
 
             classView = setClassView;
-            if (classView) {
+            if (classView.equals(ClassViewType.GRID)) {
                 panel.removeGroupObjectCells();
                 grid.addGroupObjectCells();
                 SwingUtilities.invokeLater(new Runnable() {

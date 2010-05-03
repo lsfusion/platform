@@ -41,8 +41,8 @@ public class Mapper {
         for (ObjectNavigator object : groupKey)
             objects.add(mapObject(object,classView));
 
-        GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID,objects,order,
-                groupKey.pageSize,groupKey.gridClassView);
+        GroupObjectImplement groupValue = new GroupObjectImplement(groupKey.ID, objects, order,
+                groupKey.pageSize, groupKey.initClassView, groupKey.banClassView);
 
         groupMapper.put(groupKey, groupValue);
         return groupValue;

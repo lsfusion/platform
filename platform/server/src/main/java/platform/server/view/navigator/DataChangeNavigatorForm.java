@@ -21,7 +21,7 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
 
 /*        // добавляем элементы для которых меняем на форму
         interfaceGroup = new GroupObjectNavigator(IDShift(1));
-        interfaceGroup.singleViewType = true; interfaceGroup.gridClassView = false;
+        interfaceGroup.singleViewType = true; interfaceGroup.initClassView = false;
         interfaceObjects = new HashMap<ClassPropertyInterface, ObjectNavigator>();
         for(ClassPropertyInterface propertyInterface : change.interfaces) {
             ObjectNavigator interfaceObject = new ObjectNavigator(propertyInterface.ID,propertyInterface.interfaceClass,propertyInterface.toString());

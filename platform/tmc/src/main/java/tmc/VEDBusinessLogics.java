@@ -10,7 +10,6 @@ import java.rmi.registry.LocateRegistry;
 import java.awt.event.KeyEvent;
 
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.sql.MSSQLDataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.Union;
 import platform.server.logics.BusinessLogics;
@@ -23,6 +22,7 @@ import platform.server.view.navigator.filter.*;
 import platform.server.auth.User;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
+import platform.interop.ClassViewType;
 
 import javax.swing.*;
 
@@ -38,7 +38,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         System.out.println("Server is starting...");
         DataAdapter adapter = new PostgreDataAdapter("ved","localhost","postgres","11111");
-//        DataAdapter adapter = new MSSQLDataAdapter("ved2","ME2-ПК","sa","11111");
+//        DataAdapter adapter = new MSSQLDataAdapter("ved","169.254.1.25","sa","12345");
         VEDBusinessLogics BL = new VEDBusinessLogics(adapter,7652);
 
 //        if(args.length>0 && args[0].equals("-F"))
@@ -480,6 +480,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initGroups() {
         allGroup = new AbstractGroup("Все");
+        allGroup.container = false;
         allGroup.add(baseGroup);
 
         documentGroup = new AbstractGroup("Параметры документа");
@@ -628,8 +629,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objDoc = addSingleGroupObjectImplement(documentClass, "Документ", properties, baseGroup, true, documentGroup, true);
             if(toAdd) {
-                objDoc.groupTo.gridClassView = false;
-                objDoc.groupTo.fixedClassView = true;
+                objDoc.groupTo.initClassView = ClassViewType.PANEL;
+                objDoc.groupTo.banClassView = ClassViewType.GRID;
                 objDoc.show = false;
                 objDoc.addOnTransaction = true;
             }
@@ -944,7 +945,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Реестр цен", true);
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(commitWholeShopInc, "Документ", properties, baseGroup, true);
-            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
             addPropertyView(objDoc, objArt, properties, articleQuantity, shopPrice);
@@ -959,7 +960,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Акт переоценки", true);
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(documentShopPrice, "Документ", properties, baseGroup, true);
-            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
             addPropertyView(objDoc, objArt, properties, articleQuantity, shopPrice, prevPrice, revalBalance);
@@ -985,7 +986,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Ценники", true);
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(documentShopPrice, "Документ", properties, baseGroup, true);
-            objDoc.groupTo.gridClassView = false;
+            objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
             addPropertyView(objDoc, objArt, properties, shopPrice);

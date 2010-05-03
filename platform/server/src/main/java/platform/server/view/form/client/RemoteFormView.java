@@ -167,12 +167,12 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         ((CustomObjectImplement) form.getObjectImplement(objectID)).changeGridClass(idClass);
     }
 
-    public void switchClassView(int groupID) {
-        form.switchClassView(form.getGroupObjectImplement(groupID));
+    public boolean switchClassView(int groupID) {
+        return form.switchClassView(form.getGroupObjectImplement(groupID));
     }
 
-    public void changeClassView(int groupID, boolean show) {
-        form.changeClassView(form.getGroupObjectImplement(groupID), show);
+    public boolean changeClassView(int groupID, byte classView) {
+        return form.changeClassView(form.getGroupObjectImplement(groupID), classView);
     }
 
     public void changePropertyOrder(int propertyID, byte modiType) {

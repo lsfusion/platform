@@ -1,6 +1,7 @@
 package platform.client.form.classes;
 
 import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
@@ -10,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class ClassDialog extends JDialog {
 
@@ -38,16 +40,21 @@ public class ClassDialog extends JDialog {
             }
         });
 
-        JButton cancelButton = new JButton("Отмена");
-        cancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        AbstractAction cancelAction = new AbstractAction("Отмена") {
+            public void actionPerformed(ActionEvent ae) {
                 ClassDialog.this.setVisible(false);
             }
-        });
+        };
+
+        JButton cancelButton = new JButton(cancelAction);
+
+        getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "closeDialog");
+        getRootPane().getActionMap().put("closeDialog", cancelAction);
 
         buttonContainer.add(okButton);
         buttonContainer.add(cancelButton);
         add(buttonContainer, BorderLayout.SOUTH);
+
     }
 
     private ClientObjectClass chosenClass = null;

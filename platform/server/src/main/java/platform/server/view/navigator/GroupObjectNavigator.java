@@ -1,6 +1,7 @@
 package platform.server.view.navigator;
 
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.ClassViewType;
 
 import java.util.ArrayList;
 
@@ -19,8 +20,8 @@ public class GroupObjectNavigator extends ArrayList<ObjectNavigator> {
         return super.add(objectNavigator);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
-    public boolean gridClassView = true;
-    public boolean fixedClassView = false;
+    public byte initClassView = ClassViewType.GRID;
+    public byte banClassView = 0;
     public int pageSize = 10;
     
 }

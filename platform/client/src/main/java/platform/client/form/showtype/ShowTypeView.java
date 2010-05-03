@@ -1,13 +1,12 @@
 package platform.client.form.showtype;
 
-import platform.client.form.ClientForm;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.interop.ClassViewType;
 
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Enumeration;
-import java.io.IOException;
 
 public abstract class ShowTypeView extends JPanel implements ActionListener {
 
@@ -51,21 +50,17 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
         buttonPressed(e.getActionCommand());
     }
 
-    public void changeClassView(Boolean classView, Boolean fixedClassView) {
-        if (classView) {
-            gridButton.setSelected(true);
-            if (fixedClassView) {
-                gridButton.setVisible(true);
-                panelButton.setVisible(false);
-            }
+    public void changeClassView(Byte classView, Byte banClassView) {
+
+        switch (classView) {
+            case ClassViewType.PANEL : panelButton.setSelected(true); break;
+            case ClassViewType.GRID : gridButton.setSelected(true); break;
+            case ClassViewType.HIDE : hideButton.setSelected(true); break;
         }
-        else {
-            panelButton.setSelected(true);
-            if (fixedClassView) {
-                gridButton.setVisible(false);
-                panelButton.setVisible(true);
-            }
-        }
+
+        panelButton.setVisible((banClassView & ClassViewType.PANEL) == 0);
+        gridButton.setVisible((banClassView & ClassViewType.GRID) == 0);
+        hideButton.setVisible((banClassView & ClassViewType.HIDE) == 0);
     }
 
     protected abstract void buttonPressed(String action);

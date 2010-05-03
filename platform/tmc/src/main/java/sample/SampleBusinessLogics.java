@@ -145,7 +145,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
-//            objArt.groupTo.gridClassView = false; //objArt.groupTo.singleViewType = true;
+//            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
             ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
 

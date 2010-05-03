@@ -497,28 +497,24 @@ public class ClientForm extends JPanel {
 
     public boolean switchClassView(ClientGroupObjectImplementView groupObject) throws IOException {
 
-        if(groupObject.fixedClassView) return false;
-
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
-        remoteForm.switchClassView(groupObject.getID());
-
-        applyFormChanges();
-
-        return true;
+        if (remoteForm.switchClassView(groupObject.getID())) {
+            applyFormChanges();
+            return true;
+        } else
+            return false;
     }
 
-    public boolean changeClassView(ClientGroupObjectImplementView groupObject, boolean show) throws IOException {
-
-        if(groupObject.fixedClassView) return false;
+    public boolean changeClassView(ClientGroupObjectImplementView groupObject, byte show) throws IOException {
 
         SwingUtils.stopSingleAction(groupObject.getActionID(), true);
 
-        remoteForm.changeClassView(groupObject.getID(), show);
-
-        applyFormChanges();
-
-        return true;
+        if (remoteForm.changeClassView(groupObject.getID(), show)) {
+            applyFormChanges();
+            return true;
+        } else
+            return false;
     }
 
     public void changeOrder(ClientCellView property, Order modiType) throws IOException {

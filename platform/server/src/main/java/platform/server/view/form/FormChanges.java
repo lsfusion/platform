@@ -14,7 +14,7 @@ public class FormChanges {
 
     public String message = "";
 
-    public Map<GroupObjectImplement,Boolean> classViews = new HashMap<GroupObjectImplement, Boolean>();
+    public Map<GroupObjectImplement,Byte> classViews = new HashMap<GroupObjectImplement, Byte>();
     public Map<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>> objects = new HashMap<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>>();
     public Map<GroupObjectImplement,Map<ObjectImplement,ConcreteValueClass>> classes = new HashMap<GroupObjectImplement,Map<ObjectImplement,ConcreteValueClass>>();
     public Map<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>> gridObjects = new HashMap<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>>();
@@ -59,9 +59,9 @@ public class FormChanges {
     public void serialize(DataOutputStream outStream) throws IOException {
 
         outStream.writeInt(classViews.size());
-        for (Map.Entry<GroupObjectImplement,Boolean> classView : classViews.entrySet()) {
+        for (Map.Entry<GroupObjectImplement,Byte> classView : classViews.entrySet()) {
             outStream.writeInt(classView.getKey().ID);
-            outStream.writeBoolean(classView.getValue());
+            outStream.writeByte(classView.getValue());
         }
 
         outStream.writeInt(objects.size());

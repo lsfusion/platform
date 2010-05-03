@@ -16,17 +16,17 @@ public class GroupObjectImplementView extends ArrayList<ObjectImplementView> imp
         for(ObjectNavigator object : view)
             add(new ObjectImplementView(object));
         
-        fixedClassView = view.fixedClassView;
+        fixedClassView = view.banClassView;
     }
 
-    public Boolean fixedClassView = false;
+    public Byte fixedClassView = 0;
 
     public GridView gridView = new GridView();
     public ShowTypeView showTypeView = new ShowTypeView();
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(view.ID);
-        outStream.writeBoolean(fixedClassView);
+        outStream.writeByte(fixedClassView);
 
         outStream.writeInt(size());
         for(ObjectImplementView object : this)

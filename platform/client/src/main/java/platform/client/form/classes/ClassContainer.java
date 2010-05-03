@@ -26,6 +26,7 @@ public abstract class ClassContainer extends JPanel {
                 collapseTree();
             }
         });
+        collapseButton.setFocusable(false);
         collapseButton.setFont(getFont().deriveFont(Font.BOLD));
 
         expandButton = new JButton(">");
@@ -39,7 +40,7 @@ public abstract class ClassContainer extends JPanel {
         Insets insets = expandButton.getInsets();
         insets.left = 0; insets.right = 0;
         expandButton.setMargin(insets); // экономим на спичках
-
+        expandButton.setFocusable(false);
         expandButton.setFont(getFont().deriveFont(Font.BOLD));
         expandButton.setVisible(false); // по умолчанию невидима
 
@@ -54,6 +55,7 @@ public abstract class ClassContainer extends JPanel {
                 needToBeValidated();
             }
         });
+        widthDecButton.setFocusable(false);
         widthDecButton.setFont(getFont().deriveFont(Font.BOLD));
 
         JButton widthIncButton = new JButton(">");
@@ -65,6 +67,7 @@ public abstract class ClassContainer extends JPanel {
                 needToBeValidated();
             }
         });
+        widthIncButton.setFocusable(false);
         widthIncButton.setFont(getFont().deriveFont(Font.BOLD));
 
         buttonContainer = new JPanel();

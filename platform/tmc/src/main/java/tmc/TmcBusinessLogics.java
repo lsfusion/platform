@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
+import platform.interop.ClassViewType;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.data.Union;
@@ -1374,8 +1375,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtIncPrintNavigatorForm(NavigatorElement parent, int ID, String caption) throws JRException, FileNotFoundException {
             super(parent, ID, caption, true);
 
-            objDoc.groupTo.gridClassView = false;
-            objDoc.groupTo.fixedClassView = true;
+            objDoc.groupTo.initClassView = ClassViewType.PANEL;
+            objDoc.groupTo.banClassView = ClassViewType.GRID;
 
             addPropertyView(objDoc, properties, outSumsGroup);
             addPropertyView(objDetail, properties, outSumsGroup);
@@ -1454,8 +1455,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", properties,
                                                                         baseGroup, storeGroup, outSumsGroup, accountGroup);
-            objDoc.groupTo.gridClassView = false;
-            objDoc.groupTo.fixedClassView = true;
+            objDoc.groupTo.initClassView = ClassViewType.PANEL;
+            objDoc.groupTo.banClassView = ClassViewType.GRID;
 
             ObjectNavigator objReceipt = addSingleGroupObjectImplement(receipt, "Чек", properties,
                                                                         baseGroup, outSumsGroup);
@@ -1505,8 +1506,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             if (groupStore) {
                 objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                             baseGroup, accountGroup);
-                objStore.groupTo.gridClassView = false;
-                objStore.groupTo.fixedClassView = true;
+                objStore.groupTo.initClassView = ClassViewType.PANEL;
+                objStore.groupTo.banClassView = ClassViewType.GRID;
             }
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(invDocument, "Документ", properties,
@@ -1646,8 +1647,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             if (groupStore) {
                 objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                             baseGroup, accountGroup);
-                objStore.groupTo.gridClassView = false;
-                objStore.groupTo.fixedClassView = true;
+                objStore.groupTo.initClassView = ClassViewType.PANEL;
+                objStore.groupTo.banClassView = ClassViewType.GRID;
             }
 
             ObjectNavigator objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", properties,
@@ -1677,8 +1678,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup, accountGroup);
-            objStore.groupTo.gridClassView = false;
-            objStore.groupTo.fixedClassView = true;
+            objStore.groupTo.initClassView = ClassViewType.PANEL;
+            objStore.groupTo.banClassView = ClassViewType.GRID;
 
             objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
@@ -1783,13 +1784,13 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             // создать блок "Поставщик"
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties,
                                                                                     baseGroup);
-            objSupplier.groupTo.gridClassView = false;
-            objSupplier.groupTo.fixedClassView = true;
+            objSupplier.groupTo.initClassView = ClassViewType.PANEL;
+            objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
             // создать блок "Склад"
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup);
-            objStore.groupTo.gridClassView = false;
+            objStore.groupTo.initClassView = ClassViewType.PANEL;
 
             // создать блок "Товар"
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
@@ -1831,8 +1832,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, ID, caption);
 
             gobjInterval = new GroupObjectNavigator(IDShift(1));
-            gobjInterval.gridClassView = false;
-            gobjInterval.fixedClassView = true;
+            gobjInterval.initClassView = ClassViewType.PANEL;
+            gobjInterval.banClassView = ClassViewType.GRID;
 
             objDateFrom = new ObjectNavigator(IDShift(1), DateClass.instance, "С даты :");
             objDateTo = new ObjectNavigator(IDShift(1), DateClass.instance, "По дату :");

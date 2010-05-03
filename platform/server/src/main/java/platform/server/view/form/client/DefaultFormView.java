@@ -203,7 +203,10 @@ public class DefaultFormView extends FormView {
 
             childComponent.container = groupPropertyContainer;
             childComponent = groupPropertyContainer;
-            groupAbstract = groupAbstract.getParent();
+            do {
+                groupAbstract = groupAbstract.getParent();
+            } while (groupAbstract != null && !groupAbstract.container); // пропускаем группы, по которым не нужно создавать контейнер
+
         }
 
         // проверка на null нужна для глобальных свойств без groupObject'ов вообще

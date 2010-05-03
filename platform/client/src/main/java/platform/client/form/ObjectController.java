@@ -4,6 +4,7 @@ import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.classes.ClassController;
+import platform.interop.ClassViewType;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -73,12 +74,13 @@ class ObjectController {
 
     }
 
-    Boolean classView;
-    public void changeClassView(Boolean classView) {
+    Byte classView = ClassViewType.GRID;
+    public void changeClassView(Byte classView) {
 
         this.classView = classView;
 
-        if (classView) {
+        if (classView.equals(ClassViewType.GRID)) {
+            
             if (classController != null)
                 classController.showViews();
         } else {
@@ -102,7 +104,7 @@ class ObjectController {
 
     public void showViews() {
 
-        if (classView)
+        if (classView.equals(ClassViewType.GRID))
             classController.showViews();
 
         if (buttonAdd != null)
