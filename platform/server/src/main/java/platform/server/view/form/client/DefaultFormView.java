@@ -41,10 +41,10 @@ public class DefaultFormView extends FormView {
             groupObjects.add(clientGroup);
 
             ContainerView groupContainer = addContainer(); // контейнер всей группы
+            groupContainer.title = group.get(0).caption;
             groupContainer.container = mainContainer;
             groupContainer.constraints.order = navigatorForm.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-            groupContainer.constraints.insetsInside = new Insets(0,0,4,0);
 
             ContainerView gridContainer = addContainer(); // контейнер грида внутрь
             gridContainer.container = groupContainer;
@@ -55,8 +55,6 @@ public class DefaultFormView extends FormView {
             panelContainer.container = groupContainer;
             panelContainer.constraints.order = 1;
             panelContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
-
-            panelContainer.title = group.get(0).caption;
 
             panelContainers.put(clientGroup, panelContainer);
 
@@ -76,7 +74,6 @@ public class DefaultFormView extends FormView {
 
                 clientObject.container = panelContainer;
                 clientObject.constraints.order = -1000 + clientGroup.indexOf(clientObject);
-                clientObject.constraints.insetsSibling = new Insets(0,0,2,2);
 
                 addComponent(clientGroup, clientObject, clientObject.view.baseClass.getParent());
 
@@ -84,7 +81,6 @@ public class DefaultFormView extends FormView {
 
                 clientObject.classCellView.container = panelContainer;
                 clientObject.classCellView.constraints.order = -500 + clientGroup.indexOf(clientObject);
-                clientObject.classCellView.constraints.insetsSibling = new Insets(0,0,2,2);
 
                 addComponent(clientGroup, clientObject.classCellView, clientObject.view.baseClass.getParent());
 
@@ -125,7 +121,6 @@ public class DefaultFormView extends FormView {
 
             PropertyCellView clientProperty = new PropertyCellView(property);
             clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
-            clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
             properties.add(clientProperty);
 
