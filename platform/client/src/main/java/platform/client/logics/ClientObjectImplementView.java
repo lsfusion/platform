@@ -42,6 +42,7 @@ public class ClientObjectImplementView implements Serializable {
         classCellView = new ClientClassCellView(inStream, containers, this);
 
         classView = new ClientClassView(inStream,containers);
+        
         addView = new ClientFunctionView(inStream, containers);
         changeClassView = new ClientFunctionView(inStream, containers);
         delView = new ClientFunctionView(inStream, containers);

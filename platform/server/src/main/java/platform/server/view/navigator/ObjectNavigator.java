@@ -13,14 +13,17 @@ public class ObjectNavigator extends CellViewNavigator implements PropertyInterf
         this.caption = caption;
         this.baseClass = baseClass;
 
-        if (baseClass instanceof CustomClass && !((CustomClass)baseClass).children.isEmpty())
+        if (baseClass instanceof CustomClass && !((CustomClass)baseClass).children.isEmpty()) {
+            showTree = true;
             showClass = true;
+        }
     }
 
     public GroupObjectNavigator groupTo;
 
     public final String caption;
     public boolean show = true;
+    public boolean showTree = false;
     public boolean showClass = false;
 
     public boolean addOnTransaction = false;

@@ -75,6 +75,9 @@ public abstract class ClassContainer extends JPanel {
         buttonContainer.add(widthIncButton);
 
         add(buttonContainer, BorderLayout.SOUTH);
+
+        // по умолчанию показываем дерево свернутым
+        collapseTree();
     }
 
     private Dimension maxSize;

@@ -33,8 +33,10 @@ public class ObjectImplementView extends CellView {
 
         classCellView.serialize(outStream);
         outStream.writeBoolean(view.showClass);
-        
+
         classView.serialize(outStream);
+        outStream.writeBoolean(view.showTree);        
+
         addView.serialize(outStream);
         changeClassView.serialize(outStream);
         delView.serialize(outStream);

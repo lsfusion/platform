@@ -87,7 +87,7 @@ public class ClassController {
 
     public void showViews() {
 
-        if (object.baseClass.hasChilds()) {
+        if (object.classView.show) {
 
             if (classContainer != null)
                 classContainer.setVisible(true);
