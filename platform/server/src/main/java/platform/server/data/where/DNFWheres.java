@@ -1,20 +1,6 @@
 package platform.server.data.where;
 
 import platform.base.QuickMap;
-import platform.base.BaseUtils;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.data.query.InnerWhere;
-import platform.server.data.query.JoinSet;
-import platform.server.data.query.InnerJoin;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.translator.KeyTranslator;
-import platform.server.caches.HashContext;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
 public abstract class DNFWheres<M extends DNFWheres.Interface<M>,This extends DNFWheres<M,This>> extends QuickMap<M,Where> {
 

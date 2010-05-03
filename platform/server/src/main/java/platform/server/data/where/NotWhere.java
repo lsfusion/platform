@@ -7,7 +7,7 @@ import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 
 public class NotWhere extends ObjectWhere {
 

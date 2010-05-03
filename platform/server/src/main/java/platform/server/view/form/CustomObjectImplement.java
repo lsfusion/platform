@@ -69,6 +69,12 @@ public class CustomObjectImplement extends ObjectImplement {
         updateValueClass(session);
     }
 
+    public void refreshValueClass(ChangesSession session) throws SQLException {
+        value = value.refresh(session);
+
+        updateValueClass(session);
+    }
+
     public void updateValueClass(ChangesSession session) throws SQLException {
         // запишем класс объекта
         ConcreteCustomClass changeClass;

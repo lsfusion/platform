@@ -11,23 +11,72 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.*;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 import net.jcip.annotations.Immutable;
 
 @Immutable
 public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyInterface> extends SumGroupProperty<T> {
 
-    OrderedMap<PropertyInterfaceImplement<L>,Boolean> orders;
-    PropertyMapImplement<L,T> restriction;
+    // чисто чтобы быстрее (не себя подставлять)
+    private static class NullProperty<T extends PropertyInterface> extends FunctionProperty<NullProperty.Interface<T>> {
+
+        private static <T extends PropertyInterface> List<Interface<T>> getInterfaces(Property<T> property) {
+            List<Interface<T>> interfaces = new ArrayList<Interface<T>>();
+            for(T propertyInterface : property.interfaces)
+                interfaces.add(new Interface<T>(interfaces.size(),propertyInterface));
+            return interfaces;
+        }
+
+        public NullProperty(Property<T> property) {
+            super("pc"+property.hashCode(), property.toString(), getInterfaces(property));
+        }
+
+        public static class Interface<T extends PropertyInterface> extends PropertyInterface<Interface<T>> {
+            final T mapInterface;
+
+            public Interface(int ID, T mapInterface) {
+                super(ID);
+                this.mapInterface = mapInterface;
+            }
+        }
+
+        public Map<Interface<T>,T> getMapInterfaces() {
+            Map<Interface<T>,T> result = new HashMap<Interface<T>,T>();
+            for(Interface<T> propertyInterface : interfaces)
+                result.put(propertyInterface,propertyInterface.mapInterface);
+            return result;
+        }
+
+        protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+            return CaseExpr.NULL;
+        }
+
+    }
+
+    private final NullProperty<Interface<T>> nullProperty;
+    private final PropertyMapImplement<? extends PropertyInterface, T> distribute;
 
     public DistrGroupProperty(String sID, String caption, Collection<PropertyInterfaceImplement<T>> interfaces, Property<T> property, OrderedMap<PropertyInterfaceImplement<T>,Boolean> mapOrders, PropertyMapImplement<L,T> restriction) {
         super(sID, caption, interfaces, property);
-        orders = new OrderedMap<PropertyInterfaceImplement<L>, Boolean>();
+        OrderedMap<PropertyInterfaceImplement<L>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<L>, Boolean>();
         for(Map.Entry<PropertyInterfaceImplement<T>,Boolean> order : mapOrders.entrySet())
             orders.put(order.getKey().map(BaseUtils.reverse(restriction.mapping)),order.getValue());
-        this.restriction = restriction;
+
+        nullProperty = new NullProperty<Interface<T>>(this);
+
+        distribute = DerivedProperty.createUGProp(new PropertyImplement<PropertyInterfaceImplement<L>, NullProperty.Interface<Interface<T>>>(nullProperty,
+                BaseUtils.join(nullProperty.getMapInterfaces(), DerivedProperty.mapImplements(getMapInterfaces(), BaseUtils.reverse(restriction.mapping)))),
+                orders, restriction.property).map(restriction.mapping);
+    }
+
+    @Override
+    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+        U result = modifier.newChanges();
+        result.add(distribute.property.getUsedChanges(modifier));
+        result.add(groupProperty.getUsedChanges(modifier));
+        result.add(groupProperty.getUsedDataChanges(modifier));
+        return result;
     }
 
     @Override
@@ -36,14 +85,18 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
         // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
+
+        PropertyChanges propertyChanges = new PropertyChanges(nullProperty, propertyChange.map(nullProperty.getMapInterfaces()));
+
         Where nullWhere = propertyChange.getQuery("value").join(getGroupImplements(mapKeys, modifier, null)).getWhere().and(
                 groupProperty.getExpr(mapKeys, modifier, null).getWhere());
-        Modifier<? extends Changes> changeModifier = new DataChangesModifier(modifier, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier));
+        if(!nullWhere.isFalse())
+            propertyChanges = new PropertyChanges(propertyChanges, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier));
 
-        ExprProperty<Interface<T>> exprProperty = new ExprProperty<Interface<T>>(propertyChange);
-        Expr distributeExpr = DerivedProperty.createUGProp(new PropertyImplement<PropertyInterfaceImplement<L>, ExprProperty.Interface<Interface<T>>>(exprProperty,
-                BaseUtils.crossJoin(exprProperty.getMapInterfaces(),DerivedProperty.mapImplements(getMapInterfaces(), BaseUtils.reverse(restriction.mapping)))),
-                orders, restriction.property).map(restriction.mapping).mapExpr(mapKeys, changeModifier, null);
-        return groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), changedWhere, modifier);
+        Expr distributeExpr = distribute.mapExpr(mapKeys, new PropertyChangesModifier(modifier, propertyChanges), null);
+        DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), null, modifier);
+        if(changedWhere!=null)
+            getExpr(propertyChange.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+        return dataChanges;
     }
 }

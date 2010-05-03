@@ -1,7 +1,8 @@
 package platform.server.data.expr;
 
 import platform.server.caches.ParamLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
@@ -18,7 +19,10 @@ import platform.server.data.where.Where;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 @TranslateExprLazy
+@Immutable
 public class FormulaExpr extends StaticClassExpr {
 
     private final String formula;
@@ -91,6 +95,7 @@ public class FormulaExpr extends StaticClassExpr {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<String, BaseExpr> param : params.entrySet())

@@ -7,7 +7,7 @@ import platform.server.data.expr.where.MapWhere;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.where.Where;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -18,13 +18,17 @@ import platform.server.data.type.ConcatenateType;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
 
 import java.util.List;
 import java.util.ArrayList;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class ConcatenateExpr extends BaseExpr {
 
     private final List<BaseExpr> exprs;
@@ -97,6 +101,7 @@ public class ConcatenateExpr extends BaseExpr {
         return exprs.equals(((ConcatenateExpr)obj).exprs);
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(BaseExpr expr : exprs)

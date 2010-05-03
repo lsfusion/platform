@@ -72,7 +72,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected AbstractCustomClass namedObject, transaction;
 
     protected LP groeq2;
-    protected LP greater2;
+    protected LP greater2, less2;
     protected LP between;
     protected LP object1, and1, andNot1;
     protected LP equals2,diff2;
@@ -84,6 +84,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP transactionLater;
     protected LP currentDate;
+    protected LP currentHour;
 
     void initBase() {
         baseClass = new BaseClass(idShift(1), "Объект");
@@ -108,6 +109,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         andNot1 = addAFProp(true);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
+        less2 = addCFProp(Compare.LESS);
         diff2 = addCFProp(Compare.NOT_EQUALS);
         between = addJProp("Между", and1, groeq2,1,2, groeq2,3,1);
         vtrue = addCProp("Истина",LogicalClass.instance,true);
@@ -120,7 +122,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
+        currentHour = addSFProp(defaultSyntax.getHour(), DoubleClass.instance, 0);
     }
+
+    public static SQLSyntax defaultSyntax;
 
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();
     // получает свойство is
@@ -140,6 +145,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             object.put(valueClass,objectProp);
         }
         return objectProp;
+    }
+
+    protected LP and(boolean... nots) {
+        return addAFProp(nots);
     }
 
     private Map<ValueClass,LP> split = new HashMap<ValueClass, LP>();
@@ -1006,6 +1015,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLGProp(group, property, listImplements);
     }
 
+    protected <T extends PropertyInterface,P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {
+        return addDGProp(null, "sys", orders, ascending, groupProp, params);
+    }
+    protected <T extends PropertyInterface,P extends PropertyInterface> LP addDGProp(AbstractGroup group, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+        return addDGProp(group, genSID(), caption, orders, ascending, groupProp, params);
+    }
     protected <T extends PropertyInterface,P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces,params);
         int intNum = listImplements.size();

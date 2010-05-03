@@ -16,15 +16,17 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.Query;
-import platform.server.data.query.Join;
-import platform.server.caches.MapValues;
-import platform.server.caches.HashValues;
-import platform.server.caches.MapValuesIterable;
+import platform.server.caches.*;
+import platform.server.caches.hash.HashCodeValues;
+import platform.server.caches.hash.HashValues;
 
 import java.sql.SQLException;
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 // временная таблица на момент сессии
+@Immutable
 public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
 
     // конструктор чистой структуры
@@ -74,6 +76,7 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         };
     }
 
+    @Lazy
     public int hashValues(HashValues hashValues) {
         int hash = 0;
         if(rows!=null)
@@ -107,9 +110,15 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         return super.equals(obj) && BaseUtils.nullEquals(rows,((SessionTable)obj).rows);
     }
 
+    boolean hashCoded = false;
+    int hashCode;
     @Override
-    public int hashCode() {
-        return BaseUtils.nullHash(rows) * 31 + super.hashCode();
+    public int hashCode() { // можно было бы взять из AbstractMapValues но без мн-го наследования
+        if(!hashCoded) {
+            hashCode = hashValues(HashCodeValues.instance);
+            hashCoded = true;
+        }
+        return hashCode;
     }
 
     public abstract This createThis(ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows);

@@ -1,9 +1,11 @@
 package platform.server.caches;
 
 import platform.base.MapIterable;
-import platform.base.Pairs;
 import platform.base.QuickMap;
 import platform.server.data.expr.ValueExpr;
+import platform.server.caches.hash.HashCodeValues;
+import platform.server.caches.hash.HashTranslateValues;
+import platform.server.caches.hash.HashValues;
 
 import java.util.Map;
 import java.util.Iterator;
@@ -22,15 +24,7 @@ public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>,Map<
     }
 
     protected Map<ValueExpr, ValueExpr> map(final Map<ValueExpr, ValueExpr> map) {
-        if(from.hashValues(new HashValues(){
-            public int hash(ValueExpr expr) {
-                return map.get(expr).hashCode();
-            }
-        })==to.hashValues(new HashValues(){
-            public int hash(ValueExpr expr) {
-                return expr.hashCode();
-            }
-        }))
+        if(from.hashValues(new HashTranslateValues(map))==to.hashValues(HashCodeValues.instance))
             return map;
         else
             return null;

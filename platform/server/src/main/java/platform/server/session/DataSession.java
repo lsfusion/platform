@@ -7,7 +7,6 @@ import platform.interop.Compare;
 import platform.server.data.*;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.DataAdapter;
@@ -26,11 +25,14 @@ import platform.server.view.form.RemoteForm;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.classes.*;
-import platform.server.caches.HashValues;
+import platform.server.caches.hash.HashValues;
 import platform.server.caches.MapValuesIterable;
+import platform.server.caches.Lazy;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import net.jcip.annotations.Immutable;
 
 public class DataSession extends SQLSession implements ChangesSession {
 
@@ -305,6 +307,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         return incrementChange.properties;
     }
 
+    @Immutable
     private static class Increment extends Modifier<Increment.UsedChanges> {
 
         Map<Property, IncrementChangeTable> tables = new HashMap<Property, IncrementChangeTable>(); 
@@ -339,6 +342,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
 
             @Override
+            @Lazy
             public int hashValues(HashValues hashValues) {
                 return super.hashValues(hashValues) * 31 + MapValuesIterable.hash(increment,hashValues);
             }

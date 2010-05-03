@@ -119,4 +119,8 @@ public abstract class DataAdapter implements SQLSyntax {
     public boolean nullUnionTrouble() {
         return false;
     }
+
+    public String getHour() {
+        return "EXTRACT(HOUR FROM CURRENT_TIME)";
+    }
 }

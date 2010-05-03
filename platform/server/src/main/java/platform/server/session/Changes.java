@@ -2,8 +2,7 @@ package platform.server.session;
 
 import platform.server.classes.CustomClass;
 import platform.server.logics.property.DataProperty;
-import platform.server.caches.MapValues;
-import platform.server.caches.HashValues;
+import platform.server.caches.hash.HashValues;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.AbstractMapValues;
 import platform.server.data.expr.ValueExpr;

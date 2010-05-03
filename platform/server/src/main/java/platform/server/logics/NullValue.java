@@ -4,7 +4,8 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
-import platform.server.caches.HashValues;
+import platform.server.caches.hash.HashValues;
+import platform.server.session.ChangesSession;
 
 import java.util.Set;
 import java.util.HashSet;
@@ -53,6 +54,10 @@ public class NullValue extends ObjectValue<NullValue> {
     }
 
     public NullValue translate(Map<ValueExpr, ValueExpr> mapValues) {
+        return this;
+    }
+
+    public ObjectValue refresh(ChangesSession session) {
         return this;
     }
 }

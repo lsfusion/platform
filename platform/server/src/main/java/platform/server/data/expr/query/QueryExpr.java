@@ -6,9 +6,10 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.query.SourceEnumerator;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.where.Where;
 import platform.server.caches.*;
 import platform.base.BaseUtils;
 
@@ -16,6 +17,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>,J extends QueryJoin> extends InnerExpr implements MapContext {
 
     public I query;
@@ -114,5 +118,23 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
     @Lazy
     public Set<ValueExpr> getValues() {
         return enumValues(group.keySet(), query.getEnum());
+    }
+
+    protected static <E extends BaseExpr> Map<E, BaseExpr> pushValues(Map<E, BaseExpr> group, Where falseWhere) {
+        Map<BaseExpr, BaseExpr> exprValues = falseWhere.not().getExprValues();
+        Map<E, BaseExpr> result = new HashMap<E, BaseExpr>(); // проталкиваем values внутрь
+        boolean pushed = false;
+        for(Map.Entry<E, BaseExpr> groupExpr : group.entrySet()) {
+            BaseExpr pushValue = exprValues.get(groupExpr.getValue());
+            if(pushValue!=null) {
+                pushed = true;
+                result.put(groupExpr.getKey(), pushValue);
+            } else
+                result.put(groupExpr.getKey(),groupExpr.getValue());
+        }
+        if(pushed)
+            return result;
+        else
+            return group;
     }
 }

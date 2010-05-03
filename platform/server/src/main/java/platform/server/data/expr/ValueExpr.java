@@ -11,7 +11,7 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.base.BaseUtils;
 
 import java.util.*;
@@ -107,6 +107,7 @@ public class ValueExpr extends StaticClassExpr {
         staticExprs = new HashSet<ValueExpr>();
         staticExprs.add(ValueExpr.TRUE);
         staticExprs.add(ValueExpr.ZERO);
+        staticExprs.add(null);
     }
 
     public static Set<? extends Expr> removeStatic(Set<? extends Expr> col) {

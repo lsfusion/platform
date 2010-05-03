@@ -17,12 +17,15 @@ import platform.server.data.type.ConcatenateType;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.base.QuickMap;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class DeconcatenateExpr extends SingleClassExpr {
 
     BaseExpr expr;
@@ -77,6 +80,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         return expr.hashContext(hashContext) * 31 + part;
     }

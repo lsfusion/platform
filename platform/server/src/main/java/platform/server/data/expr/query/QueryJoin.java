@@ -1,6 +1,7 @@
 package platform.server.data.expr.query;
 
 import platform.server.caches.*;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -11,6 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>> implements MapContext {
 
     private final I query;
@@ -70,6 +74,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
             return group;
         }
     };
+    @Lazy
     public int hash(HashContext hashContext) {
         return hashes.hash(hashContext);
     }

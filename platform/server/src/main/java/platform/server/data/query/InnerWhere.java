@@ -4,17 +4,17 @@ import platform.base.BaseUtils;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.where.EqualsWhere;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
 import platform.server.data.where.DNFWheres;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class InnerWhere implements DNFWheres.Interface<InnerWhere> {
 
     public final JoinSet joins;
@@ -63,6 +63,7 @@ public class InnerWhere implements DNFWheres.Interface<InnerWhere> {
         return false;
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<KeyExpr,BaseExpr> keyValue : keyExprs.entrySet())

@@ -297,7 +297,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         for(GroupObjectImplement group : groups)
             for(ObjectImplement object : group.objects)
                 if(object instanceof CustomObjectImplement)
-                    ((CustomObjectImplement)object).updateValueClass(session);
+                    ((CustomObjectImplement)object).refreshValueClass(session);
         refresh = true;
     }
 
@@ -315,8 +315,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     public String saveChanges() throws SQLException {
         String applyString = session.apply(BL);
         if(applyString==null) {
-            addObjectOnTransaction();
             refreshData();
+            addObjectOnTransaction();
         }
         return applyString;
     }
@@ -329,7 +329,6 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             for(ObjectImplement object : group.objects)
                 if(object instanceof CustomObjectImplement)
                     ((CustomObjectImplement)object).updateValueClass(session);
-
         addObjectOnTransaction();
 
         dataChanged = true;

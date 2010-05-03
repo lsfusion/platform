@@ -1,10 +1,9 @@
 package platform.server.caches;
 
 import platform.base.MapIterable;
-import platform.server.caches.HashContext;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.KeyTranslator;
+import platform.server.caches.hash.HashCodeContext;
+import platform.server.caches.hash.HashTranslateContext;
 
 import java.util.Iterator;
 
@@ -21,21 +20,7 @@ public class MapHashIterable extends MapIterable<KeyTranslator,KeyTranslator> {
     }
 
     protected KeyTranslator map(final KeyTranslator translator) {
-        if(from.hash(new HashContext(){
-            public int hash(KeyExpr expr) {
-                return translator.translate(expr).hashCode();
-            }
-            public int hash(ValueExpr expr) {
-                return (values?translator.values.get(expr):expr).hashCode();
-            }
-        })==to.hash(new HashContext(){
-            public int hash(KeyExpr expr) {
-                return expr.hashCode();
-            }
-            public int hash(ValueExpr expr) {
-                return expr.hashCode();
-            }
-        }))
+        if(from.hash(new HashTranslateContext(translator, values))==to.hash(HashCodeContext.instance))
             return translator;
         else
             return null;

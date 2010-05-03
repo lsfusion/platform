@@ -59,4 +59,6 @@ public interface SQLSyntax {
     String getUnionOrder(String union,String orderBy, String top);
 
     String getOrderDirection(boolean order);
+
+    String getHour();
 }

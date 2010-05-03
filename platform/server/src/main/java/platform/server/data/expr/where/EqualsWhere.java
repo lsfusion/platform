@@ -1,19 +1,15 @@
 package platform.server.data.expr.where;
 
 import platform.interop.Compare;
-import platform.server.caches.ParamLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.classes.StringClass;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
-import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.*;
-import platform.server.data.translator.KeyTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.EqualMap;
 import platform.base.BaseUtils;
@@ -21,6 +17,9 @@ import platform.base.BaseUtils;
 import java.util.Map;
 import java.util.HashMap;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     private EqualsWhere(BaseExpr operator1, BaseExpr operator2) {
@@ -73,6 +72,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
                (operator1.equals(((EqualsWhere)o).operator2) && operator2.equals(((EqualsWhere)o).operator1)) ;
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         return operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31;
     }

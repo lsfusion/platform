@@ -1,20 +1,19 @@
 package platform.server.data.expr.where;
 
 import platform.interop.Compare;
-import platform.server.caches.ParamLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.translator.KeyTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.base.BaseUtils;
+import net.jcip.annotations.Immutable;
 
 // если operator1 не null и больше operator2 или operator2 null
+@Immutable
 public class GreaterWhere extends CompareWhere {
 
     private GreaterWhere(BaseExpr operator1, BaseExpr operator2) {
@@ -31,6 +30,7 @@ public class GreaterWhere extends CompareWhere {
         return operator1.equals(((GreaterWhere)o).operator1) && operator2.equals(((GreaterWhere)o).operator2);
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         return 1 + operator1.hashContext(hashContext)*31 + operator2.hashContext(hashContext)*31*31;
     }

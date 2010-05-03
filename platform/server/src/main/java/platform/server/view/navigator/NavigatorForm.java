@@ -228,7 +228,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return resultPropView;
     }
 
-    void addHintsNoUpdate(List<Property> properties, AbstractGroup group) {
+    public void addHintsNoUpdate(List<Property> properties, AbstractGroup group) {
 
         for (Property property : properties) {
             if (group != null && !group.hasChild(property)) continue;

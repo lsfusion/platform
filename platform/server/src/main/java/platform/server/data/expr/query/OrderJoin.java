@@ -5,17 +5,20 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-import platform.server.caches.HashContext;
-import platform.server.caches.TranslateContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.Lazy;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.KeyTranslator;
 
 import java.util.Set;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
+    @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
         private final Set<Expr> partitions;
@@ -25,6 +28,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             this.partitions = partitions;
         }
 
+        @Lazy
         public int hashContext(HashContext hashContext) {
             int hash = 0;
             for(Expr partition : partitions)

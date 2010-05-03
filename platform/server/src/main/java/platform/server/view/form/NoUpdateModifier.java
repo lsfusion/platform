@@ -7,9 +7,12 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.caches.HashValues;
+import platform.server.caches.hash.HashValues;
+import platform.server.caches.Lazy;
 
 import java.util.*;
+
+import net.jcip.annotations.Immutable;
 
 public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedChanges> {
 
@@ -22,6 +25,7 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         this.hintsNoUpdate = hintsNoUpdate;
     }
 
+    @Immutable
     public static class UsedChanges extends Changes<UsedChanges> {
         final Set<Property> noUpdateProps;
 
@@ -37,6 +41,7 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         }
 
         @Override
+        @Lazy
         public int hashValues(HashValues hashValues) {
             return 31 * super.hashValues(hashValues) + noUpdateProps.hashCode();
         }

@@ -342,7 +342,7 @@ public class BaseUtils {
                 if(values1.contains(entry2.getValue())) // повторяется значение - не reversed
                     return null;
             } else
-                if(!entry2.getValue().equals(value1)) // повторяется ключ
+                if(!value1.equals(entry2.getValue())) // повторяется ключ
                     return null;
         }
         return result;

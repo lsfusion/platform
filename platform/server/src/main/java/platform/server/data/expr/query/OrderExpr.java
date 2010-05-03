@@ -1,7 +1,6 @@
 package platform.server.data.expr.query;
 
 import platform.server.data.expr.*;
-import platform.server.data.expr.where.MapWhere;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.cases.CaseExpr;
@@ -11,15 +10,16 @@ import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.query.*;
 import platform.server.data.type.Type;
-import platform.server.caches.MapContext;
-import platform.server.caches.HashContext;
-import platform.server.caches.TranslateContext;
-import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.*;
+import platform.server.caches.hash.HashContext;
 
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
+    @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         public Expr expr;
         public List<Expr> orders;
@@ -31,10 +31,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             this.partitions = partitions;
         }
 
+        @ParamLazy
         public Query translateDirect(KeyTranslator translator) {
             return new Query(expr.translateDirect(translator),translator.translate(orders),translator.translate(partitions));
         }
 
+        @Lazy
         public int hashContext(HashContext hashContext) {
             int hash = 0;
             for(Expr order : orders)
@@ -45,10 +47,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return hash * 31 + expr.hashContext(hashContext);
         }
 
+        @Lazy
         public Where getWhere() {
             return expr.getWhere().and(Expr.getWhere(orders)).and(Expr.getWhere(partitions));
         }
 
+        @Lazy
         public Type getType() {
             return expr.getType(getWhere());
         }
@@ -115,6 +119,15 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     protected Expr create(Map<KeyExpr, BaseExpr> group, Query query) {
         return createBase(group, query.expr, query.orders, query.partitions);
+    }
+
+    @Override
+    public BaseExpr packFollowFalse(Where where) {
+        Map<KeyExpr,BaseExpr> pushedGroup = pushValues(group, where);
+        if(pushedGroup!=group) // немного извращенно но пока так
+            return (BaseExpr) createBase(pushedGroup, query.expr, query.orders, query.partitions);
+        else
+            return this;
     }
 
     protected static Expr createBase(Map<KeyExpr, BaseExpr> group, Expr expr, List<Expr> orders, Set<Expr> partitions) {

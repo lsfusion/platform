@@ -2,7 +2,8 @@ package platform.server.data.expr;
 
 import platform.base.BaseUtils;
 import platform.server.caches.ParamLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.classes.IntegralClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
@@ -15,9 +16,12 @@ import platform.server.data.where.Where;
 
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr
 @TranslateExprLazy
+@Immutable
 public class LinearExpr extends StaticClassExpr {
 
     final LinearOperandMap map;
@@ -71,6 +75,7 @@ public class LinearExpr extends StaticClassExpr {
         return map.equals(((LinearExpr)obj).map);
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         return map.hashContext(hashContext);
     }
@@ -108,6 +113,7 @@ public class LinearExpr extends StaticClassExpr {
         return new DataWhereSet(follows);
     }
 
+    @Lazy
     public IntegralClass getStaticClass() {
         return map.getType();
     }

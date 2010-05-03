@@ -2,7 +2,8 @@ package platform.server.data.expr.cases;
 
 import platform.interop.Compare;
 import platform.server.caches.ParamLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.*;
@@ -23,7 +24,10 @@ import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 @TranslateExprLazy
+@Immutable
 public class CaseExpr extends Expr {
 
     private final ExprCaseList cases;
@@ -149,6 +153,7 @@ public class CaseExpr extends Expr {
         return cases.equals(((CaseExpr)obj).cases);
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         return cases.hashContext(hashContext);
     }

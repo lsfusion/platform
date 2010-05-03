@@ -1,20 +1,14 @@
 package platform.server.data.expr;
 
-import platform.base.QuickMap;
-import platform.server.classes.BaseClass;
-import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.query.*;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
-import platform.server.data.expr.where.IsClassWhere;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 
 import java.util.Map;
 

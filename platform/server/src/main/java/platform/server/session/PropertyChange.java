@@ -5,7 +5,8 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.Where;
 import platform.server.data.query.Query;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.logics.property.PropertyInterface;
@@ -16,12 +17,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class PropertyChange<T extends PropertyInterface> extends AbstractMapValues<PropertyChange<T>> implements MapContext {
-    public Map<T,KeyExpr> mapKeys;
-    public Expr expr;
-    public Where where;
+    public final Map<T,KeyExpr> mapKeys;
+    public final Expr expr;
+    public final Where where;
 
     public PropertyChange(Map<T, KeyExpr> mapKeys, Expr expr, Where where) {
+        assert !mapKeys.containsValue(null);
         this.mapKeys = mapKeys;
         this.expr = expr;
         this.where = where;
@@ -57,6 +62,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return query;
    }
 
+    @Lazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
@@ -77,20 +83,16 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return false;
     }
 
+    @Lazy
     public int hashValues(final HashValues hashValues) {
-        return hash(new HashContext() {
-            public int hash(KeyExpr expr) {
-                return 1;
-            }
+        return hash(hashValues.mapKeys());
+    }
 
-            public int hash(ValueExpr expr) {
-                return hashValues.hash(expr);
-            }
-        });
+    public PropertyChange<T> translate(KeyTranslator translator) {
+        return new PropertyChange<T>(BaseUtils.join(mapKeys,translator.keys),expr.translateDirect(translator),where.translateDirect(translator));
     }
 
     public PropertyChange<T> translate(Map<ValueExpr, ValueExpr> mapValues) {
-        KeyTranslator translator = new KeyTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues);
-        return new PropertyChange<T>(mapKeys,expr.translateDirect(translator),where.translateDirect(translator));
+        return translate(new KeyTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues));
     }
 }

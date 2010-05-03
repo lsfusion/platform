@@ -1,7 +1,8 @@
 package platform.server.data.expr.where;
 
 import platform.server.caches.ParamLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.classes.DataClass;
 import platform.server.classes.UnknownClass;
 import platform.server.classes.sets.AndClassSet;
@@ -9,16 +10,15 @@ import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
-import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.expr.SingleClassExpr;
-import platform.server.data.expr.Expr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import net.jcip.annotations.Immutable;
 
-
+@Immutable
 public class IsClassWhere extends DataWhere {
 
     private final SingleClassExpr expr;
@@ -84,6 +84,7 @@ public class IsClassWhere extends DataWhere {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         return expr.hashContext(hashContext) + classes.hashCode()*31;
     }

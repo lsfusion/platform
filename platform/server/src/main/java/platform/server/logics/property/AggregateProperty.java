@@ -88,9 +88,12 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return true;
     }
 
+    public static AggregateProperty recalculate = null;
+    
     public void recalculateAggregation(SQLSession session) throws SQLException {
         PropertyField writeField = field;
         field = null;
+        recalculate = this;
 
         Query<KeyField, PropertyField> writeQuery = new Query<KeyField, PropertyField>(mapTable.table);
         Expr recalculateExpr = getExpr(BaseUtils.join(mapTable.mapKeys, writeQuery.mapKeys));

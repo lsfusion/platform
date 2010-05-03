@@ -6,10 +6,14 @@ import platform.server.data.Table;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.expr.query.GroupJoin;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 
 import java.util.Collection;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Interface<JoinSet> {
 
     JoinSet() {
@@ -55,6 +59,7 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
                 groups.add((GroupJoin) where);
     }
 
+    @Lazy
     public int hashContext(HashContext hashContext) {
         int hash = 0;
         for(InnerJoin where : wheres)

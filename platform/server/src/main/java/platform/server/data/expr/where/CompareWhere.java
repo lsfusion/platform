@@ -4,6 +4,7 @@ import platform.server.data.query.JoinData;
 import platform.server.data.query.SourceEnumerator;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.OrWhere;
 import platform.server.data.where.Where;
@@ -12,6 +13,8 @@ import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.logics.DataObject;
 import platform.server.caches.ParamLazy;
+import platform.server.caches.hash.HashKeyExprsContext;
+import platform.server.caches.hash.HashContext;
 import platform.interop.Compare;
 
 import java.util.Map;
@@ -88,6 +91,17 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
         if(packedOperator1==null) return FALSE;
         BaseExpr packedOperator2 = operator2.andFollowFalse(falseWhere);
         if(packedOperator2==null) return FALSE;
+
+        Map<KeyExpr, BaseExpr> keyExprs = falseWhere.not().getKeyExprs();
+        if(keyExprs.size()>0) {
+            HashContext hashKeyExprs = new HashKeyExprsContext(keyExprs);
+            if(operator1.hashContext(hashKeyExprs)==operator2.hashContext(hashKeyExprs)) {
+                QueryTranslator translator = new QueryTranslator(keyExprs,false);
+                if(operator1.translateQuery(translator).equals(operator2.translateQuery(translator)))
+                    return ((CompareWhere)this) instanceof EqualsWhere?Where.TRUE:Where.FALSE;
+            }
+        }
+  
         return createThis(packedOperator1,packedOperator2);
     }
 

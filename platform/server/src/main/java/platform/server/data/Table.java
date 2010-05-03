@@ -2,9 +2,9 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.ParamLazy;
-import platform.server.caches.TwinLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.*;
+import platform.server.caches.hash.HashCodeContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.*;
@@ -34,6 +34,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class Table implements MapKeysInterface<KeyField> {
     public final String name;
     public final Collection<KeyField> keys = new ArrayList<KeyField>();
@@ -198,6 +201,7 @@ public class Table implements MapKeysInterface<KeyField> {
             return Table.this.properties;
         }
 
+        @Lazy
         public int hashContext(HashContext hashContext) {
             int hash = Table.this.hashCode()*31;
                 // нужен симметричный хэш относительно выражений
@@ -235,17 +239,7 @@ public class Table implements MapKeysInterface<KeyField> {
 
         @Override
         public int hashCode() {
-            return hashContext(new HashContext(){
-                public int hash(KeyExpr expr) {
-                    return expr.hashCode();
-                }
-
-                public int hash(ValueExpr expr) {
-                    return expr.hashCode();
-                }
-            });
-
-
+            return hashContext(HashCodeContext.instance);
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -315,6 +309,7 @@ public class Table implements MapKeysInterface<KeyField> {
             }
         }
 
+        @Immutable
         public class Expr extends InnerExpr {
 
             public final PropertyField property;
@@ -362,6 +357,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
             }
 
+            @Lazy
             public int hashContext(HashContext hashContext) {
                 return Join.this.hashContext(hashContext)*31+property.hashCode();
             }

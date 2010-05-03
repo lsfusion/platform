@@ -50,7 +50,10 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
         Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
 //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
-        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),changedWhere,modifier);
+        DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null,modifier);
+        if(changedWhere!=null)
+            getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+        return dataChanges;
     }
 
     private Expr getChangeExpr(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {

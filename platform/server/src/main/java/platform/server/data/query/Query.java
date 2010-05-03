@@ -6,7 +6,7 @@ import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.expr.KeyExpr;
@@ -196,6 +196,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         where = query.where;
     }
 
+    @Lazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Expr property : properties.values())

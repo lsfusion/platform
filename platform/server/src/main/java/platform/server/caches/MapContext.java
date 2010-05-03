@@ -1,6 +1,6 @@
 package platform.server.caches;
 
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 

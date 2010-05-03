@@ -1,12 +1,14 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.Lazy;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
 
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public abstract class QueryHashes<K extends BaseExpr> {
 
     protected abstract int hashValue(HashContext hashContext);
@@ -14,16 +16,9 @@ public abstract class QueryHashes<K extends BaseExpr> {
     protected abstract Map<K, BaseExpr> getGroup();
 
     // hash'и "внешнего" контекста, там пойдет внутренняя трансляция values поэтому hash по values надо "протолкнуть" внутрь
+    @Lazy
     public int hashContext(final HashContext hashContext) {
-        HashContext innerHash = new HashContext() {
-            public int hash(KeyExpr expr) {
-                return 1;
-            }
-
-            public int hash(ValueExpr expr) {
-                return hashContext.hash(expr);
-            }
-        };
+        HashContext innerHash = hashContext.mapKeys();
         int hash = 0;
         for(Map.Entry<K,BaseExpr> groupExpr : getGroup().entrySet())
             hash += groupExpr.getKey().hashContext(innerHash) ^ groupExpr.getValue().hashContext(hashContext);
@@ -31,6 +26,7 @@ public abstract class QueryHashes<K extends BaseExpr> {
     }
 
     // hash'и "внутреннего" контекста
+    @Lazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<K,BaseExpr> expr : getGroup().entrySet())

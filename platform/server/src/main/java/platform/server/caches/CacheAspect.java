@@ -62,6 +62,9 @@ public class CacheAspect {
     }
 
     private Object lazyExecute(Object object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
+        if(args.length>0 && args[0] instanceof NoCacheInterface)
+            return thisJoinPoint.proceed();
+
         Invocation invoke = new Invocation(thisJoinPoint,args);
         Map caches = ((ImmutableInterface)object).getCaches();
         Object result = caches.get(invoke);

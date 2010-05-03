@@ -1,6 +1,6 @@
 package platform.server.data.expr.cases;
 
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.Where;
 

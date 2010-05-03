@@ -3,7 +3,8 @@ package platform.server.caches;
 import platform.base.BaseUtils;
 import platform.base.EmptyIterator;
 import platform.base.Pairs;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashMapContext;
+import platform.server.caches.hash.HashMapKeysContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.translator.KeyTranslator;
@@ -14,14 +15,7 @@ import java.util.Map;
 public class MapParamsIterable implements Iterable<KeyTranslator> {
 
     public static int hash(MapContext map,final boolean values) {
-        return map.hash(new HashContext() {
-            public int hash(KeyExpr expr) {
-                return 1;
-            }
-            public int hash(ValueExpr expr) {
-                return values?1:expr.hashCode();
-            }
-        });
+        return map.hash(values? HashMapContext.instance: HashMapKeysContext.instance);
     }
 
     private final MapContext from;
@@ -62,6 +56,8 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
             else {
                 keyPairs = new Pairs<KeyExpr,KeyExpr>(from.getKeys(),to.getKeys());
                 keysIterator = keyPairs.iterator();
+                if(!keysIterator.hasNext())
+                    valueIterator = new EmptyIterator<Map<ValueExpr, ValueExpr>>();    
             }
         }
 
@@ -73,13 +69,11 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
 
         public KeyTranslator next() {
             Map<KeyExpr,KeyExpr> mapKeys;
-            if(keysIterator.hasNext())
-                mapKeys = keysIterator.next();
-            else {
+            if(!keysIterator.hasNext()) {
                 mapValues = valueIterator.next();
                 keysIterator = keyPairs.iterator();
-                mapKeys = keysIterator.next();
             }
+            mapKeys = keysIterator.next();
             return new KeyTranslator(mapKeys,mapValues);
         }
 

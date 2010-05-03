@@ -181,21 +181,21 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         return result;
     }
 
-    Where getFilterWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getFilterWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         Where where = Where.TRUE;
         for(Filter filt : filters)
             where = where.and(filt.getWhere(mapKeys, classGroup, modifier));
         return where;
     }
 
-    Where getClassWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) {
+    private Where getClassWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) {
         Where where = Where.TRUE;
         for(ObjectImplement object : objects)
             where = where.and(DataSession.getIsClassWhere(modifier.getSession(),mapKeys.get(object),object.getGridClass(),null));
         return where;
     }
 
-    Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
+    public Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         return getFilterWhere(mapKeys, classGroup, modifier).and(getClassWhere(mapKeys, classGroup, modifier));
     }
 

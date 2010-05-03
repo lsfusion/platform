@@ -2,7 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.Table;
 import platform.server.classes.BaseClass;
 import platform.server.classes.SystemClass;
@@ -16,10 +16,13 @@ import platform.server.data.where.Where;
 
 import java.util.Collections;
 
+import net.jcip.annotations.Immutable;
+
+@Immutable
 public class IsClassExpr extends StaticClassExpr {
 
-    public SingleClassExpr expr;
-    BaseClass baseClass;
+    public final SingleClassExpr expr;
+    final BaseClass baseClass;
 
     public IsClassExpr(SingleClassExpr expr, BaseClass baseClass) {
         this.expr = expr;

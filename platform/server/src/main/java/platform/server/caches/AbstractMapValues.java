@@ -1,7 +1,6 @@
 package platform.server.caches;
 
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.caches.hash.HashCodeValues;
 
 public abstract class AbstractMapValues<U extends AbstractMapValues<U>> implements MapValues<U>  {
 
@@ -10,15 +9,9 @@ public abstract class AbstractMapValues<U extends AbstractMapValues<U>> implemen
     @Override
     public int hashCode() {
         if(!hashCoded) {
-            hashCode = hashValues(new HashValues() {
-                public int hash(ValueExpr expr) {
-                    return expr.hashCode();
-                }
-            });
+            hashCode = hashValues(HashCodeValues.instance);
             hashCoded = true;
         }
         return hashCode;
     }
-
-
 }

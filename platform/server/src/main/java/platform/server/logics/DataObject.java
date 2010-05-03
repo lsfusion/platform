@@ -15,12 +15,14 @@ import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.navigator.PropertyInterfaceNavigator;
 import platform.server.view.navigator.Mapper;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.caches.HashValues;
+import platform.server.caches.hash.HashValues;
+import platform.server.session.ChangesSession;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
+import java.sql.SQLException;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, PropertyInterfaceNavigator {
 
@@ -127,5 +129,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public DataObject translate(Map<ValueExpr, ValueExpr> mapValues) {
         return new DataObject(mapValues.get(getExpr()));
+    }
+
+    public DataObject refresh(ChangesSession session) throws SQLException {
+        return session.getDataObject(object, objectClass.getType());
     }
 }

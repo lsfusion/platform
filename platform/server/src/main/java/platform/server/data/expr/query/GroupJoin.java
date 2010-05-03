@@ -8,9 +8,9 @@ import platform.server.data.where.Where;
 import platform.server.data.where.DataWhere;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerWhere;
-import platform.server.caches.HashContext;
-import platform.server.caches.TranslateContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.Lazy;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.expr.query.GroupExpr;
 
@@ -20,6 +20,7 @@ import java.util.Set;
 @Immutable
 public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin {
 
+    @Immutable
     public static class Query extends AbstractTranslateContext<Query> {
         private final Where where;
         private final InnerWhere innerWhere;
@@ -29,6 +30,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
             this.innerWhere = innerWhere;
         }
 
+        @Lazy
         public int hashContext(HashContext hashContext) {
             return where.hashContext(hashContext) * 31 + innerWhere.hashContext(hashContext);
         }

@@ -5,7 +5,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.*;
 import platform.server.data.expr.query.GroupJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.caches.HashContext;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.InnerWhere;
 import platform.server.data.expr.cases.CaseExpr;
@@ -19,7 +19,6 @@ import platform.server.data.expr.*;
 import platform.server.data.type.Type;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.data.where.OrObjectWhere;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.classes.DataClass;
 
@@ -60,22 +59,14 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
         return result;
     }
     
-    private static Map<BaseExpr, BaseExpr> pushValues(Map<BaseExpr, BaseExpr> group,Where trueWhere) {
-        Map<BaseExpr, BaseExpr> exprValues = trueWhere.getExprValues();
-        Map<BaseExpr, BaseExpr> result = new HashMap<BaseExpr, BaseExpr>(); BaseExpr pushValue; // проталкиваем values внутрь
-        for(Map.Entry<BaseExpr, BaseExpr> groupExpr : group.entrySet())
-            result.put(groupExpr.getKey(),((pushValue=exprValues.get(groupExpr.getValue()))==null?groupExpr.getValue():pushValue));
-        return result;
-    }
-
     // проталкиваем статичные значения внутрь
     @Override
     public BaseExpr packFollowFalse(Where falseWhere) {
-        Expr packed = createBase(pushValues(group, falseWhere.not()), query, isMax(), falseWhere.not(), getContextTypeWhere());
+        Expr packed = createBase(pushValues(group, falseWhere), query, isMax(), falseWhere.not(), getContextTypeWhere());
         if(packed instanceof BaseExpr)
             return (BaseExpr) packed;
         else {
-            assert false;
+//            assert false;
             return this;
         }
     }

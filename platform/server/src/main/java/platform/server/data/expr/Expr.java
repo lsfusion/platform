@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.Lazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.AbstractSourceJoin;
@@ -16,13 +17,17 @@ import platform.server.data.where.Where;
 import java.util.Collection;
 import java.util.Map;
 
+import net.jcip.annotations.Immutable;
+
 // абстрактный класс выражений
 
+@Immutable
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
 
     public abstract Type getType(Where where);
+    @Lazy
     public Type getSelfType() {
         return getType(getWhere());
     }   

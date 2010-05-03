@@ -1,7 +1,6 @@
 package platform.server.caches;
 
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.caches.hash.HashCodeContext;
 
 public abstract class AbstractTranslateContext<This extends TranslateContext> implements TranslateContext<This> {
 
@@ -10,17 +9,9 @@ public abstract class AbstractTranslateContext<This extends TranslateContext> im
     @Override
     public int hashCode() {
         if(!hashCoded) {
-            hashCode = hashContext(new HashContext() {
-                public int hash(KeyExpr expr) {
-                    return expr.hashCode();
-                }
-                public int hash(ValueExpr expr) {
-                    return expr.hashCode();
-                }
-            });
+            hashCode = hashContext(HashCodeContext.instance);
             hashCoded = true;
         }
         return hashCode;
     }
-
 }
