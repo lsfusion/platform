@@ -69,14 +69,7 @@ public class ClassController {
         buttonChangeClass.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent ae) {
-                ClientObjectClass selectedClass = getSelectedClass();
-                if(selectedClass instanceof ClientConcreteClass) {
-                    try {
-                        form.changeClass(object, (ClientConcreteClass)selectedClass);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении класса объекта", e);
-                    }
-                }
+                changeClass();
             }
 
         });
@@ -133,4 +126,19 @@ public class ClassController {
         return (ClientObjectClass) selNode.getUserObject();
     }
 
+    public void changeClass() {
+
+        ClientObjectClass selectedClass = getSelectedClass();
+
+        if (!(selectedClass instanceof ClientConcreteClass)) {
+            selectedClass = ClassDialog.dialogConcreteClass(form, object, selectedClass);
+            if (selectedClass == null) return;
+        }
+
+        try {
+            form.changeClass(object, (ClientConcreteClass)selectedClass);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при изменении класса объекта", e);
+        }
+    }
 }

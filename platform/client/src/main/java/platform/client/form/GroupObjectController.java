@@ -248,14 +248,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         comp.getActionMap().put("addObject", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
-                ClientObjectClass addClass = objects.get(groupObject.get(0)).classController.getDerivedClass();
-                if(addClass instanceof ClientConcreteClass) {
-                    try {
-                        form.addObject(groupObject.get(0),(ClientConcreteClass)addClass);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при добавлении объекта", e);
-                    }
-                }
+                objects.get(groupObject.get(0)).addObject();
             }
         });
 
@@ -263,11 +256,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         comp.getActionMap().put("removeObject", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    form.changeClass(groupObject.get(0), null);
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при удалении объекта", e);
-                }
+                objects.get(groupObject.get(0)).deleteObject();
             }
         });
 
@@ -275,14 +264,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         comp.getActionMap().put("changeObjectClass", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
-                ClientObjectClass changeClass = objects.get(groupObject.get(0)).classController.getSelectedClass();
-                if(changeClass instanceof ClientConcreteClass) {
-                    try {
-                        form.changeClass(groupObject.get(0), (ClientConcreteClass) changeClass);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении класса объекта", e);
-                    }
-                }
+                objects.get(groupObject.get(0)).classController.changeClass();
             }
         });
 

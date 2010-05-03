@@ -22,7 +22,9 @@ public class ClientDialog extends JDialog {
 
         setLayout(new BorderLayout());
 
+        // делаем, чтобы не выглядел как диалог
         setUndecorated(true);
+        getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
 
         //        RemoteNavigator remoteNavigator = owner.remoteForm.getNavigator(((ClientPropertyView)owner.editingCell).sID);
         navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {

@@ -22,8 +22,6 @@ public class ClassPropertyEditor extends JComponent implements PropertyEditorCom
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
 
         dialog.setLocation(new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
-        dialog.setSize(300, 300);
-
         dialog.setVisible(true);
         return null;
     }

@@ -4,6 +4,7 @@ import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.classes.ClassController;
+import platform.client.form.classes.ClassDialog;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
@@ -39,16 +40,8 @@ class ObjectController {
             buttonAdd = new JButton("Добавить");
             buttonAdd.setFocusable(false);
             buttonAdd.addActionListener(new ActionListener() {
-
                 public void actionPerformed(ActionEvent ae) {
-                    ClientObjectClass derivedClass = classController.getDerivedClass();
-                    if(derivedClass instanceof ClientConcreteClass) {
-                        try {
-                            form.addObject(object, (ClientConcreteClass)derivedClass);
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при добавлении объекта", e);
-                        }
-                    }
+                    addObject();
                 }
             });
 
@@ -57,11 +50,7 @@ class ObjectController {
             buttonDel.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent ae) {
-                    try {
-                        form.changeClass(object, null);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при удалении объекта", e);
-                    }
+                    deleteObject();
                 }
 
             });
@@ -112,5 +101,30 @@ class ObjectController {
 
         if (buttonDel != null)
             buttonDel.setVisible(true);
+    }
+
+    public void addObject() {
+
+        ClientObjectClass derivedClass = classController.getDerivedClass();
+
+        if (!(derivedClass instanceof ClientConcreteClass)) {
+            derivedClass = ClassDialog.dialogConcreteClass(form, object, derivedClass);
+            if (derivedClass == null) return;
+        }
+
+        try {
+            form.addObject(object, (ClientConcreteClass)derivedClass);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при добавлении объекта", e);
+        }
+    }
+
+    public void deleteObject() {
+
+        try {
+            form.changeClass(object, null);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при удалении объекта", e);
+        }
     }
 }

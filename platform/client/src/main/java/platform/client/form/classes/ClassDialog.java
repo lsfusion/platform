@@ -1,7 +1,6 @@
 package platform.client.form.classes;
 
 import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
@@ -17,11 +16,16 @@ public class ClassDialog extends JDialog {
 
     ClassTree tree;
 
-    public ClassDialog(Component owner, ClientObjectImplementView object, ClientConcreteClass value) {
+    public ClassDialog(Component owner, ClientObjectImplementView object, ClientObjectClass value) {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
         setLayout(new BorderLayout());
+
+        // делаем, чтобы не выглядел как диалог
         setUndecorated(true);
+        getRootPane().setBorder(BorderFactory.createLineBorder(Color.gray, 1));
+
+        setSize(300, 200);
 
         tree = new ClassTree(0, object.baseClass) {
             protected void currentClassChanged() {
@@ -57,8 +61,8 @@ public class ClassDialog extends JDialog {
 
     }
 
-    private ClientObjectClass chosenClass = null;
-    public ClientObjectClass getChosenClass() {
+    private ClientConcreteClass chosenClass = null;
+    public ClientConcreteClass getChosenClass() {
         return chosenClass;
     }
 
@@ -66,8 +70,16 @@ public class ClassDialog extends JDialog {
         
         ClientClass selectedClass = tree.getSelectedClass();
         if (selectedClass instanceof ClientConcreteClass) {
-            chosenClass = tree.getSelectedClass();
+            chosenClass = (ClientConcreteClass)tree.getSelectedClass();
             ClassDialog.this.setVisible(false);
         }
+    }
+
+    public static ClientConcreteClass dialogConcreteClass(Component owner, ClientObjectImplementView object, ClientObjectClass value) {
+
+        ClassDialog dialog = new ClassDialog(owner, object, value);
+        dialog.setLocation(java.awt.MouseInfo.getPointerInfo().getLocation());
+        dialog.setVisible(true);
+        return dialog.getChosenClass();
     }
 }
