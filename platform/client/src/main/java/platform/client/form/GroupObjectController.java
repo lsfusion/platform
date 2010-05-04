@@ -125,7 +125,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                         grid.requestFocusInWindow();
                     }
                 });
-            } else {
+            } else if (classView.equals(ClassViewType.PANEL)) {
                 panel.addGroupObjectCells();
                 grid.removeGroupObjectCells();
                 SwingUtilities.invokeLater(new Runnable() {
@@ -134,7 +134,11 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                     }
                 });
 //                    panel.requestFocusInWindow();
+            } else {
+                panel.removeGroupObjectCells();
+                grid.removeGroupObjectCells();
             }
+
 
             for (ClientObjectImplementView object : groupObject) {
                 objects.get(object).changeClassView(classView);

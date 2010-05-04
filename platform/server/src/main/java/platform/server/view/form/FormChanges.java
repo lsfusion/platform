@@ -54,6 +54,12 @@ public class FormChanges {
         System.out.println(" ------- Drop ---------------");
         for(PropertyView property : dropProperties)
             System.out.println(property);
+
+        System.out.println(" ------- CLASSVIEWS ---------------");
+        for (Map.Entry<GroupObjectImplement,Byte> classView : classViews.entrySet()) {
+            System.out.println(classView.getKey() + " - " + classView.getValue());
+        }
+
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

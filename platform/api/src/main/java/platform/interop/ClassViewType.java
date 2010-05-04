@@ -13,4 +13,14 @@ public class ClassViewType {
         else
             return GRID;
     }
+
+    public static byte getByte(String action) {
+
+        if (action.equals("grid"))
+            return GRID;
+        else if (action.equals("panel"))
+            return PANEL;
+        else
+            return HIDE;
+    }
 }

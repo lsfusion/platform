@@ -23,20 +23,9 @@ public abstract class ShowTypeController {
             protected void buttonPressed(String action) {
 
                 try {
-                    if (action.equals("grid")) {
-                        if (classView.equals(ClassViewType.PANEL))
-                            form.changeClassView(logicsSupplier.getGroupObject(), ClassViewType.GRID);
-                        else
-                            needToBeShown();
-                    }
-                    else if (action.equals("panel")) {
-                        if (classView.equals(ClassViewType.GRID))
-                            form.changeClassView(logicsSupplier.getGroupObject(), ClassViewType.PANEL);
-                        else
-                            needToBeShown();
-                    } else {
-                        needToBeHidden();
-                    }
+                    byte newClassView = ClassViewType.getByte(action);
+                    if (!classView.equals(newClassView))
+                        form.changeClassView(logicsSupplier.getGroupObject(), newClassView);
                 } catch (IOException el) {
                     throw new RuntimeException("Ошибка при переключении вида", el);
                 }
@@ -56,7 +45,11 @@ public abstract class ShowTypeController {
 
             this.classView = classView;
             showView.changeClassView(classView, banClassView);
-            needToBeShown();
+
+            if (classView.equals(ClassViewType.HIDE))
+                needToBeHidden();
+            else
+                needToBeShown();
         }
     }
 
