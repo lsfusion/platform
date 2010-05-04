@@ -27,7 +27,7 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     }
 
     Object objectChosen() throws RemoteException {
-        return clientDialog.objectChosen();
+        return clientDialog.objectChosen(owner.getID());
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
@@ -53,5 +53,4 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     public boolean valueChanged() {
         return clientDialog.objectChosen;
     }
-
 }

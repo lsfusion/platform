@@ -46,6 +46,11 @@ public class ClientForm extends JPanel {
         return readOnly;
     }
 
+    private int ID;
+    public int getID() {
+        return ID;
+    }
+
     public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean ireadOnly) throws IOException, ClassNotFoundException {
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
@@ -57,6 +62,11 @@ public class ClientForm extends JPanel {
         readOnly = ireadOnly;
 
         formView = ClientObjectProxy.retrieveClientFormView(remoteForm);
+
+        // так неправильно делать по двум причинам :
+        // 1. лишний ping
+        // 2. ID могут совпадать. Пока это используется только в диалогах, поэтому не столь критично
+        ID = remoteForm.getID();
 
         initializeForm();
 

@@ -154,12 +154,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     // диалоги
 
     // обеспечивает синхронность вызова
-    private CustomClass dialogClass = null;
-    void setDialogClass(CustomClass setClass) {
-        dialogClass = setClass;
+    private Map<Integer,CustomClass> dialogClass = new HashMap<Integer,CustomClass>();
+    void setDialogClass(Integer callerID, CustomClass setClass) {
+        dialogClass.put(callerID, setClass);
     }
-    public int getDialogObject() throws RemoteException {
-        return getCacheObject(dialogClass);
+    public int getDialogObject(int callerID) throws RemoteException {
+        return getCacheObject(dialogClass.get(callerID));
     }
 
     private void addCacheObject(Integer object) throws SQLException {
@@ -169,38 +169,38 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                     (Integer)((DataObject)objectValue).object);
     }
 
-    public RemoteFormInterface createObjectForm(int objectID) {
+    public RemoteFormInterface createObjectForm(int objectID, int callerID) {
         CustomObjectImplement objectImplement = (CustomObjectImplement) currentForm.getObjectImplement(objectID);
-        setDialogClass(objectImplement.baseClass);
+        setDialogClass(callerID, objectImplement.baseClass);
         if(objectImplement.currentClass!=null)
             addCacheObject(objectImplement.currentClass, (Integer) objectImplement.getObjectValue().getValue());
         return createForm(objectImplement.baseClass.getClassForm(BL,securityPolicy),true);
     }
 
-    public RemoteFormInterface createObjectForm(int objectID, int value) throws RemoteException {
+    public RemoteFormInterface createObjectForm(int objectID, int callerID, int value) throws RemoteException {
         try {
             addCacheObject(BaseUtils.intToObject(value));
             CustomObjectImplement objectImplement = (CustomObjectImplement) currentForm.getObjectImplement(objectID);
-            setDialogClass(objectImplement.baseClass);
+            setDialogClass(callerID, objectImplement.baseClass);
             return createForm(objectImplement.baseClass.getClassForm(BL, securityPolicy),true);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public RemoteFormInterface createChangeForm(int viewID) {
+    public RemoteFormInterface createChangeForm(int viewID, int callerID) {
         try {
-            return createChangeForm(currentForm.getPropertyView(viewID).view);
+            return createChangeForm(currentForm.getPropertyView(viewID).view, callerID);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement) throws SQLException {
+    private <P extends PropertyInterface> RemoteFormInterface createChangeForm(PropertyObjectImplement<P> implement, int callerID) throws SQLException {
         PropertyValueImplement<?> change = implement.getChangeProperty();
         addCacheObject((Integer) change.read(currentForm.session,currentForm)); // считываем значение чтобы закинуть в кэш
         CustomClass changeClass = change.getDialogClass(currentForm.session);
-        setDialogClass(changeClass);
+        setDialogClass(callerID, changeClass);
 
         DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change, changeClass);
         navigatorForm.relevantElements.addAll(changeClass.getRelevantElements(BL,securityPolicy));
@@ -208,11 +208,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return createForm(navigatorForm,true);
     }
 
-    public RemoteFormInterface createPropertyForm(int viewID, int value) throws RemoteException {
+    public RemoteFormInterface createPropertyForm(int viewID, int callerID, int value) throws RemoteException {
         try {
             addCacheObject(BaseUtils.intToObject(value));
             CustomClass propertyClass = currentForm.getPropertyView(viewID).view.getDialogClass();
-            setDialogClass(propertyClass);
+            setDialogClass(callerID, propertyClass);
             return createForm(propertyClass.getClassForm(BL, securityPolicy),true);
         } catch (SQLException e) {
             throw new RuntimeException(e);

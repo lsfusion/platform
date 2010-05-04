@@ -53,8 +53,8 @@ public class ClientDialog extends JDialog {
         setCurrentForm(dialog);
     }
 
-    public Object objectChosen() throws RemoteException {
-       return BaseUtils.intToObject(navigator.remoteNavigator.getDialogObject());
+    public Object objectChosen(int callerID) throws RemoteException {
+       return BaseUtils.intToObject(navigator.remoteNavigator.getDialogObject(callerID));
     }
 
     public boolean objectChosen;

@@ -26,8 +26,8 @@ abstract public class ClientCellView extends ClientComponentView {
     public abstract ClientGroupObjectImplementView getGroupObject();
 
     // диалог для получения возможных значений
-    public abstract RemoteFormInterface createForm(RemoteNavigatorInterface navigator) throws RemoteException;
-    public abstract RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, Integer value) throws RemoteException;
+    public abstract RemoteFormInterface createForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException;
+    public abstract RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException;
 
     private Dimension minimumSize;
     private Dimension maximumSize;

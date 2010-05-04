@@ -34,11 +34,11 @@ public class ClientClassCellView extends ClientObjectView {
         return null;
     }
 
-    public RemoteFormInterface createForm(RemoteNavigatorInterface navigator) throws RemoteException {
+    public RemoteFormInterface createForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
         return null;
     }
 
-    public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, Integer value) throws RemoteException {
+    public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException {
         return null;
     }
 }
