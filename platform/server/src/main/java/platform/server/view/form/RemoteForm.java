@@ -653,11 +653,13 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
             for(GroupObjectImplement group : groups) {
 
-                // если изменились класс грида или представление 
-                boolean updateKeys = refresh || (group.updated & (GroupObjectImplement.UPDATED_GRIDCLASS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0;
-
                 if ((group.updated & GroupObjectImplement.UPDATED_CLASSVIEW) != 0)
                     result.classViews.put(group, group.curClassView);
+
+                if (group.curClassView == ClassViewType.HIDE) continue;
+
+                // если изменились класс грида или представление 
+                boolean updateKeys = refresh || (group.updated & (GroupObjectImplement.UPDATED_GRIDCLASS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0;
 
                 if(Filter.ignoreInInterface) {
                     updateKeys |= (group.updated & GroupObjectImplement.UPDATED_FILTER)!=0;
@@ -760,7 +762,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 if(updateKeys) {
                     OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> keyResult;
-                    if(! (group.curClassView == ClassViewType.GRID)) // панель
+                    if(group.curClassView != ClassViewType.GRID) // панель
                         updateGroupObject(group,result,readKeys(group,orderSeeks));
                     else {
                         if(orderSeeks!=null && !group.orders.starts(orderSeeks.keySet())) // если не "хватает" спереди ключей, дочитываем
@@ -843,6 +845,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             Map<GroupObjectImplement,Collection<PropertyView>> groupProps = new HashMap<GroupObjectImplement, Collection<PropertyView>>();
 
             for(PropertyView<?> drawProp : properties) {
+
+                if (drawProp.toDraw != null && drawProp.toDraw.curClassView == ClassViewType.HIDE) continue;
 
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
