@@ -39,7 +39,11 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
             if (sortDir != null)
                 label.setIcon(sortDir ? arrowUpIcon : arrowDownIcon);
 
-       }
+            if (value instanceof String)
+                label.setToolTipText((String)value);
+
+            label.setFont(label.getFont().deriveFont(Font.PLAIN, 10));
+        }
         return comp;
     }
 
