@@ -19,7 +19,7 @@ import java.util.Set;
 
 import net.jcip.annotations.Immutable;
 
-@Immutable
+@GenericImmutable
 public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>,J extends QueryJoin> extends InnerExpr implements MapContext {
 
     public I query;
@@ -110,12 +110,12 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         return enumKeys(group.keySet(),expr.getEnum());
     }
 
-    @Lazy
+    @GenericLazy
     public Set<KeyExpr> getKeys() {
         return getKeys(query, group);
     }
 
-    @Lazy
+    @GenericLazy
     public Set<ValueExpr> getValues() {
         return enumValues(group.keySet(), query.getEnum());
     }

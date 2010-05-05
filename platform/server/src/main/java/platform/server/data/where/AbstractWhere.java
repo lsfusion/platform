@@ -2,14 +2,12 @@ package platform.server.data.where;
 
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
-import platform.server.caches.MapContext;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.where.EqualsWhere;
@@ -31,16 +29,22 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return not().orMeans(where.not()).not(); // A AND B = not(notA OR notB)
     }
     public Where or(Where where) {
-        Where or = OrWhere.op(this,where,false);
+        return or(where, false);
+    }
+    public Where or(Where where, boolean packExprs) {
+        Where or = OrWhere.op(this,where, FollowDeep.inner(packExprs));
         assert !(!or.isTrue() && or.checkTrue());
         return or;
     }
     public Where orMeans(Where where) {
-        return OrWhere.op(this,where,true);
+        return OrWhere.op(this,where, FollowDeep.PLAIN);
     }
 
     public Where followFalse(Where falseWhere) {
-        return OrWhere.followFalse(this,falseWhere,false,false);
+        return followFalse(falseWhere, false);
+    }
+    public Where followFalse(Where falseWhere, boolean packExprs) {
+        return OrWhere.followFalse(this,falseWhere, FollowDeep.inner(packExprs),false);
     }
 
     public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map) {
@@ -51,7 +55,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public boolean means(Where where) {
-        return OrWhere.op(not(),where,true).checkTrue();
+        return OrWhere.op(not(),where, FollowDeep.PLAIN).checkTrue();
     }
 
     static Where toWhere(AndObjectWhere[] wheres) {

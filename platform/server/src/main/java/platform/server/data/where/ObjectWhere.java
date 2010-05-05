@@ -9,7 +9,7 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
 
     public abstract ObjectWhere not();
 
-    public Where pairs(AndObjectWhere pair, boolean plainFollow) {
+    public Where pairs(AndObjectWhere pair, FollowDeep followDeep) {
         return null;
     }
 
@@ -29,18 +29,19 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
         return new OrObjectWhere[]{this};
     }
 
-    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
+    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs) {
         // исходим из предположения что что !(not()=>falseWhere) то есть !(op,this,true).checkTrue
         if(!sureNotTrue && OrWhere.orTrue(this,falseWhere))
             return TRUE;
         if(means(falseWhere))
             return FALSE;
-        else {
+        if(packExprs) {
             Where result = packFollowFalse(falseWhere);
-            if(!BaseUtils.hashEquals(this,result) && !sureNotTrue && OrWhere.orTrue(result,falseWhere)) // если упаковался еще раз на orTrue проверим
+            if(!BaseUtils.hashEquals(this,result) && OrWhere.orTrue(result,falseWhere)) // если упаковался еще раз на orTrue проверим
                 return TRUE;
             return result;
         }
+        return this;
     }
 
     public Where packFollowFalse(Where falseWhere) {

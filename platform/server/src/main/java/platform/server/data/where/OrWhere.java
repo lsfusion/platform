@@ -33,7 +33,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         }
     };
 
-    public static Where op(Where where1,Where where2,boolean plainFollow) {
+    public static Where op(Where where1,Where where2,FollowDeep followDeep) {
 
         if(where1.isFalse() || where2.isTrue()) return where2;
         if(where2.isFalse() || where1.isTrue()) return where1;
@@ -49,7 +49,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             boolean paired = false;
             for(int i=0;i<rawWheres2.length;i++)
                 if(rawWheres2[i]!=null) {
-                    Where pairedWhere = rawWheres2[i].pairs(andWhere1, plainFollow);
+                    Where pairedWhere = rawWheres2[i].pairs(andWhere1, followDeep);
                     if(pairedWhere!=null) {
                         pairedWheres[pairs++] = pairedWhere;
                         rawWheres2[i] = null;
@@ -78,29 +78,29 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         // делаем followFalse друг друга
         Where resultWhere;
 
-        Where followWhere1 = followFalse(unpairedWhere1,unpairedWhere2,plainFollow,false);
+        Where followWhere1 = followFalse(unpairedWhere1,unpairedWhere2,followDeep,false);
         if(followWhere1.isTrue())
             resultWhere = followWhere1;
         else { // точно NOT unpairedWhere2 OR followWhere1 == TRUE потому как иначе unpairedWhere1 OR unpairedWhere2 == TRUE и тогда followWhere1.isTrue
-            Where followWhere2 = followFalse(unpairedWhere2,followWhere1,plainFollow,true);
-            if(plainFollow || (BaseUtils.hashEquals(followWhere1,unpairedWhere1) && BaseUtils.hashEquals(followWhere2,unpairedWhere2))) { // если совпали follow'ы то все отлично
+            Where followWhere2 = followFalse(unpairedWhere2,followWhere1,followDeep,true);
+            if(followDeep==FollowDeep.PLAIN || (BaseUtils.hashEquals(followWhere1,unpairedWhere1) && BaseUtils.hashEquals(followWhere2,unpairedWhere2))) { // если совпали follow'ы то все отлично
                 resultWhere = null;
-                if(plainFollow) {
+                if(followDeep==FollowDeep.PLAIN) {
                     if(followWhere2.isTrue())
                         resultWhere = followWhere2;
                 } else {
-                    resultWhere = changeMeans(followWhere1,followWhere2);
+                    resultWhere = changeMeans(followWhere1,followWhere2,followDeep==FollowDeep.PACK);
                     if(resultWhere==null) // пробуем в обратную сторону
-                        resultWhere = changeMeans(followWhere2,followWhere1);
+                        resultWhere = changeMeans(followWhere2,followWhere1,followDeep==FollowDeep.PACK);
                 }
                 if(resultWhere==null)
                     resultWhere = toWhere(BaseUtils.add(followWhere1.getAnd(),followWhere2.getAnd(),instancer));
             } else // иначе погнали еще раз or может новые скобки появились
-                resultWhere = op(followWhere1,followWhere2,false);
+                resultWhere = op(followWhere1,followWhere2,followDeep);
         }
 
         for(int i=0;i<pairs;i++)
-            resultWhere = op(resultWhere,pairedWheres[i],plainFollow);
+            resultWhere = op(resultWhere,pairedWheres[i],followDeep);
 
         return resultWhere;
     }
@@ -108,7 +108,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // Метод переворачивающий AND и OR очень хорошо со сравнениями помогает
     // X OR (Y AND Z) если X=>Y равен Y AND (X OR Y), по сути это реверсивная перестановка то есть для and'а в обратную сторону, то есть если ее делать всегда
     // то будет бесконечный цикл, поэтому важно проверить что
-    static Where changeMeans(Where where1, Where where2) {
+    static Where changeMeans(Where where1, Where where2, boolean packExprs) {
         AndObjectWhere[] wheres1 = where1.getAnd();
         AndObjectWhere[] wheres2 = where2.getAnd();
         for(int i=0;i<wheres1.length;i++)
@@ -118,8 +118,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                     if(wheres1[i].means(orWheres[k])) { // значит можно поменять местами
                         Where andSiblings = siblingsWhere(orWheres,k);
                         Where orSiblings = toWhere(BaseUtils.add(siblings(wheres1,i),siblings(wheres2,j),instancer));
-                        if(!BaseUtils.hashEquals(wheres1[i].followFalse(op(op(andSiblings,orWheres[k].not(),true),orSiblings,true)),
-                                wheres1[i])) // если сокращается хоть что-то, меняем местами
+                        if(!BaseUtils.hashEquals(wheres1[i], // если сокращается хоть что-то, меняем местами
+                                followFalse(wheres1[i],op(op(andSiblings,orWheres[k].not(),FollowDeep.PLAIN),orSiblings,FollowDeep.PLAIN),FollowDeep.inner(packExprs),false)))
                             return orSiblings.or(orWheres[k].and(wheres1[i].or(andSiblings)));
                     }
                 }
@@ -142,7 +142,8 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         return new OrObjectWhere[]{this};
     }
 
-    static Where followFalse(Where followWhere, Where falseWhere, boolean plainFollow, boolean sureNotTrue) {
+    // plainFollow: 0 - не идти внутрь, 1 - идти внутрь 
+    static Where followFalse(Where followWhere, Where falseWhere, FollowDeep followDeep, boolean sureNotTrue) {
 
 //        assert !(!plainFollow && sureNotTrue && orTrue(followWhere,falseWhere)); // проверим sureNotTrue, из-за packFollowFalse Linear, GroupExpr пока иногда нарушается 
 
@@ -191,108 +192,22 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         if(changed>0) { // по кругу погнали result
             Where result = toWhere(staticWheres,statics);
             for(int i=0;i<changed;i++)
-                result = op(result,changedWheres[i],plainFollow);
-            return followFalse(result,falseWhere,plainFollow,sureNotTrue);
+                result = op(result,changedWheres[i], followDeep);
+            return followFalse(result,falseWhere, followDeep,sureNotTrue);
         } else {
             AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length]; int results = 0;
             for(int i=0;i<statics;i++)
                 if(!falseWhere.directMeansFrom(staticWheres[i])) // вычистим из where элементы которые заведомо false
                     resultWheres[results++] = staticWheres[i];
             Where result = toWhere(resultWheres,results);
-            if(plainFollow || result.isFalse()) // если глубже не надо выходим
+            if(followDeep==FollowDeep.PLAIN || result.isFalse()) // если глубже не надо выходим
                 return result;
             else // иначе погнали основной цикл + по sibling'ам
-                return result.innerFollowFalse(falseWhere, sureNotTrue);
+                return result.innerFollowFalse(falseWhere, sureNotTrue, followDeep == FollowDeep.PACK);
         }
     }
 
-    public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
-        AndObjectWhere[] staticWheres = new AndObjectWhere[wheres.length]; int stat = 0;
-        Where[] decomposedWheres = new Where[wheres.length]; int decomp = 0;
-        AndObjectWhere[] maxWheres = wheres.clone();
-        for(int i=0;i<maxWheres.length;i++) { // будем бежать с высот поменьше - своего рода пузырьком
-            for(int j=maxWheres.length-1;j>i;j--)
-                if(maxWheres[j].getHeight()<maxWheres[j-1].getHeight()) {
-                    AndObjectWhere t = maxWheres[j];
-                    maxWheres[j] = maxWheres[j-1];
-                    maxWheres[j-1] = t;
-                }
-            Where decomposedWhere = maxWheres[i].decompose(decompose,objects);
-            if(decomposedWhere == maxWheres[i])
-                staticWheres[stat++] = maxWheres[i];
-            else {
-                if(decomposedWhere.isTrue()) return decomposedWhere;
-                decomposedWheres[decomp++] = decomposedWhere;
-            }
-        }
-
-        if(stat < wheres.length) {
-            Where result = toWhere(staticWheres,stat);
-            for(int i=0;i<decomp;i++)
-                result = op(result,decomposedWheres[i],true);
-            return result;
-        } else
-            return this;
-    }
-
-    // вычищает те Or'ы которые заведомо не будут false
-    static Where decomposeFalse(Where where,Where toFalse) {
-
-        AndObjectWhere[] wheres = where.getAnd();
-
-        // toFalse может менять знаки
-        ObjectWhereSet decompose = new ObjectWhereSet(toFalse.getObjects());
-        decompose.addAll(toFalse.not().getObjects());
-
-        // для всех or'ов делаем decompose, получаем доп. objects
-        Where[] decomposedWheres = new Where[wheres.length];
-        ObjectWhereSet[] objectWheres = new ObjectWhereSet[wheres.length];
-        for(int i=0;i<wheres.length;i++) {
-            objectWheres[i] = new ObjectWhereSet();
-            decomposedWheres[i] = wheres[i].decompose(decompose,objectWheres[i]);
-        }
-
-        AndObjectWhere[] rawResult = new AndObjectWhere[wheres.length]; int resnum = 0;
-
-        // разбиваем на компоненты по правилу (доп. objects linked or.getObjects)
-        int queue = 0; int first = 0;
-        int[] component = new int[wheres.length]; int numWheres = 1; component[0] = 0;
-        boolean[] checked = new boolean[wheres.length];
-        while(true) {
-            for(int i=first+1;i<wheres.length;i++)
-                if(!checked[i] && (objectWheres[component[queue]].linked(wheres[i].getObjects()) || objectWheres[i].linked(wheres[component[queue]].getObjects()))) {
-                    component[numWheres++] = i;
-                    checked[i] = true;
-                }
-            queue++;
-            if(queue >= numWheres) { // в очереди никого нету
-                // проверяем or всей компоненты на checkTrue
-                Where toCheck = FALSE;
-                AndObjectWhere[] staticWheres = new AndObjectWhere[numWheres]; int stats = 0;
-                for(int i=0;i<numWheres;i++)
-                    if(decomposedWheres[component[i]]==wheres[component[i]])
-                        staticWheres[stats++] = wheres[component[i]];
-                    else
-                        toCheck = op(toCheck,decomposedWheres[component[i]],true);
-                if(stats < numWheres && orTrue(toCheck,toWhere(staticWheres,stats))) // если не true - drop'аем
-                    for(int i=0;i<numWheres;i++)
-                        rawResult[resnum++] = wheres[component[i]];
-
-                first++; while(first<wheres.length && checked[first]) first++; // ищем первый необработанный элемент
-                if(first>=wheres.length) break; // больше нету
-
-                component = new int[wheres.length]; numWheres = 1;
-                component[0] = first; queue = 0;
-            }
-        }
-
-        if(resnum==wheres.length)
-            return where;
-        else
-            return toWhere(rawResult,resnum);
-    }
-
-    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
+    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs) {
 
          if(!sureNotTrue) {
              if(orTrue(this,falseWhere))
@@ -305,15 +220,15 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
         int current = 0;
         for(AndObjectWhere where : wheres) { // после упрощения важно использовать именно этот элемент, иначе неправильно работать будет
             AndObjectWhere[] siblingWheres = siblings(staticWheres, current);
-            Where followAndWhere = followFalse(where,op(op(toWhere(siblingWheres),followWhere,true),falseWhere,true),false,sureNotTrue);
+            Where followAndWhere = followFalse(where,op(op(toWhere(siblingWheres),followWhere,FollowDeep.PLAIN),falseWhere,FollowDeep.PLAIN),FollowDeep.inner(packExprs),sureNotTrue);
             if(!BaseUtils.hashEquals(followAndWhere,where)) { // если изменился static "перекидываем" в result
-                followWhere = op(followWhere,followAndWhere,false);
+                followWhere = op(followWhere,followAndWhere,FollowDeep.inner(packExprs));
                 staticWheres = siblingWheres;
                 sureNotTrue = false; // при изменении follow мог упаковаться и соответственно изменится и уже быть true
             } else
                 current++;
         }
-        return op(toWhere(staticWheres),followWhere,false);
+        return op(toWhere(staticWheres),followWhere,FollowDeep.inner(packExprs));
     }
 
     static class Compare {
@@ -362,9 +277,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             if(wheres[i] instanceof AndWhere && (maxWhere<0 || wheres[i].getHeight()>wheres[maxWhere].getHeight()))
                 maxWhere = i;
         if(maxWhere<0) { // значит остались одни ObjectWhere
-            for(int i=0;i<numWheres;i++)
-                if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
-                    return ((CompareWhere)wheres[i]).checkTrue(siblingsWhere(wheres,i,numWheres));
+//            for(int i=0;i<numWheres;i++)
+//                if(wheres[i] instanceof CompareWhere) // если есть хоть один Compare, запускаем дальше чтобы избавится от них
+//                    return ((CompareWhere)wheres[i]).checkTrue(siblingsWhere(wheres,i,numWheres));
 
             // сначала объединим все EqualsWhere в группы - если найдем разные ValueExpr'ы в группе вывалимся, assert что нету CompareWhere
             EqualMap equals = new EqualMap(numWheres*2);
@@ -387,14 +302,14 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             if(classesNot.andEquals(equals).means(classesOr))
                 return true;
 
-            // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
+/*            // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
             CompareMap compare = new CompareMap();
             for(int i=0;i<numWheres;i++)
                 if(wheres[i] instanceof NotWhere && ((NotWhere) wheres[i]).where instanceof GreaterWhere) {
                     GreaterWhere greaterWhere = (GreaterWhere) ((NotWhere) wheres[i]).where;
                     if(!compare.add(equals.getEqual(greaterWhere.operator1),equals.getEqual(greaterWhere.operator2))) // противоречивы значит true;
                         return true;
-                }
+                }*/
             return false;
         }
 
@@ -414,7 +329,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     }
 
     public static boolean orTrue(Where where1,Where where2) {
-        return op(where1,where2,true).checkTrue();
+        return op(where1,where2,FollowDeep.PLAIN).checkTrue();
     }
 
     public boolean checkTrue() {

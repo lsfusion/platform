@@ -26,7 +26,7 @@ import java.util.*;
 import net.jcip.annotations.Immutable;
 
 // временная таблица на момент сессии
-@Immutable
+@GenericImmutable
 public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
 
     // конструктор чистой структуры
@@ -76,7 +76,7 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         };
     }
 
-    @Lazy
+    @GenericLazy
     public int hashValues(HashValues hashValues) {
         int hash = 0;
         if(rows!=null)

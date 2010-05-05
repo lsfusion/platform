@@ -52,7 +52,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     public boolean checkTrue(Where where) {
         // A>B = !(A=B) AND !(B>A) AND A AND B
         // A=B = !(A>B) AND !(B>A) AND A AND B
-        return  OrWhere.orTrue(operator1.getWhere(),where) &&
+        return OrWhere.orTrue(operator1.getWhere(),where) &&
                 OrWhere.orTrue(operator2.getWhere(),where) &&
                 GreaterWhere.create(operator2, operator1).means(where) &&
                 (this instanceof GreaterWhere?EqualsWhere.create(operator1, operator2):GreaterWhere.create(operator1, operator2)).means(where);

@@ -4,7 +4,7 @@ import platform.server.data.where.Where;
 
 public abstract class AddCaseList<D,C extends Case<D>> extends CaseList<D,C> {
 
-    Where upWhere;
+    protected Where upWhere;
     
     public AddCaseList() {
         upWhere = Where.FALSE;

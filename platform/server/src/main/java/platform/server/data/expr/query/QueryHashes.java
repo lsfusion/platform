@@ -2,13 +2,15 @@ package platform.server.data.expr.query;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
+import platform.server.caches.GenericImmutable;
+import platform.server.caches.GenericLazy;
 import platform.server.data.expr.BaseExpr;
 
 import java.util.Map;
 
 import net.jcip.annotations.Immutable;
 
-@Immutable
+@GenericImmutable
 public abstract class QueryHashes<K extends BaseExpr> {
 
     protected abstract int hashValue(HashContext hashContext);
@@ -16,7 +18,7 @@ public abstract class QueryHashes<K extends BaseExpr> {
     protected abstract Map<K, BaseExpr> getGroup();
 
     // hash'и "внешнего" контекста, там пойдет внутренняя трансляция values поэтому hash по values надо "протолкнуть" внутрь
-    @Lazy
+    @GenericLazy
     public int hashContext(final HashContext hashContext) {
         HashContext innerHash = hashContext.mapKeys();
         int hash = 0;
@@ -26,7 +28,7 @@ public abstract class QueryHashes<K extends BaseExpr> {
     }
 
     // hash'и "внутреннего" контекста
-    @Lazy
+    @GenericLazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<K,BaseExpr> expr : getGroup().entrySet())

@@ -3,7 +3,6 @@ package platform.server.data.where;
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.server.caches.ManualLazy;
-import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.AbstractSourceJoin;
@@ -54,29 +53,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres;
     }
 
-    public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
-        // в отличии от or сразу заведомо известный результат мы никак не получим поэтому просто прямо бежим
-        OrObjectWhere[] staticWheres = new OrObjectWhere[wheres.length]; int stat = 0;
-        Where[] decomposedWheres = new Where[wheres.length]; int decomp = 0;
-        for(OrObjectWhere where : wheres) {
-            Where decomposedWhere = where.decompose(decompose,objects);
-            if(decomposedWhere == where)
-                staticWheres[stat++] = where;
-            else
-                decomposedWheres[decomp++] = decomposedWhere;
-        }
-
-        if(stat < wheres.length) {
-            Where result = toWhere(staticWheres,stat);
-            for(int i=0;i<decomp;i++)
-                result = OrWhere.op(result.not(),decomposedWheres[i].not(),true).not();
-            return result;
-        } else
-            return this;
-    }
-
-    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue) {
-        return OrWhere.followFalse(not(),falseWhere,false,false).not();
+    public Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs) {
+        return OrWhere.followFalse(not(),falseWhere, FollowDeep.inner(packExprs),false).not();
     }
 
     public boolean checkTrue() {
@@ -171,7 +149,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return decisions;
     }
 
-    public Where pairs(AndObjectWhere pair, boolean plainFollow) {
+    public Where pairs(AndObjectWhere pair, FollowDeep followDeep) {
 
         if(pair instanceof ObjectWhere) return null;
         AndWhere pairAnd = (AndWhere)pair;
@@ -181,13 +159,13 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
             if(paired.common.length==pairAnd.wheres.length || paired.getDiff1().length==0) // тогда не скобки а следствия пусть followFalse - directMeans устраняют
                 return null;
 
-            return OrWhere.op(OrWhere.op(toWhere(paired.getDiff1()),toWhere(paired.getDiff2()),plainFollow).not(),toWhere(paired.common).not(),plainFollow).not(); // (W1 OR W2) AND P
+            return OrWhere.op(OrWhere.op(toWhere(paired.getDiff1()),toWhere(paired.getDiff2()), followDeep).not(),toWhere(paired.common).not(), followDeep).not(); // (W1 OR W2) AND P
         }
 
         // поищем decision'ы
         for(Decision decision : getDecisions())
             for(Decision thatDecision : pairAnd.getDecisions()) {
-                Where pairedDecision = decision.pairs(thatDecision,plainFollow);
+                Where pairedDecision = decision.pairs(thatDecision, followDeep);
                 if(pairedDecision!=null) return pairedDecision;
             }
 

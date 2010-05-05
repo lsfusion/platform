@@ -6,6 +6,8 @@ import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.Lazy;
 import platform.server.caches.MapContext;
+import platform.server.caches.GenericImmutable;
+import platform.server.caches.GenericLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.data.where.classes.ClassWhere;
@@ -23,7 +25,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 // запрос JoinSelect
-@Immutable
+@GenericImmutable
 public class Query<K,V> implements MapKeysInterface<K>, MapContext {
 
     public final Map<K,KeyExpr> mapKeys;
@@ -196,7 +198,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         where = query.where;
     }
 
-    @Lazy
+    @GenericLazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Expr property : properties.values())

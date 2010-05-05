@@ -31,16 +31,6 @@ abstract public class DataWhere extends ObjectWhere {
         return new ObjectWhereSet(this);
     }
 
-    public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
-        if(decompose.followNot.contains(this))
-            return TRUE;
-        else {
-            objects.data.add(this);
-            objects.followData.addAll(getFollows());
-            return this;
-        }
-    }
-
     // возвращает себя и все зависимости
     private DataWhereSet follows = null;
     public DataWhereSet getFollows() {

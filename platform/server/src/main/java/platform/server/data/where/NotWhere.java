@@ -38,16 +38,6 @@ public class NotWhere extends ObjectWhere {
         return where.hashContext(hashContext)*31;
     }
 
-    public Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects) {
-        if(where.getFollows().intersect(decompose.data))
-            return TRUE;
-        else {
-            objects.not.add(where);
-            objects.followNot.addAll(where.getFollows());
-            return this;
-        }
-    }
-
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     public Where translateDirect(KeyTranslator translator) {

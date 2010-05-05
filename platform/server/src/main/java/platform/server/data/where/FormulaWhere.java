@@ -5,10 +5,12 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
+import platform.server.caches.GenericImmutable;
+import platform.server.caches.GenericLazy;
 import platform.server.data.query.SourceEnumerator;
 import net.jcip.annotations.Immutable;
 
-@Immutable
+@GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
     protected final WhereType[] wheres;
@@ -32,7 +34,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
             where.enumerate(enumerator);
     }
 
-    @Lazy
+    @GenericLazy
     public int hashContext(HashContext hashContext) {
         int result = hashCoeff();
         for(Where where : wheres)

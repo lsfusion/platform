@@ -472,7 +472,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSalePrice.setDerivedChange(saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2);
         addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSalePrice);
 
-        LP articleActionActive = addJProp(and(false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleRetail), 1, isStarted, 3,
+        LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
                                         addJProp(less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
                                         addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2,
                                         addJProp(less2, orderClientSum, 1, articleActionClientSum, 2), 1, 3,
@@ -887,11 +887,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public SaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, toAdd, orderSaleRetail);
 
-            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
+/*            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, documentGroup, true);
             addHintsNoUpdate(obligationDocument.property);
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
-            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
+            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));*/
         }
     }
 

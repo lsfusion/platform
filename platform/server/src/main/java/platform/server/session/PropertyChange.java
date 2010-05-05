@@ -19,7 +19,7 @@ import java.util.HashSet;
 
 import net.jcip.annotations.Immutable;
 
-@Immutable
+@GenericImmutable
 public class PropertyChange<T extends PropertyInterface> extends AbstractMapValues<PropertyChange<T>> implements MapContext {
     public final Map<T,KeyExpr> mapKeys;
     public final Expr expr;
@@ -36,7 +36,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return new HashSet<KeyExpr>(mapKeys.values());
     }
 
-    @Lazy
+    @GenericLazy
     public Set<ValueExpr> getValues() {
         return AbstractSourceJoin.enumValues(expr,where);
     }
@@ -62,7 +62,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return query;
    }
 
-    @Lazy
+    @GenericLazy
     public int hash(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
@@ -83,7 +83,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return false;
     }
 
-    @Lazy
+    @GenericLazy
     public int hashValues(final HashValues hashValues) {
         return hash(hashValues.mapKeys());
     }

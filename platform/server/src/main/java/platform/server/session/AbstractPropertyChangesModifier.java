@@ -4,6 +4,8 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.caches.hash.HashValues;
 import platform.server.caches.Lazy;
+import platform.server.caches.GenericImmutable;
+import platform.server.caches.GenericLazy;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
@@ -30,7 +32,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         return session;
     }
 
-    @Immutable
+    @GenericImmutable
     protected abstract static class UsedChanges<P extends PropertyInterface, T extends Property<P>, AC extends AbstractPropertyChanges<P,T,AC>,
                                     UC extends UsedChanges<P,T,AC,UC>> extends Changes<UC> {
         AC changes;
@@ -56,7 +58,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         }
 
         @Override
-        @Lazy
+        @GenericLazy
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + changes.hashValues(hashValues);
         }

@@ -32,6 +32,11 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
         return getWhere(group);
     }
 
+    @Lazy
+    public Where getKeysWhere() {
+        return getWhere(group.keySet());
+    }
+
     protected GroupExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
         super(expr, group);
     }
@@ -52,17 +57,19 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
         return result;
     }
 
-    // проталкивает "верхний" where внутрь
-    private static Where pushWhere(Map<BaseExpr, BaseExpr> group, Where trueWhere) {
-        Where result = trueWhere.andMeans(getWhere(group)).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getMeansWhere();
-        assert result.means(getWhere(group.keySet())); // надо assert'ить чтобы не and'ить
-        return result;
-    }
-    
     // проталкиваем статичные значения внутрь
     @Override
+    @ManualLazy
     public BaseExpr packFollowFalse(Where falseWhere) {
-        Expr packed = createBase(pushValues(group, falseWhere), query, isMax(), falseWhere.not(), getContextTypeWhere());
+        ClassExprWhere classWhere;
+        Map<BaseExpr, BaseExpr> pushedGroup = pushValues(group, falseWhere);
+        if(pushedGroup==group) {
+            classWhere = falseWhere.not().andMeans(getJoinsWhere()).getClassWhere().mapBack(group).and(getKeysWhere().getClassWhere());
+            if(getFullWhere().getClassWhere().means(classWhere))
+                return this;
+        } else
+            classWhere = falseWhere.not().andMeans(getWhere(pushedGroup)).getClassWhere().mapBack(group).and(getWhere(pushedGroup.keySet()).getClassWhere());
+        Expr packed = pushValues(pushedGroup, query, isMax(), classWhere.getPackWhere(), getContextTypeWhere());
         if(packed instanceof BaseExpr)
             return (BaseExpr) packed;
         else {
@@ -277,16 +284,11 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
                 expr = expr.and(EqualsWhere.create(groupExpr.getKey(),groupKey));
         }
 
-        return createBase(BaseUtils.reverse(reversedGroup), expr, max, Where.TRUE, new HashMap<KeyExpr, Type>());
+        return pushValues(BaseUtils.reverse(reversedGroup), expr, max, getWhere(group).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getPackWhere(), new HashMap<KeyExpr, Type>());
     }
 
-    // отсюда идет ветка packFollowFalse
-    private static Expr createBase(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where upWhere, Map<KeyExpr,Type> keepTypes) {
-        return pushValues(group, expr, max, pushWhere(group, upWhere), keepTypes);
-    }
-
-    // проталкиваем Values, которые в группировке (group.values) 
-    private static Expr pushValues(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,Type> keepTypes) {
+    // проталкиваем Values, которые в группировке (group.values)
+    private static Expr pushValues(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr, Type> keepTypes) {
 
         // PUSH VALUES
         Map<BaseExpr, BaseExpr> keepGroup = new HashMap<BaseExpr, BaseExpr>(); // проталкиваем values внутрь

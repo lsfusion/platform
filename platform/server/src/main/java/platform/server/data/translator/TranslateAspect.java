@@ -131,14 +131,14 @@ public class TranslateAspect {
         return where.lazyResult(thisJoinPoint);
     }
 
-    // packFollowFalse noPush
+/*    // packFollowFalse noPush
     @Around("call(platform.server.data.expr.BaseExpr platform.server.data.expr.BaseExpr.packFollowFalse(platform.server.data.where.Where)) && target(groupExpr) && args(falseWhere)")
     public Object callPackFollowFalse(ProceedingJoinPoint thisJoinPoint, GroupExpr groupExpr, AbstractWhere falseWhere) throws Throwable {
         if(groupExpr.assertNoPush(falseWhere.not()))
             return groupExpr;
         else
             return thisJoinPoint.proceed();
-   }
+   }*/
     /*
     @Around("execution(@platform.server.table.query.translator.KeepObject * *.*(..)) && target(object)") // с call'ом есть баги
     public Object callKeepObject(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {

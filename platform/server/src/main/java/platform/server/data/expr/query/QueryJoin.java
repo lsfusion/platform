@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 import net.jcip.annotations.Immutable;
 
-@Immutable
+@GenericImmutable
 public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>> implements MapContext {
 
     private final I query;
@@ -74,7 +74,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
             return group;
         }
     };
-    @Lazy
+    @GenericLazy
     public int hash(HashContext hashContext) {
         return hashes.hash(hashContext);
     }

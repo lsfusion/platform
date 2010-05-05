@@ -16,11 +16,12 @@ import java.util.Map;
 public interface Where extends SourceJoin, TranslateContext<Where> {
 
     Where followFalse(Where falseWhere);
-    
+    Where followFalse(Where falseWhere, boolean packExprs);
+
     <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
 
     // внутренние
-    Where innerFollowFalse(Where falseWhere, boolean sureNotTrue);
+    Where innerFollowFalse(Where falseWhere, boolean sureNotTrue, boolean packExprs);
     boolean checkTrue();
     boolean directMeansFrom(AndObjectWhere where);
 
@@ -31,7 +32,8 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
 
     Where and(Where where);
     Where or(Where where);
-    Where andMeans(Where where); // чисто для means 
+    Where or(Where where, boolean packExprs);
+    Where andMeans(Where where); // чисто для means
     Where orMeans(Where where); // чисто для means
     boolean means(Where where);
 
@@ -43,10 +45,6 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
     Map<KeyExpr, BaseExpr> getKeyExprs();
 
     ObjectWhereSet getObjects();
-
-    // получает where такой что this => result, а также result.getObjects() not linked с decompose
-    // также получает objects not linked с decompose, (потому как при сокращении могут вырезаться некоторые)
-    Where decompose(ObjectWhereSet decompose, ObjectWhereSet objects);
 
     static String TRUE_STRING = "1=1";
     static String FALSE_STRING = "1<>1";

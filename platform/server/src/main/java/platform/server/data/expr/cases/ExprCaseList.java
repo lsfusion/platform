@@ -27,34 +27,43 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
         add(where,exprTrue);
         add(Where.TRUE,exprFalse);
     }
+
+    private boolean packExprs = false;
     public ExprCaseList(Where falseWhere) {
         super(falseWhere);
+        
+        packExprs = true;
     }
 
     // возвращает CaseExpr
     public Expr getExpr() {
         if(size()>0) {
             ExprCase lastCase = get(size()-1); // в последнем элементе срезаем null'ы с конца
-            lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not());
+            lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not(), packExprs);
         }
         if(size()==1 && get(0).where.isTrue())
             return get(0).data;
         return new CaseExpr(this);
     }
 
-    Where nullWhere = Where.FALSE;
+    private Where nullWhere = Where.FALSE;
 
     public void add(Where where, BaseExpr expr) {
-        where = where.and(nullWhere.not()).followFalse(upWhere);
+        where = where.and(nullWhere.not()).followFalse(upWhere, packExprs);
         if(where.isFalse()) return;
 
         Where falseWhere = upWhere.or(where.not());
-        if((expr=expr.andFollowFalse(falseWhere))==null) // если заведомо null
+        if(packExprs)
+            expr = expr.andFollowFalse(falseWhere);
+        else
+            if(expr.getWhere().means(falseWhere)) // пропишем частный случай
+                expr = null;
+        if(expr==null) // если заведомо null
             nullWhere = nullWhere.or(where);
         else {
             ExprCase lastCase = size()>0?get(size()-1):null;
             if(lastCase!=null && BaseUtils.hashEquals(lastCase.data,expr)) // если повторяется то просто заor'им
-                lastCase.where = lastCase.where.or(where);
+                lastCase.where = lastCase.where.or(where, packExprs);
             else
                 add(new ExprCase(where, expr));
             upWhere = upWhere.or(where);

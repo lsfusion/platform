@@ -3,7 +3,6 @@ package platform.server.data.where.classes;
 import platform.base.BaseUtils;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.StaticClassExpr;
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.translator.KeyTranslator;
 import platform.server.data.type.Type;
@@ -27,14 +26,14 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return true;
     }
 
-    public Where getMeansWhere() {
+    public Where getPackWhere() {
         if(isTrue()) return Where.TRUE;
         if(isFalse()) return Where.FALSE;
         return new PackClassWhere(this);
     }
 
     public boolean means(Where where) {
-        return getMeansWhere().means(where);
+        return getPackWhere().means(where);
     }
 
     private ClassExprWhere(boolean isTrue) {
