@@ -147,7 +147,7 @@ public class DefaultFormView extends FormView {
 
         ContainerView formButtonContainer = addContainer();
         formButtonContainer.container = mainContainer;
-        formButtonContainer.constraints.order = navigatorForm.groups.size();
+        formButtonContainer.constraints.order = 1000; // начинаем с очень большого числа, поскольку в mainContainer могут попадать и свойства, если toDraw == null
         formButtonContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
 
         printView.container = formButtonContainer;
