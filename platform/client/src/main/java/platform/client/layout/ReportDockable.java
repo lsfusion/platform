@@ -1,6 +1,7 @@
 package platform.client.layout;
 
 import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
@@ -43,6 +44,7 @@ public class ReportDockable extends FormDockable {
 
         JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),
                 new ClientReportData(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getReportDataByteArray())))));
+        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
         return prepareViewer(new JRViewer(print));
     }
 

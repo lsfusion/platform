@@ -16,7 +16,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
     }
 
     public int getMinimumWidth() { return 45; }
-    public int getPreferredWidth() { return 80; }
+    public int getPreferredWidth() { return 60; }
 
     public Format getDefaultFormat() {
         return NumberFormat.getInstance();

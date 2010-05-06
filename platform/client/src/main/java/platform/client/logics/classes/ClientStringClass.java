@@ -18,7 +18,7 @@ public class ClientStringClass extends ClientDataClass {
         length = inStream.readInt();
     }
 
-    public int getMinimumWidth() { return 30; }
+    public int getMinimumWidth() { return length; }
     public int getPreferredWidth() { return length * 5; }
 
     public Format getDefaultFormat() {

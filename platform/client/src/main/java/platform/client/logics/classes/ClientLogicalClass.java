@@ -14,7 +14,7 @@ public class ClientLogicalClass extends ClientDataClass {
         super(inStream);
     }
 
-    public int getPreferredWidth() { return 35; }
+    public int getPreferredWidth() { return 25; }
 
     public Format getDefaultFormat() {
         return null;
