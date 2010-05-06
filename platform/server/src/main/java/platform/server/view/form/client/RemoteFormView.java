@@ -1,22 +1,19 @@
 package platform.server.view.form.client;
 
 import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
-import platform.interop.CompressingOutputStream;
-import platform.interop.Order;
-import platform.interop.RemoteObject;
-import platform.interop.Scroll;
+import platform.interop.*;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.CustomClass;
 import platform.server.view.form.*;
+import platform.server.view.form.client.report.DefaultJasperDesign;
 import platform.server.view.form.filter.Filter;
 
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // фасад для работы с клиентом
 public class RemoteFormView extends RemoteObject implements RemoteFormInterface {
@@ -29,8 +26,27 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         super(port);
         
         this.form = form;
+        if (reportDesign != null)
+            form.setCustomReportDesign(true);
+
         this.richDesign = richDesign;
         this.reportDesign = reportDesign;
+    }
+
+    private JasperDesign getReportDesign() {
+
+        if (reportDesign != null) return reportDesign;
+
+        Set<Integer> hideGroupObjects = new HashSet<Integer>();
+        for (GroupObjectImplement group : form.groups)
+            if (group.curClassView == ClassViewType.HIDE)
+                hideGroupObjects.add(group.ID);
+
+        try {
+            return new DefaultJasperDesign(richDesign, hideGroupObjects).design;
+        } catch (JRException e) {
+            throw new RuntimeException("Ошибка при создании дизайна отчета по умолчанию", e);
+        }
     }
 
     public byte[] getReportDesignByteArray() {
@@ -38,7 +54,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            new ObjectOutputStream(compStream).writeObject(reportDesign);
+            new ObjectOutputStream(compStream).writeObject(getReportDesign());
             compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -285,5 +301,9 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean getCustomReportDesign() {
+        return form.getCustomReportDesign();
     }
 }

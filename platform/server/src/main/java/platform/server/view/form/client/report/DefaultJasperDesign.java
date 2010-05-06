@@ -234,7 +234,7 @@ public class DefaultJasperDesign {
 
     }
 
-    public DefaultJasperDesign(FormView formView) throws JRException {
+    public DefaultJasperDesign(FormView formView, Set<Integer> hideGroupObjects) throws JRException {
 
         int pageWidth = 842 - 40;
         int pageHeight = 595;
@@ -248,7 +248,12 @@ public class DefaultJasperDesign {
         addDefaultStyle();
         addCellStyle();
 
-        for(GroupObjectImplementView group : (List<GroupObjectImplementView>)formView.groupObjects) {
+        List<GroupObjectImplementView> drawGroups = new ArrayList<GroupObjectImplementView>();
+        for(GroupObjectImplementView group : formView.groupObjects)
+            if (!hideGroupObjects.contains(group.view.ID))
+                drawGroups.add(group);
+
+        for(GroupObjectImplementView group : drawGroups) {
 
             Collection<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
 
@@ -263,7 +268,7 @@ public class DefaultJasperDesign {
                     drawFields.add(new ReportDrawField(property));
             }
 
-            boolean detail = (group == formView.groupObjects.get(formView.groupObjects.size()-1));
+            boolean detail = (group == drawGroups.get(drawGroups.size()-1));
 
             int captionWidth = 0, minimumWidth = 0, preferredWidth = 0;
             for (ReportDrawField reportField : drawFields) {
@@ -289,7 +294,7 @@ public class DefaultJasperDesign {
                 }
             }
 
-            JRDesignStyle groupCellStyle = addGroupCellStyle(formView.groupObjects.indexOf(group), formView.groupObjects.size());
+            JRDesignStyle groupCellStyle = addGroupCellStyle(drawGroups.indexOf(group), drawGroups.size());
 
             for(ReportDrawField reportField : drawFields) {
 

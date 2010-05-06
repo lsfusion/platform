@@ -2,6 +2,7 @@ package platform.client.layout;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.export.JExcelApiExporter;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
@@ -14,10 +15,7 @@ import platform.interop.CompressingInputStream;
 import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
-import java.io.IOException;
-import java.io.DataInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 
 public class ReportDockable extends FormDockable {
 
@@ -39,13 +37,7 @@ public class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
 
-        JasperDesign design = ClientObjectProxy.retrieveJasperDesign(remoteForm);
-        JasperReport report = JasperCompileManager.compileReport(design);
-
-        JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),
-                new ClientReportData(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getReportDataByteArray())))));
-        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
-        return prepareViewer(new JRViewer(print));
+        return prepareViewer(new JRViewer(createJasperPrint(remoteForm)));
     }
 
     private JRViewer prepareViewer(final JRViewer viewer) {
@@ -60,5 +52,32 @@ public class ReportDockable extends FormDockable {
     // закрываются пользователем
     void closed() {
         // пока ничего не делаем
+    }
+
+    public static JasperPrint createJasperPrint(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
+
+        JasperDesign design = ClientObjectProxy.retrieveJasperDesign(remoteForm);
+        JasperReport report = JasperCompileManager.compileReport(design);
+
+        JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),
+                new ClientReportData(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(remoteForm.getReportDataByteArray())))));
+        print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
+
+        return print;
+    }
+
+    public static void exportToExcel(RemoteFormInterface remoteForm) throws JRException, IOException, ClassNotFoundException {
+
+        File tempFile = File.createTempFile("lsf", ".xls");
+
+        JExcelApiExporter xlsExporter = new JExcelApiExporter();
+        xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm));
+        xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+        xlsExporter.exportReport();
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(tempFile);
+        }
+
     }
 }

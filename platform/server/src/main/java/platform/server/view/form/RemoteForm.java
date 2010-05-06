@@ -968,6 +968,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return reportObjects;
     }
 
+    boolean customReportDesign = false;
+    public boolean getCustomReportDesign() {
+        return customReportDesign;
+    }
+    public void setCustomReportDesign(boolean has) {
+        customReportDesign = has;
+    }
+
     // считывает все данные (для отчета)
     public FormData getFormData() throws SQLException {
 
@@ -1008,7 +1016,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         FormData result = new FormData();
 
         for(PropertyView<?> property : properties)
-            query.properties.put(property, property.view.getExpr(classGroups, query.mapKeys, this));
+            if (customReportDesign || property.view.getApplyObject().curClassView != ClassViewType.HIDE) // если свойство находится не в GroupObject, который спрятан
+                query.properties.put(property, property.view.getExpr(classGroups, query.mapKeys, this));
 
         OrderedMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.execute(session,queryOrders,0);
         for(Entry<Map<ObjectImplement, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {

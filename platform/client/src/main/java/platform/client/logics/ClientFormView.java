@@ -19,6 +19,7 @@ public class ClientFormView implements Serializable, LogicsSupplier {
     public List<ClientRegularFilterGroupView> regularFilters;
 
     public ClientFunctionView printView;
+    public ClientFunctionView xlsView;
     public ClientFunctionView refreshView;
     public ClientFunctionView applyView;
     public ClientFunctionView cancelView;
@@ -113,6 +114,7 @@ public class ClientFormView implements Serializable, LogicsSupplier {
         }
 
         printView = new ClientFunctionView(inStream,containers);
+        xlsView = new ClientFunctionView(inStream,containers);
         refreshView = new ClientFunctionView(inStream,containers);
         applyView = new ClientFunctionView(inStream,containers);
         cancelView = new ClientFunctionView(inStream,containers);

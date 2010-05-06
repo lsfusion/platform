@@ -35,6 +35,7 @@ public class FormView implements ClientSerialize {
     public OrderedMap<CellViewNavigator,Boolean> defaultOrders = new OrderedMap<CellViewNavigator, Boolean>();
 
     public FunctionView printView = new FunctionView();
+    public FunctionView xlsView = new FunctionView();
     public FunctionView refreshView = new FunctionView();
     public FunctionView applyView = new FunctionView();
     public FunctionView cancelView = new FunctionView();
@@ -70,6 +71,7 @@ public class FormView implements ClientSerialize {
         }
 
         printView.serialize(outStream);
+        xlsView.serialize(outStream);
         refreshView.serialize(outStream);
         applyView.serialize(outStream);
         cancelView.serialize(outStream);

@@ -39,7 +39,7 @@ public class ClientObjectProxy {
 
         int ID = remoteForm.getID();
 
-        if (!cacheJasperDesign.containsKey(ID)) {
+        if (!remoteForm.getCustomReportDesign() || !cacheJasperDesign.containsKey(ID)) {
 
             byte[] state = remoteForm.getReportDesignByteArray();
             Log.incrementBytesReceived(state.length);

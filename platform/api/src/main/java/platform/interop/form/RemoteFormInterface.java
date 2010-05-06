@@ -67,4 +67,5 @@ public interface RemoteFormInterface extends Remote {
     final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
     final static int CHANGEGROUPOBJECT_LASTROW = 1;
 
+    boolean getCustomReportDesign() throws RemoteException;
 }

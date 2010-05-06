@@ -262,6 +262,18 @@ public class ClientForm extends JPanel {
             }
         });
 
+        JButton buttonXls = new JButton("Excel");
+        buttonXls.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent ae) {
+                try {
+                    ReportDockable.exportToExcel(remoteForm);
+                } catch (Exception e) {
+                    throw new RuntimeException("Ошибка при экспорте в Excel", e);
+                }
+            }
+        });
+
         AbstractAction refreshAction = new AbstractAction("Обновить") {
 
             public void actionPerformed(ActionEvent ae) {
@@ -331,6 +343,7 @@ public class ClientForm extends JPanel {
 
         if (!readOnly) {
             formLayout.add(formView.printView, buttonPrint);
+            formLayout.add(formView.xlsView, buttonXls);
             formLayout.add(formView.refreshView, buttonRefresh);
             formLayout.add(formView.applyView, buttonApply);
             formLayout.add(formView.cancelView, buttonCancel);
