@@ -18,7 +18,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>tmc.TmcBusinessLogics</mainClass>
+                            <mainClass>tmc.VEDBusinessLogics</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -30,7 +30,7 @@
                  <appendAssemblyId>false</appendAssemblyId>
                  <archive>
                      <manifest>
-                         <mainClass>tmc.TmcBusinessLogics</mainClass>
+                         <mainClass>tmc.VEDBusinessLogics</mainClass>
                      </manifest>
                  </archive>
                   <descriptors>

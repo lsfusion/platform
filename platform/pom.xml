@@ -32,13 +32,6 @@
          </plugins>
     </build>
 
-    <repositories>
-        <repository>
-            <id>internal</id>
-            <url>http://81.25.47.234:8080/archiva/repository/internal</url>
-        </repository>
-    </repositories>
-
     <pluginRepositories>
         <pluginRepository>
           <id>Codehaus Snapshots</id>
