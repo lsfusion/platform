@@ -1,12 +1,12 @@
 package platform.interop.form;
 
-import java.sql.SQLException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface RemoteFormInterface extends Remote {
 
-    byte[] getReportDesignByteArray() throws RemoteException;
+    byte[] getReportDesignByteArray(boolean toExcel) throws RemoteException;
+    boolean hasCustomReportDesign() throws RemoteException;
     byte[] getReportDataByteArray() throws RemoteException;
 
     byte[] getRichDesignByteArray() throws RemoteException;
@@ -67,5 +67,4 @@ public interface RemoteFormInterface extends Remote {
     final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
     final static int CHANGEGROUPOBJECT_LASTROW = 1;
 
-    boolean getCustomReportDesign() throws RemoteException;
 }

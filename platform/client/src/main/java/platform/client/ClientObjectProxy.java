@@ -35,13 +35,13 @@ public class ClientObjectProxy {
 
     private static final Map<Integer, JasperDesign> cacheJasperDesign = new HashMap();
 
-    public static JasperDesign retrieveJasperDesign(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    public static JasperDesign retrieveJasperDesign(RemoteFormInterface remoteForm, boolean toExcel) throws IOException, ClassNotFoundException {
 
         int ID = remoteForm.getID();
 
-        if (!remoteForm.getCustomReportDesign() || !cacheJasperDesign.containsKey(ID)) {
+        if (!remoteForm.hasCustomReportDesign() || !cacheJasperDesign.containsKey(ID)) {
 
-            byte[] state = remoteForm.getReportDesignByteArray();
+            byte[] state = remoteForm.getReportDesignByteArray(toExcel);
             Log.incrementBytesReceived(state.length);
 
             cacheJasperDesign.put(ID, (JasperDesign) new ObjectInputStream(new CompressingInputStream(new ByteArrayInputStream(state))).readObject());

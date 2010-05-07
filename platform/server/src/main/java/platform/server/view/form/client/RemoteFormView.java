@@ -2,6 +2,8 @@ package platform.server.view.form.client;
 
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
 import platform.interop.*;
 import platform.interop.form.RemoteFormInterface;
@@ -15,6 +17,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
+import ar.com.fdvs.dj.core.DynamicJasperHelper;
+
 // фасад для работы с клиентом
 public class RemoteFormView extends RemoteObject implements RemoteFormInterface {
 
@@ -26,14 +30,11 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         super(port);
         
         this.form = form;
-        if (reportDesign != null)
-            form.setCustomReportDesign(true);
-
         this.richDesign = richDesign;
         this.reportDesign = reportDesign;
     }
 
-    private JasperDesign getReportDesign() {
+    private JasperDesign getReportDesign(boolean toExcel) {
 
         if (reportDesign != null) return reportDesign;
 
@@ -43,18 +44,45 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
                 hideGroupObjects.add(group.ID);
 
         try {
-            return new DefaultJasperDesign(richDesign, hideGroupObjects).design;
+
+            File customReport = new File(getCustomReportName());
+            if (customReport.exists()) {
+                return JRXmlLoader.load(customReport);
+            }
+
+            JasperDesign design = new DefaultJasperDesign(richDesign, hideGroupObjects, toExcel).design;
+
+            String autoReportName = getAutoReportName();
+            if (!(new File(autoReportName).exists())) {
+                DynamicJasperHelper.generateJRXML(JasperCompileManager.compileReport(design),
+                                                  "UTF-8", autoReportName);
+            }
+
+            return design;
+            
         } catch (JRException e) {
             throw new RuntimeException("Ошибка при создании дизайна отчета по умолчанию", e);
         }
     }
 
-    public byte[] getReportDesignByteArray() {
+    private String getCustomReportName() {
+        return "reports/custom/" + getSID() + ".jrxml";
+    }
+
+    private String getAutoReportName() {
+        return "reports/auto/" + getSID() + ".jrxml";
+    }
+
+    public boolean hasCustomReportDesign() {
+        return reportDesign != null || new File(getCustomReportName()).exists();
+    }
+
+    public byte[] getReportDesignByteArray(boolean toExcel) {
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            new ObjectOutputStream(compStream).writeObject(getReportDesign());
+            new ObjectOutputStream(compStream).writeObject(getReportDesign(toExcel));
             compStream.finish();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -67,7 +95,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             CompressingOutputStream compStream = new CompressingOutputStream(outStream);
-            form.getFormData().serialize(new DataOutputStream(compStream));
+            form.getFormData(hasCustomReportDesign()).serialize(new DataOutputStream(compStream));
             compStream.finish();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -235,6 +263,10 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         return form.navigatorForm.ID;
     }
 
+    public String getSID() {
+        return form.navigatorForm.sID;
+    }
+
     public void refreshData() {
         try {
             form.refreshData();
@@ -301,9 +333,5 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public boolean getCustomReportDesign() {
-        return form.getCustomReportDesign();
     }
 }

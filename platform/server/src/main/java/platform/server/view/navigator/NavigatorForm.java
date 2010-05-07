@@ -247,14 +247,22 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         hintsSave.add(prop);
     }
 
+    private static String genSID(int iID) {
+        return "form" + iID; 
+    }
+
+    public String sID;
     public boolean isPrintForm;
 
     protected NavigatorForm(int iID, String caption) { this(iID, caption, false); }
     NavigatorForm(int iID, String caption, boolean iisPrintForm) { this(null, iID, caption, iisPrintForm); }
     protected NavigatorForm(NavigatorElement parent, int iID, String caption) { this(parent, iID, caption, false); }
-    protected NavigatorForm(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) {
+    protected NavigatorForm(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) { this(parent, iID, caption, genSID(iID), iisPrintForm); }
+    protected NavigatorForm(NavigatorElement parent, int iID, String caption, String isID, boolean iisPrintForm) {
         super(parent, iID, caption);
         System.out.println("Initializing form "+caption+"...");
+
+        sID = isID;
         isPrintForm = iisPrintForm;
     }
 

@@ -37,7 +37,7 @@ public class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
 
-        return prepareViewer(new JRViewer(createJasperPrint(remoteForm)));
+        return prepareViewer(new JRViewer(createJasperPrint(remoteForm, false)));
     }
 
     private JRViewer prepareViewer(final JRViewer viewer) {
@@ -54,9 +54,9 @@ public class ReportDockable extends FormDockable {
         // пока ничего не делаем
     }
 
-    public static JasperPrint createJasperPrint(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
+    public static JasperPrint createJasperPrint(RemoteFormInterface remoteForm, boolean toExcel) throws ClassNotFoundException, IOException, JRException {
 
-        JasperDesign design = ClientObjectProxy.retrieveJasperDesign(remoteForm);
+        JasperDesign design = ClientObjectProxy.retrieveJasperDesign(remoteForm, toExcel);
         JasperReport report = JasperCompileManager.compileReport(design);
 
         JasperPrint print = JasperFillManager.fillReport(report,new HashMap(),
@@ -71,7 +71,7 @@ public class ReportDockable extends FormDockable {
         File tempFile = File.createTempFile("lsf", ".xls");
 
         JExcelApiExporter xlsExporter = new JExcelApiExporter();
-        xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm));
+        xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm, true));
         xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
         xlsExporter.exportReport();
 

@@ -51,5 +51,10 @@
         <artifactId>aspectjrt</artifactId>
         <version>1.6.8</version>
     </dependency>
+   <dependency>
+       <groupId>ar.com.fdvs</groupId>
+       <artifactId>DynamicJasper</artifactId>
+       <version>3.0.13</version>
+   </dependency>
   </dependencies>
 </project>

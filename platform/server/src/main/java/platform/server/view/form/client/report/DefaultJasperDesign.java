@@ -234,7 +234,7 @@ public class DefaultJasperDesign {
 
     }
 
-    public DefaultJasperDesign(FormView formView, Set<Integer> hideGroupObjects) throws JRException {
+    public DefaultJasperDesign(FormView formView, Set<Integer> hideGroupObjects, boolean toExcel) throws JRException {
 
         int pageWidth = 842 - 40;
         int pageHeight = 595;
@@ -325,7 +325,8 @@ public class DefaultJasperDesign {
                 drawText.setStretchType(JRDesignTextField.STRETCH_TYPE_RELATIVE_TO_BAND_HEIGHT);
                 drawText.setBlankWhenNull(true);
 
-                drawText.setPattern(reportField.pattern);
+                if (!toExcel)
+                    drawText.setPattern(reportField.pattern);
 
                 reportLayout.add(reportField, drawCaption, drawText);
             }
