@@ -8,7 +8,6 @@ package platform.client.form;
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -26,7 +25,6 @@ public class SimplexLayout implements LayoutManager2 {
 
     public boolean disableLayout = false;
 
-    public boolean hasChanged = true;
     Dimension oldDimension;
     Map<List<Component>,Map<Component, Rectangle>> cache = new HashMap<List<Component>, Map<Component, Rectangle>>();
 
@@ -48,7 +46,6 @@ public class SimplexLayout implements LayoutManager2 {
     public void addLayoutComponent(String name, Component comp) {
         if (allComponents.indexOf(comp) == -1) allComponents.add(comp);
         constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
-        hasChanged = true;
     }
 
     public void addLayoutComponent(Component comp, Object constr) {
@@ -58,14 +55,12 @@ public class SimplexLayout implements LayoutManager2 {
         else
             constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
 //        System.out.println("addLayoutComp");
-        hasChanged = true;
     }
     
     public void removeLayoutComponent(Component comp) {
         allComponents.remove(comp);
         constraints.remove(comp);
 //        System.out.println("removeLayoutComp");
-        hasChanged = true;
     }
 
     public Dimension preferredLayoutSize(Container parent) {
@@ -116,15 +111,12 @@ public class SimplexLayout implements LayoutManager2 {
 
         if (disableLayout) return;
 
-        long stl = System.currentTimeMillis();
-
         if (parent != mainContainer) return;
 
         if (fillVisibleComponents()) return;
 
         if (parent.getSize().equals(oldDimension)) {
 
-            if (!hasChanged) return;
             Map<Component,Rectangle> cachedCoords = cache.get(components);
             if (cachedCoords != null) {
                 for (Component comp : components)
@@ -143,15 +135,13 @@ public class SimplexLayout implements LayoutManager2 {
 
             solver = LpSolve.makeLp(0, 0);
 
-            fillComponentVariables(solver, parent);
+            fillComponentVariables(solver);
             fillComponentConstraints(solver, parent);
             fillConstraints(solver);
 
             fillObjFunction(solver);
 
             solver.setTimeout(2);
-            // solve the problem
-            long st = System.currentTimeMillis();
 
             solver.setVerbose(LpSolve.IMPORTANT);
             solver.setOutputfile("");
@@ -176,15 +166,13 @@ public class SimplexLayout implements LayoutManager2 {
                 solver.deleteLp();
         }
 
-        hasChanged = false;
-        
 //        System.out.println("Layout complete : " + (System.currentTimeMillis()-stl));
     }
 
     private Map<Component, SimplexComponentInfo> infos;
     private SimplexComponentInfo targetInfo;
     
-    private void fillComponentVariables(LpSolve solver, Container parent) throws LpSolveException {
+    private void fillComponentVariables(LpSolve solver) throws LpSolveException {
 
         infos = new HashMap<Component, SimplexComponentInfo>();
         
@@ -291,7 +279,6 @@ public class SimplexLayout implements LayoutManager2 {
         int maxCol = (maxVar < 3) ? 1 : ((compCount - 1) / (maxVar - 1) + 1);
 
         SimplexSolverDirections curDir = null;
-        int curRow = 0;
         int curCol = 0;
         
         Iterator<Integer> it = comporder.navigableKeySet().iterator();
@@ -312,7 +299,6 @@ public class SimplexLayout implements LayoutManager2 {
                 curCol++;
                 if (curCol == maxCol) {
                     curCol = 0;
-                    curRow++;
                 }
             }
         }
@@ -469,7 +455,6 @@ public class SimplexLayout implements LayoutManager2 {
     // в итоге invalidate срабатывает даже при добавлении / удалении объектов
     public void dropCaches() {
 
-        hasChanged = true;
         oldDimension = null;
         cache.clear();
     }
