@@ -6,6 +6,9 @@ import java.rmi.RemoteException;
 public class RemoteObject extends UnicastRemoteObject {
 
     final protected int exportPort;
+    public int getExportPort() {
+        return exportPort;
+    }
 
     public RemoteObject(int port) throws RemoteException {
         super(port);

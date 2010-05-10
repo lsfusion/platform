@@ -33,21 +33,6 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         super(iAdapter,port);
     }
 
-//    static Registry registry;
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
-
-        System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("sample6","localhost","postgres","11111");
-        SampleBusinessLogics BL = new SampleBusinessLogics(adapter,7652);
-
-//        if(args.length>0 && args[0].equals("-F"))
-//        BL.fillData();
-        LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
-//        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
-        System.out.println("Server has successfully started");
-    }
-
-
     AbstractGroup documentGroup, fixedGroup, currentGroup, lastDocumentGroup;
 
     protected void initGroups() {

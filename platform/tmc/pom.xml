@@ -13,24 +13,13 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>tmc.VEDBusinessLogics</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-             </plugin>
-            <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
               <configuration>
                  <finalName>tmc</finalName>
                  <appendAssemblyId>false</appendAssemblyId>
                  <archive>
                      <manifest>
-                         <mainClass>tmc.VEDBusinessLogics</mainClass>
+                         <mainClass>platform.server.logics.BusinessLogics</mainClass>
                      </manifest>
                  </archive>
                   <descriptors>
@@ -50,10 +39,6 @@
     </build>
 
     <dependencies>
-      <dependency>
-          <groupId>by.luxsoft.platform</groupId>
-          <artifactId>api</artifactId>
-      </dependency>
       <dependency>
           <groupId>by.luxsoft.platform</groupId>
           <artifactId>server</artifactId>

@@ -34,22 +34,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         super(adapter, exportPort);
     }
 
-    //    static Registry registry;
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
-
-        System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("ved","localhost","postgres","11111");
-        defaultSyntax = adapter;
-//        DataAdapter adapter = new MSSQLDataAdapter("ved2","ME2-ПК","sa","11111");
-        VEDBusinessLogics BL = new VEDBusinessLogics(adapter,7652);
-
-//        if(args.length>0 && args[0].equals("-F"))
-//        BL.fillData();
-        LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
-//        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
-        System.out.println("Server has successfully started");
-    }
-
     // конкретные классы
     // реализация по безналу (в опт)
     CustomClass orderSaleWhole;

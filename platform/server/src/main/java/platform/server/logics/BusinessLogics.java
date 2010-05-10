@@ -35,14 +35,36 @@ import platform.server.classes.*;
 
 import java.io.*;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
 import java.util.*;
+import java.net.MalformedURLException;
+
+import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.core.io.FileSystemResource;
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
+
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
+
+        System.out.println("Server is starting...");
+
+        XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
+
+        BusinessLogics bl = (BusinessLogics)factory.getBean("businessLogics");
+        
+        LocateRegistry.createRegistry(bl.getExportPort()).rebind("BusinessLogics", bl);
+
+        System.out.println("Server has successfully started");
+    }
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
     
     protected DataAdapter adapter;
+    public SQLSyntax getAdapter() {
+        return adapter;
+    }
+    
     public final static boolean activateCaches = true;
 
     public RemoteNavigatorInterface createNavigator(String login, String password) {
@@ -122,10 +144,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
-        currentHour = addSFProp(defaultSyntax.getHour(), DoubleClass.instance, 0);
+        currentHour = addSFProp(adapter.getHour(), DoubleClass.instance, 0);
     }
-
-    public static SQLSyntax defaultSyntax;
 
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();
     // получает свойство is

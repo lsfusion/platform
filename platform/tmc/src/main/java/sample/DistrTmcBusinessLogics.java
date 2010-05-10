@@ -28,18 +28,6 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         super(iAdapter,port);
     }
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
-        System.out.println("Server is starting...");
-        DataAdapter adapter = new PostgreDataAdapter("samples","localhost","postgres","11111");
-//        DataAdapter adapter = new MSSQLDataAdapter("distrtmc","ME2-ПК","sa","11111");
-        DistrTmcBusinessLogics BL = new DistrTmcBusinessLogics(adapter,7652);
-        BL.fillData();
-        LocateRegistry.createRegistry(7652).rebind("BusinessLogics", BL);
-//        Naming.rebind("rmi://127.0.0.1:1099/TmcBusinessLogics",new TmcBusinessLogics());
-        System.out.println("Server has successfully started");
-
-    }
-
     protected void initGroups() {
     }
 
