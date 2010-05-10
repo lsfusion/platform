@@ -145,7 +145,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // plainFollow: 0 - не идти внутрь, 1 - идти внутрь 
     static Where followFalse(Where followWhere, Where falseWhere, FollowDeep followDeep, boolean sureNotTrue) {
 
-//        assert !(!plainFollow && sureNotTrue && orTrue(followWhere,falseWhere)); // проверим sureNotTrue, из-за packFollowFalse Linear, GroupExpr пока иногда нарушается 
+        assert !(followDeep==FollowDeep.INNER && sureNotTrue && orTrue(followWhere,falseWhere)); // проверим sureNotTrue, из-за packFollowFalse Linear, GroupExpr пока иногда нарушается 
 
         if(falseWhere.isTrue()) return FALSE;
         if(falseWhere.isFalse()) return followWhere;

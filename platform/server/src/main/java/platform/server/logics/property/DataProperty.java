@@ -80,7 +80,7 @@ public class DataProperty extends Property<ClassPropertyInterface> {
         // блок с удалением
         Where removeWhere = session.getRemoveWhere(value,dataExpr);
         for(ClassPropertyInterface remove : interfaces)
-            removeWhere.or(session.getRemoveWhere(remove.interfaceClass,joinImplement.get(remove)));
+            removeWhere = removeWhere.or(session.getRemoveWhere(remove.interfaceClass,joinImplement.get(remove)));
         cases.add(removeWhere.and(dataExpr.getWhere()), Expr.NULL);
 
         // свойства по умолчанию
