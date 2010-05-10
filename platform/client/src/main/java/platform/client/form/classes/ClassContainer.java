@@ -51,8 +51,7 @@ public abstract class ClassContainer extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 widthDecreased();
-                invalidate();
-                needToBeValidated();
+                needToBeRevalidated();
             }
         });
         widthDecButton.setFocusable(false);
@@ -63,8 +62,7 @@ public abstract class ClassContainer extends JPanel {
 
             public void actionPerformed(ActionEvent e) {
                 widthIncreased();
-                invalidate();
-                needToBeValidated();
+                needToBeRevalidated();
             }
         });
         widthIncButton.setFocusable(false);
@@ -94,7 +92,7 @@ public abstract class ClassContainer extends JPanel {
 
         setMaximumSize(maxSize);
 
-        needToBeValidated();
+        needToBeRevalidated();
     }
 
     protected void collapseTree() {
@@ -109,10 +107,10 @@ public abstract class ClassContainer extends JPanel {
         newMaxSize.width = expandButton.getMinimumSize().width;
         setMaximumSize(newMaxSize);
 
-        needToBeValidated();
+        needToBeRevalidated();
     }
 
-    protected abstract void needToBeValidated();
+    protected abstract void needToBeRevalidated();
     protected abstract void widthDecreased();
     protected abstract void widthIncreased();
 }

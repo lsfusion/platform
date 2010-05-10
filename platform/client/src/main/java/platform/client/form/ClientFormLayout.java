@@ -84,4 +84,7 @@ public class ClientFormLayout {
             return false;
     }
 
+    public void dropCaches() {
+        layoutManager.dropCaches();
+    }
 }

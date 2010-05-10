@@ -124,8 +124,9 @@ public class SimplexLayout implements LayoutManager2 {
 
         if (parent.getSize().equals(oldDimension)) {
 
+            if (!hasChanged) return;
             Map<Component,Rectangle> cachedCoords = cache.get(components);
-            if (cachedCoords != null && !hasChanged) {
+            if (cachedCoords != null) {
                 for (Component comp : components)
                     comp.setBounds(cachedCoords.get(comp));
                 return;
@@ -462,14 +463,14 @@ public class SimplexLayout implements LayoutManager2 {
     }
 
     public void invalidateLayout(Container target) {
+    }
+    
+    // приходится делать не через invalidateLayout, поскольку механизм invalidate() считает, что отрисовка проходит всегда очень быстро
+    // в итоге invalidate срабатывает даже при добавлении / удалении объектов
+    public void dropCaches() {
 
         hasChanged = true;
         oldDimension = null;
-        cache.clear();        
+        cache.clear();
     }
-
-
 }
-
-
-

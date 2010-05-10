@@ -667,4 +667,8 @@ public class ClientForm extends JPanel {
         }
 
     }
+
+    public void dropLayoutCaches() {
+        formLayout.dropCaches();
+    }
 }

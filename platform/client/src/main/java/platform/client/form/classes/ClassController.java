@@ -48,7 +48,8 @@ public class ClassController {
 
         classContainer = new ClassContainer(view) {
 
-            protected void needToBeValidated() {
+            protected void needToBeRevalidated() {
+                form.dropLayoutCaches();
                 form.validate();
             }
 
