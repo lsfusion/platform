@@ -33,9 +33,10 @@ public class Main {
                     UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
 
                     String serverName = args.length>0?args[0]:"localhost";
+                    String exportPort = args.length>1?args[1]:"7652";
 
-//                    RemoteNavigatorInterface remoteNavigator = new LoginDialog((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":7652/BusinessLogics")).login();
-                    RemoteNavigatorInterface remoteNavigator = ((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":7652/BusinessLogics"))
+//                    RemoteNavigatorInterface remoteNavigator = new LoginDialog((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":"+exportPort+"/BusinessLogics")).login();
+                    RemoteNavigatorInterface remoteNavigator = ((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":"+exportPort+"/BusinessLogics"))
                             .createNavigator("user1", "user1");
                     if (remoteNavigator == null) return;
 
