@@ -13,10 +13,18 @@ public class ConcreteCustomClassSet extends QuickSet<ConcreteCustomClass> {
     }
 
     // добавляет отфильтровывая up'ы
-    public void addAll(ConcreteCustomClassSet set,UpClassSet up) {
+    public void addAll(ConcreteCustomClassSet set, UpClassSet up, boolean has) {
         for(int i=0;i<set.size;i++) {
             ConcreteCustomClass nodeSet = set.get(i);
-            if(!up.has(nodeSet))
+            if(up.has(nodeSet)==has)
+                add(nodeSet,set.htable[set.indexes[i]]);
+        }
+    }
+
+    public void addAll(ConcreteCustomClassSet set, ConcreteCustomClassSet and) {
+        for(int i=0;i<set.size;i++) {
+            ConcreteCustomClass nodeSet = set.get(i);
+            if(and.contains(nodeSet))
                 add(nodeSet,set.htable[set.indexes[i]]);
         }
     }

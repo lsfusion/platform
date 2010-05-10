@@ -87,9 +87,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public static <U extends Changes<U>> U getUsedChanges(Property<?> onChange, Property<?> toChange, Modifier<U> modifier) {
-        U result = modifier.newChanges();
-        result.addChanges(onChange.getUsedChanges(toChange.getChangeModifier(modifier, false)));
-        return result;
+        return modifier.newChanges().addChanges(onChange.getUsedChanges(toChange.getChangeModifier(modifier, false)).session);
     }
 
     protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {

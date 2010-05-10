@@ -20,6 +20,6 @@ public abstract class FunctionProperty<T extends PropertyInterface> extends Aggr
     }
 
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        return Property.getUsedChanges(getDepends(), modifier);
+        return modifier.getUsedChanges(getDepends());
     }
 }

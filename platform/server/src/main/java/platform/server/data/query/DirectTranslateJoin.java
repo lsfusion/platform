@@ -1,20 +1,23 @@
 package platform.server.data.query;
 
 import net.jcip.annotations.Immutable;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.caches.Lazy;
 
 import java.util.Collection;
+import java.util.Map;
 
 @Immutable
-public class KeyTranslateJoin<U> extends Join<U>  {
+public class DirectTranslateJoin<U> extends Join<U>  {
 
-    KeyTranslator translator;
+    DirectTranslator translator;
     Join<U> join;
 
-    public KeyTranslateJoin(KeyTranslator translator,Join<U> join) {
+    public DirectTranslateJoin(DirectTranslator translator,Join<U> join) {
         this.translator = translator;
         this.join = join;
     }

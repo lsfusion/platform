@@ -3,7 +3,6 @@ package platform.server.session;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
-import platform.interop.Compare;
 import platform.server.data.*;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
@@ -22,7 +21,6 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.RemoteForm;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.classes.*;
 import platform.server.caches.hash.HashValues;
@@ -36,19 +34,23 @@ import net.jcip.annotations.Immutable;
 
 public class DataSession extends SQLSession implements ChangesSession {
 
+    // mutable для удобства
     public static class UpdateChanges {
 
-        public Set<Property> properties = new HashSet<Property>();
-        public Set<CustomClass> addClasses = new HashSet<CustomClass>();
-        public Set<CustomClass> removeClasses = new HashSet<CustomClass>();
+        public final Set<Property> properties;
+        public final Set<CustomClass> addClasses;
+        public final Set<CustomClass> removeClasses;
 
         public UpdateChanges() {
+            properties = new HashSet<Property>();
+            addClasses = new HashSet<CustomClass>();
+            removeClasses = new HashSet<CustomClass>();            
         }
 
-        public UpdateChanges(UpdateChanges changes) {
-            properties = new HashSet<Property>(changes.properties);
-            addClasses = new HashSet<CustomClass>(changes.addClasses);
-            removeClasses = new HashSet<CustomClass>(changes.removeClasses);
+        public UpdateChanges(SessionChanges changes, RemoteForm<?> form) {
+            addClasses = new HashSet<CustomClass>(changes.add.keySet());
+            removeClasses = new HashSet<CustomClass>(changes.remove.keySet());
+            properties = new HashSet<Property>(form.getUpdateProperties(changes));
         }
 
         public void add(UpdateChanges changes) {
@@ -67,7 +69,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     // assert что те же формы что и в increment, соответственно в значениях - изменения от посл. apply до посл. update (prev)
     public Map<RemoteForm, UpdateChanges> updateChanges = new HashMap<RemoteForm, UpdateChanges>();
 
-    public SessionChanges changes = new SessionChanges();
+    public SessionChanges changes = SessionChanges.EMPTY;
 
     public final BaseClass baseClass;
     public final CustomClass namedObject;
@@ -77,25 +79,6 @@ public class DataSession extends SQLSession implements ChangesSession {
 
     // для отладки
     public static boolean reCalculateAggr = false;
-
-    public static Where getIsClassWhere(SessionChanges session, Expr expr, ValueClass isClass, WhereBuilder changedWheres) {
-        Where isClassWhere = expr.isClass(isClass.getUpSet());
-        if(isClass instanceof CustomClass && session!=null) {
-            RemoveClassTable removeTable = session.remove.get((CustomClass)isClass);
-            if(removeTable!=null) {
-                Where removeWhere = removeTable.getJoinWhere(expr);
-                isClassWhere = isClassWhere.and(removeWhere.not());
-                if(changedWheres!=null) changedWheres.add(removeWhere);
-            }
-            AddClassTable addTable = session.add.get((CustomClass)isClass);
-            if(addTable!=null) {
-                Where addWhere = addTable.getJoinWhere(expr);
-                isClassWhere = isClassWhere.or(addWhere);
-                if(changedWheres!=null) changedWheres.add(addWhere);
-            }
-        }
-        return isClassWhere;
-    }
 
     public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, Property name, CustomClass transaction, Property date) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         super(adapter);
@@ -118,7 +101,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         if(!cancel)
             for(Map.Entry<RemoteForm,UpdateChanges> appliedChange : appliedChanges.entrySet())
-                appliedChange.getValue().add(getUpdateChanges(changes,appliedChange.getKey()));
+                appliedChange.getValue().add(new UpdateChanges(changes, (RemoteForm<?>) appliedChange.getKey()));
 
         assert Collections.disjoint(appliedChanges.keySet(),(cancel?updateChanges:incrementChanges).keySet());
         appliedChanges.putAll(cancel?updateChanges:incrementChanges);
@@ -127,14 +110,8 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
-        for(AddClassTable addTable : changes.add.values())
-            dropTemporaryTable(addTable);
-        for(RemoveClassTable removeTable : changes.remove.values())
-            dropTemporaryTable(removeTable);
-        for(DataChangeTable dataTable : changes.data.values())
-            dropTemporaryTable(dataTable);
-
-        changes = new SessionChanges();
+        changes.dropTables(this);
+        changes = SessionChanges.EMPTY;
     }
 
     public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, Modifier<? extends Changes> modifier, DataObject key, Object value) throws SQLException {
@@ -169,33 +146,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         assert Collections.disjoint(addClasses,removeClasses);
 
-        for(CustomClass addClass : addClasses) {
-            AddClassTable addTable = changes.add.get(addClass);
-            if(addTable==null) { // если нету таблицы создаем
-                addTable = new AddClassTable(addClass.ID);
-                createTemporaryTable(addTable);
-            }
-            changes.add.put(addClass,addTable.insertRecord(this,Collections.singletonMap(addTable.object,change),new HashMap<PropertyField, ObjectValue>(), false));
-
-            if(BusinessLogics.autoFillDB) continue;
-
-            RemoveClassTable removeTable = changes.remove.get(addClass);
-            if(removeTable!=null) changes.remove.put(addClass,removeTable.deleteRecords(this,Collections.singletonMap(removeTable.object,change))) ;
-        }
-        for(CustomClass removeClass : removeClasses) {
-            RemoveClassTable removeTable = changes.remove.get(removeClass);
-            if(removeTable==null) { // если нету таблицы создаем
-                removeTable = new RemoveClassTable(removeClass.ID);
-                createTemporaryTable(removeTable);
-            }
-            changes.remove.put(removeClass,removeTable.insertRecord(this,Collections.singletonMap(removeTable.object,change),new HashMap<PropertyField, ObjectValue>(), false));
-
-            AddClassTable addTable = changes.add.get(removeClass);
-            if(addTable!=null) changes.add.put(removeClass,addTable.deleteRecords(this,Collections.singletonMap(addTable.object,change)));
-        }
-
-        for(Map.Entry<DataProperty,DataChangeTable> dataChange : changes.data.entrySet()) // удаляем существующие изменения
-            dataChange.setValue(dataChange.getValue().dropChanges(this, dataChange.getKey(), change, removeClasses));
+        changes = new SessionChanges(changes, addClasses, removeClasses, change, this);
 
         newClasses.put(change,toClass);
 
@@ -207,52 +158,12 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException {
-        DataChangeTable dataChange = changes.data.get(property);
-        if(dataChange == null) { // создадим таблицу, если не было
-            dataChange = new DataChangeTable(property);
-            createTemporaryTable(dataChange);
-        }
-        
-        // если изменяем по внешнему коду, но сначала надо найти внутренний код, а затем менять
-        if (externalID) {
-            DataProperty extPropID = property.value.getExternalID();
-
-            Query<ClassPropertyInterface,String> query = new Query<ClassPropertyInterface, String>(extPropID);
-            query.and(extPropID.getExpr(query.mapKeys).compare((DataObject) newValue,Compare.EQUALS));
-
-            OrderedMap<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> result = query.executeClasses(this, baseClass);
-
-            if (result.size() == 0)
-                newValue = NullValue.instance;
-            else
-                newValue = BaseUtils.singleValue(result.singleKey());
-        }
-
-        DataChangeTable changeTable = dataChange.insertRecord(this, BaseUtils.join(dataChange.mapKeys, keys), Collections.singletonMap(dataChange.value, newValue), true);
-        changes.data.put(property, changeTable);
+        changes = new SessionChanges(changes, property, keys, newValue, this);
 
         // по тем по кому не было restart'а new -> to
-        SessionChanges propertyChanges = new SessionChanges();
-        propertyChanges.data.put(property,changeTable);
+        SessionChanges propertyChanges = changes.getSessionChanges(property);
         for(Map.Entry<RemoteForm,UpdateChanges> incrementChange : incrementChanges.entrySet())
-            incrementChange.getValue().properties.addAll(getUpdateProperties(propertyChanges,incrementChange.getKey()));
-    }
-
-    private static UpdateChanges getUpdateChanges(SessionChanges sessionChanges, RemoteForm<?> form) {
-        UpdateChanges result = new UpdateChanges();
-        result.addClasses.addAll(sessionChanges.add.keySet());
-        result.removeClasses.addAll(sessionChanges.remove.keySet());
-        result.properties.addAll(getUpdateProperties(sessionChanges,form));
-        return result;
-    }
-
-    private static Collection<Property> getUpdateProperties(SessionChanges sessionChanges, RemoteForm<?> form) {
-        Collection<Property> properties = new HashSet<Property>();
-        Modifier<? extends Changes> propertyModifier = form.update(sessionChanges);
-        for(Property<?> updateProperty : form.getUpdateProperties())
-            if(updateProperty.hasChanges(propertyModifier))
-                properties.add(updateProperty);
-        return properties;
+            incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
     }
 
     public ConcreteClass getCurrentClass(DataObject value) {
@@ -294,7 +205,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             incrementChange = appliedChanges.remove(form);
             if(incrementChange==null) // совсем не было
                 incrementChange = new UpdateChanges();
-            UpdateChanges formChanges = getUpdateChanges(changes, form);
+            UpdateChanges formChanges = new UpdateChanges(changes, form);
             // from = changes (сбрасываем пометку что не было restart'а)
             updateChanges.put(form, formChanges);
             // возвращаем applied + changes
@@ -325,15 +236,35 @@ public class DataSession extends SQLSession implements ChangesSession {
         static class UsedChanges extends Changes<UsedChanges> {
             final Map<Property, IncrementChangeTable> increment;
 
+            private UsedChanges() {
+                 increment = new HashMap<Property, IncrementChangeTable>();
+            }
+            private final static UsedChanges EMPTY = new UsedChanges();
+
+            public UsedChanges(Increment modifier) {
+                 super(modifier);
+                 increment = new HashMap<Property, IncrementChangeTable>(modifier.tables);
+            }
+
             @Override
             public boolean hasChanges() {
                 return super.hasChanges() || !increment.isEmpty();
             }
 
-            @Override
-            public void add(UsedChanges add) {
-                super.add(add);
-                increment.putAll(add.increment);
+            private UsedChanges(UsedChanges changes, SessionChanges merge) {
+                super(changes, merge);
+                increment = changes.increment;
+            }
+            public UsedChanges addChanges(SessionChanges changes) {
+                return new UsedChanges(this, changes);
+            }
+
+            private UsedChanges(UsedChanges changes, UsedChanges merge) {
+                super(changes, merge);
+                increment = BaseUtils.merge(changes.increment, merge.increment);
+            }
+            public UsedChanges add(UsedChanges changes) {
+                return new UsedChanges(this, changes);
             }
 
             @Override
@@ -348,6 +279,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
 
             @Override
+            @Lazy
             public Set<ValueExpr> getValues() {
                 Set<ValueExpr> result = new HashSet<ValueExpr>();
                 result.addAll(super.getValues());
@@ -355,18 +287,22 @@ public class DataSession extends SQLSession implements ChangesSession {
                 return result;
             }
 
-            public UsedChanges() {
-                 increment = new HashMap<Property, IncrementChangeTable>();
+            public UsedChanges(Property property, IncrementChangeTable table) {
+                increment = Collections.singletonMap(property, table);
             }
 
-            private UsedChanges(UsedChanges usedChanges, Map<ValueExpr, ValueExpr> mapValues) {
+            private UsedChanges(UsedChanges usedChanges, Map<ValueExpr,ValueExpr> mapValues) {
                 super(usedChanges, mapValues);
-                increment = MapValuesIterable.translate(usedChanges.increment,mapValues);
+                increment = MapValuesIterable.translate(usedChanges.increment, mapValues);
             }
 
-            public UsedChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+            public UsedChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
                 return new UsedChanges(this, mapValues);
             }
+        }
+
+        public UsedChanges fullChanges() {
+            return new UsedChanges(this);
         }
 
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
@@ -381,15 +317,14 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         public UsedChanges used(Property property, UsedChanges usedChanges) {
             IncrementChangeTable incrementTable = tables.get(property);
-            if(incrementTable!=null) {
-                usedChanges = new UsedChanges();
-                usedChanges.increment.put(property,incrementTable);
-            }
-            return usedChanges;
+            if(incrementTable!=null)
+                return new UsedChanges(property, incrementTable);
+            else
+                return usedChanges;
         }
 
         public UsedChanges newChanges() {
-            return new UsedChanges();
+            return UsedChanges.EMPTY;
         }
 
         public IncrementChangeTable read(Collection<Property> properties,BaseClass baseClass) throws SQLException {

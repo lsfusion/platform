@@ -7,13 +7,13 @@ import platform.server.data.expr.*;
 import java.util.*;
 
 @Immutable
-public class KeyTranslator {
+public class DirectTranslator {
 
     // какой есть - какой нужен
     public final Map<KeyExpr,KeyExpr> keys;
     public final Map<ValueExpr,ValueExpr> values;
 
-    public KeyTranslator(Map<KeyExpr, KeyExpr> keys, Map<ValueExpr, ValueExpr> values) {
+    public DirectTranslator(Map<KeyExpr, KeyExpr> keys, Map<ValueExpr, ValueExpr> values) {
         this.keys = keys;
         this.values = values;
 
@@ -39,7 +39,7 @@ public class KeyTranslator {
     }
 
     public boolean equals(Object obj) {
-        return obj==this || (obj instanceof KeyTranslator && keys.equals(((KeyTranslator)obj).keys) && values.equals(((KeyTranslator)obj).values));
+        return obj==this || (obj instanceof DirectTranslator && keys.equals(((DirectTranslator)obj).keys) && values.equals(((DirectTranslator)obj).values));
     }
 
 

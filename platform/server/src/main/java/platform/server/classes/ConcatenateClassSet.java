@@ -30,6 +30,18 @@ public class ConcatenateClassSet implements ConcreteClass  {
         return new ConcatenateClassSet(andClasses);
     }
 
+    public AndClassSet or(AndClassSet node) {
+        ConcatenateClassSet or = (ConcatenateClassSet) node;
+        assert or.classes.length == classes.length;
+
+        AndClassSet[] orClasses = new AndClassSet[classes.length];
+        for(int i=0;i<classes.length;i++)
+            if((orClasses[i] = classes[i].or(or.classes[i]))==null)
+                return null;
+
+        return new ConcatenateClassSet(orClasses);
+    }
+
     public boolean isEmpty() {
         for(AndClassSet classSet : classes)
             if(classSet.isEmpty())

@@ -3,7 +3,6 @@ package platform.server.session;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.caches.hash.HashValues;
-import platform.server.caches.Lazy;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
 import platform.server.data.expr.ValueExpr;
@@ -14,8 +13,6 @@ import platform.server.data.query.Join;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
 
 public abstract class AbstractPropertyChangesModifier<P extends PropertyInterface, T extends Property<P>, AC extends AbstractPropertyChanges<P,T,AC>,
                                             UC extends AbstractPropertyChangesModifier.UsedChanges<P,T,AC,UC>> extends Modifier<UC> {
@@ -41,15 +38,24 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
             this.changes = changes;
         }
 
+        protected UsedChanges(AbstractPropertyChangesModifier<P,T,AC,UC> modifier) {
+            super(modifier);
+            this.changes = modifier.changes; // immutable не страшно
+        }
+
         @Override
         public boolean hasChanges() {
             return super.hasChanges() || changes.hasChanges();
         }
 
-        @Override
-        public void add(UC add) {
-            super.add(add);
-            changes = changes.add(add.changes);
+        protected UsedChanges(UC changes, SessionChanges merge) {
+            super(changes, merge);
+            this.changes = changes.changes;
+        }
+
+        protected UsedChanges(UC changes, UC merge) {
+            super(changes, merge);
+            this.changes = changes.changes.add(merge.changes);
         }
 
         @Override
@@ -64,6 +70,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         }
 
         @Override
+        @GenericLazy
         public Set<ValueExpr> getValues() {
             Set<ValueExpr> result = new HashSet<ValueExpr>();
             result.addAll(super.getValues());
@@ -71,7 +78,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
             return result;
         }
 
-        protected UsedChanges(UC usedChanges, Map<ValueExpr, ValueExpr> mapValues) {
+        protected UsedChanges(UC usedChanges, Map<ValueExpr,ValueExpr> mapValues) {
             super(usedChanges, mapValues);
             changes = usedChanges.changes.translate(mapValues);
         }

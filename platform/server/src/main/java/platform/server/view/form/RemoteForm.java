@@ -30,6 +30,7 @@ import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.data.where.Where;
+import platform.server.caches.ManualLazy;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -61,12 +62,31 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return BL.baseClass.findClassID(classID);
     }
 
+    private UsedChanges fullChanges;
+    @Override
+    @ManualLazy
+    public UsedChanges fullChanges() {
+        if(fullChanges==null || !BaseUtils.hashEquals(fullChanges.session,getSession()))
+            fullChanges = super.fullChanges();
+        return fullChanges;
+    }
+
+
     public Modifier<? extends Changes> update(final SessionChanges sessionChanges) {
         return new NoUpdateModifier(hintsNoUpdate) {
             public SessionChanges getSession() {
                 return sessionChanges;
             }
         };
+    }
+
+    public Set<Property> getUpdateProperties(SessionChanges sessionChanges) {
+        Set<Property> properties = new HashSet<Property>();
+        Modifier<? extends Changes> propertyModifier = update(sessionChanges);
+        for(Property<?> updateProperty : getUpdateProperties())
+            if(updateProperty.hasChanges(propertyModifier))
+                properties.add(updateProperty);
+        return properties;
     }
 
     final FocusView<T> focusView;
@@ -503,7 +523,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 incrementChanges = new HashMap<RemoteForm, DataSession.UpdateChanges>(session.incrementChanges);
                 appliedChanges = new HashMap<RemoteForm, DataSession.UpdateChanges>(session.appliedChanges);
                 updateChanges = new HashMap<RemoteForm, DataSession.UpdateChanges>(session.updateChanges);
-                changes = new SessionChanges(session.changes);
+                changes = session.changes;
             }
         }
 

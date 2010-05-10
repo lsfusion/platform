@@ -33,13 +33,10 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
 
     public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
 
-        U result = modifier.newChanges();
         Set<Property> used = new HashSet<Property>();
         FunctionProperty.fillDepends(used,BaseUtils.merge(value.mapping.values(),onChange));
         if(valueChanged) used.add(value.property);
-        result.add(Property.getUsedChanges(used, modifier));
-        result.add(property.getUsedDataChanges(modifier));
-        return result;
+        return modifier.getUsedChanges(used).add(property.getUsedDataChanges(modifier));
     }
 
     public DataChanges getDataChanges(Modifier<? extends Changes> modifier) {

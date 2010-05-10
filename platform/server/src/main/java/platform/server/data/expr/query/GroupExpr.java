@@ -12,7 +12,7 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.cases.Case;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.expr.*;
@@ -79,7 +79,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
     }
 
     // трансляция
-    public GroupExpr(GroupExpr groupExpr,KeyTranslator translator) {
+    public GroupExpr(GroupExpr groupExpr, DirectTranslator translator) {
         super(groupExpr, translator);
     }
 

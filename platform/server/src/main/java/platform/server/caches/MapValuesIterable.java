@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.HashMap;
 
 // нужен чтобы с использованием hash'ей строить мапы ValueExpr'ов
-public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>,Map<ValueExpr,ValueExpr>> {
+public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>, Map<ValueExpr,ValueExpr>> {
 
     private final MapValues<?> from;
     private final MapValues<?> to;
@@ -23,7 +23,7 @@ public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>,Map<
         this.to = to;
     }
 
-    protected Map<ValueExpr, ValueExpr> map(final Map<ValueExpr, ValueExpr> map) {
+    protected Map<ValueExpr,ValueExpr> map(final Map<ValueExpr, ValueExpr> map) {
         if(from.hashValues(new HashTranslateValues(map))==to.hashValues(HashCodeValues.instance))
             return map;
         else

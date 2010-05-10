@@ -127,7 +127,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         this(expr.object,expr.objectClass);
     }
 
-    public DataObject translate(Map<ValueExpr, ValueExpr> mapValues) {
+    public DataObject translate(Map<ValueExpr,ValueExpr> mapValues) {
         return new DataObject(mapValues.get(getExpr()));
     }
 

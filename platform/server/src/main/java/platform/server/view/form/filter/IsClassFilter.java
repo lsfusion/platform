@@ -3,7 +3,6 @@ package platform.server.view.form.filter;
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.session.DataSession;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.view.form.GroupObjectImplement;
@@ -33,6 +32,6 @@ public class IsClassFilter<P extends PropertyInterface> extends PropertyFilter<P
     }
 
     public Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
-        return DataSession.getIsClassWhere(modifier.getSession(),property.getExpr(classGroup, mapKeys, modifier),isClass,null);
+        return modifier.getSession().getIsClassWhere(property.getExpr(classGroup, mapKeys, modifier), isClass, null);
     }
 }

@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
 import platform.server.data.where.DataWhereSet;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.caches.hash.HashContext;
 
 public interface InnerJoin {
@@ -9,7 +9,7 @@ public interface InnerJoin {
 
     int hashContext(HashContext hashContext);
 
-    InnerJoin translateDirect(KeyTranslator translator);
+    InnerJoin translateDirect(DirectTranslator translator);
 
     boolean isIn(DataWhereSet set);
 }

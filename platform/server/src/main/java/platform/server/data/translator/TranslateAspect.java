@@ -7,7 +7,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclareParents;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.InnerExpr;
 import platform.server.data.expr.Expr;
@@ -21,15 +20,15 @@ import platform.server.data.where.NotWhere;
 public class TranslateAspect {
 
     public static interface TranslateLazyInterface {
-        void initTranslate(Object object, KeyTranslator translator, Object thisObject);
+        void initTranslate(Object object, DirectTranslator translator, Object thisObject);
         Object lazyResult(ProceedingJoinPoint thisJoinPoint) throws Throwable;
     }
     public abstract static class TranslateLazyImplement implements TranslateLazyInterface {
         protected Object object = null;
-        protected KeyTranslator translator = null;
+        protected DirectTranslator translator = null;
         protected boolean translated = false;
 
-        public void initTranslate(Object object, KeyTranslator translator, Object thisObject) {
+        public void initTranslate(Object object, DirectTranslator translator, Object thisObject) {
             if(!translated && !(object==thisObject)) {
                 this.object = object;
                 this.translator = translator;
@@ -67,8 +66,8 @@ public class TranslateAspect {
     }
     @DeclareParents(value="@TranslateExprLazy *",defaultImpl=TranslateExprLazyImplement.class)
     private TranslateExprLazyInterface translateExprLazy;
-    @AfterReturning(pointcut="call(platform.server.data.expr.Expr platform.server.data.expr.Expr.translateDirect(platform.server.data.translator.KeyTranslator)) && target(expr) && args(translator)",returning="transExpr")
-    public void afterExprTranslate(Expr expr, KeyTranslator translator, TranslateExprLazyInterface transExpr) {
+    @AfterReturning(pointcut="call(platform.server.data.expr.Expr platform.server.data.expr.Expr.translateDirect(platform.server.data.translator.DirectTranslator)) && target(expr) && args(translator)",returning="transExpr")
+    public void afterExprTranslate(Expr expr, DirectTranslator translator, TranslateExprLazyInterface transExpr) {
         transExpr.initTranslate(expr,translator,transExpr);
     }
     @Around("call(platform.server.data.where.Where platform.server.data.expr.Expr.calculateWhere()) && target(expr)")
@@ -85,8 +84,8 @@ public class TranslateAspect {
     }
     @DeclareParents(value="platform.server.data.where.DataWhere+",defaultImpl=TranslateClassWhereLazyImplement.class)
     private TranslateClassWhereLazyInterface translateClassWhereLazy;
-    @AfterReturning(pointcut="call(platform.server.data.where.Where platform.server.data.where.Where.translateDirect(platform.server.data.translator.KeyTranslator)) && target(where) && args(translator)",returning="transWhere")
-    public void afterDataWhereTranslate(AbstractWhere where,KeyTranslator translator, TranslateClassWhereLazyInterface transWhere) {
+    @AfterReturning(pointcut="call(platform.server.data.where.Where platform.server.data.where.Where.translateDirect(platform.server.data.translator.DirectTranslator)) && target(where) && args(translator)",returning="transWhere")
+    public void afterDataWhereTranslate(AbstractWhere where, DirectTranslator translator, TranslateClassWhereLazyInterface transWhere) {
         if(!(transWhere instanceof InnerExpr.NotNull)) // он уже обработан
            transWhere.initTranslate(where,translator,transWhere);
     }
@@ -104,8 +103,8 @@ public class TranslateAspect {
     }
     @DeclareParents(value="platform.server.data.where.FormulaWhere+",defaultImpl=TranslateMeanWhereLazyImplement.class)
     private TranslateMeanWhereLazyInterface translateMeanWhereLazy;
-    @AfterReturning(pointcut="call(platform.server.data.where.Where platform.server.data.where.Where.translateDirect(platform.server.data.translator.KeyTranslator)) && target(where) && args(translator)",returning="transWhere")
-    public void afterFormulaWhereTranslate(AbstractWhere where,KeyTranslator translator, TranslateMeanWhereLazyInterface transWhere) {
+    @AfterReturning(pointcut="call(platform.server.data.where.Where platform.server.data.where.Where.translateDirect(platform.server.data.translator.DirectTranslator)) && target(where) && args(translator)",returning="transWhere")
+    public void afterFormulaWhereTranslate(AbstractWhere where, DirectTranslator translator, TranslateMeanWhereLazyInterface transWhere) {
         transWhere.initTranslate(where,translator,transWhere);
     }
     @Around("call(platform.server.data.where.classes.MeanClassWheres platform.server.data.where.AbstractWhere.calculateMeanClassWheres()) && target(where)")
@@ -122,8 +121,8 @@ public class TranslateAspect {
     }
     @DeclareParents(value="platform.server.data.where.classes.MeanClassWheres+",defaultImpl=TranslateMeanClassWhereLazyImplement.class)
     private TranslateMeanClassWhereLazyInterface translateMeanClassWhereLazy;
-    @AfterReturning(pointcut="call(platform.server.data.where.classes.MeanClassWheres platform.server.data.where.classes.MeanClassWheres.translate(platform.server.data.translator.KeyTranslator)) && target(where) && args(translator)",returning="transWhere")
-    public void afterMeanClassWhereTranslate(MeanClassWheres where,KeyTranslator translator, TranslateMeanClassWhereLazyInterface transWhere) {
+    @AfterReturning(pointcut="call(platform.server.data.where.classes.MeanClassWheres platform.server.data.where.classes.MeanClassWheres.translate(platform.server.data.translator.DirectTranslator)) && target(where) && args(translator)",returning="transWhere")
+    public void afterMeanClassWhereTranslate(MeanClassWheres where, DirectTranslator translator, TranslateMeanClassWhereLazyInterface transWhere) {
         transWhere.initTranslate(where,translator,transWhere);
     }
     @Around("call(platform.server.data.where.classes.ClassExprWhere platform.server.data.where.classes.MeanClassWheres.calculateClassWhere()) && target(where)")

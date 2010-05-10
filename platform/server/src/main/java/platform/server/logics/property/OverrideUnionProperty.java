@@ -38,7 +38,7 @@ public class OverrideUnionProperty extends UnionProperty {
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
         U result = modifier.newChanges();
         for(PropertyMapImplement<?, Interface> operand : operands)
-            result.add(operand.property.getUsedDataChanges(modifier));
+            result = result.add(operand.property.getUsedDataChanges(modifier));
         return result;
     }
 

@@ -12,7 +12,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
@@ -35,8 +35,8 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         mapKeys = query.mapKeys;
         values = query.getValues();
 
-        properties = query.where.followTrue(query.properties);
-        where = query.where;
+        where = query.where.followFalse(Where.FALSE, true);
+        properties = where.followTrue(query.properties);
     }
 
     public CompiledQuery<K,V> compileSelect(SQLSyntax syntax) {
@@ -62,7 +62,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
                 return joinExprs(joinImplement, mapValues);
            joinKeys.put(joinExpr.getKey(), (KeyExpr) joinExpr.getValue());
         }
-        return new KeyTranslateJoin<V>(new KeyTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
+        return new DirectTranslateJoin<V>(new DirectTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
     }
 
     public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
@@ -71,7 +71,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         Join<V> join = this;
 
         // сначала map'им значения
-        join = new KeyTranslateJoin<V>(new KeyTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues), join);
+        join = new DirectTranslateJoin<V>(new DirectTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues), join);
 
         // затем делаем подстановку
         join = new QueryTranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement)), join);

@@ -1,13 +1,13 @@
 package platform.server.caches;
 
 import platform.base.MapIterable;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.caches.hash.HashCodeContext;
 import platform.server.caches.hash.HashTranslateContext;
 
 import java.util.Iterator;
 
-public class MapHashIterable extends MapIterable<KeyTranslator,KeyTranslator> {
+public class MapHashIterable extends MapIterable<DirectTranslator, DirectTranslator> {
 
     private final MapContext from;
     private final MapContext to;
@@ -19,14 +19,14 @@ public class MapHashIterable extends MapIterable<KeyTranslator,KeyTranslator> {
         this.values = values;
     }
 
-    protected KeyTranslator map(final KeyTranslator translator) {
+    protected DirectTranslator map(final DirectTranslator translator) {
         if(from.hash(new HashTranslateContext(translator, values))==to.hash(HashCodeContext.instance))
             return translator;
         else
             return null;
     }
 
-    protected Iterator<KeyTranslator> mapIterator() {
+    protected Iterator<DirectTranslator> mapIterator() {
         return new MapParamsIterable(from, to, values).iterator();
     }
 }

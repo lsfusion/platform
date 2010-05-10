@@ -4,7 +4,7 @@ import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.DoubleClass;
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
@@ -92,7 +92,7 @@ public class ValueExpr extends StaticClassExpr {
         return this;
     }
 
-    public BaseExpr translateDirect(KeyTranslator translator) {
+    public BaseExpr translateDirect(DirectTranslator translator) {
         return translator.translate(this);
     }
 

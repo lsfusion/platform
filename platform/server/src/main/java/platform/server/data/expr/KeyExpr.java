@@ -1,7 +1,7 @@
 package platform.server.data.expr;
 
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Type;
@@ -57,7 +57,7 @@ public class KeyExpr extends VariableClassExpr {
         return translator.translate(this);
     }
 
-    public KeyExpr translateDirect(KeyTranslator translator) {
+    public KeyExpr translateDirect(DirectTranslator translator) {
         return translator.translate(this);
     }
 

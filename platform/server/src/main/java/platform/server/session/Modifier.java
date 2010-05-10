@@ -10,29 +10,24 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.ArrayList;
 
 public abstract class Modifier<U extends Changes<U>> {
 
     public abstract U used(Property property,U usedChanges);
     public abstract U newChanges();
 
+    public abstract U fullChanges();
     public abstract SessionChanges getSession();
 
-    public void modifyAdd(U changes, ValueClass valueClass) {
-        SessionChanges session = getSession();
-        if(session!=null && valueClass instanceof CustomClass)
-            BaseUtils.putNotNull((CustomClass)valueClass,session.add,changes.add);
-    }
-    public void modifyRemove(U changes, ValueClass valueClass) {
-        SessionChanges session = getSession();
-        if(session!=null && valueClass instanceof CustomClass)
-            BaseUtils.putNotNull((CustomClass)valueClass,session.remove,changes.remove);
-    }
-    public void modifyData(U changes, DataProperty property) {
-        SessionChanges session = getSession();
-        if(session!=null)
-            BaseUtils.putNotNull(property,session.data,changes.data);
+    public abstract <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere);
+
+    public U getUsedChanges(Collection<Property> col) {
+        U result = newChanges();
+        for(Property<?> property : col)
+            result = result.add(property.getUsedChanges(this));
+        return result;
     }
 
-    public abstract <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere);
 }

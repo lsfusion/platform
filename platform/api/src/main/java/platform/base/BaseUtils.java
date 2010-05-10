@@ -375,6 +375,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <B,K1 extends B,K2 extends B> Set<B> mergeItem(Set<K1> set,K2 item) {
+        Set<B> result = new HashSet<B>(set);
+        result.add(item);
+        return result;
+    }
+
     public static <B,K1 extends B,K2 extends B> List<B> mergeList(List<K1> list1,List<K2> list2) {
         List<B> result = new ArrayList<B>(list1);
         result.addAll(list2);

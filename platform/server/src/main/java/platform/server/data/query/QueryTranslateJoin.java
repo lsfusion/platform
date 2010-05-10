@@ -1,6 +1,5 @@
 package platform.server.data.query;
 
-import platform.server.data.translator.KeyTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;

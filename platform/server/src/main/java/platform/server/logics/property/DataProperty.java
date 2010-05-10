@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
-import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassWhere;
@@ -38,20 +37,14 @@ public class DataProperty extends Property<ClassPropertyInterface> {
     }
 
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        U result = modifier.newChanges();
-        if(derivedChange !=null) result.add(derivedChange.getUsedChanges(modifier));
-        modifier.modifyData(result, this);
-        modifier.modifyRemove(result, value);
-        for(ClassPropertyInterface propertyInterface : interfaces)
-            modifier.modifyRemove(result,propertyInterface.interfaceClass);
-        return result;
+        SessionChanges session = modifier.getSession();
+        return (derivedChange != null ? derivedChange.getUsedChanges(modifier) : modifier.newChanges()).addChanges(
+                session.getSessionChanges(this).add(new SessionChanges(session, ClassProperty.getValueClasses(interfaces), true)));
     }
 
     @Override
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-        U changes = modifier.newChanges();
-        ClassProperty.modifyClasses(interfaces,modifier,changes);
-        return changes;
+        return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), ClassProperty.getValueClasses(interfaces), false));
     }
 
     @Override
@@ -73,7 +66,6 @@ public class DataProperty extends Property<ClassPropertyInterface> {
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         SessionChanges session = modifier.getSession();
-        assert session!=null;
 
         Expr dataExpr = getExpr(joinImplement);
 
@@ -86,17 +78,10 @@ public class DataProperty extends Property<ClassPropertyInterface> {
         }
 
         // блок с удалением
-        RemoveClassTable removeTable;
-        Where removeWhere = Where.FALSE;
-        if(value instanceof CustomClass && (removeTable = session.remove.get((CustomClass) value))!=null)
-            removeWhere = removeWhere.or(removeTable.getJoinWhere(dataExpr));
-
+        Where removeWhere = session.getRemoveWhere(value,dataExpr);
         for(ClassPropertyInterface remove : interfaces)
-            if(remove.interfaceClass instanceof CustomClass && (removeTable = session.remove.get((CustomClass) remove.interfaceClass))!=null)
-                removeWhere = removeWhere.or(removeTable.getJoinWhere(joinImplement.get(remove)));
-
-        if(!removeWhere.isFalse())
-            cases.add(removeWhere.and(dataExpr.getWhere()), Expr.NULL);
+            removeWhere.or(session.getRemoveWhere(remove.interfaceClass,joinImplement.get(remove)));
+        cases.add(removeWhere.and(dataExpr.getWhere()), Expr.NULL);
 
         // свойства по умолчанию
         if(derivedChange !=null) {

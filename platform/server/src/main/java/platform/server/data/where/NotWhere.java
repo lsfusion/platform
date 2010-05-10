@@ -4,7 +4,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.caches.hash.HashContext;
@@ -40,7 +40,7 @@ public class NotWhere extends ObjectWhere {
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public Where translateDirect(KeyTranslator translator) {
+    public Where translateDirect(DirectTranslator translator) {
         return where.translateDirect(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {

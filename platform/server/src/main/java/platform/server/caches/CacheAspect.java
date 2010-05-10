@@ -80,6 +80,15 @@ public class CacheAspect {
         return lazyExecute(object,thisJoinPoint,thisJoinPoint.getArgs());
     }
 
+/*    // отдельно для generics из-за бага
+    @DeclareParents(value="@platform.server.caches.GenericImmutable *",defaultImpl=ImmutableInterfaceImplement.class)
+    private ImmutableInterface genericImmutable;
+
+    @Around("execution(@platform.server.caches.GenericLazy * (@platform.server.caches.GenericImmutable *).*(..)) && target(object)") // с call'ом есть баги
+    public Object callGenericMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        return lazyExecute(object,thisJoinPoint,thisJoinPoint.getArgs());
+    }
+  */
     @Around("execution(@platform.server.caches.ParamLazy * *.*(@net.jcip.annotations.Immutable *)) && target(object)") // с call'ом есть баги
     public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         Object[] args = thisJoinPoint.getArgs();

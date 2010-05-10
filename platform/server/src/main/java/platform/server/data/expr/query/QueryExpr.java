@@ -4,7 +4,7 @@ import platform.server.data.expr.*;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.SourceEnumerator;
@@ -16,8 +16,6 @@ import platform.base.BaseUtils;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
-
-import net.jcip.annotations.Immutable;
 
 @GenericImmutable
 public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>,J extends QueryJoin> extends InnerExpr implements MapContext {
@@ -37,7 +35,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
     }
 
     // трансляция
-    protected QueryExpr(QueryExpr<K,I,J> queryExpr, KeyTranslator translator) {
+    protected QueryExpr(QueryExpr<K,I,J> queryExpr, DirectTranslator translator) {
         // надо еще транслировать "внутренние" values
         Map<ValueExpr, ValueExpr> mapValues = BaseUtils.filterKeys(translator.values, queryExpr.getValues());
 
@@ -45,7 +43,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
             query = queryExpr.query;
             group = translator.translateDirect(queryExpr.group);
         } else { // еще values перетранслируем
-            KeyTranslator valueTranslator = new KeyTranslator(BaseUtils.toMap(queryExpr.getKeys()), mapValues);
+            DirectTranslator valueTranslator = new DirectTranslator(BaseUtils.toMap(queryExpr.getKeys()), mapValues);
             query = queryExpr.query.translateDirect(valueTranslator);
             group = new HashMap<K, BaseExpr>();
             for(Map.Entry<K, BaseExpr> keyJoin : queryExpr.group.entrySet())
@@ -91,9 +89,9 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
     public boolean twins(AbstractSourceJoin obj) {
         QueryExpr<K,I,J> groupExpr = (QueryExpr)obj;
 
-//        assert hashCode()==groupExpr.hashCode();
+        assert hashCode()==groupExpr.hashCode();
 
-        for(KeyTranslator translator : new MapHashIterable(this, groupExpr, false))
+        for(DirectTranslator translator : new MapHashIterable(this, groupExpr, false))
             if(query.translateDirect(translator).equals(groupExpr.query) &&
                     translator.translateKeys(group).equals(groupExpr.group)) // нельзя reverse'ить
                 return true;

@@ -6,16 +6,21 @@ import platform.server.caches.MapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.caches.MapValuesIterable;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.base.QuickMap;
 
 import java.util.*;
 
+// Immutable
 public abstract class AbstractPropertyChanges<P extends PropertyInterface, T extends Property<P>, This extends AbstractPropertyChanges<P,T,This>> extends QuickMap<T, PropertyChange<P>> implements MapValues<This> {
 
     protected abstract This createThis();
 
     protected AbstractPropertyChanges() {
+    }
+
+    protected AbstractPropertyChanges(This set) {
+        super(set);
     }
 
     protected AbstractPropertyChanges(T property, PropertyChange<P> change) {
@@ -65,14 +70,14 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         return result;
     }
 
-    public This translate(Map<ValueExpr, ValueExpr> mapValues) {
+    public This translate(Map<ValueExpr,ValueExpr> mapValues) {
         This result = createThis();
         for(int i=0;i<size;i++)
             result.add(getKey(i),getValue(i).translate(mapValues));
         return result;
     }
 
-    public This translate(KeyTranslator translator) {
+    public This translate(DirectTranslator translator) {
         This result = createThis();
         for(int i=0;i<size;i++)
             result.add(getKey(i),getValue(i).translate(translator));

@@ -2,7 +2,6 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.Lazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
@@ -24,14 +23,11 @@ import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.auth.SecurityPolicy;
-import platform.base.BaseUtils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 public abstract class CustomClass extends AbstractNode implements ObjectClass, ValueClass {
 
@@ -39,7 +35,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return ObjectType.instance;
     }
 
-    final Collection<CustomClass> parents;
+    public final Collection<CustomClass> parents;
     public final List<CustomClass> children;
 
     public String toString() {
@@ -306,6 +302,17 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         if(this instanceof ConcreteCustomClass && !set.contains((ConcreteCustomClass) this)) return false;
         for(CustomClass child : children)
             if(!child.upInSet(upSet, set)) return false;
+        return true;
+    }
+    public boolean upInSet(CustomClass[] wheres, int numWheres, CustomClass[] proceeded, int numProceeded, CustomClass check) {
+        if(isChild(check))
+            return true;
+        for(int i=0;i<numWheres;i++) if(wheres[i]!=null && isChild(wheres[i])) return true;
+        for(int i=0;i<numProceeded;i++) if(isChild(proceeded[i])) return true;
+
+        if(this instanceof ConcreteCustomClass) return false;
+        for(CustomClass child : children)
+            if(!child.upInSet(wheres,numWheres, proceeded, numProceeded, check)) return false;
         return true;
     }
 

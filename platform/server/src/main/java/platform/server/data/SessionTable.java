@@ -23,8 +23,6 @@ import platform.server.caches.hash.HashValues;
 import java.sql.SQLException;
 import java.util.*;
 
-import net.jcip.annotations.Immutable;
-
 // временная таблица на момент сессии
 @GenericImmutable
 public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
@@ -95,12 +93,12 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         return result;
     }
 
-    public This translate(Map<ValueExpr, ValueExpr> mapValues) {
+    public This translate(Map<ValueExpr,ValueExpr> mapValues) {
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> transRows = null;
         if(rows!=null) {
             transRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
             for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                transRows.put(MapValuesIterable.translate(row.getKey(),mapValues),MapValuesIterable.translate(row.getValue(),mapValues));
+                transRows.put(MapValuesIterable.translate(row.getKey(), mapValues), MapValuesIterable.translate(row.getValue(), mapValues));
         }
         return createThis(classes, propertyClasses, transRows);
     }

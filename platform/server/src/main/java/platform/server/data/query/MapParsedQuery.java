@@ -35,6 +35,7 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         // нужно перемаппить ClassWhere, здесь по большому счету не нужен mapValues потому как assert то классы совпадают
         return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(BaseUtils.filterKeys(mapProps, classProps).values()), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
     }
+    
 
     private Set<ValueExpr> getValues() {
         return BaseUtils.reverse(mapValues).keySet();

@@ -54,21 +54,16 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             U result = modifier.newChanges();
-            for(Property<?> property : getDepends()) {
-                result.add(property.getUsedDataChanges(modifier));
-                result.add(property.getUsedChanges(modifier));
-            }
-        }
-
-        if(implementChange) {
-            U result = modifier.newChanges();
-            result.add(implement.property.getUsedDataChanges(modifier));
-            Set<Property> implementProps = new HashSet<Property>();
-            fillDepends(implementProps,implement.mapping.values());
-            result.add(Property.getUsedChanges(implementProps,modifier));
+            for(Property<?> property : getDepends())
+                result = result.add(property.getUsedDataChanges(modifier)).add(property.getUsedChanges(modifier));
             return result;
         }
 
+        if(implementChange) {
+            Set<Property> implementProps = new HashSet<Property>();
+            fillDepends(implementProps,implement.mapping.values());
+            return implement.property.getUsedDataChanges(modifier).add(modifier.getUsedChanges(implementProps));
+        }
 
         return super.getUsedDataChanges(modifier);
     }

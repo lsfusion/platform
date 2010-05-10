@@ -1,6 +1,6 @@
 package platform.server.classes.sets;
 
-import platform.base.SetWhere;
+import platform.base.ExtraSetWhere;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.classes.*;
@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 // выше вершин
-public class UpClassSet extends SetWhere<CustomClass,UpClassSet> implements ObjectClassSet {
+public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectClassSet {
 
-    private UpClassSet(CustomClass[] iClasses) {
-        super(iClasses);
+    private UpClassSet(CustomClass[] classes) {
+        super(classes);
     }
 
     public static final UpClassSet FALSE = new UpClassSet(new CustomClass[0]);
@@ -67,11 +67,23 @@ public class UpClassSet extends SetWhere<CustomClass,UpClassSet> implements Obje
                 return node;
             else
                 return UpClassSet.FALSE;
-        } else
+        }
+        if(node instanceof UpClassSet)
             return intersect((UpClassSet)node);
+        return getOr().and((OrObjectClassSet)node);
     }
 
-    public OrClassSet getOr() {
+    public AndClassSet or(AndClassSet node) {
+        if(node instanceof ConcreteClass)
+            if(has((ConcreteClass)node))
+                return this;
+            else
+                return OrObjectClassSet.or(this,node);
+        else
+            return add((UpClassSet)node);
+    }
+
+    public OrObjectClassSet getOr() {
         return new OrObjectClassSet(this);
     }
 
@@ -82,8 +94,9 @@ public class UpClassSet extends SetWhere<CustomClass,UpClassSet> implements Obje
     public boolean containsAll(AndClassSet node) {
         if(node instanceof ConcreteClass)
             return has((ConcreteClass)node);
-        else
+        if(node instanceof UpClassSet)
             return ((UpClassSet)node).inSet(this,new ConcreteCustomClassSet());
+        return getOr().containsAll((OrClassSet)node);
     }
 
     public ConcreteCustomClass getSingleClass() {
@@ -119,11 +132,23 @@ public class UpClassSet extends SetWhere<CustomClass,UpClassSet> implements Obje
         return wheres;
     }
 
-    public UpClassSet add(UpClassSet set) {
-        return super.add(set);
+    protected CustomClass add(CustomClass addWhere, CustomClass[] wheres, int numWheres, CustomClass[] proceeded, int numProceeded) {
+        for(CustomClass parent : addWhere.parents)
+            if(parent.upInSet(wheres,numWheres, proceeded, numProceeded, addWhere)) // если покрывает все where возвращаем parent
+                return parent;
+        return null;
     }
-    public UpClassSet intersect(UpClassSet set) {
-        return super.intersect(set);
+
+    protected UpClassSet intersect(UpClassSet where) {
+        if(isTrue() || where.isFalse()) return where;
+        if(isFalse() || where.isTrue()) return this;
+
+        UpClassSet result = FALSE;
+        for(CustomClass andOp : where.wheres)
+            for(CustomClass and : wheres)
+                result = result.add(new UpClassSet(intersect(andOp,and)));
+        return result;
     }
+
 
 }

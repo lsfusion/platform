@@ -3,7 +3,7 @@ package platform.server.data.expr.query;
 import platform.base.BaseUtils;
 import platform.server.caches.ParamLazy;
 import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.BaseExpr;
@@ -18,12 +18,12 @@ public class MaxGroupExpr extends GroupExpr {
         super(group, expr);
     }
 
-    public MaxGroupExpr(MaxGroupExpr maxExpr, KeyTranslator translator) {
+    public MaxGroupExpr(MaxGroupExpr maxExpr, DirectTranslator translator) {
         super(maxExpr, translator);
     }
 
     @ParamLazy
-    public MaxGroupExpr translateDirect(KeyTranslator translator) {
+    public MaxGroupExpr translateDirect(DirectTranslator translator) {
         return new MaxGroupExpr(this,translator);
     }
 

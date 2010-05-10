@@ -1,7 +1,7 @@
 package platform.server.data.expr;
 
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.expr.where.MapWhere;
@@ -47,7 +47,7 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
             return InnerExpr.this.getSource(compile) + " IS NULL";
         }
 
-        public Where translateDirect(KeyTranslator translator) {
+        public Where translateDirect(DirectTranslator translator) {
             return InnerExpr.this.translateDirect(translator).getWhere();
         }
         public Where translateQuery(QueryTranslator translator) {

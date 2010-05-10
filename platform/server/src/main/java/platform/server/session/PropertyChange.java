@@ -8,7 +8,7 @@ import platform.server.data.query.Query;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.caches.*;
 import platform.base.BaseUtils;
@@ -16,8 +16,6 @@ import platform.base.BaseUtils;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-
-import net.jcip.annotations.Immutable;
 
 @GenericImmutable
 public class PropertyChange<T extends PropertyInterface> extends AbstractMapValues<PropertyChange<T>> implements MapContext {
@@ -77,7 +75,7 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         if (!(o instanceof PropertyChange)) return false;
 
         PropertyChange<?> change = (PropertyChange)o;
-        for(KeyTranslator translator : new MapHashIterable(this, change, false))
+        for(DirectTranslator translator : new MapHashIterable(this, change, false))
             if(where.translateDirect(translator).equals(change.where) && expr.translateDirect(translator).equals(change.expr))
                 return true;
         return false;
@@ -88,11 +86,11 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return hash(hashValues.mapKeys());
     }
 
-    public PropertyChange<T> translate(KeyTranslator translator) {
+    public PropertyChange<T> translate(DirectTranslator translator) {
         return new PropertyChange<T>(BaseUtils.join(mapKeys,translator.keys),expr.translateDirect(translator),where.translateDirect(translator));
     }
 
-    public PropertyChange<T> translate(Map<ValueExpr, ValueExpr> mapValues) {
-        return translate(new KeyTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues));
+    public PropertyChange<T> translate(Map<ValueExpr,ValueExpr> mapValues) {
+        return translate(new DirectTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()), mapValues));
     }
 }

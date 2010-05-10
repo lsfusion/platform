@@ -13,7 +13,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
-import platform.server.session.DataSession;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 import platform.server.view.form.filter.Filter;
@@ -191,7 +190,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     private Where getClassWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) {
         Where where = Where.TRUE;
         for(ObjectImplement object : objects)
-            where = where.and(DataSession.getIsClassWhere(modifier.getSession(),mapKeys.get(object),object.getGridClass(),null));
+            where = where.and(modifier.getSession().getIsClassWhere(mapKeys.get(object), object.getGridClass(), null));
         return where;
     }
 

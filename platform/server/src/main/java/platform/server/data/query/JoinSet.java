@@ -4,7 +4,7 @@ import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.server.data.Table;
 import platform.server.data.where.DNFWheres;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.expr.query.GroupJoin;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
@@ -67,7 +67,7 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
         return hash;
     }
 
-    public JoinSet translateDirect(KeyTranslator translator) {
+    public JoinSet translateDirect(DirectTranslator translator) {
         InnerJoin[] transJoins = new InnerJoin[wheres.length];
         for(int i=0;i<wheres.length;i++)
             transJoins[i] = wheres[i].translateDirect(translator);

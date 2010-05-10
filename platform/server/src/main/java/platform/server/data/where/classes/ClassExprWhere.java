@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.*;
 import platform.server.classes.sets.AndClassSet;
@@ -102,7 +102,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     private ClassExprWhere(ClassExprWhere classes, Map<VariableClassExpr, VariableClassExpr> map) {
         super(classes, map);
     }
-    public ClassExprWhere translate(KeyTranslator translator) {
+    public ClassExprWhere translate(DirectTranslator translator) {
         return new ClassExprWhere(this, translator.translateVariable(BaseUtils.toMap(keySet())));
     }
 

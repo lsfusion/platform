@@ -1,7 +1,7 @@
 package platform.server.data.query;
 
 import platform.base.BaseUtils;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.DNFWheres;
@@ -71,7 +71,7 @@ public class InnerWhere implements DNFWheres.Interface<InnerWhere> {
         return joins.hashContext(hashContext) * 31 + hash;
     }
 
-    public InnerWhere translateDirect(KeyTranslator translator) {
+    public InnerWhere translateDirect(DirectTranslator translator) {
         Map<KeyExpr,BaseExpr> transValues = new HashMap<KeyExpr, BaseExpr>();
         for(Map.Entry<KeyExpr,BaseExpr> keyValue : keyExprs.entrySet())
             transValues.put(keyValue.getKey().translateDirect(translator),keyValue.getValue().translateDirect(translator));

@@ -1,7 +1,7 @@
 package platform.server.data.where.classes;
 
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.DataWhere;
@@ -53,7 +53,7 @@ public class PackClassWhere extends DataWhere {
         return packWhere.toString();
     }
 
-    public Where translateDirect(KeyTranslator translator) {
+    public Where translateDirect(DirectTranslator translator) {
         throw new RuntimeException("Not supported");
     }
     public Where translateQuery(QueryTranslator translator) {

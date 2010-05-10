@@ -2,7 +2,7 @@ package platform.server.data.expr.query;
 
 import net.jcip.annotations.Immutable;
 import platform.server.data.expr.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.DataWhere;
@@ -35,7 +35,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
             return where.hashContext(hashContext) * 31 + innerWhere.hashContext(hashContext);
         }
 
-        public Query translateDirect(KeyTranslator translator) {
+        public Query translateDirect(DirectTranslator translator) {
             return new Query(where.translateDirect(translator),innerWhere.translateDirect(translator));
         }
 
@@ -54,11 +54,11 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
     }
 
     // дублируем аналогичную логику GroupExpr'а
-    private GroupJoin(GroupJoin join, KeyTranslator translator) {
+    private GroupJoin(GroupJoin join, DirectTranslator translator) {
         super(join, translator);
     }
 
-    public InnerJoin translateDirect(KeyTranslator translator) {
+    public InnerJoin translateDirect(DirectTranslator translator) {
         return new GroupJoin(this, translator);
     }
 

@@ -8,8 +8,7 @@ import platform.server.session.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
@@ -25,24 +24,21 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         assert value !=null;
     }
 
-    public static <U extends Changes<U>> void modifyClasses(Collection<ClassPropertyInterface> interfaces, Modifier<U> modifier, U fill) {
-        for(ClassPropertyInterface valueInterface : interfaces) {
-            modifier.modifyAdd(fill, valueInterface.interfaceClass);
-            modifier.modifyRemove(fill, valueInterface.interfaceClass);
-        }
+    public static Set<ValueClass> getValueClasses(Collection<ClassPropertyInterface> interfaces) {
+        Set<ValueClass> interfaceClasses = new HashSet<ValueClass>();
+        for(ClassPropertyInterface valueInterface : interfaces)
+            interfaceClasses.add(valueInterface.interfaceClass);
+        return interfaceClasses;
     }
 
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
-        U result = modifier.newChanges();
-        modifyClasses(interfaces, modifier, result);
-        return result;
+        return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), getValueClasses(interfaces), false));
     }
 
     public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Where classWhere = Where.TRUE;
         for(Map.Entry<ClassPropertyInterface,? extends Expr> join : joinImplement.entrySet()) // берем (нужного класса and не remove'уты) or add'уты
-            classWhere = classWhere.and(DataSession.getIsClassWhere(modifier.getSession(), join.getValue(),
-                    join.getKey().interfaceClass, changedWhere));
+            classWhere = classWhere.and(modifier.getSession().getIsClassWhere(join.getValue(), join.getKey().interfaceClass, changedWhere));
         return classWhere;
     }
 

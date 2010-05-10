@@ -1,76 +1,57 @@
 package platform.server.session;
 
-import platform.server.classes.CustomClass;
-import platform.server.logics.property.DataProperty;
 import platform.server.caches.hash.HashValues;
-import platform.server.caches.MapValuesIterable;
 import platform.server.caches.AbstractMapValues;
+import platform.server.caches.GenericImmutable;
+import platform.server.caches.GenericLazy;
 import platform.server.data.expr.ValueExpr;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
+import java.util.Map;
 
+@GenericImmutable
 public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U> {
-    
-    public final Map<CustomClass, AddClassTable> add;
-    public final Map<CustomClass, RemoveClassTable> remove;
-    public final Map<DataProperty, DataChangeTable> data;
+
+    public SessionChanges session;
 
     public boolean hasChanges() {
-        return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty();
+        return session.hasChanges();
     }
 
     public Changes() {
-        add = new HashMap<CustomClass, AddClassTable>();
-        remove = new HashMap<CustomClass, RemoveClassTable>();
-        data = new HashMap<DataProperty, DataChangeTable>();
+        session = SessionChanges.EMPTY;
     }
 
     protected Changes(Changes<U> changes, Map<ValueExpr,ValueExpr> mapValues) {
-        add = MapValuesIterable.translate(changes.add, mapValues);
-        remove = MapValuesIterable.translate(changes.remove, mapValues);
-        data = MapValuesIterable.translate(changes.data, mapValues);
+        session = changes.session.translate(mapValues);
     }
 
-    // конструктор копирования
-    public Changes(U changes) {
-        add = changes.add;
-        remove = changes.remove;
-        data = changes.data;
-    }
-
-    protected Changes(Map<CustomClass, AddClassTable> add, Map<CustomClass, RemoveClassTable> remove, Map<DataProperty, DataChangeTable> data) {
-        this.add = add;
-        this.remove = remove;
-        this.data = data;
+    public Changes(Modifier<U> modifier) { // можно так как SessionChanges Immutable
+        session = modifier.getSession();
     }
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof Changes && add.equals(((Changes) o).add) && data.equals(((Changes) o).data) && remove.equals(((Changes) o).remove);
+        return this == o || o instanceof Changes && session.equals(((Changes) o).session);
     }
 
-    public void addChanges(Changes<?> changes) {
-        add.putAll(changes.add);
-        remove.putAll(changes.remove);
-        data.putAll(changes.data);
+    protected Changes(U changes, SessionChanges merge) {
+        session = changes.session.add(merge);
     }
-
-    public void add(U changes) {
-        addChanges(changes);
+    public abstract U addChanges(SessionChanges changes);
+    
+    protected Changes(U changes, U merge) {
+        session = changes.session.add(merge.session);
     }
+    public abstract U add(U changes);
 
+    @GenericLazy
     public int hashValues(HashValues hashValues) {
-        return (MapValuesIterable.hash(add,hashValues) * 31 + MapValuesIterable.hash(remove,hashValues)) * 31 + MapValuesIterable.hash(data,hashValues);
+        return session.hashValues(hashValues);
     }
 
+    @GenericLazy
     public Set<ValueExpr> getValues() {
-        Set<ValueExpr> result = new HashSet<ValueExpr>();
-        MapValuesIterable.enumValues(result,add);
-        MapValuesIterable.enumValues(result,remove);
-        MapValuesIterable.enumValues(result,data);
-        return result;
+        return session.getValues();
     }
 }

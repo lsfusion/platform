@@ -1,9 +1,6 @@
 package platform.server.data.where.classes;
 
-import platform.base.ArrayInstancer;
-import platform.base.BaseUtils;
-import platform.base.QuickMap;
-import platform.base.SetWhere;
+import platform.base.*;
 import platform.server.caches.ManualLazy;
 import platform.server.logics.BusinessLogics;
 import platform.server.classes.sets.AndClassSet;
@@ -16,7 +13,7 @@ import java.util.Set;
 
 // !!! equals'ы и hashCode должны только в meanWheres вызываться
 // предполагается ДНФ потому как в отличии от КНФ у Set'ов пустое пересечение актуально в данной задаче в то время как универсального мн-ва здесь нету 
-public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, This>> extends SetWhere<AbstractClassWhere.And<K>,This> {
+public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, This>> extends ExtraMapSetWhere<K,AndClassSet,AbstractClassWhere.And<K>,This> {
 
     public This or(This where) {
         return add(where);
@@ -66,6 +63,14 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
 
     }
 
+    protected And<K> createMap() {
+        return new And<K>();
+    }
+
+    protected AndClassSet addMapValue(AndClassSet value1, AndClassSet value2) {
+        return value1.or(value2);
+    }
+
     protected AbstractClassWhere(boolean isTrue) {
         super(isTrue?new And[]{new And<K>()}:new And[0]);
     }
@@ -82,13 +87,13 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         return who.containsAll(what);
     }
 
-    protected And<K>[] intersect(And<K> where1, And<K> where2) {
+    protected And<K> intersect(And<K> where1, And<K> where2) {
         if(where1.size>where2.size) return intersect(where2,where1); // пусть добавляется в большую
 
         And<K> result = new And<K>(where2);
         if(!result.addAll(where1))
-            return newArray(0);
-        return toArray(result);
+            return null;
+        return result;
     }
 
     protected AbstractClassWhere(And<K>[] wheres) {
@@ -222,7 +227,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         }
     }
 
-    protected static class KNF<K> extends SetWhere<Or<K>,KNF<K>> implements ArrayInstancer<Or<K>> {
+    protected static class KNF<K> extends ExtraMapSetWhere<K,OrClassSet,Or<K>,KNF<K>> implements ArrayInstancer<Or<K>> {
 
         public Or<K>[] newArray(int size) {
             return new Or[size];
@@ -248,12 +253,20 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return what.containsAll(who);
         }
 
-        public Or<K>[] intersect(Or<K> where1, Or<K> where2) {
+        public Or<K> intersect(Or<K> where1, Or<K> where2) {
             if(where1.size>where2.size) return intersect(where2,where1); // пусть добавляется в большую
 
             Or<K> result = new Or<K>(where2);
             result.addAll(where1);
-            return toArray(result);
+            return result;
+        }
+
+        protected Or<K> createMap() {
+            return new Or<K>();
+        }
+
+        protected OrClassSet addMapValue(OrClassSet value1, OrClassSet value2) {
+            return value1.and(value2);
         }
 
         public KNF<K> or(QuickMap<K,AndClassSet> map) {

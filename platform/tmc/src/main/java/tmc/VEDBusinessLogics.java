@@ -138,7 +138,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderShopInc = addAbstractClass("Заявка прихода на магазин", orderInc);
         orderWarehouseInc = addAbstractClass("Заявка прихода на распред. центр", orderInc);
 
-        orderOut = addAbstractClass("Заявка расхода со склада", order);
+        documentInner = addAbstractClass("Внутренняя операция", order);
+        returnInner = addAbstractClass("Возврат внутренней операции", order);
+        orderInner = addAbstractClass("Заказ", documentInner);
+        
+        orderOut = addAbstractClass("Заявка расхода со склада", documentInner);
         orderStoreOut = addAbstractClass("Заявка расхода со склада", orderOut);
         orderShopOut = addAbstractClass("Заявка расхода с магазина", orderOut);
         orderWarehouseOut = addAbstractClass("Заявка расхода с распред. центра", orderOut);
@@ -152,10 +156,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // внутр. и внешние операции
         orderDelivery = addAbstractClass("Закупка", orderInc); // всегда прих., создает партию - элементарную единицу учета
         commitDelivery = addAbstractClass("Приход от пост.", orderDelivery, commitInc, invoiceDocument);
-
-        documentInner = addAbstractClass("Внутренняя операция", order);
-        returnInner = addAbstractClass("Возврат внутренней операции", order);
-        orderInner = addAbstractClass("Заказ", documentInner);
 
         orderSale = addAbstractClass("Продажа", orderOut);
 
@@ -198,7 +198,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderDeliveryImport = addConcreteClass("Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
         addConcreteClass("Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
 
-        orderReturnDeliveryLocal = addConcreteClass("Заявка на возврат местному поставщику", orderStoreOut, orderLocal);
+        orderReturnDeliveryLocal = addConcreteClass("Заявка на возврат местному поставщику", orderStoreOut, documentInner, orderLocal);
         invoiceReturnDeliveryLocal = addConcreteClass("Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal,invoiceDocument);
         commitReturnDeliveryLocal = addConcreteClass("Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
 
@@ -871,11 +871,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public SaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, toAdd, orderSaleRetail);
 
-/*            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
+            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, documentGroup, true);
             addHintsNoUpdate(obligationDocument.property);
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
-            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));*/
+            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
         }
     }
 

@@ -15,7 +15,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
@@ -211,7 +211,7 @@ public class Table implements MapKeysInterface<KeyField> {
         }
 
         @ParamLazy
-        public Join translateDirect(KeyTranslator translator) {
+        public Join translateDirect(DirectTranslator translator) {
             return new Join(translator.translateDirect(joins));
         }
 
@@ -274,7 +274,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return "IN JOIN " + Join.this.toString();
             }
 
-            public Where translateDirect(KeyTranslator translator) {
+            public Where translateDirect(DirectTranslator translator) {
                 return Join.this.translateDirect(translator).getDirectWhere();
             }
             public Where translateQuery(QueryTranslator translator) {
@@ -323,7 +323,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.translateQuery(translator).getExpr(property);
             }
 
-            public Expr translateDirect(KeyTranslator translator) {
+            public Expr translateDirect(DirectTranslator translator) {
                 return Join.this.translateDirect(translator).getDirectExpr(property);
             }
 

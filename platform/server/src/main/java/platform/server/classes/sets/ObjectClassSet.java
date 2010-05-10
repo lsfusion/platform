@@ -6,8 +6,9 @@ public interface ObjectClassSet extends AndClassSet {
 
     BaseClass getBaseClass();
 
-    public String getWhereString(String source);
+    String getWhereString(String source);
 
-    public String getNotWhereString(String source);
+    String getNotWhereString(String source);
 
+    OrObjectClassSet getOr();
 }

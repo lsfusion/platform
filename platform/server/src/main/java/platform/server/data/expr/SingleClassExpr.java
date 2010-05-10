@@ -1,6 +1,6 @@
 package platform.server.data.expr;
 
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.expr.where.IsClassWhere;
 import platform.server.classes.BaseClass;
@@ -12,7 +12,7 @@ import platform.base.QuickMap;
 
 public abstract class SingleClassExpr extends BaseExpr {
 
-    public abstract SingleClassExpr translateDirect(KeyTranslator translator);
+    public abstract SingleClassExpr translateDirect(DirectTranslator translator);
 
     private Expr classExpr;
     public Expr classExpr(BaseClass baseClass) {

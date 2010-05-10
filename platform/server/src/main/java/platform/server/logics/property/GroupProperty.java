@@ -53,7 +53,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         Expr newExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, null), groupProperty.getExpr(mapKeys, modifier, null), operator != 1, joinImplement);
-        if(modifier.getSession()==null || (changedWhere==null && !isStored())) return newExpr;
+        if(!modifier.getSession().hasChanges() || (changedWhere==null && !isStored())) return newExpr;
 
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();

@@ -2,13 +2,15 @@ package platform.server.classes.sets;
 
 import platform.base.BaseUtils;
 import platform.server.classes.*;
+import platform.server.data.type.Type;
+import platform.server.data.type.ObjectType;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class OrObjectClassSet implements OrClassSet {
+public class OrObjectClassSet implements OrClassSet, AndClassSet {
 
     public final UpClassSet up;
     public final ConcreteCustomClassSet set;
@@ -43,14 +45,28 @@ public class OrObjectClassSet implements OrClassSet {
 
     public OrObjectClassSet or(OrObjectClassSet node) {
         // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
-        UpClassSet orUp = up.add(node.up);
 
         ConcreteCustomClassSet orSet = new ConcreteCustomClassSet();
-        orSet.addAll(set,node.up);
-        orSet.addAll(node.set,up);
-        return new OrObjectClassSet(orUp,orSet,unknown || node.unknown);
+        orSet.addAll(set,node.up,false);
+        orSet.addAll(node.set,up,false);
+        return new OrObjectClassSet(up.add(node.up),orSet,unknown || node.unknown);
     }
 
+    public OrObjectClassSet and(OrClassSet node) {
+        return and((OrObjectClassSet)node);
+    }
+
+    public OrObjectClassSet and(OrObjectClassSet node) {
+        // or'им Up'ы, or'им Set'ы после чего вырезаем из Set'а все кто есть в Up'ах
+        UpClassSet andUp = up.intersect(node.up);
+
+        ConcreteCustomClassSet andSet = new ConcreteCustomClassSet();
+        andSet.addAll(set,node.set);
+        andSet.addAll(set,node.up,true);
+        andSet.addAll(node.set,up,true);
+        return new OrObjectClassSet(andUp,andSet,unknown && node.unknown);
+    }
+    
     public boolean isEmpty() {
         return set.isEmpty() && up.isFalse() && !unknown;
     }
@@ -61,7 +77,7 @@ public class OrObjectClassSet implements OrClassSet {
     }
 
     public boolean equals(Object o) {
-        return this == o || o instanceof OrObjectClassSet && ((OrObjectClassSet)o).containsAll(this) && containsAll((OrObjectClassSet)o);
+        return this == o || o instanceof OrObjectClassSet && ((OrObjectClassSet)o).containsAll((OrClassSet)this) && containsAll((OrClassSet)o);
     }
 
     public int hashCode() {
@@ -100,5 +116,29 @@ public class OrObjectClassSet implements OrClassSet {
                 return up.getSingleClass();
         }
         return null;
+    }
+
+    public AndClassSet and(AndClassSet node) {
+        return and(node.getOr());
+    }
+
+    public AndClassSet or(AndClassSet node) {
+        return or(node.getOr());
+    }
+
+    public boolean containsAll(AndClassSet node) {
+        return containsAll(node.getOr());
+    }
+
+    public OrClassSet getOr() {
+        return this;
+    }
+
+    public Type getType() {
+        return ObjectType.instance;
+    }
+
+    public static AndClassSet or(ObjectClassSet set1, AndClassSet set2) {
+        return set1.getOr().or(set2.getOr());
     }
 }

@@ -5,14 +5,12 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.base.BaseUtils;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
-
-import net.jcip.annotations.Immutable;
 
 @GenericImmutable
 public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>> implements MapContext {
@@ -33,7 +31,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
     }
 
     // дублируем аналогичную логику GroupExpr'а
-    protected QueryJoin(QueryJoin<K,I> join, KeyTranslator translator) {
+    protected QueryJoin(QueryJoin<K,I> join, DirectTranslator translator) {
         // надо еще транслировать "внутренние" values
         Map<ValueExpr, ValueExpr> mapValues = BaseUtils.filterKeys(translator.values, join.getValues());
 
@@ -41,7 +39,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
             query = join.query;
             group = translator.translateDirect(join.group);
         } else { // еще values перетранслируем
-            KeyTranslator valueTranslator = new KeyTranslator(BaseUtils.toMap(join.getKeys()), mapValues);
+            DirectTranslator valueTranslator = new DirectTranslator(BaseUtils.toMap(join.getKeys()), mapValues);
             query = join.query.translateDirect(valueTranslator);
             group = new HashMap<K, BaseExpr>();
             for(Map.Entry<K, BaseExpr> groupJoin : join.group.entrySet())
@@ -79,11 +77,11 @@ public abstract class QueryJoin<K extends BaseExpr,I extends TranslateContext<I>
         return hashes.hash(hashContext);
     }
 
-    public KeyTranslator merge(QueryJoin<K,I> groupJoin) {
+    public DirectTranslator merge(QueryJoin<K,I> groupJoin) {
         if(hashCode()!=groupJoin.hashCode())
             return null;
 
-        for(KeyTranslator translator : new MapHashIterable(this,groupJoin,false))
+        for(DirectTranslator translator : new MapHashIterable(this,groupJoin,false))
             if(query.translateDirect(translator).equals(groupJoin.query) &&
                translator.translateKeys(group).equals(groupJoin.group)) // нельзя reverse'ить
                     return translator;

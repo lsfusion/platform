@@ -6,7 +6,7 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.query.*;
 import platform.server.data.type.Type;
@@ -32,7 +32,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         }
 
         @ParamLazy
-        public Query translateDirect(KeyTranslator translator) {
+        public Query translateDirect(DirectTranslator translator) {
             return new Query(expr.translateDirect(translator),translator.translate(orders),translator.translate(partitions));
         }
 
@@ -81,11 +81,11 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     }
 
     // трансляция
-    private OrderExpr(OrderExpr orderExpr,KeyTranslator translator) {
+    private OrderExpr(OrderExpr orderExpr, DirectTranslator translator) {
         super(orderExpr, translator);
     }
 
-    public OrderExpr translateDirect(KeyTranslator translator) {
+    public OrderExpr translateDirect(DirectTranslator translator) {
         return new OrderExpr(this,translator);
     }
 

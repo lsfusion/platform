@@ -40,7 +40,7 @@ public abstract class AddSet<T,This extends AddSet<T,This>> {
         if(isFalse() || where.isTrue()) return where;
         if(where.isFalse() || isTrue()) return (This) this;
 
-        T[] ors = newArray(wheres.length+where.wheres.length); int ornum=0;
+        T[] added = newArray(wheres.length+where.wheres.length); int numAdd=0;
         T[] keeps = wheres.clone(); int keepnum = wheres.length;
         for(T and : where.wheres) {
             boolean contained = false;
@@ -59,12 +59,12 @@ public abstract class AddSet<T,This extends AddSet<T,This>> {
                     }
                 }
             if(!contained)
-                ors[ornum++] = and;
+                added[numAdd++] = and;
         }
-        T[] results = newArray(ornum+keepnum); System.arraycopy(ors,0, results,0,ornum);
+        T[] results = newArray(numAdd+keepnum); System.arraycopy(added,0, results,0,numAdd);
         for(T keep : keeps)
             if(keep !=null)
-                results[ornum++] = keep;
+                results[numAdd++] = keep;
         return createThis(results);
     }
 

@@ -9,7 +9,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.Lazy;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 
 import java.util.Set;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             return hash * 31 + where.hashContext(hashContext);
         }
 
-        public Query translateDirect(KeyTranslator translator) {
+        public Query translateDirect(DirectTranslator translator) {
             return new Query(where.translateDirect(translator),translator.translate(partitions));
         }
 

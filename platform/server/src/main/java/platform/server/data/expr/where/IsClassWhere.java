@@ -11,7 +11,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.SingleClassExpr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
@@ -52,7 +52,7 @@ public class IsClassWhere extends DataWhere {
     }
 
     @ParamLazy
-    public Where translateDirect(KeyTranslator translator) {
+    public Where translateDirect(DirectTranslator translator) {
         return new IsClassWhere(expr.translateDirect(translator),classes);
     }
     @ParamLazy

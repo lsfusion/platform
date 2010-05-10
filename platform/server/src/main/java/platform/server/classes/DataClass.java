@@ -64,6 +64,18 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         return compatible;
     }
 
+    public OrClassSet and(OrClassSet node) {
+        return and((AndClassSet)node);
+    }
+
+    public AndClassSet or(AndClassSet node) {
+        return and(node);
+    }
+
+    public OrClassSet or(OrClassSet node) {
+        return and(node);
+    }
+    
     public DataClass getRandom(Random randomizer) {
         return this;
     }
@@ -73,22 +85,19 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     }
 
     public boolean containsAll(AndClassSet node) {
-        return inSet(node);
+        return node instanceof DataClass && getCompatible((DataClass)node)!=null;
     }
 
     public boolean containsAll(OrClassSet node) {
-        return node instanceof DataClass && inSet((DataClass)node);
+        return node instanceof DataClass && getCompatible((DataClass)node)!=null;
     }
 
-    public OrClassSet or(OrClassSet node) {
-        return and((DataClass)node);
-    }
     public OrClassSet getOr() {
         return this;
     }
 
     public boolean inSet(AndClassSet set) {
-        return set instanceof DataClass && getCompatible((DataClass)set)!=null;
+        return set.containsAll(this);
     }
 
     public Type getType() {

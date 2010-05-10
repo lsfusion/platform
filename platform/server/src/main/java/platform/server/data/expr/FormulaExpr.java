@@ -5,7 +5,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.expr.where.MapWhere;
@@ -69,7 +69,7 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @ParamLazy
-    public BaseExpr translateDirect(KeyTranslator translator) {
+    public BaseExpr translateDirect(DirectTranslator translator) {
         return new FormulaExpr(formula,translator.translateDirect(params),valueClass);
     }
 

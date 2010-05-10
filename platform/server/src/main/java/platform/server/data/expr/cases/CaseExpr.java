@@ -9,7 +9,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.*;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.expr.where.MapWhere;
@@ -80,7 +80,7 @@ public class CaseExpr extends Expr {
     }
 
     @ParamLazy
-    public CaseExpr translateDirect(KeyTranslator translator) {
+    public CaseExpr translateDirect(DirectTranslator translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
             translatedCases.add(new ExprCase(exprCase.where.translateDirect(translator),exprCase.data.translateDirect(translator)));

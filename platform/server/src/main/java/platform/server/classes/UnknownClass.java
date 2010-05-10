@@ -34,14 +34,14 @@ public class UnknownClass implements ConcreteObjectClass {
     }
 
     public boolean inSet(AndClassSet set) {
-        return set instanceof UnknownClass && equals(set);
+        return set.containsAll(this);
     }
 
     public boolean containsAll(AndClassSet node) {
-        return inSet(node);
+        return node instanceof UnknownClass && equals(node);
     }
 
-    public OrClassSet getOr() {
+    public OrObjectClassSet getOr() {
         return new OrObjectClassSet();
     }
 
@@ -62,7 +62,11 @@ public class UnknownClass implements ConcreteObjectClass {
     }
 
     public ObjectClassSet and(AndClassSet node) {
-        return inSet(node)?this: UpClassSet.FALSE;
+        return ConcreteCustomClass.and(this,node);
+    }
+
+    public AndClassSet or(AndClassSet node) {
+        return ConcreteCustomClass.or(this,node);
     }
 
     public boolean isEmpty() {

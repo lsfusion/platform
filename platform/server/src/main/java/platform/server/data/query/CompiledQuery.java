@@ -7,7 +7,7 @@ import platform.server.data.Table;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
@@ -589,7 +589,7 @@ public class CompiledQuery<K,V> {
                     String getSource(Map<J,Q> selects, E expr) {
             J exprJoin = expr.getGroupJoin();
 
-            KeyTranslator translator;
+            DirectTranslator translator;
             for(Map.Entry<J,Q> group : selects.entrySet())
                 if((translator=exprJoin.merge(group.getKey()))!=null)
                     return group.getValue().add(expr.query.translateDirect(translator),expr);

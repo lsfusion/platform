@@ -2,7 +2,7 @@ package platform.server.data.where.classes;
 
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.where.DNFWheres;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.base.BaseUtils;
 
 import java.util.Map;
@@ -44,7 +44,7 @@ public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
         return false;
     }
 
-    public MeanClassWhere translate(KeyTranslator translator) {
+    public MeanClassWhere translate(DirectTranslator translator) {
         Map<VariableClassExpr,VariableClassExpr> transEquals = new HashMap<VariableClassExpr, VariableClassExpr>();
         for(Map.Entry<VariableClassExpr,VariableClassExpr> equal : equals.entrySet())
             transEquals.put(equal.getKey().translateDirect(translator),equal.getValue().translateDirect(translator));

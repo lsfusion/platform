@@ -1,6 +1,6 @@
 package platform.server.data.expr;
 
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
@@ -48,7 +48,7 @@ public class ConcatenateExpr extends BaseExpr {
         return new DataWhereSet(exprs);
     }
 
-    public ConcatenateExpr translateDirect(KeyTranslator translator) {
+    public ConcatenateExpr translateDirect(DirectTranslator translator) {
         return new ConcatenateExpr(translator.translateDirect(exprs));
     }
 

@@ -8,7 +8,7 @@ import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 
@@ -104,7 +104,7 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return not;
     }
 
-    public Where translateDirect(KeyTranslator translator) {
+    public Where translateDirect(DirectTranslator translator) {
         return not().translateDirect(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {

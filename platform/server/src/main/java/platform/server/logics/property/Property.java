@@ -70,14 +70,45 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    protected static Modifier<SessionChanges> defaultModifier = new Modifier<SessionChanges>(){
-        public SessionChanges newChanges() {
-            return new SessionChanges();
+    protected static class DefaultChanges extends Changes<DefaultChanges> {
+        private DefaultChanges() {
+        }
+        public final static DefaultChanges EMPTY = new DefaultChanges();
+
+        private DefaultChanges(DefaultChanges changes, SessionChanges merge) {
+            super(changes, merge);
+        }
+        public DefaultChanges addChanges(SessionChanges changes) {
+            return new DefaultChanges(this, changes);
+        }
+
+        private DefaultChanges(DefaultChanges changes, DefaultChanges merge) {
+            super(changes, merge);
+        }
+        public DefaultChanges add(DefaultChanges changes) {
+            return new DefaultChanges(this, changes);
+        }
+
+        public DefaultChanges(DefaultChanges changes, Map<ValueExpr,ValueExpr> mapValues) {
+            super(changes, mapValues);
+        }
+        public DefaultChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
+            return new DefaultChanges(this, mapValues);
+        }
+    }
+
+    protected static Modifier<DefaultChanges> defaultModifier = new Modifier<DefaultChanges>(){
+        public DefaultChanges newChanges() {
+            return DefaultChanges.EMPTY;
         }
         public SessionChanges getSession() {
-            return null;
+            return SessionChanges.EMPTY;
         }
-        public SessionChanges used(Property property, SessionChanges usedChanges) {
+        public DefaultChanges fullChanges() {
+            return DefaultChanges.EMPTY;
+        }
+
+        public DefaultChanges used(Property property, DefaultChanges usedChanges) {
             return usedChanges;
         }
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
@@ -158,18 +189,14 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
     // возвращает от чего "зависят" изменения - с callback'ов
     protected abstract <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier);
-    public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
+    public <U extends Changes<U>> U aspectGetUsedChanges(Modifier<U> modifier) {
         return modifier.used(this, calculateUsedChanges(modifier));
+    }
+    public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {
+        return aspectGetUsedChanges(modifier);
     }
     public boolean hasChanges(Modifier<? extends Changes> modifier) {
         return getUsedChanges(modifier).hasChanges();
-    }
-
-    public static <U extends Changes<U>> U getUsedChanges(Collection<Property> col, Modifier<U> modifier) {
-        U result = modifier.newChanges();
-        for(Property<?> property : col)
-            result.add(property.getUsedChanges(modifier));
-        return result;
     }
 
     @Lazy

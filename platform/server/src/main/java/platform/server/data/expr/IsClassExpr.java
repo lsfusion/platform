@@ -7,7 +7,7 @@ import platform.server.data.Table;
 import platform.server.classes.BaseClass;
 import platform.server.classes.SystemClass;
 import platform.server.data.query.*;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Type;
@@ -58,7 +58,7 @@ public class IsClassExpr extends StaticClassExpr {
         return expr.translateQuery(translator).classExpr(baseClass);
     }
     @ParamLazy
-    public StaticClassExpr translateDirect(KeyTranslator translator) {
+    public StaticClassExpr translateDirect(DirectTranslator translator) {
         return new IsClassExpr(expr.translateDirect(translator),baseClass);
     }
 

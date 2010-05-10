@@ -9,7 +9,7 @@ import platform.server.data.where.DataWhere;
 import platform.server.data.where.OrWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.DataWhereSet;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.logics.DataObject;
 import platform.server.caches.ParamLazy;
@@ -76,7 +76,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     protected abstract Compare getCompare();
 
     @ParamLazy
-    public Where translateDirect(KeyTranslator translator) {
+    public Where translateDirect(DirectTranslator translator) {
         return createThis(operator1.translateDirect(translator),operator2.translateDirect(translator));
     }
     @ParamLazy

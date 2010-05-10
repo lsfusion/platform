@@ -12,7 +12,7 @@ import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.*;
 
@@ -394,7 +394,7 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     @ParamLazy
-    public Where translateDirect(KeyTranslator translator) {
+    public Where translateDirect(DirectTranslator translator) {
         AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
             resultWheres[i] = (AndObjectWhere) wheres[i].translateDirect(translator);

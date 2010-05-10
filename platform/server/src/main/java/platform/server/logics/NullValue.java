@@ -53,7 +53,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return new HashSet<ValueExpr>();
     }
 
-    public NullValue translate(Map<ValueExpr, ValueExpr> mapValues) {
+    public NullValue translate(Map<ValueExpr,ValueExpr> mapValues) {
         return this;
     }
 

@@ -7,12 +7,12 @@ import platform.server.caches.hash.HashMapContext;
 import platform.server.caches.hash.HashMapKeysContext;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.translator.KeyTranslator;
+import platform.server.data.translator.DirectTranslator;
 
 import java.util.Iterator;
 import java.util.Map;
 
-public class MapParamsIterable implements Iterable<KeyTranslator> {
+public class MapParamsIterable implements Iterable<DirectTranslator> {
 
     public static int hash(MapContext map,final boolean values) {
         return map.hash(values? HashMapContext.instance: HashMapKeysContext.instance);
@@ -28,12 +28,12 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
         this.values = values;
     }
 
-    public Iterator<KeyTranslator> iterator() {
+    public Iterator<DirectTranslator> iterator() {
         return new MapIterator();
     }
 
     // перебирает Map'ы KeyExpr -> KeyExpr и ValueExpr -> ValueExpr
-    private class MapIterator implements Iterator<KeyTranslator> {
+    private class MapIterator implements Iterator<DirectTranslator> {
         private Pairs<KeyExpr,KeyExpr> keyPairs;
 
         private Iterator<Map<ValueExpr,ValueExpr>> valueIterator;
@@ -67,14 +67,14 @@ public class MapParamsIterable implements Iterable<KeyTranslator> {
 
         private Map<ValueExpr,ValueExpr> mapValues;
 
-        public KeyTranslator next() {
+        public DirectTranslator next() {
             Map<KeyExpr,KeyExpr> mapKeys;
             if(!keysIterator.hasNext()) {
                 mapValues = valueIterator.next();
                 keysIterator = keyPairs.iterator();
             }
             mapKeys = keysIterator.next();
-            return new KeyTranslator(mapKeys,mapValues);
+            return new DirectTranslator(mapKeys,mapValues);
         }
 
         public void remove() {

@@ -10,7 +10,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public boolean inSet(AndClassSet set) {
-        return (set instanceof ConcreteCustomClass && equals(set)) || (set instanceof UpClassSet && ((UpClassSet) set).has(this));
+        return set.containsAll(this);
     }
 
     public void fillNextConcreteChilds(ConcreteCustomClassSet classSet) {
@@ -21,7 +21,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return new ValueExpr(ID, SystemClass.instance);
     }
 
-    public OrClassSet getOr() {
+    public OrObjectClassSet getOr() {
         return new OrObjectClassSet(this);
     }
 
@@ -34,7 +34,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
 
     public ObjectClassSet and(AndClassSet node) {
-        return inSet(node)?this:UpClassSet.FALSE;
+        return and(this,node);
+    }
+
+    public AndClassSet or(AndClassSet node) {
+        return or(this,node); 
     }
 
     public boolean isEmpty() {
@@ -50,5 +54,13 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
             return this;
         else
             return null;
+    }
+
+    // мн-ое наследование для ConcreteObjectClass
+    public static ObjectClassSet and(ConcreteObjectClass set1, AndClassSet set2) {
+        return set1.inSet(set2)?set1:UpClassSet.FALSE;
+    }
+    public static AndClassSet or(ConcreteObjectClass set1, AndClassSet set2) {
+        return set1.inSet(set2)?set1:OrObjectClassSet.or(set1,set2); 
     }
 }

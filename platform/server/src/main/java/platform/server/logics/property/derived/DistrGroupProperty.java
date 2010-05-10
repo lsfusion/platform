@@ -72,11 +72,7 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
 
     @Override
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-        U result = modifier.newChanges();
-        result.add(distribute.property.getUsedChanges(modifier));
-        result.add(groupProperty.getUsedChanges(modifier));
-        result.add(groupProperty.getUsedDataChanges(modifier));
-        return result;
+        return distribute.property.getUsedChanges(modifier).add(groupProperty.getUsedChanges(modifier)).add(groupProperty.getUsedDataChanges(modifier));
     }
 
     @Override
