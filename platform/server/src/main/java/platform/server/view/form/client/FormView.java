@@ -21,7 +21,7 @@ public class FormView implements ClientSerialize {
     public Collection<ContainerView> containers = new ArrayList<ContainerView>();
 
     protected ContainerView addContainer() {
-        ContainerView container = new ContainerView(idGenerator.genID());
+        ContainerView container = new ContainerView(idGenerator.idShift());
         containers.add(container);
         return container;
     }
@@ -37,13 +37,13 @@ public class FormView implements ClientSerialize {
 
     public OrderedMap<CellViewNavigator,Boolean> defaultOrders = new OrderedMap<CellViewNavigator, Boolean>();
 
-    public FunctionView printView = new FunctionView(idGenerator.genID());
-    public FunctionView xlsView = new FunctionView(idGenerator.genID());
-    public FunctionView refreshView = new FunctionView(idGenerator.genID());
-    public FunctionView applyView = new FunctionView(idGenerator.genID());
-    public FunctionView cancelView = new FunctionView(idGenerator.genID());
-    public FunctionView okView = new FunctionView(idGenerator.genID());
-    public FunctionView closeView = new FunctionView(idGenerator.genID());
+    public FunctionView printView = new FunctionView(idGenerator.idShift());
+    public FunctionView xlsView = new FunctionView(idGenerator.idShift());
+    public FunctionView refreshView = new FunctionView(idGenerator.idShift());
+    public FunctionView applyView = new FunctionView(idGenerator.idShift());
+    public FunctionView cancelView = new FunctionView(idGenerator.idShift());
+    public FunctionView okView = new FunctionView(idGenerator.idShift());
+    public FunctionView closeView = new FunctionView(idGenerator.idShift());
 
     public List<CellView> order = new ArrayList<CellView>();
 

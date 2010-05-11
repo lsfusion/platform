@@ -1,5 +1,7 @@
 package platform.base;
 
 public interface IDGenerator {
-    public int genID();
+
+    public int idShift(int offs);
+    public int idShift();
 }

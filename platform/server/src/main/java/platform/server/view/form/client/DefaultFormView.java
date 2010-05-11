@@ -119,7 +119,7 @@ public class DefaultFormView extends FormView {
 
             GroupObjectImplementView groupObject = mgroupObjects.get(property.toDraw);
 
-            PropertyCellView clientProperty = new PropertyCellView(idGenerator.genID(), property);
+            PropertyCellView clientProperty = new PropertyCellView(idGenerator.idShift(), property);
             clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
@@ -137,7 +137,7 @@ public class DefaultFormView extends FormView {
             for (RegularFilterNavigator regFilter : filterGroup.filters)
                 groupObjects.addAll(navigatorForm.getApplyObject(regFilter.filter.getObjects()));
 
-            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(idGenerator.genID(), filterGroup);
+            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(idGenerator.idShift(), filterGroup);
             filterGroupView.container = buttonContainers.get(mgroupObjects.get(navigatorForm.getApplyObject(groupObjects)).get(0));
             filterGroupView.constraints.order = 3 + navigatorForm.regularFilterGroups.indexOf(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);

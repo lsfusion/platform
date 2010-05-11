@@ -1,10 +1,7 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.base.BaseUtils;
-import platform.base.Combinations;
-import platform.base.OrderedMap;
-import platform.base.DateConverter;
+import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteObject;
@@ -80,15 +77,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     // счетчик идентификаторов
-    int idCount = 0;
-
-    int idGet(int offs) {
-        return idCount + offs;
-    }
+    IDGenerator idGenerator = new DefaultIDGenerator();
 
     int idShift(int offs) {
-        idCount += offs;
-        return idCount;
+        return idGenerator.idShift(offs);
     }
 
     protected AbstractCustomClass namedObject, transaction;

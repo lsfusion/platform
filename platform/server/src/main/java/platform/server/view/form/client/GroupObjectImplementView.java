@@ -19,8 +19,8 @@ public class GroupObjectImplementView extends ArrayList<ObjectImplementView> imp
         
         fixedClassView = view.banClassView;
 
-        gridView = new GridView(idGen.genID());
-        showTypeView = new ShowTypeView(idGen.genID());
+        gridView = new GridView(idGen.idShift());
+        showTypeView = new ShowTypeView(idGen.idShift());
     }
 
     public Byte fixedClassView = 0;

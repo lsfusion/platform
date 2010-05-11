@@ -51,7 +51,7 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
     private String actionID = null;
     public String getActionID() {
         if(actionID==null)
-            actionID = "changeGroupObject" + idGenerator.genID();
+            actionID = "changeGroupObject" + idGenerator.idShift();
         return actionID;
     }
 }

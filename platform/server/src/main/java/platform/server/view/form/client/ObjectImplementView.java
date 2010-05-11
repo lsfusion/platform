@@ -1,6 +1,5 @@
 package platform.server.view.form.client;
 
-import platform.server.data.type.Type;
 import platform.server.view.navigator.ObjectNavigator;
 import platform.base.IDGenerator;
 
@@ -22,12 +21,12 @@ public class ObjectImplementView implements ClientSerialize {
 
         view = iView;
 
-        objectCellView = new ObjectCellView(idGen.genID(), view);
-        classCellView = new ClassCellView(idGen.genID(), view);
-        classView = new ClassView(idGen.genID());
-        addView = new FunctionView(idGen.genID());
-        changeClassView = new FunctionView(idGen.genID());
-        delView = new FunctionView(idGen.genID());
+        objectCellView = new ObjectCellView(idGen.idShift(), view);
+        classCellView = new ClassCellView(idGen.idShift(), view);
+        classView = new ClassView(idGen.idShift());
+        addView = new FunctionView(idGen.idShift());
+        changeClassView = new FunctionView(idGen.idShift());
+        delView = new FunctionView(idGen.idShift());
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
