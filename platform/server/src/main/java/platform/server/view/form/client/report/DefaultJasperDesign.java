@@ -259,7 +259,7 @@ public class DefaultJasperDesign {
 
             // сначала все коды
             for(ObjectImplementView object : group)
-                drawFields.add(new ReportDrawField(object));
+                drawFields.add(new ReportDrawField(object.objectCellView));
 
             // бежим по всем свойствам входящим в объектам
             for(PropertyCellView property : (List<PropertyCellView>)formView.properties) {

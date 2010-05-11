@@ -35,7 +35,7 @@ public class DefaultFormView extends FormView {
         Map<ObjectImplementView, ContainerView> buttonContainers = new HashMap<ObjectImplementView, ContainerView>();
         for (GroupObjectNavigator group : navigatorForm.groups) {
 
-            GroupObjectImplementView clientGroup = new GroupObjectImplementView(group);
+            GroupObjectImplementView clientGroup = new GroupObjectImplementView(idGenerator, group);
 
             mgroupObjects.put(group, clientGroup);
             groupObjects.add(clientGroup);
@@ -72,12 +72,12 @@ public class DefaultFormView extends FormView {
 
             for (ObjectImplementView clientObject : clientGroup) {
 
-                clientObject.container = panelContainer;
-                clientObject.constraints.order = -1000 + clientGroup.indexOf(clientObject);
+                clientObject.objectCellView.container = panelContainer;
+                clientObject.objectCellView.constraints.order = -1000 + clientGroup.indexOf(clientObject);
 
-                addComponent(clientGroup, clientObject, clientObject.view.baseClass.getParent());
+                addComponent(clientGroup, clientObject.objectCellView, clientObject.view.baseClass.getParent());
 
-                order.add(clientObject);
+                order.add(clientObject.objectCellView);
 
                 clientObject.classCellView.container = panelContainer;
                 clientObject.classCellView.constraints.order = -500 + clientGroup.indexOf(clientObject);
@@ -119,7 +119,7 @@ public class DefaultFormView extends FormView {
 
             GroupObjectImplementView groupObject = mgroupObjects.get(property.toDraw);
 
-            PropertyCellView clientProperty = new PropertyCellView(property);
+            PropertyCellView clientProperty = new PropertyCellView(idGenerator.genID(), property);
             clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
@@ -137,7 +137,7 @@ public class DefaultFormView extends FormView {
             for (RegularFilterNavigator regFilter : filterGroup.filters)
                 groupObjects.addAll(navigatorForm.getApplyObject(regFilter.filter.getObjects()));
 
-            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
+            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(idGenerator.genID(), filterGroup);
             filterGroupView.container = buttonContainers.get(mgroupObjects.get(navigatorForm.getApplyObject(groupObjects)).get(0));
             filterGroupView.constraints.order = 3 + navigatorForm.regularFilterGroups.indexOf(filterGroup);
             filterGroupView.constraints.insetsSibling = new Insets(0,4,2,4);

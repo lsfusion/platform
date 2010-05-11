@@ -2,6 +2,7 @@ package platform.server.view.form.client;
 
 import platform.server.view.navigator.GroupObjectNavigator;
 import platform.server.view.navigator.ObjectNavigator;
+import platform.base.IDGenerator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,19 +11,22 @@ import java.util.ArrayList;
 public class GroupObjectImplementView extends ArrayList<ObjectImplementView> implements ClientSerialize {
     public GroupObjectNavigator view;
 
-    public GroupObjectImplementView(GroupObjectNavigator iView) {
+    public GroupObjectImplementView(IDGenerator idGen, GroupObjectNavigator iView) {
         view = iView;
 
         for(ObjectNavigator object : view)
-            add(new ObjectImplementView(object));
+            add(new ObjectImplementView(idGen, object));
         
         fixedClassView = view.banClassView;
+
+        gridView = new GridView(idGen.genID());
+        showTypeView = new ShowTypeView(idGen.genID());
     }
 
     public Byte fixedClassView = 0;
 
-    public GridView gridView = new GridView();
-    public ShowTypeView showTypeView = new ShowTypeView();
+    public GridView gridView;
+    public ShowTypeView showTypeView;
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(view.ID);

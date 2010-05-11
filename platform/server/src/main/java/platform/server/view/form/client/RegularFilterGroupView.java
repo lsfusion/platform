@@ -10,7 +10,8 @@ import java.io.ObjectOutputStream;
 public class RegularFilterGroupView extends FunctionView {
     public RegularFilterGroupNavigator view;
 
-    public RegularFilterGroupView(RegularFilterGroupNavigator view) {
+    public RegularFilterGroupView(int ID, RegularFilterGroupNavigator view) {
+        super(ID);
         this.view = view;
     }
 

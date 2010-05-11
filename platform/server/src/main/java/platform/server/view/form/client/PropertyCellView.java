@@ -10,7 +10,8 @@ public class PropertyCellView extends CellView implements ClientSerialize {
 
     public PropertyViewNavigator view;
 
-    public PropertyCellView(PropertyViewNavigator iView) {
+    public PropertyCellView(int ID, PropertyViewNavigator iView) {
+        super(ID);
         view = iView;
     }
 

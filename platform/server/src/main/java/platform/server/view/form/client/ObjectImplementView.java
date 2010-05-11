@@ -2,34 +2,42 @@ package platform.server.view.form.client;
 
 import platform.server.data.type.Type;
 import platform.server.view.navigator.ObjectNavigator;
+import platform.base.IDGenerator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ObjectImplementView extends CellView {
+public class ObjectImplementView implements ClientSerialize {
 
     public ObjectNavigator view;
 
-    public ObjectImplementView(ObjectNavigator iView) {
+    public ObjectCellView objectCellView;
+    public ClassCellView classCellView;
+    public ClassView classView;
+    public FunctionView addView;
+    public FunctionView changeClassView;
+    public FunctionView delView;
+
+    public ObjectImplementView(IDGenerator idGen, ObjectNavigator iView) {
+
         view = iView;
 
-        classCellView = new ClassCellView(view);
+        objectCellView = new ObjectCellView(idGen.genID(), view);
+        classCellView = new ClassCellView(idGen.genID(), view);
+        classView = new ClassView(idGen.genID());
+        addView = new FunctionView(idGen.genID());
+        changeClassView = new FunctionView(idGen.genID());
+        delView = new FunctionView(idGen.genID());
     }
 
-    public ClassCellView classCellView;
-    public ClassView classView = new ClassView();
-    public FunctionView addView = new FunctionView();
-    public FunctionView changeClassView = new FunctionView();
-    public FunctionView delView = new FunctionView();
-
     public void serialize(DataOutputStream outStream) throws IOException {
-        super.serialize(outStream);
-
-        outStream.writeBoolean(view.show);
 
         outStream.writeInt(view.ID);
 
         view.baseClass.serialize(outStream);
+
+        objectCellView.serialize(outStream);
+        outStream.writeBoolean(view.show);
 
         classCellView.serialize(outStream);
         outStream.writeBoolean(view.showClass);
@@ -40,21 +48,5 @@ public class ObjectImplementView extends CellView {
         addView.serialize(outStream);
         changeClassView.serialize(outStream);
         delView.serialize(outStream);
-    }
-
-    Type getType() {
-        return view.baseClass.getType();
-    }
-
-    int getID() {
-        return view.ID;
-    }
-
-    String getSID() {
-        return view.getSID();
-    }
-
-    String getCaption() {
-        return view.caption;
     }
 }

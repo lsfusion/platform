@@ -8,10 +8,16 @@ import java.io.ObjectOutputStream;
 
 public class ComponentView implements ClientSerialize {
 
+    int ID;
+    public ComponentView(int ID) {
+        this.ID = ID;
+    }
+
     public ContainerView container;
     public SimplexConstraints constraints = new SimplexConstraints();
 
     public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeInt(ID);
         outStream.writeBoolean(container==null);
         if(container!=null)
             outStream.writeInt(container.ID);

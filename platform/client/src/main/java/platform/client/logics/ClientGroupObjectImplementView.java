@@ -1,5 +1,8 @@
 package platform.client.logics;
 
+import platform.base.IDGenerator;
+import platform.base.DefaultIDGenerator;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -44,11 +47,11 @@ public class ClientGroupObjectImplementView extends ArrayList<ClientObjectImplem
         showTypeView = new ClientShowTypeView(inStream, containers);
     }
 
-    private static int lastID = 0;
+    private static IDGenerator idGenerator = new DefaultIDGenerator();
     private String actionID = null;
     public String getActionID() {
         if(actionID==null)
-            actionID = "changeGroupObject" + (lastID++);
+            actionID = "changeGroupObject" + idGenerator.genID();
         return actionID;
     }
 }

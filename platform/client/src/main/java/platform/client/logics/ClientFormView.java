@@ -10,6 +10,8 @@ import java.util.*;
 
 public class ClientFormView implements Serializable, LogicsSupplier {
 
+    // нужен именно List, чтобы проще был обход по дереву
+    // считается, что containers уже топологически отсортированы
     public final List<ClientContainerView> containers;
 
     public List<ClientGroupObjectImplementView> groupObjects;

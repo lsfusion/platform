@@ -6,13 +6,11 @@ import java.util.List;
 
 public class ContainerView extends ComponentView {
 
-    int ID;
-
-    public ContainerView(int iID) {
-        ID = iID;
-    }
-
     public String title;
+
+    public ContainerView(int ID) {
+        super(ID);
+    }
 
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);

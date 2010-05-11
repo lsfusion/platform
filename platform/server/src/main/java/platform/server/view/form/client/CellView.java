@@ -18,6 +18,10 @@ abstract public class CellView extends ComponentView {
     Dimension maximumSize;
     Dimension preferredSize;
 
+    public CellView(int ID) {
+        super(ID);
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
 

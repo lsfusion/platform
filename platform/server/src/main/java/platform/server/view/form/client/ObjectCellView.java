@@ -2,22 +2,19 @@ package platform.server.view.form.client;
 
 import platform.server.data.type.Type;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.classes.StringClass;
 
-public class ClassCellView extends CellView implements ClientSerialize {
+public class ObjectCellView extends CellView {
 
     ObjectNavigator view;
-    Type type;
-
-    public ClassCellView(int ID, ObjectNavigator view) {
+    
+    public ObjectCellView(int ID, ObjectNavigator view) {
         super(ID);
 
         this.view = view;
-        this.type = new StringClass(30);
     }
 
     Type getType() {
-        return type;
+        return view.baseClass.getType();
     }
 
     int getID() {
@@ -29,6 +26,7 @@ public class ClassCellView extends CellView implements ClientSerialize {
     }
 
     String getCaption() {
-        return view.caption; 
+        return view.caption;
     }
+
 }

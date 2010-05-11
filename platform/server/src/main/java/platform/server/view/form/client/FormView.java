@@ -1,6 +1,8 @@
 package platform.server.view.form.client;
 
 import platform.base.OrderedMap;
+import platform.base.IDGenerator;
+import platform.base.DefaultIDGenerator;
 import platform.server.view.navigator.CellViewNavigator;
 import platform.server.view.navigator.PropertyViewNavigator;
 
@@ -13,12 +15,13 @@ import java.util.Map;
 
 public class FormView implements ClientSerialize {
 
-    // именно в таком порядке сериализация
-    // дерево container'ов
-    public List<ContainerView> containers = new ArrayList<ContainerView>();
-    // для id
+    // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
+    protected IDGenerator idGenerator = new DefaultIDGenerator();
+
+    public Collection<ContainerView> containers = new ArrayList<ContainerView>();
+
     protected ContainerView addContainer() {
-        ContainerView container = new ContainerView(containers.size());
+        ContainerView container = new ContainerView(idGenerator.genID());
         containers.add(container);
         return container;
     }
@@ -34,13 +37,13 @@ public class FormView implements ClientSerialize {
 
     public OrderedMap<CellViewNavigator,Boolean> defaultOrders = new OrderedMap<CellViewNavigator, Boolean>();
 
-    public FunctionView printView = new FunctionView();
-    public FunctionView xlsView = new FunctionView();
-    public FunctionView refreshView = new FunctionView();
-    public FunctionView applyView = new FunctionView();
-    public FunctionView cancelView = new FunctionView();
-    public FunctionView okView = new FunctionView();
-    public FunctionView closeView = new FunctionView();
+    public FunctionView printView = new FunctionView(idGenerator.genID());
+    public FunctionView xlsView = new FunctionView(idGenerator.genID());
+    public FunctionView refreshView = new FunctionView(idGenerator.genID());
+    public FunctionView applyView = new FunctionView(idGenerator.genID());
+    public FunctionView cancelView = new FunctionView(idGenerator.genID());
+    public FunctionView okView = new FunctionView(idGenerator.genID());
+    public FunctionView closeView = new FunctionView(idGenerator.genID());
 
     public List<CellView> order = new ArrayList<CellView>();
 
