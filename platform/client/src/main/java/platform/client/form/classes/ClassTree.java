@@ -208,7 +208,10 @@ public abstract class ClassTree extends JTree {
     private boolean setNodeSelectedClass(DefaultMutableTreeNode node, ClientObjectClass cls) {
 
         if (cls.equals(node.getUserObject())) {
-            setSelectionPath(new TreePath(node.getPath()));
+
+            TreePath selectedPath = new TreePath(node.getPath());
+            setSelectionPath(selectedPath);
+            scrollPathToVisible(selectedPath);
             changeCurrentClass(cls, node);
             return true;
         }
