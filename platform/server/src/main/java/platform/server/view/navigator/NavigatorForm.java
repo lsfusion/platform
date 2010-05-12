@@ -148,11 +148,11 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         }
     }
 
-    protected PropertyViewNavigator addControlView(LC control, ObjectNavigator... objects) {
+    protected ControlViewNavigator addControlView(LC control, ObjectNavigator... objects) {
         return addControlView(control, null, objects);
     }
 
-    PropertyViewNavigator addControlView(LC control, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
+    ControlViewNavigator addControlView(LC control, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
 
         return addControlView(groupObject, control.createNavigator(objects));
     }
@@ -168,9 +168,9 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return result;
     }
 
-    PropertyViewNavigator addControlView(GroupObjectNavigator groupObject, ControlObjectNavigator controlImplement) {
+    ControlViewNavigator addControlView(GroupObjectNavigator groupObject, ControlObjectNavigator controlImplement) {
 
-        PropertyViewNavigator controlView = (PropertyViewNavigator) controlImplement.createView(IDShift(1), (groupObject == null) ? getApplyObject(controlImplement.getObjectImplements()) : groupObject);
+        ControlViewNavigator controlView = controlImplement.createView(IDShift(1), (groupObject == null) ? getApplyObject(controlImplement.getObjectImplements()) : groupObject);
 
         if (controlImplement.property.sID != null) {
 
@@ -267,6 +267,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public Collection<Property> hintsSave = new HashSet<Property>();
 
     protected void addHintsNoUpdate(LP<?> prop) {
+        addHintsNoUpdate(prop.property);
     }
 
     protected void addHintsNoUpdate(Property prop) {

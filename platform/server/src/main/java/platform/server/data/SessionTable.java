@@ -206,8 +206,6 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
     }
 
     public This deleteRecords(SQLSession session, Map<KeyField,DataObject> keys) throws SQLException {
-        assert keys.keySet().equals(keys);
-
         if(rows==null) {
             session.deleteKeyRecords(this, DataObject.getMapValues(keys));
             return (This)this;

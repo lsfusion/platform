@@ -56,7 +56,7 @@ public class ClientPropertyView extends ClientCellView {
         return baseType.getClassComponent(form, this, value, getFormat());
     }
 
-    public RemoteFormInterface createForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
+    public RemoteFormInterface createEditorForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
         return navigator.createChangeForm(ID, callerID);
     }
 

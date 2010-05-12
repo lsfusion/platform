@@ -7,17 +7,17 @@ import platform.server.view.navigator.ActionObjectNavigator;
 
 import java.util.List;
 
-public class LA extends LC<ActionInterface, Action> {
+public class LA<P extends ActionInterface> extends LC<P, Action<P>> {
 
-    public LA(Action property) {
+    public LA(Action<P> property) {
         super(property);
     }
 
-    public LA(Action property, List<ActionInterface> listInterfaces) {
+    public LA(Action<P> property, List<P> listInterfaces) {
         super(property, listInterfaces);
     }
 
-    public ActionObjectNavigator createNavigator(ObjectNavigator... objects) {
-        return new ActionObjectNavigator(this, objects);
+    public ActionObjectNavigator<P> createNavigator(ObjectNavigator... objects) {
+        return new ActionObjectNavigator<P>(this, objects);
     }
 }

@@ -24,7 +24,7 @@ public class ClientObjectType implements ClientType {
     public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form, property.createForm(form.clientNavigator.remoteNavigator, form.getID()));
+        return new ObjectPropertyEditor(form, property.createEditorForm(form.clientNavigator.remoteNavigator, form.getID()));
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {

@@ -25,14 +25,6 @@ abstract public class ClientCellView extends ClientComponentView {
     public abstract int getShiftID(); // нужен для того, чтобы CellView мог генерировать уникальный ID
     public abstract ClientGroupObjectImplementView getGroupObject();
 
-    // диалог для получения возможных значений
-    public abstract RemoteFormInterface createForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException;
-    public abstract RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException;
-
-    private Dimension minimumSize;
-    private Dimension maximumSize;
-    private Dimension preferredSize;
-
     public String caption;
 
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
@@ -55,8 +47,8 @@ abstract public class ClientCellView extends ClientComponentView {
         return getPreferredHeight();
     }
 
+    private Dimension minimumSize;
     public Dimension getMinimumSize() {
-
         if (minimumSize != null) return minimumSize;
         return new Dimension(getMinimumWidth(), getMinimumHeight());
     }
@@ -69,8 +61,8 @@ abstract public class ClientCellView extends ClientComponentView {
         return 15;
     }
 
+    private Dimension preferredSize;
     public Dimension getPreferredSize() {
-
         if (preferredSize != null) return preferredSize;
         return new Dimension(getPreferredWidth(), getPreferredHeight());
     }
@@ -83,19 +75,21 @@ abstract public class ClientCellView extends ClientComponentView {
         return getPreferredHeight();
     }
 
+    private Dimension maximumSize;
     public Dimension getMaximumSize() {
-
         if (maximumSize != null) return maximumSize;
         return new Dimension(getMaximumWidth(), getMaximumHeight());
     }
 
     private transient PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent() {
-
         if (renderer == null) renderer = baseType.getRendererComponent(getFormat());
-
         return renderer;
     }
+
+    // диалог для получения возможных значений, используются только в нижних методах
+    public abstract RemoteFormInterface createEditorForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException;
+    public abstract RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException;
 
     public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
     public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;

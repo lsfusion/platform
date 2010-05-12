@@ -13,9 +13,9 @@ import java.util.Collection;
 import java.util.Set;
 import java.sql.SQLException;
 
-public class ActionObjectImplement extends ControlObjectImplement<ActionInterface, Action> {
+public class ActionObjectImplement<P extends ActionInterface> extends ControlObjectImplement<P, Action<P>> {
 
-    public ActionObjectImplement(Action property, Map<ActionInterface, ? extends PropertyObjectInterface> mapping) {
+    public ActionObjectImplement(Action<P> property, Map<P, ? extends PropertyObjectInterface> mapping) {
         super(property, mapping);
     }
 

@@ -344,10 +344,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP actionDiscount = addDProp(baseGroup, "actionDiscount", "Скидка", DoubleClass.instance, action);
         LP inAction = addDProp(baseGroup, "inAction", "В акции", LogicalClass.instance, action, article);
 
-        LP isStarted = addJProp(baseGroup, "Началась", between, currentDate, actionFrom, 1, actionTo, 1);
+        LP isStarted = addJProp(baseGroup, "Началась", and(true, true), is(action), 1,
+                                        addJProp(less2, currentDate, actionFrom, 1), 1,
+                                        addJProp(greater2, currentDate, actionTo, 1), 1);
         LP articleSaleAction = addCGProp(priceGroup, "articleAction", "Дейст. распродажа",
                 addJProp(and1, 1, addJProp(and1, inAction, 1, 2, addJProp(and1, isStarted, 1, is(saleAction), 1), 1), 1, 2), inAction, 2);
-        LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp("0", DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
+        LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
         LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
 
         LP articleActionToGroup = addDProp(baseGroup, "articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
@@ -444,7 +446,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentLogisticsSupplied = addJProp(documentLogisticsGroup, "Поставляется", equals2, outSubject, 1, addJProp(articleStoreSupplier, incStore, 1, 2), 1, 2);
         documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
 
-        LP orderClientSum = addDProp(baseGroup, "orderClientSum", "Нак. сумма", DoubleClass.instance, orderSaleRetail);
+        LP orderClientSum = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleRetail), addDProp(baseGroup, "orderClientSum", "Нак. сумма", DoubleClass.instance, orderSaleRetail));
         LP orderHour = addDProp(baseGroup, "orderHour", "Час", DoubleClass.instance, orderSaleRetail);
         orderHour.setDerivedChange(currentHour, is(orderSale), 1);
 
@@ -493,7 +495,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Доплата карточкой", DoubleClass.instance, saleCash);
 
         // сдача/доплата
-        LP orderSaleDiff = addDUProp(documentPriceGroup, "Разница", orderSalePay, addSUProp(Union.SUM, orderSalePayCash, orderSalePayCard, orderSalePayObligation));
+        LP orderSaleDiff = addDUProp(documentPriceGroup, "Разница",
+                addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayCard, orderSalePayObligation)), 1), 
+                orderSalePayCash);
     }
 
     private LP addSupplierProperty(LP property) {
@@ -622,6 +626,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initNavigators() throws JRException, FileNotFoundException {
 
+        NavigatorElement print = new NavigatorElement(baseElement, 4000, "Печатные формы");
+            NavigatorForm incomePrice = new IncomePriceNavigatorForm(print, 4100);
+            NavigatorForm revalueAct = new RevalueActNavigatorForm(print, 4200);
+            NavigatorForm pricers = new PricersNavigatorForm(print, 4300);
+        
         NavigatorElement delivery = new NavigatorElement(baseElement, 1000, "Управление закупками");
             new SupplierArticleNavigatorForm(delivery, 1050);
             NavigatorForm deliveryShopLocal = new DeliveryShopLocalNavigatorForm(delivery, true, 1100);
@@ -670,11 +679,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         NavigatorElement store = new NavigatorElement(baseElement, 2000, "Сводная информация");
             new StoreArticleNavigatorForm(store, 2100);
-
-        NavigatorElement print = new NavigatorElement(baseElement, 4000, "Печатные формы");
-            NavigatorForm incomePrice = new IncomePriceNavigatorForm(print, 4100);
-            NavigatorForm revalueAct = new RevalueActNavigatorForm(print, 4200);
-            NavigatorForm pricers = new PricersNavigatorForm(print, 4300);
 
         commitWholeShopInc.addRelevant(incomePrice);
         documentShopPrice.addRelevant(revalueAct);
@@ -1075,6 +1079,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addControlView(objDoc, objArt, controls, articleQuantity, shopPrice, prevPrice, revalBalance);
 
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(shopPrice), Compare.NOT_EQUALS, getPropertyImplement(prevPrice)));
+
+            addFormAction(baseGroup, this, objDoc);
         }
     }
 

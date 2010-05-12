@@ -8,21 +8,21 @@ import platform.server.view.form.ActionObjectImplement;
 
 import java.util.Map;
 
-public class ActionObjectNavigator extends ControlObjectNavigator<ActionInterface, Action, ActionObjectImplement> {
+public class ActionObjectNavigator<P extends ActionInterface> extends ControlObjectNavigator<P, Action<P>, ActionObjectImplement<P>> {
 
-    public ActionObjectNavigator(LA property, ControlInterfaceNavigator... objects) {
+    public ActionObjectNavigator(LA<P> property, ControlInterfaceNavigator... objects) {
         super(property, objects);
     }
 
-    public ActionObjectNavigator(Action property, Map<ActionInterface, ControlInterfaceNavigator> mapping) {
+    public ActionObjectNavigator(Action<P> property, Map<P, ControlInterfaceNavigator> mapping) {
         super(property, mapping);
     }
 
     public ControlViewNavigator createView(int ID, GroupObjectNavigator groupObject) {
-        return new ActionViewNavigator(ID, this, groupObject);
+        return new ActionViewNavigator<P>(ID, this, groupObject);
     }
 
-    public ActionObjectImplement createImplement(Map<ActionInterface, PropertyObjectInterface> mapping) {
-        return new ActionObjectImplement(property, mapping);
+    public ActionObjectImplement<P> createImplement(Map<P, PropertyObjectInterface> mapping) {
+        return new ActionObjectImplement<P>(property, mapping);
     }
 }

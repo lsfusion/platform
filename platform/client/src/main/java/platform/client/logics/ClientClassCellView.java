@@ -34,7 +34,7 @@ public class ClientClassCellView extends ClientObjectView {
         return null;
     }
 
-    public RemoteFormInterface createForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
+    public RemoteFormInterface createEditorForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
         return null;
     }
 

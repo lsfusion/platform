@@ -5,13 +5,13 @@ import platform.server.logics.control.ControlInterface;
 
 import java.util.Map;
 
-public class ActionImplement<T> extends ControlImplement<T, ActionInterface, Action> {
+public class ActionImplement<T, P extends ActionInterface> extends ControlImplement<T, P, Action<P>> {
     
-    public ActionImplement(Action property, Map<ActionInterface, T> mapping) {
+    public ActionImplement(Action<P> property, Map<P, T> mapping) {
         super(property, mapping);
     }
 
-    public ActionImplement(Action property) {
+    public ActionImplement(Action<P> property) {
         super(property);
     }
 }

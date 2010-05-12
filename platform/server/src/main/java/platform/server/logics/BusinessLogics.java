@@ -26,7 +26,10 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.linear.LP;
 import platform.server.logics.linear.LC;
+import platform.server.logics.linear.LA;
 import platform.server.logics.control.Control;
+import platform.server.logics.action.Action;
+import platform.server.logics.action.FormAction;
 import platform.server.session.DataSession;
 import platform.server.data.SQLSession;
 import platform.server.view.navigator.*;
@@ -648,6 +651,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addControl(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
     }
 
+    protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
+        return addCProp("sys", valueClass, value, params);
+    }
     protected LP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp(genSID(), caption, valueClass, value, params);
     }
@@ -807,6 +813,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         controls.add(lp.property);
         if(group!=null) group.add(lp.property);
         return lp;
+    }
+
+    protected LA addFormAction(AbstractGroup group, NavigatorForm form, ObjectNavigator... objects) {
+        return addControl(group, new LA<FormAction.Interface>(new FormAction(genSID(), form.caption, form, objects)));
     }
 
     protected LP addJProp(LP mainProp, Object... params) {
