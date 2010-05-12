@@ -6,7 +6,7 @@ import platform.server.view.form.PropertyObjectInterface;
 
 import java.sql.SQLException;
 
-public interface PropertyInterfaceNavigator extends CompareValueNavigator {
+public interface ControlInterfaceNavigator extends CompareValueNavigator {
 
     PropertyObjectInterface doMapping(Mapper mapper);
 }

@@ -40,62 +40,17 @@ abstract public class CellView extends ComponentView {
     abstract String getSID();
     abstract String getCaption();
 
-    public Format getFormat() {
-        return getType().getDefaultFormat();
-    }
-
-    public int getMinimumWidth() {
-        return getType().getMinimumWidth();
-    }
-
-    public int getMinimumHeight() {
-        return getPreferredHeight();
-    }
-
-    public Dimension getMinimumSize() {
-
-        if (minimumSize != null) return minimumSize;
-        return new Dimension(getMinimumWidth(), getMinimumHeight());
-    }
-
-    public int getPreferredWidth() {
-        return getType().getPreferredWidth();
-    }
-
-    public int getPreferredHeight() {
-        return 15;
-    }
-
-    public Dimension getPreferredSize() {
-
-        if (preferredSize != null) return preferredSize;
-        return new Dimension(getPreferredWidth(), getPreferredHeight());
-    }
-
-    public int getMaximumWidth() {
-        return getType().getMaximumWidth();
-    }
-
-    public int getMaximumHeight() {
-        return getPreferredHeight();
-    }
-
-    public Dimension getMaximumSize() {
-
-        if (maximumSize != null) return maximumSize;
-        return new Dimension(getMaximumWidth(), getMaximumHeight());
-    }
-
-    
     public void fillReportDrawField(ReportDrawField reportField) {
 
         reportField.sID = getSID();
         reportField.caption = getCaption();
 
-        reportField.minimumWidth = getMinimumWidth();
-        reportField.preferredWidth = getPreferredWidth();
+        Type type = getType();
 
-        Format format = getFormat();
+        reportField.minimumWidth = type.getMinimumWidth();
+        reportField.preferredWidth = type.getPreferredWidth();
+
+        Format format = type.getDefaultFormat();
         if (format instanceof DecimalFormat) {
             reportField.pattern = ((DecimalFormat)format).toPattern();
         }

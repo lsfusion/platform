@@ -7,7 +7,7 @@ import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.view.navigator.PropertyObjectNavigator;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.navigator.PropertyInterfaceNavigator;
+import platform.server.view.navigator.ControlInterfaceNavigator;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.AggregateProperty;
@@ -27,7 +27,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         public abstract Expr getExpr();
 
-        public abstract PropertyInterfaceNavigator getInterface(Map<P,DataObject> mapValues, ObjectNavigator valueObject);
+        public abstract ControlInterfaceNavigator getInterface(Map<P,DataObject> mapValues, ObjectNavigator valueObject);
     }
 
     public static class KeyInterface<P extends PropertyInterface> extends Interface<P> {
@@ -44,7 +44,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             return propertyInterface.changeExpr;
         }
 
-        public PropertyInterfaceNavigator getInterface(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
+        public ControlInterfaceNavigator getInterface(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
             return mapValues.get(propertyInterface);
         }
     }
@@ -63,7 +63,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
             return toChange.changeExpr;
         }
 
-        public PropertyInterfaceNavigator getInterface(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
+        public ControlInterfaceNavigator getInterface(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
             return valueObject;
         }
     }
@@ -107,7 +107,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public PropertyObjectNavigator<Interface<P>> getPropertyNavigator(Map<P, DataObject> mapValues, ObjectNavigator valueObject) {
-        Map<Interface<P>, PropertyInterfaceNavigator> interfaceImplement = new HashMap<Interface<P>, PropertyInterfaceNavigator>();
+        Map<Interface<P>, ControlInterfaceNavigator> interfaceImplement = new HashMap<Interface<P>, ControlInterfaceNavigator>();
         for(Interface<P> propertyInterface : interfaces)
             interfaceImplement.put(propertyInterface, propertyInterface.getInterface(mapValues, valueObject));
         return new PropertyObjectNavigator<Interface<P>>(this,interfaceImplement);

@@ -220,7 +220,7 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
     }
 
     public void changePropertyOrder(int propertyID, byte modiType) {
-        PropertyView propertyView = form.getPropertyView(propertyID);
+        PropertyView<?> propertyView = form.getPropertyView(propertyID);
         try {
             propertyView.toDraw.changeOrder(propertyView.view, Order.deserialize(modiType));
         } catch (IOException e) {

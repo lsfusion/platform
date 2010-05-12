@@ -115,17 +115,17 @@ public class DefaultFormView extends FormView {
 //            clientGroup.showTypeView.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
         }
 
-        for (PropertyViewNavigator property : navigatorForm.propertyViews) {
+        for (ControlViewNavigator control : navigatorForm.controlViews) {
 
-            GroupObjectImplementView groupObject = mgroupObjects.get(property.toDraw);
+            GroupObjectImplementView groupObject = mgroupObjects.get(control.toDraw);
 
-            PropertyCellView clientProperty = new PropertyCellView(idGenerator.idShift(), property);
-            clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(property);
+            ControlCellView clientProperty = new ControlCellView(idGenerator.idShift(), control);
+            clientProperty.constraints.order = navigatorForm.controlViews.indexOf(control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
-            properties.add(clientProperty);
+            controls.add(clientProperty);
 
-            addComponent(groupObject, clientProperty, property.view.property.getParent());
+            addComponent(groupObject, clientProperty, control.view.property.getParent());
             order.add(clientProperty);
         }
 

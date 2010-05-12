@@ -8,10 +8,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.RemoteForm;
+import platform.server.view.form.*;
 import platform.server.data.where.Where;
 
 import java.io.DataInputStream;
@@ -46,7 +43,7 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
             case 1:
                 return form.getObjectImplement(inStream.readInt());
             case 2:
-                return form.getPropertyView(inStream.readInt()).view;
+                return ((PropertyView<?>)form.getPropertyView(inStream.readInt())).view;
         }
 
         throw new IOException();

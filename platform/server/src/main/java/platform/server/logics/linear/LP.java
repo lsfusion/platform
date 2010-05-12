@@ -1,32 +1,21 @@
-package platform.server.logics.property.linear;
+package platform.server.logics.linear;
 
-import platform.server.logics.property.*;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.property.*;
+import platform.server.view.navigator.ObjectNavigator;
+import platform.server.view.navigator.PropertyObjectNavigator;
 import platform.base.BaseUtils;
 
 import java.util.*;
 
-public class LP<T extends PropertyInterface> {
+public class LP<T extends PropertyInterface> extends LC<T,Property<T>> {
 
     public LP(Property<T> property) {
-        this.property = property;
-        listInterfaces = new ArrayList<T>(property.interfaces);
+        super(property);
     }
 
     public LP(Property<T> property, List<T> listInterfaces) {
-        this.property = property;
-        this.listInterfaces = listInterfaces;
-    }
-
-    public Property<T> property;
-    public List<T> listInterfaces;
-
-    public <IT extends PropertyInterface> boolean intersect(LP<IT> lp) {
-        assert listInterfaces.size()==lp.listInterfaces.size();
-        Map<IT,T> map = new HashMap<IT,T>();
-        for(int i=0;i<listInterfaces.size();i++)
-            map.put(lp.listInterfaces.get(i),listInterfaces.get(i));
-        return property.intersect(lp.property,map);
+        super(property,listInterfaces);
     }
 
     public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, Object... params) {
@@ -39,5 +28,9 @@ public class LP<T extends PropertyInterface> {
         new DerivedChange<D,T>(property,BusinessLogics.mapImplement(valueProperty,defImplements.subList(0,valueProperty.listInterfaces.size())),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(valueProperty.listInterfaces.size(), defImplements.size())),
                 defaultChanged);
+    }
+
+    public PropertyObjectNavigator<T> createNavigator(ObjectNavigator... objects) {
+        return new PropertyObjectNavigator<T>(this, objects);
     }
 }

@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
-import platform.server.logics.property.linear.LP;
 
 import java.util.*;
 

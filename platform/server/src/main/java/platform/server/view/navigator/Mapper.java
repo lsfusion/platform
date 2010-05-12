@@ -2,19 +2,14 @@ package platform.server.view.navigator;
 
 import platform.server.view.form.*;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.control.ControlInterface;
+import platform.server.logics.control.Control;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.ArrayList;
 
-/**
- * Created by IntelliJ IDEA.
-* User: ME2
-* Date: 20.10.2009
-* Time: 11:41:06
-* To change this template use File | Settings | File Templates.
-*/
 public class Mapper {
 
     public Mapper() {
@@ -48,22 +43,22 @@ public class Mapper {
         return groupValue;
     }
 
-    private final Map<PropertyObjectNavigator, PropertyObjectImplement> propertyMapper = new HashMap<PropertyObjectNavigator, PropertyObjectImplement>();
+    private final Map<ControlObjectNavigator, ControlObjectImplement> controlMapper = new HashMap<ControlObjectNavigator, ControlObjectImplement>();
 
-    public <P extends PropertyInterface> PropertyObjectImplement<P> mapProperty(PropertyObjectNavigator<P> propKey) {
+    public <P extends ControlInterface, C extends Control<P>, O extends ControlObjectImplement<P,C>> O mapControl(ControlObjectNavigator<P,C,O> propKey) {
 
-        if (propertyMapper.containsKey(propKey)) return propertyMapper.get(propKey);
+        if (controlMapper.containsKey(propKey)) return (O) controlMapper.get(propKey);
 
         Map<P,PropertyObjectInterface> propertyMap = new HashMap<P, PropertyObjectInterface>();
-        for(Map.Entry<P,PropertyInterfaceNavigator> propertyImplement : propKey.mapping.entrySet())
+        for(Map.Entry<P, ControlInterfaceNavigator> propertyImplement : propKey.mapping.entrySet())
             propertyMap.put(propertyImplement.getKey(),propertyImplement.getValue().doMapping(this));
-        PropertyObjectImplement<P> propValue = new PropertyObjectImplement<P>(propKey.property,propertyMap);
+        O propValue = propKey.createImplement(propertyMap);
 
-        propertyMapper.put(propKey, propValue);
+        controlMapper.put(propKey, propValue);
         return propValue;
     }
 
-    public <P extends PropertyInterface> PropertyView mapPropertyView(PropertyViewNavigator<P> propKey) {
-        return new PropertyView<P>(propKey.ID, propKey.getSID(), mapProperty(propKey.view), groupMapper.get(propKey.toDraw));
+    public <T extends ControlInterface, C extends Control<T>, I extends ControlObjectImplement<T,C>, O extends ControlObjectNavigator<T,C,I>> ControlView mapControlView(ControlViewNavigator<T,C,I,O> propKey) {
+        return propKey.createView(propKey.ID, propKey.getSID(), mapControl(propKey.view), groupMapper.get(propKey.toDraw));
     }
 }

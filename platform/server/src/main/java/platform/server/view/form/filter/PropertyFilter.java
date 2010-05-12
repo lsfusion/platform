@@ -5,6 +5,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.RemoteForm;
+import platform.server.view.form.PropertyView;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public abstract class PropertyFilter<P extends PropertyInterface> extends Filter
 
     public PropertyFilter(DataInputStream inStream, RemoteForm form) throws IOException {
         super(inStream,form);
-        property = form.getPropertyView(inStream.readInt()).view;
+        property = ((PropertyView<P>)form.getPropertyView(inStream.readInt())).view;
     }
 
     public GroupObjectImplement getApplyObject() {

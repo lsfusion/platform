@@ -23,8 +23,10 @@ import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.DistrGroupProperty;
 import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
-import platform.server.logics.property.linear.*;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.linear.LP;
+import platform.server.logics.linear.LC;
+import platform.server.logics.control.Control;
 import platform.server.session.DataSession;
 import platform.server.data.SQLSession;
 import platform.server.view.navigator.*;
@@ -93,8 +95,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP vtrue, vzero;
 
-    public LP name;
-    protected LP date;
+    public LP<?> name;
+    protected LP<?> date;
 
     protected LP transactionLater;
     protected LP currentDate;
@@ -292,21 +294,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected abstract void initAuthentication();
 
     String genSID() {
-        return "prop" + properties.size();
+        return "control" + controls.size();
+    }
+
+    protected void setPropOrder(LP<?> prop, LP<?> propRel, boolean before) {
+        setPropOrder(prop.property, propRel.property, before);
     }
 
     protected void setPropOrder(Property prop, Property propRel, boolean before) {
 
-        int indProp = properties.indexOf(prop);
-        int indPropRel = properties.indexOf(propRel);
+        int indProp = controls.indexOf(prop);
+        int indPropRel = controls.indexOf(propRel);
 
         if (before) {
             if (indPropRel < indProp) {
                 for (int i = indProp; i >= indPropRel + 1; i--)
-                    properties.set(i, properties.get(i-1));
-                properties.set(indPropRel, prop);
+                    controls.set(i, controls.get(i-1));
+                controls.set(indPropRel, prop);
             }
         }
+    }
+
+    protected void addIndex(LP<?>... lps) {
+        List<Property> index = new ArrayList<Property>();
+        for(LP<?> lp : lps)
+            index.add(lp.property);
+        indexes.add(index);
     }
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
@@ -317,7 +330,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public BaseClass baseClass;
 
     public TableFactory tableFactory;
-    public List<Property> properties = new ArrayList<Property>();
+    public List<Control> controls = new ArrayList<Control>();
+    public List<Property> getProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for(Control control : controls)
+            if(control instanceof Property)
+                result.add((Property)control);
+        return result;
+    }
     protected Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
@@ -329,7 +349,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
-        for(Property property : properties)
+        for(Property property : getProperties())
             fillPropertyList(property,linkedSet);
         return linkedSet;
     }
@@ -382,9 +402,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.startTransaction();
 
         // запишем sID'ки
-        int idPropNum = 0;
-        for(Property property : properties)
-            property.ID = idPropNum++;
+        int idControlNum = 0;
+        for(Control control : controls)
+            control.ID = idControlNum++;
 
         // инициализируем таблицы
         tableFactory.fillDB(session);
@@ -625,7 +645,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDProp(null, sID, caption, value, params);
     }
     protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
-        return addProp(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
+        return addControl(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
     }
 
     protected LP addCProp(String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
@@ -636,26 +656,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
-        return addProp(group,new LP<ClassPropertyInterface>(new ClassProperty(sID,caption,params,valueClass,value)));
+        return addControl(group,new LP<ClassPropertyInterface>(new ClassProperty(sID,caption,params,valueClass,value)));
     }
 
     protected LP addSFProp(String formula, ConcreteValueClass value,int paramCount) {
-        return addProp(null,new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(),value,formula,paramCount)));
+        return addControl(null,new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(),value,formula,paramCount)));
     }
 
     protected LP addCFProp(Compare compare) {
-        return addProp(null,new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(),compare)));
+        return addControl(null,new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(),compare)));
     }
 
     protected LP addMFProp(ConcreteValueClass value,int paramCount) {
-        return addProp(null,new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(),value,paramCount)));
+        return addControl(null,new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(),value,paramCount)));
     }
 
     protected LP addAFProp(boolean... nots) {
         return addAFProp(genSID(),nots);
     }    
     protected LP addAFProp(String sID, boolean... nots) {
-        return addProp(null,new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID,nots)));
+        return addControl(null,new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID,nots)));
     }
 
     // Linear Implement
@@ -783,8 +803,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLI(readLI(params),listInterfaces);
     }
 
-    private <T extends LP> T addProp(AbstractGroup group, T lp) {
-        properties.add(lp.property);
+    private <T extends LC<?,?>> T addControl(AbstractGroup group, T lp) {
+        controls.add(lp.property);
         if(group!=null) group.add(lp.property);
         return lp;
     }
@@ -842,7 +862,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LP listProperty = new LP<JoinProperty.Interface>(property);
         property.implement = mapImplement(mainProp,readImplements(listProperty.listInterfaces,params));
 
-        return addProp(group, listProperty);
+        return addControl(group, listProperty);
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, boolean sum, Object... params) {
@@ -858,11 +878,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private <P extends PropertyInterface,L extends PropertyInterface> LP mapLProp(AbstractGroup group,PropertyMapImplement<L, P> implement, LP<P> property) {
-        return addProp(group, new LP<L>(implement.property,BaseUtils.mapList(property.listInterfaces,BaseUtils.reverse(implement.mapping))));
+        return addControl(group, new LP<L>(implement.property,BaseUtils.mapList(property.listInterfaces,BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface,L extends PropertyInterface> LP mapLGProp(AbstractGroup group,PropertyImplement<PropertyInterfaceImplement<P>, L> implement, List<PropertyInterfaceImplement<P>> listImplements) {
-        return addProp(group, new LP<L>(implement.property,BaseUtils.mapList(listImplements,BaseUtils.reverse(implement.mapping))));
+        return addControl(group, new LP<L>(implement.property,BaseUtils.mapList(listImplements,BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
@@ -902,7 +922,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     
 /*
     // свойство обратное группируещему - для этого задается ограничивающее свойство, результирующее св-во с группировочными, порядковое св-во
-    protected LP addUGProp(AbstractGroup group, String caption, LP maxGroupProp, LP unGroupProp, Object... params) {
+    protected LF addUGProp(AbstractGroup group, String caption, LF maxGroupProp, LF unGroupProp, Object... params) {
         List<LI> lParams = readLI(params);
         List<LI> lUnGroupParams = lParams.subList(0,unGroupProp.listInterfaces.size());
         List<LI> orderParams = lParams.subList(unGroupProp.listInterfaces.size(),lParams.size());
@@ -919,7 +939,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         boolean[] andParams = new boolean[groupParams.size()-1];
         for(int i=0;i<andParams.length;i++)
             andParams[i] = false;
-        LP groupPropSet = addJProp(addAFProp(andParams),BaseUtils.add(groupParams));
+        LF groupPropSet = addJProp(addAFProp(andParams),BaseUtils.add(groupParams));
 
         for(int i=0;i<intNum;i++) { // докинем не достающие порядки
             boolean found = false;
@@ -933,28 +953,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // ставим на предшествие сначала order'а, потом всех интерфейсов
-        LP[] orderProps = new LP[orderParams.size()];
+        LF[] orderProps = new LF[orderParams.size()];
         for(int i=0;i<orderParams.size();i++) {
             orderProps[i] = (addJProp(and1, BaseUtils.add(directLI(groupPropSet),orderParams.get(i).compare(greater2, this, intNum))));
             groupPropSet = addJProp(and1, BaseUtils.add(directLI(groupPropSet),orderParams.get(i).compare(equals2, this, intNum)));
         }
-        LP groupPropPrev = addSUProp(Union.OVERRIDE, orderProps);
+        LF groupPropPrev = addSUProp(Union.OVERRIDE, orderProps);
 
         // группируем суммируя по "задвоенным" св-вам maxGroup
         Object[] remainParams = new Object[intNum];
         for(int i=1;i<=intNum;i++)
             remainParams[i-1] = i+intNum;
-        LP remainPrev = addSGProp(groupPropPrev, remainParams);
+        LF remainPrev = addSGProp(groupPropPrev, remainParams);
 
         // создадим группировочное св-во с маппом на общий интерфейс, нужно поубирать "дырки"
         
 
         // возвращаем MIN(unGroup-MU(prevGroup,0(maxGroup)),maxGroup) и не unGroup<=prevGroup
-        LP zeroQuantity = addJProp(and1, BaseUtils.add(new Object[]{vzero},directLI(maxGroupProp)));
-        LP zeroRemainPrev = addSUProp(Union.OVERRIDE , zeroQuantity, remainPrev);
-        LP calc = addSFProp("prm3+prm1-prm2-GREATEST(prm3,prm1-prm2)",DoubleClass.instance,3);
-        LP maxRestRemain = addJProp(calc, BaseUtils.add(BaseUtils.add(unGroupProp.write(),directLI(zeroRemainPrev)),directLI(maxGroupProp)));
-        LP exceed = addJProp(groeq2, BaseUtils.add(directLI(remainPrev),unGroupProp.write()));
+        LF zeroQuantity = addJProp(and1, BaseUtils.add(new Object[]{vzero},directLI(maxGroupProp)));
+        LF zeroRemainPrev = addSUProp(Union.OVERRIDE , zeroQuantity, remainPrev);
+        LF calc = addSFProp("prm3+prm1-prm2-GREATEST(prm3,prm1-prm2)",DoubleClass.instance,3);
+        LF maxRestRemain = addJProp(calc, BaseUtils.add(BaseUtils.add(unGroupProp.write(),directLI(zeroRemainPrev)),directLI(maxGroupProp)));
+        LF exceed = addJProp(groeq2, BaseUtils.add(directLI(remainPrev),unGroupProp.write()));
         return addJProp(group, caption, andNot1, BaseUtils.add(directLI(maxRestRemain),directLI(exceed)));
     }
   */
@@ -995,7 +1015,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         if(persist)
             for(Property property : suggestPersist)
-                persistents.add((AggregateProperty) addProp(null, new LP(property)).property);        
+                persistents.add((AggregateProperty) addControl(null, new LP(property)).property);
 
         for(int i=0;i<mgProps.size();i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
@@ -1005,7 +1025,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         List<LI> li = readLI(params);
         Object[] interfaces = writeLI(li.subList(extra,li.size())); // "вырежем" группировочные интерфейсы
 
-        LP[] result = new LP[extra+1];
+        LF[] result = new LF[extra+1];
         int i = 0;
         do {
             result[i] = addGProp(group,ids[i],captions[i],groupProp,false,interfaces);
@@ -1022,7 +1042,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         CycleGroupProperty<T,P> property = new CycleGroupProperty<T,P>(sID, caption, listImplements, groupProp.property, dataProp.property);
 
         // нужно добавить ограничение на уникальность
-        properties.add(property.getConstrainedProperty());
+        controls.add(property.getConstrainedProperty());
 
         return mapLGProp(group, property, listImplements);
     }
@@ -1070,7 +1090,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         for(int i=0;i<params.length/(intNum+1+extra);i++) {
             Integer offs = i*(intNum+1+extra);
-            LP opImplement = (LP)params[offs+extra];
+            LP<?> opImplement = (LP)params[offs+extra];
             PropertyMapImplement operand = new PropertyMapImplement(opImplement.property);
             for(int j=0;j<intNum;j++)
                 operand.mapping.put(opImplement.listInterfaces.get(((Integer)params[offs+1+extra+j])-1),listProperty.listInterfaces.get(j));
@@ -1088,7 +1108,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        return addProp(group, listProperty);
+        return addControl(group, listProperty);
     }
 
     // объединение классовое (непересекающихся) свойств
@@ -1174,7 +1194,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    protected void addConstraint(LP lp, boolean checkChange) {
+    protected void addConstraint(LP<?> lp, boolean checkChange) {
         lp.property.setConstraint(checkChange);
     }
 
@@ -1189,7 +1209,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final static boolean checkClasses = false;
     private boolean checkProps() {
         if(checkClasses)
-            for(Property prop : properties) {
+            for(Property prop : getProperties()) {
                 System.out.println("Checking property : "+prop+"...");
                 assert prop.check();
             }
@@ -1344,7 +1364,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 else
                     groupProp = randObjProps.get(randomizer.nextInt(randObjProps.size()));
 
-                Collection<Interface> interfaces = new ArrayList<Interface>();
+                Collection<Function> interfaces = new ArrayList<Function>();
 
                 boolean correct = true;
                 List<PropertyInterface> groupInt = new ArrayList(groupProp.interfaces);
@@ -1371,7 +1391,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         implement = impProp;
                     }
 
-                    interfaces.add(new Interface(j,implement));
+                    interfaces.add(new Function(j,implement));
                 }
 
                 if(correct) {
@@ -1465,7 +1485,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // сначала список получим
         List<AggregateProperty> aggrProperties = new ArrayList<AggregateProperty>();
-        for(Property property : properties) {
+        for(Property property : getProperties()) {
             if(property instanceof AggregateProperty && property.isObject())
                 aggrProperties.add((AggregateProperty)property);
         }
@@ -1484,10 +1504,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // сначала список получим
         List<DataProperty> dataProperties = new ArrayList<DataProperty>();
-        for(Property property : properties) {
+        for(Property property : getProperties())
             if(property instanceof DataProperty)
                 dataProperties.add((DataProperty)property);
-        }
 
         DataSession session = createSession(adapter);
 
@@ -1627,7 +1646,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Random randomizer = new Random(autoSeed);
 
         // бежим по св-вам
-        for(Property abstractProperty : properties)
+        for(Property abstractProperty : getProperties())
             if(abstractProperty instanceof DataProperty) {
                 DataProperty property = (DataProperty)abstractProperty;
 

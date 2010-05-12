@@ -1,22 +1,29 @@
 package platform.server.view.form.client;
 
 import platform.server.data.type.Type;
+import platform.server.data.type.ObjectType;
 import platform.server.view.navigator.PropertyViewNavigator;
+import platform.server.view.navigator.ControlViewNavigator;
+import platform.server.classes.DoubleClass;
+import platform.server.logics.property.Property;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class PropertyCellView extends CellView implements ClientSerialize {
+public class ControlCellView extends CellView implements ClientSerialize {
 
-    public PropertyViewNavigator view;
+    public ControlViewNavigator<?,?,?,?> view;
 
-    public PropertyCellView(int ID, PropertyViewNavigator iView) {
+    public ControlCellView(int ID, ControlViewNavigator view) {
         super(ID);
-        view = iView;
+        this.view = view;
     }
 
     Type getType() {
-        return view.view.property.getType();
+        if(view instanceof PropertyViewNavigator)
+            return ((Property)((PropertyViewNavigator)view).view.property).getType();
+        else
+            return ObjectType.instance; // пофигу что вернуть, у ClassCellView та же "проблема"
     }
 
     int getID() {

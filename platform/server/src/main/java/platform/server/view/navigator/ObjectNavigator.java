@@ -6,7 +6,7 @@ import platform.server.view.form.PropertyObjectInterface;
 
 import java.util.Set;
 
-public class ObjectNavigator extends CellViewNavigator implements PropertyInterfaceNavigator {
+public class ObjectNavigator extends CellViewNavigator implements ControlInterfaceNavigator {
 
     public ObjectNavigator(int ID, ValueClass baseClass, String caption) {
         super(ID);

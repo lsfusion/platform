@@ -30,7 +30,7 @@ public class FormView implements ClientSerialize {
     public List<GroupObjectImplementView> groupObjects = new ArrayList<GroupObjectImplementView>();
 
     // список свойств
-    public List<PropertyCellView> properties = new ArrayList<PropertyCellView>();
+    public List<ControlCellView> controls = new ArrayList<ControlCellView>();
 
     // список фильтров
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
@@ -63,7 +63,7 @@ public class FormView implements ClientSerialize {
         serializeList(outStream,orderedContainers);
 
         serializeList(outStream,groupObjects);
-        serializeList(outStream,properties);
+        serializeList(outStream, controls);
         serializeList(outStream,regularFilters);
 
         outStream.writeInt(defaultOrders.size());
@@ -84,7 +84,7 @@ public class FormView implements ClientSerialize {
         outStream.writeInt(order.size());
         for(CellView orderCell : order) {
             outStream.writeInt(orderCell.getID());
-            if (orderCell instanceof PropertyCellView)
+            if (orderCell instanceof ControlCellView)
                 outStream.writeBoolean(true);
             else {
                 outStream.writeBoolean(false);

@@ -15,53 +15,10 @@ import platform.server.session.*;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PropertyObjectImplement<P extends PropertyInterface> extends PropertyImplement<PropertyObjectInterface,P> implements OrderView {
+public class PropertyObjectImplement<P extends PropertyInterface> extends ControlObjectImplement<P,Property<P>> implements OrderView {
 
     public PropertyObjectImplement(Property<P> property,Map<P,? extends PropertyObjectInterface> mapping) {
-        super(property, (Map<P,PropertyObjectInterface>) mapping);
-    }
-
-    // получает Grid в котором рисоваться
-    public GroupObjectImplement getApplyObject() {
-        GroupObjectImplement applyObject=null;
-        for(ObjectImplement intObject : getObjectImplements())
-            if(applyObject==null || intObject.groupTo.order >applyObject.order)
-                applyObject = intObject.getApplyObject();
-
-        return applyObject;
-    }
-
-    public Collection<ObjectImplement> getObjectImplements() {
-        Collection<ObjectImplement> result = new ArrayList<ObjectImplement>();
-        for(PropertyObjectInterface object : mapping.values())
-            if(object instanceof ObjectImplement)
-                result.add((ObjectImplement) object);
-        return result;
-    }
-
-    // в интерфейсе
-    public boolean isInInterface(GroupObjectImplement classGroup) {
-
-        Map<P, AndClassSet> classImplement = new HashMap<P, AndClassSet>();
-        for(P propertyInterface : property.interfaces)
-            classImplement.put(propertyInterface, mapping.get(propertyInterface).getClassSet(classGroup));
-        return property.allInInterface(classImplement);
-    }
-
-    // проверяет на то что изменился верхний объект
-    public boolean objectUpdated(GroupObjectImplement classGroup) {
-        for(PropertyObjectInterface intObject : mapping.values())
-            if(intObject.objectUpdated(classGroup)) return true;
-
-        return false;
-    }
-
-    public boolean classUpdated(GroupObjectImplement classGroup) {
-        for(PropertyObjectInterface intObject : mapping.values())
-            if(intObject.classUpdated(classGroup))
-                return true;
-
-        return false;
+        super(property, mapping);
     }
 
     public boolean dataUpdated(Collection<Property> changedProps) {

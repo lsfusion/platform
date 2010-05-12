@@ -20,8 +20,8 @@ public class StringClass extends DataClass<String> {
 
     int length;
 
-    public StringClass(int iLength) {
-        length = iLength;
+    public StringClass(int length) {
+        this.length = length;
     }
 
     public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {

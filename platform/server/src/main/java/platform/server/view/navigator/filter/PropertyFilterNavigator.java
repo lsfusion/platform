@@ -21,7 +21,7 @@ public abstract class PropertyFilterNavigator<P extends PropertyInterface> exten
     protected abstract Filter doMapping(PropertyObjectImplement<P> propertyImplement, Mapper mapper) throws SQLException;
 
     public Filter doMapping(Mapper mapper) throws SQLException {
-        return doMapping(mapper.mapProperty(property),mapper);
+        return doMapping(mapper.mapControl(property),mapper);
     }
 
     protected void fillObjects(Set<ObjectNavigator> objects) {

@@ -41,8 +41,8 @@ public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends Naviga
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator<MaxChangeProperty.Interface<P>>(
                     constrainedProperty.getPropertyNavigator(implement.mapping, valueObject))));
 
-        addPropertyView(BL.properties, BL.baseGroup, true, valueObject);
-        addPropertyView(BL.properties, BL.aggrGroup, true, valueObject);
+        addControlView(BL.controls, BL.baseGroup, true, valueObject);
+        addControlView(BL.controls, BL.aggrGroup, true, valueObject);
     }
 
 /*    public <T extends BusinessLogics<T>> void seekObjects(RemoteForm<T> remoteForm, Mapper mapper, Object dataValue, Map<ClassPropertyInterface, Object> interfaceValues) {
