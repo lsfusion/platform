@@ -107,10 +107,10 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public DocumentNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -126,13 +126,13 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         public StoreArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 //            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup);
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", controls, baseGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties, baseGroup);
 
-            addControlView(objStore, objArt, controls, baseGroup);
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(quantity)));
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(documentStore), Compare.EQUALS, objStore));
@@ -153,11 +153,11 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             group.add(objArt);
             addGroup(group);
 
-            addControlView(objDoc, controls, baseGroup);
-            addControlView(objArt, controls, baseGroup);
-            addControlView(objDoc, objArt, controls, baseGroup);
-            addControlView(is(incomeDocument), objDoc);
-            addControlView(incQuantity, objDoc, objArt);
+            addPropertyView(objDoc, properties, baseGroup);
+            addPropertyView(objArt, properties, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
+            addPropertyView(is(incomeDocument), objDoc);
+            addPropertyView(incQuantity, objDoc, objArt);
         }
     }
 

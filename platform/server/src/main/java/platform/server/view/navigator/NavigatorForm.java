@@ -7,12 +7,10 @@ import platform.base.ListPermutations;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.control.Control;
-import platform.server.logics.control.ControlInterface;
-import platform.server.logics.linear.LC;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
@@ -26,7 +24,7 @@ import java.util.*;
 public abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
     public List<GroupObjectNavigator> groups = new ArrayList<GroupObjectNavigator>();
-    public List<ControlViewNavigator> controlViews = new ArrayList<ControlViewNavigator>();
+    public List<PropertyViewNavigator> propertyViews = new ArrayList<PropertyViewNavigator>();
 
     public Set<FilterNavigator> fixedFilters = new HashSet<FilterNavigator>();
 
@@ -56,14 +54,14 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return IDCount;
     }
 
-    protected ObjectNavigator addSingleGroupObjectImplement(ValueClass baseClass, String caption, List<Control> controls, Object... groups) {
+    protected ObjectNavigator addSingleGroupObjectImplement(ValueClass baseClass, String caption, List<Property> properties, Object... groups) {
 
         GroupObjectNavigator groupObject = new GroupObjectNavigator(IDShift(1));
         ObjectNavigator object = new ObjectNavigator(IDShift(1), baseClass, caption);
         groupObject.add(object);
         addGroup(groupObject);
 
-        addControlView(controls, groups, object);
+        addPropertyView(properties, groups, object);
 
         return object;
     }
@@ -72,23 +70,23 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         groups.add(group);
     }
 
-    protected void addControlView(ObjectNavigator object, List<Control> controls, Object... groups) {
-        addControlView(controls, groups, object);
+    protected void addPropertyView(ObjectNavigator object, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object);
     }
 
-    protected void addControlView(ObjectNavigator object1, ObjectNavigator object2, List<Control> controls, Object... groups) {
-        addControlView(controls, groups, object1, object2);
+    protected void addPropertyView(ObjectNavigator object1, ObjectNavigator object2, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object1, object2);
     }
 
-    protected void addControlView(ObjectNavigator object1, ObjectNavigator object2, ObjectNavigator object3, List<Control> controls, Object... groups) {
-        addControlView(controls, groups, object1, object2, object3);
+    protected void addPropertyView(ObjectNavigator object1, ObjectNavigator object2, ObjectNavigator object3, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object1, object2, object3);
     }
 
-    protected void addControlView(ObjectNavigator object1, ObjectNavigator object2, ObjectNavigator object3, ObjectNavigator object4, List<Control> controls, Object... groups) {
-        addControlView(controls, groups, object1, object2, object3, object4);
+    protected void addPropertyView(ObjectNavigator object1, ObjectNavigator object2, ObjectNavigator object3, ObjectNavigator object4, List<Property> properties, Object... groups) {
+        addPropertyView(properties, groups, object1, object2, object3, object4);
     }
 
-    private void addControlView(List<Control> controls, Object[] groups, ObjectNavigator... objects) {
+    private void addPropertyView(List<Property> properties, Object[] groups, ObjectNavigator... objects) {
 
         for (int i = 0; i < groups.length; i++) {
 
@@ -98,43 +96,43 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
             if (group instanceof AbstractGroup) {
                 boolean upClasses = false;
                 if ((i+1)<groups.length && groups[i+1] instanceof Boolean) upClasses = (Boolean)groups[i+1];
-                addControlView(controls, (AbstractGroup)group, upClasses, objects);
+                addPropertyView(properties, (AbstractGroup)group, upClasses, objects);
             }
             else if (group instanceof LP)
-                addControlView((LP)group, objects);
+                this.addPropertyView((LP)group, objects);
         }
     }
 
-    void addControlView(List<Control> controls, Boolean upClasses, ObjectNavigator... objects) {
-        addControlView(controls, (AbstractGroup)null, upClasses, objects);
+    void addPropertyView(List<Property> properties, Boolean upClasses, ObjectNavigator... objects) {
+        addPropertyView(properties, (AbstractGroup)null, upClasses, objects);
     }
 
-    protected void addControlView(List<Control> controls, AbstractGroup group, Boolean upClasses, ObjectNavigator... objects) {
-        addControlView(controls, group, upClasses, null, objects);
+    protected void addPropertyView(List<Property> properties, AbstractGroup group, Boolean upClasses, ObjectNavigator... objects) {
+        addPropertyView(properties, group, upClasses, null, objects);
     }
 
-    protected void addControlView(List<Control> controls, AbstractGroup group, Boolean upClasses, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
+    protected void addPropertyView(List<Property> properties, AbstractGroup group, Boolean upClasses, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
 
         // приходится делать именно так, так как важен порядок следования свойств
 
-        for (Control control : controls) {
+        for (Property property : properties) {
 
-            if (control.getParent() == null) continue;
+            if (property.getParent() == null) continue;
 
-            if (group == null && !(control instanceof DataProperty)) continue;
+            if (group == null && !(property instanceof DataProperty)) continue;
 
-            if (group != null && !group.hasChild(control)) continue;
+            if (group != null && !group.hasChild(property)) continue;
 
-            if (control.interfaces.size() == objects.length) {
+            if (property.interfaces.size() == objects.length) {
 
-                addControlView(control, upClasses, groupObject, objects);
+                addPropertyView(property, upClasses, groupObject, objects);
             }
         }
     }
 
-    <P extends ControlInterface<P>> void addControlView(Control<P> control, Boolean upClasses, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
+    <P extends PropertyInterface<P>> void addPropertyView(Property<P> property, Boolean upClasses, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
 
-        for (List<P> mapping : new ListPermutations<P>(control.interfaces)) {
+        for (List<P> mapping : new ListPermutations<P>(property.interfaces)) {
 
             Map<P, AndClassSet> propertyInterface = new HashMap<P, AndClassSet>();
             int interfaceCount = 0;
@@ -143,18 +141,18 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
                 propertyInterface.put(iface, propertyClass.getUpSet());
             }
 
-            if ((upClasses && control.anyInInterface(propertyInterface)) || (!upClasses && control.allInInterface(propertyInterface)))
-                addControlView(control.createLC(mapping), groupObject, objects);
+            if ((upClasses && property.anyInInterface(propertyInterface)) || (!upClasses && property.allInInterface(propertyInterface)))
+                addPropertyView(new LP<P>(property, mapping), groupObject, objects);
         }
     }
 
-    protected ControlViewNavigator addControlView(LC control, ObjectNavigator... objects) {
-        return addControlView(control, null, objects);
+    protected PropertyViewNavigator addPropertyView(LP property, ObjectNavigator... objects) {
+        return addPropertyView(property, null, objects);
     }
 
-    ControlViewNavigator addControlView(LC control, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
+    <P extends PropertyInterface> PropertyViewNavigator addPropertyView(LP<P> property, GroupObjectNavigator groupObject, ObjectNavigator... objects) {
 
-        return addControlView(groupObject, control.createNavigator(objects));
+        return addPropertyView(groupObject, new PropertyObjectNavigator<P>(property, objects));
     }
 
     public GroupObjectNavigator getApplyObject(Collection<ObjectNavigator> objects) {
@@ -168,27 +166,27 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return result;
     }
 
-    ControlViewNavigator addControlView(GroupObjectNavigator groupObject, ControlObjectNavigator controlImplement) {
+    <P extends PropertyInterface> PropertyViewNavigator<P> addPropertyView(GroupObjectNavigator groupObject, PropertyObjectNavigator<P> propertyImplement) {
 
-        ControlViewNavigator controlView = controlImplement.createView(IDShift(1), (groupObject == null) ? getApplyObject(controlImplement.getObjectImplements()) : groupObject);
+        PropertyViewNavigator<P> propertyView = new PropertyViewNavigator<P>(IDShift(1), propertyImplement, (groupObject == null) ? getApplyObject(propertyImplement.getObjectImplements()) : groupObject);
 
-        if (controlImplement.property.sID != null) {
+        if (propertyImplement.property.sID != null) {
 
             // придется поискать есть ли еще такие sID, чтобы добиться уникальности sID
             boolean foundSID = false;
-            for (ControlViewNavigator property : controlViews)
-                if (BaseUtils.nullEquals(property.sID, controlImplement.property.sID)) {
+            for (PropertyViewNavigator property : propertyViews)
+                if (BaseUtils.nullEquals(property.sID, propertyImplement.property.sID)) {
                     foundSID = true;
                     break;
                 }
-            controlView.sID = controlImplement.property.sID + ((foundSID) ? controlView.ID : "");
+            propertyView.sID = propertyImplement.property.sID + ((foundSID) ? propertyView.ID : "");
         }
 
-        controlViews.add(controlView);
+        propertyViews.add(propertyView);
 
         assert richDesign == null && reportDesign == null;
 
-        return controlView;
+        return propertyView;
     }
 
     protected PropertyObjectNavigator addPropertyObjectImplement(LP property, ObjectNavigator... objects) {
@@ -213,53 +211,41 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return getPropertyView(lp.property, object.groupTo);
     }
 
-    PropertyViewNavigator getPropertyView(PropertyObjectNavigator prop) {
-        return (PropertyViewNavigator) getControlView(prop);
-    }
-    
-    protected PropertyViewNavigator getPropertyView(Property prop) {
-        return (PropertyViewNavigator) getControlView(prop);
-    }
+    protected PropertyViewNavigator getPropertyView(PropertyObjectNavigator property) {
 
-    protected PropertyViewNavigator getPropertyView(Property prop, GroupObjectNavigator groupObject) {
-        return (PropertyViewNavigator) getControlView(prop, groupObject);
+        PropertyViewNavigator resultPropertyView = null;
+        for (PropertyViewNavigator propView : propertyViews)
+            if (propView.view.equals(property))
+                resultPropertyView = propView;
+
+        return resultPropertyView;
     }
 
-    protected ControlViewNavigator getControlView(ControlObjectNavigator control) {
+    protected PropertyViewNavigator getPropertyView(Property property) {
 
-        ControlViewNavigator resultControlView = null;
-        for (ControlViewNavigator propView : controlViews)
-            if (propView.view.equals(control))
-                resultControlView = propView;
+        PropertyViewNavigator resultPropertyView = null;
+        for (PropertyViewNavigator<?> propertyView : propertyViews)
+            if (propertyView.view.property == property)
+                resultPropertyView = propertyView;
 
-        return resultControlView;
+        return resultPropertyView;
     }
 
-    protected ControlViewNavigator getControlView(Control control) {
+    protected PropertyViewNavigator getPropertyView(Property property, GroupObjectNavigator groupObject) {
 
-        ControlViewNavigator resultControlView = null;
-        for (ControlViewNavigator controlView : controlViews)
-            if (controlView.view.property == control)
-                resultControlView = controlView;
+        PropertyViewNavigator resultPropertyView = null;
+        for (PropertyViewNavigator<?> propertyView : propertyViews)
+            if (propertyView.view.property.equals(property) && propertyView.toDraw.equals(groupObject))
+                resultPropertyView = propertyView;
 
-        return resultControlView;
+        return resultPropertyView;
     }
 
-    protected ControlViewNavigator getControlView(Control control, GroupObjectNavigator groupObject) {
+    public void addHintsNoUpdate(List<Property> properties, AbstractGroup group) {
 
-        ControlViewNavigator resultControlView = null;
-        for (ControlViewNavigator controlView : controlViews)
-            if (controlView.view.property.equals(control) && controlView.toDraw.equals(groupObject))
-                resultControlView = controlView;
-
-        return resultControlView;
-    }
-
-    public void addHintsNoUpdate(List<Control> controls, AbstractGroup group) {
-
-        for (Control control : controls) {
-            if ((group == null || group.hasChild(control)) && control instanceof Property) 
-                addHintsNoUpdate((Property) control);
+        for (Property property : properties) {
+            if ((group == null || group.hasChild(property)))
+                addHintsNoUpdate(property);
         }
     }
 

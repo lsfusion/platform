@@ -11,9 +11,9 @@ import platform.interop.form.RemoteFormInterface;
 
 import java.util.*;
 
-public class FormAction extends Action<FormAction.Interface> {
+public class FormAction {
 
-    NavigatorForm form;
+/*    NavigatorForm form;
     
     public static class Interface extends ActionInterface {
 
@@ -53,5 +53,5 @@ public class FormAction extends Action<FormAction.Interface> {
 
     public RemoteFormInterface execute(Map<Interface, DataObject> objects) {
         return null;
-    }
+    }*/
 }

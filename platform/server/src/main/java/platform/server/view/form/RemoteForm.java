@@ -111,9 +111,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         for (int i=0;i< navigatorForm.groups.size();i++)
             groups.add(mapper.mapGroup(navigatorForm.groups.get(i),i,classView));
 
-        for (ControlViewNavigator navigatorProperty : navigatorForm.controlViews)
+        for (PropertyViewNavigator navigatorProperty : navigatorForm.propertyViews)
             if (this.securityPolicy.property.view.checkPermission(navigatorProperty.view.property))
-                controls.add(mapper.mapControlView(navigatorProperty));
+                properties.add(mapper.mapPropertyView(navigatorProperty));
 
         for (FilterNavigator navigatorFilter : navigatorForm.fixedFilters) {
             Filter filter = navigatorFilter.doMapping(mapper);
@@ -138,14 +138,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     public List<GroupObjectImplement> groups = new ArrayList<GroupObjectImplement>();
     public Map<GroupObjectImplement,ViewTable> groupTables = new HashMap<GroupObjectImplement, ViewTable>(); 
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
-    public List<ControlView> controls = new ArrayList<ControlView>();
-    public List<PropertyView> getProperties() {
-        List<PropertyView> result = new ArrayList<PropertyView>();
-        for(ControlView control : controls)
-            if(control instanceof PropertyView)
-                result.add((PropertyView) control);
-        return result;
-    }
+    public List<PropertyView> properties = new ArrayList<PropertyView>();
 
     // ----------------------------------- Поиск объектов по ID ------------------------------ //
 
@@ -164,12 +157,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return null;
     }
 
-    public PropertyView<?> getPropertyView(int propertyID) {
-        return (PropertyView)getControlView(propertyID);
-    }
-
-    public ControlView getControlView(int propertyID) {
-        for (ControlView property : controls)
+    public PropertyView getPropertyView(int propertyID) {
+        for (PropertyView property : properties)
             if (property.ID == propertyID)
                 return property;
         return null;
@@ -395,7 +384,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     public Collection<Property> getUpdateProperties() {
 
         Set<Property> result = new HashSet<Property>();
-        for(PropertyView<?> propView : getProperties())
+        for(PropertyView<?> propView : properties)
             result.add(propView.view.property);
         for(GroupObjectImplement group : groups)
             group.fillUpdateProperties(result);
@@ -511,9 +500,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
 
         Collection<Group> groups = new ArrayList<Group>();
-        Map<ControlView,Boolean> cacheInGridInterface;
-        Map<ControlView,Boolean> cacheInInterface;
-        Set<ControlView> isDrawed;
+        Map<PropertyView,Boolean> cacheInGridInterface;
+        Map<PropertyView,Boolean> cacheInInterface;
+        Set<PropertyView> isDrawed;
         Map<RegularFilterGroup,RegularFilter> regularFilterValues;
 
         Map<RemoteForm, DataSession.UpdateChanges> incrementChanges;
@@ -525,9 +514,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         ApplyTransaction() {
             for(GroupObjectImplement group : RemoteForm.this.groups)
                 groups.add(new Group(group));
-            cacheInGridInterface = new HashMap<ControlView, Boolean>(RemoteForm.this.cacheInGridInterface);
-            cacheInInterface = new HashMap<ControlView, Boolean>(RemoteForm.this.cacheInInterface);
-            isDrawed = new HashSet<ControlView>(RemoteForm.this.isDrawed);
+            cacheInGridInterface = new HashMap<PropertyView, Boolean>(RemoteForm.this.cacheInGridInterface);
+            cacheInInterface = new HashMap<PropertyView, Boolean>(RemoteForm.this.cacheInInterface);
+            isDrawed = new HashSet<PropertyView>(RemoteForm.this.isDrawed);
             regularFilterValues = new HashMap<RegularFilterGroup, RegularFilter>(RemoteForm.this.regularFilterValues);
 
             if(dataChanged) {
@@ -649,9 +638,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
-    protected Map<ControlView,Boolean> cacheInGridInterface = new HashMap<ControlView,Boolean>();
-    protected Map<ControlView,Boolean> cacheInInterface = new HashMap<ControlView, Boolean>();
-    protected Set<ControlView> isDrawed = new HashSet<ControlView>();
+    protected Map<PropertyView,Boolean> cacheInGridInterface = new HashMap<PropertyView,Boolean>();
+    protected Map<PropertyView,Boolean> cacheInInterface = new HashMap<PropertyView, Boolean>();
+    protected Set<PropertyView> isDrawed = new HashSet<PropertyView>();
 
     boolean refresh = true;
     private boolean classUpdated(Updated updated, GroupObjectImplement groupObject) {
@@ -872,87 +861,87 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 }
             }
 
-            Collection<ControlView> panelControls = new ArrayList<ControlView>();
-            Map<GroupObjectImplement,Collection<ControlView>> groupControls = new HashMap<GroupObjectImplement, Collection<ControlView>>();
+            Collection<PropertyView> panelProperties = new ArrayList<PropertyView>();
+            Map<GroupObjectImplement,Collection<PropertyView>> groupProperties = new HashMap<GroupObjectImplement, Collection<PropertyView>>();
 
-            for(ControlView<?,?,?> drawControl : controls) {
+            for(PropertyView<?> drawProperty : properties) {
 
-                if (drawControl.toDraw != null && drawControl.toDraw.curClassView == ClassViewType.HIDE) continue;
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
 
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
 
-                if(refresh || classUpdated(drawControl.view,drawControl.toDraw)) {
-                    inGridInterface = drawControl.view.isInInterface(drawControl.toDraw);
-                    cacheInGridInterface.put(drawControl, inGridInterface);
+                if(refresh || classUpdated(drawProperty.view,drawProperty.toDraw)) {
+                    inGridInterface = drawProperty.view.isInInterface(drawProperty.toDraw);
+                    cacheInGridInterface.put(drawProperty, inGridInterface);
                 } else { // пусть будут assert
-                    inGridInterface = cacheInGridInterface.get(drawControl);
-                    assert inGridInterface==drawControl.view.isInInterface(drawControl.toDraw);
+                    inGridInterface = cacheInGridInterface.get(drawProperty);
+                    assert inGridInterface==drawProperty.view.isInInterface(drawProperty.toDraw);
                 }
 
-                if(drawControl.toDraw==null)
+                if(drawProperty.toDraw==null)
                     inInterface = inGridInterface;
                 else
-                    if(refresh || classUpdated(drawControl.view,null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
-                        inInterface = drawControl.view.isInInterface(null);
-                        cacheInInterface.put(drawControl, inInterface);
+                    if(refresh || classUpdated(drawProperty.view,null)) { // здесь еще можно вставить : что если inGridInterface и не null'ы
+                        inInterface = drawProperty.view.isInInterface(null);
+                        cacheInInterface.put(drawProperty, inInterface);
                     } else {
-                        inInterface = cacheInInterface.get(drawControl);
-                        assert inInterface==drawControl.view.isInInterface(null);
+                        inInterface = cacheInInterface.get(drawProperty);
+                        assert inInterface==drawProperty.view.isInInterface(null);
                     }
 
-                boolean read = refresh || dataUpdated(drawControl.view,changedProps) ||
-                        drawControl.toDraw!=null && (drawControl.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
-                if(inGridInterface && drawControl.toDraw!=null && drawControl.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
-                    if(read || objectUpdated(drawControl.view,drawControl.toDraw)) {
-                        Collection<ControlView> controlList = groupControls.get(drawControl.toDraw);
-                        if(controlList==null) {
-                            controlList = new ArrayList<ControlView>();
-                            groupControls.put(drawControl.toDraw,controlList);
+                boolean read = refresh || dataUpdated(drawProperty.view,changedProps) ||
+                        drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
+                if(inGridInterface && drawProperty.toDraw!=null && drawProperty.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
+                    if(read || objectUpdated(drawProperty.view,drawProperty.toDraw)) {
+                        Collection<PropertyView> propertyList = groupProperties.get(drawProperty.toDraw);
+                        if(propertyList==null) {
+                            propertyList = new ArrayList<PropertyView>();
+                            groupProperties.put(drawProperty.toDraw,propertyList);
                         }
-                        controlList.add(drawControl);
-                        isDrawed.add(drawControl);
+                        propertyList.add(drawProperty);
+                        isDrawed.add(drawProperty);
                     }
                 } else
                 if(inInterface) { // в панели
-                    if(read || objectUpdated(drawControl.view,null)) {
-                        panelControls.add(drawControl);
-                        isDrawed.add(drawControl);
+                    if(read || objectUpdated(drawProperty.view,null)) {
+                        panelProperties.add(drawProperty);
+                        isDrawed.add(drawProperty);
                     }
                 } else
-                    if(isDrawed.remove(drawControl))
-                        result.dropProperties.add(drawControl); // вкидываем удаление из интерфейса
+                    if(isDrawed.remove(drawProperty))
+                        result.dropProperties.add(drawProperty); // вкидываем удаление из интерфейса
             }
 
-            if(panelControls.size()>0) { // читаем "панельные" свойства
-                Query<Object, ControlView> selectProps = new Query<Object, ControlView>(new HashMap<Object, KeyExpr>());
-                for(ControlView<?,?,?> drawControl : panelControls)
-                    selectProps.properties.put(drawControl, drawControl.view.getExpr(null,null, this));
+            if(panelProperties.size()>0) { // читаем "панельные" свойства
+                Query<Object, PropertyView> selectProps = new Query<Object, PropertyView>(new HashMap<Object, KeyExpr>());
+                for(PropertyView<?> drawProperty : panelProperties)
+                    selectProps.properties.put(drawProperty, drawProperty.view.getExpr(null,null, this));
 
-                Map<ControlView,Object> resultProps = selectProps.execute(session).singleValue();
-                for(ControlView drawProp : panelControls)
-                    result.panelControls.put(drawProp,resultProps.get(drawProp));
+                Map<PropertyView,Object> resultProps = selectProps.execute(session).singleValue();
+                for(PropertyView drawProp : panelProperties)
+                    result.panelProperties.put(drawProp,resultProps.get(drawProp));
             }
 
-            for(Entry<GroupObjectImplement, Collection<ControlView>> mapGroup : groupControls.entrySet()) { // читаем "табличные" свойства
+            for(Entry<GroupObjectImplement, Collection<PropertyView>> mapGroup : groupProperties.entrySet()) { // читаем "табличные" свойства
                 GroupObjectImplement group = mapGroup.getKey();
-                Collection<ControlView> groupList = mapGroup.getValue();
+                Collection<PropertyView> groupList = mapGroup.getValue();
 
-                Query<ObjectImplement, ControlView> selectProps = new Query<ObjectImplement, ControlView>(group);
+                Query<ObjectImplement, PropertyView> selectProps = new Query<ObjectImplement, PropertyView>(group);
 
                 ViewTable keyTable = groupTables.get(mapGroup.getKey()); // ставим фильтр на то что только из viewTable'а
                 selectProps.and(keyTable.joinAnd(BaseUtils.join(keyTable.mapKeys,selectProps.mapKeys)).getWhere());
 
-                for(ControlView<?,?,?> drawControl : groupList)
-                    selectProps.properties.put(drawControl, drawControl.view.getExpr(group.getClassGroup(), selectProps.mapKeys, this));
+                for(PropertyView<?> drawProperty : groupList)
+                    selectProps.properties.put(drawProperty, drawProperty.view.getExpr(group.getClassGroup(), selectProps.mapKeys, this));
 
-                OrderedMap<Map<ObjectImplement, Object>, Map<ControlView, Object>> resultProps = selectProps.execute(session);
+                OrderedMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.execute(session);
 
-                for(ControlView drawProp : groupList) {
+                for(PropertyView drawProp : groupList) {
                     Map<Map<ObjectImplement,DataObject>,Object> propResult = new HashMap<Map<ObjectImplement,DataObject>, Object>();
-                    for(Entry<Map<ObjectImplement, Object>, Map<ControlView, Object>> resultRow : resultProps.entrySet())
+                    for(Entry<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultRow : resultProps.entrySet())
                         propResult.put(group.findGroupObjectValue(resultRow.getKey()),resultRow.getValue().get(drawProp));
-                    result.gridControls.put(drawProp,propResult);
+                    result.gridProperties.put(drawProp,propResult);
                 }
             }
         } catch (ComplexQueryException e) {
@@ -1038,7 +1027,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
         FormData result = new FormData();
 
-        for(PropertyView<?> property : getProperties())
+        for(PropertyView<?> property : properties)
             if (allProperties || property.view.getApplyObject().curClassView != ClassViewType.HIDE) // если свойство находится не в GroupObject, который спрятан
                 query.properties.put(property, property.view.getExpr(classGroups, query.mapKeys, this));
 
@@ -1053,7 +1042,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                         groupValue.put(object,object.getObjectValue().getValue());
 
             Map<PropertyView,Object> propertyValues = new HashMap<PropertyView, Object>();
-            for(PropertyView property : getProperties())
+            for(PropertyView property : properties)
                 propertyValues.put(property,row.getValue().get(property));
 
             result.add(groupValue,propertyValues);

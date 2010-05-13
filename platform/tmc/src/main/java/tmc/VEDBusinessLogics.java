@@ -688,7 +688,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class GlobalNavigatorForm extends NavigatorForm {
         protected GlobalNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Глобальные параметры");
-            addControlView(controls, allGroup, true);
+            addPropertyView(properties, allGroup, true);
         }
     }
 
@@ -700,7 +700,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected DocumentNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, (toAdd?documentClass.caption:"Документы"));
 
-            objDoc = addSingleGroupObjectImplement(documentClass, "Документ", controls, baseGroup, true, documentGroup, true);
+            objDoc = addSingleGroupObjectImplement(documentClass, "Документ", properties, baseGroup, true, documentGroup, true);
             if(toAdd) {
                 objDoc.groupTo.initClassView = ClassViewType.PANEL;
                 objDoc.groupTo.banClassView = ClassViewType.GRID;
@@ -716,8 +716,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
             super(parent, ID, documentClass, toAdd);
 
-            objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
-            addControlView(objDoc, objArt, controls, baseGroup, true, documentGroup, true);
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
+            addPropertyView(objDoc, objArt, properties, baseGroup, true, documentGroup, true);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -727,7 +727,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             fillExtraFilters(filterGroup, toAdd && !filled);
             addRegularFilterGroup(filterGroup);
 
-            addHintsNoUpdate(controls, moveGroup);
+            addHintsNoUpdate(properties, moveGroup);
             addHintsNoUpdate(returnInnerFreeQuantity);
         }
 
@@ -817,11 +817,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ArticleOuterNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, CustomClass commitClass) {
             super(parent, ID, documentClass, toAdd);
 
-            objOuter = addSingleGroupObjectImplement(commitClass, "Партия", controls, baseGroup, true);
+            objOuter = addSingleGroupObjectImplement(commitClass, "Партия", properties, baseGroup, true);
 
-            addControlView(objOuter, objDoc, controls, baseGroup, true, documentGroup, true);
-            addControlView(objOuter, objDoc, objArt, controls, baseGroup, true, documentGroup, true);
-            addControlView(objOuter, objArt, controls, baseGroup, true);
+            addPropertyView(objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objOuter, objArt, properties, baseGroup, true);
 
             NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(innerQuantity));
             NotNullFilterNavigator documentFreeFilter = new NotNullFilterNavigator(getPropertyImplement(documentInnerFreeQuantity));
@@ -871,8 +871,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public SaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, toAdd, orderSaleRetail);
 
-            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", controls, baseGroup, true);
-            addControlView(objDoc, objObligation, controls, documentGroup, true);
+            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
+            addPropertyView(objDoc, objObligation, properties, documentGroup, true);
             addHintsNoUpdate(obligationDocument);
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
@@ -915,11 +915,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ReturnArticleNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
             super(parent, ID, documentClass, toAdd);
 
-            objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", controls, baseGroup, true);
+            objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
 
-            addControlView(objInner, objDoc, controls, baseGroup, true, documentGroup, true);
-            addControlView(objInner, objDoc, objArt, controls, baseGroup, true, documentGroup, true);
-            addControlView(objInner, objArt, controls, baseGroup, true, documentPriceGroup, true);
+            addPropertyView(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objArt, properties, baseGroup, true, documentPriceGroup, true);
 
             NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerQuantity));
             NotNullFilterNavigator documentFreeFilter = new NotNullFilterNavigator(getPropertyImplement(returnFreeQuantity));
@@ -937,12 +937,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             addRegularFilterGroup(filterGroup);
 
-            objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", controls, baseGroup, true);
+            objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, baseGroup, true);
 
-            addControlView(objInner, objOuter, objDoc, controls, baseGroup, true, documentGroup, true);
-            addControlView(objInner, objOuter, objDoc, objArt, controls, baseGroup, true, documentGroup, true);
-            addControlView(objInner, objOuter, controls, baseGroup, true);
-            addControlView(objInner, objOuter, objArt, controls, baseGroup, true);
+            addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objOuter, properties, baseGroup, true);
+            addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
 
             NotNullFilterNavigator documentCommitFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerCommitQuantity));
             NotNullFilterNavigator documentCommitFreeFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerFreeQuantity));
@@ -984,10 +984,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SupplierArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Ассортимент поставщиков");
 
-            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", controls, allGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, allGroup, true);
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
-            addControlView(objSupplier, objArt, controls, allGroup, true);
+            addPropertyView(objSupplier, objArt, properties, allGroup, true);
 
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(articleSupplier,objArt),Compare.EQUALS,objSupplier));
         }
@@ -997,14 +997,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected StoreArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls, allGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, allGroup, true);
-            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", controls, allGroup, true);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
+            ObjectNavigator objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, allGroup, true);
 
-            addControlView(objStore, objArt, controls, allGroup, true);
-            addControlView(objStore, objOuter, controls, allGroup, true);
-            addControlView(objOuter, objArt, controls, baseGroup, true);
-            addControlView(objStore, objOuter, objArt, controls, allGroup, true);
+            addPropertyView(objStore, objArt, properties, allGroup, true);
+            addPropertyView(objStore, objOuter, properties, allGroup, true);
+            addPropertyView(objOuter, objArt, properties, baseGroup, true);
+            addPropertyView(objStore, objOuter, objArt, properties, allGroup, true);
         }
     }
 
@@ -1012,10 +1012,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected FormatArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по форматам");
 
-            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", controls, allGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, allGroup, true);
+            ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
-            addControlView(objFormat, objArt, controls, allGroup, true);
+            addPropertyView(objFormat, objArt, properties, allGroup, true);
         }
     }
 
@@ -1057,11 +1057,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected IncomePriceNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Реестр цен", true);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(commitWholeShopInc, "Документ", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(commitWholeShopInc, "Документ", properties, baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, articleQuantity, shopPrice);
+            addPropertyView(objDoc, objArt, properties, articleQuantity, shopPrice);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(shopPrice)));
         }
@@ -1072,15 +1072,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected RevalueActNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Акт переоценки", true);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(documentShopPrice, "Документ", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(documentShopPrice, "Документ", properties, baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, articleQuantity, shopPrice, prevPrice, revalBalance);
+            addPropertyView(objDoc, objArt, properties, articleQuantity, shopPrice, prevPrice, revalBalance);
 
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(shopPrice), Compare.NOT_EQUALS, getPropertyImplement(prevPrice)));
 
-            addFormAction(baseGroup, this, objDoc);
+//            addFormAction(baseGroup, this, objDoc);
         }
     }
 
@@ -1088,10 +1088,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ActionNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Акции");
 
-            ObjectNavigator objAction = addSingleGroupObjectImplement(action, "Акция", controls, allGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, allGroup, true);
+            ObjectNavigator objAction = addSingleGroupObjectImplement(action, "Акция", properties, allGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
-            addControlView(objAction, objArt, controls, allGroup, true);
+            addPropertyView(objAction, objArt, properties, allGroup, true);
         }
     }
 
@@ -1100,11 +1100,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected PricersNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Ценники", true);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(documentShopPrice, "Документ", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(documentShopPrice, "Документ", properties, baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, shopPrice);
+            addPropertyView(objDoc, objArt, properties, shopPrice);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(shopPrice)));
             addFixedFilter(new NotFilterNavigator(new CompareFilterNavigator(getPropertyImplement(shopPrice), Compare.EQUALS, addPropertyObjectImplement(prevPrice,objDoc,objArt))));

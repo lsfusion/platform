@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.server.caches.Lazy;
+import platform.server.caches.GenericLazy;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
@@ -10,6 +11,7 @@ import platform.server.data.SQLSession;
 import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Query;
 import platform.server.data.query.MapKeysInterface;
@@ -19,11 +21,10 @@ import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LP;
-import platform.server.logics.control.Control;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.group.AbstractNode;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
@@ -32,10 +33,42 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Immutable
-abstract public class Property<T extends PropertyInterface> extends Control<T> implements MapKeysInterface<T> {
+abstract public class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T> {
+
+    public final String sID;
+
+    public String caption;
+
+    public String toString() {
+        return caption;
+    }
+
+    public int ID=0;
+
+    public final Collection<T> interfaces;
+
+    public boolean check() {
+        return !getClassWhere().isFalse();
+    }
+
+    public <P extends PropertyInterface> boolean intersect(Property<P> property, Map<P,T> map) {
+        return !getClassWhere().and(new ClassWhere<T>(property.getClassWhere(),map)).isFalse();
+    }
+
+    @GenericLazy
+    public boolean allInInterface(Map<T,? extends AndClassSet> interfaceClasses) {
+        return new ClassWhere<T>(interfaceClasses).meansCompatible(getClassWhere());
+    }
+
+    @GenericLazy
+    public boolean anyInInterface(Map<T, ? extends AndClassSet> interfaceClasses) {
+        return !getClassWhere().andCompatible(new ClassWhere<T>(interfaceClasses)).isFalse();
+    }
 
     public Property(String sID, String caption, List<T> interfaces) {
-        super(sID, caption, interfaces);
+        this.sID = sID;
+        this.caption = caption;
+        this.interfaces = interfaces;
 
         changeExpr = new PullExpr(toString() + " value");
     }
@@ -295,7 +328,4 @@ abstract public class Property<T extends PropertyInterface> extends Control<T> i
         return changed==null?null:new WhereBuilder();
     }
 
-    public LP<T> createLC(List<T> listInterfaces) {
-        return new LP<T>(this, listInterfaces);
-    }
 }

@@ -94,12 +94,12 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         public InDocumentArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(inDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(inDocument, "Документ", properties,
                                                                         baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
         }
     }
 
@@ -108,16 +108,16 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         public OutDocumentArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objOutDoc = addSingleGroupObjectImplement(outDocument, "Расх. документ", controls,
+            ObjectNavigator objOutDoc = addSingleGroupObjectImplement(outDocument, "Расх. документ", properties,
                                                                         baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
-            ObjectNavigator objInDoc = addSingleGroupObjectImplement(inDocument, "Прих. документ", controls,
+            ObjectNavigator objInDoc = addSingleGroupObjectImplement(inDocument, "Прих. документ", properties,
                                                                         baseGroup);
 
-            addControlView(objOutDoc, objArt, controls, baseGroup);
-            addControlView(objArt, objInDoc, controls, baseGroup);
-            addControlView(objOutDoc, objArt, objInDoc, controls, baseGroup);
+            addPropertyView(objOutDoc, objArt, properties, baseGroup);
+            addPropertyView(objArt, objInDoc, properties, baseGroup);
+            addPropertyView(objOutDoc, objArt, objInDoc, properties, baseGroup);
 
             addFixedFilter(new OrFilterNavigator(
                     new CompareFilterNavigator(getPropertyImplement(remains), Compare.NOT_EQUALS, 0),
@@ -141,9 +141,9 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
             group.add(objArt);
             addGroup(group);
 
-            addControlView(objDoc, controls, baseGroup);
-            addControlView(objArt, controls, baseGroup);
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, properties, baseGroup);
+            addPropertyView(objArt, properties, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
         }
     }
 

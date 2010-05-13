@@ -25,11 +25,6 @@ import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.linear.LP;
-import platform.server.logics.linear.LC;
-import platform.server.logics.linear.LA;
-import platform.server.logics.control.Control;
-import platform.server.logics.action.Action;
-import platform.server.logics.action.FormAction;
 import platform.server.session.DataSession;
 import platform.server.data.SQLSession;
 import platform.server.view.navigator.*;
@@ -297,7 +292,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected abstract void initAuthentication();
 
     String genSID() {
-        return "control" + controls.size();
+        return "property" + properties.size();
     }
 
     protected void setPropOrder(LP<?> prop, LP<?> propRel, boolean before) {
@@ -306,14 +301,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected void setPropOrder(Property prop, Property propRel, boolean before) {
 
-        int indProp = controls.indexOf(prop);
-        int indPropRel = controls.indexOf(propRel);
+        int indProp = properties.indexOf(prop);
+        int indPropRel = properties.indexOf(propRel);
 
         if (before) {
             if (indPropRel < indProp) {
                 for (int i = indProp; i >= indPropRel + 1; i--)
-                    controls.set(i, controls.get(i-1));
-                controls.set(indPropRel, prop);
+                    properties.set(i, properties.get(i-1));
+                properties.set(indPropRel, prop);
             }
         }
     }
@@ -333,14 +328,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public BaseClass baseClass;
 
     public TableFactory tableFactory;
-    public List<Control> controls = new ArrayList<Control>();
-    public List<Property> getProperties() {
-        List<Property> result = new ArrayList<Property>();
-        for(Control control : controls)
-            if(control instanceof Property)
-                result.add((Property)control);
-        return result;
-    }
+    public List<Property> properties = new ArrayList<Property>();
     protected Set<AggregateProperty> persistents = new HashSet<AggregateProperty>();
     protected Set<List<? extends Property>> indexes = new HashSet<List<? extends Property>>();
 
@@ -352,7 +340,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
-        for(Property property : getProperties())
+        for(Property property : properties)
             fillPropertyList(property,linkedSet);
         return linkedSet;
     }
@@ -405,9 +393,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.startTransaction();
 
         // запишем sID'ки
-        int idControlNum = 0;
-        for(Control control : controls)
-            control.ID = idControlNum++;
+        int idPropertyNum = 0;
+        for(Property property : properties)
+            property.ID = idPropertyNum++;
 
         // инициализируем таблицы
         tableFactory.fillDB(session);
@@ -648,7 +636,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDProp(null, sID, caption, value, params);
     }
     protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
-        return addControl(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
+        return addProperty(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
     }
 
     protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
@@ -662,26 +650,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
-        return addControl(group,new LP<ClassPropertyInterface>(new ClassProperty(sID,caption,params,valueClass,value)));
+        return addProperty(group,new LP<ClassPropertyInterface>(new ClassProperty(sID,caption,params,valueClass,value)));
     }
 
     protected LP addSFProp(String formula, ConcreteValueClass value,int paramCount) {
-        return addControl(null,new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(),value,formula,paramCount)));
+        return addProperty(null,new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(),value,formula,paramCount)));
     }
 
     protected LP addCFProp(Compare compare) {
-        return addControl(null,new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(),compare)));
+        return addProperty(null,new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(),compare)));
     }
 
     protected LP addMFProp(ConcreteValueClass value,int paramCount) {
-        return addControl(null,new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(),value,paramCount)));
+        return addProperty(null,new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(),value,paramCount)));
     }
 
     protected LP addAFProp(boolean... nots) {
         return addAFProp(genSID(),nots);
     }    
     protected LP addAFProp(String sID, boolean... nots) {
-        return addControl(null,new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID,nots)));
+        return addProperty(null,new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID,nots)));
     }
 
     // Linear Implement
@@ -809,14 +797,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLI(readLI(params),listInterfaces);
     }
 
-    private <T extends LC<?,?>> T addControl(AbstractGroup group, T lp) {
-        controls.add(lp.property);
+    private <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
+        properties.add(lp.property);
         if(group!=null) group.add(lp.property);
         return lp;
-    }
-
-    protected LA addFormAction(AbstractGroup group, NavigatorForm form, ObjectNavigator... objects) {
-        return addControl(group, new LA<FormAction.Interface>(new FormAction(genSID(), form.caption, form, objects)));
     }
 
     protected LP addJProp(LP mainProp, Object... params) {
@@ -872,7 +856,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LP listProperty = new LP<JoinProperty.Interface>(property);
         property.implement = mapImplement(mainProp,readImplements(listProperty.listInterfaces,params));
 
-        return addControl(group, listProperty);
+        return addProperty(group, listProperty);
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, boolean sum, Object... params) {
@@ -888,11 +872,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private <P extends PropertyInterface,L extends PropertyInterface> LP mapLProp(AbstractGroup group,PropertyMapImplement<L, P> implement, LP<P> property) {
-        return addControl(group, new LP<L>(implement.property,BaseUtils.mapList(property.listInterfaces,BaseUtils.reverse(implement.mapping))));
+        return addProperty(group, new LP<L>(implement.property,BaseUtils.mapList(property.listInterfaces,BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface,L extends PropertyInterface> LP mapLGProp(AbstractGroup group,PropertyImplement<PropertyInterfaceImplement<P>, L> implement, List<PropertyInterfaceImplement<P>> listImplements) {
-        return addControl(group, new LP<L>(implement.property,BaseUtils.mapList(listImplements,BaseUtils.reverse(implement.mapping))));
+        return addProperty(group, new LP<L>(implement.property,BaseUtils.mapList(listImplements,BaseUtils.reverse(implement.mapping))));
     }
 
     private <P extends PropertyInterface> LP mapLGProp(AbstractGroup group, GroupProperty<P> property, List<PropertyInterfaceImplement<P>> listImplements) {
@@ -1025,7 +1009,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         if(persist)
             for(Property property : suggestPersist)
-                persistents.add((AggregateProperty) addControl(null, new LP(property)).property);
+                persistents.add((AggregateProperty) addProperty(null, new LP(property)).property);
 
         for(int i=0;i<mgProps.size();i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
@@ -1052,7 +1036,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         CycleGroupProperty<T,P> property = new CycleGroupProperty<T,P>(sID, caption, listImplements, groupProp.property, dataProp.property);
 
         // нужно добавить ограничение на уникальность
-        controls.add(property.getConstrainedProperty());
+        properties.add(property.getConstrainedProperty());
 
         return mapLGProp(group, property, listImplements);
     }
@@ -1118,7 +1102,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        return addControl(group, listProperty);
+        return addProperty(group, listProperty);
     }
 
     // объединение классовое (непересекающихся) свойств
@@ -1219,7 +1203,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final static boolean checkClasses = false;
     private boolean checkProps() {
         if(checkClasses)
-            for(Property prop : getProperties()) {
+            for(Property prop : properties) {
                 System.out.println("Checking property : "+prop+"...");
                 assert prop.check();
             }
@@ -1495,7 +1479,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // сначала список получим
         List<AggregateProperty> aggrProperties = new ArrayList<AggregateProperty>();
-        for(Property property : getProperties()) {
+        for(Property property : properties) {
             if(property instanceof AggregateProperty && property.isObject())
                 aggrProperties.add((AggregateProperty)property);
         }
@@ -1514,7 +1498,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // сначала список получим
         List<DataProperty> dataProperties = new ArrayList<DataProperty>();
-        for(Property property : getProperties())
+        for(Property property : properties)
             if(property instanceof DataProperty)
                 dataProperties.add((DataProperty)property);
 
@@ -1656,7 +1640,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Random randomizer = new Random(autoSeed);
 
         // бежим по св-вам
-        for(Property abstractProperty : getProperties())
+        for(Property abstractProperty : properties)
             if(abstractProperty instanceof DataProperty) {
                 DataProperty property = (DataProperty)abstractProperty;
 

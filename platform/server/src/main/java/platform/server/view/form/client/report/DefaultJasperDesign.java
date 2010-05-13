@@ -8,7 +8,7 @@ import net.sf.jasperreports.engine.design.*;
 import platform.server.view.form.client.FormView;
 import platform.server.view.form.client.GroupObjectImplementView;
 import platform.server.view.form.client.ObjectImplementView;
-import platform.server.view.form.client.ControlCellView;
+import platform.server.view.form.client.PropertyCellView;
 
 import java.awt.*;
 import java.util.*;
@@ -262,7 +262,7 @@ public class DefaultJasperDesign {
                 drawFields.add(new ReportDrawField(object.objectCellView));
 
             // бежим по всем свойствам входящим в объектам
-            for(ControlCellView property : formView.controls) {
+            for(PropertyCellView property : formView.properties) {
 
                 if (group.view == property.view.toDraw)
                     drawFields.add(new ReportDrawField(property));

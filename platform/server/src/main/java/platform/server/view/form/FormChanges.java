@@ -19,9 +19,9 @@ public class FormChanges {
     public Map<GroupObjectImplement,Map<ObjectImplement,ConcreteValueClass>> classes = new HashMap<GroupObjectImplement,Map<ObjectImplement,ConcreteValueClass>>();
     public Map<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>> gridObjects = new HashMap<GroupObjectImplement,List<Map<ObjectImplement,DataObject>>>();
     public Map<GroupObjectImplement,List<Map<ObjectImplement,ConcreteValueClass>>> gridClasses = new HashMap<GroupObjectImplement,List<Map<ObjectImplement,ConcreteValueClass>>>();
-    public Map<ControlView,Map<Map<ObjectImplement,DataObject>,Object>> gridControls = new HashMap<ControlView, Map<Map<ObjectImplement, DataObject>, Object>>();
-    public Map<ControlView,Object> panelControls = new HashMap<ControlView, Object>();
-    public Set<ControlView> dropProperties = new HashSet<ControlView>();
+    public Map<PropertyView,Map<Map<ObjectImplement,DataObject>,Object>> gridProperties = new HashMap<PropertyView, Map<Map<ObjectImplement, DataObject>, Object>>();
+    public Map<PropertyView,Object> panelProperties = new HashMap<PropertyView, Object>();
+    public Set<PropertyView> dropProperties = new HashSet<PropertyView>();
 
     void out(RemoteForm<?> bv) {
         System.out.println(" ------- GROUPOBJECTS ---------------");
@@ -40,19 +40,19 @@ public class FormChanges {
 
         System.out.println(" ------- PROPERTIES ---------------");
         System.out.println(" ------- Group ---------------");
-        for(ControlView property : gridControls.keySet()) {
-            Map<Map<ObjectImplement, DataObject>, Object> propertyValues = gridControls.get(property);
-            System.out.println(property+" ---- control");
+        for(PropertyView property : gridProperties.keySet()) {
+            Map<Map<ObjectImplement, DataObject>, Object> propertyValues = gridProperties.get(property);
+            System.out.println(property+" ---- property");
             for(Map<ObjectImplement, DataObject> gov : propertyValues.keySet())
                 System.out.println(gov+" - "+propertyValues.get(gov));
         }
 
         System.out.println(" ------- Panel ---------------");
-        for(ControlView property : panelControls.keySet())
-            System.out.println(property+" - "+ panelControls.get(property));
+        for(PropertyView property : panelProperties.keySet())
+            System.out.println(property+" - "+ panelProperties.get(property));
 
         System.out.println(" ------- Drop ---------------");
-        for(ControlView property : dropProperties)
+        for(PropertyView property : dropProperties)
             System.out.println(property);
 
         System.out.println(" ------- CLASSVIEWS ---------------");
@@ -114,8 +114,8 @@ public class FormChanges {
                     groupObjectValue.get(object).serialize(outStream);
         }
 
-        outStream.writeInt(gridControls.size());
-        for (Map.Entry<ControlView,Map<Map<ObjectImplement,DataObject>,Object>> gridProperty : gridControls.entrySet()) {
+        outStream.writeInt(gridProperties.size());
+        for (Map.Entry<PropertyView,Map<Map<ObjectImplement,DataObject>,Object>> gridProperty : gridProperties.entrySet()) {
             outStream.writeInt(gridProperty.getKey().ID);
 
             outStream.writeInt(gridProperty.getValue().size());
@@ -126,15 +126,15 @@ public class FormChanges {
             }
         }
 
-        outStream.writeInt(panelControls.size());
-        for (Map.Entry<ControlView,Object> panelProperty : panelControls.entrySet()) {
+        outStream.writeInt(panelProperties.size());
+        for (Map.Entry<PropertyView,Object> panelProperty : panelProperties.entrySet()) {
             outStream.writeInt(panelProperty.getKey().ID);
 
             BaseUtils.serializeObject(outStream, panelProperty.getValue());
         }
 
         outStream.writeInt(dropProperties.size());
-        for (ControlView propertyView : dropProperties)
+        for (PropertyView propertyView : dropProperties)
             outStream.writeInt(propertyView.ID);
 
         outStream.writeUTF(message);

@@ -1,19 +1,27 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.logics.control.ControlImplement;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class PropertyImplement<T,P extends PropertyInterface> extends ControlImplement<T, P, Property<P>> {
+public class PropertyImplement<T,P extends PropertyInterface> {
+
+    public final Property<P> property;
+    public final Map<P,T> mapping;
+
+    public String toString() {
+        return property.toString();
+    }
 
     public PropertyImplement(Property<P> property,Map<P,T> mapping) {
-        super(property, mapping);
+        this.property = property;
+        this.mapping = mapping;
     }
 
     public PropertyImplement(Property<P> property) {
-        super(property);
+        this.property = property;
+        mapping = new HashMap<P,T>();
     }
 
     public <L> PropertyImplement<L, P> mapImplement(Map<T,L> mapImplement) {

@@ -1,9 +1,9 @@
 package platform.server.auth;
 
-import platform.server.logics.linear.LC;
-import platform.server.logics.control.Control;
+import platform.server.logics.linear.LP;
+import platform.server.logics.property.Property;
 
-public class ViewPropertySecurityPolicy extends AbstractSecurityPolicy<Control> {
+public class ViewPropertySecurityPolicy extends AbstractSecurityPolicy<Property> {
 
-    public void deny(LC<?,?> lp) { deny(lp.property); }
+    public void deny(LP<?> lp) { deny(lp.property); }
 }

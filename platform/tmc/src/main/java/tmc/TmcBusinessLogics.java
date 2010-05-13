@@ -1314,7 +1314,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         ExtIncDocumentNavigatorForm(NavigatorElement parent, int iID, String caption, boolean isPrintForm) {
             super(parent, iID, caption, isPrintForm);
 
-            objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", controls,
+            objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", properties,
                                                    baseGroup, storeGroup, supplierGroup, quantGroup, incSumsGroup);
         }
     }
@@ -1329,7 +1329,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtIncDetailNavigatorForm(NavigatorElement parent, int ID, String caption, boolean isPrintForm) {
             super(parent, ID, caption, isPrintForm);
 
-            objDetail = addSingleGroupObjectImplement(extIncomeDetail, "Строка", controls,
+            objDetail = addSingleGroupObjectImplement(extIncomeDetail, "Строка", properties,
                                                                       artclGroup, quantGroup, incPrmsGroup, incSumsGroup, outPrmsGroup);
 
             PropertyObjectNavigator detDocument = addPropertyObjectImplement(extIncDetailDocument, objDetail);
@@ -1342,10 +1342,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtIncNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                     balanceGroup, extIncQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(extIncQuantity), 0);
@@ -1360,8 +1360,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             objDoc.groupTo.banClassView = ClassViewType.GRID;
 
-            addControlView(objDoc, controls, outSumsGroup);
-            addControlView(objDetail, controls, outSumsGroup);
+            addPropertyView(objDoc, properties, outSumsGroup);
+            addPropertyView(objDetail, properties, outSumsGroup);
 
             objDoc.sID = "objDoc";
             getPropertyView(name.property, objDoc.groupTo).sID = "docName";
@@ -1376,12 +1376,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public IntraNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(intraDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(intraDocument, "Документ", properties,
                                                                         baseGroup, storeGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                     balanceGroup, intraQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(intraQuantity), 0,
@@ -1397,12 +1397,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExtOutNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(extOutcomeDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(extOutcomeDocument, "Документ", properties,
                                                                         baseGroup, storeGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                     balanceGroup, extOutQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(extOutQuantity), 0,
@@ -1415,12 +1415,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public CashSaleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", properties,
                                                                         baseGroup, storeGroup, outSumsGroup, accountGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                         balanceGroup, cashSaleQuantity, outSumsGroup, accountGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(cashSaleQuantity), 0,
@@ -1435,23 +1435,23 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ReceiptNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", properties,
                                                                         baseGroup, storeGroup, outSumsGroup, accountGroup);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             objDoc.groupTo.banClassView = ClassViewType.GRID;
 
-            ObjectNavigator objReceipt = addSingleGroupObjectImplement(receipt, "Чек", controls,
+            ObjectNavigator objReceipt = addSingleGroupObjectImplement(receipt, "Чек", properties,
                                                                         baseGroup, outSumsGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                         balanceGroup);
 
-            addControlView(objReceipt, objArt, controls,
+            addPropertyView(objReceipt, objArt, properties,
                         receiptQuantity, incPrmsGroup, outPrmsGroup, outSumsGroup);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                         accountGroup);
 
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(receiptSaleDocument, objReceipt), Compare.EQUALS, objDoc));
@@ -1466,12 +1466,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ClearingSaleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(clearingSaleDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(clearingSaleDocument, "Документ", properties,
                                                                         baseGroup, storeGroup, customerGroup, extOutDocumentSumPriceOut);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                         balanceGroup, clearingSaleQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(clearingSaleQuantity), 0,
@@ -1486,18 +1486,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectNavigator objStore = null;
             if (groupStore) {
-                objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+                objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                             baseGroup, accountGroup);
                 objStore.groupTo.initClassView = ClassViewType.PANEL;
                 objStore.groupTo.banClassView = ClassViewType.GRID;
             }
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(invDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(invDocument, "Документ", properties,
                                                                         baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                     balanceGroup, invBalance, invQuantity, incPrmsGroup, outPrmsGroup, accountGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(invQuantity), 0,
@@ -1506,7 +1506,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             if (groupStore)
                 addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(revalStore, objDoc), Compare.EQUALS, objStore));
             else
-                addControlView(controls, storeGroup, false, objDoc);
+                addPropertyView(properties, storeGroup, false, objDoc);
         }
     }
 
@@ -1515,12 +1515,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ReturnNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(returnDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(returnDocument, "Документ", properties,
                                                                         baseGroup, storeGroup, supplierGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                     balanceGroup, returnQuantity, incPrmsGroup, outPrmsGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(returnQuantity), 0,
@@ -1533,18 +1533,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExchangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", properties,
                                                                         baseGroup, storeGroup);
-            ObjectNavigator objArtTo = addSingleGroupObjectImplement(article, "Товар (на)", controls,
+            ObjectNavigator objArtTo = addSingleGroupObjectImplement(article, "Товар (на)", properties,
                                                                         baseGroup);
-            ObjectNavigator objArtFrom = addSingleGroupObjectImplement(article, "Товар (c)", controls,
+            ObjectNavigator objArtFrom = addSingleGroupObjectImplement(article, "Товар (c)", properties,
                                                                         baseGroup);
 
-            addControlView(objDoc, objArtTo, controls,
+            addPropertyView(objDoc, objArtTo, properties,
                     docOutBalanceQuantity, exchIncQuantity, exchOutQuantity, incPrmsGroup, outPrmsGroup);
-            addControlView(docOutBalanceQuantity, objDoc, objArtFrom);
-            addControlView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
-            addControlView(objDoc, objArtFrom, controls, incPrmsGroup, outPrmsGroup);
+            addPropertyView(docOutBalanceQuantity, objDoc, objArtFrom);
+            addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(objDoc, objArtFrom, properties, incPrmsGroup, outPrmsGroup);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
 /*            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -1600,7 +1600,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ExchangeMNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", properties,
                                                                         baseGroup, storeGroup);
 
             GroupObjectNavigator gobjArts = new GroupObjectNavigator(IDShift(1));
@@ -1612,9 +1612,9 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             gobjArts.add(objArtFrom);
             addGroup(gobjArts);
 
-            addControlView(controls, baseGroup, false, objArtTo);
-            addControlView(controls, baseGroup, false, objArtFrom);
-            addControlView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(properties, baseGroup, false, objArtTo);
+            addPropertyView(properties, baseGroup, false, objArtFrom);
+            addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(exchangeQuantity)));
         }
@@ -1627,18 +1627,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
             ObjectNavigator objStore = null;
             if (groupStore) {
-                objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+                objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                             baseGroup, accountGroup);
                 objStore.groupTo.initClassView = ClassViewType.PANEL;
                 objStore.groupTo.banClassView = ClassViewType.GRID;
             }
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", properties,
                                                                         baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
 
-            addControlView(objDoc, objArt, controls,
+            addPropertyView(objDoc, objArt, properties,
                     revalOverBalanceQuantity, isRevalued, incPrmsGroupBefore, outPrmsGroupBefore, outPrmsGroupAfter);
 
             addArticleRegularFilterGroup(getPropertyImplement(isRevalued), false,
@@ -1647,7 +1647,7 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             if (groupStore)
                 addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(revalStore, objDoc), Compare.EQUALS, objStore));
             else
-                addControlView(controls, storeGroup, false, objDoc);
+                addPropertyView(properties, storeGroup, false, objDoc);
         }
     }
 
@@ -1658,15 +1658,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+            objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup, accountGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
             objStore.groupTo.banClassView = ClassViewType.GRID;
 
-            objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
 
-            addControlView(objStore, objArt, controls,
+            addPropertyView(objStore, objArt, properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
         }
     }
@@ -1676,10 +1676,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticlePrimDocNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objPrimDoc = addSingleGroupObjectImplement(primaryDocument, "Документ", controls,
+            ObjectNavigator objPrimDoc = addSingleGroupObjectImplement(primaryDocument, "Документ", properties,
                                                                                     baseGroup, paramsGroup);
 
-            addControlView(objPrimDoc, objArt, controls,
+            addPropertyView(objPrimDoc, objArt, properties,
                     paramsGroup);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(isDocArtChangesParams)));
@@ -1696,10 +1696,10 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public StoreArticleDocNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", properties,
                                                                                     baseGroup, docDate, storeGroup, true, supplierGroup, true, customerGroup, true);
 
-            addControlView(dltDocStoreQuantity, objDoc, objStore, objArt);
+            addPropertyView(dltDocStoreQuantity, objDoc, objStore, objArt);
 
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(isDocStoreArtInclude, objDoc, objStore, objArt)));
 
@@ -1716,19 +1716,19 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public ArticleStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
 
-            objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+            objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup);
 
-            addControlView(objStore, objArt, controls,
+            addPropertyView(objStore, objArt, properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
-            addControlView(controls, baseGroup, false, objArt.groupTo, objStore, objArt);
-            addControlView(controls, balanceGroup, false, objArt.groupTo, objStore, objArt);
-            addControlView(controls, incPrmsGroup, false, objArt.groupTo, objStore, objArt);
-            addControlView(controls, outPrmsGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(properties, baseGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(properties, balanceGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(properties, incPrmsGroup, false, objArt.groupTo, objStore, objArt);
+            addPropertyView(properties, outPrmsGroup, false, objArt.groupTo, objStore, objArt);
         }
 
     }
@@ -1748,12 +1748,12 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             addGroup(gobjArtStore);
 
             // добавить свойства по товару
-            addControlView(controls, baseGroup, false, objArt);
+            addPropertyView(properties, baseGroup, false, objArt);
             // добавить свойства по складу
-            addControlView(controls, baseGroup, false, objStore);
+            addPropertyView(properties, baseGroup, false, objStore);
 
             // добавить множественные свойства по товару и складу
-            addControlView(objStore, objArt, controls,
+            addPropertyView(objStore, objArt, properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
         }
     }
@@ -1764,22 +1764,22 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
             super(parent, ID, caption);
 
             // создать блок "Поставщик"
-            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", controls,
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties,
                                                                                     baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
             objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
             // создать блок "Склад"
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
 
             // создать блок "Товар"
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup, true);
 
             // добавить множественные свойства
-            addControlView(objStore, objArt, controls,
+            addPropertyView(objStore, objArt, properties,
                     baseGroup, balanceGroup, incPrmsGroup, outPrmsGroup);
 
             // установить фильтр по умолчанию на поставщик товара = поставщик
@@ -1831,15 +1831,15 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public MainAccountNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup);
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(document, "Документ", properties,
                                                                                     baseGroup, docDate);
 
 //            addPropertyView(balanceDocStoreDateMSumAccount, objStore, objDateFrom);
 //            addPropertyView(balanceDocStoreDateESumAccount, objStore, objDateTo);
 
-            addControlView(dltDocStoreSumAccount, objDoc, objStore);
+            addPropertyView(dltDocStoreSumAccount, objDoc, objStore);
 
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(dltDocStoreSumAccount), Compare.NOT_EQUALS, 0));
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(docDate), Compare.GREATER_EQUALS, objDateFrom));
@@ -1858,18 +1858,18 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         public SalesArticleStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup);
 
-            addControlView(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
+            addPropertyView(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
 
-            addControlView(balanceStoreDateMQuantity, objStore, objArticle, objDateFrom);
-            addControlView(incStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
-            addControlView(outStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
-            addControlView(balanceStoreDateEQuantity, objStore, objArticle, objDateTo);
-            addControlView(saleStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(balanceStoreDateMQuantity, objStore, objArticle, objDateFrom);
+            addPropertyView(incStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(outStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(balanceStoreDateEQuantity, objStore, objArticle, objDateTo);
+            addPropertyView(saleStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
         }
     }
 

@@ -12,7 +12,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.navigator.ControlInterfaceNavigator;
+import platform.server.view.navigator.PropertyInterfaceNavigator;
 import platform.server.view.navigator.Mapper;
 import platform.server.view.navigator.ObjectNavigator;
 import platform.server.caches.hash.HashValues;
@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.Collections;
 import java.sql.SQLException;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, ControlInterfaceNavigator {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, PropertyInterfaceNavigator {
 
     public Object object;
     public ConcreteClass objectClass;

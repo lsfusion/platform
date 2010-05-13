@@ -15,7 +15,7 @@ public class ClassNavigatorForm extends NavigatorForm {
 
         addGroup(groupObject);
 
-        addControlView(BL.controls, BL.baseGroup, true, object);
-        addControlView(BL.controls, BL.aggrGroup, true, object);
+        addPropertyView(BL.properties, BL.baseGroup, true, object);
+        addPropertyView(BL.properties, BL.aggrGroup, true, object);
     }
 }

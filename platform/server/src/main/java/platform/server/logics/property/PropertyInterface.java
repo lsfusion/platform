@@ -7,13 +7,12 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.control.ControlInterface;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public class PropertyInterface<P extends PropertyInterface<P>> extends ControlInterface<P> implements PropertyInterfaceImplement<P>, Comparable<P> {
+public class PropertyInterface<P extends PropertyInterface<P>> implements PropertyInterfaceImplement<P>, Comparable<P> {
 
     public int ID = 0;
 

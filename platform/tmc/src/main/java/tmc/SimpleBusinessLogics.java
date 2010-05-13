@@ -616,11 +616,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExtIncOrderNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(extIncomeOrder, "Заказ", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(extIncomeOrder, "Заказ", properties, baseGroup);
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             PropertyObjectNavigator orderImp = addPropertyObjectImplement(orderQuantity, objDoc, objArt);
             addFixedFilter(new OrFilterNavigator(new NotNullFilterNavigator(orderImp),
@@ -634,11 +634,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExtIncNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption, false);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(extIncomeDocument, "Документ", properties, baseGroup);
 
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(quantity));
         }
@@ -668,10 +668,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public IntraNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(intraDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(intraDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(quantity), getPropertyImplement(docOutBalanceQuantity), getPropertyImplement(docIncBalanceQuantity));
 
@@ -685,10 +685,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public CashSaleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(cashSaleDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(quantity), getPropertyImplement(docOutBalanceQuantity));
         }
@@ -699,10 +699,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ClearingSaleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(clearingSaleDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(clearingSaleDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(quantity), getPropertyImplement(docOutBalanceQuantity));
         }
@@ -713,10 +713,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public InvNavigatorForm(NavigatorElement parent, int ID, String caption, boolean groupStore) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(invDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(invDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addArticleRegularFilterGroup(getPropertyImplement(quantity), getPropertyImplement(docOutBalanceQuantity));
         }
@@ -727,13 +727,13 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ReturnNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(returnDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, true);
-            ObjectNavigator objExtInc = addSingleGroupObjectImplement(extIncomeDocument, "Приход", controls, baseGroup, true);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(returnDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
+            ObjectNavigator objExtInc = addSingleGroupObjectImplement(extIncomeDocument, "Приход", properties, baseGroup, true);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
-            addControlView(objDoc, objExtInc, objArt, controls, baseGroup);
-            addControlView(objExtInc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
+            addPropertyView(objDoc, objExtInc, objArt, properties, baseGroup);
+            addPropertyView(objExtInc, objArt, properties, baseGroup);
 
             addArticleRegularFilterGroup(addPropertyObjectImplement(quantity, objDoc, objArt),
                     addPropertyObjectImplement(docOutBalanceQuantity, objDoc, objArt));
@@ -756,15 +756,15 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExchangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArtTo = addSingleGroupObjectImplement(article, "Товар (на)", controls,
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArtTo = addSingleGroupObjectImplement(article, "Товар (на)", properties,
                                                                         baseGroup);
-            ObjectNavigator objArtFrom = addSingleGroupObjectImplement(article, "Товар (c)", controls,
+            ObjectNavigator objArtFrom = addSingleGroupObjectImplement(article, "Товар (c)", properties,
                                                                         baseGroup);
 
-            addControlView(objDoc, objArtTo, controls, baseGroup);
-            addControlView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
-            addControlView(objDoc, objArtFrom, controls, baseGroup);
+            addPropertyView(objDoc, objArtTo, properties, baseGroup);
+            addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(objDoc, objArtFrom, properties, baseGroup);
 
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
 /*            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
@@ -820,7 +820,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ExchangeMNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(exchangeDocument, "Документ", properties, baseGroup);
 
             GroupObjectNavigator gobjArts = new GroupObjectNavigator(IDShift(1));
 
@@ -831,9 +831,9 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             gobjArts.add(objArtFrom);
             addGroup(gobjArts);
 
-            addControlView(controls, baseGroup, false, objArtTo);
-            addControlView(controls, baseGroup, false, objArtFrom);
-            addControlView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
+            addPropertyView(properties, baseGroup, false, objArtTo);
+            addPropertyView(properties, baseGroup, false, objArtFrom);
+            addPropertyView(exchangeQuantity, objDoc, objArtFrom, objArtTo);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(exchangeQuantity)));
         }
@@ -844,10 +844,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public RevalueNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(revalDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addHintsNoUpdate(currentRevalDate);
             addHintsNoUpdate(currentRevalDoc);
@@ -870,10 +870,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public TaxNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(taxDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, currentVatOut);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(taxDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentVatOut);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addHintsNoUpdate(currentTaxDate);
             addHintsNoUpdate(currentTaxDoc);
@@ -896,10 +896,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public LocTaxNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(locTaxDocument, "Документ", controls, baseGroup);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(locTaxDocument, "Документ", properties, baseGroup);
+            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 
             addHintsNoUpdate(currentLocTaxDate);
             addHintsNoUpdate(currentLocTaxDoc);
@@ -924,13 +924,13 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup);
+            objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
             objStore.groupTo.initClassView = ClassViewType.PANEL;
             objStore.groupTo.banClassView = ClassViewType.GRID;
 
-            objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
-            addControlView(objStore, objArt, controls, baseGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup);
         }
     }
 
@@ -939,15 +939,15 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreArticlePrimDocNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objPrimDoc = addSingleGroupObjectImplement(priceOutDocument, "Документ", controls, baseGroup);
+            ObjectNavigator objPrimDoc = addSingleGroupObjectImplement(priceOutDocument, "Документ", properties, baseGroup);
 
-            addControlView(objPrimDoc, objArt, controls, baseGroup);
+            addPropertyView(objPrimDoc, objArt, properties, baseGroup);
 
-            addControlView(objPrimDoc, objStore, objArt, controls, priceOutChange);
+            addPropertyView(objPrimDoc, objStore, objArt, properties, priceOutChange);
 
-            addControlView(objArt, controls, lastDocumentGroup, currentGroup);
+            addPropertyView(objArt, properties, lastDocumentGroup, currentGroup);
 
-            addControlView(objStore, objArt, controls, lastDocumentGroup, currentGroup);
+            addPropertyView(objStore, objArt, properties, lastDocumentGroup, currentGroup);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(priceOutChange)));
 
@@ -963,9 +963,9 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreArticleDocNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", controls, baseGroup, date, incStore, outStore);
+            ObjectNavigator objDoc = addSingleGroupObjectImplement(quantityDocument, "Товарный документ", properties, baseGroup, date, incStore, outStore);
 
-            addControlView(objDoc, objArt, controls, baseGroup);
+            addPropertyView(objDoc, objArt, properties, baseGroup);
 //            addPropertyView(property, baseGroup, true, objDoc);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(quantity)));
@@ -986,10 +986,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public ArticleStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            objArt = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
-            objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup);
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
+            objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup);
 
-            addControlView(objStore, objArt, controls, baseGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup);
 //            addPropertyView(property, baseGroup, false, objArt.groupTo, objStore, objArt);
         }
     }
@@ -1008,10 +1008,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
-            addControlView(objArt, controls, baseGroup);
-            addControlView(objStore, controls, baseGroup);
+            addPropertyView(objArt, properties, baseGroup);
+            addPropertyView(objStore, properties, baseGroup);
 
-            addControlView(objStore, objArt, controls, baseGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup);
         }
     }
 
@@ -1020,7 +1020,7 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         SupplierStoreArticleNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", controls, baseGroup);
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
             objSupplier.groupTo.banClassView = ClassViewType.GRID;
 
@@ -1033,10 +1033,10 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
-            addControlView(objStore, controls, baseGroup);
-            addControlView(objArt, controls, baseGroup);
-            addControlView(objStore, objArt, controls, baseGroup, supplierGroup);
-            addControlView(objStore, objSupplier, objArt, controls, storeSupplIsCurrent);
+            addPropertyView(objStore, properties, baseGroup);
+            addPropertyView(objArt, properties, baseGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup, supplierGroup);
+            addPropertyView(objStore, objSupplier, objArt, properties, storeSupplIsCurrent);
 
             // установить фильтр по умолчанию на поставщик товара = поставщик
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeSupplArt, objStore, objSupplier, objArt)));
@@ -1085,12 +1085,12 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public SupplyRangeNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup, currentGroup);
-            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, currentGroup);
-            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", controls, baseGroup, currentGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup, currentGroup);
 
-            addControlView(objStore, objArticle, controls, baseGroup, currentGroup, supplierGroup);
-            addControlView(objStore, objSupplier, objArticle, controls, baseGroup, currentGroup, supplierGroup, storeSupplIsCurrent);
+            addPropertyView(objStore, objArticle, properties, baseGroup, currentGroup, supplierGroup);
+            addPropertyView(objStore, objSupplier, objArticle, properties, baseGroup, currentGroup, supplierGroup, storeSupplIsCurrent);
 
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeInRange, objStore, objArticle)));
             addSingleRegularFilterGroup(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(currentSupplier, objStore, objArticle))),
@@ -1116,9 +1116,9 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             gobjArtStore.add(objStore);
             addGroup(gobjArtStore);
 
-            addControlView(objArt, controls, baseGroup, currentGroup, supplierGroup);
-            addControlView(objStore, controls, baseGroup, currentGroup, supplierGroup);
-            addControlView(objStore, objArt, controls, baseGroup, currentGroup, supplierGroup);
+            addPropertyView(objArt, properties, baseGroup, currentGroup, supplierGroup);
+            addPropertyView(objStore, properties, baseGroup, currentGroup, supplierGroup);
+            addPropertyView(objStore, objArt, properties, baseGroup, currentGroup, supplierGroup);
 
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(storeInRange, objStore, objArt)));
             addSingleRegularFilterGroup(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(balanceStoreQuantity, objStore, objArt))),
@@ -1133,19 +1133,19 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
             ObjectNavigator objFormat, objArticle;
             if(upFormat) {
-                objFormat = addSingleGroupObjectImplement(format, "Формат", controls, baseGroup, currentGroup);
+                objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
                 objFormat.groupTo.initClassView = ClassViewType.PANEL;
-                objArticle = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup, currentGroup);
+                objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, currentGroup);
             } else {
-                objArticle = addSingleGroupObjectImplement(article, "Товар", controls,baseGroup, currentGroup);
-                objFormat = addSingleGroupObjectImplement(format, "Формат", controls, baseGroup, currentGroup);
+                objArticle = addSingleGroupObjectImplement(article, "Товар", properties,baseGroup, currentGroup);
+                objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
             }
 
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup, currentGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
 
-            addControlView(objFormat, objArticle, controls, baseGroup, currentGroup);
-            addControlView(objArticle, objStore, controls, baseGroup, supplierGroup, currentGroup);
-            addControlView(objFormat, objArticle, objDateFrom, objDateTo, controls, saleFormatArticleBetweenDateSum,  resultABCSum);
+            addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
+            addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateSum,  resultABCSum);
 
             PropertyObjectNavigator storeFormatImplement = addPropertyObjectImplement(storeFormat, objStore);
             addFixedFilter(new CompareFilterNavigator(storeFormatImplement, Compare.EQUALS, objFormat));
@@ -1158,16 +1158,16 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
             super(parent, ID, caption);
 
             ObjectNavigator objFormat, objArticle, objGroup;
-            objFormat = addSingleGroupObjectImplement(format, "Формат", controls, baseGroup, currentGroup);
-            objGroup = addSingleGroupObjectImplement(articleGroup, "Группа", controls, baseGroup, currentGroup);
-            objArticle = addSingleGroupObjectImplement(article, "Товар", controls,baseGroup, currentGroup);
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup, currentGroup);
+            objFormat = addSingleGroupObjectImplement(format, "Формат", properties, baseGroup, currentGroup);
+            objGroup = addSingleGroupObjectImplement(articleGroup, "Группа", properties, baseGroup, currentGroup);
+            objArticle = addSingleGroupObjectImplement(article, "Товар", properties,baseGroup, currentGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, currentGroup);
 
-            addControlView(objArticle, objGroup, controls, baseGroup, currentGroup);
-            addControlView(objFormat, objArticle, controls, baseGroup, currentGroup);
-            addControlView(objArticle, objStore, controls, baseGroup, supplierGroup, currentGroup);
-            addControlView(objFormat, objArticle, objDateFrom, objDateTo, controls, saleFormatArticleBetweenDateQuantity, resultABCInsideGroupQuantity, saleFormatArticleBetweenDateSum, resultABCInsideGroupSum);
-            addControlView(objFormat, objGroup, objDateFrom, objDateTo, controls, saleFormatGroupBetweenDateSum, resultABCGroup);
+            addPropertyView(objArticle, objGroup, properties, baseGroup, currentGroup);
+            addPropertyView(objFormat, objArticle, properties, baseGroup, currentGroup);
+            addPropertyView(objArticle, objStore, properties, baseGroup, supplierGroup, currentGroup);
+            addPropertyView(objFormat, objArticle, objDateFrom, objDateTo, properties, saleFormatArticleBetweenDateQuantity, resultABCInsideGroupQuantity, saleFormatArticleBetweenDateSum, resultABCInsideGroupSum);
+            addPropertyView(objFormat, objGroup, objDateFrom, objDateTo, properties, saleFormatGroupBetweenDateSum, resultABCGroup);
 
             PropertyObjectNavigator artGroupImplement = addPropertyObjectImplement (artGroup, objArticle);
             addFixedFilter(new CompareFilterNavigator(artGroupImplement, Compare.EQUALS, objGroup));
@@ -1183,18 +1183,18 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public SalesArticleStoreNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", controls,
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties,
                                                                         baseGroup);
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls,
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties,
                                                                         baseGroup);
 
-            addControlView(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
+            addPropertyView(saleArticleBetweenDateQuantity, objArticle, objDateFrom, objDateTo);
 
-            addControlView(remainStoreArticleStartQuantity, objStore, objArticle, objDateFrom);
-            addControlView(incBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
-            addControlView(outBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
-            addControlView(remainStoreArticleEndQuantity, objStore, objArticle, objDateTo);
-            addControlView(saleStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(remainStoreArticleStartQuantity, objStore, objArticle, objDateFrom);
+            addPropertyView(incBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(outBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
+            addPropertyView(remainStoreArticleEndQuantity, objStore, objArticle, objDateTo);
+            addPropertyView(saleStoreArticleBetweenDateQuantity, objStore, objArticle, objDateFrom, objDateTo);
         }
     }
 
@@ -1203,11 +1203,11 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         public StoreSupplierSpecNavigatorForm(NavigatorElement parent, int ID, String caption) {
             super(parent, ID, caption);
 
-            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", controls, baseGroup);
-            ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", controls, baseGroup, supplierGroup);
-            ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", controls, baseGroup, contractGroup);
-            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", controls, baseGroup, formatGroup, regionGroup);
-            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", controls, baseGroup);
+            ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, baseGroup);
+            ObjectNavigator objContract = addSingleGroupObjectImplement(contract, "Договор", properties, baseGroup, supplierGroup);
+            ObjectNavigator objSpec = addSingleGroupObjectImplement(specification, "Спецификация", properties, baseGroup, contractGroup);
+            ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, baseGroup, formatGroup, regionGroup);
+            ObjectNavigator objArticle = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup);
 
             // связываем объекты друг с другом
             PropertyObjectNavigator contractSupplierImplement = addPropertyObjectImplement(contractSupplier, objContract);
@@ -1226,8 +1226,8 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
                                         KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
 
             // добавляем множественные свойства
-            addControlView(objStore, objSpec, controls, baseGroup);
-            addControlView(objSpec, objArticle, controls, baseGroup);
+            addPropertyView(objStore, objSpec, properties, baseGroup);
+            addPropertyView(objSpec, objArticle, properties, baseGroup);
 
             // указываем, что верхние три товара будут идти в панель
             objSupplier.groupTo.initClassView = ClassViewType.PANEL;
