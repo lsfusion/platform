@@ -22,7 +22,7 @@ public class ClientDateClass extends ClientDataClass {
         return DateFormat.getDateInstance(DateFormat.SHORT);
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new DatePropertyRenderer(format); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new DatePropertyRenderer(format); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new DatePropertyEditor(value, (SimpleDateFormat) format); }
 
 }

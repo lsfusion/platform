@@ -20,6 +20,6 @@ public class ClientLogicalClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new LogicalPropertyRenderer(); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new LogicalPropertyRenderer(); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new LogicalPropertyEditor(value); }
 }

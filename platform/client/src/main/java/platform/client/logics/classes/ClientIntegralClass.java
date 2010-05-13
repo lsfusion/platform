@@ -24,7 +24,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     protected abstract Class getJavaClass() ;
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new IntegerPropertyRenderer(format); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new IntegerPropertyRenderer(format); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, getJavaClass()); }
 
 }

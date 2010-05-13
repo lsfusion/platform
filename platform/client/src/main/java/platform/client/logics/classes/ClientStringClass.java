@@ -25,6 +25,6 @@ public class ClientStringClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new StringPropertyRenderer(format); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new StringPropertyRenderer(format); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new StringPropertyEditor(length, value); }
 }

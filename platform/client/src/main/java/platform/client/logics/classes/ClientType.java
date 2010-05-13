@@ -16,7 +16,7 @@ public interface ClientType {
 
     Format getDefaultFormat();
 
-    PropertyRendererComponent getRendererComponent(Format format);
+    PropertyRendererComponent getRendererComponent(Format format, String caption);
 
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
     abstract public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;

@@ -83,7 +83,7 @@ abstract public class ClientCellView extends ClientComponentView {
 
     private transient PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent() {
-        if (renderer == null) renderer = baseType.getRendererComponent(getFormat());
+        if (renderer == null) renderer = baseType.getRendererComponent(getFormat(), caption);
         return renderer;
     }
 

@@ -21,6 +21,6 @@ public class ClientBitClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format) { return new BitPropertyRenderer(); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new BitPropertyRenderer(); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new BitPropertyEditor(value); }
 }
