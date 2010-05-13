@@ -115,7 +115,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, Modifier<? extends Changes> modifier, DataObject key, Object value) throws SQLException {
-        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).change(this,modifier,value);
+        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).execute(this,modifier,value);
     }
 
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {

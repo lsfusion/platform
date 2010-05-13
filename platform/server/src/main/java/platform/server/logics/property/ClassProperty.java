@@ -44,6 +44,6 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 
     public Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         // здесь session может быть null
-            return new ValueExpr(value,valueClass).and(getIsClassWhere(joinImplement, modifier, changedWhere));
+        return new ValueExpr(value,valueClass).and(getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 }

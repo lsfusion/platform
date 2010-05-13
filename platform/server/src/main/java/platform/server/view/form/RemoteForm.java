@@ -306,7 +306,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     public <P extends PropertyInterface> void changeProperty(PropertyObjectImplement<P> property, Object value) throws SQLException {
 
         // изменяем св-во
-        property.getChangeProperty().change(session, this, value);
+        property.getChangeProperty().execute(session, this, value);
 
         dataChanged = true;
     }

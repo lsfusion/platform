@@ -639,6 +639,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
     }
 
+    protected LP addAProp(AbstractGroup group, String caption, ValueClass... params) {
+        return addProperty(group,new LP<ClassPropertyInterface>(new ActionProperty(genSID(),caption,params)));
+    }
+
     protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
     }

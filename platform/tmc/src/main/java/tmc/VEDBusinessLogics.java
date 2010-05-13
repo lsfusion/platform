@@ -498,6 +498,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSaleDiff = addDUProp(documentPriceGroup, "Разница",
                 addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayCard, orderSalePayObligation)), 1), 
                 orderSalePayCash);
+
+        addAProp(baseGroup, "Test", documentShopPrice);
     }
 
     private LP addSupplierProperty(LP property) {

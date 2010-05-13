@@ -43,8 +43,8 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return getDataChanges(property.changeExpr,modifier).hasChanges();
     }
 
-    public void change(DataSession session, Modifier<? extends Changes> modifier,Object value) throws SQLException {
-        getDataChanges(session.getObjectValue(value, property.getType()).getExpr(),modifier).change(session);
+    public void execute(DataSession session, Modifier<? extends Changes> modifier,Object value) throws SQLException {
+        getDataChanges(session.getObjectValue(value, property.getType()).getExpr(),modifier).execute(session);
     }
 
 }

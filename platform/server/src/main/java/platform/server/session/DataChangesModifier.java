@@ -69,6 +69,7 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
     }
 
     protected PropertyChange<ClassPropertyInterface> getPropertyChange(Property property) {
+        assert changes.actions.isEmpty();
         if(property instanceof DataProperty)
             return changes.get((DataProperty) property);
         else
