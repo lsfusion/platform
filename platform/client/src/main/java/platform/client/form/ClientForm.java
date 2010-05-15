@@ -621,9 +621,11 @@ public class ClientForm extends JPanel {
 
         if (remoteForm.hasSessionChanges()) {
 
-            remoteForm.cancelChanges();
-            dataChanged();
-            applyFormChanges();
+            if (SwingUtils.showConfirmDialog(this, "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
+                remoteForm.cancelChanges();
+                dataChanged();
+                applyFormChanges();
+            }
         }
 
         return true;

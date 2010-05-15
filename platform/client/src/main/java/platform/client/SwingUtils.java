@@ -1,12 +1,16 @@
 package platform.client;
 
+import platform.client.form.ClientForm;
+
 import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.plaf.ActionMapUIResource;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
+import java.util.*;
 
 public class SwingUtils {
 
@@ -78,4 +82,30 @@ public class SwingUtils {
         }
     }
 
+    public static final int YES_BUTTON = 0;
+    public static final int NO_BUTTON = 1;
+
+    public static int showConfirmDialog(JComponent parentComponent, Object message, String title, int messageType, int initialValue) {
+
+        Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
+                            UIManager.getString("OptionPane.noButtonText")};
+
+        JOptionPane dialogPane = new JOptionPane(message,
+                                                 messageType,
+                                                 JOptionPane.YES_NO_OPTION,
+                                                 null, options, options[initialValue]);
+
+        addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
+        addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("UP"));
+        addFocusTraversalKey(dialogPane, KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("LEFT"));
+        addFocusTraversalKey(dialogPane, KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("DOWN"));
+
+        JDialog dialog = dialogPane.createDialog(parentComponent, title);
+        dialog.setVisible(true);
+
+        if (dialogPane.getValue() == options[0])
+            return JOptionPane.YES_OPTION;
+        else
+            return JOptionPane.NO_OPTION;
+    }
 }
