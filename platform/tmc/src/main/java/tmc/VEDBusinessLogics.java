@@ -631,58 +631,58 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void initNavigators() throws JRException, FileNotFoundException {
 
         NavigatorElement print = new NavigatorElement(baseElement, 4000, "Печатные формы");
-            NavigatorForm incomePrice = new IncomePriceNavigatorForm(print, 4100);
-            NavigatorForm revalueAct = new RevalueActNavigatorForm(print, 4200);
-            NavigatorForm pricers = new PricersNavigatorForm(print, 4300);
+            NavigatorForm incomePrice = addNavigatorForm(new IncomePriceNavigatorForm(print, 4100));
+            NavigatorForm revalueAct = addNavigatorForm(new RevalueActNavigatorForm(print, 4200));
+            NavigatorForm pricers = addNavigatorForm(new PricersNavigatorForm(print, 4300));
         
         NavigatorElement delivery = new NavigatorElement(baseElement, 1000, "Управление закупками");
-            new SupplierArticleNavigatorForm(delivery, 1050);
-            NavigatorForm deliveryShopLocal = new DeliveryShopLocalNavigatorForm(delivery, true, 1100);
-                NavigatorForm deliveryShopLocalBrowse = new DeliveryShopLocalNavigatorForm(deliveryShopLocal, false, 1125);
-            NavigatorForm deliveryWarehouseLocal = new DeliveryWarehouseLocalNavigatorForm(delivery, true, 1130);
-                NavigatorForm deliveryWarehouseLocalBrowse = new DeliveryWarehouseLocalNavigatorForm(deliveryWarehouseLocal, false, 1135);
-            NavigatorForm deliveryImport = new DeliveryImportNavigatorForm(delivery, true, 1150);
-                NavigatorForm deliveryImportBrowse = new DeliveryImportNavigatorForm(deliveryImport, false, 1175);
-            NavigatorForm returnDelivery = new ReturnDeliveryLocalNavigatorForm(delivery, 1400, true);
-                new ReturnDeliveryLocalNavigatorForm(returnDelivery, 1410, false);
+            addNavigatorForm(new SupplierArticleNavigatorForm(delivery, 1050));
+            NavigatorForm deliveryShopLocal = addNavigatorForm(new DeliveryShopLocalNavigatorForm(delivery, true, 1100));
+                NavigatorForm deliveryShopLocalBrowse = addNavigatorForm(new DeliveryShopLocalNavigatorForm(deliveryShopLocal, false, 1125));
+            NavigatorForm deliveryWarehouseLocal = addNavigatorForm(new DeliveryWarehouseLocalNavigatorForm(delivery, true, 1130));
+                NavigatorForm deliveryWarehouseLocalBrowse = addNavigatorForm(new DeliveryWarehouseLocalNavigatorForm(deliveryWarehouseLocal, false, 1135));
+            NavigatorForm deliveryImport = addNavigatorForm(new DeliveryImportNavigatorForm(delivery, true, 1150));
+                NavigatorForm deliveryImportBrowse = addNavigatorForm(new DeliveryImportNavigatorForm(deliveryImport, false, 1175));
+            NavigatorForm returnDelivery = addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(delivery, 1400, true));
+                addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(returnDelivery, 1410, false));
 
         NavigatorElement sale = new NavigatorElement(baseElement, 1200, "Управление продажами");
-            NavigatorForm saleWhole = new SaleWholeNavigatorForm(sale, 1250, true);
-                new SaleWholeNavigatorForm(saleWhole, 1275, false);
-            NavigatorForm saleRetail = new SaleRetailNavigatorForm(sale, 1300, true);
-                new SaleRetailNavigatorForm(saleRetail, 1310, false);
-            NavigatorForm returnSaleWholeArticle = new ReturnSaleWholeArticleNavigatorForm(sale, true, 1450);
-                new ReturnSaleWholeArticleNavigatorForm(returnSaleWholeArticle, false, 1460);
-            NavigatorForm returnSaleCheckRetailArticle = new ReturnSaleCheckRetailArticleNavigatorForm(sale, true, 1475);
-                new ReturnSaleCheckRetailArticleNavigatorForm(returnSaleCheckRetailArticle, false, 1485);
-            NavigatorForm returnSaleInvoiceRetailArticle = new ReturnSaleInvoiceRetailArticleNavigatorForm(sale, true, 1477);
-                new ReturnSaleInvoiceRetailArticleNavigatorForm(returnSaleInvoiceRetailArticle, false, 1487);
+            NavigatorForm saleWhole = addNavigatorForm(new SaleWholeNavigatorForm(sale, 1250, true));
+                addNavigatorForm(new SaleWholeNavigatorForm(saleWhole, 1275, false));
+            NavigatorForm saleRetail = addNavigatorForm(new SaleRetailNavigatorForm(sale, 1300, true));
+                addNavigatorForm(new SaleRetailNavigatorForm(saleRetail, 1310, false));
+            NavigatorForm returnSaleWholeArticle = addNavigatorForm(new ReturnSaleWholeArticleNavigatorForm(sale, true, 1450));
+                addNavigatorForm(new ReturnSaleWholeArticleNavigatorForm(returnSaleWholeArticle, false, 1460));
+            NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailArticleNavigatorForm(sale, true, 1475));
+                addNavigatorForm(new ReturnSaleCheckRetailArticleNavigatorForm(returnSaleCheckRetailArticle, false, 1485));
+            NavigatorForm returnSaleInvoiceRetailArticle = addNavigatorForm(new ReturnSaleInvoiceRetailArticleNavigatorForm(sale, true, 1477));
+                addNavigatorForm(new ReturnSaleInvoiceRetailArticleNavigatorForm(returnSaleInvoiceRetailArticle, false, 1487));
 
         NavigatorElement distribute = new NavigatorElement(baseElement, 3000, "Управление распределением");
-            NavigatorForm distributeShopForm = new DistributeShopNavigatorForm(distribute, 3100, true);
-                NavigatorForm distributeShopBrowseForm = new DistributeShopNavigatorForm(distributeShopForm, 3200, false);
-            NavigatorForm distributeWarehouseForm = new DistributeWarehouseNavigatorForm(distribute, 3110, true);
-                NavigatorForm distributeWarehouseBrowseForm = new DistributeWarehouseNavigatorForm(distributeWarehouseForm, 3210, false);
+            NavigatorForm distributeShopForm = addNavigatorForm(new DistributeShopNavigatorForm(distribute, 3100, true));
+                NavigatorForm distributeShopBrowseForm = addNavigatorForm(new DistributeShopNavigatorForm(distributeShopForm, 3200, false));
+            NavigatorForm distributeWarehouseForm = addNavigatorForm(new DistributeWarehouseNavigatorForm(distribute, 3110, true));
+                NavigatorForm distributeWarehouseBrowseForm = addNavigatorForm(new DistributeWarehouseNavigatorForm(distributeWarehouseForm, 3210, false));
 
         NavigatorElement price = new NavigatorElement(baseElement, 2400, "Управление ценообразованием");
-            NavigatorForm documentRevalue = new DocumentRevalueNavigatorForm(price, true, 2650);
-                new DocumentRevalueNavigatorForm(documentRevalue, false, 2750);
-            new FormatArticleNavigatorForm(price, 2200);
-            new GlobalNavigatorForm(price, 5200);
+            NavigatorForm documentRevalue = addNavigatorForm(new DocumentRevalueNavigatorForm(price, true, 2650));
+                addNavigatorForm(new DocumentRevalueNavigatorForm(documentRevalue, false, 2750));
+            addNavigatorForm(new FormatArticleNavigatorForm(price, 2200));
+            addNavigatorForm(new GlobalNavigatorForm(price, 5200));
 
         NavigatorElement tax = new NavigatorElement(baseElement, 5400, "Управление налогами");
-            NavigatorForm nds = new DocumentNDSNavigatorForm(tax, true, 5800);
-                new DocumentNDSNavigatorForm(nds, false, 5850);
+            NavigatorForm nds = addNavigatorForm(new DocumentNDSNavigatorForm(tax, true, 5800));
+                addNavigatorForm(new DocumentNDSNavigatorForm(nds, false, 5850));
 
         NavigatorElement actions = new NavigatorElement(baseElement, 7400, "Управление акциями");
-            NavigatorForm saleAction = new ActionNavigatorForm(actions, 7800);
+            NavigatorForm saleAction = addNavigatorForm(new ActionNavigatorForm(actions, 7800));
 
         NavigatorElement balance = new NavigatorElement(baseElement, 1500, "Управление хранением");
-            NavigatorForm balanceCheck = new BalanceCheckNavigatorForm(balance, 1350, true);
-                new BalanceCheckNavigatorForm(balanceCheck, 1375, false);
+            NavigatorForm balanceCheck = addNavigatorForm(new BalanceCheckNavigatorForm(balance, 1350, true));
+                addNavigatorForm(new BalanceCheckNavigatorForm(balanceCheck, 1375, false));
 
         NavigatorElement store = new NavigatorElement(baseElement, 2000, "Сводная информация");
-            new StoreArticleNavigatorForm(store, 2100);
+            addNavigatorForm(new StoreArticleNavigatorForm(store, 2100));
 
         commitWholeShopInc.addRelevant(incomePrice);
         documentShopPrice.addRelevant(revalueAct);
@@ -733,6 +733,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addHintsNoUpdate(properties, moveGroup);
             addHintsNoUpdate(returnInnerFreeQuantity);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView form = super.createDefaultRichDesign();
+            form.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
+            return form;
         }
 
         protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
@@ -872,20 +880,26 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class SaleRetailNavigatorForm extends DocumentInnerNavigatorForm {
+        
+        private ObjectNavigator objObligation;
+
         public SaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, toAdd, orderSaleRetail);
 
-            ObjectNavigator objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
+            objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, documentGroup, true);
             addHintsNoUpdate(obligationDocument);
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
 
-            DefaultFormView formView = new DefaultFormView(this);
-            formView.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
-            formView.addIntersection(formView.getGroupObjectContainer(objOuter.groupTo), formView.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            richDesign = formView;
+        }
 
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.addIntersection(design.getGroupObjectContainer(objOuter.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            return design;
         }
     }
 
@@ -970,6 +984,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)), toAdd);
             addRegularFilterGroup(filterOutGroup);
         }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView form = super.createDefaultRichDesign();
+            form.addIntersection(form.getGroupObjectContainer(objInner.groupTo), form.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            return form;
+        }
     }
 
     private class ReturnSaleWholeArticleNavigatorForm extends ReturnArticleNavigatorForm {
@@ -1004,17 +1026,27 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class StoreArticleNavigatorForm extends NavigatorForm {
+        private ObjectNavigator objArt;
+
         protected StoreArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Остатки по складу");
 
             ObjectNavigator objStore = addSingleGroupObjectImplement(store, "Склад", properties, allGroup, true);
-            ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
             ObjectNavigator objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, allGroup, true);
 
             addPropertyView(objStore, objArt, properties, allGroup, true);
             addPropertyView(objStore, objOuter, properties, allGroup, true);
             addPropertyView(objOuter, objArt, properties, baseGroup, true);
             addPropertyView(objStore, objOuter, objArt, properties, allGroup, true);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView form = super.createDefaultRichDesign();
+            form.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
+            return form;
         }
     }
 

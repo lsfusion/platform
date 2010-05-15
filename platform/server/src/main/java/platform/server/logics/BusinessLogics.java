@@ -1726,4 +1726,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
             }
     }
+
+    public NavigatorForm addNavigatorForm(NavigatorForm form) {
+        form.richDesign = form.createDefaultRichDesign();
+        return form;
+    }
 }

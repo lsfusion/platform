@@ -141,7 +141,7 @@ public class SimplexLayout implements LayoutManager2 {
 
             fillObjFunction(solver);
 
-            solver.setTimeout(2);
+//            solver.setTimeout(2);
 
             solver.setVerbose(LpSolve.IMPORTANT);
             solver.setOutputfile("");
@@ -212,7 +212,7 @@ public class SimplexLayout implements LayoutManager2 {
             
             Dimension min = component.getMinimumSize();
             Dimension max = component.getMaximumSize();
-            
+
             SimplexComponentInfo info = infos.get(component);
 
             //добавляем везде 1, иначе на округлении она теряется
@@ -407,9 +407,11 @@ public class SimplexLayout implements LayoutManager2 {
             objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 0.5 : 0.0));
                     
         }
-        
+
+        // вот здесь есть тонкий момент - если выставлять маленькие значения, то целевая функция может уходить не в ту степь
+        // получится, что все объекты очень сильно сжаты по высоте или ширине 
         objFnc.set(colmaxw, (fillmaxw) ? 2.0 : 0.0);
-        objFnc.set(colmaxh, (fillmaxh) ? 15.0 : 0.0);
+        objFnc.set(colmaxh, (fillmaxh) ? 20.0 : 0.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)

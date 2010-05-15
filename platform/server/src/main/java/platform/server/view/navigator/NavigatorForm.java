@@ -283,7 +283,8 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         isPrintForm = iisPrintForm;
     }
 
-    protected FormView richDesign;
+    public FormView richDesign;
+    public DefaultFormView createDefaultRichDesign() { return new DefaultFormView(this); } 
     public FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
     protected JasperDesign reportDesign;
