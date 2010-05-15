@@ -3,9 +3,9 @@ package platform.interop.form.layout;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
-public class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplexConstraint>
-                         implements Serializable {
+public class SimplexConstraints<T> implements Serializable {
 
     public int order = 0;
 
@@ -26,6 +26,10 @@ public class SimplexConstraints extends HashMap<Component, DoNotIntersectSimplex
     public Insets insetsInside = new Insets(1,0,1,0);
 
     public SimplexComponentDirections directions = new SimplexComponentDirections(0.01,0.01,0,0);
+
+    // приходится делать сериализацию отдельно, посколько клиент будет работать не с исходным классом T, а с его ID
+    transient public Map<T, DoNotIntersectSimplexConstraint> intersects = new HashMap<T, DoNotIntersectSimplexConstraint>();
+    transient public Integer ID = 0; // по нему будет идентифицироваться объект на который установлен intersects 
 
     public SimplexConstraints() {
     }

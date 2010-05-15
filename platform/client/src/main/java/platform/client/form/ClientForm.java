@@ -460,7 +460,6 @@ public class ClientForm extends JPanel {
 
         if (property instanceof ClientPropertyView) {
 
-            System.out.println("changeProperty : " + property + " - " + value);
             // типа только если меняется свойство
             remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
             dataChanged();

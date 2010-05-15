@@ -27,6 +27,10 @@ public class DefaultFormView extends FormView {
 
     private transient Map<GroupObjectImplementView, Map<AbstractGroup, ContainerView>> groupPropertyContainers = new HashMap<GroupObjectImplementView, Map<AbstractGroup, ContainerView>>();
 
+    private transient Map<GroupObjectImplementView, ContainerView> groupContainers = new HashMap<GroupObjectImplementView, ContainerView>();
+    public ContainerView getGroupObjectContainer(GroupObjectImplementView groupObject) { return groupContainers.get(groupObject); }
+    public ContainerView getGroupObjectContainer(GroupObjectNavigator groupObject) { return getGroupObjectContainer(get(groupObject)); }
+
     public DefaultFormView(NavigatorForm<?> navigatorForm) {
 
         mainContainer = addContainer();
@@ -45,6 +49,8 @@ public class DefaultFormView extends FormView {
             groupContainer.container = mainContainer;
             groupContainer.constraints.order = navigatorForm.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+
+            groupContainers.put(clientGroup, groupContainer);
 
             ContainerView gridContainer = addContainer(); // контейнер грида внутрь
             gridContainer.container = groupContainer;

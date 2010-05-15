@@ -5,6 +5,7 @@ import platform.base.IDGenerator;
 import platform.base.DefaultIDGenerator;
 import platform.server.view.navigator.CellViewNavigator;
 import platform.server.view.navigator.PropertyViewNavigator;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -91,5 +92,12 @@ public class FormView implements ClientSerialize {
                 outStream.writeBoolean(orderCell instanceof ClassCellView);
             }
         }
+    }
+
+    public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
+
+        if (comp1.container != comp2.container)
+            throw new RuntimeException("Запрещено создавать пересечения для объектов в разных контейнерах");
+        comp1.constraints.intersects.put(comp2, cons);
     }
 }

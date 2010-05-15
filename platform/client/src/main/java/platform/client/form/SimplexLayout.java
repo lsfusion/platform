@@ -29,7 +29,7 @@ public class SimplexLayout implements LayoutManager2 {
     Map<List<Component>,Map<Component, Rectangle>> cache = new HashMap<List<Component>, Map<Component, Rectangle>>();
 
     List<Component> allComponents = new ArrayList<Component>();
-    Map<Component, SimplexConstraints> constraints = new HashMap<Component, SimplexConstraints>();
+    Map<Component, SimplexConstraints<Integer>> constraints = new HashMap<Component, SimplexConstraints<Integer>>();
     
     private Container mainContainer;
     
@@ -38,7 +38,7 @@ public class SimplexLayout implements LayoutManager2 {
         constraints.put(mainContainer, SimplexConstraints.DEFAULT_CONSTRAINT);
     }
     
-    public SimplexLayout(Container imainContainer, SimplexConstraints c) {
+    public SimplexLayout(Container imainContainer, SimplexConstraints<Integer> c) {
         mainContainer = imainContainer;
         constraints.put(mainContainer, c);
     }
@@ -308,10 +308,10 @@ public class SimplexLayout implements LayoutManager2 {
         for (Component comp1 : components) 
             if (comp1.getParent() == parent)
                 for (Component comp2 : components)
-                    if (comp2.getParent() == parent && comp1 != comp2 && !constraints.get(comp2).containsKey(comp1)) {
+                    if (comp2.getParent() == parent && comp1 != comp2 && !constraints.get(comp2).intersects.containsKey(constraints.get(comp1).ID)) {
                         
-                        if (constraints.get(comp1).containsKey(comp2)) {
-                            constraints.get(comp1).get(comp2).fillConstraint(solver, infos.get(comp1), infos.get(comp2), constraints.get(comp1), constraints.get(comp2), null);
+                        if (constraints.get(comp1).intersects.containsKey(constraints.get(comp2).ID)) {
+                            constraints.get(comp1).intersects.get(constraints.get(comp2).ID).fillConstraint(solver, infos.get(comp1), infos.get(comp2), constraints.get(comp1), constraints.get(comp2), null);
                         } else {
                             
                             int order1 = order.indexOf(comp1);
@@ -409,7 +409,7 @@ public class SimplexLayout implements LayoutManager2 {
         }
         
         objFnc.set(colmaxw, (fillmaxw) ? 2.0 : 0.0);
-        objFnc.set(colmaxh, (fillmaxh) ? 2.0 : 0.0);
+        objFnc.set(colmaxh, (fillmaxh) ? 15.0 : 0.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)

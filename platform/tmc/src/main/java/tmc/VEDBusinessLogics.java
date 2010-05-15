@@ -16,10 +16,12 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
+import platform.server.view.form.client.DefaultFormView;
 import platform.server.auth.User;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
 import javax.swing.*;
 
@@ -878,6 +880,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addHintsNoUpdate(obligationDocument);
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
+
+            DefaultFormView formView = new DefaultFormView(this);
+            formView.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
+            formView.addIntersection(formView.getGroupObjectContainer(objOuter.groupTo), formView.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            richDesign = formView;
+
         }
     }
 
