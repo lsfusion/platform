@@ -4,6 +4,7 @@ import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.client.SwingUtils;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.RemoteDialogInterface;
 import platform.base.BaseUtils;
 
 import javax.swing.*;
@@ -17,7 +18,7 @@ public class ClientDialog extends JDialog {
     final ClientNavigator navigator;
     private ClientForm currentForm;
 
-    public ClientDialog(ClientForm owner, RemoteFormInterface dialog) throws IOException, ClassNotFoundException {
+    public ClientDialog(ClientForm owner, RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL); // обозначаем parent'а и модальность
 
         setLayout(new BorderLayout());
@@ -30,7 +31,7 @@ public class ClientDialog extends JDialog {
         navigator = new ClientNavigator(owner.clientNavigator.remoteNavigator) {
 
            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-               setCurrentForm(navigator.remoteNavigator.createForm(element.ID,true));
+//               setCurrentForm(((RemoteDialogInterface)currentForm.remoteForm).createFormDialog(remoteNavigator));
            }
         };
 
@@ -53,16 +54,12 @@ public class ClientDialog extends JDialog {
         setCurrentForm(dialog);
     }
 
-    public Object objectChosen(int callerID) throws RemoteException {
-       return BaseUtils.intToObject(navigator.remoteNavigator.getDialogObject(callerID));
-    }
-
     public boolean objectChosen;
 
     boolean isReadOnly() { return true; }
 
     // необходим чтобы в диалоге менять формы (панели)
-    void setCurrentForm(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+    void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
 
        if (currentForm != null) remove(currentForm);
        currentForm = new ClientForm(remoteForm, navigator, isReadOnly()) {

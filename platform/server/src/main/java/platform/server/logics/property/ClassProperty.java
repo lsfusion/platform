@@ -31,8 +31,12 @@ public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
         return interfaceClasses;
     }
 
-    public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
+    public static <U extends Changes<U>> U getIsClassUsedChanges(Collection<ClassPropertyInterface> interfaces, Modifier<U> modifier) {
         return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), getValueClasses(interfaces), false));
+    }
+
+    public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
+        return getIsClassUsedChanges(interfaces, modifier);
     }
 
     public static Where getIsClassWhere(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

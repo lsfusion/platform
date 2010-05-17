@@ -1,0 +1,41 @@
+package platform.server.logics;
+
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.classes.ValueClass;
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.ObjectNavigator;
+import platform.server.view.form.client.RemoteFormView;
+import platform.interop.action.ClientAction;
+import platform.interop.action.FormClientAction;
+import platform.base.BaseUtils;
+
+import java.util.*;
+
+// вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
+public class FormActionProperty extends ActionProperty {
+
+    public final NavigatorForm form;
+    public final Map<ObjectNavigator, ClassPropertyInterface> mapObjects;
+
+    public static ValueClass[] getValueClasses(ObjectNavigator[] objects) {
+        ValueClass[] valueClasses = new ValueClass[objects.length];
+        for(int i=0;i<objects.length;i++)
+            valueClasses[i] = objects[i].baseClass;
+        return valueClasses;
+    }
+
+    public FormActionProperty(String sID, String caption, NavigatorForm form, ObjectNavigator[] objects) {
+        super(sID, caption, getValueClasses(objects));
+
+        int i=0;
+        mapObjects = new HashMap<ObjectNavigator, ClassPropertyInterface>();
+        for(ClassPropertyInterface propertyInterface : interfaces)
+            mapObjects.put(objects[i++],propertyInterface);
+        this.form = form;
+    }
+
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, List<ClientAction> actions, RemoteFormView executeForm) {
+        actions.add(new FormClientAction(form.isPrintForm, executeForm.createForm(form, BaseUtils.join(mapObjects,keys)))); 
+    }
+}

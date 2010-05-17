@@ -6,11 +6,17 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
 import platform.interop.*;
+import platform.interop.action.ClientAction;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.RemoteDialogInterface;
 import platform.server.classes.CustomClass;
 import platform.server.view.form.*;
 import platform.server.view.form.client.report.DefaultJasperDesign;
 import platform.server.view.form.filter.Filter;
+import platform.server.view.navigator.ObjectNavigator;
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -20,13 +26,13 @@ import java.util.*;
 import ar.com.fdvs.dj.core.DynamicJasperHelper;
 
 // фасад для работы с клиентом
-public class RemoteFormView extends RemoteObject implements RemoteFormInterface {
+public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>> extends RemoteObject implements RemoteFormInterface {
 
-    RemoteForm<?> form;
+    F form;
     public FormView richDesign;
     public JasperDesign reportDesign;
 
-    public RemoteFormView(RemoteForm form, FormView richDesign, JasperDesign reportDesign, int port) throws RemoteException {
+    public RemoteFormView(F form, FormView richDesign, JasperDesign reportDesign, int port) throws RemoteException {
         super(port);
         
         this.form = form;
@@ -174,9 +180,9 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
         }
     }
 
-    public void changePropertyView(int propertyID, byte[] object) {
+    public List<ClientAction> changePropertyView(int propertyID, byte[] object) {
         try {
-            form.changeProperty(form.getPropertyView(propertyID).view, BaseUtils.deserializeObject(object));
+            return form.changeProperty(form.getPropertyView(propertyID).view, BaseUtils.deserializeObject(object), this);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -330,6 +336,51 @@ public class RemoteFormView extends RemoteObject implements RemoteFormInterface 
             form.serializePropertyEditorType(dataStream,form.getPropertyView(propertyID));
 
             return outStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
+        try {
+            RemoteDialog<T> dialogForm = form.createClassPropertyDialog(viewID, value);
+            return new RemoteDialogView<T>(dialogForm,dialogForm.navigatorForm.getRichDesign(),dialogForm.navigatorForm.getReportDesign(),exportPort);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException {
+        try {
+            RemoteDialog<T> dialogForm = form.createEditorPropertyDialog(viewID);
+            return new RemoteDialogView<T>(dialogForm,dialogForm.navigatorForm.getRichDesign(),dialogForm.navigatorForm.getReportDesign(),exportPort);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteDialogInterface createObjectDialog(int objectID) {
+        try {
+            RemoteDialog<T> dialogForm = form.createObjectDialog(objectID);
+            return new RemoteDialogView<T>(dialogForm,dialogForm.navigatorForm.getRichDesign(),dialogForm.navigatorForm.getReportDesign(),exportPort);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteDialogInterface createObjectDialog(int objectID, int value) throws RemoteException {
+        try {
+            RemoteDialog<T> dialogForm = form.createObjectDialog(objectID, value);
+            return new RemoteDialogView<T>(dialogForm,dialogForm.navigatorForm.getRichDesign(),dialogForm.navigatorForm.getReportDesign(),exportPort);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public RemoteFormInterface createForm(NavigatorForm navigatorForm, Map<ObjectNavigator, DataObject> mapObjects) {
+        try {
+            RemoteForm<T> remoteForm = form.createForm(navigatorForm, mapObjects);
+            return new RemoteFormView<T,RemoteForm<T>>(remoteForm,navigatorForm.getRichDesign(),navigatorForm.getReportDesign(),exportPort);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

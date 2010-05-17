@@ -1,7 +1,7 @@
 package platform.client.logics;
 
+import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
 import platform.client.form.editor.ClassPropertyEditor;
@@ -34,11 +34,11 @@ public class ClientClassCellView extends ClientObjectView {
         return null;
     }
 
-    public RemoteFormInterface createEditorForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
+    public RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException {
         return null;
     }
 
-    public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException {
+    public RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException {
         return null;
     }
 }

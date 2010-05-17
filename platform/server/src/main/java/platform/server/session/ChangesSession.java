@@ -25,7 +25,7 @@ public interface ChangesSession {
 
     public void changeClass(DataObject change, ConcreteObjectClass toClass) throws SQLException;
 
-    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException;
+    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue) throws SQLException;
 
     public ConcreteClass getCurrentClass(DataObject value);
     public <T> Map<T,ConcreteClass> getCurrentClasses(Map<T,DataObject> map);

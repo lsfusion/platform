@@ -1,7 +1,10 @@
 package platform.interop.form;
 
+import platform.interop.action.ClientAction;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.List;
 
 public interface RemoteFormInterface extends Remote {
 
@@ -22,7 +25,7 @@ public interface RemoteFormInterface extends Remote {
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    void changePropertyView(int propertyID, byte[] object) throws RemoteException;
+    List<ClientAction> changePropertyView(int propertyID, byte[] object) throws RemoteException;
 
     void changeObject(int objectID, Integer value) throws RemoteException;
 
@@ -67,4 +70,11 @@ public interface RemoteFormInterface extends Remote {
     final static int CHANGEGROUPOBJECT_FIRSTROW = 0;
     final static int CHANGEGROUPOBJECT_LASTROW = 1;
 
+    RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException;
+
+    RemoteDialogInterface createEditorPropertyDialog(int viewID) throws RemoteException;
+
+    RemoteDialogInterface createObjectDialog(int objectID) throws RemoteException;
+
+    RemoteDialogInterface createObjectDialog(int objectID, int value) throws RemoteException;
 }

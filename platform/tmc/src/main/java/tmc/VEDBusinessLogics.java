@@ -500,8 +500,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSaleDiff = addDUProp(documentPriceGroup, "Разница",
                 addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayCard, orderSalePayObligation)), 1), 
                 orderSalePayCash);
-
-        addAProp(baseGroup, "Test", documentShopPrice);
     }
 
     private LP addSupplierProperty(LP property) {
@@ -1122,7 +1120,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(shopPrice), Compare.NOT_EQUALS, getPropertyImplement(prevPrice)));
 
-//            addFormAction(baseGroup, this, objDoc);
+            addFAProp(baseGroup, "Акт переоценки", this, objDoc);
         }
     }
 

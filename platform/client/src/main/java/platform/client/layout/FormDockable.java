@@ -14,14 +14,14 @@ abstract class FormDockable extends DefaultDockable {
 
     final int formID;
 
-    FormDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+    public FormDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
         this(iformID);
 
-        createActiveComponent(navigator, currentSession);
+        createActiveComponent(navigator, navigator.remoteNavigator.createForm(formID, currentSession));
     }
 
-    FormDockable(int iformID, ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
-        this(iformID);
+    FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+        this(remoteForm.getID());
 
         createActiveComponent(navigator, remoteForm);
     }
@@ -29,10 +29,6 @@ abstract class FormDockable extends DefaultDockable {
     FormDockable(int iformID) {
         formID = iformID;
         setFactoryID(ClientFormFactory.FACTORY_ID);
-    }
-
-    void createActiveComponent(ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
-        createActiveComponent(navigator, navigator.remoteNavigator.createForm(formID, currentSession));
     }
 
     void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {

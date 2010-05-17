@@ -55,10 +55,7 @@ public class Layout extends JFrame implements ComponentCollector {
             }
 
             public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
-                if (element.isPrintForm)
-                    Main.layout.defaultStation.drop(new ReportDockable(element.ID, this, true));
-                else
-                    Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, true));
+                Main.layout.defaultStation.drop(element.isPrintForm?new ReportDockable(element.ID, this, true):new ClientFormDockable(element.ID, this, true));
             }
         };
 

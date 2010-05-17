@@ -6,6 +6,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.RemoteDialogInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.awt.*;
@@ -88,8 +89,8 @@ abstract public class ClientCellView extends ClientComponentView {
     }
 
     // диалог для получения возможных значений, используются только в нижних методах
-    public abstract RemoteFormInterface createEditorForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException;
-    public abstract RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException;
+    public abstract RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException;
+    public abstract RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException;
 
     public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
     public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;

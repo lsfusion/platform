@@ -115,7 +115,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, Modifier<? extends Changes> modifier, DataObject key, Object value) throws SQLException {
-        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).execute(this,modifier,value);
+        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).execute(this,modifier,value,null);
     }
 
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {
@@ -157,7 +157,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         }
     }
 
-    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue, boolean externalID) throws SQLException {
+    public void changeProperty(DataProperty property, Map<ClassPropertyInterface, DataObject> keys, ObjectValue newValue) throws SQLException {
         changes = new SessionChanges(changes, property, keys, newValue, this);
 
         // по тем по кому не было restart'а new -> to

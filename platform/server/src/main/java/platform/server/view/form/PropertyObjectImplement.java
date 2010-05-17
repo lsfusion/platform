@@ -79,7 +79,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return mapInterface;
     }
 
-    public PropertyValueImplement getChangeProperty() {
+    public PropertyValueImplement<?> getChangeProperty() {
         return property.getChangeProperty(getInterfaceValues());
     }
 

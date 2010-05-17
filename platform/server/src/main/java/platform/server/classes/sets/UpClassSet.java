@@ -79,8 +79,9 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
                 return this;
             else
                 return OrObjectClassSet.or(this,node);
-        else
+        if(node instanceof UpClassSet)
             return add((UpClassSet)node);
+        return getOr().or((OrObjectClassSet)node);
     }
 
     public OrObjectClassSet getOr() {

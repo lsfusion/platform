@@ -201,7 +201,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // запишем текущую дату
         DataSession session = createSession(adapter);
-        session.changeProperty((DataProperty)currentDate.property, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance), false);
+        session.changeProperty((DataProperty)currentDate.property, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance));
         session.apply(this);
         session.close();
     }
@@ -639,8 +639,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
     }
 
-    protected LP addAProp(AbstractGroup group, String caption, ValueClass... params) {
-        return addProperty(group,new LP<ClassPropertyInterface>(new ActionProperty(genSID(),caption,params)));
+    protected LP addFAProp(AbstractGroup group, String caption, NavigatorForm form, ObjectNavigator... params) {
+        return addProperty(group,new LP<ClassPropertyInterface>(new FormActionProperty(genSID(),caption,form,params)));
     }
 
     protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
@@ -1564,7 +1564,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     else
                         valueObject = NullValue.instance;
 
-                    session.changeProperty(changeProp, keys, valueObject, false);
+                    session.changeProperty(changeProp, keys, valueObject);
                 }
             }
 
@@ -1685,7 +1685,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             valueObject = new DataObject(objectName,StringClass.get(50));
                         } else
                             valueObject = BaseUtils.getRandom(property.value.getRandomList(objects),randomizer);
-                        session.changeProperty(property,randomIteration,valueObject,false);
+                        session.changeProperty(property,randomIteration,valueObject);
                         randomInterfaces++;
                     }
                 }

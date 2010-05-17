@@ -271,7 +271,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public String sID;
     public boolean isPrintForm;
 
-    protected NavigatorForm(int iID, String caption) { this(iID, caption, false); }
+    protected NavigatorForm(int ID, String caption) { this(ID, caption, false); }
     NavigatorForm(int iID, String caption, boolean iisPrintForm) { this(null, iID, caption, iisPrintForm); }
     protected NavigatorForm(NavigatorElement parent, int iID, String caption) { this(parent, iID, caption, false); }
     protected NavigatorForm(NavigatorElement parent, int iID, String caption, boolean iisPrintForm) { this(parent, iID, caption, genSID(iID), iisPrintForm); }

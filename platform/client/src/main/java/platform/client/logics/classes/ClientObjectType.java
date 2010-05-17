@@ -24,10 +24,10 @@ public class ClientObjectType implements ClientType {
     public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new IntegerPropertyRenderer(format); }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form, property.createEditorForm(form.clientNavigator.remoteNavigator, form.getID()));
+        return new ObjectPropertyEditor(form, property.createEditorForm(form.remoteForm));
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form, property.createClassForm(form.clientNavigator.remoteNavigator, form.getID(), (Integer) value));
+        return new ObjectPropertyEditor(form, property.createClassForm(form.remoteForm, (Integer) value));
     }
 }

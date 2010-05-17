@@ -9,10 +9,14 @@ import java.io.IOException;
 
 import net.sf.jasperreports.engine.JRException;
 
-class ClientFormDockable extends FormDockable {
+public class ClientFormDockable extends FormDockable {
 
-    ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
         super(iformID, inavigator, currentSession);
+    }
+
+    public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+        super(navigator, remoteForm);
     }
 
     @Override

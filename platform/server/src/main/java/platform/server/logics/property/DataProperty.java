@@ -1,12 +1,9 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.data.Field;
-import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Join;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.ExprCaseList;
@@ -14,13 +11,18 @@ import platform.server.data.type.Type;
 import platform.server.session.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.view.form.client.RemoteFormView;
+import platform.interop.action.ClientAction;
 
 import java.util.*;
+import java.sql.SQLException;
 
 import net.jcip.annotations.Immutable;
 
 @Immutable
-public class DataProperty extends Property<ClassPropertyInterface> {
+public class DataProperty extends UserProperty {
 
     public ValueClass value;
 
@@ -32,7 +34,7 @@ public class DataProperty extends Property<ClassPropertyInterface> {
     }
 
     public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
-        super(sID, caption, getInterfaces(classes));
+        super(sID, caption, classes);
         this.value = value;
     }
 
@@ -45,15 +47,6 @@ public class DataProperty extends Property<ClassPropertyInterface> {
     @Override
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
         return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), ClassProperty.getValueClasses(interfaces), false));
-    }
-
-    @Override
-    public DataChanges getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, modifier, null));//.and(DataSession.getIsClassWhere(modifier.getSession(), change.expr, value, null));
-        if(changedWhere!=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
-
-        // изменяет себя, если классы совпадают
-        return new DataChanges(this,change);
     }
 
     @Override
@@ -97,26 +90,15 @@ public class DataProperty extends Property<ClassPropertyInterface> {
         return cases.getExpr();
     }
 
-    protected boolean usePreviousStored() {
-        return false;
-    }
-
-    protected Map<ClassPropertyInterface, ValueClass> getMapClasses() {
-        Map<ClassPropertyInterface, ValueClass> result = new HashMap<ClassPropertyInterface, ValueClass>();
-        for(ClassPropertyInterface propertyInterface : interfaces)
-            result.put(propertyInterface,propertyInterface.interfaceClass);
-        return result;
-    }
-
-    protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
-        Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();
-        for(Map.Entry<ClassPropertyInterface,KeyField> mapKey : mapTable.mapKeys.entrySet())
-            result.put(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());
-        result.put(storedField, value.getUpSet());
-        return new ClassWhere<Field>(result);
-    }
-
     public Type getType() {
         return value.getType();
+    }
+
+    protected AndClassSet getValueSet() {
+        return value.getUpSet();
+    }
+
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException {
+        session.changeProperty(this, keys, value);
     }
 }

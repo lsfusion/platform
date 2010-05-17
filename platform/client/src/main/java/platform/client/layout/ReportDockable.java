@@ -23,8 +23,8 @@ public class ReportDockable extends FormDockable {
         super(iformID, navigator, currentSession);
     }
 
-    public ReportDockable(int iformID, ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
-        super(iformID, navigator, remoteForm);
+    public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
+        super(navigator, remoteForm);
     }
 
     // из файла

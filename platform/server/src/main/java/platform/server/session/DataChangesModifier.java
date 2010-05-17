@@ -3,6 +3,7 @@ package platform.server.session;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.UserProperty;
 import platform.server.data.expr.ValueExpr;
 import platform.server.caches.Lazy;
 
@@ -11,15 +12,15 @@ import net.jcip.annotations.Immutable;
 import java.util.Map;
 
 @Immutable
-public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPropertyInterface,DataProperty,DataChanges,DataChangesModifier.UsedChanges> {
+public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPropertyInterface,UserProperty,DataChanges,DataChangesModifier.UsedChanges> {
 
     public DataChangesModifier(Modifier modifier, DataChanges changes) {
         super(modifier, changes);
     }
 
-    protected static class UsedChanges extends AbstractPropertyChangesModifier.UsedChanges<ClassPropertyInterface,DataProperty,DataChanges,UsedChanges> {
+    protected static class UsedChanges extends AbstractPropertyChangesModifier.UsedChanges<ClassPropertyInterface,UserProperty,DataChanges,UsedChanges> {
 
-        public UsedChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) {
+        public UsedChanges(UserProperty property, PropertyChange<ClassPropertyInterface> change) {
             super(new DataChanges(property, change));
         }
 
@@ -64,12 +65,11 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
         return new UsedChanges(this);
     }
 
-    protected UsedChanges createChanges(DataProperty property, PropertyChange<ClassPropertyInterface> change) {
+    protected UsedChanges createChanges(UserProperty property, PropertyChange<ClassPropertyInterface> change) {
         return new UsedChanges(property, change);
     }
 
     protected PropertyChange<ClassPropertyInterface> getPropertyChange(Property property) {
-        assert changes.actions.isEmpty();
         if(property instanceof DataProperty)
             return changes.get((DataProperty) property);
         else

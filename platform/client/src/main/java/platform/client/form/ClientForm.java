@@ -13,10 +13,13 @@ import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.layout.ReportDockable;
+import platform.client.layout.ClientFormDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.CompressingInputStream;
 import platform.interop.Scroll;
 import platform.interop.Order;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientActionDispatcher;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
@@ -461,7 +464,19 @@ public class ClientForm extends JPanel {
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
-            remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
+            List<ClientAction> actions = remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
+
+            for(ClientAction action : actions)
+                action.dispatch(new ClientActionDispatcher() {
+                    public void executeForm(RemoteFormInterface remoteForm, boolean isPrintForm) {
+                        try {
+                            Main.layout.defaultStation.drop(isPrintForm?new ReportDockable(clientNavigator, remoteForm):new ClientFormDockable(clientNavigator, remoteForm));
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
             dataChanged();
             applyFormChanges();
 
@@ -586,7 +601,7 @@ public class ClientForm extends JPanel {
 
     void print() throws IOException, ClassNotFoundException, JRException {
 
-        Main.layout.defaultStation.drop(new ReportDockable(remoteForm.getID(), clientNavigator, remoteForm));
+        Main.layout.defaultStation.drop(new ReportDockable(clientNavigator, remoteForm));
 
     }
 

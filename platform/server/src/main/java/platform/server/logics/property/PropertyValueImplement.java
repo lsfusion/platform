@@ -7,8 +7,11 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.session.*;
 import platform.server.classes.CustomClass;
+import platform.server.view.form.client.RemoteFormView;
+import platform.interop.action.ClientAction;
 
 import java.util.Map;
+import java.util.List;
 import java.sql.SQLException;
 
 public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<DataObject,P> {
@@ -43,8 +46,8 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return getDataChanges(property.changeExpr,modifier).hasChanges();
     }
 
-    public void execute(DataSession session, Modifier<? extends Changes> modifier,Object value) throws SQLException {
-        getDataChanges(session.getObjectValue(value, property.getType()).getExpr(),modifier).execute(session);
+    public List<ClientAction> execute(DataSession session, Modifier<? extends Changes> modifier, Object value, RemoteFormView executeForm) throws SQLException {
+        return getDataChanges(session.getObjectValue(value, property.getType()).getExpr(),modifier).execute(session, executeForm);
     }
 
 }

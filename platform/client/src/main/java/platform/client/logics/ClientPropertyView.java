@@ -3,8 +3,8 @@ package platform.client.logics;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
@@ -56,11 +56,11 @@ public class ClientPropertyView extends ClientCellView {
         return baseType.getClassComponent(form, this, value, getFormat());
     }
 
-    public RemoteFormInterface createEditorForm(RemoteNavigatorInterface navigator, int callerID) throws RemoteException {
-        return navigator.createChangeForm(ID, callerID);
+    public RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException {
+        return form.createEditorPropertyDialog(ID);
     }
 
-    public RemoteFormInterface createClassForm(RemoteNavigatorInterface navigator, int callerID, Integer value) throws RemoteException {
-        return navigator.createPropertyForm(ID, callerID, BaseUtils.objectToInt(value));
+    public RemoteDialogInterface createClassForm(RemoteFormInterface form, Integer value) throws RemoteException {
+        return form.createClassPropertyDialog(ID, BaseUtils.objectToInt(value));
     }
 }

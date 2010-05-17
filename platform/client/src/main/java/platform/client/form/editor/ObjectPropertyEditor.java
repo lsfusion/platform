@@ -5,6 +5,7 @@ import platform.client.form.ClientForm;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientNavigatorDialog;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.RemoteDialogInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,18 +17,18 @@ import java.util.EventObject;
 public class ObjectPropertyEditor extends JDialog implements PropertyEditorComponent {
 
     private final ClientForm owner;
-    private final RemoteFormInterface dialog;
+    private final RemoteDialogInterface dialog;
 
     private ClientDialog clientDialog;
 
-    public ObjectPropertyEditor(ClientForm owner, RemoteFormInterface dialog) {
+    public ObjectPropertyEditor(ClientForm owner, RemoteDialogInterface dialog) {
 
         this.owner = owner;
         this.dialog = dialog;
     }
 
     Object objectChosen() throws RemoteException {
-        return clientDialog.objectChosen(owner.getID());
+        return dialog.getDialogValue();
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
