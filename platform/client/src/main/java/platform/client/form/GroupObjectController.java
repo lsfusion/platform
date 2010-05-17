@@ -320,4 +320,15 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return form;
     }
 
+    public String getSaveMessage() {
+
+        String message = "";
+        for (ClientObjectImplementView object : groupObject) {
+            if (object.addOnTransaction) {
+                message += "Создать новый " + object.caption + " ?";
+            }
+        }
+
+        return message;
+    }
 }

@@ -32,6 +32,8 @@ public class ObjectImplementView implements ClientSerialize {
     public void serialize(DataOutputStream outStream) throws IOException {
 
         outStream.writeInt(view.ID);
+        outStream.writeUTF(view.caption);
+        outStream.writeBoolean(view.addOnTransaction);
 
         view.baseClass.serialize(outStream);
 

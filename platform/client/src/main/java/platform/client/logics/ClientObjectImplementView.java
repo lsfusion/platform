@@ -15,6 +15,9 @@ public class ClientObjectImplementView implements Serializable {
         return ID;
     }
 
+    public String caption;
+    public boolean addOnTransaction;
+
     // вручную заполняется
     public ClientGroupObjectImplementView groupObject;
 
@@ -34,6 +37,8 @@ public class ClientObjectImplementView implements Serializable {
         groupObject = iGroupObject;
 
         ID = inStream.readInt();
+        caption = inStream.readUTF();
+        addOnTransaction = inStream.readBoolean();
 
         baseClass = ClientClass.deserialize(inStream);
 

@@ -601,6 +601,17 @@ public class ClientForm extends JPanel {
 
         if (remoteForm.hasSessionChanges()) {
 
+            String okMessage = "";
+            for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
+                okMessage += controllers.get(groupObject).getSaveMessage();
+            }
+
+            if (!okMessage.isEmpty()) {
+                if (!(SwingUtils.showConfirmDialog(this, okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
+                    return false;
+                }
+            }
+
             String message = remoteForm.saveChanges();
             if (message==null) {
                 Log.printSuccessMessage("Изменения были удачно записаны...");
