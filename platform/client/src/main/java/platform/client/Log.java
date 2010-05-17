@@ -93,6 +93,8 @@ public final class Log {
         public void stateChanged() {
 
             view.setText(text);
+            if (!text.isEmpty())
+                view.setCaretPosition(text.length()-1);
 
 //            info.setText("Bytes received : " + bytesReceived);
         }
