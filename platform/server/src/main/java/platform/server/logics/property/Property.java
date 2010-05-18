@@ -21,6 +21,7 @@ import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.property.derived.MaxChangeProperty;
@@ -249,6 +250,10 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
 
         readQuery.properties.put(readValue, getExpr(readQuery.mapKeys,modifier,null));
         return BaseUtils.singleValue(readQuery.execute(session)).get(readValue);
+    }
+
+    public ObjectValue readClasses(DataSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
+        return session.getObjectValue(read(session,keys,modifier),getType());
     }
 
     public Expr getIncrementExpr(Map<KeyField, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

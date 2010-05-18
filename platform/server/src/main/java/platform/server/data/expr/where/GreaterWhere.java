@@ -16,7 +16,8 @@ import net.jcip.annotations.Immutable;
 @Immutable
 public class GreaterWhere extends CompareWhere {
 
-    private GreaterWhere(BaseExpr operator1, BaseExpr operator2) {
+    // public только для symmetricWhere
+    public GreaterWhere(BaseExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
     }
 

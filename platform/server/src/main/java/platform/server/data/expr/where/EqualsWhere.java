@@ -22,7 +22,8 @@ import net.jcip.annotations.Immutable;
 @Immutable
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
-    private EqualsWhere(BaseExpr operator1, BaseExpr operator2) {
+    // public только для symmetricWhere
+    public EqualsWhere(BaseExpr operator1, BaseExpr operator2) {
         super(operator1, operator2);
     }
 

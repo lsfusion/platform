@@ -42,4 +42,8 @@ public class DoubleClass extends IntegralClass<Double> {
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setDouble(num, (Double)value);
     }
+
+    public Double shiftValue(Double object) {
+        return (object==null?0:object)+1;
+    }
 }

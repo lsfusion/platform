@@ -90,12 +90,8 @@ public class DataProperty extends UserProperty {
         return cases.getExpr();
     }
 
-    public Type getType() {
-        return value.getType();
-    }
-
-    protected AndClassSet getValueSet() {
-        return value.getUpSet();
+    protected ValueClass getValueClass() {
+        return value;
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException {

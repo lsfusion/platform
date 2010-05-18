@@ -12,7 +12,6 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.type.Type;
 import platform.server.view.form.client.RemoteFormView;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.action.ClientAction;
 
 import java.util.Map;
@@ -25,7 +24,7 @@ public abstract class ActionProperty extends UserProperty {
         super(sID, caption, classes);
     }
 
-    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, List<ClientAction> actions, RemoteFormView executeForm);
+    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException;
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException {
         assert value instanceof NullValue;
@@ -40,11 +39,7 @@ public abstract class ActionProperty extends UserProperty {
         return new ValueExpr(true,ActionClass.instance).and(ClassProperty.getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 
-    public Type getType() {
-        return ActionClass.instance;
-    }
-
-    protected AndClassSet getValueSet() {
+    protected ActionClass getValueClass() {
         return ActionClass.instance;
     }
 }

@@ -17,6 +17,7 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
+    Where pack();
 
     <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
 

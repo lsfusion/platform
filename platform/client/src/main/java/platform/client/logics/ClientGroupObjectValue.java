@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
-public class ClientGroupObjectValue extends OrderedMap<ClientObjectImplementView,Integer>
+public class ClientGroupObjectValue extends OrderedMap<ClientObjectImplementView,Object>
                              implements Serializable {
 
     public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject) throws IOException {
@@ -19,12 +19,12 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObjectImplementView
     
     public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject,boolean nulls) throws IOException {
         for (ClientObjectImplementView clientObject : clientGroupObject)
-            put(clientObject, (Integer) BaseUtils.deserializeObject(inStream));
+            put(clientObject, BaseUtils.deserializeObject(inStream));
 
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
-        for (Map.Entry<ClientObjectImplementView,Integer> objectValue : entrySet())
-            outStream.writeInt(objectValue.getValue());
+        for (Map.Entry<ClientObjectImplementView,Object> objectValue : entrySet())
+            BaseUtils.serializeObject(outStream, objectValue.getValue());
     }
 }

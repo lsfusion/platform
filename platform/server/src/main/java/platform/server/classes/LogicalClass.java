@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class LogicalClass extends DataClass<Boolean> {
+public class LogicalClass extends IncrementClass<Boolean> {
 
     public static final LogicalClass instance = new LogicalClass();
 
@@ -96,5 +96,9 @@ public class LogicalClass extends DataClass<Boolean> {
     @Override
     public int getBinaryLength(boolean charBinary) {
         return 1;
+    }
+
+    public Boolean shiftValue(Boolean object) {
+        return object?null:true;
     }
 }

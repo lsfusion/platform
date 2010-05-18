@@ -115,13 +115,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         store = addAbstractClass("Склад", subject);
         shop = addConcreteClass("Магазин", store);
         warehouse = addConcreteClass("Распред. центр", store);
-        article = addConcreteClass("Товар", namedObject);
+        article = addConcreteClass("Товар", namedObject, barcodeObject);
         articleGroup = addConcreteClass("Группа товаров", namedObject);
         supplier = addAbstractClass("Поставщик", subject);
         localSupplier = addConcreteClass("Местный поставщик", supplier);
         importSupplier = addConcreteClass("Импортный поставщик", supplier);
         customerWhole = addConcreteClass("Оптовый покупатель", namedObject);
-        customerRetail = addConcreteClass("Розничный покупатель", namedObject);
+        customerRetail = addConcreteClass("Розничный покупатель", namedObject, barcodeObject);
 
         format = addConcreteClass("Формат", namedObject);
 
@@ -205,7 +205,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnSaleInvoiceRetail = addConcreteClass("Возврат реализации по безналу", orderShopInc, returnInner, commitInc, orderRetail);
         returnSaleCheckRetail = addConcreteClass("Возврат реализации за наличный расчет", orderShopInc, returnInner, commitInc, orderRetail);
 
-        obligation = addAbstractClass("Облигация", namedObject);
+        obligation = addAbstractClass("Облигация", namedObject, barcodeObject);
         coupon = addConcreteClass("Купон", obligation);
         giftObligation = addConcreteClass("Подарочный сертификат", obligation);
     }
@@ -394,7 +394,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         currentShopPrice = addJProp(priceGroup, "currentShopPrice", "Цена на складе (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
-        LP outOfDatePrice = addJProp(and1, articleBalanceSklCommitedQuantity, 1, 2, addJProp(diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
+        LP outOfDatePrice = addJProp(and(false,false), vtrue, articleBalanceSklCommitedQuantity, 1, 2, addJProp(diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
         documentRevalued.setDerivedChange(outOfDatePrice, priceStore, 1, 2);
 
         prevPrice = addDProp(documentPriceGroup, "prevPrice", "Цена пред.", DoubleClass.instance, documentShopPrice, article);
@@ -897,6 +897,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
 
+            ObjectNavigator objBarcode = addSingleGroupObjectImplement(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
+            objBarcode.groupTo.initClassView = ClassViewType.PANEL;
+            objBarcode.groupTo.banClassView = ClassViewType.GRID;
+
+            addBarCode(article, articleInnerQuantity);
         }
 
         @Override

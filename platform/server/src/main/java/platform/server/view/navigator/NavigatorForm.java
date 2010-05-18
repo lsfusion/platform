@@ -4,7 +4,10 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
+import platform.base.OrderedMap;
 import platform.server.classes.ValueClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
@@ -221,6 +224,10 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return resultPropertyView;
     }
 
+    public PropertyObjectNavigator getPropertyImplement(Property property) {
+        return getPropertyView(property).view;
+    }
+
     protected PropertyViewNavigator getPropertyView(Property property) {
 
         PropertyViewNavigator resultPropertyView = null;
@@ -299,5 +306,13 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeBoolean(isPrintForm);
+    }
+
+    public OrderedMap<CustomClass, PropertyObjectNavigator> barcodes = new OrderedMap<CustomClass, PropertyObjectNavigator>();
+    public void addBarCode(CustomClass customClass, LP lp) {
+        barcodes.put(customClass, getPropertyImplement(lp));
+    }
+    public void addBarCode(CustomClass customClass, PropertyObjectNavigator property) {
+        barcodes.put(customClass, property);
     }
 }

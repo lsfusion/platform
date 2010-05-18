@@ -46,6 +46,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     public Where followFalse(Where falseWhere, boolean packExprs) {
         return OrWhere.followFalse(this,falseWhere, FollowDeep.inner(packExprs),false);
     }
+    public Where pack() {
+        return followFalse(Where.FALSE, true);
+    }
 
     public <K> Map<K, Expr> followTrue(Map<K, ? extends Expr> map) {
         Map<K, Expr> result = new HashMap<K, Expr>();
@@ -72,7 +75,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             return new OrWhere(compiledWheres);
         }
     }
-    static Where toWhere(OrObjectWhere[] wheres) {
+    public static Where toWhere(OrObjectWhere[] wheres) {
         if(wheres.length==1)
             return wheres[0];
         else

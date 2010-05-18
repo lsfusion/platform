@@ -28,7 +28,7 @@ import ar.com.fdvs.dj.core.DynamicJasperHelper;
 // фасад для работы с клиентом
 public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>> extends RemoteObject implements RemoteFormInterface {
 
-    F form;
+    public F form;
     public FormView richDesign;
     public JasperDesign reportDesign;
 
@@ -156,7 +156,7 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
             // считаем ключи и найдем groupObjectValue
             Map<ObjectImplement,Object> mapValues = new HashMap<ObjectImplement, Object>();
             for(ObjectImplement object : groupObject.objects)
-                mapValues.put(object, inStream.readInt());
+                mapValues.put(object, BaseUtils.deserializeObject(inStream));
             form.changeGroupObject(groupObject, groupObject.findGroupObjectValue(mapValues));
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -188,7 +188,7 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         }
     }
 
-    public void changeObject(int objectID, Integer value) {
+    public void changeObject(int objectID, Object value) {
         try {
             form.getObjectImplement(objectID).changeValue(form.session, value);
         } catch (SQLException e) {

@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.server.classes.ValueClass;
+import platform.server.classes.ActionClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
@@ -8,6 +9,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.Field;
 import platform.server.data.PropertyField;
 import platform.server.data.KeyField;
+import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.RemoteFormView;
@@ -41,19 +43,23 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
 
     @Override
     public DataChanges getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, modifier, null));//.and(DataSession.getIsClassWhere(modifier.getSession(), change.expr, value, null));
+        change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, modifier, null).and(modifier.getSession().getIsClassWhere(change.expr, getValueClass(), changedWhere).or(change.expr.getWhere().not())));
         if(changedWhere !=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
         // изменяет себя, если классы совпадают
         return new DataChanges(this, change);
     }
 
-    protected abstract AndClassSet getValueSet();
+    public Type getType() {
+        return getValueClass().getType();
+    }
+
+    protected abstract ValueClass getValueClass();
 
     protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
         Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();
         for(Map.Entry<ClassPropertyInterface, KeyField> mapKey : mapTable.mapKeys.entrySet())
             result.put(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());
-        result.put(storedField, getValueSet());
+        result.put(storedField, getValueClass().getUpSet());
         return new ClassWhere<Field>(result);
     }
 

@@ -508,9 +508,9 @@ public class ClientForm extends JPanel {
             } else {
 
                 ClientObjectImplementView object = ((ClientObjectCellView)property).object;
-                remoteForm.changeObject(object.getID(), (Integer)value);
+                remoteForm.changeObject(object.getID(), value);
 
-                controllers.get(property.getGroupObject()).setCurrentObject(object, (Integer)value);
+                controllers.get(property.getGroupObject()).setCurrentObject(object, value);
 
                 applyFormChanges();
 

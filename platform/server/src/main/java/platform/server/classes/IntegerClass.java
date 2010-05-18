@@ -46,4 +46,8 @@ public class IntegerClass extends IntegralClass<Integer> {
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setInt(num, (Integer)value);
     }
+
+    public Integer shiftValue(Integer object) {
+        return (object==null?0:object)+1;
+    }
 }

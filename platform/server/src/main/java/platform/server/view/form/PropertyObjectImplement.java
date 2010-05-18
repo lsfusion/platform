@@ -72,15 +72,40 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         properties.add(property);
     }
 
-    public Map<P, DataObject> getInterfaceValues() {
+    public Map<P, ConcreteClass> getInterfaceClasses(P overrideInterface, ConcreteClass overrideClass) {
+        Map<P,ConcreteClass> mapInterface = new HashMap<P,ConcreteClass>();
+        for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
+            if(overrideInterface!=null && implement.getKey().equals(overrideInterface))
+                mapInterface.put(overrideInterface, overrideClass);
+            else
+                mapInterface.put(implement.getKey(),implement.getValue().getCurrentClass());
+        return mapInterface;
+    }
+    
+    public Map<P, ConcreteClass> getInterfaceClasses() {
+        return getInterfaceClasses(null, null);
+    }
+
+    public Map<P, DataObject> getInterfaceValues(P overrideInterface, DataObject overrideObject) {
         Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
         for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
-            mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
+            if(overrideInterface!=null && implement.getKey().equals(overrideInterface))
+                mapInterface.put(overrideInterface, overrideObject);
+            else
+                mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
         return mapInterface;
+    }
+
+    public Map<P, DataObject> getInterfaceValues() {
+        return getInterfaceValues(null, null);
     }
 
     public PropertyValueImplement<?> getChangeProperty() {
         return property.getChangeProperty(getInterfaceValues());
+    }
+
+    public PropertyValueImplement<?> getChangeProperty(P overrideInterface, DataObject overrideObject) {
+        return property.getChangeProperty(getInterfaceValues(overrideInterface, overrideObject));
     }
 
     public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
@@ -96,9 +121,6 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     }
 
     public CustomClass getDialogClass() {
-        Map<P, ConcreteClass> mapClasses = new HashMap<P, ConcreteClass>();
-        for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
-            mapClasses.put(implement.getKey(),implement.getValue().getCurrentClass());
-        return property.getDialogClass(getInterfaceValues(), mapClasses);
+        return property.getDialogClass(getInterfaceValues(), getInterfaceClasses());
     }
 }

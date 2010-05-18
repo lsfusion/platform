@@ -2,6 +2,7 @@ package platform.server.data.where;
 
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.base.BaseUtils;
 
 public class Equal {
     public BaseExpr[] exprs;
@@ -15,5 +16,12 @@ public class Equal {
         size = 1;
         if(expr instanceof ValueExpr)
             value = (ValueExpr) expr;
+    }
+
+    public boolean contains(BaseExpr expr) {
+        for(int i=0;i<size;i++)
+            if(BaseUtils.hashEquals(exprs[i],expr))
+                return true;
+        return false;
     }
 }

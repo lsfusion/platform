@@ -205,7 +205,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     }
 
-    public void setCurrentObject(ClientObjectImplementView object, Integer value) {
+    public void setCurrentObject(ClientObjectImplementView object, Object value) {
 
         if (currentObject == null) return;
 

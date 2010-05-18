@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Random;
 
 // класс который можно сравнивать
-public abstract class IntegralClass<T extends Number> extends DataClass<T> {
+public abstract class IntegralClass<T extends Number> extends IncrementClass<T> {
 
     public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
         return new DataObject(50,this);

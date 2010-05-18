@@ -5,6 +5,7 @@ import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.RemoteObject;
+import platform.interop.action.ClientAction;
 import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
@@ -28,6 +29,8 @@ import platform.server.logics.linear.LP;
 import platform.server.session.DataSession;
 import platform.server.data.SQLSession;
 import platform.server.view.navigator.*;
+import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.form.RemoteForm;
 import platform.server.classes.*;
 
 import java.io.*;
@@ -83,7 +86,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return idGenerator.idShift(offs);
     }
 
-    protected AbstractCustomClass namedObject, transaction;
+    protected AbstractCustomClass namedObject, transaction, barcodeObject;
 
     protected LP groeq2;
     protected LP greater2, less2;
@@ -99,12 +102,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP transactionLater;
     protected LP currentDate;
     protected LP currentHour;
+    protected LP barcode;
+    protected LP barcodeToObject;
+    protected LP barcodeAction;
 
     void initBase() {
         baseClass = new BaseClass(idShift(1), "Объект");
 
         namedObject = addAbstractClass("Объект с именем", baseClass);
         transaction = addAbstractClass("Транзакция", baseClass);
+        barcodeObject = addAbstractClass("Штрих-кодированный объект", baseClass);
 
         tableFactory = new TableFactory();
         for(int i=0;i<TableFactory.MAX_INTERFACE;i++) { // заполним базовые таблицы
@@ -137,6 +144,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
         currentHour = addSFProp(adapter.getHour(), DoubleClass.instance, 0);
+
+        barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
+        barcodeToObject = addCGProp(baseGroup, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
+
+        barcodeAction = addProperty(baseGroup,new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
+    }
+
+    private class BarCodeActionProperty extends ActionProperty {
+
+        public BarCodeActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{StringClass.get(13)});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException {
+            ((RemoteForm<?>)executeForm.form).executeBarcode(BaseUtils.singleValue(keys), (Property<?>)barcodeToObject.property);
+        }
     }
 
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();

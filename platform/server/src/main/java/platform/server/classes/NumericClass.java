@@ -81,4 +81,8 @@ public class NumericClass extends IntegralClass<Double> {
     public int getBinaryLength(boolean charBinary) {
         return length * (charBinary?1:2);
     }
+
+    public Double shiftValue(Double object) {
+        return (object==null?0:object)+1;
+    }
 }

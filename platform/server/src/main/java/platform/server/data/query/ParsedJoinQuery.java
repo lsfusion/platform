@@ -35,7 +35,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         mapKeys = query.mapKeys;
         values = query.getValues();
 
-        where = query.where.followFalse(Where.FALSE, true);
+        where = query.where.pack();
         properties = where.followTrue(query.properties);
     }
 

@@ -61,6 +61,15 @@ public class InnerJoins extends DNFWheres<InnerWhere, InnerJoins> {
                 result.add(new Entry(mean,where));
             }
         }
+
+        // упакуем entry
+        for(Iterator<Entry> it = result.iterator();it.hasNext();) {
+            Entry resultJoin = it.next();
+            resultJoin.where = resultJoin.where.pack();
+            if(resultJoin.where.isFalse())
+                it.remove();            
+        }
+        
         return result;
     }
 

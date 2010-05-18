@@ -16,10 +16,14 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.type.TypeSerializer;
+import platform.server.data.type.Type;
 import platform.server.classes.*;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -32,6 +36,8 @@ import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.caches.ManualLazy;
 
 import java.io.DataOutputStream;
@@ -95,11 +101,11 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     final FocusView<T> focusView;
     final CustomClassView classView;
 
-    public final NavigatorForm navigatorForm;
+    public final NavigatorForm<T> navigatorForm;
 
     protected final Mapper mapper;
 
-    public RemoteForm(NavigatorForm<?> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
+    public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
         this.navigatorForm = navigatorForm;
         this.BL = BL;
         this.session = session;
@@ -148,7 +154,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
-    public RemoteForm(NavigatorForm<?> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView) throws SQLException {
+    public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView) throws SQLException {
         this(navigatorForm, BL, session, securityPolicy, focusView, classView, new HashMap<ObjectNavigator, Object>());
     }
 
@@ -1102,6 +1108,60 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
+    public <P extends PropertyInterface> boolean executeBarcodeProperty(DataObject dataObject, PropertyObjectImplement<P> implement, boolean onlyValue) throws SQLException {
+        Property<P> property = implement.property;
+        Type type = implement.getType();
+        if(!onlyValue && type instanceof IncrementClass) {
+            IncrementClass incrementType = (IncrementClass)type;
+            for(P propertyInterface : property.interfaces) {
+                Map<P, DataObject> interfaceValues = implement.getInterfaceValues(propertyInterface, dataObject);
+                Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this));
+                DataChanges dataChanges = property.getChangeProperty(interfaceValues).getDataChanges(
+                        incrementValue==null?CaseExpr.NULL:new ValueExpr(incrementValue,incrementType), this);
+                if(dataChanges.hasChanges()) {
+                    dataChanges.execute(session, null);
+                    PropertyObjectInterface objectInterface = implement.mapping.get(propertyInterface);
+                    if(objectInterface instanceof ObjectImplement) {
+                        ObjectImplement objectImplement = (ObjectImplement)objectInterface;
+                        userGroupSeeks.put(objectImplement.groupTo, Collections.<OrderView,Object>singletonMap(objectImplement, dataObject.object));
+                    }
+                    return true;
+                }
+            }
+        }
 
+        // нужно проверить можно ли менять на этот класс
+        DataChanges dataChanges = implement.getChangeProperty().getDataChanges(dataObject.getExpr(),this);
+        if(dataChanges.hasChanges()) {
+            dataChanges.execute(session, null);
+            return true;
+        }
+
+        return false;
+    }
+
+    public <B extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject) throws SQLException {
+
+        ObjectValue value = barcodeToObject.readClasses(session, Collections.singletonMap(BaseUtils.single(barcodeToObject.interfaces), barcode), this);
+        if(value instanceof DataObject) {
+            DataObject dataObject = (DataObject)value;
+            ConcreteCustomClass dataClass = (ConcreteCustomClass)session.getCurrentClass(dataObject);
+            for(Map.Entry<CustomClass,PropertyObjectNavigator> barCode : navigatorForm.barcodes.entrySet()) // проверяем заданные пользователем свойства
+                if(dataClass.isChild(barCode.getKey()) && executeBarcodeProperty(dataObject, mapper.mapProperty(barCode.getValue()), false)) // нашли свойство
+                    return;
+
+            for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем
+                if(executeBarcodeProperty(dataObject, property.view, true))
+                    return;
+
+            for(GroupObjectImplement group : groups) { // просто ищем первый попавшийся объект
+                for(ObjectImplement object : group.objects)
+                    if(object instanceof CustomObjectImplement && dataClass.isChild(((CustomObjectImplement)object).getGridClass())) {
+                        userGroupSeeks.put(group, Collections.<OrderView,Object>singletonMap(object, dataObject.object));
+                        return;
+                    }
+            }
+        }
+    }
 }
 

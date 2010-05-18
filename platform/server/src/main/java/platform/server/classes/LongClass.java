@@ -42,4 +42,8 @@ public class LongClass extends IntegralClass<Long> {
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
         statement.setLong(num, (Long)value);
     }
+
+    public Long shiftValue(Long object) {
+        return (object==null?0:object)+1;
+    }
 }

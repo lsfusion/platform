@@ -52,7 +52,7 @@ public class CustomObjectImplement extends ObjectImplement {
             return currentClass;
     }
 
-    public ValueClass getGridClass() {
+    public CustomClass getGridClass() {
         return gridClass;
     }
 
