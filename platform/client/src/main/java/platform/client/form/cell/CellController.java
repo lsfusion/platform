@@ -69,4 +69,7 @@ public class CellController {
         return true;
     }
 
+    public void startEditing() {
+        view.startEditing();
+    }
 }

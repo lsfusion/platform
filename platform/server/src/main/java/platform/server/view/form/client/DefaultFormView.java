@@ -19,6 +19,9 @@ public class DefaultFormView extends FormView {
     private transient Map<ObjectNavigator, ObjectImplementView> mobjects = new HashMap<ObjectNavigator, ObjectImplementView>();
     public ObjectImplementView get(ObjectNavigator object) { return mobjects.get(object); }
 
+    private transient Map<PropertyViewNavigator, PropertyCellView> mproperties = new HashMap<PropertyViewNavigator, PropertyCellView>();
+    public PropertyCellView get(PropertyViewNavigator property) { return mproperties.get(property); }
+
     private transient ContainerView mainContainer;
     public ContainerView getMainContainer() { return mainContainer; }
 
@@ -129,6 +132,7 @@ public class DefaultFormView extends FormView {
             clientProperty.constraints.order = navigatorForm.propertyViews.indexOf(control);
             clientProperty.constraints.insetsSibling = new Insets(0,0,2,2);
 
+            mproperties.put(control, clientProperty);
             properties.add(clientProperty);
 
             addComponent(groupObject, clientProperty, control.view.property.getParent());

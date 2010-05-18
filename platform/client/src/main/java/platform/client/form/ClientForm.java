@@ -141,22 +141,43 @@ public class ClientForm extends JPanel {
 
     }
 
+    // здесь хранится список всех GroupObjects плюс при необходимости null
+    private List<ClientGroupObjectImplementView> groupObjects;
+    public List<ClientGroupObjectImplementView> getGroupObjects() {
+        return groupObjects;
+    }
+
+
     private void initializeGroupObjects() throws IOException {
 
         controllers = new HashMap<ClientGroupObjectImplementView, GroupObjectController>();
+        groupObjects = new ArrayList<ClientGroupObjectImplementView>();
 
         for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
-
+            groupObjects.add(groupObject);
             GroupObjectController controller = new GroupObjectController(groupObject, formView, this, formLayout);
             controllers.put(groupObject, controller);
         }
 
         for (ClientPropertyView properties : formView.properties) {
             if (properties.groupObject == null) {
+                groupObjects.add(null);
                 GroupObjectController controller = new GroupObjectController(null, formView, this, formLayout);
                 controllers.put(null, controller);
+                break;
             }
         }
+    }
+
+    // реализуем "обратную" обработку нажатий кнопок
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+
+        for (ClientGroupObjectImplementView groupObject : groupObjects) {
+            if (controllers.get(groupObject).processKeyEvent(ks, e)) return true;
+        }
+
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     private void initializeRegularFilters() {

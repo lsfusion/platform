@@ -4,6 +4,7 @@ import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.view.form.client.report.ReportDrawField;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,9 +15,11 @@ import java.text.SimpleDateFormat;
 
 abstract public class CellView extends ComponentView {
 
-    Dimension minimumSize;
-    Dimension maximumSize;
-    Dimension preferredSize;
+    public Dimension minimumSize;
+    public Dimension maximumSize;
+    public Dimension preferredSize;
+
+    public KeyStroke editKey;
 
     public CellView(int ID) {
         super(ID);
@@ -32,6 +35,8 @@ abstract public class CellView extends ComponentView {
         new ObjectOutputStream(outStream).writeObject(minimumSize);
         new ObjectOutputStream(outStream).writeObject(maximumSize);
         new ObjectOutputStream(outStream).writeObject(preferredSize);
+
+        new ObjectOutputStream(outStream).writeObject(editKey); 
     }
 
     abstract Type getType();

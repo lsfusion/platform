@@ -58,6 +58,11 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             return true;
         }
 
+        if (e == null) {
+            // значит программно вызвали редактирование
+            return true;
+        }
+
         return false;
     }
 

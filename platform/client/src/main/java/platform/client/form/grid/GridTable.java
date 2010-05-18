@@ -342,6 +342,22 @@ public abstract class GridTable extends ClientFormTable
             return null;
     }
 
+    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
+
+        for (ClientCellView columns : gridColumns) {
+            if (ks.equals(columns.editKey)) {
+                int leadRow = getSelectionModel().getLeadSelectionIndex();
+                if (leadRow != -1 && !isEditing()) {
+                    if (editCellAt(leadRow, gridColumns.indexOf(columns)))
+                        return true;
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // ---------------------------------------------------------------------------------------------- //
     // ------------------------------------------- Модель данных ------------------------------------ //
     // ---------------------------------------------------------------------------------------------- //

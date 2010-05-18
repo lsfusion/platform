@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.Union;
@@ -225,7 +226,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP onlyPositive = addJProp(and1, 1, positive, 1);
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
 
-        LP articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article); addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
+        LP articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article);
+        articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
         incStore = addCUProp("incStore", "Склад (прих.)", // generics
                 addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
@@ -246,7 +248,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 orderSupplier,
                 addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderWhole),
                 addDProp("retailCustomer", "Розничный покупатель", customerRetail, orderRetail));
-        addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
+        nameContragent = addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
 
         LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
 
@@ -462,7 +464,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                         addJProp(less2, orderClientSum, 1, articleActionClientSum, 2), 1, 3,
                                         addJProp(less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
                                         addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
-        LP orderArticleSaleDiscount = addDProp(baseGroup, "orderArticleSaleDiscount", "Скидка", DoubleClass.instance, orderSaleRetail, article);
+        orderArticleSaleDiscount = addDProp(baseGroup, "orderArticleSaleDiscount", "Скидка", DoubleClass.instance, orderSaleRetail, article);
         orderArticleSaleDiscount.setDerivedChange(addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2), true, 1, 2, is(orderSaleRetail), 1);
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSalePrice, 1, 2);
@@ -517,16 +519,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP articleFreeOrderQuantity;
 
+    LP articleToGroupName;
+
     LP articleSupplier;
     LP articleStoreSupplier;
     LP articleStorePeriod;
     LP articleStoreMin;
     LP articleFullStoreDemand;
 
+    LP nameContragent;
+
     LP documentLogisticsSupplied, documentLogisticsRequired, documentLogisticsRecommended;
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
     LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
+    LP orderArticleSaleDiscount;
     LP shopPrice;
     LP priceStore, inDocumentPrice;
     LP isRevalued, isNewPrice, documentRevalued;

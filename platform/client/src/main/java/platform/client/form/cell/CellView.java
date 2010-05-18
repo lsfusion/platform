@@ -76,4 +76,7 @@ public abstract class CellView extends JPanel {
         table.setValue(ivalue);
     }
 
+    public void startEditing() {
+        table.editCellAt(0, 0);
+    }
 }

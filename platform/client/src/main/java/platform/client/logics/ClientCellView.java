@@ -9,6 +9,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -28,6 +29,8 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public String caption;
 
+    public KeyStroke editKey;
+
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -38,6 +41,8 @@ abstract public class ClientCellView extends ClientComponentView {
         minimumSize = (Dimension) new ObjectInputStream(inStream).readObject();
         maximumSize = (Dimension) new ObjectInputStream(inStream).readObject();
         preferredSize = (Dimension) new ObjectInputStream(inStream).readObject();
+
+        editKey = (KeyStroke) new ObjectInputStream(inStream).readObject();
     }
 
     public int getMinimumWidth() {

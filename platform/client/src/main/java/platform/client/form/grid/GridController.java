@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.awt.event.KeyEvent;
 
 public class GridController {
 
@@ -187,5 +188,12 @@ public class GridController {
 
             gridTable.setColumnValues(object.classCellView, cls);
         }
+    }
+
+    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
+
+        if (gridTable.processKeyEvent(ks, e)) return true;
+
+        return false;
     }
 }

@@ -8,6 +8,7 @@ import platform.client.form.ClientFormLayout;
 import javax.swing.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.awt.event.KeyEvent;
 
 public abstract class PanelController {
 
@@ -160,5 +161,17 @@ public abstract class PanelController {
         for (ClientCellView property : controllers.keySet()) {
             controllers.get(property).showViews();
         }
+    }
+
+    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
+
+        for (ClientCellView cell : controllers.keySet()) {
+            if (ks.equals(cell.editKey)) {
+                controllers.get(cell).startEditing();
+                return true;
+            }
+        }
+
+        return false;
     }
 }
