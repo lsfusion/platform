@@ -99,6 +99,6 @@ public class LogicalClass extends IncrementClass<Boolean> {
     }
 
     public Boolean shiftValue(Boolean object) {
-        return object?null:true;
+        return object==null?true:null;
     }
 }

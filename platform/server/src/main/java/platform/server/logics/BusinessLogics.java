@@ -146,7 +146,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentHour = addSFProp(adapter.getHour(), DoubleClass.instance, 0);
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
-        barcodeToObject = addCGProp(baseGroup, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
+        barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
+        addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
 
         barcodeAction = addProperty(baseGroup,new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
     }

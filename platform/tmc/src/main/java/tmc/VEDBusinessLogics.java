@@ -484,7 +484,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderDeliveryPrice.setDerivedChange(articleSupplierPrice, 2, articleQuantity, 1, 2);
         addSUProp(documentPriceGroup, "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), orderDeliveryPrice);
 
-        LP orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckRetail, obligation);
+        orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckRetail, obligation);
         obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
         orderSaleObligationCanNotBeUsed = addJProp(and(false, false, true), is(commitSaleCheckRetail), 1, is(obligation), 2,
                                                     addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
@@ -510,6 +510,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP obligationDocument;
     LP orderSaleObligationCanNotBeUsed;
+    LP orderSaleUseObligation;
 
     LP clientSum;
     LP incStore;
@@ -902,6 +903,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objBarcode.groupTo.banClassView = ClassViewType.GRID;
 
             addBarCode(article, articleInnerQuantity);
+            addBarCode(obligation, orderSaleUseObligation);
         }
 
         @Override
