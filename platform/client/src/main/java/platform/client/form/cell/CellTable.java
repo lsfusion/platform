@@ -8,6 +8,7 @@ import platform.base.BaseUtils;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
+import java.awt.*;
 
 public abstract class CellTable extends SingleCellTable
                         implements ClientCellViewTable {
@@ -26,9 +27,9 @@ public abstract class CellTable extends SingleCellTable
 
     public void keyChanged(ClientCellView key) {
 
-        setMinimumSize(key.getMinimumSize());
-        setPreferredSize(key.getPreferredSize());
-        setMaximumSize(key.getMaximumSize());
+        setMinimumSize(key.getMinimumSize(this));
+        setPreferredSize(key.getPreferredSize(this));
+        setMaximumSize(key.getMaximumSize(this));
     }
 
     public void setValue(Object value) {

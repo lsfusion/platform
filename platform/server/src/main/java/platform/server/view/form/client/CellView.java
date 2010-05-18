@@ -20,6 +20,7 @@ abstract public class CellView extends ComponentView {
     public Dimension preferredSize;
 
     public KeyStroke editKey;
+    public Font font;
 
     public CellView(int ID) {
         super(ID);
@@ -36,7 +37,8 @@ abstract public class CellView extends ComponentView {
         new ObjectOutputStream(outStream).writeObject(maximumSize);
         new ObjectOutputStream(outStream).writeObject(preferredSize);
 
-        new ObjectOutputStream(outStream).writeObject(editKey); 
+        new ObjectOutputStream(outStream).writeObject(editKey);
+        new ObjectOutputStream(outStream).writeObject(font);
     }
 
     abstract Type getType();

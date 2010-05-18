@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
+import java.awt.*;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.Union;
@@ -470,7 +471,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSalePrice, 1, 2);
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2);
         LP orderSaleDiscountSum = addSGProp(documentPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
-        LP orderSalePay = addDUProp(documentPriceGroup, "Сумма к оплате", addSGProp("Сумма док. прод.", orderArticleSaleSum, 1), orderSaleDiscountSum);
+        orderSalePay = addDUProp(documentPriceGroup, "Сумма к оплате", addSGProp("Сумма док. прод.", orderArticleSaleSum, 1), orderSaleDiscountSum);
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSalePrice, 3, 2);
         LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2);
@@ -534,6 +535,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
     LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
+    LP orderSalePay;
     LP orderArticleSaleDiscount;
     LP shopPrice;
     LP priceStore, inDocumentPrice;

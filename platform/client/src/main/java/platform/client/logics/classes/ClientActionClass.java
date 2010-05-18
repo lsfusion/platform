@@ -10,6 +10,7 @@ import platform.client.logics.ClientCellView;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.awt.*;
 
 public class ClientActionClass extends ClientLogicalClass {
     
@@ -18,12 +19,12 @@ public class ClientActionClass extends ClientLogicalClass {
     }
 
     @Override
-    public int getPreferredWidth() {
+    public int getPreferredWidth(FontMetrics fontMetrics) {
         return 50;
     }
 
     @Override
-    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new ActionPropertyRenderer(caption); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new ActionPropertyRenderer(caption); }
 
     @Override
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }

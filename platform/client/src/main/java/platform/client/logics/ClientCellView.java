@@ -7,7 +7,6 @@ import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,53 +42,54 @@ abstract public class ClientCellView extends ClientComponentView {
         preferredSize = (Dimension) new ObjectInputStream(inStream).readObject();
 
         editKey = (KeyStroke) new ObjectInputStream(inStream).readObject();
+        font = (Font) new ObjectInputStream(inStream).readObject(); 
     }
 
-    public int getMinimumWidth() {
-        return baseType.getMinimumWidth();
+    public int getMinimumWidth(JComponent comp) {
+        return baseType.getMinimumWidth(comp.getFontMetrics(getFont(comp)));
     }
 
-    int getMinimumHeight() {
-        return getPreferredHeight();
+    int getMinimumHeight(JComponent comp) {
+        return getPreferredHeight(comp);
     }
 
     private Dimension minimumSize;
-    public Dimension getMinimumSize() {
+    public Dimension getMinimumSize(JComponent comp) {
         if (minimumSize != null) return minimumSize;
-        return new Dimension(getMinimumWidth(), getMinimumHeight());
+        return new Dimension(getMinimumWidth(comp), getMinimumHeight(comp));
     }
 
-    public int getPreferredWidth() {
-        return baseType.getPreferredWidth();
+    public int getPreferredWidth(JComponent comp) {
+        return baseType.getPreferredWidth(comp.getFontMetrics(getFont(comp)));
     }
 
-    int getPreferredHeight() {
-        return 15;
+    int getPreferredHeight(JComponent comp) {
+        return comp.getFontMetrics(getFont(comp)).getHeight() + 1;
     }
 
     private Dimension preferredSize;
-    public Dimension getPreferredSize() {
+    public Dimension getPreferredSize(JComponent comp) {
         if (preferredSize != null) return preferredSize;
-        return new Dimension(getPreferredWidth(), getPreferredHeight());
+        return new Dimension(getPreferredWidth(comp), getPreferredHeight(comp));
     }
 
-    public int getMaximumWidth() {
-        return baseType.getMaximumWidth();
+    public int getMaximumWidth(JComponent comp) {
+        return baseType.getMaximumWidth(comp.getFontMetrics(getFont(comp)));
     }
 
-    int getMaximumHeight() {
-        return getPreferredHeight();
+    int getMaximumHeight(JComponent comp) {
+        return getPreferredHeight(comp);
     }
 
     private Dimension maximumSize;
-    public Dimension getMaximumSize() {
+    public Dimension getMaximumSize(JComponent comp) {
         if (maximumSize != null) return maximumSize;
-        return new Dimension(getMaximumWidth(), getMaximumHeight());
+        return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
 
     private transient PropertyRendererComponent renderer;
     public PropertyRendererComponent getRendererComponent() {
-        if (renderer == null) renderer = baseType.getRendererComponent(getFormat(), caption);
+        if (renderer == null) renderer = baseType.getRendererComponent(getFormat(), caption, getFont());
         return renderer;
     }
 
@@ -99,6 +99,14 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public abstract PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
     public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
+
+    private Font font;
+    Font getFont() {
+        return font;
+    }
+    Font getFont(JComponent comp) {
+        return (font == null ? comp.getFont() : font);
+    }
 
     private Format format;
     Format getFormat() {

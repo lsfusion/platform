@@ -65,9 +65,9 @@ public abstract class GridTable extends ClientFormTable
         for (ClientCellView property : gridColumns) {
 
             TableColumn column = getColumnModel().getColumn(gridColumns.indexOf(property));
-            column.setMinWidth(property.getMinimumWidth());
-            column.setPreferredWidth(property.getPreferredWidth());
-            column.setMaxWidth(property.getMaximumWidth());
+            column.setMinWidth(property.getMinimumWidth(this));
+            column.setPreferredWidth(property.getPreferredWidth(this));
+            column.setMaxWidth(property.getMaximumWidth(this));
         }
 
         if (gridColumns.size() != 0) {

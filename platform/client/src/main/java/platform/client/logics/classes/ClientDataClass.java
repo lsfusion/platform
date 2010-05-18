@@ -7,6 +7,7 @@ import platform.client.logics.ClientCellView;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.awt.*;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
@@ -18,15 +19,21 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         return false;
     }
 
-    public int getMinimumWidth() {
-        return getPreferredWidth();
+    public int getMinimumWidth(FontMetrics fontMetrics) {
+        return fontMetrics.stringWidth(getMinimumMask()) + 8;
     }
-    public int getPreferredWidth() {
-        return 50;
+    public int getPreferredWidth(FontMetrics fontMetrics) {
+        return fontMetrics.stringWidth(getPreferredMask()) + 8;
     }
-    public int getMaximumWidth() {
+    public int getMaximumWidth(FontMetrics fontMetrics) {
         return Integer.MAX_VALUE;
     }
+
+    public String getMinimumMask() {
+        return getPreferredMask();
+    }
+    
+    abstract public String getPreferredMask();
 
     protected abstract PropertyEditorComponent getComponent(Object value, Format format);
 

@@ -706,4 +706,11 @@ public class BaseUtils {
         Collections.addAll(list,elements);
         return list;
     }
+
+    public static String replicate(char character, int length) {
+
+        char[] chars = new char[length];
+        Arrays.fill(chars, character);
+        return new String(chars);
+    }
 }

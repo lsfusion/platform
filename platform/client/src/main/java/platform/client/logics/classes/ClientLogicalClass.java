@@ -7,6 +7,7 @@ import platform.client.form.editor.LogicalPropertyEditor;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.awt.*;
 
 public class ClientLogicalClass extends ClientDataClass {
 
@@ -14,12 +15,24 @@ public class ClientLogicalClass extends ClientDataClass {
         super(inStream);
     }
 
-    public int getPreferredWidth() { return 25; }
+    @Override
+    public int getMinimumWidth(FontMetrics fontMetrics) {
+        return getPreferredWidth(fontMetrics);
+    }
+
+
+    public int getPreferredWidth(FontMetrics fontMetrics) {
+        return 25;
+    }
+
+    public String getPreferredMask() {
+        return "";
+    }
 
     public Format getDefaultFormat() {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new LogicalPropertyRenderer(); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new LogicalPropertyRenderer(); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new LogicalPropertyEditor(value); }
 }

@@ -7,16 +7,17 @@ import platform.client.logics.ClientCellView;
 
 import java.text.Format;
 import java.io.IOException;
+import java.awt.*;
 
 public interface ClientType {
 
-    int getMinimumWidth();
-    int getPreferredWidth();
-    int getMaximumWidth();
+    int getMinimumWidth(FontMetrics fontMetrics);
+    int getPreferredWidth(FontMetrics fontMetrics);
+    int getMaximumWidth(FontMetrics fontMetrics);
 
     Format getDefaultFormat();
 
-    PropertyRendererComponent getRendererComponent(Format format, String caption);
+    PropertyRendererComponent getRendererComponent(Format format, String caption, Font font);
 
     abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
     abstract public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;

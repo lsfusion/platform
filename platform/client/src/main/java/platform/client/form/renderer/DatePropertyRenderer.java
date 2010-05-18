@@ -5,12 +5,13 @@ import platform.client.form.PropertyRendererComponent;
 
 import javax.swing.*;
 import java.text.Format;
+import java.awt.*;
 
 public class DatePropertyRenderer extends LabelPropertyRenderer
                            implements PropertyRendererComponent {
 
-    public DatePropertyRenderer(Format format) {
-        super(format);
+    public DatePropertyRenderer(Format format, Font font) {
+        super(format, font);
 
         setHorizontalAlignment(JLabel.RIGHT);
 

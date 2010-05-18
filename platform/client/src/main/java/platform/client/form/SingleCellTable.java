@@ -4,10 +4,7 @@ import platform.client.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 public class SingleCellTable extends ClientFormTable {
 
@@ -40,6 +37,13 @@ public class SingleCellTable extends ClientFormTable {
                 KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK));
 
    }
+
+    // приходится делать вот таким извращенным способом, поскольку ComponentListener срабатывает после перерисовки формы
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        rowHeight = height;
+        super.setBounds(x, y, width, height);
+    }
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
 					int condition, boolean pressed) {

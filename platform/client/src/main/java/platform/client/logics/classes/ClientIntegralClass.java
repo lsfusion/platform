@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
+import java.awt.*;
 
 abstract public class ClientIntegralClass extends ClientDataClass {
 
@@ -15,8 +16,14 @@ abstract public class ClientIntegralClass extends ClientDataClass {
         super(inStream);
     }
 
-    public int getMinimumWidth() { return 45; }
-    public int getPreferredWidth() { return 60; }
+    @Override
+    public String getMinimumMask() {
+        return "999 999";
+    }
+
+    public String getPreferredMask() {
+        return "9 999 999";
+    }
 
     public Format getDefaultFormat() {
         return NumberFormat.getInstance();
@@ -24,7 +31,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     protected abstract Class getJavaClass() ;
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new IntegerPropertyRenderer(format); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new IntegerPropertyRenderer(format, font); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new IntegerPropertyEditor(value, (NumberFormat)format, getJavaClass()); }
 
 }

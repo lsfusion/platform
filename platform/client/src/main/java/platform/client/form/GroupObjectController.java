@@ -336,7 +336,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
 
         if (panel.processKeyEvent(ks, e)) return true;
-        if (grid.processKeyEvent(ks, e)) return true;
+        if (grid != null && grid.processKeyEvent(ks, e)) return true;
 
         return false;
     }

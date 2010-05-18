@@ -9,12 +9,16 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 
     Format format = null;
 
-    LabelPropertyRenderer(Format iformat) {
+    LabelPropertyRenderer(Format iformat, Font font) {
         super();
 
         format = iformat;
         setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
+
+        if (font != null) {
+            setFont(font);
+        }
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {

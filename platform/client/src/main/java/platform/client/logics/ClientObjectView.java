@@ -1,8 +1,10 @@
 package platform.client.logics;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.awt.*;
 
 public abstract class ClientObjectView extends ClientCellView {
 
@@ -22,8 +24,8 @@ public abstract class ClientObjectView extends ClientCellView {
         return object.groupObject;
     }
 
-    public int getMaximumWidth() {
-        return getPreferredWidth();
+    public int getMaximumWidth(JComponent comp) {
+        return getPreferredWidth(comp);
     }
 
 }

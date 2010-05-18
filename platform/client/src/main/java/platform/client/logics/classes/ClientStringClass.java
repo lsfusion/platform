@@ -3,10 +3,12 @@ package platform.client.logics.classes;
 import platform.client.form.*;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.form.editor.StringPropertyEditor;
+import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
+import java.awt.*;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -18,13 +20,29 @@ public class ClientStringClass extends ClientDataClass {
         length = inStream.readInt();
     }
 
-    public int getMinimumWidth() { return length; }
-    public int getPreferredWidth() { return length * 5; }
+    @Override
+    public int getMinimumWidth(FontMetrics fontMetrics) {
+        return length;
+    }
+
+    @Override
+    public int getPreferredWidth(FontMetrics fontMetrics) { 
+        return length * 5;
+    }
+
+    @Override
+    public String getMinimumMask() {
+        return BaseUtils.replicate('A', length / 5);
+    }
+
+    public String getPreferredMask() {
+        return BaseUtils.replicate('A', length);
+    }
 
     public Format getDefaultFormat() {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption) { return new StringPropertyRenderer(format); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new StringPropertyRenderer(format, font); }
     public PropertyEditorComponent getComponent(Object value, Format format) { return new StringPropertyEditor(length, value); }
 }
