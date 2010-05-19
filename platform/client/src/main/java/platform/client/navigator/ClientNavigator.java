@@ -33,7 +33,9 @@ public abstract class ClientNavigator extends AbstractNavigator {
     }
 
     public void changeCurrentClass(RemoteFormInterface form,ClientObjectImplementView object) throws RemoteException {
-        changeCurrentClass(form.getObjectClassID(object.getID()));
+        int classID = form.getObjectClassID(object.getID());
+        if (classID != 0)
+            changeCurrentClass(classID);
     }
 
     void changeCurrentClass(int classID) throws RemoteException {

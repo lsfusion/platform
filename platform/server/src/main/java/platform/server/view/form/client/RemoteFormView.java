@@ -10,6 +10,7 @@ import platform.interop.action.ClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
 import platform.server.classes.CustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.view.form.*;
 import platform.server.view.form.client.report.DefaultJasperDesign;
 import platform.server.view.form.filter.Filter;
@@ -164,10 +165,16 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
     }
 
     public int getObjectClassID(int objectID) {
+
         ObjectImplement objectImplement = form.getObjectImplement(objectID);
         if(!(objectImplement instanceof CustomObjectImplement))
             return 0;
-        return (((CustomObjectImplement) objectImplement).currentClass).ID;
+
+        ConcreteCustomClass currentClass = ((CustomObjectImplement) objectImplement).currentClass;
+        if (currentClass == null)
+            return 0;
+
+        return currentClass.ID;
     }
 
     public void changeGroupObject(int groupID, byte changeType) {
