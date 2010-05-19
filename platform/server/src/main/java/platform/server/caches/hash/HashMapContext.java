@@ -10,11 +10,11 @@ public class HashMapContext implements HashContext {
     public final static HashContext instance = new HashMapContext();
 
     public int hash(KeyExpr expr) {
-        return 1;
+        return hashMapKey;
     }
 
     public int hash(ValueExpr expr) {
-        return 1;
+        return hashMapValue;
     }
 
     public HashContext mapKeys() {

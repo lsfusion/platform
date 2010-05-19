@@ -14,7 +14,7 @@ public class HashTranslateValuesContext implements HashContext, NoCacheInterface
     }
 
     public int hash(KeyExpr expr) {
-        return 1;
+        return hashMapKey;
     }
 
     public int hash(ValueExpr expr) {

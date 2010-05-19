@@ -302,17 +302,17 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             if(classesNot.andEquals(equals).means(classesOr))
                 return true;
 
-/*            // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
+            // возьмем все GreaterWhere и построим граф, assert что нету CompareWhere
             CompareMap compare = new CompareMap();
             for(int i=0;i<numWheres;i++)
                 if(wheres[i] instanceof NotWhere && ((NotWhere) wheres[i]).where instanceof GreaterWhere) {
                     GreaterWhere greaterWhere = (GreaterWhere) ((NotWhere) wheres[i]).where;
                     if(!compare.add(equals.getEqual(greaterWhere.operator1),equals.getEqual(greaterWhere.operator2))) // противоречивы значит true;
                         return true;
-                }*/
+                }
 
             // эвристика - для CompareWhere проверяем "единичные" следствия - частный случай самой верхней проверки (CompareWhere.checkTrue)
-            for(int i=0;i<numWheres;i++)
+            for(int i=0;i<numWheres;i++) // вообще говоря исключая логику транзитивности такой подход практически эквивалентен верхней проверке (если только не будет скажем A=B, A>B, B>A)
                 if(wheres[i] instanceof CompareWhere) {
                     Equal equal1, equal2; Compare compare1, compare2;
                     CompareWhere compareWhere = (CompareWhere) wheres[i];
@@ -321,10 +321,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
                             if(equal1.contains(compareWhere.operator2))
                                 return true;
                         }
-/*                        else
+                        else
                             if((equal2 = equals.get(compareWhere.operator2))!=null && (compare1 = compare.get(equal1))!=null &&
                                     (compare2 = compare.get(equal2))!=null && compare1.greater.contains(compare2))
-                                return true;*/
+                                return true;
                     }
                 }
 
