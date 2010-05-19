@@ -3,6 +3,7 @@ package platform.server.view.form.client;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 
 public class ContainerView extends ComponentView {
 
@@ -10,6 +11,24 @@ public class ContainerView extends ComponentView {
 
     public ContainerView(int ID) {
         super(ID);
+
+        constraints.fillVertical = -1;
+        constraints.fillHorizontal = -1;
+    }
+
+    List<ComponentView> children = new ArrayList<ComponentView>();
+    public void add(ComponentView comp) {
+
+        if (comp.getContainer() != null)
+            comp.getContainer().remove(comp);
+
+        comp.setContainer(this);
+        children.add(comp);
+    }
+
+    private void remove(ComponentView comp) {
+        comp.setContainer(null);
+        children.remove(comp);
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

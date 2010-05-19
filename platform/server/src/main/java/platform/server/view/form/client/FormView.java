@@ -21,8 +21,15 @@ public class FormView implements ClientSerialize {
 
     public Collection<ContainerView> containers = new ArrayList<ContainerView>();
 
-    protected ContainerView addContainer() {
+    public ContainerView addContainer() {
+        return addContainer(null);
+    }
+
+    public ContainerView addContainer(String title) {
+
         ContainerView container = new ContainerView(idGenerator.idShift());
+        container.title = title;
+
         containers.add(container);
         return container;
     }

@@ -58,9 +58,18 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
             case ClassViewType.HIDE : hideButton.setSelected(true); break;
         }
 
+        int visibleCount = 0;
+
         panelButton.setVisible((banClassView & ClassViewType.PANEL) == 0);
+        if (panelButton.isVisible()) visibleCount++;
+
         gridButton.setVisible((banClassView & ClassViewType.GRID) == 0);
+        if (gridButton.isVisible()) visibleCount++;
+
         hideButton.setVisible((banClassView & ClassViewType.HIDE) == 0);
+        if (hideButton.isVisible()) visibleCount++;
+
+        setVisible(visibleCount > 1);
     }
 
     protected abstract void buttonPressed(String action);

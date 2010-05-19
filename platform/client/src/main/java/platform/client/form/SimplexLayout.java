@@ -401,10 +401,10 @@ public class SimplexLayout implements LayoutManager2 {
                     objFnc.add(1.0);
                 }
             }
-            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -0.5 : 0.0));
-            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -0.5 : 0.0));
-            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 0.5 : 0.0));
-            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 0.5 : 0.0));
+            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0));
+            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0));
+            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0));
+            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0));
                     
         }
 

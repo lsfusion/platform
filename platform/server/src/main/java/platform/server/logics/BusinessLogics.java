@@ -107,6 +107,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP barcodeAction;
 
     void initBase() {
+
+        baseGroup = new AbstractGroup("Атрибуты");
+        baseGroup.createContainer = false;
+
+        aggrGroup = new AbstractGroup("Аггрегированные атрибуты");
+        aggrGroup.createContainer = false;
+
         baseClass = new BaseClass(idShift(1), "Объект");
 
         namedObject = addAbstractClass("Объект с именем", baseClass);
@@ -284,8 +291,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public AbstractGroup baseGroup = new AbstractGroup("Атрибуты");
-    public AbstractGroup aggrGroup = new AbstractGroup("Аггрегированные атрибуты");
+    public AbstractGroup baseGroup;
+    public AbstractGroup aggrGroup;
     protected abstract void initGroups();
     protected abstract void initClasses();
     protected abstract void initProperties();

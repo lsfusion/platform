@@ -11,7 +11,7 @@ public class SimplexConstraints<T> implements Serializable {
 
     public static final SimplexConstraints DEFAULT_CONSTRAINT = new SimplexConstraints();
 
-    public DoNotIntersectSimplexConstraint childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
+    public DoNotIntersectSimplexConstraint childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
     public int maxVariables = 3;
 
 //    public static int MAXIMUM = 1;

@@ -78,5 +78,6 @@ public abstract class CellView extends JPanel {
 
     public void startEditing() {
         table.editCellAt(0, 0);
+        table.requestFocusInWindow(); // здесь надо переделать, чтобы фокус не сбивался
     }
 }

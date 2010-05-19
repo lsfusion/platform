@@ -6,26 +6,28 @@ import java.sql.SQLException;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-import java.awt.*;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.Union;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.form.client.ContainerView;
 import platform.server.auth.User;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexComponentDirections;
 
 import javax.swing.*;
+import java.awt.*;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -470,7 +472,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSalePrice, 1, 2);
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2);
-        LP orderSaleDiscountSum = addSGProp(documentPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
+        orderSaleDiscountSum = addSGProp(documentPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
         orderSalePay = addDUProp(documentPriceGroup, "Сумма к оплате", addSGProp("Сумма док. прод.", orderArticleSaleSum, 1), orderSaleDiscountSum);
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSalePrice, 3, 2);
@@ -500,7 +502,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Доплата карточкой", DoubleClass.instance, saleCash);
 
         // сдача/доплата
-        LP orderSaleDiff = addDUProp(documentPriceGroup, "Разница",
+        orderSaleDiff = addDUProp(documentPriceGroup, "Разница",
                 addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayCard, orderSalePayObligation)), 1), 
                 orderSalePayCash);
     }
@@ -535,7 +537,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
     LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
-    LP orderSalePay;
+    LP orderSaleDiscountSum, orderSalePay, orderSaleDiff;
     LP orderArticleSaleDiscount;
     LP shopPrice;
     LP priceStore, inDocumentPrice;
@@ -561,7 +563,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initGroups() {
         allGroup = new AbstractGroup("Все");
-        allGroup.container = false;
+        allGroup.createContainer = false;
         allGroup.add(baseGroup);
 
         documentGroup = new AbstractGroup("Параметры документа");
@@ -890,9 +892,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class SaleRetailNavigatorForm extends DocumentInnerNavigatorForm {
         
         private ObjectNavigator objObligation;
+        private ObjectNavigator objBarcode;
 
         public SaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, toAdd, orderSaleRetail);
+
+            objDoc.groupTo.banClassView |= ClassViewType.HIDE; 
 
             objObligation = addSingleGroupObjectImplement(obligation, "Облигация", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, documentGroup, true);
@@ -900,9 +905,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
             addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
 
-            ObjectNavigator objBarcode = addSingleGroupObjectImplement(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
+            objBarcode = addSingleGroupObjectImplement(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
-            objBarcode.groupTo.banClassView = ClassViewType.GRID;
+            objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
 
             addBarCode(article, articleInnerQuantity);
             addBarCode(obligation, orderSaleUseObligation);
@@ -912,7 +917,24 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
+
+            // делаем, чтобы суммы были как можно правее
+//            design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.01,-0.5,0,0.5);
+
+            // увеличиваем размер шрифтов
+            Font sumFont = new Font("Tahoma", Font.BOLD, 32);
+            design.get(getPropertyView(orderSaleDiscountSum.property)).font = sumFont;
+            design.get(getPropertyView(orderSalePay.property)).font = sumFont;
+            design.get(getPropertyView(orderSaleDiff.property)).font = sumFont;
+
+            // привязываем функциональные кнопки
+            design.get(getPropertyView(nameContragent.property, objDoc.groupTo)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+            design.get(objBarcode).objectCellView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0);
+
+            // располагаем объекты на форме относительно друг друга
+            design.addIntersection(design.getGroupObjectContainer(objBarcode.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objOuter.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            
             return design;
         }
     }

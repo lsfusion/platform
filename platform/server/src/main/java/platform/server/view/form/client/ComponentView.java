@@ -15,7 +15,14 @@ public class ComponentView implements ClientSerialize {
         this.ID = ID;
     }
 
-    public ContainerView container;
+    protected ContainerView container;
+    public ContainerView getContainer() {
+        return container;
+    }
+    public void setContainer(ContainerView container) {
+        this.container = container;
+    }
+    
     public SimplexConstraints<ComponentView> constraints = new SimplexConstraints<ComponentView>();
 
     public void serialize(DataOutputStream outStream) throws IOException {
