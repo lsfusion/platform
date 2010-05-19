@@ -11,8 +11,8 @@ import java.util.EventObject;
 public class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
 
-    public StringPropertyEditor(final int length, Object value) {
-        super();
+    public StringPropertyEditor(final int length, Object value, Font font) {
+        super(font);
 
         setDocument(new PlainDocument() {
 

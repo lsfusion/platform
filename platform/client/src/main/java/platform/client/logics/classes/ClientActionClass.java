@@ -27,5 +27,5 @@ public class ClientActionClass extends ClientLogicalClass {
     public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new ActionPropertyRenderer(caption); }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, Font font) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
 }

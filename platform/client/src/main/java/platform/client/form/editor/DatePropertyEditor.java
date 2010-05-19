@@ -18,12 +18,15 @@ import java.util.EventObject;
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
 
-    public DatePropertyEditor(Object value, SimpleDateFormat format) {
+    public DatePropertyEditor(Object value, SimpleDateFormat format, Font font) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
         if (value != null)
             setDate(DateConverter.intToDate((Integer)value));
         ((JFormattedTextField)dateEditor).selectAll();
+
+        if (font != null)
+            setFont(font);
     }
 
     @Override

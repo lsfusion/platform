@@ -44,5 +44,5 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new StringPropertyRenderer(format, font); }
-    public PropertyEditorComponent getComponent(Object value, Format format) { return new StringPropertyEditor(length, value); }
+    public PropertyEditorComponent getComponent(Object value, Format format, Font font) { return new StringPropertyEditor(length, value, font); }
 }

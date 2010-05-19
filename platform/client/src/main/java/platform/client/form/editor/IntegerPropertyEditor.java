@@ -14,7 +14,8 @@ import java.util.EventObject;
 public class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor(Object value, NumberFormat format, Class<?> valueClass) {
+    public IntegerPropertyEditor(Object value, NumberFormat format, Font font, Class<?> valueClass) {
+        super(font);
 
 //        NumberFormat format = iformat;
 //        if (format == null)

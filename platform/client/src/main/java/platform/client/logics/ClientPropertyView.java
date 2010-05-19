@@ -49,7 +49,7 @@ public class ClientPropertyView extends ClientCellView {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(this.ID)));
         if(inStream.readBoolean()) return null;
 
-        return ClientTypeSerializer.deserialize(inStream).getEditorComponent(form, this, value, getFormat());
+        return ClientTypeSerializer.deserialize(inStream).getEditorComponent(form, this, value, getFormat(), getFont());
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {

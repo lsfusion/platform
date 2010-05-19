@@ -35,13 +35,13 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     
     abstract public String getPreferredMask();
 
-    protected abstract PropertyEditorComponent getComponent(Object value, Format format);
+    protected abstract PropertyEditorComponent getComponent(Object value, Format format, Font font);
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return getComponent(value, format);
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, Font font) throws IOException, ClassNotFoundException {
+        return getComponent(value, format, font);
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return getComponent(value, format);
+        return getComponent(value, format, null);
     }
 }

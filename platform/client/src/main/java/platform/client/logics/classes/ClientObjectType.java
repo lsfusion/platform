@@ -32,7 +32,7 @@ public class ClientObjectType implements ClientType {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new IntegerPropertyRenderer(format, font); }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, Font font) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form, property.createEditorForm(form.remoteForm));
     }
 

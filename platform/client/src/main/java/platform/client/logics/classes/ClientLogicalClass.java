@@ -34,5 +34,5 @@ public class ClientLogicalClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new LogicalPropertyRenderer(); }
-    public PropertyEditorComponent getComponent(Object value, Format format) { return new LogicalPropertyEditor(value); }
+    public PropertyEditorComponent getComponent(Object value, Format format, Font font) { return new LogicalPropertyEditor(value); }
 }

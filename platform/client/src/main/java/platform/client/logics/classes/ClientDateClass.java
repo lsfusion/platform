@@ -27,6 +27,6 @@ public class ClientDateClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new DatePropertyRenderer(format, font); }
-    public PropertyEditorComponent getComponent(Object value, Format format) { return new DatePropertyEditor(value, (SimpleDateFormat) format); }
+    public PropertyEditorComponent getComponent(Object value, Format format, Font font) { return new DatePropertyEditor(value, (SimpleDateFormat) format, font); }
 
 }

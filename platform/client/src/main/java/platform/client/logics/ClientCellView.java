@@ -101,10 +101,10 @@ abstract public class ClientCellView extends ClientComponentView {
     public abstract PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException;
 
     private Font font;
-    Font getFont() {
+    public Font getFont() {
         return font;
     }
-    Font getFont(JComponent comp) {
+    public Font getFont(JComponent comp) {
         return (font == null ? comp.getFont() : font);
     }
 
