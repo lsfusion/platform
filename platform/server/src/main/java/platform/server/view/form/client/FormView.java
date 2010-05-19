@@ -5,6 +5,9 @@ import platform.base.IDGenerator;
 import platform.base.DefaultIDGenerator;
 import platform.server.view.navigator.CellViewNavigator;
 import platform.server.view.navigator.PropertyViewNavigator;
+import platform.server.view.navigator.GroupObjectNavigator;
+import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.Property;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
 import java.io.DataOutputStream;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.awt.*;
 
 public class FormView implements ClientSerialize {
 
@@ -106,5 +110,15 @@ public class FormView implements ClientSerialize {
         if (comp1.container != comp2.container)
             throw new RuntimeException("Запрещено создавать пересечения для объектов в разных контейнерах");
         comp1.constraints.intersects.put(comp2, cons);
+    }
+
+
+    public void setFont(AbstractGroup group, Font font, GroupObjectNavigator groupObject) {
+        
+        for (PropertyCellView property : properties) {
+            if (property.view.toDraw == groupObject && group.hasChild(property.view.view.property)) {
+                property.font = font;
+            }
+        }
     }
 }

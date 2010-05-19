@@ -12,13 +12,11 @@ import platform.server.data.Union;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.view.form.client.DefaultFormView;
-import platform.server.view.form.client.ContainerView;
 import platform.server.auth.User;
 import platform.interop.UserInfo;
 import platform.interop.Compare;
@@ -970,14 +968,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             // делаем, чтобы суммы были как можно правее
             design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
 
-            // пусть контэйнер с суммами будет самым первым, чтобы быть как можно выше и правее
-            design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.order = 100000;
-
             // увеличиваем размер шрифтов
-            Font sumFont = new Font("Tahoma", Font.BOLD, 32);
-            design.get(getPropertyView(orderSaleDiscountSum.property)).font = sumFont;
-            design.get(getPropertyView(orderSalePay.property)).font = sumFont;
-            design.get(getPropertyView(orderSaleDiff.property)).font = sumFont;
+            design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
 
             // привязываем функциональные кнопки
             design.get(getPropertyView(nameContragent.property, objDoc.groupTo)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
