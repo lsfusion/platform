@@ -1120,6 +1120,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(objDoc, objArt, properties, articleQuantity, shopPrice);
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(shopPrice)));
+
+            addFAProp(documentPriceGroup, "Реестр цен", this, objDoc);
         }
     }
 
@@ -1136,7 +1138,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addFixedFilter(new CompareFilterNavigator(getPropertyImplement(shopPrice), Compare.NOT_EQUALS, getPropertyImplement(prevPrice)));
 
-            addFAProp(baseGroup, "Акт переоценки", this, objDoc);
+            addFAProp(documentPriceGroup, "Акт переоценки", this, objDoc);
         }
     }
 
@@ -1164,6 +1166,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(shopPrice)));
             addFixedFilter(new NotFilterNavigator(new CompareFilterNavigator(getPropertyImplement(shopPrice), Compare.EQUALS, addPropertyObjectImplement(prevPrice,objDoc,objArt))));
+
+            addFAProp(documentPriceGroup, "Ценники", this, objDoc);
         }
     }
 
