@@ -10,5 +10,7 @@ public interface PropertyObjectInterface extends OrderView {
 
     DataObject getDataObject();
 
+    boolean isNull();
+
     ConcreteClass getCurrentClass();
 }

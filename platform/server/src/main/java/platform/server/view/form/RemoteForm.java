@@ -1113,21 +1113,22 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         Type type = implement.getType();
         if(!onlyValue && type instanceof IncrementClass) {
             IncrementClass incrementType = (IncrementClass)type;
-            for(P propertyInterface : property.interfaces) {
-                Map<P, DataObject> interfaceValues = implement.getInterfaceValues(propertyInterface, dataObject);
-                Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this));
-                DataChanges dataChanges = property.getChangeProperty(interfaceValues).getDataChanges(
-                        incrementValue==null?CaseExpr.NULL:new ValueExpr(incrementValue,incrementType), this);
-                if(dataChanges.hasChanges()) {
-                    dataChanges.execute(session, null);
-                    PropertyObjectInterface objectInterface = implement.mapping.get(propertyInterface);
-                    if(objectInterface instanceof ObjectImplement) {
-                        ObjectImplement objectImplement = (ObjectImplement)objectInterface;
-                        userGroupSeeks.put(objectImplement.groupTo, Collections.<OrderView,Object>singletonMap(objectImplement, dataObject.object));
+            for(P propertyInterface : property.interfaces)
+                if(!implement.hasNulls(propertyInterface)) {
+                    Map<P, DataObject> interfaceValues = implement.getInterfaceValues(propertyInterface, dataObject);
+                    Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this));
+                    DataChanges dataChanges = property.getChangeProperty(interfaceValues).getDataChanges(
+                            incrementValue==null?CaseExpr.NULL:new ValueExpr(incrementValue,incrementType), this);
+                    if(dataChanges.hasChanges()) {
+                        dataChanges.execute(session, null);
+                        PropertyObjectInterface objectInterface = implement.mapping.get(propertyInterface);
+                        if(objectInterface instanceof ObjectImplement) {
+                            ObjectImplement objectImplement = (ObjectImplement)objectInterface;
+                            userGroupSeeks.put(objectImplement.groupTo, Collections.<OrderView,Object>singletonMap(objectImplement, dataObject.object));
+                        }
+                        return true;
                     }
-                    return true;
                 }
-            }
         }
 
         // нужно проверить можно ли менять на этот класс

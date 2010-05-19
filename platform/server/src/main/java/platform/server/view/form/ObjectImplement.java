@@ -6,6 +6,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.NullValue;
 import platform.server.logics.property.Property;
 import platform.server.session.ChangesSession;
 import platform.server.session.Changes;
@@ -50,6 +51,10 @@ public abstract class ObjectImplement extends CellView implements PropertyObject
     public abstract ObjectValue getObjectValue();
     public DataObject getDataObject() {
         return (DataObject)getObjectValue();
+    }
+
+    public boolean isNull() {
+        return getObjectValue() instanceof NullValue;
     }
 
     public abstract ValueClass getGridClass();

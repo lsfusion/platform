@@ -134,4 +134,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public DataObject refresh(ChangesSession session) throws SQLException {
         return session.getDataObject(object, objectClass.getType());
     }
+
+    public boolean isNull() {
+        return false;
+    }
 }
