@@ -9,7 +9,7 @@ public class HashMapValues implements HashValues {
     public final static HashValues instance = new HashMapValues();
 
     public int hash(ValueExpr expr) {
-        return 1;
+        return hashMapValue;
     }
 
     public HashContext mapKeys() {

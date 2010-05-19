@@ -7,7 +7,6 @@ import platform.base.ListPermutations;
 import platform.base.OrderedMap;
 import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
@@ -308,11 +307,13 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         outStream.writeBoolean(isPrintForm);
     }
 
-    public OrderedMap<CustomClass, PropertyObjectNavigator> barcodes = new OrderedMap<CustomClass, PropertyObjectNavigator>();
-    public void addBarCode(CustomClass customClass, LP lp) {
-        barcodes.put(customClass, getPropertyImplement(lp));
+    public List<CustomClass> barcodeClasses = new ArrayList<CustomClass>();
+    public List<PropertyObjectNavigator> barcodeProperties = new ArrayList<PropertyObjectNavigator>();
+    public void addBarcode(CustomClass customClass, LP lp) {
+        addBarcode(customClass, getPropertyImplement(lp));
     }
-    public void addBarCode(CustomClass customClass, PropertyObjectNavigator property) {
-        barcodes.put(customClass, property);
+    public void addBarcode(CustomClass customClass, PropertyObjectNavigator property) {
+        barcodeClasses.add(customClass);
+        barcodeProperties.add(property);
     }
 }

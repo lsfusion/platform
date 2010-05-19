@@ -1132,10 +1132,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
 
         // нужно проверить можно ли менять на этот класс
-        DataChanges dataChanges = implement.getChangeProperty().getDataChanges(dataObject.getExpr(),this);
-        if(dataChanges.hasChanges()) {
-            dataChanges.execute(session, null);
-            return true;
+        if(!implement.hasNulls(null)) {
+            DataChanges dataChanges = implement.getChangeProperty().getDataChanges(dataObject.getExpr(),this);
+            if(dataChanges.hasChanges()) {
+                dataChanges.execute(session, null);
+                return true;
+            }
         }
 
         return false;
@@ -1147,21 +1149,20 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         if(value instanceof DataObject) {
             DataObject dataObject = (DataObject)value;
             ConcreteCustomClass dataClass = (ConcreteCustomClass)session.getCurrentClass(dataObject);
-            for(Map.Entry<CustomClass,PropertyObjectNavigator> barCode : navigatorForm.barcodes.entrySet()) // проверяем заданные пользователем свойства
-                if(dataClass.isChild(barCode.getKey()) && executeBarcodeProperty(dataObject, mapper.mapProperty(barCode.getValue()), false)) // нашли свойство
+            for(int i=0;i<navigatorForm.barcodeClasses.size();i++) // проверяем заданные пользователем свойства
+                if(dataClass.isChild(navigatorForm.barcodeClasses.get(i)) && executeBarcodeProperty(dataObject, mapper.mapProperty(navigatorForm.barcodeProperties.get(i)), false)) // нашли свойство
                     return;
 
-            for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем
-                if(executeBarcodeProperty(dataObject, property.view, true))
-                    return;
-
-            for(GroupObjectImplement group : groups) { // просто ищем первый попавшийся объект
+            for(GroupObjectImplement group : groups) // просто ищем первый попавшийся объект
                 for(ObjectImplement object : group.objects)
                     if(object instanceof CustomObjectImplement && dataClass.isChild(((CustomObjectImplement)object).getGridClass())) {
                         userGroupSeeks.put(group, Collections.<OrderView,Object>singletonMap(object, dataObject.object));
                         return;
                     }
-            }
+
+            for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем
+                if(executeBarcodeProperty(dataObject, property.view, true))
+                    return;
         }
     }
 }

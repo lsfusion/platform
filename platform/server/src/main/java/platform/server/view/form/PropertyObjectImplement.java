@@ -89,7 +89,7 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
     // проверяет что нету пустых значений и можно выполнять getInterfaceValues, нужно чисто для executeBarcode
     public boolean hasNulls(P overrideInterface) {
         for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
-            if(!implement.getKey().equals(overrideInterface) && implement.getValue().isNull())
+            if((overrideInterface==null || !implement.getKey().equals(overrideInterface)) && implement.getValue().isNull())
                 return true;
         return false;
     }
