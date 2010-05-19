@@ -12,6 +12,7 @@ public class ContainerView extends ComponentView {
     public ContainerView(int ID) {
         super(ID);
 
+        // по умолчанию, контейнеры не должны resize'ится вообще, то есть не стремится ни к максимальному размеру, ни к предпочитаемому
         constraints.fillVertical = -1;
         constraints.fillHorizontal = -1;
     }

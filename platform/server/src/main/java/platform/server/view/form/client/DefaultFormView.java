@@ -50,7 +50,6 @@ public class DefaultFormView extends FormView {
             ContainerView groupContainer = addContainer(group.get(0).caption); // контейнер всей группы
             groupContainer.constraints.order = navigatorForm.groups.indexOf(group);
             groupContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
-            groupContainer.constraints.fillHorizontal = 0;
             mainContainer.add(groupContainer);
 
             groupContainers.put(clientGroup, groupContainer);

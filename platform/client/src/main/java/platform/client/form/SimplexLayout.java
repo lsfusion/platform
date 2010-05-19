@@ -332,7 +332,14 @@ public class SimplexLayout implements LayoutManager2 {
                     }
         
     }
-    
+
+    // На текущей момент основными целевыми функциями являются :
+    // Растянуть как можно больше в высоту пропорционально fillVertical с коэффициентом 10
+    // Растянуть как можно больше в высоту пропорционально fillHorizontal с коэффициентом 10
+    // Сделать как можно ближе к Preferred размерам с коэффициентом -1 и 1
+    // Сделать как можно больше те, у кого установлен fillVertical или fillHorizontal с коэффициентом 0.1
+    // Сделать как можно выше, левее с коэффициентом 0.01
+
     private void fillObjFunction(LpSolve solver) throws LpSolveException {
 
         solver.addColumn(new double[0]);
@@ -354,18 +361,21 @@ public class SimplexLayout implements LayoutManager2 {
         
         for (Component component : components) {
 
+            Dimension max = component.getMaximumSize();
             Dimension pref = component.getPreferredSize();
             
             SimplexComponentInfo info = infos.get(component);
             
             SimplexConstraints constraint = constraints.get(component);
-            
-            if (constraint.fillHorizontal > 0) {
+
+            // нужно проверять на максимальный размер, иначе кнопка раскрытия дерева сильно ограничит сверху colmaxw
+            if (constraint.fillHorizontal > 0 && max.getWidth() >= mainContainer.getWidth()) {
                 solver.addConstraintex(3, new double[] {1, -1, -1 * constraint.fillHorizontal}, new int[] {info.R, info.L, colmaxw}, LpSolve.GE, 0);
                 fillmaxw = true;
             } else {
 
-                if (constraint.fillHorizontal == 0) {
+                // Preferred size
+                if (constraint.fillHorizontal >= 0) {
 
                     solver.addColumn(new double[0]);
                     int var = solver.getNcolumns();
@@ -381,12 +391,13 @@ public class SimplexLayout implements LayoutManager2 {
                 }
             }
                 
-            if (constraint.fillVertical > 0) {
+            if (constraint.fillVertical > 0 && max.getHeight() >= mainContainer.getHeight()) {
                 solver.addConstraintex(3, new double[] {1, -1, -1 * constraint.fillVertical}, new int[] {info.B, info.T, colmaxh}, LpSolve.GE, 0);
                 fillmaxh = true;
             } else {
 
-                if (constraint.fillVertical == 0) {
+                // Preferred size
+                if (constraint.fillVertical >= 0) {
                     
                     solver.addColumn(new double[0]);
                     int var = solver.getNcolumns();
@@ -401,17 +412,18 @@ public class SimplexLayout implements LayoutManager2 {
                     objFnc.add(1.0);
                 }
             }
-            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0));
-            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0));
-            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0));
-            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0));
+
+            // направления и расширения до максимума
+            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -0.1 : 0.0));
+            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -0.1 : 0.0));
+            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 0.1 : 0.0));
+            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 0.1 : 0.0));
                     
         }
 
-        // вот здесь есть тонкий момент - если выставлять маленькие значения, то целевая функция может уходить не в ту степь
-        // получится, что все объекты очень сильно сжаты по высоте или ширине 
-        objFnc.set(colmaxw, (fillmaxw) ? 2.0 : 0.0);
-        objFnc.set(colmaxh, (fillmaxh) ? 20.0 : 0.0);
+        // самое важное условие - ему выдается самый большой коэффициент
+        objFnc.set(colmaxw, (fillmaxw) ? 10.0 : 0.0);
+        objFnc.set(colmaxh, (fillmaxh) ? 10.0 : 0.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)

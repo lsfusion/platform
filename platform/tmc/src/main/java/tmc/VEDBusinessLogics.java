@@ -727,7 +727,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objBarcode = addSingleGroupObjectImplement(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
-            objBarcode.groupTo.banClassView = ClassViewType.GRID;
+            objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
         }
     }
 
@@ -968,7 +968,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = super.createDefaultRichDesign();
 
             // делаем, чтобы суммы были как можно правее
-//            design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.01,-0.5,0,0.5);
+            design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+
+            // пусть контэйнер с суммами будет самым первым, чтобы быть как можно выше и правее
+            design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.order = 100000;
 
             // увеличиваем размер шрифтов
             Font sumFont = new Font("Tahoma", Font.BOLD, 32);
