@@ -732,10 +732,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class DocumentNavigatorForm extends BarcodeNavigatorForm {
         final ObjectNavigator objDoc;
 
+        protected boolean toAdd = false;
+
         protected static final boolean fixFilters = true;
 
         protected DocumentNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, (toAdd?documentClass.caption:"Документы"));
+
+            this.toAdd = toAdd; 
 
             objDoc = addSingleGroupObjectImplement(documentClass, "Документ", properties, baseGroup, true, documentGroup, true);
             if(toAdd) {
@@ -968,8 +972,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             // делаем, чтобы суммы были как можно правее
             design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
 
-            // увеличиваем размер шрифтов
-            design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
+            if (toAdd) {
+                // увеличиваем размер шрифтов
+                design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
+            }
 
             // привязываем функциональные кнопки
             design.get(getPropertyView(nameContragent.property, objDoc.groupTo)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
