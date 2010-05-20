@@ -982,7 +982,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(objBarcode).objectCellView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0);
 
             // располагаем объекты на форме относительно друг друга
-            design.addIntersection(design.getGroupObjectContainer(objBarcode.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objOuter.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;

@@ -381,13 +381,13 @@ public class SimplexLayout implements LayoutManager2 {
                     int var = solver.getNcolumns();
                     solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.width+1.0);
                     solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.GE, 0);
-                    objFnc.add(-1.0);
+                    objFnc.add(-100.0);
 
                     solver.addColumn(new double[0]);
                     var = solver.getNcolumns();
                     solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.width+1.0);
                     solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.R, info.L}, LpSolve.LE, 0);
-                    objFnc.add(1.0);
+                    objFnc.add(100.0);
                 }
             }
                 
@@ -403,27 +403,27 @@ public class SimplexLayout implements LayoutManager2 {
                     int var = solver.getNcolumns();
                     solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.GE, pref.height);
                     solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.GE, 0);
-                    objFnc.add(-1.0);
+                    objFnc.add(-100.0);
 
                     solver.addColumn(new double[0]);
                     var = solver.getNcolumns();
                     solver.addConstraintex(1, new double[] {1}, new int[] {var}, LpSolve.LE, pref.height);
                     solver.addConstraintex(3, new double[] {1, -1, 1}, new int[] {var, info.B, info.T}, LpSolve.LE, 0);
-                    objFnc.add(1.0);
+                    objFnc.add(100.0);
                 }
             }
 
             // направления и расширения до максимума
-            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -0.1 : 0.0));
-            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -0.1 : 0.0));
-            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 0.1 : 0.0));
-            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 0.1 : 0.0));
+            objFnc.set(info.T, -constraint.directions.T + ((constraint.fillVertical > 0) ? -1 : 0.0));
+            objFnc.set(info.L, -constraint.directions.L + ((constraint.fillHorizontal > 0) ? -1 : 0.0));
+            objFnc.set(info.B, constraint.directions.B + ((constraint.fillVertical > 0) ? 1 : 0.0));
+            objFnc.set(info.R, constraint.directions.R + ((constraint.fillHorizontal > 0) ? 1 : 0.0));
                     
         }
 
         // самое важное условие - ему выдается самый большой коэффициент
-        objFnc.set(colmaxw, (fillmaxw) ? 10.0 : 0.0);
-        objFnc.set(colmaxh, (fillmaxh) ? 10.0 : 0.0);
+        objFnc.set(colmaxw, (fillmaxw) ? 10000.0 : 0.0);
+        objFnc.set(colmaxh, (fillmaxh) ? 10000.0 : 0.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)

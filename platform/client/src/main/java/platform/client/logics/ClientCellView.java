@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.SwingUtils;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
 
@@ -29,6 +30,7 @@ abstract public class ClientCellView extends ClientComponentView {
     public String caption;
 
     public KeyStroke editKey;
+    public boolean showEditKey;
 
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
@@ -42,6 +44,7 @@ abstract public class ClientCellView extends ClientComponentView {
         preferredSize = (Dimension) new ObjectInputStream(inStream).readObject();
 
         editKey = (KeyStroke) new ObjectInputStream(inStream).readObject();
+        showEditKey = inStream.readBoolean();
         font = (Font) new ObjectInputStream(inStream).readObject(); 
     }
 
@@ -115,4 +118,12 @@ abstract public class ClientCellView extends ClientComponentView {
     }
 
     public String toString() { return caption; }
+
+    public String getFullCaption() {
+
+        String fullCaption = caption;
+        if (showEditKey && editKey != null)
+            fullCaption += " (" + SwingUtils.getKeyStrokeCaption(editKey) + ")";
+        return fullCaption;
+    }
 }

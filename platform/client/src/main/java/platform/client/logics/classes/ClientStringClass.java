@@ -21,22 +21,12 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
-    public int getMinimumWidth(FontMetrics fontMetrics) {
-        return length;
-    }
-
-    @Override
-    public int getPreferredWidth(FontMetrics fontMetrics) { 
-        return length * 5;
-    }
-
-    @Override
     public String getMinimumMask() {
-        return BaseUtils.replicate('A', length / 5);
+        return BaseUtils.replicate('0', length / 5);
     }
 
     public String getPreferredMask() {
-        return BaseUtils.replicate('A', length);
+        return BaseUtils.replicate('0', length);
     }
 
     public Format getDefaultFormat() {

@@ -365,7 +365,7 @@ public abstract class GridTable extends ClientFormTable
     class Model extends AbstractTableModel {
 
         public String getColumnName(int col) {
-              return gridColumns.get(col).caption;
+              return gridColumns.get(col).getFullCaption();
         }
 
         public int getRowCount() {

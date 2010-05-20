@@ -68,7 +68,7 @@ public abstract class CellView extends JPanel {
 
     void keyChanged(ClientCellView key) {
 
-        label.setText(key.caption);
+        label.setText(key.getFullCaption());
         table.keyChanged(key);
     }
 
