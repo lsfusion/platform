@@ -78,6 +78,16 @@ public abstract class CellView extends JPanel {
 
     public void startEditing() {
         table.editCellAt(0, 0);
-        table.requestFocusInWindow(); // здесь надо переделать, чтобы фокус не сбивался
+
+        Component tableEditor = table.getEditorComponent();
+        if (tableEditor != null) {
+
+            // устанавливаем следущий компонент фокуса на текущий
+            if (tableEditor instanceof JComponent) {
+                ((JComponent)tableEditor).setNextFocusableComponent(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+            }
+            
+            tableEditor.requestFocusInWindow();
+        }
     }
 }

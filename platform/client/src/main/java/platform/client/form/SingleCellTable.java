@@ -50,9 +50,25 @@ public class SingleCellTable extends ClientFormTable {
 
         // сами обрабатываем нажатие клавиши Enter
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed) {
-            if (isEditing()) getCellEditor().stopCellEditing();
-            KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
+
+            if (isEditing()) {
+
+                Component editorComp = getEditorComponent(), nextComp = null;
+                if (editorComp instanceof JComponent)
+                    nextComp = ((JComponent)editorComp).getNextFocusableComponent();
+
+                getCellEditor().stopCellEditing();
+
+                // приходится таким волшебным образом извращаться, поскольку в stopCellEditing в явную устанавливается фокус на JTable
+                // это не устраивает, если по нажатии кнопки из другого компонена вызывается редактирование, а потом необходимо вернуть фокус обратно
+                if (nextComp != null)
+                    nextComp.requestFocusInWindow();
+                
+            } else
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent();
+
             return true;
+
         } else
             return super.processKeyBinding(ks, e, condition, pressed);
 
