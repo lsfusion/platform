@@ -334,10 +334,10 @@ public class SimplexLayout implements LayoutManager2 {
     }
 
     // На текущей момент основными целевыми функциями являются :
-    // Растянуть как можно больше в высоту пропорционально fillVertical с коэффициентом 10
-    // Растянуть как можно больше в высоту пропорционально fillHorizontal с коэффициентом 10
-    // Сделать как можно ближе к Preferred размерам с коэффициентом -1 и 1
-    // Сделать как можно больше те, у кого установлен fillVertical или fillHorizontal с коэффициентом 0.1
+    // Растянуть как можно больше в высоту пропорционально fillVertical с коэффициентом 1000
+    // Растянуть как можно больше в высоту пропорционально fillHorizontal с коэффициентом 1000
+    // Сделать как можно ближе к Preferred размерам с коэффициентом -100 и 100
+    // Сделать как можно больше те, у кого установлен fillVertical или fillHorizontal с коэффициентом 1
     // Сделать как можно выше, левее с коэффициентом 0.01
 
     private void fillObjFunction(LpSolve solver) throws LpSolveException {
@@ -422,8 +422,8 @@ public class SimplexLayout implements LayoutManager2 {
         }
 
         // самое важное условие - ему выдается самый большой коэффициент
-        objFnc.set(colmaxw, (fillmaxw) ? 10000.0 : 0.0);
-        objFnc.set(colmaxh, (fillmaxh) ? 10000.0 : 0.0);
+        objFnc.set(colmaxw, (fillmaxw) ? 1000.0 : 0.0);
+        objFnc.set(colmaxh, (fillmaxh) ? 1000.0 : 0.0);
         
         double[] objArr = new double[objFnc.size()];
         for (int i = 0; i < objFnc.size(); i++)

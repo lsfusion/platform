@@ -975,6 +975,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (toAdd) {
                 // увеличиваем размер шрифтов
                 design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
+
+                design.get(getPropertyView(orderSaleDiscountSum.property)).enabled = false;
+                design.get(getPropertyView(orderSalePay.property)).enabled = false;
+                design.get(getPropertyView(orderSaleDiff.property)).enabled = false;
             }
 
             // привязываем функциональные кнопки

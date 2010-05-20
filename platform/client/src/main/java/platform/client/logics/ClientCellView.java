@@ -32,6 +32,8 @@ abstract public class ClientCellView extends ClientComponentView {
     public KeyStroke editKey;
     public boolean showEditKey;
 
+    public boolean enabled;
+
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -45,7 +47,9 @@ abstract public class ClientCellView extends ClientComponentView {
 
         editKey = (KeyStroke) new ObjectInputStream(inStream).readObject();
         showEditKey = inStream.readBoolean();
-        font = (Font) new ObjectInputStream(inStream).readObject(); 
+        font = (Font) new ObjectInputStream(inStream).readObject();
+
+        enabled = inStream.readBoolean();
     }
 
     public int getMinimumWidth(JComponent comp) {

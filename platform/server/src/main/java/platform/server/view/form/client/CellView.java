@@ -23,6 +23,8 @@ abstract public class CellView extends ComponentView {
     public boolean showEditKey = true;
     public Font font;
 
+    public boolean enabled = true;
+
     public CellView(int ID) {
         super(ID);
     }
@@ -41,6 +43,8 @@ abstract public class CellView extends ComponentView {
         new ObjectOutputStream(outStream).writeObject(editKey);
         outStream.writeBoolean(showEditKey);
         new ObjectOutputStream(outStream).writeObject(font);
+
+        outStream.writeBoolean(enabled);
     }
 
     abstract Type getType();
