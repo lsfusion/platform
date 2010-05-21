@@ -4,11 +4,11 @@ import platform.client.form.*;
 import platform.client.form.renderer.StringPropertyRenderer;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.base.BaseUtils;
+import platform.interop.CellDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
-import java.awt.*;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -33,6 +33,6 @@ public class ClientStringClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new StringPropertyRenderer(format, font); }
-    public PropertyEditorComponent getComponent(Object value, Format format, Font font) { return new StringPropertyEditor(length, value, font); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new StringPropertyRenderer(format, design); }
+    public PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return new StringPropertyEditor(length, value, design); }
 }

@@ -3,13 +3,13 @@ package platform.client.logics.classes;
 import platform.client.form.*;
 import platform.client.form.renderer.DatePropertyRenderer;
 import platform.client.form.editor.DatePropertyEditor;
+import platform.interop.CellDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.awt.*;
 
 public class ClientDateClass extends ClientDataClass {
 
@@ -26,7 +26,7 @@ public class ClientDateClass extends ClientDataClass {
         return DateFormat.getDateInstance(DateFormat.SHORT);
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new DatePropertyRenderer(format, font); }
-    public PropertyEditorComponent getComponent(Object value, Format format, Font font) { return new DatePropertyEditor(value, (SimpleDateFormat) format, font); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new DatePropertyRenderer(format, design); }
+    public PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return new DatePropertyEditor(value, (SimpleDateFormat) format, design); }
 
 }

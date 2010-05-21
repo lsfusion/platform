@@ -6,6 +6,7 @@ import platform.client.form.ClientForm;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientCellView;
+import platform.interop.CellDesign;
 
 import java.text.Format;
 import java.text.NumberFormat;
@@ -30,9 +31,9 @@ public class ClientObjectType implements ClientType {
         return NumberFormat.getInstance();
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new IntegerPropertyRenderer(format, font); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new IntegerPropertyRenderer(format, design); }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, Font font) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form, property.createEditorForm(form.remoteForm));
     }
 

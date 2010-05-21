@@ -1,6 +1,7 @@
 package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
+import platform.interop.CellDesign;
 
 import javax.swing.*;
 import java.text.Format;
@@ -9,8 +10,8 @@ import java.awt.*;
 public class StringPropertyRenderer extends LabelPropertyRenderer
                              implements PropertyRendererComponent {
 
-    public StringPropertyRenderer(Format iformat, Font font) {
-        super(iformat, font);
+    public StringPropertyRenderer(Format iformat, CellDesign design) {
+        super(iformat, design);
 
 //        setHorizontalAlignment(JLabel.LEFT);
 

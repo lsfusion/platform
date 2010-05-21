@@ -3,6 +3,7 @@ package platform.server.view.form.client;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.view.form.client.report.ReportDrawField;
+import platform.interop.CellDesign;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +22,10 @@ abstract public class CellView extends ComponentView {
 
     public KeyStroke editKey;
     public boolean showEditKey = true;
-    public Font font;
+
+    public Format format;
+
+    public CellDesign design = new CellDesign();
 
     public boolean enabled = true;
 
@@ -42,7 +46,10 @@ abstract public class CellView extends ComponentView {
 
         new ObjectOutputStream(outStream).writeObject(editKey);
         outStream.writeBoolean(showEditKey);
-        new ObjectOutputStream(outStream).writeObject(font);
+
+        new ObjectOutputStream(outStream).writeObject(format);
+
+        new ObjectOutputStream(outStream).writeObject(design);
 
         outStream.writeBoolean(enabled);
     }

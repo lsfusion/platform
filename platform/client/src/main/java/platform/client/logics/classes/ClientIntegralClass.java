@@ -3,6 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.*;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.form.editor.IntegerPropertyEditor;
+import platform.interop.CellDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -31,7 +32,7 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     protected abstract Class getJavaClass() ;
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new IntegerPropertyRenderer(format, font); }
-    public PropertyEditorComponent getComponent(Object value, Format format, Font font) { return new IntegerPropertyEditor(value, (NumberFormat)format, font, getJavaClass()); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new IntegerPropertyRenderer(format, design); }
+    public PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return new IntegerPropertyEditor(value, (NumberFormat)format, design, getJavaClass()); }
 
 }

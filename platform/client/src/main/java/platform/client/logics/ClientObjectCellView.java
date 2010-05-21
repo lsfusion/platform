@@ -30,7 +30,7 @@ public class ClientObjectCellView extends ClientObjectView {
         if (form.switchClassView(object.groupObject))
             return null;
         else
-            return baseType.getEditorComponent(form, this, value, getFormat(), getFont());
+            return baseType.getEditorComponent(form, this, value, getFormat(), design);
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {

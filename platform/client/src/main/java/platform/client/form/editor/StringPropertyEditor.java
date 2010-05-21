@@ -1,6 +1,7 @@
 package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
+import platform.interop.CellDesign;
 
 import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
@@ -11,8 +12,8 @@ import java.util.EventObject;
 public class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
 
-    public StringPropertyEditor(final int length, Object value, Font font) {
-        super(font);
+    public StringPropertyEditor(final int length, Object value, CellDesign design) {
+        super(design);
 
         setDocument(new PlainDocument() {
 

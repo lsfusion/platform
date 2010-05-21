@@ -3,6 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
 import platform.client.logics.ClientCellView;
+import platform.interop.CellDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,10 +36,10 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     
     abstract public String getPreferredMask();
 
-    protected abstract PropertyEditorComponent getComponent(Object value, Format format, Font font);
+    protected abstract PropertyEditorComponent getComponent(Object value, Format format, CellDesign design);
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, Font font) throws IOException, ClassNotFoundException {
-        return getComponent(value, format, font);
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException {
+        return getComponent(value, format, design);
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException {

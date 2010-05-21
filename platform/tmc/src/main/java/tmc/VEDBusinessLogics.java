@@ -476,8 +476,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSalePrice, 1, 2);
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2);
-        orderSaleDiscountSum = addSGProp(documentPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
-        orderSalePay = addDUProp(documentPriceGroup, "Сумма к оплате", addSGProp("Сумма док. прод.", orderArticleSaleSum, 1), orderSaleDiscountSum);
+        orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
+        orderSalePay = addDUProp(documentAggrPriceGroup, "Сумма к оплате", addSGProp("Сумма док. прод.", orderArticleSaleSum, 1), orderSaleDiscountSum);
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSalePrice, 3, 2);
         LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2);
@@ -506,7 +506,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Доплата карточкой", DoubleClass.instance, saleCash);
 
         // сдача/доплата
-        orderSaleDiff = addDUProp(documentPriceGroup, "Разница",
+        orderSaleDiff = addDUProp(documentAggrPriceGroup, "Разница",
                 addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayCard, orderSalePayObligation)), 1),
                 orderSalePayCash);
     }
@@ -566,7 +566,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     AbstractGroup allGroup;
     AbstractGroup logisticsGroup;
     AbstractGroup documentMoveGroup;
-    AbstractGroup documentPriceGroup;
+    AbstractGroup documentPriceGroup, documentAggrPriceGroup;
     AbstractGroup documentLogisticsGroup;
 
     protected void initGroups() {
@@ -587,7 +587,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         allGroup.add(priceGroup);
 
         documentPriceGroup = new AbstractGroup("Ценовые параметры документа");
+        documentPriceGroup.createContainer = false;
         documentGroup.add(documentPriceGroup);
+
+        documentAggrPriceGroup = new AbstractGroup("Агрегированные ценовые параметры документа");
+        documentAggrPriceGroup.createContainer = false;
+        documentPriceGroup.add(documentAggrPriceGroup);
 
         logisticsGroup = new AbstractGroup("Логистические параметры");
         allGroup.add(logisticsGroup);
@@ -973,12 +978,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
 
             if (toAdd) {
-                // увеличиваем размер шрифтов
-                design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
 
-                design.get(getPropertyView(orderSaleDiscountSum.property)).enabled = false;
-                design.get(getPropertyView(orderSalePay.property)).enabled = false;
-                design.get(getPropertyView(orderSaleDiff.property)).enabled = false;
+                // устанавливаем дизайн
+                design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
+                design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
+
+                // блокируем объекты для ввода
+                design.setEnabled(documentAggrPriceGroup, false, objDoc.groupTo);
             }
 
             // привязываем функциональные кнопки

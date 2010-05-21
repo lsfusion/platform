@@ -1,6 +1,7 @@
 package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
+import platform.interop.CellDesign;
 
 import javax.swing.*;
 import javax.swing.text.DefaultFormatterFactory;
@@ -14,8 +15,8 @@ import java.util.EventObject;
 public class IntegerPropertyEditor extends TextFieldPropertyEditor
                             implements PropertyEditorComponent {
 
-    public IntegerPropertyEditor(Object value, NumberFormat format, Font font, Class<?> valueClass) {
-        super(font);
+    public IntegerPropertyEditor(Object value, NumberFormat format, CellDesign design, Class<?> valueClass) {
+        super(design);
 
 //        NumberFormat format = iformat;
 //        if (format == null)

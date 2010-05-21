@@ -5,6 +5,7 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
+import platform.interop.CellDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -18,15 +19,14 @@ import java.util.EventObject;
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
 
-    public DatePropertyEditor(Object value, SimpleDateFormat format, Font font) {
+    public DatePropertyEditor(Object value, SimpleDateFormat format, CellDesign design) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
         if (value != null)
             setDate(DateConverter.intToDate((Integer)value));
         ((JFormattedTextField)dateEditor).selectAll();
 
-        if (font != null)
-            setFont(font);
+        design.designComponent(this);
     }
 
     @Override

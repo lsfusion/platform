@@ -1,5 +1,7 @@
 package platform.client.form.editor;
 
+import platform.interop.CellDesign;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.KeyEvent;
@@ -7,15 +9,13 @@ import java.awt.*;
 
 class TextFieldPropertyEditor extends JFormattedTextField {
 
-    TextFieldPropertyEditor(Font font) {
+    TextFieldPropertyEditor(CellDesign design) {
         super();
 
         setBorder(new EmptyBorder(0, 3, 0, 0));
         setOpaque(true);
 
-        if (font != null)
-            setFont(font);
-//        setBackground(new Color(128,128,255));
+        design.designComponent(this);
     }
 
     @Override

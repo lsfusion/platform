@@ -6,6 +6,7 @@ import platform.client.form.ClientForm;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientCellView;
+import platform.interop.CellDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,8 +25,8 @@ public class ClientActionClass extends ClientLogicalClass {
     }
 
     @Override
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, Font font) { return new ActionPropertyRenderer(caption); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new ActionPropertyRenderer(caption); }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, Font font) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
 }
