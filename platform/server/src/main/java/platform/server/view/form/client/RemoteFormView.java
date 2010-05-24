@@ -197,7 +197,7 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
 
     public void changeObject(int objectID, Object value) {
         try {
-            form.getObjectImplement(objectID).changeValue(form.session, value);
+            form.changeObject(form.getObjectImplement(objectID), value, this);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

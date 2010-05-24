@@ -13,6 +13,7 @@ import java.awt.*;
 public abstract class CellTable extends SingleCellTable
                         implements ClientCellViewTable {
 
+    boolean checkEquals = true;
     private Object value;
 
     public CellTable() {
@@ -26,6 +27,8 @@ public abstract class CellTable extends SingleCellTable
     }
 
     public void keyChanged(ClientCellView key) {
+
+        checkEquals = key.checkEquals();
 
         setMinimumSize(key.getMinimumSize(this));
         setPreferredSize(key.getPreferredSize(this));
@@ -63,7 +66,7 @@ public abstract class CellTable extends SingleCellTable
         }
 
         public void setValueAt(Object value, int row, int col) {
-            if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
+            if (checkEquals && BaseUtils.nullEquals(value, getValueAt(row, col))) return;
             cellValueChanged(value);
         }
 

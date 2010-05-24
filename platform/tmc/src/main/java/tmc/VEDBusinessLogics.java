@@ -967,6 +967,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addBarcode(obligation, orderSaleUseObligation);
             addBarcode(customerRetail, addPropertyObjectImplement(orderContragent, objDoc));
+
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objBarcode));
         }
 
         @Override

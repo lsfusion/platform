@@ -13,6 +13,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
@@ -315,5 +316,19 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public void addBarcode(CustomClass customClass, PropertyObjectNavigator property) {
         barcodeClasses.add(customClass);
         barcodeProperties.add(property);
+    }
+
+    public List<ObjectNavigator> autoActionObjects = new ArrayList<ObjectNavigator>();
+    public List<PropertyObjectNavigator> autoActions = new ArrayList<PropertyObjectNavigator>();
+    public void addAutoAction(ObjectNavigator object, LP action) {
+        addAutoAction(object, getPropertyImplement(action));
+    }
+
+    public void addAutoAction(ObjectNavigator object, PropertyObjectNavigator action) {
+
+        assert action.property instanceof ActionProperty;
+
+        autoActionObjects.add(object);
+        autoActions.add(action);
     }
 }

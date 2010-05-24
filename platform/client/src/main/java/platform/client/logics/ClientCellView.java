@@ -128,4 +128,8 @@ abstract public class ClientCellView extends ClientComponentView {
             fullCaption += " (" + SwingUtils.getKeyStrokeCaption(editKey) + ")";
         return fullCaption;
     }
+
+    public boolean checkEquals() {
+        return true;
+    }
 }

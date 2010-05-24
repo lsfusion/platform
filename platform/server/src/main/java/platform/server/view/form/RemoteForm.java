@@ -428,6 +428,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return new RemoteForm<T>(form, BL, session, securityPolicy, focusView, classView, DataObject.getMapValues(mapObjects));
     }
 
+    public void changeObject(ObjectImplement object, Object value, RemoteFormView form) throws SQLException {
+
+        object.changeValue(session, value);
+
+        // запускаем все Action'ы, которые следят за этим объектом
+        executeAutoActions(object, form);
+    }
+
     // транзакция для отката при exception'ах
     private class ApplyTransaction {
 
@@ -1164,6 +1172,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 if(executeBarcodeProperty(dataObject, property.view, true))
                     return;
         }
+    }
+
+    private void executeAutoActions(ObjectImplement object, RemoteFormView form) throws SQLException {
+
+        for (int i = 0; i < navigatorForm.autoActions.size(); i++)
+            if (object.equals(mapper.mapObject(navigatorForm.autoActionObjects.get(i)))) {
+
+                PropertyObjectImplement action = mapper.mapProperty(navigatorForm.autoActions.get(i));
+                changeProperty(action, null, form);
+            }
     }
 }
 
