@@ -43,7 +43,16 @@ public class LongClass extends IntegralClass<Long> {
         statement.setLong(num, (Long)value);
     }
 
-    public Long shiftValue(Long object) {
-        return (object==null?0:object)+1;
+    public Long shiftValue(Long object, boolean back) {
+        if(object!=null) {
+            if (back)
+                return object > 1 ? object - 1 : null;
+            else
+                return object + 1;
+        } else
+            if(!back)
+                return (long) 1;
+            else
+                return null;
     }
 }

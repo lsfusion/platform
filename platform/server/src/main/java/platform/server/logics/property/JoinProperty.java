@@ -42,7 +42,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     }
 
     @Override
-    public void fillDepends(Set<Property> depends) {
+    public void fillDepends(Set<Property> depends, boolean derived) {
         fillDepends(depends,implement.mapping.values());
         depends.add(implement.property);       
     }

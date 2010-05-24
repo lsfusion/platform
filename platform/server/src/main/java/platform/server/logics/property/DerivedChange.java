@@ -11,7 +11,11 @@ import java.util.*;
 
 public class DerivedChange<D extends PropertyInterface, C extends PropertyInterface> {
 
-    Property<C> property;
+    public boolean notDeterministic() {
+        return value.property.notDeterministic();
+    }
+
+    Property<C> property; // что меняем
     PropertyImplement<PropertyInterfaceImplement<C>,D> value;
     Collection<PropertyMapImplement<?,C>> onChange = new ArrayList<PropertyMapImplement<?, C>>();
     boolean valueChanged = false;
@@ -25,10 +29,6 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
         this.value = value;
         this.onChange = onChange;
         this.valueChanged = valueChanged;
-
-        // запишем в DataProperty
-        for(DataProperty dataProperty : property.getDataChanges())
-            dataProperty.derivedChange = this;
     }
 
     public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {

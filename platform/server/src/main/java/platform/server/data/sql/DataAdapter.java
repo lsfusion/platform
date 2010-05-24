@@ -123,4 +123,8 @@ public abstract class DataAdapter implements SQLSyntax {
     public String getHour() {
         return "EXTRACT(HOUR FROM CURRENT_TIME)";
     }
+
+    public String getEpoch() {
+        return "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)";
+    }
 }

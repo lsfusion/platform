@@ -47,7 +47,17 @@ public class IntegerClass extends IntegralClass<Integer> {
         statement.setInt(num, (Integer)value);
     }
 
-    public Integer shiftValue(Integer object) {
-        return (object==null?0:object)+1;
+    public Integer shiftValue(Integer object, boolean back) {
+        if(object!=null) {
+            if (back)
+                return object > 1 ? object - 1 : null;
+            else
+                return object + 1;
+        } else
+            if(!back)
+                return 1;
+            else
+                return null;
     }
+
 }

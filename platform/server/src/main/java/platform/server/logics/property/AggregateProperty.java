@@ -32,25 +32,9 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     // проверяет аггрегацию для отладки
     public boolean checkAggregation(SQLSession session,String caption) throws SQLException {
-        Query<T, String> aggrSelect;
-        aggrSelect = getQuery("value");
-/*        if(caption.equals("Дата 8") || caption.equals("Склад")) {
-            System.out.println("AGGR - "+caption);
-            AggrSelect.outSelect(Session);
-        }*/
-        OrderedMap<Map<T, Object>, Map<String, Object>> aggrResult = aggrSelect.execute(session);
+        OrderedMap<Map<T, Object>, Map<String, Object>> aggrResult = getQuery("value").execute(session);
         DataSession.reCalculateAggr = true;
-        aggrSelect = getQuery("value");
-/*        if(caption.equals("Дата 8") || caption.equals("Склад")) {
-            System.out.println("RECALCULATE - "+caption);
-            AggrSelect.outSelect(Session);
-        }*/
-//        if(BusinessLogics.ChangeDBIteration==13 && caption.equals("Посл. дата изм. парам.")) {
-//            System.out.println("RECALCULATE - "+caption);
-//            AggrSelect.outSelect(Session);
-//        }
-
-        OrderedMap<Map<T, Object>, Map<String, Object>> calcResult = aggrSelect.execute(session);
+        OrderedMap<Map<T, Object>, Map<String, Object>> calcResult = getQuery("value").execute(session);
         DataSession.reCalculateAggr = false;
 
         Iterator<Map.Entry<Map<T,Object>,Map<String,Object>>> i = aggrResult.entrySet().iterator();

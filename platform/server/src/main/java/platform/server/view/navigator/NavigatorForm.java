@@ -10,14 +10,15 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
 import platform.server.view.navigator.filter.FilterNavigator;
+import platform.server.view.navigator.filter.OrderViewNavigator;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
@@ -32,14 +33,20 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public Set<FilterNavigator> fixedFilters = new HashSet<FilterNavigator>();
 
     public void addFixedFilter(FilterNavigator filter) {
-        fixedFilters.add(filter); 
+        fixedFilters.add(filter);
+    }
+
+    public OrderedMap<OrderViewNavigator, Boolean> fixedOrders = new OrderedMap<OrderViewNavigator, Boolean>();
+
+    public void addFixedOrder(OrderViewNavigator order, boolean descending) {
+        fixedOrders.put(order, descending);
     }
 
     public List<RegularFilterGroupNavigator> regularFilterGroups = new ArrayList<RegularFilterGroupNavigator>();
     public void addRegularFilterGroup(RegularFilterGroupNavigator group) {
         regularFilterGroups.add(group);
     }
-    
+
     protected RegularFilterGroupNavigator addSingleRegularFilterGroup(FilterNavigator ifilter, String iname, KeyStroke ikey) {
 
         RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
@@ -272,7 +279,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     }
 
     private static String genSID(int iID) {
-        return "form" + iID; 
+        return "form" + iID;
     }
 
     public String sID;
@@ -291,7 +298,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     }
 
     public FormView richDesign;
-    public DefaultFormView createDefaultRichDesign() { return new DefaultFormView(this); } 
+    public DefaultFormView createDefaultRichDesign() { return new DefaultFormView(this); }
     public FormView getRichDesign() { if (richDesign == null) return new DefaultFormView(this); else return richDesign; }
 
     protected JasperDesign reportDesign;
@@ -317,6 +324,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         barcodeClasses.add(customClass);
         barcodeProperties.add(property);
     }
+    public PropertyObjectNavigator reverseBarcode = null;
 
     public List<ObjectNavigator> autoActionObjects = new ArrayList<ObjectNavigator>();
     public List<PropertyObjectNavigator> autoActions = new ArrayList<PropertyObjectNavigator>();

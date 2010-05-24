@@ -49,7 +49,7 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends) {
+    protected void fillDepends(Set<Property> depends, boolean derived) {
         depends.add(property);
         fillDepends(depends,partitions);
         fillDepends(depends,orders.keySet());

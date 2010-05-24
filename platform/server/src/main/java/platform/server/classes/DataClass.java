@@ -10,7 +10,6 @@ import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.DataObjectImplement;
@@ -32,6 +31,10 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public abstract DataClass getCompatible(DataClass compClass);
     public abstract Object getDefaultValue();
 
+    public Object getAnyValue() {
+        return getDefaultValue();
+    }
+
     public AbstractGroup getParent() {
         return null;
     }
@@ -42,10 +45,6 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
 
     public boolean isCompatible(Type type) {
         return type instanceof DataClass && getCompatible((DataClass)type)!=null;
-    }
-
-    public DataProperty getExternalID() {
-        return null;
     }
 
     public DataClass getUpSet() {

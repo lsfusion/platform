@@ -12,7 +12,6 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.navigator.*;
@@ -30,10 +29,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
     public TmcBusinessLogics(DataAdapter iAdapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
         super(iAdapter,port);
-    }
-
-    public TmcBusinessLogics(DataAdapter iAdapter,int testType,Integer seed,int iterations) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException {
-        super(iAdapter,testType,seed,iterations);
     }
 
     ConcreteCustomClass article;
@@ -196,7 +191,6 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
         artWeight = addDProp(baseGroup, "Вес (кг.)", NumericClass.get(6, 3), article);
         artPackCount = addDProp(baseGroup, "Кол-во в уп.", IntegerClass.instance, article);
 
-        article.externalID = (DataProperty)artBarCode.property;
     }
 
     // ------------------------------------------------------------------------------------------------------- //

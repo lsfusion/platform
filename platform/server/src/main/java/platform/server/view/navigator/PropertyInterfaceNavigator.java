@@ -1,12 +1,9 @@
 package platform.server.view.navigator;
 
-import platform.server.view.navigator.filter.CompareValueNavigator;
-import platform.server.view.form.filter.CompareValue;
+import platform.server.view.navigator.filter.OrderViewNavigator;
 import platform.server.view.form.PropertyObjectInterface;
 
-import java.sql.SQLException;
-
-public interface PropertyInterfaceNavigator extends CompareValueNavigator {
+public interface PropertyInterfaceNavigator extends OrderViewNavigator {
 
     PropertyObjectInterface doMapping(Mapper mapper);
 }

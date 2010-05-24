@@ -32,7 +32,7 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof Changes && session.equals(((Changes) o).session);
+        return this == o || getClass()==o.getClass() && session.equals(((Changes) o).session);
     }
 
     protected Changes(U changes, SessionChanges merge) {

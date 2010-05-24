@@ -24,7 +24,7 @@ abstract public class UnionProperty extends FunctionProperty<UnionProperty.Inter
     protected abstract Collection<PropertyMapImplement<?, Interface>> getOperands();
 
     @Override
-    public void fillDepends(Set<Property> depends) {
+    public void fillDepends(Set<Property> depends, boolean derived) {
         fillDepends(depends,getOperands());
     }
 }

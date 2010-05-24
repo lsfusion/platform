@@ -272,7 +272,7 @@ public class MapCacheAspect {
     public <K extends PropertyInterface,U extends Changes<U>> Expr getJoinExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, Map<Integer,Map<JoinExprInterfaceImplement<U>,Query<K,String>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // если свойство AndFormulaProperty - то есть нарушается инвариант что все входные не null идет autoFillDB то не кэшируем
-        if(property instanceof AndFormulaProperty || BusinessLogics.autoFillDB || property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
+        if(property instanceof AndFormulaProperty || property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
 
         property.cached = true;
 

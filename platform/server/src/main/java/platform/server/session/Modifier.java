@@ -1,17 +1,12 @@
 package platform.server.session;
 
-import platform.base.BaseUtils;
-import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.data.where.WhereBuilder;
 
 import java.util.Map;
 import java.util.Collection;
-import java.util.ArrayList;
 
 public abstract class Modifier<U extends Changes<U>> {
 

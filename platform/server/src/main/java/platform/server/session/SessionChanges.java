@@ -11,8 +11,9 @@ import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.DataProperty;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.Lazy;
 import platform.server.caches.AbstractMapValues;
@@ -90,8 +91,6 @@ public class SessionChanges extends AbstractMapValues<SessionChanges> {
                 session.createTemporaryTable(addTable);
             }
             add.put(addClass,addTable.insertRecord(session, Collections.singletonMap(addTable.object,change),new HashMap<PropertyField, ObjectValue>(), false));
-
-            if(BusinessLogics.autoFillDB) continue;
 
             RemoveClassTable removeTable = remove.get(addClass);
             if(removeTable!=null) remove.put(addClass,removeTable.deleteRecords(session,Collections.singletonMap(removeTable.object,change))) ;

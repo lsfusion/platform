@@ -61,4 +61,5 @@ public interface SQLSyntax {
     String getOrderDirection(boolean order);
 
     String getHour();
+    String getEpoch();
 }

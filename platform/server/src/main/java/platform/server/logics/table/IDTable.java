@@ -50,7 +50,6 @@ public class IDTable extends Table {
 
     public Integer generateID(SQLSession dataSession, int idType) throws SQLException {
 
-        if(BusinessLogics.autoFillDB) return BusinessLogics.autoIDCounter++;
         // читаем
         Query<KeyField, PropertyField> query = new Query<KeyField, PropertyField>(this);
         platform.server.data.query.Join<PropertyField> joinTable = joinAnd(Collections.singletonMap(key,query.mapKeys.get(key)));

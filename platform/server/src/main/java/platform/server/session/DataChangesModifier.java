@@ -1,9 +1,6 @@
 package platform.server.session;
 
-import platform.server.logics.property.DataProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.UserProperty;
+import platform.server.logics.property.*;
 import platform.server.data.expr.ValueExpr;
 import platform.server.caches.Lazy;
 

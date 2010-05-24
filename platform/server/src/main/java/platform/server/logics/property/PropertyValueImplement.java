@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
@@ -12,6 +13,7 @@ import platform.interop.action.ClientAction;
 
 import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 import java.sql.SQLException;
 
 public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<DataObject,P> {
@@ -37,17 +39,22 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
 
-    public DataChanges getDataChanges(Expr expr, Modifier<? extends Changes> modifier) {
+    public PropertyChange<P> getPropertyChange(Expr expr) {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        return property.getDataChanges(new PropertyChange<P>(mapKeys, expr, CompareWhere.compareValues(mapKeys, mapping)), null, modifier);
+        return new PropertyChange<P>(mapKeys, expr, CompareWhere.compareValues(mapKeys, mapping));
     }
-    
+
     public boolean canBeChanged(Modifier<? extends Changes> modifier) {
-        return getDataChanges(property.changeExpr,modifier).hasChanges();
+        return property.getDataChanges(getPropertyChange(property.changeExpr), null, modifier).hasChanges();
     }
 
-    public List<ClientAction> execute(DataSession session, Modifier<? extends Changes> modifier, Object value, RemoteFormView executeForm) throws SQLException {
-        return getDataChanges(session.getObjectValue(value, property.getType()).getExpr(),modifier).execute(session, executeForm);
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm) throws SQLException {
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        execute(session.getObjectValue(value, property.getType()), session, modifier, executeForm, actions);
+        return actions;
     }
 
+    public boolean execute(ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, RemoteFormView executeForm, List<ClientAction> actions) throws SQLException {
+        return session.execute(property, getPropertyChange(value.getExpr()), modifier, executeForm, actions);
+    }
 }

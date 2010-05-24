@@ -18,12 +18,9 @@ import platform.server.data.KeyField;
 import platform.server.data.type.TypeSerializer;
 import platform.server.data.type.Type;
 import platform.server.classes.*;
-import platform.server.classes.sets.AndClassSet;
 import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -35,9 +32,8 @@ import platform.server.view.form.filter.Filter;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
+import platform.server.view.navigator.filter.OrderViewNavigator;
 import platform.server.data.where.Where;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.caches.ManualLazy;
 
 import java.io.DataOutputStream;
@@ -139,6 +135,11 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             for (RegularFilterNavigator filter : navigatorGroup.filters)
                 group.addFilter(new RegularFilter(filter.ID, filter.filter.doMapping(mapper), filter.name, filter.key));
             regularFilterGroups.add(group);
+        }
+
+        for (Entry<OrderViewNavigator, Boolean> navigatorOrder : navigatorForm.fixedOrders.entrySet()) {
+            OrderView order = navigatorOrder.getKey().doMapping(mapper);
+            order.getApplyObject().fixedOrders.put(order, navigatorOrder.getValue());
         }
 
         addObjectOnTransaction();
@@ -279,31 +280,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         for(Filter filter : object.groupTo.filters) {
             if(filter instanceof CompareFilter && (!Filter.ignoreInInterface || filter.isInInterface(object.groupTo))) { // если ignoreInInterface проверить что в интерфейсе 
                 CompareFilter<?> compareFilter = (CompareFilter)filter;
-                if(compareFilter.compare==Compare.EQUALS && compareFilter.property.property instanceof DataProperty) {
-                    Query<PropertyObjectInterface,String> subQuery = new Query<PropertyObjectInterface,String>(compareFilter.property.mapping.values());
-                    Map<PropertyObjectInterface,DataObject> fixedObjects = new HashMap<PropertyObjectInterface, DataObject>();
-                    for(PropertyObjectInterface mapObject : compareFilter.property.mapping.values())
-                        if(mapObject.getApplyObject() !=object.groupTo)
-                            fixedObjects.put(mapObject, mapObject.getDataObject());
-                        else // assert что тогда sibObject instanceof ObjectImplement потому как ApplyObject = null а object.groupTo !=null
-                            if(mapObject !=object)
-                                subQuery.and(subQuery.mapKeys.get(mapObject).isClass(((ObjectImplement)mapObject).getGridClass().getUpSet()));
-                            else
-                                fixedObjects.put(mapObject,addObject);
-                    subQuery.putKeyWhere(fixedObjects);
-
-                    subQuery.properties.put("newvalue", compareFilter.value.getExpr(object.groupTo.getClassGroup(),BaseUtils.filterKeys(subQuery.mapKeys,compareFilter.property.getObjectImplements()), this));
-
-                    OrderedMap<Map<PropertyObjectInterface, DataObject>, Map<String, ObjectValue>> result = subQuery.executeClasses(session,BL.baseClass);
-                    // изменяем св-ва
-                    for(Map.Entry<Map<PropertyObjectInterface,DataObject>,Map<String,ObjectValue>> row : result.entrySet()) {
-                        DataProperty changeProperty = (DataProperty) compareFilter.property.property;
-                        Map<ClassPropertyInterface,DataObject> keys = new HashMap<ClassPropertyInterface, DataObject>();
-                        for(ClassPropertyInterface propertyInterface : changeProperty.interfaces)
-                            keys.put(propertyInterface,row.getKey().get(compareFilter.property.mapping.get(propertyInterface)));
-                        session.changeProperty(changeProperty,keys,row.getValue().get("newvalue"));
-                    }
-                } else
+                if(compareFilter.compare==Compare.EQUALS)
+                    compareFilter.fillOnAdd(session, this, object, addObject);
+                else
                     if (object.groupTo.equals(compareFilter.getApplyObject()))
                         foundConflict = true;
             }
@@ -331,7 +310,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         dataChanged = true;
 
         // изменяем св-во
-        return property.getChangeProperty().execute(session, this, value, executeForm);
+        return property.getChangeProperty().execute(session, value, this, executeForm);
     }
 
     // Обновление данных
@@ -1116,7 +1095,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
-    public <P extends PropertyInterface> boolean executeBarcodeProperty(DataObject dataObject, PropertyObjectImplement<P> implement, boolean onlyValue) throws SQLException {
+    public <P extends PropertyInterface> boolean executeBarcodeProperty(DataObject dataObject, PropertyObjectImplement<P> implement, boolean onlyValue, boolean reverse) throws SQLException {
         Property<P> property = implement.property;
         Type type = implement.getType();
         if(!onlyValue && type instanceof IncrementClass) {
@@ -1124,11 +1103,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             for(P propertyInterface : property.interfaces)
                 if(!implement.hasNulls(propertyInterface)) {
                     Map<P, DataObject> interfaceValues = implement.getInterfaceValues(propertyInterface, dataObject);
-                    Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this));
-                    DataChanges dataChanges = property.getChangeProperty(interfaceValues).getDataChanges(
-                            incrementValue==null?CaseExpr.NULL:new ValueExpr(incrementValue,incrementType), this);
-                    if(dataChanges.hasChanges()) {
-                        dataChanges.execute(session, null);
+                    Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this), reverse);
+                    if(property.getChangeProperty(interfaceValues).execute(ObjectValue.getValue(incrementValue,incrementType), session, this, null, null)) {
                         PropertyObjectInterface objectInterface = implement.mapping.get(propertyInterface);
                         if(objectInterface instanceof ObjectImplement) {
                             ObjectImplement objectImplement = (ObjectImplement)objectInterface;
@@ -1139,26 +1115,25 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 }
         }
 
-        // нужно проверить можно ли менять на этот класс
-        if(!implement.hasNulls(null)) {
-            DataChanges dataChanges = implement.getChangeProperty().getDataChanges(dataObject.getExpr(),this);
-            if(dataChanges.hasChanges()) {
-                dataChanges.execute(session, null);
-                return true;
-            }
-        }
-
-        return false;
+        return !implement.hasNulls(null) && implement.getChangeProperty().execute(dataObject, session, this, null, null);
     }
 
     public <B extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject) throws SQLException {
+
+        boolean reverseChange = false;
+        if(navigatorForm.reverseBarcode != null) {
+            PropertyValueImplement<?> reverseProperty = mapper.mapProperty(navigatorForm.reverseBarcode).getChangeProperty();
+            reverseChange = (reverseProperty.read(session, this)!=null);
+            if(reverseChange)
+                reverseProperty.execute(session, null, this, null);
+        }
 
         ObjectValue value = barcodeToObject.readClasses(session, Collections.singletonMap(BaseUtils.single(barcodeToObject.interfaces), barcode), this);
         if(value instanceof DataObject) {
             DataObject dataObject = (DataObject)value;
             ConcreteCustomClass dataClass = (ConcreteCustomClass)session.getCurrentClass(dataObject);
             for(int i=0;i<navigatorForm.barcodeClasses.size();i++) // проверяем заданные пользователем свойства
-                if(dataClass.isChild(navigatorForm.barcodeClasses.get(i)) && executeBarcodeProperty(dataObject, mapper.mapProperty(navigatorForm.barcodeProperties.get(i)), false)) // нашли свойство
+                if(dataClass.isChild(navigatorForm.barcodeClasses.get(i)) && executeBarcodeProperty(dataObject, mapper.mapProperty(navigatorForm.barcodeProperties.get(i)), false, reverseChange)) // нашли свойство
                     return;
 
             for(GroupObjectImplement group : groups) // просто ищем первый попавшийся объект
@@ -1169,7 +1144,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                     }
 
             for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем
-                if(executeBarcodeProperty(dataObject, property.view, true))
+                if(executeBarcodeProperty(dataObject, property.view, true, reverseChange))
                     return;
         }
     }

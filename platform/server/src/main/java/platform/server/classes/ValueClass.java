@@ -2,7 +2,6 @@ package platform.server.classes;
 
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.ObjectImplement;
@@ -22,8 +21,6 @@ public interface ValueClass extends RemoteClass {
     AbstractGroup getParent();
 
     AndClassSet getUpSet();
-
-    DataProperty getExternalID();
 
     // получает рандомный объект
     DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException;

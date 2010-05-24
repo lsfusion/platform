@@ -4,13 +4,11 @@ import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.server.caches.Lazy;
 import platform.server.caches.GenericLazy;
-import platform.server.data.Field;
-import platform.server.data.KeyField;
-import platform.server.data.PropertyField;
-import platform.server.data.SQLSession;
+import platform.server.data.*;
 import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.DoubleClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Query;
@@ -34,7 +32,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Immutable
-abstract public class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T> {
+public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T> {
 
     public final String sID;
 
@@ -74,12 +72,23 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         changeExpr = new PullExpr(toString() + " value");
     }
 
-    protected void fillDepends(Set<Property> depends) {
+    public Map<Time, TimeChangeDataProperty<T>> timeChanges = new HashMap<Time, TimeChangeDataProperty<T>>();
+
+    protected void fillDepends(Set<Property> depends, boolean derived) {
+    }
+
+    public boolean notDeterministic() {
+        Set<Property> depends = new HashSet<Property>();
+        fillDepends(depends, false);
+        for(Property property : depends)
+            if(property.notDeterministic())
+                return true;
+        return false;
     }
 
     public Set<Property> getDepends() {
         Set<Property> depends = new HashSet<Property>();
-        fillDepends(depends);
+        fillDepends(depends, true);
         return depends;
     }
 
@@ -117,7 +126,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         }
     }
 
-    protected static Modifier<DefaultChanges> defaultModifier = new Modifier<DefaultChanges>(){
+    public static Modifier<DefaultChanges> defaultModifier = new Modifier<DefaultChanges>(){
         public DefaultChanges newChanges() {
             return DefaultChanges.EMPTY;
         }
@@ -231,7 +240,7 @@ abstract public class Property<T extends PropertyInterface> extends AbstractNode
         assert !cached;
     }
     public boolean isStored() {
-        return field !=null && (!DataSession.reCalculateAggr || this instanceof DataProperty); // для тестирования 2-е условие
+        return field !=null && (!DataSession.reCalculateAggr || this instanceof StoredDataProperty); // для тестирования 2-е условие
     }
 
     public boolean isFalse = false;

@@ -96,11 +96,14 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     // с активным интерфейсом
     public Set<Filter> filters = new HashSet<Filter>();
 
+    public OrderedMap<OrderView, Boolean> fixedOrders = new OrderedMap<OrderView, Boolean>();
+
     // обертку потому как сложный assertion
-    public OrderedMap<OrderView,Boolean> setOrders = null;
+    private OrderedMap<OrderView,Boolean> setOrders = null;
     public OrderedMap<OrderView,Boolean> getSetOrders() {
         if(setOrders==null) {
             setOrders = new OrderedMap<OrderView,Boolean>(userOrders);
+            setOrders.putAll(fixedOrders);
             for(ObjectImplement object : objects)
                 if(!(setOrders.containsKey(object)))
                     setOrders.put(object,false);

@@ -30,14 +30,25 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, Object... params) {
+        setDerivedChange(valueProperty, null, params);
+    }
+
+    public <D extends PropertyInterface> void setDerivedChange(LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
         boolean defaultChanged = false;
         if(params[0] instanceof Boolean) {
             defaultChanged = (Boolean)params[0];
             params = Arrays.copyOfRange(params,1,params.length);
         }
         List<PropertyInterfaceImplement<T>> defImplements = BusinessLogics.readImplements(listInterfaces,params);
-        new DerivedChange<D,T>(property,BusinessLogics.mapImplement(valueProperty,defImplements.subList(0,valueProperty.listInterfaces.size())),
+        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property,BusinessLogics.mapImplement(valueProperty,defImplements.subList(0,valueProperty.listInterfaces.size())),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(valueProperty.listInterfaces.size(), defImplements.size())),
                 defaultChanged);
+
+        // запишем в DataProperty
+        if(BL!=null && derivedChange.notDeterministic())
+            BL.notDeterministic.add(derivedChange);
+        else
+            for(DataProperty dataProperty : property.getDataChanges())
+                dataProperty.derivedChange = derivedChange;
     }
 }

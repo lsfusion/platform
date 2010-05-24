@@ -53,7 +53,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys(); // изначально чтобы новые и старые группировочные записи в одном контексте были
 
         Expr newExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, null), groupProperty.getExpr(mapKeys, modifier, null), operator != 1, joinImplement);
-        if(!modifier.getSession().hasChanges() || (changedWhere==null && !isStored())) return newExpr;
+        if(!hasChanges(modifier) || (changedWhere==null && !isStored())) return newExpr;
 
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
@@ -69,7 +69,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
     abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Expr newExpr);
 
     @Override
-    public void fillDepends(Set<Property> depends) {
+    public void fillDepends(Set<Property> depends, boolean derived) {
         for(Interface<T> interfaceImplement : interfaces)
             interfaceImplement.implement.mapFillDepends(depends);
         depends.add(groupProperty);

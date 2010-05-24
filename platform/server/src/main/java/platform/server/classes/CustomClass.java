@@ -14,7 +14,6 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.table.ObjectTable;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.CustomObjectImplement;
@@ -166,18 +165,6 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         Collection<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
         fillConcreteChilds(result);
         return result;
-    }
-
-    public DataProperty externalID;
-    public DataProperty getExternalID() {
-
-        if (externalID != null) return externalID;
-        for (CustomClass parent : parents) {
-            DataProperty parentID = parent.getExternalID();
-            if (parentID != null) return parentID;
-        }
-
-        return null;
     }
 
     public void getDiffSet(ConcreteObjectClass diffClass,Collection<CustomClass> addClasses,Collection<CustomClass> removeClasses) {

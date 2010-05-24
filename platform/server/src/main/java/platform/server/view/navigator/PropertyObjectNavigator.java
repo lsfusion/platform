@@ -4,15 +4,15 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyImplement;
-import platform.server.view.form.filter.CompareValue;
-import platform.server.view.navigator.filter.CompareValueNavigator;
+import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.navigator.filter.OrderViewNavigator;
 
 import java.util.Map;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class PropertyObjectNavigator<P extends PropertyInterface> extends PropertyImplement<PropertyInterfaceNavigator,P> implements CompareValueNavigator {
+public class PropertyObjectNavigator<P extends PropertyInterface> extends PropertyImplement<PropertyInterfaceNavigator,P> implements OrderViewNavigator {
 
     public Collection<ObjectNavigator> getObjectImplements() {
         Collection<ObjectNavigator> result = new ArrayList<ObjectNavigator>();
@@ -37,7 +37,7 @@ public class PropertyObjectNavigator<P extends PropertyInterface> extends Proper
         super(property, mapping);
     }
 
-    public CompareValue doMapping(Mapper mapper) {
+    public PropertyObjectImplement doMapping(Mapper mapper) {
         return mapper.mapProperty(this);
     }
 }

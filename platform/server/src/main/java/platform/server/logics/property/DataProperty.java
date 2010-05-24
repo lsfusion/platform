@@ -1,41 +1,39 @@
 package platform.server.logics.property;
 
-import platform.base.BaseUtils;
-import platform.server.data.PropertyField;
 import platform.server.classes.ValueClass;
-import platform.server.classes.sets.AndClassSet;
-import platform.server.data.query.Join;
+import platform.server.session.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.type.Type;
-import platform.server.session.*;
-import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.Where;
+import platform.server.data.PropertyField;
+import platform.server.data.query.Join;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.view.form.client.RemoteFormView;
+import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 
-import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.Map;
 import java.sql.SQLException;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
-public class DataProperty extends UserProperty {
+public abstract class DataProperty extends UserProperty {
 
     public ValueClass value;
+    
+    public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
+        super(sID, caption, classes);        
+        this.value = value;
+    }
 
     public static List<ClassPropertyInterface> getInterfaces(ValueClass[] classes) {
         List<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>();
         for(ValueClass interfaceClass : classes)
             interfaces.add(new ClassPropertyInterface(interfaces.size(),interfaceClass));
         return interfaces;
-    }
-
-    public DataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
-        super(sID, caption, classes);
-        this.value = value;
     }
 
     public <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
@@ -50,8 +48,8 @@ public class DataProperty extends UserProperty {
     }
 
     @Override
-    protected void fillDepends(Set<Property> depends) {
-        if(derivedChange !=null) derivedChange.fillDepends(depends);
+    protected void fillDepends(Set<Property> depends, boolean derived) {
+        if(derived && derivedChange !=null) derivedChange.fillDepends(depends);
     }
 
     public DerivedChange<?,?> derivedChange = null;
@@ -97,4 +95,5 @@ public class DataProperty extends UserProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException {
         session.changeProperty(this, keys, value);
     }
+
 }

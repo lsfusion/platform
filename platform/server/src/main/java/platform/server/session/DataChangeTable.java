@@ -9,8 +9,9 @@ import platform.server.data.query.Query;
 import platform.server.data.expr.Expr;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.DataProperty;
 
 import java.sql.SQLException;
 import java.util.*;

@@ -28,7 +28,7 @@ public class FormActionProperty extends ActionProperty {
     public FormActionProperty(String sID, String caption, NavigatorForm form, ObjectNavigator[] objects) {
         super(sID, caption, getValueClasses(objects));
 
-        int i=0;
+        int i=0; // такой же дебилизм и в SessionDataProperty 
         mapObjects = new HashMap<ObjectNavigator, ClassPropertyInterface>();
         for(ClassPropertyInterface propertyInterface : interfaces)
             mapObjects.put(objects[i++],propertyInterface);

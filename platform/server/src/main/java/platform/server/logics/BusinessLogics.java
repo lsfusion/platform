@@ -13,10 +13,10 @@ import platform.server.auth.User;
 import platform.server.data.*;
 import platform.server.data.query.Query;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.property.*;
@@ -27,11 +27,15 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.linear.LP;
 import platform.server.session.DataSession;
+import platform.server.session.PropertyChange;
 import platform.server.data.SQLSession;
+import platform.server.data.where.Where;
 import platform.server.view.navigator.*;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.RemoteForm;
 import platform.server.classes.*;
+import platform.server.caches.GenericLazy;
+import platform.server.caches.GenericImmutable;
 
 import java.io.*;
 import java.rmi.RemoteException;
@@ -43,6 +47,7 @@ import java.net.MalformedURLException;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 
+@GenericImmutable
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
@@ -102,6 +107,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP transactionLater;
     protected LP currentDate;
     protected LP currentHour;
+    protected LP currentEpoch;
     protected LP barcode;
     protected LP barcodeToObject;
     protected LP barcodeAction;
@@ -150,7 +156,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
-        currentHour = addSFProp(adapter.getHour(), DoubleClass.instance, 0);
+        currentHour = addTProp(Time.HOUR);
+        currentEpoch = addTProp(Time.EPOCH);
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
@@ -232,11 +239,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // запишем текущую дату
         DataSession session = createSession(adapter);
-        session.changeProperty((DataProperty)currentDate.property, new HashMap<ClassPropertyInterface, DataObject>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance));
+        session.execute((DataProperty)currentDate.property, new PropertyChange<ClassPropertyInterface>(new HashMap<ClassPropertyInterface, KeyExpr>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance).getExpr(), Where.TRUE), Property.defaultModifier, null, null);
         session.apply(this);
         session.close();
     }
-
+/*
     final static Set<Integer> wereSuspicious = new HashSet<Integer>();
 
     // тестирующий конструктор
@@ -290,7 +297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             throw new RuntimeException(e);
         }
     }
-
+  */
     public AbstractGroup baseGroup;
     public AbstractGroup aggrGroup;
     protected abstract void initGroups();
@@ -353,8 +360,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
     public DataSession createSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(adapter, baseClass, namedObject, name.property, transaction, date.property);
+        return new DataSession(adapter, baseClass, namedObject, name.property, transaction, date.property, notDeterministic);
     }
+
+    public List<DerivedChange<?,?>> notDeterministic = new ArrayList<DerivedChange<?,?>>();
 
     public BaseClass baseClass;
 
@@ -369,6 +378,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             fillPropertyList(depend,set);
         set.add(property);
     }
+    @GenericLazy
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for(Property property : properties)
@@ -388,7 +398,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public List<Property> getStoredProperties() {
         List<Property> result = new ArrayList<Property>();
         for(Property property : getPropertyList())
-            if(persistents.contains(property) || property instanceof DataProperty)
+            if(persistents.contains(property) || property instanceof StoredDataProperty)
                 result.add(property);
         return result;
     }
@@ -667,7 +677,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addDProp(null, sID, caption, value, params);
     }
     protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
-        return addProperty(group,new LP<ClassPropertyInterface>(new DataProperty(sID,caption,params,value)));
+        return addProperty(group,new LP<ClassPropertyInterface>(new StoredDataProperty(sID,caption,params,value)));
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, NavigatorForm form, ObjectNavigator... params) {
@@ -686,6 +696,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addCProp(AbstractGroup group, String sID, String caption, ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addProperty(group,new LP<ClassPropertyInterface>(new ClassProperty(sID,caption,params,valueClass,value)));
+    }
+
+    protected LP addTProp(Time time) {
+        return addProperty(null, new LP<PropertyInterface>(new TimeFormulaProperty(genSID(),time)));
+    }
+
+    protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
+        return addTCProp(null, time, genSID(), caption, changeProp, classes);
+    }
+
+    protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
+        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(sID, caption, classes, changeProp.listInterfaces);
+        changeProp.property.timeChanges.put(time, timeProperty);
+        return addProperty(group, new LP<ClassPropertyInterface>(timeProperty));
     }
 
     protected LP addSFProp(String formula, ConcreteValueClass value,int paramCount) {
@@ -1492,6 +1516,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         System.out.println();
     }
    */
+    /*
     // случайным образом генерирует имплементацию
     void randomImplement(Random randomizer) {
         List<CustomClass> classes = new ArrayList<CustomClass>(baseClass.getChilds());
@@ -1532,10 +1557,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     void changeDBTest(Integer maxIterations,Random randomizer) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         // сначала список получим
-        List<DataProperty> dataProperties = new ArrayList<DataProperty>();
+        List<StoredDataProperty> dataProperties = new ArrayList<StoredDataProperty>();
         for(Property property : properties)
-            if(property instanceof DataProperty)
-                dataProperties.add((DataProperty)property);
+            if(property instanceof StoredDataProperty)
+                dataProperties.add((StoredDataProperty)property);
 
         DataSession session = createSession(adapter);
 
@@ -1574,15 +1599,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             int propertiesChanged = randomizer.nextInt(8)+1;
             for(int ip=0;ip<propertiesChanged;ip++) {
                 // берем случайные n св-в
-                DataProperty changeProp = dataProperties.get(randomizer.nextInt(dataProperties.size()));
+                StoredDataProperty changeProp = dataProperties.get(randomizer.nextInt(dataProperties.size()));
                 int numChanges = randomizer.nextInt(3)+1;
                 for(int in=0;in<numChanges;in++) {
-/*                    // теперь определяем класс найденного объекта
-                    Class valueClass = null;
-                    if(ChangeProp.Value instanceof CustomClass)
-                        valueClass = customClass.FindClassID(ValueObject);
-                    else
-                        valueClass = ChangeProp.Value;*/
 
                     // генерим рандомные объекты этих классов
                     Map<ClassPropertyInterface, DataObject> keys = new HashMap<ClassPropertyInterface, DataObject>();
@@ -1598,10 +1617,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     session.changeProperty(changeProp, keys, valueObject);
                 }
             }
-
-/*            for(DataProperty Property : Session.propertyViews) {
-                Property.OutChangesTable(Adapter, Session);
-            }*/
 
             session.apply(this);
             checkPersistent(session);
@@ -1623,7 +1638,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public static boolean autoFillDB = false;
     public static int autoIDCounter = 0;
     static int autoSeed = 1400;
-    public void autoFillDB(Map<ConcreteCustomClass, Integer> classQuantity, Map<DataProperty, Integer> propQuantity, Map<DataProperty, Set<ClassPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public void autoFillDB(Map<ConcreteCustomClass, Integer> classQuantity, Map<StoredDataProperty, Integer> propQuantity, Map<StoredDataProperty, Set<ClassPropertyInterface>> propNotNull) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         System.out.print("Идет заполнение базы данных...");
 
@@ -1676,8 +1691,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // бежим по св-вам
         for(Property abstractProperty : properties)
-            if(abstractProperty instanceof DataProperty) {
-                DataProperty property = (DataProperty)abstractProperty;
+            if(abstractProperty instanceof StoredDataProperty) {
+                StoredDataProperty property = (StoredDataProperty)abstractProperty;
 
                 System.out.println("Свойство : "+property.caption);
 
@@ -1744,7 +1759,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         autoFillDB = false;
     }
-
+*/
     private void recalculateAggregations(SQLSession session,Collection<AggregateProperty> recalculateProperties) throws SQLException {
 
         for(Property property : getPropertyList())

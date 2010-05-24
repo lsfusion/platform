@@ -32,11 +32,4 @@ public class DataChanges extends AbstractPropertyChanges<ClassPropertyInterface,
         return new DataChanges(this, add);
     }
 
-    public List<ClientAction> execute(DataSession session, RemoteFormView executeForm) throws SQLException {
-        List<ClientAction> actions = new ArrayList<ClientAction>();
-        for(int i=0;i<size;i++)
-            for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : getValue(i).getQuery("value").executeClasses(session, session.baseClass).entrySet())
-                getKey(i).execute(row.getKey(), row.getValue().get("value"), session, actions, executeForm);
-        return actions;
-    }
 }

@@ -11,7 +11,6 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.navigator.*;
@@ -175,8 +174,6 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         LP artBarCode = addDProp(baseGroup, "artBarCode", "Штрих-код", NumericClass.get(13, 0), article);
         LP artWeight = addDProp(baseGroup, "artWeight", "Вес (кг.)", NumericClass.get(6, 3), article);
         LP artPackCount = addDProp(baseGroup, "artPackCount", "Кол-во в уп.", IntegerClass.instance, article);
-
-        article.externalID = (DataProperty)artBarCode.property;
 
         clearingSaleCustomer = addDProp("clearingSaleCustomer","Покупатель", customer, clearingSaleDocument); // реализация по б\н расчету
         LP clearingSaleCustomerName = addJProp(baseGroup, "Имя покупателя", name, clearingSaleCustomer, 1);

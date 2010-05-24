@@ -18,9 +18,9 @@ public class CompareFilterNavigator<P extends PropertyInterface> extends Propert
 
     public Compare compare;
 
-    public CompareValueNavigator value;
+    public OrderViewNavigator value;
 
-    public CompareFilterNavigator(PropertyObjectNavigator<P> iProperty, Compare iCompare, CompareValueNavigator iValue) {
+    public CompareFilterNavigator(PropertyObjectNavigator<P> iProperty, Compare iCompare, OrderViewNavigator iValue) {
         super(iProperty);
         value = iValue;
         compare = iCompare;
