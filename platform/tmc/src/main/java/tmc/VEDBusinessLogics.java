@@ -1044,14 +1044,27 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
-            // делаем, чтобы суммы были как можно правее
-            design.get(getPropertyView(orderSalePay.property)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
-
             if (toAdd) {
+
+                // делаем, чтобы суммы были внизу и как можно правее
+                design.get(getPropertyView(orderSalePay)).getContainer().setContainer(design.getMainContainer());
+                design.get(getPropertyView(orderSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+
+                design.get(getPropertyView(reverseRetailBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
+                design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.get(getPropertyView(reverseRetailBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
                 // устанавливаем дизайн
                 design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
                 design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
+
+                design.get(getPropertyView(barcodeObjectName)).design.font = new Font("Tahoma", Font.BOLD, 36);
+                design.get(getPropertyView(barcodeObjectName)).design.background = new Color(240,240,240);
+
+                design.get(objBarcode).objectCellView.design.font = new Font("Tahoma", Font.BOLD, 18);
+                design.get(getPropertyView(reverseRetailBarcode)).design.font = new Font("Tahoma", Font.BOLD, 18);
+                design.get(getPropertyView(nameContragent)).design.font = new Font("Tahoma", Font.BOLD, 24);
+                design.get(getPropertyView(orderClientSum)).design.font = new Font("Tahoma", Font.BOLD, 24);
 
                 // блокируем объекты для ввода
                 design.setEnabled(documentAggrPriceGroup, false, objDoc.groupTo);

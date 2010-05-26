@@ -179,6 +179,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP currentEpoch;
     protected LP barcode;
     protected LP barcodeToObject;
+    protected LP barcodeObjectName;
     protected LP barcodeAction;
 
     public LP userLogin, userPassword, userFirstName, userLastName;
@@ -236,7 +237,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
-        addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
+        barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
 
         userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), user);
         loginToUser = addCGProp(null, "loginToUser", "Пользователь", object(user), userLogin, userLogin, 1);
