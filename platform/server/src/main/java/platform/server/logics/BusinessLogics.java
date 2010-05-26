@@ -72,15 +72,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     
     public final static boolean activateCaches = true;
 
-    public RemoteNavigatorInterface createNavigator(String login, String password) {
+    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) {
 
-        User user = authPolicy.getUser(login, password);
-        if (user == null) throw new LoginException();
+        DataSession session;
+        try {
+            session = createSession(adapter);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         try {
-            return new RemoteNavigator(adapter, this, user, exportPort);
-        } catch (RemoteException e) {
+            DataObject loginObject = new DataObject(login, StringClass.get(30));
+            Integer userID = (Integer) loginToUser.read(session, loginObject);
+            if(userID==null)
+                throw new LoginException();
+            String checkPassword = (String) userPassword.read(session, new DataObject(userID, user));
+            if(checkPassword != null && !password.trim().equals(checkPassword.trim()))
+                throw new LoginException();
+
+            return new RemoteNavigator(adapter, this, authPolicy.users.get(userID), computer, exportPort);
+        } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                session.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -92,6 +110,54 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected AbstractCustomClass namedObject, transaction, barcodeObject;
+
+    public ConcreteCustomClass user, computer;
+
+    public Collection<Integer> getComputers() {
+        Collection<Integer> result = new ArrayList<Integer>();
+
+        try {
+            DataSession session = createSession(adapter);
+
+            Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
+            query.and(BaseUtils.singleValue(query.mapKeys).isClass(computer.getUpSet()));
+            for(Map<String, Object> row : query.execute(session).keySet())
+                result.add((Integer) row.get("key"));
+
+            if(result.size()==0) {
+                result.add((Integer) session.addObject(computer, session.modifier).object);
+                session.apply(this);
+            }
+
+            session.close();
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    protected User addUser(String login) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+
+        DataSession session = createSession(adapter);
+
+        DataObject loginObject = new DataObject(login, StringClass.get(30));
+        Integer userID = (Integer) loginToUser.read(session, loginObject);
+        if(userID == null) {
+            DataObject addObject = session.addObject(user, session.modifier);
+            userLogin.getChangeProperty(addObject).execute(loginObject, session, session.modifier, null, null);
+            userID = (Integer) addObject.object;
+            session.apply(this);
+        }
+
+        session.close();
+
+        User userObject = new User(userID);
+        authPolicy.users.put(userID, userObject);
+        return userObject;
+    }
+
 
     protected LP groeq2;
     protected LP greater2, less2;
@@ -112,6 +178,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP barcodeToObject;
     protected LP barcodeAction;
 
+    public LP userLogin, userPassword, userFirstName, userLastName;
+    protected LP<?> loginToUser;
+
     void initBase() {
 
         baseGroup = new AbstractGroup("Атрибуты");
@@ -125,6 +194,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         namedObject = addAbstractClass("Объект с именем", baseClass);
         transaction = addAbstractClass("Транзакция", baseClass);
         barcodeObject = addAbstractClass("Штрих-кодированный объект", baseClass);
+
+        user = addConcreteClass("Пользователь", baseClass);
+        computer = addConcreteClass("Рабочее место", baseClass);
 
         tableFactory = new TableFactory();
         for(int i=0;i<TableFactory.MAX_INTERFACE;i++) { // заполним базовые таблицы
@@ -163,7 +235,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
         addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
 
-        barcodeAction = addProperty(baseGroup,new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
+        userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), user);
+        loginToUser = addCGProp(null, "loginToUser", "Пользователь", object(user), userLogin, userLogin, 1);
+        userPassword = addDProp(baseGroup, "userPassword", "Пароль", StringClass.get(30), user);
+        userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), user);
+        userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), user);
+
+        barcodeAction = addProperty(null, new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
     }
 
     private class BarCodeActionProperty extends ActionProperty {
@@ -233,13 +311,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         baseElement.add(baseClass.getBaseClassForm(this));
         initNavigators();
 
-        initAuthentication();
-
         synchronizeDB();
 
+        initAuthentication();
+        
         // запишем текущую дату
         DataSession session = createSession(adapter);
-        session.execute((DataProperty)currentDate.property, new PropertyChange<ClassPropertyInterface>(new HashMap<ClassPropertyInterface, KeyExpr>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance).getExpr(), Where.TRUE), Property.defaultModifier, null, null);
+        session.execute(currentDate.property, new PropertyChange<ClassPropertyInterface>(new HashMap<ClassPropertyInterface, KeyExpr>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance).getExpr(), Where.TRUE), session.modifier, null, null);
         session.apply(this);
         session.close();
     }
@@ -327,7 +405,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected abstract void initNavigators() throws JRException, FileNotFoundException;
 
     public AuthPolicy authPolicy = new AuthPolicy();
-    protected abstract void initAuthentication();
+    protected abstract void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException;
 
     String genSID() {
         return "property" + properties.size();

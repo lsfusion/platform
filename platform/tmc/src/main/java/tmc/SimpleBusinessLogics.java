@@ -1237,13 +1237,12 @@ public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
         }
     }
 
-    protected void initAuthentication() {
+    protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 
         SecurityPolicy securityPolicy;
 
-        User user1 = authPolicy.addUser("user1", "user1", new UserInfo("Петр", "Петров"));
-
-        User user2 = authPolicy.addUser("user2", "user2", new UserInfo("Иван", "Иванов"));
+        User user1 = addUser("user1");
+        User user2 = addUser("user2");
 
         securityPolicy = new SecurityPolicy();
 

@@ -101,13 +101,13 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     protected final Mapper mapper;
 
-    public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
+    public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, PropertyObjectInterface user, PropertyObjectInterface computer, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
         this.navigatorForm = navigatorForm;
         this.BL = BL;
         this.session = session;
         this.securityPolicy = securityPolicy;
 
-        mapper = new Mapper();
+        mapper = new Mapper(user, computer);
 
         this.focusView = focusView;
         this.classView = classView;
@@ -155,8 +155,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
-    public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView) throws SQLException {
-        this(navigatorForm, BL, session, securityPolicy, focusView, classView, new HashMap<ObjectNavigator, Object>());
+    public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, PropertyObjectInterface user, PropertyObjectInterface computer) throws SQLException {
+        this(navigatorForm, BL, session, securityPolicy, focusView, classView, user, computer, new HashMap<ObjectNavigator, Object>());
     }
 
     public List<GroupObjectImplement> groups = new ArrayList<GroupObjectImplement>();
@@ -273,29 +273,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
         DataObject addObject = session.addObject(cls,this);
 
-        boolean foundConflict = false;
-
-        // берем все текущие CompareFilter на оператор 0(=) делаем DataChange на Value сразу в сессию
-        // тогда добавляет для всех других объектов из того же GroupObjectImplement'а, значение Value, GetValueExpr
-        for(Filter filter : object.groupTo.filters) {
-            if(filter instanceof CompareFilter && (!Filter.ignoreInInterface || filter.isInInterface(object.groupTo))) { // если ignoreInInterface проверить что в интерфейсе 
-                CompareFilter<?> compareFilter = (CompareFilter)filter;
-                if(compareFilter.compare==Compare.EQUALS)
-                    compareFilter.fillOnAdd(session, this, object, addObject);
-                else
-                    if (object.groupTo.equals(compareFilter.getApplyObject()))
-                        foundConflict = true;
-            }
-        }
-
-//        по идее не над так как в order'ах будут null'ы
-//        foundConflict = foundConflict || !object.groupTo.orders.isEmpty();
+        for(Filter filter : object.groupTo.getSetFilters())
+            if(!Filter.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе 
+                filter.resolveAdd(session, this, object, addObject);
 
         object.changeValue(session, addObject);
 
-        // меняем вид, если при добавлении может получиться, что фильтр не выполнится
-        if (foundConflict)
-            changeClassView(object.groupTo, ClassViewType.PANEL);
+        // меняем вид, если при добавлении может получиться, что фильтр не выполнится, нужно как-то проверить в общем случае
+//      changeClassView(object.groupTo, ClassViewType.PANEL);
 
         dataChanged = true;
     }
@@ -403,8 +388,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return session.changes.hasChanges();
     }
 
-    public RemoteForm<T> createForm(NavigatorForm form, Map<ObjectNavigator, DataObject> mapObjects) throws SQLException {
-        return new RemoteForm<T>(form, BL, session, securityPolicy, focusView, classView, DataObject.getMapValues(mapObjects));
+    public RemoteForm<T> createForm(NavigatorForm<T> form, Map<ObjectNavigator, DataObject> mapObjects) throws SQLException {
+        return new RemoteForm<T>(form, BL, session, securityPolicy, focusView, classView, mapper.user, mapper.computer, DataObject.getMapValues(mapObjects));
     }
 
     public void changeObject(ObjectImplement object, Object value, RemoteFormView form) throws SQLException {
@@ -1067,29 +1052,29 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     public RemoteDialog<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
         ClassNavigatorForm<T> classForm = new ClassNavigatorForm<T>(BL, getPropertyView(viewID).view.getDialogClass());
-        return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, value);
+        return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, mapper.user, mapper.computer, value);
     }
 
     public RemoteDialog<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyValueImplement<?> change = getPropertyView(viewID).view.getChangeProperty();
         DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change.getDialogClass(session), change);
-        return new RemoteDialog<T>(navigatorForm, BL, session, securityPolicy, focusView, classView, navigatorForm.object);
+        return new RemoteDialog<T>(navigatorForm, BL, session, securityPolicy, focusView, classView, navigatorForm.object, mapper.user, mapper.computer);
     }
 
     public RemoteDialog<T> createObjectDialog(int objectID) throws SQLException {
         CustomObjectImplement objectImplement = (CustomObjectImplement) getObjectImplement(objectID);
         ClassNavigatorForm<T> classForm = new ClassNavigatorForm<T>(BL, objectImplement.baseClass);
         if(objectImplement.currentClass!=null)
-            return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, objectImplement.getObjectValue().getValue());
+            return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, mapper.user, mapper.computer, objectImplement.getObjectValue().getValue());
         else
-            return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object);
+            return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, mapper.user, mapper.computer);
     }
 
     public RemoteDialog<T> createObjectDialog(int objectID, int value) throws RemoteException {
         try {
             CustomObjectImplement objectImplement = (CustomObjectImplement) getObjectImplement(objectID);
             ClassNavigatorForm<T> classForm = new ClassNavigatorForm<T>(BL, objectImplement.baseClass);
-            return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, value);
+            return new RemoteDialog<T>(classForm, BL, session, securityPolicy, focusView, classView, classForm.object, mapper.user, mapper.computer, value);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

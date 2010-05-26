@@ -7,16 +7,11 @@ import java.util.List;
 
 public class User extends UserPolicy {
 
-    String login;
-    String password;
+    public final int ID;
 
-    public UserInfo userInfo;
+    public User(int ID) {
 
-    public User(String ilogin, String ipassword, UserInfo iuserInfo) {
-
-        login = ilogin;
-        password = ipassword;
-        userInfo = iuserInfo;
+        this.ID = ID;
     }
 
     List<UserGroup> userGroups = new ArrayList();

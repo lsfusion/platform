@@ -36,8 +36,8 @@ public class Main {
                     String exportPort = args.length>1?args[1]:"7652";
 
 //                    RemoteNavigatorInterface remoteNavigator = new LoginDialog((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":"+exportPort+"/BusinessLogics")).login();
-                    RemoteNavigatorInterface remoteNavigator = ((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":"+exportPort+"/BusinessLogics"))
-                            .createNavigator("user1", "user1");
+                    RemoteLogicsInterface remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverName + ":" + exportPort + "/BusinessLogics");
+                    RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator("user1", "", remoteLogics.getComputers().iterator().next());
                     if (remoteNavigator == null) return;
 
                     layout = new Layout(remoteNavigator);

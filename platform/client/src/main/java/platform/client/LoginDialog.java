@@ -65,7 +65,7 @@ public class LoginDialog extends JDialog {
     private void onOK() {
 
         try {
-            result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()));
+            result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()), BL.getComputers().iterator().next());
             dispose();
         } catch (RemoteException e) {
             throw new RuntimeException("Ошибка при подключении к серверу", e);

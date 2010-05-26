@@ -1,10 +1,15 @@
 package platform.server.logics.linear;
 
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
+import platform.server.data.SQLSession;
+import platform.server.session.DataSession;
 import platform.base.BaseUtils;
 
 import java.util.*;
+import java.sql.SQLException;
 
 public class LP<T extends PropertyInterface> {
 
@@ -51,4 +56,19 @@ public class LP<T extends PropertyInterface> {
             for(DataProperty dataProperty : property.getDataChanges())
                 dataProperty.derivedChange = derivedChange;
     }
+
+    public Object read(DataSession session, DataObject... objects) throws SQLException {
+        Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
+        for(int i=0;i<listInterfaces.size();i++)
+            mapValues.put(listInterfaces.get(i),objects[i]);
+        return property.read(session, mapValues, session.modifier);
+    }
+
+    public PropertyValueImplement getChangeProperty(DataObject... objects) throws SQLException {
+        Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
+        for(int i=0;i<listInterfaces.size();i++)
+            mapValues.put(listInterfaces.get(i),objects[i]);
+        return property.getChangeProperty(mapValues);
+    }
+
 }

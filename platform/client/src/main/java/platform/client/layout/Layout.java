@@ -41,8 +41,8 @@ public class Layout extends JFrame implements ComponentCollector {
 
         setIconImage(new ImageIcon(getClass().getResource("/platform/images/lsfusion.jpg")).getImage());
 
-        UserInfo userInfo = (UserInfo) new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray())).readObject();
-        setTitle("LS Fusion - " + userInfo.firstName + " " + userInfo.lastName);
+        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
+        setTitle("LS Fusion - " + inputStream.readObject() + " " + inputStream.readObject());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setSize(1024, 768);

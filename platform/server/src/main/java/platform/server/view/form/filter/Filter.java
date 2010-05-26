@@ -5,11 +5,10 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.Updated;
+import platform.server.session.DataSession;
+import platform.server.view.form.*;
 import platform.server.data.where.Where;
+import platform.server.logics.DataObject;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -49,4 +48,8 @@ public abstract class Filter implements Updated {
     public abstract GroupObjectImplement getApplyObject();
 
     public abstract Where getWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException;
+
+    public boolean resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectImplement object, DataObject addObject) throws SQLException {
+        return false;
+    }
 }

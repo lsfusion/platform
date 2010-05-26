@@ -84,8 +84,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     protected void initIndexes() {
     }
 
-    protected void initAuthentication() {
-        User user1 = authPolicy.addUser("user1", "user1", new UserInfo("Петр", "Петров"));
+    protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+        User user1 = addUser("user1");
     }
 
     NavigatorForm mainAccountForm, salesArticleStoreForm;

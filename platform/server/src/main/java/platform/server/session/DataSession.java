@@ -35,7 +35,60 @@ import net.jcip.annotations.Immutable;
 
 public class DataSession extends SQLSession implements ChangesSession {
 
-    // mutable для удобства
+    public static class SimpleChanges extends Changes<SimpleChanges> {
+
+        private SimpleChanges() {
+        }
+        public static final SimpleChanges EMPTY = new SimpleChanges();
+
+        private SimpleChanges(SimpleChanges changes, SessionChanges merge) {
+            super(changes, merge);
+        }
+        public SimpleChanges addChanges(SessionChanges changes) {
+            return new SimpleChanges(this, changes);
+        }
+
+        public SimpleChanges(Modifier<SimpleChanges> modifier) {
+            super(modifier);
+        }
+
+        private SimpleChanges(SimpleChanges changes, SimpleChanges merge) {
+            super(changes, merge);
+        }
+        public SimpleChanges add(SimpleChanges changes) {
+            return new SimpleChanges(this, changes);
+        }
+
+        private SimpleChanges(Changes<SimpleChanges> changes, Map<ValueExpr, ValueExpr> mapValues) {
+            super(changes, mapValues);
+        }
+        public SimpleChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+            return new SimpleChanges(this, mapValues);
+        }
+    }
+
+    public final Modifier<SimpleChanges> modifier = new Modifier<SimpleChanges>() {
+        public SimpleChanges newChanges() {
+            return SimpleChanges.EMPTY;
+        }
+
+        public SimpleChanges fullChanges() {
+            return new SimpleChanges(this);
+        }
+
+        public SessionChanges getSession() {
+            return changes;
+        }
+
+        public SimpleChanges used(Property property, SimpleChanges usedChanges) {
+            return usedChanges;
+        }
+
+        public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
+            return null;
+        }
+    };
+
     public static class UpdateChanges {
 
         public final Set<Property> properties;
@@ -189,7 +242,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         // если идет изменение и есть недетерменированное производное изменение зависищее от него, то придется его "выполнить"
         for(DerivedChange<?,?> derivedChange : notDeterministic) {
-            DataChanges derivedChanges = derivedChange.getDataChanges(new DataChangesModifier(Property.defaultModifier, changes));
+            DataChanges derivedChanges = derivedChange.getDataChanges(new DataChangesModifier(modifier, changes));
             if(derivedChanges.hasChanges())
                 changes = changes.add(derivedChanges);
         }

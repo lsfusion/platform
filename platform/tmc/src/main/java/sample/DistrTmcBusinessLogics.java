@@ -147,8 +147,8 @@ public class DistrTmcBusinessLogics extends BusinessLogics<DistrTmcBusinessLogic
         }
     }
 
-    protected void initAuthentication() {
+    protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 
-        User user1 = authPolicy.addUser("user1", "user1", new UserInfo("Петр", "Петров"));
+        User user1 = addUser("user1");
     }
 }

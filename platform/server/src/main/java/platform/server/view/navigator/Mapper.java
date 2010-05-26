@@ -2,6 +2,7 @@ package platform.server.view.navigator;
 
 import platform.server.view.form.*;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.DataObject;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -10,7 +11,12 @@ import java.util.ArrayList;
 
 public class Mapper {
 
-    public Mapper() {
+    public final PropertyObjectInterface user;
+    public final PropertyObjectInterface computer;
+
+    public Mapper(PropertyObjectInterface user, PropertyObjectInterface computer) {
+        this.user = user;
+        this.computer = computer;
     }
 
     public final Map<ObjectNavigator, ObjectImplement> objectMapper = new HashMap<ObjectNavigator, ObjectImplement>();

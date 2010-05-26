@@ -47,32 +47,39 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(DataAdapter iAdapter,T iBL,User iCurrentUser,int port) throws RemoteException {
+    public RemoteNavigator(DataAdapter adapter,T BL,User currentUser, int computer, int port) throws RemoteException {
         super(port);
 
-        adapter = iAdapter;
-        BL = iBL;
+        this.adapter = adapter;
+        this.BL = BL;
         classCache = new ClassCache();
 
-        currentUser = iCurrentUser;
-        securityPolicy = BL.authPolicy.getSecurityPolicy(currentUser);
+        securityPolicy = this.BL.authPolicy.getSecurityPolicy(currentUser);
+
+        user = new DataObject(currentUser.ID, BL.user);
+        this.computer = new DataObject(computer, BL.computer);
     }
 
-    User currentUser;
+    PropertyObjectInterface user;
+    PropertyObjectInterface computer;
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
 
     public byte[] getCurrentUserInfoByteArray() {
 
-        if (currentUser == null) return new byte[] {};
-
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         try {
+            DataSession session = BL.createSession(adapter);
+
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
-            objectStream.writeObject(currentUser.userInfo);
-        } catch (IOException e) {
+            String firstName = (String) BL.userFirstName.read(session, user.getDataObject());
+            objectStream.writeObject(firstName==null?"(без имени)":firstName.trim());
+            String lastName = (String) BL.userLastName.read(session, user.getDataObject());
+            objectStream.writeObject(lastName==null?"(без фамилии)":lastName.trim());
+            session.close();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -153,8 +160,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         addCacheObject(cls, objectID);
     }
 
-    private NavigatorForm getNavigatorForm(int formID) {
-        NavigatorForm navigatorForm = (NavigatorForm) BL.baseElement.getNavigatorElement(formID);
+    private NavigatorForm<T> getNavigatorForm(int formID) {
+        NavigatorForm<T> navigatorForm = (NavigatorForm) BL.baseElement.getNavigatorElement(formID);
         if(navigatorForm==null)
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
 
@@ -165,7 +172,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public RemoteFormInterface createForm(int formID, boolean currentSession) {
 
        try {
-            NavigatorForm navigatorForm = getNavigatorForm(formID);
+            NavigatorForm<T> navigatorForm = getNavigatorForm(formID);
 
             DataSession session;
             if (currentSession && currentForm != null)
@@ -173,7 +180,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             else
                 session = BL.createSession(adapter);
 
-           RemoteForm<T> remoteForm = new RemoteForm<T>(navigatorForm, BL, session, securityPolicy, this, this);
+           RemoteForm<T> remoteForm = new RemoteForm<T>(navigatorForm, BL, session, securityPolicy, this, this, user, computer);
 
             for (GroupObjectImplement groupObject : remoteForm.groups) {
                 Map<OrderView,Object> userSeeks = new HashMap<OrderView, Object>();

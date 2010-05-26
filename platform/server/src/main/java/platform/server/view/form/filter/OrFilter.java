@@ -2,11 +2,14 @@ package platform.server.view.form.filter;
 
 import platform.server.data.expr.Expr;
 import platform.server.logics.property.Property;
+import platform.server.logics.DataObject;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
+import platform.server.session.DataSession;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
+import platform.server.view.form.CustomObjectImplement;
 import platform.server.data.where.Where;
 
 import java.io.DataInputStream;
@@ -52,7 +55,7 @@ public class OrFilter extends Filter {
     public GroupObjectImplement getApplyObject() {
         GroupObjectImplement apply1 = op1.getApplyObject();
         GroupObjectImplement apply2 = op2.getApplyObject();
-        if(apply1.order>apply2.order)
+        if(apply2==null || (apply1!=null && apply1.order>apply2.order))
             return apply1;
         else
             return apply2;
@@ -64,5 +67,10 @@ public class OrFilter extends Filter {
 
     public boolean isInInterface(GroupObjectImplement classGroup) {
         return op1.isInInterface(classGroup) || op2.isInInterface(classGroup);
+    }
+
+    @Override
+    public boolean resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectImplement object, DataObject addObject) throws SQLException {
+        return op1.resolveAdd(session, modifier, object, addObject) || op2.resolveAdd(session, modifier, object, addObject);
     }
 }

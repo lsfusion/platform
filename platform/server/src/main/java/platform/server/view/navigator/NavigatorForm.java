@@ -199,7 +199,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return propertyView;
     }
 
-    protected PropertyObjectNavigator addPropertyObjectImplement(LP property, ObjectNavigator... objects) {
+    protected PropertyObjectNavigator addPropertyObjectImplement(LP property, PropertyInterfaceNavigator... objects) {
 
         return new PropertyObjectNavigator(property,objects);
     }
