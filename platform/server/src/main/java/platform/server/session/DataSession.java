@@ -19,6 +19,7 @@ import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.property.*;
 import platform.server.view.form.RemoteForm;
+import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
@@ -98,7 +99,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         public UpdateChanges() {
             properties = new HashSet<Property>();
             addClasses = new HashSet<CustomClass>();
-            removeClasses = new HashSet<CustomClass>();            
+            removeClasses = new HashSet<CustomClass>();
         }
 
         public UpdateChanges(SessionChanges changes, RemoteForm<?> form) {
@@ -172,7 +173,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, Modifier<? extends Changes> modifier, DataObject key, Object value) throws SQLException {
-        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).execute(this,value,modifier,null);
+        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).execute(this,value,modifier,null,null);
     }
 
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {
@@ -181,7 +182,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         // запишем объекты, которые надо будет сохранять
         changeClass(object, customClass);
-        
+
         if(customClass.isChild(namedObject))
             changeSingleProperty(name,modifier,object,customClass.caption+" "+object.object);
 
@@ -189,7 +190,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             changeSingleProperty(date,modifier,object,DateConverter.dateToInt(new Date()));
 
         return object;
-    }    
+    }
 
     Map<DataObject, ConcreteObjectClass> newClasses = new HashMap<DataObject, ConcreteObjectClass>();
 
@@ -223,7 +224,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
     }
 
-    public <P extends PropertyInterface> boolean execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, List<ClientAction> actions) throws SQLException {
+    public <P extends PropertyInterface> boolean execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, List<ClientAction> actions, PropertyObjectImplement<?> propertyImplement) throws SQLException {
         WhereBuilder changedWhere = new WhereBuilder();
         DataChanges dataChanges = property.getDataChanges(change, changedWhere, modifier);
         if(dataChanges.hasChanges()) {
@@ -231,14 +232,14 @@ public class DataSession extends SQLSession implements ChangesSession {
                 dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
                         BaseUtils.join(timeChange.getValue().mapInterfaces,change.mapKeys),
                         new TimeExpr(timeChange.getKey()), changedWhere.toWhere()), null, modifier));
-            execute(dataChanges,executeForm, actions);
+            execute(dataChanges,executeForm, actions, propertyImplement);
             return true;
         } else
             return false;
     }
 
 
-    private void execute(DataChanges changes, RemoteFormView executeForm, List<ClientAction> actions) throws SQLException {
+    private void execute(DataChanges changes, RemoteFormView executeForm, List<ClientAction> actions, PropertyObjectImplement<?> propertyImplement) throws SQLException {
 
         // если идет изменение и есть недетерменированное производное изменение зависищее от него, то придется его "выполнить"
         for(DerivedChange<?,?> derivedChange : notDeterministic) {
@@ -249,7 +250,7 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         for(int i=0;i<changes.size;i++)
             for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : changes.getValue(i).getQuery("value").executeClasses(this, baseClass).entrySet())
-                changes.getKey(i).execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm);
+                changes.getKey(i).execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm, propertyImplement);
     }
 
     public ConcreteClass getCurrentClass(DataObject value) {

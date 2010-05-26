@@ -56,6 +56,10 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         }
     }
 
+    public boolean hasChildren() {
+        return !children.isEmpty();
+    }
+
     public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
         ObjectTable classTable = getBaseClass().table;
         session.updateInsertRecord(classTable,Collections.singletonMap(classTable.key,value),

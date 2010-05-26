@@ -10,23 +10,26 @@ import platform.interop.CellDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.text.Format;
 import java.awt.*;
 
-public class ClientActionClass extends ClientLogicalClass {
-    
+public class ClientActionClass extends ClientDataClass implements ClientType {
+
     public ClientActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
     }
 
-    @Override
-    public int getPreferredWidth(FontMetrics fontMetrics) {
-        return 50;
+    public String getPreferredMask() {
+        return "1";
     }
 
-    @Override
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new ActionPropertyRenderer(caption); }
+    public Format getDefaultFormat() {
+        return null;
+    }
 
-    @Override
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new ActionPropertyRenderer(caption); }
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
+    public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return null; }
+    protected PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return null; }
 }

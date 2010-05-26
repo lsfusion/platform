@@ -9,7 +9,7 @@ public class ClientTypeSerializer {
         if(inStream.readBoolean())
             return ClientObjectClass.type;
         else
-            return (ClientDataClass)(ClientClass.deserialize(inStream));
+            return (ClientType)(ClientClass.deserialize(inStream));
     }
 
 }

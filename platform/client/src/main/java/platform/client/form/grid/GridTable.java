@@ -164,20 +164,21 @@ public abstract class GridTable extends ClientFormTable
             public void valueChanged(ListSelectionEvent e) {
 //                            System.out.println("changeSel");
                 final ClientGroupObjectValue changeObject = model.getSelectedObject();
-                assert changeObject!=null;
-                SwingUtils.invokeLaterSingleAction(logicsSupplier.getGroupObject().getActionID()
-                        , new ActionListener() {
-                    public void actionPerformed(ActionEvent ae) {
-                        try {
-                            if(changeObject.equals(model.getSelectedObject())) {
-                                currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
-                                form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
+                if (changeObject != null) {
+                    SwingUtils.invokeLaterSingleAction(logicsSupplier.getGroupObject().getActionID()
+                            , new ActionListener() {
+                        public void actionPerformed(ActionEvent ae) {
+                            try {
+                                if(changeObject.equals(model.getSelectedObject())) {
+                                    currentObject = model.getSelectedObject(); // нужно менять текущий выбранный объект для правильного скроллирования
+                                    form.changeGroupObject(logicsSupplier.getGroupObject(), model.getSelectedObject());
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException("Ошибка при изменении текущего объекта", e);
                             }
-                        } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при изменении текущего объекта", e);
                         }
-                    }
-                }, 50);
+                    }, 50);
+                }
             }
         });
 

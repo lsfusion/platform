@@ -4,6 +4,8 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.classes.ClassDialog;
 import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.classes.ClientConcreteClass;
+import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientObjectClass;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,8 +17,8 @@ public class ClassPropertyEditor extends JComponent implements PropertyEditorCom
 
     ClassDialog dialog;
 
-    public ClassPropertyEditor(Component owner, ClientObjectImplementView object, ClientConcreteClass value) {
-        dialog = new ClassDialog(owner, object, value);
+    public ClassPropertyEditor(Component owner, ClientObjectClass baseClass, ClientObjectClass value) {
+        dialog = new ClassDialog(owner, baseClass, value);
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {

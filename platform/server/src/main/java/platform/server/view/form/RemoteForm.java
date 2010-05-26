@@ -160,7 +160,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public List<GroupObjectImplement> groups = new ArrayList<GroupObjectImplement>();
-    public Map<GroupObjectImplement,ViewTable> groupTables = new HashMap<GroupObjectImplement, ViewTable>(); 
+    public Map<GroupObjectImplement,ViewTable> groupTables = new HashMap<GroupObjectImplement, ViewTable>();
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public List<PropertyView> properties = new ArrayList<PropertyView>();
 
@@ -266,6 +266,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // пометка что изменились данные
     private boolean dataChanged = false;
 
+    // добавляет во все
+    public void addObject(ConcreteCustomClass cls) throws SQLException {
+
+        for (GroupObjectImplement groupObject : groups)
+            for (ObjectImplement object : groupObject.objects)
+                if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass)) {
+
+                }
+    }
+
     public void addObject(CustomObjectImplement object, ConcreteCustomClass cls) throws SQLException {
         // пока тупо в базу
 
@@ -274,7 +284,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         DataObject addObject = session.addObject(cls,this);
 
         for(Filter filter : object.groupTo.getSetFilters())
-            if(!Filter.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе 
+            if(!Filter.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе
                 filter.resolveAdd(session, this, object, addObject);
 
         object.changeValue(session, addObject);
@@ -295,7 +305,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         dataChanged = true;
 
         // изменяем св-во
-        return property.getChangeProperty().execute(session, value, this, executeForm);
+        return property.getChangeProperty().execute(session, value, this, executeForm, property);
     }
 
     // Обновление данных
@@ -493,7 +503,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                     }
                 } else {
                     viewTable.rewrite(session,group.keys.keySet());
-                    groupTables.put(group,viewTable);                    
+                    groupTables.put(group,viewTable);
                 }
             }
         }
@@ -575,7 +585,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         assert !(orderSeeks!=null && !orders.starts(orderSeeks.keySet()));
 
         Map<ObjectImplement, KeyExpr> mapKeys = group.getMapKeys();
-        
+
         Map<OrderView, Expr> orderExprs = new HashMap<OrderView, Expr>();
         for(Map.Entry<OrderView,Boolean> toOrder : orders.entrySet())
             orderExprs.put(toOrder.getKey(),toOrder.getKey().getExpr(group.getClassGroup(), mapKeys, this));
@@ -633,7 +643,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public static Map<ObjectImplement,DataObject> dataKeys(Map<ObjectImplement,ObjectValue> map) {
-        return (Map<ObjectImplement,DataObject>)(Map<ObjectImplement,? extends ObjectValue>)map; 
+        return (Map<ObjectImplement,DataObject>)(Map<ObjectImplement,? extends ObjectValue>)map;
     }
 
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
@@ -677,7 +687,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 if (group.curClassView == ClassViewType.HIDE) continue;
 
-                // если изменились класс грида или представление 
+                // если изменились класс грида или представление
                 boolean updateKeys = refresh || (group.updated & (GroupObjectImplement.UPDATED_GRIDCLASS | GroupObjectImplement.UPDATED_CLASSVIEW))!=0;
 
                 if(Filter.ignoreInInterface) {
@@ -808,7 +818,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                         if(direction==DIRECTION_UP || direction ==DIRECTION_CENTER) { // сначала Up
                             keyResult.putAll(executeKeys(group, orderSeeks, readSize, false).reverse());
                             group.upKeys = (keyResult.size()== readSize);
-                            activeRow = keyResult.size()-1; 
+                            activeRow = keyResult.size()-1;
                         }
                         if(direction ==DIRECTION_DOWN || direction ==DIRECTION_CENTER) { // затем Down
                             OrderedMap<Map<ObjectImplement, DataObject>, Map<OrderView, ObjectValue>> executeList = executeKeys(group, orderSeeks, readSize, true);
@@ -1027,7 +1037,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         FormData result = new FormData();
 
         for(PropertyView<?> property : properties)
-            if (allProperties || property.view.getApplyObject().curClassView != ClassViewType.HIDE) // если свойство находится не в GroupObject, который спрятан
+            if (allProperties || (property.view.getApplyObject() != null && property.view.getApplyObject().curClassView != ClassViewType.HIDE)) // если свойство находится не в GroupObject, который спрятан
                 query.properties.put(property, property.view.getExpr(classGroups, query.mapKeys, this));
 
         OrderedMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.execute(session,queryOrders,0);
@@ -1089,7 +1099,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 if(!implement.hasNulls(propertyInterface)) {
                     Map<P, DataObject> interfaceValues = implement.getInterfaceValues(propertyInterface, dataObject);
                     Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this), reverse);
-                    if(property.getChangeProperty(interfaceValues).execute(ObjectValue.getValue(incrementValue,incrementType), session, this, null, null)) {
+                    if(property.getChangeProperty(interfaceValues).execute(ObjectValue.getValue(incrementValue,incrementType), session, this, null, null, implement)) {
                         PropertyObjectInterface objectInterface = implement.mapping.get(propertyInterface);
                         if(objectInterface instanceof ObjectImplement) {
                             ObjectImplement objectImplement = (ObjectImplement)objectInterface;
@@ -1100,7 +1110,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 }
         }
 
-        return !implement.hasNulls(null) && implement.getChangeProperty().execute(dataObject, session, this, null, null);
+        return !implement.hasNulls(null) && implement.getChangeProperty().execute(dataObject, session, this, null, null, implement);
     }
 
     public <B extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject) throws SQLException {
@@ -1110,7 +1120,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             PropertyValueImplement<?> reverseProperty = mapper.mapProperty(navigatorForm.reverseBarcode).getChangeProperty();
             reverseChange = (reverseProperty.read(session, this)!=null);
             if(reverseChange)
-                reverseProperty.execute(session, null, this, null);
+                reverseProperty.execute(session, null, this, null, null);
         }
 
         ObjectValue value = barcodeToObject.readClasses(session, Collections.singletonMap(BaseUtils.single(barcodeToObject.interfaces), barcode), this);

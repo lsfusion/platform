@@ -14,7 +14,7 @@ import java.util.*;
 public class DataChanges extends AbstractPropertyChanges<ClassPropertyInterface, UserProperty, DataChanges> {
 
     protected DataChanges createThis() {
-        return new DataChanges(); 
+        return new DataChanges();
     }
 
     public DataChanges() {

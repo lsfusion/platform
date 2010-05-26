@@ -1,23 +1,27 @@
 package platform.client.logics.classes;
 
-import platform.client.form.ClientForm;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.logics.ClientCellView;
+import platform.client.logics.classes.ClientClassActionClass;
 import platform.interop.Data;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.Format;
 
 abstract public class ClientClass implements Serializable {
 
-    public abstract boolean hasChilds();
+    public abstract boolean hasChildren();
 
     ClientClass(DataInputStream inStream) {
     }
 
     public static ClientClass deserialize(DataInputStream inStream) throws IOException {
+        return deserialize(inStream, false);
+    }
+
+    public static ClientClass deserialize(DataInputStream inStream, boolean nulls) throws IOException {
+
+        if (nulls && inStream.readBoolean()) return null;
+
         byte type = inStream.readByte();
 
         if(type==Data.OBJECT) return ClientObjectClass.deserializeObject(inStream);
@@ -29,6 +33,7 @@ abstract public class ClientClass implements Serializable {
         if(type==Data.ACTION) return new ClientActionClass(inStream);
         if(type==Data.DATE) return new ClientDateClass(inStream);
         if(type==Data.STRING) return new ClientStringClass(inStream);
+        if(type==Data.CLASSACTION) return new ClientClassActionClass(inStream);
 
         throw new IOException();
     }

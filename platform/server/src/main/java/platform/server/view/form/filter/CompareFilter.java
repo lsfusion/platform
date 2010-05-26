@@ -8,8 +8,6 @@ import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.type.Type;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.DataProperty;
 import platform.server.logics.DataObject;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
@@ -108,6 +106,6 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
         }
         return session.execute(property.property, new PropertyChange<P>(mapKeys,
                             value.getExpr(object.groupTo.getClassGroup(), BaseUtils.filterKeys(mapObjects, property.getObjectImplements()), modifier), changeWhere),
-                            modifier, null, null);
+                            modifier, null, null, null);
     }
 }

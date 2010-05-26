@@ -1,6 +1,7 @@
 package platform.server.data.type;
 
 import platform.server.classes.DataClass;
+import platform.server.classes.ValueClass;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,5 +22,14 @@ public class TypeSerializer {
             return ObjectType.instance;
         else
             return DataClass.deserialize(inStream);
+    }
+
+    public static void serialize(DataOutputStream outStream, ValueClass cls) throws IOException {
+        if (cls == null)
+            outStream.writeBoolean(true);
+        else {
+            outStream.writeBoolean(false);
+            cls.serialize(outStream);
+        }
     }
 }

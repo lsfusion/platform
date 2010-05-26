@@ -6,6 +6,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
 import platform.client.form.editor.ClassPropertyEditor;
 import platform.client.logics.classes.ClientConcreteClass;
+import platform.client.logics.classes.ClientObjectClass;
 
 import java.rmi.RemoteException;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class ClientClassCellView extends ClientObjectView {
     }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {
-        return new ClassPropertyEditor(form, object, (ClientConcreteClass)value);
+        return new ClassPropertyEditor(form, (ClientObjectClass)object.baseClass, (ClientObjectClass)value);
     }
 
     public PropertyEditorComponent getClassComponent(ClientForm form, Object value) throws IOException, ClassNotFoundException {

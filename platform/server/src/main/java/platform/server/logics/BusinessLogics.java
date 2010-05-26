@@ -33,6 +33,9 @@ import platform.server.data.where.Where;
 import platform.server.view.navigator.*;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.RemoteForm;
+import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.CustomObjectImplement;
 import platform.server.classes.*;
 import platform.server.caches.GenericLazy;
 import platform.server.caches.GenericImmutable;
@@ -146,7 +149,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         Integer userID = (Integer) loginToUser.read(session, loginObject);
         if(userID == null) {
             DataObject addObject = session.addObject(user, session.modifier);
-            userLogin.getChangeProperty(addObject).execute(loginObject, session, session.modifier, null, null);
+            userLogin.getChangeProperty(addObject).execute(loginObject, session, session.modifier, null, null, null);
             userID = (Integer) addObject.object;
             session.apply(this);
         }
@@ -244,13 +247,62 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcodeAction = addProperty(null, new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
     }
 
+    Map<CustomClass, ActionProperty> addObjectActions = new HashMap<CustomClass, ActionProperty>();
+    protected ActionProperty getAddObjectAction(CustomClass cls) {
+        if (!addObjectActions.containsKey(cls))
+            addObjectActions.put(cls, new AddObjectActionProperty(genSID(), cls));
+        return addObjectActions.get(cls);
+    }
+
+    protected class AddObjectActionProperty extends ActionProperty {
+
+        private CustomClass valueClass;
+
+        public AddObjectActionProperty(String sID, CustomClass valueClass) {
+            super(sID, "Добавить (" + valueClass + ")", new ValueClass[] {}); // сам класс не передаем, поскольку это свойство "глобальное"
+
+            this.valueClass = valueClass;
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+            RemoteForm<?> form = (RemoteForm<?>)executeForm.form;
+            form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
+        }
+
+        @Override
+        protected ActionClass getValueClass() {
+            return ClassActionClass.getInstance(valueClass);
+        }
+    }
+
+    Map<CustomClass, ActionProperty> deleteObjectActions = new HashMap<CustomClass, ActionProperty>();
+    protected ActionProperty getDeleteObjectAction(CustomClass cls) {
+        if (!deleteObjectActions.containsKey(cls))
+            deleteObjectActions.put(cls, new DeleteObjectActionProperty(genSID(), cls));
+        return deleteObjectActions.get(cls);
+    }
+
+    protected class DeleteObjectActionProperty extends ActionProperty {
+
+        public DeleteObjectActionProperty(String sID, CustomClass valueClass) {
+            super(sID, "Удалить (" + valueClass + ")", new ValueClass[]{valueClass});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+            for (ObjectImplement object : propertyImplement.getObjectImplements()) {
+                if (object instanceof CustomObjectImplement)
+                    ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)object, -1);
+            }
+        }
+    }
+
     private class BarCodeActionProperty extends ActionProperty {
 
         public BarCodeActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{StringClass.get(13)});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
             ((RemoteForm<?>)executeForm.form).executeBarcode(BaseUtils.singleValue(keys), (Property<?>)barcodeToObject.property);
         }
     }
@@ -317,7 +369,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         
         // запишем текущую дату
         DataSession session = createSession(adapter);
-        session.execute(currentDate.property, new PropertyChange<ClassPropertyInterface>(new HashMap<ClassPropertyInterface, KeyExpr>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance).getExpr(), Where.TRUE), session.modifier, null, null);
+        session.execute(currentDate.property, new PropertyChange<ClassPropertyInterface>(new HashMap<ClassPropertyInterface, KeyExpr>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance).getExpr(), Where.TRUE), session.modifier, null, null, null);
         session.apply(this);
         session.close();
     }

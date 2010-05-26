@@ -16,7 +16,7 @@ public class ClassDialog extends JDialog {
 
     ClassTree tree;
 
-    public ClassDialog(Component owner, ClientObjectImplementView object, ClientObjectClass value) {
+    public ClassDialog(Component owner, ClientObjectClass baseClass, ClientObjectClass value) {
         super(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
 
         setLayout(new BorderLayout());
@@ -27,7 +27,7 @@ public class ClassDialog extends JDialog {
 
         setSize(300, 200);
 
-        tree = new ClassTree(0, object.baseClass) {
+        tree = new ClassTree(0, baseClass) {
             protected void currentClassChanged() {
                 okPressed();
             }
@@ -78,7 +78,7 @@ public class ClassDialog extends JDialog {
 
     public static ClientConcreteClass dialogConcreteClass(Component owner, ClientObjectImplementView object, ClientObjectClass value) {
 
-        ClassDialog dialog = new ClassDialog(owner, object, value);
+        ClassDialog dialog = new ClassDialog(owner, (ClientObjectClass)object.baseClass, value);
         dialog.setLocation(java.awt.MouseInfo.getPointerInfo().getLocation());
         dialog.setVisible(true);
         return dialog.getChosenClass();

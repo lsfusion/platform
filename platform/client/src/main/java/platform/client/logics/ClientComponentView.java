@@ -12,13 +12,13 @@ import java.util.HashMap;
 
 public class ClientComponentView implements Serializable {
 
-    public int ID;
+    public int compID; // ID есть и у свойст и у объектов, так что чтобы не путаться
     public ClientContainerView container;
     public SimplexConstraints<Integer> constraints;
 
     ClientComponentView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
 
-        ID = inStream.readInt();
+        compID = inStream.readInt();
         
         if(!inStream.readBoolean()) {
             int containerID = inStream.readInt();
@@ -36,6 +36,6 @@ public class ClientComponentView implements Serializable {
         for (int i = 0; i < count; i++) {
             constraints.intersects.put(inStream.readInt(), (DoNotIntersectSimplexConstraint) new ObjectInputStream(inStream).readObject());
         }
-        constraints.ID = ID;
+        constraints.ID = compID;
     }
 }

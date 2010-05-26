@@ -13,6 +13,7 @@ import platform.server.data.type.Type;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.form.PropertyObjectImplement;
 import platform.interop.action.ClientAction;
 
 import java.util.Map;
@@ -67,5 +68,5 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return false;
     }
 
-    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm) throws SQLException;
+    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException;
 }

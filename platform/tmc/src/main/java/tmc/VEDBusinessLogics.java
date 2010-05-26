@@ -13,6 +13,7 @@ import platform.server.data.Time;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;

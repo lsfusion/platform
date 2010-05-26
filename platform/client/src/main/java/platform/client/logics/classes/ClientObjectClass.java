@@ -55,7 +55,7 @@ public abstract class ClientObjectClass extends ClientClass {
             return new ClientAbstractClass(inStream); 
     }
 
-    public boolean hasChilds() {
+    public boolean hasChildren() {
         return !children.isEmpty();
     }
 }

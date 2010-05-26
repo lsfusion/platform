@@ -31,7 +31,7 @@ public abstract class ClassTree extends JTree {
 
     private final DefaultTreeModel model;
 
-    // ID нужен для того, чтобы правильно работал equals
+    // compID нужен для того, чтобы правильно работал equals
     private final int ID;
 
     @Override
@@ -91,7 +91,7 @@ public abstract class ClassTree extends JTree {
             }
         });
 
-        if (rootClass.hasChilds()) {
+        if (rootClass.hasChildren()) {
             currentNode.add(new ExpandingTreeNode());
             expandPath(new TreePath(currentNode));
         }
@@ -172,10 +172,10 @@ public abstract class ClassTree extends JTree {
         for (ClientClass cls : classes) {
 
             DefaultMutableTreeNode node;
-            node = new DefaultMutableTreeNode(cls, cls.hasChilds());
+            node = new DefaultMutableTreeNode(cls, cls.hasChildren());
             parent.add(node);
 
-            if (cls.hasChilds())
+            if (cls.hasChildren())
                 node.add(new ExpandingTreeNode());
 
         }

@@ -16,7 +16,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
         super(inStream);
     }
 
-    public boolean hasChilds() {
+    public boolean hasChildren() {
         return false;
     }
 

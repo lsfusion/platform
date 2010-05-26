@@ -9,6 +9,7 @@ import platform.server.data.expr.where.CompareWhere;
 import platform.server.session.*;
 import platform.server.classes.CustomClass;
 import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.form.PropertyObjectImplement;
 import platform.interop.action.ClientAction;
 
 import java.util.Map;
@@ -48,13 +49,13 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return property.getDataChanges(getPropertyChange(property.changeExpr), null, modifier).hasChanges();
     }
 
-    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm) throws SQLException {
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        execute(session.getObjectValue(value, property.getType()), session, modifier, executeForm, actions);
+        execute(session.getObjectValue(value, property.getType()), session, modifier, executeForm, actions, propertyImplement);
         return actions;
     }
 
-    public boolean execute(ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, RemoteFormView executeForm, List<ClientAction> actions) throws SQLException {
-        return session.execute(property, getPropertyChange(value.getExpr()), modifier, executeForm, actions);
+    public boolean execute(ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, RemoteFormView executeForm, List<ClientAction> actions, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+        return session.execute(property, getPropertyChange(value.getExpr()), modifier, executeForm, actions, propertyImplement);
     }
 }
