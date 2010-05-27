@@ -2,6 +2,7 @@ package platform.client.layout;
 
 import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.DockFactory;
+import bibliothek.gui.dock.layout.DockLayoutInfo;
 import bibliothek.util.xml.XElement;
 import platform.client.navigator.ClientNavigator;
 
@@ -38,6 +39,9 @@ class ClientFormFactory implements DockFactory<FormDockable,Integer> {
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }*/
+    }
+
+    public void estimateLocations(Integer integer, Map<Integer, DockLayoutInfo> integerDockLayoutInfoMap) {
     }
 
     public ClientFormDockable layout(Integer integer, Map<Integer, Dockable> integerDockableMap) {

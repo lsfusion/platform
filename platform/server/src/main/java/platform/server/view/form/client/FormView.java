@@ -153,6 +153,19 @@ public class FormView implements ClientSerialize {
         return result;
     }
 
+    public List<PropertyCellView> getProperties(GroupObjectNavigator groupObject) {
+
+        List<PropertyCellView> result = new ArrayList<PropertyCellView>();
+
+        for (PropertyCellView property : properties) {
+            if (groupObject.equals(property.view.toDraw)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
     public void setFont(AbstractGroup group, Font font, GroupObjectNavigator groupObject) {
         
         for (PropertyCellView property : getProperties(group, groupObject)) {
@@ -222,6 +235,13 @@ public class FormView implements ClientSerialize {
     public void setFocusable(Property property, boolean focusable, GroupObjectNavigator groupObject) {
 
         for (PropertyCellView propertyView : getProperties(property, groupObject)) {
+            setFocusable(propertyView, focusable);
+        }
+    }
+
+    public void setFocusable(boolean focusable, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView propertyView : getProperties(groupObject)) {
             setFocusable(propertyView, focusable);
         }
     }

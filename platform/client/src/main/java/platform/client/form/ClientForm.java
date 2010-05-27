@@ -139,6 +139,7 @@ public class ClientForm extends JPanel {
             }
         });
 
+        setFocusCycleRoot(true);
     }
 
     // здесь хранится список всех GroupObjects плюс при необходимости null

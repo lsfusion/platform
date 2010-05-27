@@ -1066,10 +1066,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24));
 
                 // блокируем объекты для ввода
-                design.setFocusable(documentAggrPriceGroup, false, objDoc.groupTo);
-                design.setFocusable(barcodeObjectName, false);
-                design.setFocusable(nameContragent, false, objDoc.groupTo);
-                design.setFocusable(orderClientSum, false);
+                design.setFocusable(false, objBarcode.groupTo);
+                design.setFocusable(false, objDoc.groupTo);
+                design.setFocusable(design.get(objBarcode).objectCellView, false);
             }
 
             // привязываем функциональные кнопки
