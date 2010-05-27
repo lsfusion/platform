@@ -145,8 +145,8 @@ public class MapCacheAspect {
             }
         }
         synchronized(hashCaches) {
-            for(Map.Entry<JoinImplement<K>,Join<V>> cache : hashCaches.entrySet()) {
-                for(DirectTranslator translator : new MapHashIterable(cache.getKey(), joinImplement, true)) {
+            for(Map.Entry<JoinImplement<K>,Join<V>> cache : hashCaches.entrySet())
+                for(DirectTranslator translator : new MapHashIterable(cache.getKey(), joinImplement, true))
                     if(translator.translate(cache.getKey().exprs).equals(joinImplement.exprs)) {
                         // здесь не все values нужно докинуть их из контекста (ключи по идее все)
                         Map<ValueExpr,ValueExpr> transValues;
@@ -155,8 +155,6 @@ public class MapCacheAspect {
                             return new DirectTranslateJoin<V>(new DirectTranslator(translator.keys,transValues),cache.getValue());
                         }
                     }
-                }
-            }
             System.out.println("join not cached");
             Join<V> join = (Join<V>) thisJoinPoint.proceed();
             hashCaches.put(joinImplement,join);

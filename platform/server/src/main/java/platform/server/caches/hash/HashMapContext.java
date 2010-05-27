@@ -14,7 +14,7 @@ public class HashMapContext implements HashContext {
     }
 
     public int hash(ValueExpr expr) {
-        return hashMapValue;
+        return expr.objectClass.hashCode();
     }
 
     public HashContext mapKeys() {

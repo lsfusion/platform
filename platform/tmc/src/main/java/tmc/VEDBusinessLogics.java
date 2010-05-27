@@ -1124,7 +1124,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class ReturnArticleNavigatorForm extends InnerNavigatorForm {
         final ObjectNavigator objInner;
-        final ObjectNavigator objOuter;
+        ObjectNavigator objOuter;
 
         protected ReturnArticleNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
             super(parent, ID, documentClass, toAdd, false);
@@ -1151,35 +1151,38 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             addRegularFilterGroup(filterGroup);
 
-            objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, baseGroup, true);
+            if(!noOuters) {
+                objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, baseGroup, true);
 
-            addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
-            addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
-            addPropertyView(objInner, objOuter, properties, baseGroup, true);
-            addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
+                addPropertyView(objInner, objOuter, objDoc, properties, baseGroup, true, documentGroup, true);
+                addPropertyView(objInner, objOuter, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
+                addPropertyView(objInner, objOuter, properties, baseGroup, true);
+                addPropertyView(objInner, objOuter, objArt, properties, baseGroup, true);
 
-            NotNullFilterNavigator documentCommitFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerCommitQuantity));
-            NotNullFilterNavigator documentCommitFreeFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerFreeQuantity));
-            if(fixFilters)
-                addFixedFilter(new OrFilterNavigator(documentCommitFilter, documentCommitFreeFilter));
-            RegularFilterGroupNavigator filterOutGroup = new RegularFilterGroupNavigator(IDShift(1));
-            filterOutGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  documentCommitFilter,
-                                  "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !toAdd);
-            if(!fixFilters)
+                NotNullFilterNavigator documentCommitFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerCommitQuantity));
+                NotNullFilterNavigator documentCommitFreeFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerFreeQuantity));
+                if(fixFilters)
+                    addFixedFilter(new OrFilterNavigator(documentCommitFilter, documentCommitFreeFilter));
+                RegularFilterGroupNavigator filterOutGroup = new RegularFilterGroupNavigator(IDShift(1));
                 filterOutGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  documentCommitFreeFilter,
-                                  "Макс. кол-во",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)), toAdd);
-            addRegularFilterGroup(filterOutGroup);
+                                      documentCommitFilter,
+                                      "Документ",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !toAdd);
+                if(!fixFilters)
+                    filterOutGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                      documentCommitFreeFilter,
+                                      "Макс. кол-во",
+                                      KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)), toAdd);
+                addRegularFilterGroup(filterOutGroup);
+            }
         }
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView form = super.createDefaultRichDesign();
-            form.addIntersection(form.getGroupObjectContainer(objInner.groupTo), form.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            if(!noOuters)
+                form.addIntersection(form.getGroupObjectContainer(objInner.groupTo), form.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             return form;
         }
     }

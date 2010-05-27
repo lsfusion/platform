@@ -192,8 +192,6 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public Where map(Map<KeyExpr, ? extends Expr> map) {
-        Set<KeyExpr> keys = new HashSet<KeyExpr>();
-        enumKeys(keys);
-        return new Query<KeyExpr,Object>(BaseUtils.toMap(keys),this).join(map).getWhere();
+        return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
     }
 }
