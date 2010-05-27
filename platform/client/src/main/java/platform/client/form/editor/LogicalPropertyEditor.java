@@ -4,6 +4,7 @@ import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.EventObject;
 
 public class LogicalPropertyEditor extends JCheckBox
@@ -21,7 +22,11 @@ public class LogicalPropertyEditor extends JCheckBox
     }
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
-        return this;
+        if (editEvent == null) { // программно вызвали editCellAt
+            setSelected(!isSelected());
+            return null;
+        } else
+            return this;
     }
 
     public Object getCellEditorValue() {
