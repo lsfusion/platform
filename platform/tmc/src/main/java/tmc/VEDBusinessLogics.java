@@ -13,7 +13,6 @@ import platform.server.data.Time;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
@@ -1058,25 +1057,27 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
                 design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
 
-                design.get(getPropertyView(barcodeObjectName)).design.font = new Font("Tahoma", Font.BOLD, 36);
-                design.get(getPropertyView(barcodeObjectName)).design.background = new Color(240,240,240);
+                design.setFont(barcodeObjectName, new Font("Tahoma", Font.BOLD, 36));
+                design.setBackground(barcodeObjectName, new Color(240,240,240));
 
-                design.get(objBarcode).objectCellView.design.font = new Font("Tahoma", Font.BOLD, 18);
-                design.get(getPropertyView(reverseRetailBarcode)).design.font = new Font("Tahoma", Font.BOLD, 18);
-                design.get(getPropertyView(nameContragent)).design.font = new Font("Tahoma", Font.BOLD, 24);
-                design.get(getPropertyView(orderClientSum)).design.font = new Font("Tahoma", Font.BOLD, 24);
+                design.setFont(design.get(objBarcode).objectCellView, new Font("Tahoma", Font.BOLD, 18));
+                design.setFont(reverseRetailBarcode, new Font("Tahoma", Font.BOLD, 18));
+                design.setFont(nameContragent, new Font("Tahoma", Font.BOLD, 24));
+                design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24));
 
                 // блокируем объекты для ввода
-                design.setEnabled(documentAggrPriceGroup, false, objDoc.groupTo);
+                design.setFocusable(documentAggrPriceGroup, false, objDoc.groupTo);
+                design.setFocusable(barcodeObjectName, false);
+                design.setFocusable(nameContragent, false, objDoc.groupTo);
+                design.setFocusable(orderClientSum, false);
             }
 
             // привязываем функциональные кнопки
-            design.get(getPropertyView(nameContragent.property, objDoc.groupTo)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
-            design.get(objBarcode).objectCellView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0);
-            design.get(getPropertyView(reverseBarcode)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
-            design.get(getPropertyView(orderSalePayCard)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
-            design.get(getPropertyView(orderSalePayCash)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
-
+            design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
+            design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
+            design.setEditKey(reverseRetailBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+            design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
 
             // располагаем объекты на форме относительно друг друга
             if(!noOuters)

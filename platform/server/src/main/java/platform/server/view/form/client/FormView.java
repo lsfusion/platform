@@ -8,8 +8,10 @@ import platform.server.view.navigator.PropertyViewNavigator;
 import platform.server.view.navigator.GroupObjectNavigator;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.Property;
+import platform.server.logics.linear.LP;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
+import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -117,7 +119,33 @@ public class FormView implements ClientSerialize {
         List<PropertyCellView> result = new ArrayList<PropertyCellView>();
 
         for (PropertyCellView property : properties) {
-            if (property.view.toDraw == groupObject && group.hasChild(property.view.view.property)) {
+            if (groupObject.equals(property.view.toDraw) && group.hasChild(property.view.view.property)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
+    public List<PropertyCellView> getProperties(Property prop, GroupObjectNavigator groupObject) {
+
+        List<PropertyCellView> result = new ArrayList<PropertyCellView>();
+
+        for (PropertyCellView property : properties) {
+            if (groupObject.equals(property.view.toDraw) && prop.equals(property.view.view.property)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
+    public List<PropertyCellView> getProperties(Property prop) {
+
+        List<PropertyCellView> result = new ArrayList<PropertyCellView>();
+
+        for (PropertyCellView property : properties) {
+            if (prop.equals(property.view.view.property)) {
                 result.add(property);
             }
         }
@@ -128,21 +156,103 @@ public class FormView implements ClientSerialize {
     public void setFont(AbstractGroup group, Font font, GroupObjectNavigator groupObject) {
         
         for (PropertyCellView property : getProperties(group, groupObject)) {
-            property.design.font = font;
+            setFont(property, font);
         }
+    }
+
+    public void setFont(LP property, Font font) {
+        setFont(property.property, font);
+    }
+
+    public void setFont(Property property, Font font) {
+
+        for (PropertyCellView propertyView : getProperties(property)) {
+            setFont(propertyView, font);
+        }
+    }
+
+    public void setFont(CellView property, Font font) {
+        property.design.font = font;
     }
 
     public void setBackground(AbstractGroup group, Color background, GroupObjectNavigator groupObject) {
 
         for (PropertyCellView property : getProperties(group, groupObject)) {
-            property.design.background = background;
+            setBackground(property, background);
         }
     }
 
-    public void setEnabled(AbstractGroup group, boolean enabled, GroupObjectNavigator groupObject) {
+    public void setBackground(LP prop, Color background) {
+        setBackground(prop.property, background);
+    }
+
+    public void setBackground(Property prop, Color background) {
+
+        for (PropertyCellView property : getProperties(prop)) {
+            setBackground(property, background);
+        }
+    }
+
+    public void setBackground(PropertyCellView property, Color background) {
+        property.design.background = background;
+    }
+
+    public void setFocusable(AbstractGroup group, boolean focusable, GroupObjectNavigator groupObject) {
 
         for (PropertyCellView property : getProperties(group, groupObject)) {
-            property.enabled = enabled;
+            setFocusable(property, focusable);
         }
+    }
+
+    public void setFocusable(LP property, boolean focusable) {
+        setFocusable(property.property, focusable);
+    }
+
+    public void setFocusable(LP property, boolean focusable, GroupObjectNavigator groupObject) {
+        setFocusable(property.property, focusable, groupObject);
+    }
+
+    public void setFocusable(Property property, boolean focusable) {
+
+        for (PropertyCellView propertyView : getProperties(property)) {
+            setFocusable(propertyView, focusable);
+        }
+    }
+
+    public void setFocusable(Property property, boolean focusable, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView propertyView : getProperties(property, groupObject)) {
+            setFocusable(propertyView, focusable);
+        }
+    }
+
+    public void setFocusable(CellView property, boolean focusable) {
+        property.focusable = focusable;
+    }
+
+    public void setEditKey(LP property, KeyStroke keyStroke, GroupObjectNavigator groupObject) {
+        setEditKey(property.property, keyStroke, groupObject);
+    }
+
+    public void setEditKey(LP property, KeyStroke keyStroke) {
+        setEditKey(property.property, keyStroke);
+    }
+
+    public void setEditKey(Property property, KeyStroke keyStroke, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView propertyView : getProperties(property, groupObject)) {
+            setEditKey(propertyView, keyStroke);
+        }
+    }
+
+    public void setEditKey(Property property, KeyStroke keyStroke) {
+
+        for (PropertyCellView propertyView : getProperties(property)) {
+            setEditKey(propertyView, keyStroke);
+        }
+    }
+
+    public void setEditKey(CellView property, KeyStroke keyStroke) {
+        property.editKey = keyStroke;
     }
 }

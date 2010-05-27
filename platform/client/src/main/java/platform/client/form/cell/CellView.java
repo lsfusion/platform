@@ -71,8 +71,8 @@ public abstract class CellView extends JPanel {
         label.setText(key.getFullCaption());
         table.keyChanged(key);
 
-        table.setFocusable(key.enabled);
-        table.setCellSelectionEnabled(key.enabled);            
+        table.setFocusable(key.focusable);
+        table.setCellSelectionEnabled(key.focusable);
     }
 
     void setValue(Object ivalue) {
