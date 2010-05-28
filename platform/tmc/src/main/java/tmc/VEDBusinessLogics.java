@@ -801,7 +801,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 objDoc.groupTo.banClassView = ClassViewType.GRID;
                 objDoc.show = false;
                 objDoc.addOnTransaction = true;
-            }
+            } else
+                addObjectActions(this, objDoc);
         }
     }
 
@@ -1084,6 +1085,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setFocusable(false, objBarcode.groupTo);
                 design.setFocusable(false, objDoc.groupTo);
                 design.setFocusable(design.get(objBarcode).objectCellView, false);
+
+                // ставим Label сверху
+                design.setPanelLabelAbove(documentPriceGroup, true, objDoc.groupTo);
             }
 
             // привязываем функциональные кнопки

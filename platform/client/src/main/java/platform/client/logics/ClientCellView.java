@@ -37,6 +37,8 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public boolean focusable;
 
+    public boolean panelLabelAbove;
+
     ClientCellView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
 
@@ -56,6 +58,8 @@ abstract public class ClientCellView extends ClientComponentView {
         design = (CellDesign) new ObjectInputStream(inStream).readObject();
 
         focusable = inStream.readBoolean();
+
+        panelLabelAbove = inStream.readBoolean();
     }
 
     public int getMinimumWidth(JComponent comp) {

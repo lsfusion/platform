@@ -275,4 +275,15 @@ public class FormView implements ClientSerialize {
     public void setEditKey(CellView property, KeyStroke keyStroke) {
         property.editKey = keyStroke;
     }
+
+    public void setPanelLabelAbove(AbstractGroup group, boolean panelLabelAbove, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView property : getProperties(group, groupObject)) {
+            setPanelLabelAbove(property, panelLabelAbove);
+        }
+    }
+
+    public void setPanelLabelAbove(CellView property, boolean panelLabelAbove) {
+        property.panelLabelAbove = panelLabelAbove;
+    }
 }

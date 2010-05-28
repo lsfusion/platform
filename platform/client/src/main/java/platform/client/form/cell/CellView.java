@@ -26,12 +26,14 @@ public abstract class CellView extends JPanel {
         return o instanceof CellView && ((CellView) o).getID() == this.getID();
     }
 
-    public CellView() {
+    public CellView(ClientCellView key) {
 
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        setLayout(new BoxLayout(this, (key.panelLabelAbove ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS)));
 
         label = new JLabel();
         label.setBorder(BorderFactory.createEmptyBorder(0,4,0,4));
+        label.setText(key.getFullCaption());
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(label);
 
         table = new CellTable() {
@@ -53,6 +55,10 @@ public abstract class CellView extends JPanel {
             }
         };
         table.setBorder(BorderFactory.createLineBorder(Color.gray));
+        table.setFocusable(key.focusable);
+        table.setCellSelectionEnabled(key.focusable);
+
+        table.keyChanged(key);
 
         add(table);
 
@@ -65,15 +71,6 @@ public abstract class CellView extends JPanel {
     @Override
     public boolean requestFocusInWindow() {
         return table.requestFocusInWindow();
-    }
-
-    void keyChanged(ClientCellView key) {
-
-        label.setText(key.getFullCaption());
-        table.keyChanged(key);
-
-        table.setFocusable(key.focusable);
-        table.setCellSelectionEnabled(key.focusable);
     }
 
     void setValue(Object ivalue) {

@@ -28,7 +28,7 @@ public class CellController {
         key = ikey;
         form = iform;
 
-        view = new CellView() {
+        view = new CellView(key) {
 
             protected ClientCellView getKey() {
                 return key;
@@ -46,7 +46,6 @@ public class CellController {
                 return form;
             }
         };
-        view.keyChanged(ikey);
     }
 
     public void addView(ClientFormLayout formLayout) {
