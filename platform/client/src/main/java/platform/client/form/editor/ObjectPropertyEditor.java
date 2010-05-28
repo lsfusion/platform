@@ -40,7 +40,7 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
         {
             clientDialog = new ClientDialog(owner,dialog);
             clientDialog.setLocation(new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
-            clientDialog.setSize(500, 200);
+            clientDialog.setSize(500, 300);
         }
 
         clientDialog.setVisible(true);

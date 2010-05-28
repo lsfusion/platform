@@ -270,12 +270,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
             RemoteForm<?> form = (RemoteForm<?>)executeForm.form;
-            form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
+            if (valueClass.hasChildren())
+                form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
+            else
+                form.addObject((ConcreteCustomClass)valueClass);
         }
 
         @Override
         protected ActionClass getValueClass() {
-            return ClassActionClass.getInstance(valueClass);
+            if (valueClass.hasChildren())
+                return ClassActionClass.getInstance(valueClass);
+            else
+                return super.getValueClass();
         }
     }
 
@@ -1912,7 +1918,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return form;
     }
 
-    protected void addObjectActions(NavigatorForm form, ObjectNavigator object) {
+    public void addObjectActions(NavigatorForm form, ObjectNavigator object) {
 
         form.addPropertyView(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))).setToDraw(object.groupTo).setForcePanel(true);
         form.addPropertyView(new LP<ClassPropertyInterface>(getDeleteObjectAction(object.baseClass)), object);

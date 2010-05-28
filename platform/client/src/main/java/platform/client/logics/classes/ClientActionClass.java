@@ -24,6 +24,11 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
         return "1234567";
     }
 
+    @Override
+    public int getMaximumWidth(FontMetrics fontMetrics) {
+        return getPreferredWidth(fontMetrics);
+    }
+
     public Format getDefaultFormat() {
         return null;
     }

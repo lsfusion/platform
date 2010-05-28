@@ -30,8 +30,6 @@ public class ClassController {
         this.form = iform;
     }
 
-    private JButton buttonChangeClass;
-
     public void addView(ClientFormLayout formLayout) {
 
         // создаем дерево для отображения классов
@@ -63,20 +61,7 @@ public class ClassController {
         };
         classContainer.setVisible(false); // по умолчанию компонент невидим
 
-        // добавляем кнопку для изменения классов
-        buttonChangeClass = new JButton("Изменить класс");
-        buttonChangeClass.setFocusable(false);
-        buttonChangeClass.setVisible(false);
-        buttonChangeClass.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
-                changeClass();
-            }
-
-        });
-
         formLayout.add(object.classView, classContainer);
-        formLayout.add(object.changeClassView, buttonChangeClass);
     }
 
     public void showViews() {
@@ -85,9 +70,6 @@ public class ClassController {
 
             if (classContainer != null)
                 classContainer.setVisible(true);
-
-            if (buttonChangeClass != null)
-                buttonChangeClass.setVisible(true);
         }
     }
 
@@ -95,9 +77,6 @@ public class ClassController {
 
         if (classContainer != null)
             classContainer.setVisible(false);
-
-        if (buttonChangeClass != null)
-            buttonChangeClass.setVisible(false);
     }
 
     // нужно для того, что если объект типа дата, то для него не будет возможностей добавлять объекты

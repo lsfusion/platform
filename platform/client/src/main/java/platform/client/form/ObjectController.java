@@ -22,9 +22,6 @@ class ObjectController {
     // управление классами
     public ClassController classController;
 
-    private JButton buttonAdd;
-    private JButton buttonDel;
-
     public ObjectController(ClientObjectImplementView iobject, ClientForm iform) throws IOException {
 
         object = iobject;
@@ -35,29 +32,7 @@ class ObjectController {
 
     public void addView(ClientFormLayout formLayout) {
 
-        if (classController.allowedEditObjects() && object.objectCellView.show && !form.isReadOnly()) {
-
-            buttonAdd = new JButton("Добавить");
-            buttonAdd.setFocusable(false);
-            buttonAdd.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                    addObject();
-                }
-            });
-
-            buttonDel = new JButton("Удалить");
-            buttonDel.setFocusable(false);
-            buttonDel.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent ae) {
-                    deleteObject();
-                }
-
-            });
-
-            formLayout.add(object.addView, buttonAdd);
-            formLayout.add(object.delView, buttonDel);
-
+        if (classController.allowedEditObjects()) {
             classController.addView(formLayout);
         }
 
@@ -81,26 +56,12 @@ class ObjectController {
     }
 
     public void hideViews() {
-
         classController.hideViews();
-
-        if (buttonAdd != null)
-            buttonAdd.setVisible(false);
-
-        if (buttonDel != null)
-            buttonDel.setVisible(false);
     }
 
     public void showViews() {
-
         if (classView.equals(ClassViewType.GRID))
             classController.showViews();
-
-        if (buttonAdd != null)
-            buttonAdd.setVisible(true);
-
-        if (buttonDel != null)
-            buttonDel.setVisible(true);
     }
 
     public void addObject() {

@@ -1268,7 +1268,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Ассортимент поставщиков");
 
             ObjectNavigator objSupplier = addSingleGroupObjectImplement(supplier, "Поставщик", properties, allGroup, true);
+            addObjectActions(this, objSupplier);
+
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
+            addObjectActions(this, objArt);
 
             addPropertyView(objSupplier, objArt, properties, allGroup, true);
 
@@ -1306,6 +1309,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Остатки по форматам");
 
             ObjectNavigator objFormat = addSingleGroupObjectImplement(format, "Формат", properties, allGroup, true);
+            addObjectActions(this, objFormat);
+
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
             addPropertyView(objFormat, objArt, properties, allGroup, true);
@@ -1386,6 +1391,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, ID, "Акции");
 
             ObjectNavigator objAction = addSingleGroupObjectImplement(action, "Акция", properties, allGroup, true);
+            addObjectActions(this, objAction);
+
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, allGroup, true);
 
             addPropertyView(objAction, objArt, properties, allGroup, true);

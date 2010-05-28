@@ -13,9 +13,6 @@ public class ObjectImplementView implements ClientSerialize {
     public ObjectCellView objectCellView;
     public ClassCellView classCellView;
     public ClassView classView;
-    public FunctionView addView;
-    public FunctionView changeClassView;
-    public FunctionView delView;
 
     public ObjectImplementView(IDGenerator idGen, ObjectNavigator iView) {
 
@@ -24,9 +21,6 @@ public class ObjectImplementView implements ClientSerialize {
         objectCellView = new ObjectCellView(idGen.idShift(), view);
         classCellView = new ClassCellView(idGen.idShift(), view);
         classView = new ClassView(idGen.idShift());
-        addView = new FunctionView(idGen.idShift());
-        changeClassView = new FunctionView(idGen.idShift());
-        delView = new FunctionView(idGen.idShift());
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -45,9 +39,5 @@ public class ObjectImplementView implements ClientSerialize {
 
         classView.serialize(outStream);
         outStream.writeBoolean(view.showTree);        
-
-        addView.serialize(outStream);
-        changeClassView.serialize(outStream);
-        delView.serialize(outStream);
     }
 }

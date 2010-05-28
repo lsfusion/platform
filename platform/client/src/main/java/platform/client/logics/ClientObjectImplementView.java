@@ -28,9 +28,6 @@ public class ClientObjectImplementView implements Serializable {
     public ClientClassCellView classCellView;
 
     public ClientClassView classView;
-    public ClientFunctionView addView;
-    public ClientFunctionView changeClassView;
-    public ClientFunctionView delView;
 
     public ClientObjectImplementView(DataInputStream inStream, Collection<ClientContainerView> containers, ClientGroupObjectImplementView iGroupObject) throws ClassNotFoundException, IOException {
 
@@ -45,9 +42,6 @@ public class ClientObjectImplementView implements Serializable {
         objectCellView = new ClientObjectCellView(inStream, containers, this);
         classCellView = new ClientClassCellView(inStream, containers, this);
         classView = new ClientClassView(inStream,containers);
-        addView = new ClientFunctionView(inStream, containers);
-        changeClassView = new ClientFunctionView(inStream, containers);
-        delView = new ClientFunctionView(inStream, containers);
     }
 
     public String toString() { return objectCellView.caption; }

@@ -17,6 +17,8 @@ public class ClassNavigatorForm<T extends BusinessLogics<T>> extends NavigatorFo
 
         addPropertyView(BL.properties, BL.baseGroup, true, object);
         addPropertyView(BL.properties, BL.aggrGroup, true, object);
+
+        BL.addObjectActions(this, object);
     }
 
     public ClassNavigatorForm(T BL, CustomClass cls) {

@@ -66,11 +66,11 @@ public class DefaultFormView extends FormView {
             panelContainers.put(clientGroup, panelContainer);
 
             ContainerView controlsContainer = addContainer(); // контейнер всех управляющих объектов
-            controlsContainer.constraints.order = 2;
+            controlsContainer.constraints.order = 10000;
             controlsContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHT;
             controlsContainer.constraints.insetsInside = new Insets(0,0,0,0);
             controlsContainer.constraints.insetsSibling = new Insets(0,0,0,0);
-            groupContainer.add(controlsContainer);
+            panelContainer.add(controlsContainer);
 
             clientGroup.gridView.constraints.order = 1;
             clientGroup.gridView.constraints.fillVertical = 1;
@@ -101,22 +101,12 @@ public class DefaultFormView extends FormView {
 
                 buttonContainers.put(clientObject, buttonContainer);
 
-                clientObject.addView.constraints.order = 0;
-                buttonContainer.add(clientObject.addView);
-
-                clientObject.delView.constraints.order = 1;
-                buttonContainer.add(clientObject.delView);
-
-                clientObject.changeClassView.constraints.order = 2;
-                buttonContainer.add(clientObject.changeClassView);
-
                 mobjects.put(clientObject.view, clientObject);
             }
 
             clientGroup.showTypeView.constraints.order = clientGroup.size();
             clientGroup.showTypeView.constraints.directions = new SimplexComponentDirections(0.01,0,0,0.01);
             controlsContainer.add(clientGroup.showTypeView);
-//            clientGroup.showTypeView.constraints.childConstraints = SingleSimplexConstraint.TOTHE_RIGHTBOTTOM;
         }
 
         for (PropertyViewNavigator control : navigatorForm.propertyViews) {
