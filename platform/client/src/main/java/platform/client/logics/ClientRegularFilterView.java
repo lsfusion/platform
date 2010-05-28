@@ -1,23 +1,36 @@
 package platform.client.logics;
 
+import platform.client.SwingUtils;
+
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
 public class ClientRegularFilterView {
+
     public int ID;
-    public String name = "";
+    public String caption = "";
     public KeyStroke key;
+    public boolean showKey;
 
     public ClientRegularFilterView(DataInputStream inStream) throws IOException, ClassNotFoundException {
         ID = inStream.readInt();
-        name = inStream.readUTF();
+        caption = inStream.readUTF();
 
         key = (KeyStroke) new ObjectInputStream(inStream).readObject();
+        showKey = inStream.readBoolean();
+    }
+
+    public String getFullCaption() {
+
+        String fullCaption = caption;
+        if (showKey && key != null)
+            fullCaption += " (" + SwingUtils.getKeyStrokeCaption(key) + ")";
+        return fullCaption;
     }
 
     public String toString() {
-        return name;
+        return getFullCaption();
     }
 }

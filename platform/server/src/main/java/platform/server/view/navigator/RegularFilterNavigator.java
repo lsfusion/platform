@@ -9,6 +9,7 @@ public class RegularFilterNavigator {
     public transient FilterNavigator filter;
     public String name = "";
     public KeyStroke key;
+    public boolean showKey = true;
 
     public RegularFilterNavigator(int iID, FilterNavigator ifilter, String iname, KeyStroke ikey) {
         ID = iID;

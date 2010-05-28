@@ -133,7 +133,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
             RegularFilterGroup group = new RegularFilterGroup(navigatorGroup.ID);
             for (RegularFilterNavigator filter : navigatorGroup.filters)
-                group.addFilter(new RegularFilter(filter.ID, filter.filter.doMapping(mapper), filter.name, filter.key));
+                group.addFilter(new RegularFilter(filter.ID, filter.filter.doMapping(mapper), filter.name, filter.key, filter.showKey));
             regularFilterGroups.add(group);
         }
 

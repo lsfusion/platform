@@ -25,6 +25,7 @@ public class RegularFilterGroupView extends FunctionView {
             outStream.writeUTF(filter.name);
 
             new ObjectOutputStream(outStream).writeObject(filter.key);
+            outStream.writeBoolean(filter.showKey);
         }
 
         outStream.writeInt(view.defaultFilter);

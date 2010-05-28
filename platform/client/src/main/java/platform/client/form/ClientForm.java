@@ -194,7 +194,7 @@ public class ClientForm extends JPanel {
 
                 final ClientRegularFilterView singleFilter = filterGroup.filters.get(0);
 
-                final JCheckBox checkBox = new JCheckBox(singleFilter.name);
+                final JCheckBox checkBox = new JCheckBox(singleFilter.toString());
                 checkBox.addItemListener(new ItemListener() {
 
                     public void itemStateChanged(ItemEvent ie) {

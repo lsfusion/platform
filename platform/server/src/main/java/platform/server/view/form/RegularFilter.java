@@ -9,14 +9,16 @@ public class RegularFilter implements Serializable {
 
     public int ID;
     public transient Filter filter;
-    public String name = "";
+    public String name;
     public KeyStroke key;
+    public boolean showKey = true;
 
-    public RegularFilter(int iID, Filter ifilter, String iname, KeyStroke ikey) {
+    public RegularFilter(int iID, Filter ifilter, String iname, KeyStroke ikey, boolean ishowKey) {
         ID = iID;
         filter = ifilter;
         name = iname;
         key = ikey;
+        showKey = ishowKey; 
     }
 
     public String toString() {
