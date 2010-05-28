@@ -248,10 +248,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcodeAction = addProperty(null, new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
     }
 
-    Map<CustomClass, ActionProperty> addObjectActions = new HashMap<CustomClass, ActionProperty>();
-    protected ActionProperty getAddObjectAction(CustomClass cls) {
+    Map<ValueClass, ActionProperty> addObjectActions = new HashMap<ValueClass, ActionProperty>();
+    private ActionProperty getAddObjectAction(ValueClass cls) {
+        assert cls instanceof CustomClass;
         if (!addObjectActions.containsKey(cls))
-            addObjectActions.put(cls, new AddObjectActionProperty(genSID(), cls));
+            addObjectActions.put(cls, new AddObjectActionProperty(genSID(), (CustomClass)cls));
         return addObjectActions.get(cls);
     }
 
@@ -276,10 +277,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    Map<CustomClass, ActionProperty> deleteObjectActions = new HashMap<CustomClass, ActionProperty>();
-    protected ActionProperty getDeleteObjectAction(CustomClass cls) {
+    public Map<ValueClass, ActionProperty> deleteObjectActions = new HashMap<ValueClass, ActionProperty>();
+    private ActionProperty getDeleteObjectAction(ValueClass cls) {
         if (!deleteObjectActions.containsKey(cls))
-            deleteObjectActions.put(cls, new DeleteObjectActionProperty(genSID(), cls));
+            deleteObjectActions.put(cls, new DeleteObjectActionProperty(genSID(), (CustomClass)cls));
         return deleteObjectActions.get(cls);
     }
 
@@ -1907,5 +1908,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public NavigatorForm addNavigatorForm(NavigatorForm form) {
         form.richDesign = form.createDefaultRichDesign();
         return form;
+    }
+
+    protected void addObjectActions(NavigatorForm form, ObjectNavigator object) {
+
+        form.addPropertyView(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))).setToDraw(object.groupTo).setForcePanel(true);
+        form.addPropertyView(new LP<ClassPropertyInterface>(getDeleteObjectAction(object.baseClass)), object);
     }
 }

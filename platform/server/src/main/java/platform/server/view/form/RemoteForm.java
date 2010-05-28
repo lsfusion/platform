@@ -266,23 +266,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // пометка что изменились данные
     private boolean dataChanged = false;
 
-    // добавляет во все
-    public void addObject(ConcreteCustomClass cls) throws SQLException {
+    private DataObject createObject(ConcreteCustomClass cls) throws SQLException {
 
-        for (GroupObjectImplement groupObject : groups)
-            for (ObjectImplement object : groupObject.objects)
-                if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass)) {
+        if (!securityPolicy.cls.edit.add.checkPermission(cls)) return null;
 
-                }
+        return session.addObject(cls,this);
     }
 
-    public void addObject(CustomObjectImplement object, ConcreteCustomClass cls) throws SQLException {
-        // пока тупо в базу
+    private void resolveAddObjectImplement(CustomObjectImplement object, ConcreteCustomClass cls, DataObject addObject) throws SQLException {
 
-        if (!securityPolicy.cls.edit.add.checkPermission(cls)) return;
-
-        DataObject addObject = session.addObject(cls,this);
-
+        // резолвим все фильтры
         for(Filter filter : object.groupTo.getSetFilters())
             if(!Filter.ignoreInInterface || filter.isInInterface(object.groupTo)) // если ignoreInInterface проверить что в интерфейсе
                 filter.resolveAdd(session, this, object, addObject);
@@ -293,6 +286,28 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 //      changeClassView(object.groupTo, ClassViewType.PANEL);
 
         dataChanged = true;
+    }
+
+    // добавляет во все
+    public void addObject(ConcreteCustomClass cls) throws SQLException {
+
+        DataObject addObject = createObject(cls);
+        if (addObject == null) return;
+
+        for (GroupObjectImplement groupObject : groups)
+            for (ObjectImplement object : groupObject.objects)
+                if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass)) {
+                    resolveAddObjectImplement((CustomObjectImplement)object, cls, addObject);
+                }
+    }
+
+    public void addObject(CustomObjectImplement object, ConcreteCustomClass cls) throws SQLException {
+        // пока тупо в базу
+
+        DataObject addObject = createObject(cls);
+        if (addObject == null) return;
+
+        resolveAddObjectImplement(object, cls, addObject);
     }
 
     public void changeClass(CustomObjectImplement object, int classID) throws SQLException {
@@ -880,12 +895,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
 
-                if(refresh || classUpdated(drawProperty.view,drawProperty.toDraw)) {
-                    inGridInterface = drawProperty.view.isInInterface(drawProperty.toDraw);
-                    cacheInGridInterface.put(drawProperty, inGridInterface);
-                } else { // пусть будут assert
-                    inGridInterface = cacheInGridInterface.get(drawProperty);
-                    assert inGridInterface==drawProperty.view.isInInterface(drawProperty.toDraw);
+                if (drawProperty.forcePanel) {
+                    inGridInterface = false;
+                } else {
+                    if(refresh || classUpdated(drawProperty.view,drawProperty.toDraw)) {
+                        inGridInterface = drawProperty.view.isInInterface(drawProperty.toDraw);
+                        cacheInGridInterface.put(drawProperty, inGridInterface);
+                    } else { // пусть будут assert
+                        inGridInterface = cacheInGridInterface.get(drawProperty);
+                        assert inGridInterface==drawProperty.view.isInInterface(drawProperty.toDraw);
+                    }
                 }
 
                 if(drawProperty.toDraw==null)
@@ -901,7 +920,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
                 boolean read = refresh || dataUpdated(drawProperty.view,changedProps) ||
                         drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
-                if(inGridInterface && drawProperty.toDraw!=null && drawProperty.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
+                if(inGridInterface && drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
                     if(read || objectUpdated(drawProperty.view,drawProperty.toDraw)) {
                         Collection<PropertyView> propertyList = groupProperties.get(drawProperty.toDraw);
                         if(propertyList==null) {

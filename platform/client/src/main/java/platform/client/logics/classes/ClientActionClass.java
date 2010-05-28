@@ -21,7 +21,7 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
     }
 
     public String getPreferredMask() {
-        return "1";
+        return "1234567";
     }
 
     public Format getDefaultFormat() {

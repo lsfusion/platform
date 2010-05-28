@@ -10,6 +10,16 @@ public class PropertyViewNavigator<P extends PropertyInterface> extends CellView
 
     public GroupObjectNavigator toDraw;
 
+    public PropertyViewNavigator<P> setToDraw(GroupObjectNavigator toDraw) {
+        this.toDraw = toDraw;
+        return this;
+    }
+
+    public boolean forcePanel = false;
+    public void setForcePanel(boolean forcePanel) {
+        this.forcePanel = forcePanel;
+    }
+
     @Override
     public String toString() {
         return view.toString();

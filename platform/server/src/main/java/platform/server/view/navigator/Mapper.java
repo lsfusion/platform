@@ -63,6 +63,6 @@ public class Mapper {
     }
 
     public <T extends PropertyInterface> PropertyView mapPropertyView(PropertyViewNavigator<T> propKey) {
-        return new PropertyView<T>(propKey.ID, propKey.getSID(), mapProperty(propKey.view), groupMapper.get(propKey.toDraw));
+        return new PropertyView<T>(propKey.ID, propKey.getSID(), mapProperty(propKey.view), groupMapper.get(propKey.toDraw), propKey.forcePanel);
     }
 }

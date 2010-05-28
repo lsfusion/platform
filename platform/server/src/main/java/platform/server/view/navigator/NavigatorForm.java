@@ -10,13 +10,11 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
+import platform.server.view.form.ObjectImplement;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.view.navigator.filter.OrderViewNavigator;
 
@@ -156,7 +154,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         }
     }
 
-    protected PropertyViewNavigator addPropertyView(LP property, ObjectNavigator... objects) {
+    public PropertyViewNavigator addPropertyView(LP property, ObjectNavigator... objects) {
         return addPropertyView(property, null, objects);
     }
 
