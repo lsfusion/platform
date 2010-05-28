@@ -4,6 +4,7 @@ import platform.client.logics.ClientCellView;
 import platform.client.form.ClientForm;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 
 public abstract class CellView extends JPanel {
@@ -82,7 +83,7 @@ public abstract class CellView extends JPanel {
     public void startEditing() {
         table.editCellAt(0, 0);
 
-        Component tableEditor = table.getEditorComponent();
+        final Component tableEditor = table.getEditorComponent();
         if (tableEditor != null) {
 
             // устанавливаем следущий компонент фокуса на текущий
@@ -91,6 +92,15 @@ public abstract class CellView extends JPanel {
             }
             
             tableEditor.requestFocusInWindow();
+
+            if (tableEditor instanceof JTextComponent) {
+
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        ((JTextComponent)tableEditor).selectAll();
+                    }
+                });
+            }
         }
     }
 }

@@ -63,9 +63,10 @@ public final class Log {
         if (out.getTopLevelAncestor() != null) {
             out.setTemporaryBackground(Color.red);
             out.provideErrorFeedback();
-        } else {
-            JOptionPane.showMessageDialog(null, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
         }
+
+        // ошибки всегда идут на экран
+        JOptionPane.showMessageDialog(null, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
     }
 
     private static class LogView extends JPanel {
