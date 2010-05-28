@@ -322,7 +322,6 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         barcodeClasses.add(customClass);
         barcodeProperties.add(property);
     }
-    public PropertyObjectNavigator reverseBarcode = null;
 
     public List<ObjectNavigator> autoActionObjects = new ArrayList<ObjectNavigator>();
     public List<PropertyObjectNavigator> autoActions = new ArrayList<PropertyObjectNavigator>();

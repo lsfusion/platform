@@ -3,6 +3,7 @@ package platform.server.data.expr;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.DoubleClass;
+import platform.server.classes.ActionClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;

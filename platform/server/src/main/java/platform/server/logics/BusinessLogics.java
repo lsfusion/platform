@@ -181,6 +181,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP barcodeToObject;
     protected LP barcodeObjectName;
     protected LP barcodeAction;
+    public LP reverseBarcode;
 
     public LP userLogin, userPassword, userFirstName, userLastName;
     protected LP<?> loginToUser;
@@ -246,6 +247,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), user);
 
         barcodeAction = addProperty(null, new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
+        reverseBarcode = addDProp("Реверс", LogicalClass.instance);
     }
 
     Map<ValueClass, ActionProperty> addObjectActions = new HashMap<ValueClass, ActionProperty>();

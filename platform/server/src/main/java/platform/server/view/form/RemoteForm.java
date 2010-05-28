@@ -1134,13 +1134,10 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     public <B extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject) throws SQLException {
 
-        boolean reverseChange = false;
-        if(navigatorForm.reverseBarcode != null) {
-            PropertyValueImplement<?> reverseProperty = mapper.mapProperty(navigatorForm.reverseBarcode).getChangeProperty();
-            reverseChange = (reverseProperty.read(session, this)!=null);
-            if(reverseChange)
-                reverseProperty.execute(session, null, this, null, null);
-        }
+        PropertyValueImplement<?> reverseProperty = BL.reverseBarcode.getChangeProperty();
+        boolean reverseChange = (reverseProperty.read(session, this)!=null);
+        if(reverseChange)
+            reverseProperty.execute(session, null, this, null, null);
 
         ObjectValue value = barcodeToObject.readClasses(session, Collections.singletonMap(BaseUtils.single(barcodeToObject.interfaces), barcode), this);
         if(value instanceof DataObject) {

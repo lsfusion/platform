@@ -13,6 +13,7 @@ import platform.server.data.Time;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
@@ -41,10 +42,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass commitSaleWhole;
 
     // реализация в розницу
-    CustomClass orderSaleRetail;
-    CustomClass invoiceSaleRetail;
-    CustomClass commitSaleInvoiceRetail;
-    CustomClass commitSaleCheckRetail;
+    CustomClass orderSaleArticleRetail;
+    CustomClass orderSaleInvoiceArticleRetail;
+    CustomClass commitSaleInvoiceArticleRetail;
+    CustomClass commitSaleCheckArticleRetail;
     // инвентаризация
     CustomClass balanceCheck;
     // закупка у местного поставщика
@@ -62,6 +63,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     // возврат местному поставщику
     CustomClass orderReturnDeliveryLocal, invoiceReturnDeliveryLocal, commitReturnDeliveryLocal;
     // возврат реализации по безналу
+    CustomClass returnSaleInvoice;
     CustomClass returnSaleWhole;
     // возврат реализации за наличный расчет
     CustomClass returnSaleInvoiceRetail;
@@ -80,7 +82,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     CustomClass supplier;
     CustomClass store, article, articleGroup, localSupplier, importSupplier, orderLocal, format;
-    CustomClass customerWhole, customerRetail, orderWhole, orderRetail;
+    CustomClass customerWhole;
+    CustomClass customerInvoiceRetail;
+    CustomClass customerCheckRetail;
+    CustomClass orderWhole;
+    CustomClass orderInvoiceRetail;
+    CustomClass orderSaleCheckRetail;
 
     CustomClass documentRevalue;
     CustomClass commitWholeShopInc;
@@ -120,7 +127,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         localSupplier = addConcreteClass("Местный поставщик", supplier);
         importSupplier = addConcreteClass("Импортный поставщик", supplier);
         customerWhole = addConcreteClass("Оптовый покупатель", namedObject);
-        customerRetail = addConcreteClass("Розничный покупатель", namedObject, barcodeObject);
+        customerInvoiceRetail = addConcreteClass("Покупатель по накладным", namedObject);
+        customerCheckRetail = addConcreteClass("Розничный покупатель", namedObject, barcodeObject);
 
         format = addConcreteClass("Формат", namedObject);
 
@@ -158,16 +166,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSale = addAbstractClass("Продажа", orderOut);
 
         orderWhole = addAbstractClass("Оптовая операция", order);
-        orderRetail = addAbstractClass("Розничная операция", order);
+        orderInvoiceRetail = addAbstractClass("Розничная операция по накладной", order);
+
+        orderSaleCheckRetail = addAbstractClass("Реализация через кассу", order);
 
         orderSaleWhole = addConcreteClass("Оптовый заказ", orderWarehouseOut, orderInner, orderWhole, orderSale);
         invoiceSaleWhole = addConcreteClass("Выписанный оптовый заказ", orderSaleWhole, invoiceDocument);
         commitSaleWhole = addConcreteClass("Отгруженный оптовый заказ", invoiceSaleWhole, commitOut);
 
-        orderSaleRetail = addConcreteClass("Розничный заказ", orderShopOut, orderInner, orderRetail, orderSale);
-        invoiceSaleRetail = addConcreteClass("Выписанная реализация по накладной", orderSaleRetail, invoiceDocument);
-        commitSaleInvoiceRetail = addConcreteClass("Отгруженная реализация по накладной", invoiceSaleRetail, commitOut);
-        commitSaleCheckRetail = addConcreteClass("Реализация через кассу", orderSaleRetail, commitOut);
+        orderSaleArticleRetail = addAbstractClass("Розничный заказ товаров", orderShopOut, orderInner, orderSale);
+        orderSaleInvoiceArticleRetail = addConcreteClass("Розничный заказ товаров по накладной", orderSaleArticleRetail, orderInvoiceRetail);
+        commitSaleInvoiceArticleRetail = addConcreteClass("Отгруженный розничный заказ по накладной", commitOut,
+                            addConcreteClass("Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, invoiceDocument));
+        commitSaleCheckArticleRetail = addConcreteClass("Реализация товаров через кассу", orderSaleArticleRetail, commitOut, orderSaleCheckRetail);
+
+        saleInvoiceCert = addConcreteClass("Реализация сертификатов по накладной", orderInvoiceRetail, invoiceDocument);
+        saleCheckCert = addConcreteClass("Реализация сертификатов через кассу", orderSaleCheckRetail);
 
         balanceCheck = addConcreteClass("Инвентаризация", orderStoreOut, commitOut, documentInner);
 
@@ -198,18 +212,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         invoiceReturnDeliveryLocal = addConcreteClass("Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal,invoiceDocument);
         commitReturnDeliveryLocal = addConcreteClass("Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
 
-        returnSaleWhole = addConcreteClass("Оптовый возврат", orderWarehouseInc, returnInner, commitInc, orderWhole, invoiceDocument);
-        returnSaleInvoiceRetail = addConcreteClass("Возврат реализации по безналу", orderShopInc, returnInner, commitInc, orderRetail);
-        returnSaleCheckRetail = addConcreteClass("Возврат реализации за наличный расчет", orderShopInc, returnInner, commitInc, orderRetail);
+        returnSaleInvoice = addConcreteClass("Возврат по накладной", orderInc, returnInner, commitInc, invoiceDocument);
+        returnSaleWhole = addConcreteClass("Оптовый возврат", orderWarehouseInc, orderWhole, returnSaleInvoice);
+        returnSaleInvoiceRetail = addConcreteClass("Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
+        returnSaleCheckRetail = addConcreteClass("Возврат реализации через кассу", orderShopInc, returnInner, commitInc);
 
         obligation = addAbstractClass("Сертификат", namedObject, barcodeObject);
         coupon = addConcreteClass("Купон", obligation);
         giftObligation = addConcreteClass("Подарочный сертификат", obligation);
-
-        saleDocumentObligation = addConcreteClass("Продажа сертификатов", orderRetail);
     }
 
-    CustomClass saleDocumentObligation;
+    CustomClass saleInvoiceCert;
+    CustomClass saleCheckCert;
     CustomClass documentShopPrice;
 
     LP balanceSklFreeQuantity;
@@ -239,7 +253,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut));
         addJProp(baseGroup, "Склад (расх.)", name, outStore, 1);
 
-        computerShop = addDProp("Магазин рабочего места", shop, computer);
+        computerShop = addDProp("computerShop", "Магазин рабочего места", shop, computer);
         addJProp(baseGroup, "Магазин рабочего места", name, computerShop, 1);
 
         orderSupplier = addCUProp("orderSupplier", "Поставщик", addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
@@ -250,10 +264,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderContragent = addCUProp("Контрагент", // generics
                 orderSupplier,
                 addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderWhole),
-                addDProp("retailCustomer", "Розничный покупатель", customerRetail, orderRetail));
+                addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
+                addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleCheckRetail));
         nameContragent = addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
 
         LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
+        LP diffContragent = addJProp(diff2, orderContragent, 1, orderContragent, 2);
 
         LP invoiceNumber = addDProp(baseGroup, "invoiceNumber", "Накладная", StringClass.get(20), invoiceDocument);
 
@@ -267,8 +283,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         returnInnerCommitQuantity = addCUProp(documentGroup, "Кол-во возврата", // generics
                          addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitDelivery, commitSaleWhole),
-                         addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitDelivery, commitSaleInvoiceRetail),
-                         addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitDelivery, commitSaleCheckRetail));
+                         addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitDelivery, commitSaleInvoiceArticleRetail),
+                         addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitDelivery, commitSaleCheckArticleRetail));
+        LP returnSameClasses = addCUProp( // generics - для ограничения что возвращать те же классы операций, повторяет верхнее свойство
+                         addCProp(LogicalClass.instance, true, returnSaleWhole, commitSaleWhole),
+                         addCProp(LogicalClass.instance, true, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail),
+                         addCProp(LogicalClass.instance, true, returnSaleCheckRetail, commitSaleCheckArticleRetail));
 
         LP orderInnerQuantity = addDProp("outOrderQuantity", "Кол-во операции", DoubleClass.instance, orderInner, article, commitDelivery);
 
@@ -277,11 +297,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addConstraint(addJProp("Кол-во возврата должно быть не меньше кол-ва самой операции", greater2, vzero, confirmedInnerQuantity, 1, 2, 3), false);
 
         // для док. \ товара \ парт. \ док. прод.   - кол-во подтв. парт. если совпадают контрагенты
-        returnInnerFreeQuantity = addJProp(documentGroup, "Макс. кол-во по возврату парт.", and1, addJProp(and1, confirmedInnerQuantity, 4, 2, 3, sameContragent, 1, 4), 1, 2, 3, 4, is(returnInner), 1) ;
+        returnInnerFreeQuantity = addJProp(documentGroup, "Макс. кол-во по возврату парт.", and(false, true), confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4, diffContragent, 1, 4);
         returnInnerQuantity = addDGProp(documentGroup, "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4, returnInnerFreeQuantity, 1, 2, 3, 4, date, 3, 3);
         LP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
-        addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, addJProp(diff2, orderContragent, 1, orderContragent, 2), 1, 3,
-                returnDocumentQuantity, 1, 2, 3), false);
+        addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, diffContragent, 1, 3, returnDocumentQuantity, 1, 2, 3), false);
 
         // инвентаризация
         innerBalanceCheck = addDProp(documentGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitDelivery);
@@ -309,7 +328,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(moveGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, incStore, 1, 2, 3);
         addJProp(moveGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, outStore, 1, 2, 3);
 
-        returnFreeQuantity = addSGProp(documentGroup, "Макс. кол-во по возврату", returnInnerFreeQuantity, 1, 2, 4);
+        returnFreeQuantity = addSGProp(documentGroup, "Макс. кол-во к возврату", returnInnerFreeQuantity, 1, 2, 4);
 
         LP documentOutSklFreeQuantity = addJProp("Свободно парт. расх.", balanceSklFreeQuantity, outStore, 1, 2, 3);
         // создаем свойства ограничения для расчета себестоимости (являются следствием addConstraint)
@@ -318,6 +337,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                             addJProp(and1, documentOutSklFreeQuantity, 1, 2, 3, is(orderInner), 1), // прямого расхода - кол-во свободного для этого склада
                             innerBalanceCheckDB, // для инвентаризации - не больше зафиксированного количества по учету
                             addSGProp(returnInnerFreeQuantity, 1, 2, 3)); // возврата расхода  - кол-во подтв. этого контрагента
+
+        sumReturnedQuantity = addSGProp(documentGroup, "Кол-во возврата", returnInnerQuantity, 1, 3);
+        sumReturnedQuantityFree = addSGProp(documentGroup, "Макс. кол-во к возврату", returnFreeQuantity, 1, 3);
 
         // добавляем свойства по товарам
         articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", "Кол-во операции", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, date, 3, 3);
@@ -367,7 +389,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleActionQuantity = addDProp(baseGroup, "articleActionQuantity", "Кол-во от", DoubleClass.instance, articleAction);
 
         // продажа облигаций
-        obligationSaleDocument = addDProp(documentGroup, "obligationSaleDocument", "Документ продажи", saleDocumentObligation, giftObligation);
+        obligationSaleDocument = addDProp(documentGroup, "obligationSaleDocument", "Документ продажи", saleCheckCert, giftObligation);
 
         LP obligationTo = addDProp(baseGroup, "obligationTo", "До", DateClass.instance, obligation);
         LP obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
@@ -456,64 +478,62 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentLogisticsSupplied = addJProp(documentLogisticsGroup, "Поставляется", equals2, outSubject, 1, addJProp(articleStoreSupplier, incStore, 1, 2), 1, 2);
         documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
 
-        orderClientSum = addSUProp("Нак. сумма", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleRetail), addDProp(baseGroup, "orderClientSum", DoubleClass.instance, orderSaleRetail));
-        LP orderHour = addDProp(baseGroup, "orderHour", "Час", DoubleClass.instance, orderSaleRetail);
+        orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), addDProp("orderClientSum", DoubleClass.instance, orderSaleArticleRetail));
+        LP orderHour = addDProp(baseGroup, "orderHour", "Час", DoubleClass.instance, orderSaleArticleRetail);
         orderHour.setDerivedChange(currentHour, is(orderSale), 1);
 
-        changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleRetail, article);
-        changeQuantityOrder = addOProp(documentGroup, "Номер", addCProp(IntegerClass.instance, 1, orderSaleRetail, article), false, true, true, 1, 1, changeQuantityTime, 1, 2);
-
-        reverseRetailBarcode = addDProp("reverseRetailBarcode", "Реверс", LogicalClass.instance, orderSaleRetail);
+        changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail, article);
+        changeQuantityOrder = addOProp(documentGroup, "Номер", addCProp(IntegerClass.instance, 1, orderSaleArticleRetail, article), false, true, true, 1, 1, changeQuantityTime, 1, 2);
 
         LP orderSaleDocPrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
         orderSaleDocPrice.setDerivedChange(saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2);
         orderSalePrice = addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, outStore, 1, 2), 1, 2, is(orderSale), 1), orderSaleDocPrice);
 
-        LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
+        LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
                                         addJProp(less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
                                         addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2,
                                         addJProp(less2, orderClientSum, 1, articleActionClientSum, 2), 1, 3,
                                         addJProp(less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
                                         addJProp(greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
-        orderArticleSaleDiscount = addDProp(baseGroup, "orderArticleSaleDiscount", "Скидка", DoubleClass.instance, orderSaleRetail, article);
-        orderArticleSaleDiscount.setDerivedChange(addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2), true, 1, 2, is(orderSaleRetail), 1);
+        orderArticleSaleDiscount = addDProp(baseGroup, "orderArticleSaleDiscount", "Скидка", DoubleClass.instance, orderSaleArticleRetail, article);
+        orderArticleSaleDiscount.setDerivedChange(addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2), true, 1, 2, is(orderSaleArticleRetail), 1);
 
         LP orderArticleSaleSum = addJProp(documentPriceGroup, "Сумма прод.", multiplyDouble2, articleQuantity, 1, 2, orderSaleDocPrice, 1, 2);
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2);
-        orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма со скидкой", orderArticleSaleSum, orderArticleSaleDiscountSum);
+        orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к оплате", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
-        orderSalePay = addDUProp(documentAggrPriceGroup, "Сумма к оплате", addSGProp("Сумма док. прод.", orderArticleSaleSum, 1), orderSaleDiscountSum);
+        orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма к оплате",
+                                    addSGProp(obligationSum, obligationSaleDocument, 1),
+                                    addSGProp(orderArticleSaleSumWithDiscount, 1));
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
         LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2);
         LP returnSaleDiscount = addSGProp(documentPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         LP returnSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
 
-        clientSum = addSGProp(baseGroup, "clientSum", "Нак. сумма", orderSalePay, orderContragent, 1);
-        orderClientSum.setDerivedChange(clientSum, orderContragent, 1);
-
         LP orderDeliveryPrice = addDProp("orderDeliveryPrice", "Цена закуп.", DoubleClass.instance, orderDelivery, article);
         orderDeliveryPrice.setDerivedChange(articleSupplierPrice, 2, articleQuantity, 1, 2);
         addSUProp(documentPriceGroup, "Цена закуп.", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), orderDeliveryPrice);
 
-        orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckRetail, obligation);
+        orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
+        LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
         obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
-        orderSaleObligationCanNotBeUsed = addJProp(and(false, false, true), is(commitSaleCheckRetail), 1, is(obligation), 2,
+        orderSaleObligationCanBeUsed = addJProp(and(false, true, true), is(commitSaleCheckArticleRetail), 1, is(obligation), 2,
                                                     addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
                                                     addJProp(greater2, date, 1, obligationTo, 2), 1, 2);
-        addConstraint(addJProp("Нельзя использовать выбранный сертификат", and1, orderSaleUseObligation, 1, 2, orderSaleObligationCanNotBeUsed, 1, 2), false);
-        LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
-        LP orderSalePayCoupon = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1);
+        addConstraint(addJProp("Нельзя использовать выбранный сертификат", andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationCanBeUsed, 1, 2), false);
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
-        LP orderSalePayObligation = addSUProp(Union.SUM, orderSalePayGiftObligation, addJProp(min, orderSalePayCoupon, 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1));
+        LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
 
-        orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, commitSaleCheckRetail);
-        orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, commitSaleCheckRetail);
+        LP orderSalePayNoObligation = addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
+        clientSum = addSGProp(baseGroup, "clientSum", "Нак. сумма", orderSalePayNoObligation, orderContragent, 1);
+        orderClientSum.setDerivedChange(clientSum, orderContragent, 1);
+
+        orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleCheckRetail);
+        orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
 
         // сдача/доплата
-        orderSaleDiff = addDUProp(documentAggrPriceGroup, "Разница",
-                addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayCard, orderSalePayObligation)), 1),
-                orderSalePayCash);
+        orderSaleDiff = addDUProp(documentAggrPriceGroup, "Разница", orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
     }
 
     private LP addSupplierProperty(LP property) {
@@ -527,12 +547,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP computerShop;
     LP orderSalePayCash;
     LP orderSalePayCard;
-    LP reverseRetailBarcode;
     LP changeQuantityTime;
     LP confirmedInnerQuantity;
     LP obligationSaleDocument;
     LP obligationDocument;
-    LP orderSaleObligationCanNotBeUsed;
+    LP orderSaleObligationCanBeUsed;
     LP orderSaleUseObligation;
 
     LP articleFormatToSell;
@@ -570,8 +589,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP currentShopPriceDoc;
     LP currentShopPrice;
     LP currentRRP;
+    LP returnInnerFreeQuantity;
+    LP sumReturnedQuantity;
+    LP sumReturnedQuantityFree;
 
-    LP documentFreeQuantity, documentInnerFreeQuantity, returnInnerFreeQuantity, returnFreeQuantity, innerQuantity, returnInnerCommitQuantity, returnInnerQuantity;
+    LP documentFreeQuantity, documentInnerFreeQuantity, returnFreeQuantity, innerQuantity, returnInnerCommitQuantity, returnInnerQuantity;
     LP outerOrderQuantity, outerCommitedQuantity, articleBalanceCheck, articleBalanceCheckDB, innerBalanceCheck, innerBalanceCheckDB, balanceSklCommitedQuantity;
     LP articleInnerQuantity;
 
@@ -657,7 +679,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         tableFactory.include("localsupplier",localSupplier);
         tableFactory.include("importsupplier",importSupplier);
         tableFactory.include("customerwhole",customerWhole);
-        tableFactory.include("customerretail",customerRetail);
+        tableFactory.include("customerretail", customerCheckRetail);
         tableFactory.include("articlestore",article,store);
         tableFactory.include("articleorder",article,order);
         tableFactory.include("rates",DateClass.instance);
@@ -685,19 +707,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(returnDelivery, 1410, false));
 
         NavigatorElement sale = new NavigatorElement(baseElement, 1200, "Управление продажами");
-            NavigatorForm saleDocumentObligation = addNavigatorForm(new SaleDocumentObligationNavigatorForm(sale, 1225, true));
-                addNavigatorForm(new SaleDocumentObligationNavigatorForm(saleDocumentObligation, 1235, false));
+            NavigatorForm saleCheckCert = addNavigatorForm(new SaleCheckCertNavigatorForm(sale, 1225, true));
+                addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1235, false));
+            NavigatorForm saleInvoiceCert = addNavigatorForm(new SaleInvoiceCertNavigatorForm(sale, 1240, true));
+                addNavigatorForm(new SaleInvoiceCertNavigatorForm(saleInvoiceCert, 1245, false));
             NavigatorForm saleWhole = addNavigatorForm(new SaleWholeNavigatorForm(sale, 1250, true));
                 addNavigatorForm(new SaleWholeNavigatorForm(saleWhole, 1275, false));
-            NavigatorForm saleRetail = addNavigatorForm(new SaleRetailNavigatorForm(sale, 1300, true));
-                addNavigatorForm(new SaleRetailNavigatorForm(saleRetail, 1310, false));
+            NavigatorForm saleRetail = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(sale, 1300, true));
+                addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetail, 1310, false));
             addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(sale, 1320));
-            NavigatorForm returnSaleWholeArticle = addNavigatorForm(new ReturnSaleWholeArticleNavigatorForm(sale, true, 1450));
-                addNavigatorForm(new ReturnSaleWholeArticleNavigatorForm(returnSaleWholeArticle, false, 1460));
-            NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailArticleNavigatorForm(sale, true, 1475));
-                addNavigatorForm(new ReturnSaleCheckRetailArticleNavigatorForm(returnSaleCheckRetailArticle, false, 1485));
-            NavigatorForm returnSaleInvoiceRetailArticle = addNavigatorForm(new ReturnSaleInvoiceRetailArticleNavigatorForm(sale, true, 1477));
-                addNavigatorForm(new ReturnSaleInvoiceRetailArticleNavigatorForm(returnSaleInvoiceRetailArticle, false, 1487));
+            NavigatorForm returnSaleWholeArticle = addNavigatorForm(new ReturnSaleWholeNavigatorForm(sale, true, 1450));
+                addNavigatorForm(new ReturnSaleWholeNavigatorForm(returnSaleWholeArticle, false, 1460));
+            NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(sale, true, 1475));
+                addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1485));
+            NavigatorForm returnSaleInvoiceRetailArticle = addNavigatorForm(new ReturnSaleInvoiceRetailNavigatorForm(sale, true, 1477));
+                addNavigatorForm(new ReturnSaleInvoiceRetailNavigatorForm(returnSaleInvoiceRetailArticle, false, 1487));
 
         NavigatorElement distribute = new NavigatorElement(baseElement, 3000, "Управление распределением");
             NavigatorForm distributeShopForm = addNavigatorForm(new DistributeShopNavigatorForm(distribute, 3100, true));
@@ -744,9 +768,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private BarcodeNavigatorForm(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
+            addPropertyView(reverseBarcode);
+
             objBarcode = addSingleGroupObjectImplement(StringClass.get(13), "Штрих-код", properties, baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objBarcode));
         }
     }
 
@@ -979,17 +1007,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class SaleRetailNavigatorForm extends DocumentInnerNavigatorForm {
-
-        private ObjectNavigator objObligation;
+    private abstract class SaleRetailNavigatorForm extends DocumentInnerNavigatorForm {
 
         public SaleRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
-            this(parent, ID, orderSaleRetail, toAdd);
+            this(parent, ID, orderSaleArticleRetail, toAdd);
         }
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[] {nameContragent, orderClientSum, reverseRetailBarcode, orderSalePay, orderSaleDiscountSum, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+            return new Object[] {nameContragent, orderClientSum, orderSalePay, orderSaleDiscountSum, orderSalePayCash, orderSalePayCard, orderSaleDiff};
         }
 
         @Override
@@ -1016,26 +1042,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objDoc.groupTo.banClassView |= ClassViewType.HIDE;
 
-            objObligation = addSingleGroupObjectImplement(obligation, "Сертификат", properties, baseGroup, true);
-            addPropertyView(objDoc, objObligation, properties, documentGroup, true);
-            addHintsNoUpdate(obligationDocument);
+            objArt.show = false; objArt.showClass = false; objArt.showTree = false; objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
-//            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
-//            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation))));
-            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleUseObligation, objDoc, objObligation)));
-
-            PropertyObjectNavigator shopImplement = addPropertyObjectImplement(computerShop, CurrentComputerNavigator.instance);
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement));
 //            addFixedFilter(new OrFilterNavigator(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement),
 //                                                    new NotFilterNavigator(new NotNullFilterNavigator(shopImplement))));
 
+            PropertyObjectNavigator shopImplement = addPropertyObjectImplement(computerShop, CurrentComputerNavigator.instance);
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement));
+
             addFixedOrder(addPropertyObjectImplement(changeQuantityTime, objDoc, objArt), false);
-
-            addBarcode(obligation, orderSaleUseObligation);
-            addBarcode(customerRetail, addPropertyObjectImplement(orderContragent, objDoc));
-            reverseBarcode = getPropertyImplement(reverseRetailBarcode);
-
-            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objBarcode));
         }
 
         @Override
@@ -1049,9 +1064,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.get(getPropertyView(orderSalePay)).getContainer().setContainer(design.getMainContainer());
                 design.get(getPropertyView(orderSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
 
-                design.get(getPropertyView(reverseRetailBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
+                design.get(getPropertyView(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
                 design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-                design.addIntersection(design.get(getPropertyView(reverseRetailBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.get(getPropertyView(reverseBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
                 // устанавливаем дизайн
                 design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
@@ -1061,7 +1076,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setBackground(barcodeObjectName, new Color(240,240,240));
 
                 design.setFont(design.get(objBarcode).objectCellView, new Font("Tahoma", Font.BOLD, 18));
-                design.setFont(reverseRetailBarcode, new Font("Tahoma", Font.BOLD, 18));
+                design.setFont(reverseBarcode, new Font("Tahoma", Font.BOLD, 18));
                 design.setFont(nameContragent, new Font("Tahoma", Font.BOLD, 24));
                 design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24));
 
@@ -1074,13 +1089,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             // привязываем функциональные кнопки
             design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
             design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
-            design.setEditKey(reverseRetailBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
             design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
             design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
-
-            // располагаем объекты на форме относительно друг друга
-            if(!noOuters)
-                design.addIntersection(design.getGroupObjectContainer(objOuter.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             return design;
         }
@@ -1088,8 +1099,30 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
 
+        private ObjectNavigator objObligation;
+
         private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID) {
-            super(parent, ID, commitSaleCheckRetail, true);
+            super(parent, ID, commitSaleCheckArticleRetail, true);
+
+            objObligation = addSingleGroupObjectImplement(obligation, "Сертификат", properties, baseGroup, true);
+            addPropertyView(objDoc, objObligation, properties, baseGroup, true, documentGroup, true);
+            addHintsNoUpdate(obligationDocument);
+            objObligation.show = false; objObligation.showClass = false; objObligation.showTree = false; objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
+//            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
+//            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleUseObligation, objDoc, objObligation)));
+
+            addBarcode(obligation, orderSaleUseObligation);
+            addBarcode(customerCheckRetail, addPropertyObjectImplement(orderContragent, objDoc));
+        }
+    }
+
+    private class OrderSaleInvoiceRetailNavigatorForm extends SaleRetailNavigatorForm {
+
+        private OrderSaleInvoiceRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
+            super(parent, ID, orderSaleInvoiceArticleRetail, toAdd);
+
+            addBarcode(customerInvoiceRetail, addPropertyObjectImplement(orderContragent, objDoc));
         }
     }
 
@@ -1122,21 +1155,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class ReturnArticleNavigatorForm extends InnerNavigatorForm {
+    private class ReturnSaleNavigatorForm extends DocumentNavigatorForm {
         final ObjectNavigator objInner;
+        final ObjectNavigator objArt;
         ObjectNavigator objOuter;
 
-        protected ReturnArticleNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
-            super(parent, ID, documentClass, toAdd, false);
+        protected ReturnSaleNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
+            super(parent, ID, documentClass, toAdd);
 
             objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
 
             addPropertyView(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
-            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
-            addPropertyView(objInner, objArt, properties, baseGroup, true, documentPriceGroup, true);
 
-            NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(returnInnerQuantity));
-            NotNullFilterNavigator documentFreeFilter = new NotNullFilterNavigator(getPropertyImplement(returnFreeQuantity));
+            NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(sumReturnedQuantity));
+            NotNullFilterNavigator documentFreeFilter = new NotNullFilterNavigator(getPropertyImplement(sumReturnedQuantityFree));
             if(fixFilters)
                 addFixedFilter(new OrFilterNavigator(documentFilter, documentFreeFilter));
             RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
@@ -1150,6 +1182,32 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   "Макс. кол-во",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             addRegularFilterGroup(filterGroup);
+
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
+            addPropertyView(objDoc, objArt, properties, baseGroup, true);
+            addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
+            addPropertyView(objInner, objArt, properties, baseGroup, true, documentPriceGroup, true);
+
+            PropertyObjectNavigator returnInnerImplement = getPropertyImplement(returnInnerQuantity);
+
+            NotNullFilterNavigator articleFilter = new NotNullFilterNavigator(returnInnerImplement);
+            NotNullFilterNavigator articleFreeFilter = new NotNullFilterNavigator(getPropertyImplement(returnFreeQuantity));
+            if(fixFilters)
+                addFixedFilter(new OrFilterNavigator(articleFilter, articleFreeFilter));
+            RegularFilterGroupNavigator articleFilterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            articleFilterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  articleFilter,
+                                  "Документ",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), !toAdd);
+            if(!fixFilters)
+                articleFilterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  articleFreeFilter,
+                                  "Макс. кол-во",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
+            addRegularFilterGroup(articleFilterGroup);
+
+//            addHintsNoUpdate(properties, moveGroup);
+            addBarcode(article, returnInnerImplement);
 
             if(!noOuters) {
                 objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, baseGroup, true);
@@ -1187,21 +1245,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class ReturnSaleWholeArticleNavigatorForm extends ReturnArticleNavigatorForm {
-        private ReturnSaleWholeArticleNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
+    private class ReturnSaleWholeNavigatorForm extends ReturnSaleNavigatorForm {
+        private ReturnSaleWholeNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
             super(parent, ID, toAdd, returnSaleWhole, commitSaleWhole);
         }
     }
 
-    private class ReturnSaleInvoiceRetailArticleNavigatorForm extends ReturnArticleNavigatorForm {
-        private ReturnSaleInvoiceRetailArticleNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceRetail);
+    private class ReturnSaleInvoiceRetailNavigatorForm extends ReturnSaleNavigatorForm {
+        private ReturnSaleInvoiceRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
+            super(parent, ID, toAdd, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail);
         }
     }
 
-    private class ReturnSaleCheckRetailArticleNavigatorForm extends ReturnArticleNavigatorForm {
-        private ReturnSaleCheckRetailArticleNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
-            super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckRetail);
+    private class ReturnSaleCheckRetailNavigatorForm extends ReturnSaleNavigatorForm {
+        private ReturnSaleCheckRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
+            super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail);
         }
     }
 
@@ -1354,15 +1412,28 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class SaleDocumentObligationNavigatorForm extends DocumentNavigatorForm {
-        protected SaleDocumentObligationNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, saleDocumentObligation, toAdd);
+    private class SaleCertNavigatorForm extends DocumentNavigatorForm {
 
-            ObjectNavigator objObligation = addSingleGroupObjectImplement(giftObligation, "Пода", properties, allGroup, true);
+        protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
+            super(parent, ID, documentClass, toAdd);
+
+            ObjectNavigator objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
 
             addPropertyView(objDoc, objObligation, properties, allGroup, true);
 
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(obligationSaleDocument,objObligation),Compare.EQUALS,objDoc));
+        }
+    }
+
+    private class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
+        protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
+            super(parent, ID, saleCheckCert, toAdd);
+        }
+    }
+
+    private class SaleInvoiceCertNavigatorForm extends SaleCertNavigatorForm {
+        protected SaleInvoiceCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
+            super(parent, ID, saleInvoiceCert, toAdd);
         }
     }
 

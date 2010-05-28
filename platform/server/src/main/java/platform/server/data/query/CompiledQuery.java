@@ -642,8 +642,9 @@ public class CompiledQuery<K,V> {
     private static <K,AV> String fillInnerSelect(Map<K, KeyExpr> mapKeys, InnerWhere innerWhere, Where where, Map<AV, Expr> compiledProps, Map<K, String> keySelect, Map<AV, String> propertySelect, Collection<String> whereSelect, Map<ValueExpr,String> params, SQLSyntax syntax) {
 
         Map<KeyExpr,BaseExpr> keyExprs = new HashMap<KeyExpr, BaseExpr>();
-        if(!innerWhere.keyExprs.isEmpty()) {
-            keyExprs = innerWhere.keyExprs;
+        while(!innerWhere.keyExprs.isEmpty()) {
+            assert Collections.disjoint(keyExprs.keySet(), innerWhere.keyExprs.keySet());
+            keyExprs.putAll(innerWhere.keyExprs);
 
             for(BaseExpr keyValue : keyExprs.values())
                 for(KeyExpr keyKey : keyExprs.keySet())
@@ -654,7 +655,6 @@ public class CompiledQuery<K,V> {
             where = where.translateQuery(translator);
             innerWhere = BaseUtils.single(where.getInnerJoins().compileMeans()).mean;
         }
-        assert innerWhere.keyExprs.isEmpty();
 
         InnerSelect compile = new InnerSelect(innerWhere.joins,syntax,params);
         // первым так как должны keySelect'ы и inner'ы заполнится
