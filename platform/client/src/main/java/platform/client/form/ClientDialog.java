@@ -3,15 +3,12 @@ package platform.client.form;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.client.SwingUtils;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
-import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
-import java.rmi.RemoteException;
 
 public class ClientDialog extends JDialog {
 
@@ -54,31 +51,46 @@ public class ClientDialog extends JDialog {
         setCurrentForm(dialog);
     }
 
-    public boolean objectChosen;
+    public static int NOT_CHOSEN = 0;
+    public static int CHOSEN_VALUE = 1;
+    public static int CHOSEN_NULL = 2;
 
-    boolean isReadOnly() { return true; }
+    public int objectChosen = NOT_CHOSEN;
+
+    boolean isDialogMode() { return true; }
 
     // необходим чтобы в диалоге менять формы (панели)
     void setCurrentForm(RemoteDialogInterface remoteForm) throws IOException, ClassNotFoundException {
 
        if (currentForm != null) remove(currentForm);
-       currentForm = new ClientForm(remoteForm, navigator, isReadOnly()) {
+       currentForm = new ClientForm(remoteForm, navigator) {
 
-           public boolean okPressed() {
-    //                    if (super.okPressed()) {
-                   objectChosen = true;
-                   ClientDialog.this.setVisible(false);
-                   return true;
-    //                    } else
-    //                        return false;
+           @Override
+           public boolean isDialogMode() {
+               return true;
            }
 
+           @Override
+           boolean nullPressed() {
+
+               objectChosen = CHOSEN_NULL;
+               ClientDialog.this.setVisible(false);
+               return true;
+           }
+
+           @Override
+           public boolean okPressed() {
+
+               objectChosen = CHOSEN_VALUE;
+               ClientDialog.this.setVisible(false);
+               return true;
+           }
+
+           @Override
            boolean closePressed() {
-    //                    if (super.closePressed()) {
-                   ClientDialog.this.setVisible(false);
-                   return true;
-    //                    } else
-    //                        return false;
+
+               ClientDialog.this.setVisible(false);
+               return true;
            }
        };
        add(currentForm, BorderLayout.CENTER);

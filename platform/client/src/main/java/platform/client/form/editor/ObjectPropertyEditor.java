@@ -36,8 +36,7 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
         if (editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_SPACE) {
             clientDialog = new ClientNavigatorDialog(owner,dialog);
             clientDialog.setBounds(owner.getBounds());
-        } else
-        {
+        } else {
             clientDialog = new ClientDialog(owner,dialog);
             clientDialog.setLocation(new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
             clientDialog.setSize(500, 300);
@@ -48,10 +47,14 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
     }
 
     public Object getCellEditorValue() throws RemoteException {
-        return objectChosen();
+        
+        if (clientDialog.objectChosen == ClientDialog.CHOSEN_NULL)
+            return null;
+        else
+            return objectChosen();
     }
 
     public boolean valueChanged() {
-        return clientDialog.objectChosen;
+        return clientDialog.objectChosen != ClientDialog.NOT_CHOSEN;
     }
 }

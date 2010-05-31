@@ -134,7 +134,7 @@ public abstract class GridTable extends ClientFormTable
         }
 
         //noinspection SimplifiableIfStatement
-        if (form.isReadOnly() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) return false;
+        if (form.isDialogMode() && ks.equals(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0))) return false;
 
         return super.processKeyBinding(ks, ae, condition, pressed);    //To change body of overridden methods use File | Settings | File Templates.
     }
@@ -245,7 +245,7 @@ public abstract class GridTable extends ClientFormTable
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (form.isReadOnly() && e.getClickCount() > 1) form.okPressed();
+                if (form.isDialogMode() && e.getClickCount() > 1) form.okPressed();
             }
         });
 

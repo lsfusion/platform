@@ -74,7 +74,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
         ClientCellViewTable cellTable = (ClientCellViewTable)table;
 
-        if (cellTable.getForm().isReadOnly() && cellTable.isDataChanging()) return null;
+        if (cellTable.getForm().isDialogMode() && cellTable.isDataChanging()) return null;
 
         ClientCellView property = cellTable.getCellView(column);
 

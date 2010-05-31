@@ -53,6 +53,7 @@ public class FormView implements ClientSerialize {
 
     public FunctionView printView = new FunctionView(idGenerator.idShift());
     public FunctionView xlsView = new FunctionView(idGenerator.idShift());
+    public FunctionView nullView = new FunctionView(idGenerator.idShift());
     public FunctionView refreshView = new FunctionView(idGenerator.idShift());
     public FunctionView applyView = new FunctionView(idGenerator.idShift());
     public FunctionView cancelView = new FunctionView(idGenerator.idShift());
@@ -89,6 +90,7 @@ public class FormView implements ClientSerialize {
 
         printView.serialize(outStream);
         xlsView.serialize(outStream);
+        nullView.serialize(outStream);
         refreshView.serialize(outStream);
         applyView.serialize(outStream);
         cancelView.serialize(outStream);

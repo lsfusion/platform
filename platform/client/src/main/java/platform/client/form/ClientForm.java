@@ -43,10 +43,8 @@ public class ClientForm extends JPanel {
     public final RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;
 
-    private final boolean readOnly;
-
-    public boolean isReadOnly() {
-        return readOnly;
+    public boolean isDialogMode() {
+        return false;
     }
 
     private int ID;
@@ -54,15 +52,13 @@ public class ClientForm extends JPanel {
         return ID;
     }
 
-    public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator, boolean ireadOnly) throws IOException, ClassNotFoundException {
+    public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) throws IOException, ClassNotFoundException {
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
         remoteForm = iremoteForm;
 
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         clientNavigator = iclientNavigator;
-
-        readOnly = ireadOnly;
 
         formView = ClientObjectProxy.retrieveClientFormView(remoteForm);
 
@@ -307,46 +303,37 @@ public class ClientForm extends JPanel {
             }
         });
 
+        AbstractAction nullAction = new AbstractAction("Сбросить") {
+
+            public void actionPerformed(ActionEvent ae) {
+                nullPressed();
+            }
+        };
+        JButton buttonNull = new JButton(nullAction);
+
         AbstractAction refreshAction = new AbstractAction("Обновить") {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    refreshData();
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при обновлении формы", e);
-                }
+                refreshData();
             }
         };
-
-        KeyStroke keyF5 = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
-        im.put(keyF5, "refreshPressed");
-        am.put("refreshPressed", refreshAction);
-
         JButton buttonRefresh = new JButton(refreshAction);
 
-        buttonApply = new JButton("Применить");
-        buttonApply.addActionListener(new ActionListener() {
+        AbstractAction applyAction = new AbstractAction("Применить") {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    saveChanges();
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при применении изменений", e);
-                }
+                saveChanges();
             }
-        });
+        };
+        buttonApply = new JButton(applyAction);
 
-        buttonCancel = new JButton("Отменить");
-        buttonCancel.addActionListener(new ActionListener() {
+        AbstractAction cancelAction = new AbstractAction("Отменить") {
 
             public void actionPerformed(ActionEvent ae) {
-                try {
-                    cancelChanges();
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при отмене изменений", e);
-                }
+                cancelChanges();
             }
-        });
+        };
+        buttonCancel = new JButton(cancelAction);
 
         AbstractAction okAction = new AbstractAction("OK") {
 
@@ -354,11 +341,6 @@ public class ClientForm extends JPanel {
                 okPressed();
             }
         };
-
-        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (readOnly) ? 0 : InputEvent.ALT_DOWN_MASK);
-        im.put(altEnter, "okPressed");
-        am.put("okPressed", okAction);
-
         JButton buttonOK = new JButton(okAction);
 
         AbstractAction closeAction = new AbstractAction("Закрыть") {
@@ -367,23 +349,46 @@ public class ClientForm extends JPanel {
                 closePressed();
             }
         };
-
-        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
-        im.put(escape, "closePressed");
-        am.put("closePressed", closeAction);
-
         JButton buttonClose = new JButton(closeAction);
 
-        if (!readOnly) {
+        KeyStroke altDel = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
+        im.put(altDel, "altDelPressed");
+
+        KeyStroke keyF5 = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
+        im.put(keyF5, "f5Pressed");
+
+        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (isDialogMode()) ? 0 : InputEvent.ALT_DOWN_MASK);
+        im.put(altEnter, "enterPressed");
+
+        KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+        im.put(escape, "escPressed");
+
+        am.put("f5Pressed", refreshAction);
+
+        formLayout.add(formView.refreshView, buttonRefresh);
+        
+        if (!isDialogMode()) {
+
+            am.put("enterPressed", applyAction);
+            am.put("escPressed", cancelAction);
+
             formLayout.add(formView.printView, buttonPrint);
             formLayout.add(formView.xlsView, buttonXls);
-            formLayout.add(formView.refreshView, buttonRefresh);
             formLayout.add(formView.applyView, buttonApply);
             formLayout.add(formView.cancelView, buttonCancel);
-        }
 
-        formLayout.add(formView.okView, buttonOK);
-        formLayout.add(formView.closeView, buttonClose);
+        } else {
+
+            am.put("altDelPressed", nullAction);
+
+            am.put("enterPressed", okAction);
+            am.put("escPressed", closeAction);
+
+            formLayout.add(formView.nullView, buttonNull);
+            formLayout.add(formView.okView, buttonOK);
+            formLayout.add(formView.closeView, buttonClose);
+
+        }
     }
 
     private void initializeOrders() throws IOException {
@@ -635,72 +640,87 @@ public class ClientForm extends JPanel {
 
     }
 
-    void refreshData() throws IOException {
+    void refreshData() {
 
-        remoteForm.refreshData();
+        try {
 
-        applyFormChanges();
-    }
-
-    boolean saveChanges() throws IOException {
-
-        if (remoteForm.hasSessionChanges()) {
-
-            String okMessage = "";
-            for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
-                okMessage += controllers.get(groupObject).getSaveMessage();
-            }
-
-            if (!okMessage.isEmpty()) {
-                if (!(SwingUtils.showConfirmDialog(this, okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                    return false;
-                }
-            }
-
-            String message = remoteForm.saveChanges();
-            if (message==null) {
-                Log.printSuccessMessage("Изменения были удачно записаны...");
-                dataChanged();
-            }
-            else {
-                Log.printFailedMessage(message);
-                return false;
-            }
+            remoteForm.refreshData();
 
             applyFormChanges();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при обновлении формы", e);
         }
+    }
+
+    boolean saveChanges() {
+
+        try {
+
+            if (remoteForm.hasSessionChanges()) {
+
+                String okMessage = "";
+                for (ClientGroupObjectImplementView groupObject : formView.groupObjects) {
+                    okMessage += controllers.get(groupObject).getSaveMessage();
+                }
+
+                if (!okMessage.isEmpty()) {
+                    if (!(SwingUtils.showConfirmDialog(this, okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
+                        return false;
+                    }
+                }
+
+                String message = remoteForm.saveChanges();
+                if (message==null) {
+                    Log.printSuccessMessage("Изменения были удачно записаны...");
+                    dataChanged();
+                }
+                else {
+                    Log.printFailedMessage(message);
+                    return false;
+                }
+
+                applyFormChanges();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при применении изменений", e);
+        }
+
         
         return true;
     }
 
-    boolean cancelChanges() throws IOException {
+    boolean cancelChanges() {
 
-        if (remoteForm.hasSessionChanges()) {
+        try {
 
-            if (SwingUtils.showConfirmDialog(this, "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
-                remoteForm.cancelChanges();
-                dataChanged();
-                applyFormChanges();
+            if (remoteForm.hasSessionChanges()) {
+
+                if (SwingUtils.showConfirmDialog(this, "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
+                    remoteForm.cancelChanges();
+                    dataChanged();
+                    applyFormChanges();
+                }
             }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при отмене изменений", e);
         }
 
         return true;
     }
 
     public boolean okPressed() {
-        try {
-            return saveChanges();
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при применении изменений", e);
-        }
+        return saveChanges();
     }
 
     boolean closePressed() {
-        try {
-            return cancelChanges();
-        } catch (IOException e) {
-            throw new RuntimeException("Ошибка при отмене изменений", e);
-        }
+        return cancelChanges();
+    }
+
+    boolean nullPressed() {
+        return true;
     }
 
     private Color defaultApplyBackground;

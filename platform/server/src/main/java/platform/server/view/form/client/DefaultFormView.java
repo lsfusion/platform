@@ -153,27 +153,31 @@ public class DefaultFormView extends FormView {
         xlsView.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
         formButtonContainer.add(xlsView);
 
-        refreshView.constraints.order = 2;
+        nullView.constraints.order = 2;
+        nullView.constraints.directions = new SimplexComponentDirections(0,0.01,0.01,0);
+        formButtonContainer.add(nullView);
+
+        refreshView.constraints.order = 3;
         refreshView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(refreshView);
 
-        applyView.constraints.order = 3;
+        applyView.constraints.order = 4;
         applyView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(applyView);
 
         applyView.constraints.insetsSibling = new Insets(0, 8, 0, 0);
 
-        cancelView.constraints.order = 4;
+        cancelView.constraints.order = 5;
         cancelView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(cancelView);
 
         okView.constraints.insetsSibling = new Insets(0, 8, 0, 0);
 
-        okView.constraints.order = 5;
+        okView.constraints.order = 6;
         okView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(okView);
 
-        closeView.constraints.order = 6;
+        closeView.constraints.order = 7;
         closeView.constraints.directions = new SimplexComponentDirections(0,0,0.01,0.01);
         formButtonContainer.add(closeView);
 

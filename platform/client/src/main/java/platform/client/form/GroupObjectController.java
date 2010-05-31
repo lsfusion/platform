@@ -1,8 +1,6 @@
 package platform.client.form;
 
 import platform.client.logics.*;
-import platform.client.logics.classes.ClientObjectClass;
-import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.panel.PanelController;
 import platform.client.form.grid.GridController;
 import platform.client.form.showtype.ShowTypeController;
@@ -50,7 +48,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
             // Grid идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
             grid = new GridController(groupObject.gridView, this, form);
-            if (!form.isReadOnly()) addGroupObjectActions(grid.getView());
+            if (!form.isDialogMode()) addGroupObjectActions(grid.getView());
 
             grid.addView(formLayout);
 
