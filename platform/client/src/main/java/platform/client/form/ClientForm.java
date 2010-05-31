@@ -140,6 +140,14 @@ public class ClientForm extends JPanel {
         });
 
         setFocusCycleRoot(true);
+
+        // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientForm фокус оставался на ней, а не уходил куда-то еще
+        // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                requestFocusInWindow();
+            }
+        });
     }
 
     // здесь хранится список всех GroupObjects плюс при необходимости null
