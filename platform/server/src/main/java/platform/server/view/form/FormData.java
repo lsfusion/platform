@@ -1,6 +1,6 @@
 package platform.server.view.form;
 
-import platform.base.BaseUtils;
+import platform.server.view.form.FormRow;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.util.Set;
 // считанные данные (должен быть интерфейс Serialize)
 public class FormData {
 
-    private List<FormRow> rows = new ArrayList<FormRow>();
+    public List<FormRow> rows = new ArrayList<FormRow>();
     public void add(Map<ObjectImplement,Object> keys,Map<PropertyView,Object> properties) {
         rows.add(new FormRow(keys,properties));
     }
@@ -41,26 +41,5 @@ public class FormData {
         outStream.writeInt(rows.size());
         for(FormRow row : rows)
             row.serialize(outStream);
-    }
-}
-
-class FormRow {
-    Map<ObjectImplement,Object> keys;
-    Map<PropertyView,Object> values;
-
-    FormRow(Map<ObjectImplement, Object> iKeys, Map<PropertyView, Object> iProperties) {
-        keys = iKeys;
-        values = iProperties;
-    }
-
-    public void serialize(DataOutputStream outStream) throws IOException {
-        for(Map.Entry<ObjectImplement,Object> key : keys.entrySet()) {
-            outStream.writeInt(key.getKey().ID);
-            BaseUtils.serializeObject(outStream,key.getValue());
-        }
-        for(Map.Entry<PropertyView,Object> property : values.entrySet()) {
-            outStream.writeInt(property.getKey().ID);
-            BaseUtils.serializeObject(outStream,property.getValue());
-        }
     }
 }

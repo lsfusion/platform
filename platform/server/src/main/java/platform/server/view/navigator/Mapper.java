@@ -62,7 +62,15 @@ public class Mapper {
         return propValue;
     }
 
+    private final Map<PropertyViewNavigator, PropertyView> propertyViewMapper = new HashMap<PropertyViewNavigator, PropertyView>();
+
     public <T extends PropertyInterface> PropertyView mapPropertyView(PropertyViewNavigator<T> propKey) {
-        return new PropertyView<T>(propKey.ID, propKey.getSID(), mapProperty(propKey.view), groupMapper.get(propKey.toDraw), propKey.forcePanel);
+
+        if (propertyViewMapper.containsKey(propKey)) return propertyViewMapper.get(propKey);
+
+        PropertyView propValue = new PropertyView<T>(propKey.ID, propKey.getSID(), mapProperty(propKey.view), groupMapper.get(propKey.toDraw), propKey.forcePanel);
+        
+        propertyViewMapper.put(propKey, propValue);
+        return propValue;
     }
 }

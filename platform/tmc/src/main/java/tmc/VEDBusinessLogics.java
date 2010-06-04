@@ -13,20 +13,25 @@ import platform.server.data.Time;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.form.FormRow;
+import platform.server.view.form.*;
 import platform.server.auth.User;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
+import platform.interop.action.*;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
+import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -502,7 +507,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderArticleSaleDiscountSum = addJProp(documentPriceGroup, "Сумма скидки", percent, orderArticleSaleSum, 1, 2, orderArticleSaleDiscount, 1, 2);
         orderArticleSaleSumWithDiscount = addDUProp(documentPriceGroup, "Сумма к оплате", orderArticleSaleSum, orderArticleSaleDiscountSum);
         orderSaleDiscountSum = addSGProp(documentAggrPriceGroup, "Сумма скидки", orderArticleSaleDiscountSum, 1);
-        orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма к оплате",
+        orderSalePay = addCUProp(documentAggrPriceGroup, "Сумма чека",
                                     addSGProp(obligationSum, obligationSaleDocument, 1),
                                     addSGProp(orderArticleSaleSumWithDiscount, 1));
 
@@ -525,7 +530,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
 
-        LP orderSalePayNoObligation = addJProp(onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
+        orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к оплате", onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
         clientSum = addSGProp(baseGroup, "clientSum", "Нак. сумма", orderSalePayNoObligation, orderContragent, 1);
         orderClientSum.setDerivedChange(clientSum, orderContragent, 1);
 
@@ -556,6 +561,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP articleFormatToSell;
     LP inAction;
+    LP orderSalePayNoObligation;
     LP clientSum;
     LP incStore;
     LP outStore;
@@ -1016,7 +1022,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[] {nameContragent, orderClientSum, orderSalePay, orderSaleDiscountSum, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+            return new Object[] {nameContragent, orderClientSum, orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleDiff};
         }
 
         @Override
@@ -1082,6 +1088,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24));
 
                 // блокируем объекты для ввода
+                design.setFocusable(reverseBarcode, false);
                 design.setFocusable(false, objBarcode.groupTo);
                 design.setFocusable(false, objDoc.groupTo);
                 design.setFocusable(design.get(objBarcode).objectCellView, false);
@@ -1099,6 +1106,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             return design;
         }
+
     }
 
     private class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
@@ -1115,9 +1123,97 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleUseObligation, objDoc, objObligation)));
-
+  
             addBarcode(obligation, orderSaleUseObligation);
             addBarcode(customerCheckRetail, addPropertyObjectImplement(orderContragent, objDoc));
+        }
+
+        @Override
+        public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
+
+            List<ClientAction> actions = new ArrayList<ClientAction>();
+
+            ExportFileClientAction exportAction = new ExportFileClientAction("bill.txt", false, createBillTxt(remoteForm));
+
+            RuntimeClientAction runAction = new RuntimeClientAction("calc.exe", null, null);
+
+            ImportFileClientAction importAction = new ImportFileClientAction("error.txt");
+            importAction.ID = 1;
+
+            actions.add(exportAction);
+            actions.add(runAction);
+            actions.add(importAction);
+            
+            return actions;
+        }
+
+        private String createBillTxt(RemoteForm remoteForm) {
+
+            String result = "1,30\n";
+
+            FormData data;
+
+            ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+            ObjectImplement art = remoteForm.mapper.mapObject(objArt);
+
+            try {
+                 data = remoteForm.getFormData(
+                        BaseUtils.toSetElements(doc.groupTo, art.groupTo),
+                        BaseUtils.toSetElements(art.groupTo)
+                        );
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+            Double sumDoc = 0.0;
+
+            for (FormRow row : data.rows) {
+
+                result += row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePrice, objArt)));
+                result += ",0";
+                result += "," + row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(articleQuantity, objArt)));
+
+                String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(name, objArt)))).trim();
+                result += "," + artName;
+
+                Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderArticleSaleSumWithDiscount, objArt)));
+                result += "," + sumPos;
+                sumDoc += sumPos;
+
+                result += "\n";
+            }
+
+            Double sumDisc = sumDoc - (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayNoObligation, objDoc)));
+            if (sumDisc > 0) {
+                result += "#," + sumDisc + "\n";
+            }
+
+            Double sumCard = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayCard, objDoc)));
+            if (sumCard != null && sumCard > 0) {
+                result += "~1," + sumCard + "\n";
+            }
+
+            Double sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayCash, objDoc)));
+            if (sumCash != null && sumCash > 0) {
+                result += sumCash + "\n"; 
+            }
+
+            return result;
+        }
+
+        @Override
+        public String checkApplyActions(int actionID, ClientActionResult result) {
+
+            if (actionID == 1) {
+
+                ImportFileClientActionResult impFileResult = ((ImportFileClientActionResult)result);
+
+                if (impFileResult.fileExists) {
+                    return (impFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + impFileResult.fileContent);
+                }
+            }
+
+            return super.checkApplyActions(actionID, result);    //To change body of overridden methods use File | Settings | File Templates.
         }
     }
 

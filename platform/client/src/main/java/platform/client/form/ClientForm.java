@@ -18,8 +18,7 @@ import platform.client.navigator.ClientNavigator;
 import platform.interop.CompressingInputStream;
 import platform.interop.Scroll;
 import platform.interop.Order;
-import platform.interop.action.ClientAction;
-import platform.interop.action.ClientActionDispatcher;
+import platform.interop.action.*;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
@@ -33,6 +32,7 @@ import java.rmi.RemoteException;
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -42,6 +42,7 @@ public class ClientForm extends JPanel {
 
     public final RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;
+    public final ClientFormActionDispatcher actionDispatcher;
 
     public boolean isDialogMode() {
         return false;
@@ -59,6 +60,8 @@ public class ClientForm extends JPanel {
 
         // Навигатор нужен, чтобы уведомлять его об изменениях активных объектов, чтобы он мог себя переобновлять
         clientNavigator = iclientNavigator;
+
+        actionDispatcher = new ClientFormActionDispatcher(clientNavigator);
 
         formView = ClientObjectProxy.retrieveClientFormView(remoteForm);
 
@@ -322,7 +325,7 @@ public class ClientForm extends JPanel {
         AbstractAction applyAction = new AbstractAction("Применить") {
 
             public void actionPerformed(ActionEvent ae) {
-                saveChanges();
+                applyChanges();
             }
         };
         buttonApply = new JButton(applyAction);
@@ -501,16 +504,7 @@ public class ClientForm extends JPanel {
             // типа только если меняется свойство
             List<ClientAction> actions = remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
 
-            for(ClientAction action : actions)
-                action.dispatch(new ClientActionDispatcher() {
-                    public void executeForm(RemoteFormInterface remoteForm, boolean isPrintForm) {
-                        try {
-                            Main.layout.defaultStation.drop(isPrintForm?new ReportDockable(clientNavigator, remoteForm):new ClientFormDockable(clientNavigator, remoteForm));
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+            dispatchActions(actions);
 
             dataChanged();
             applyFormChanges();
@@ -532,6 +526,18 @@ public class ClientForm extends JPanel {
             }
         }
 
+    }
+
+    private List<ClientActionResult> dispatchActions(List<? extends ClientAction> actions) throws IOException {
+        
+        if (actions == null) return null;
+
+        List<ClientActionResult> result = new ArrayList<ClientActionResult>();
+
+        for(ClientAction action : actions)
+            result.add(action.dispatch(actionDispatcher));
+
+        return result;
     }
 
     void addObject(ClientObjectImplementView object, ClientConcreteClass cls) throws IOException {
@@ -653,7 +659,7 @@ public class ClientForm extends JPanel {
         }
     }
 
-    boolean saveChanges() {
+    boolean applyChanges() {
 
         try {
 
@@ -670,12 +676,23 @@ public class ClientForm extends JPanel {
                     }
                 }
 
-                String message = remoteForm.saveChanges();
-                if (message==null) {
+                List<? extends ClientAction> actions = remoteForm.getApplyActions();
+                if (actions != null) {
+                    for (ClientAction action : actions) {
+                        String message = remoteForm.checkApplyActions(action.ID, action.dispatch(actionDispatcher));
+                        if (message != null) {
+                            Log.printFailedMessage(message);
+                            return false;
+                        }
+                    }
+                }
+
+                String message = remoteForm.applyChanges();
+
+                if (message == null) {
                     Log.printSuccessMessage("Изменения были удачно записаны...");
                     dataChanged();
-                }
-                else {
+                } else {
                     Log.printFailedMessage(message);
                     return false;
                 }
@@ -712,7 +729,7 @@ public class ClientForm extends JPanel {
     }
 
     public boolean okPressed() {
-        return saveChanges();
+        return applyChanges();
     }
 
     boolean closePressed() {

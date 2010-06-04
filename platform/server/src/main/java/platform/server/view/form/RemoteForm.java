@@ -99,7 +99,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     public final NavigatorForm<T> navigatorForm;
 
-    protected final Mapper mapper;
+    public final Mapper mapper;
 
     public RemoteForm(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, PropertyObjectInterface user, PropertyObjectInterface computer, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
         this.navigatorForm = navigatorForm;
@@ -1005,7 +1005,18 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return result;
     }
 
-    // возвращает какие объекты отчета фиксируются
+    // возвращает какие объекты на форме показываются
+    private Set<GroupObjectImplement> getPropertyGroups() {
+
+        Set<GroupObjectImplement> reportObjects = new HashSet<GroupObjectImplement>();
+        for (GroupObjectImplement group : groups)
+            if (group.curClassView != ClassViewType.HIDE)
+                reportObjects.add(group);
+
+        return reportObjects;
+    }
+
+    // возвращает какие объекты на форме не фиксируются
     private Set<GroupObjectImplement> getClassGroups() {
 
         Set<GroupObjectImplement> reportObjects = new HashSet<GroupObjectImplement>();
@@ -1016,13 +1027,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return reportObjects;
     }
 
-    // считывает все данные (для отчета)
     public FormData getFormData(boolean allProperties) throws SQLException {
+
+        return getFormData((allProperties) ? new HashSet<GroupObjectImplement>(groups) : getPropertyGroups(), getClassGroups());
+    }
+
+    // считывает все данные с формы
+    public FormData getFormData(Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups) throws SQLException {
 
         // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
         endApply();
-
-        Set<GroupObjectImplement> classGroups = getClassGroups();
 
         Collection<ObjectImplement> readObjects = new ArrayList<ObjectImplement>();
         for(GroupObjectImplement group : classGroups)
@@ -1056,7 +1070,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         FormData result = new FormData();
 
         for(PropertyView<?> property : properties)
-            if (allProperties || (property.view.getApplyObject() != null && property.view.getApplyObject().curClassView != ClassViewType.HIDE)) // если свойство находится не в GroupObject, который спрятан
+            if (propertyGroups.contains(property.view.getApplyObject()))
                 query.properties.put(property, property.view.getExpr(classGroups, query.mapKeys, this));
 
         OrderedMap<Map<ObjectImplement, Object>, Map<Object, Object>> resultSelect = query.execute(session,queryOrders,0);

@@ -7,6 +7,7 @@ import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
 import platform.interop.*;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ClientActionResult;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
 import platform.server.classes.CustomClass;
@@ -292,7 +293,15 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         return form.hasSessionChanges();
     }
 
-    public String saveChanges() {
+    public List<? extends ClientAction> getApplyActions() throws RemoteException {
+        return form.navigatorForm.getApplyActions(form);
+    }
+
+    public String checkApplyActions(int actionID, ClientActionResult result) {
+        return form.navigatorForm.checkApplyActions(actionID, result);
+    }
+
+    public String applyChanges() {
         try {
             return form.saveChanges();
         } catch (SQLException e) {

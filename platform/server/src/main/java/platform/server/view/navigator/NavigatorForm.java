@@ -15,8 +15,11 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
 import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.view.navigator.filter.OrderViewNavigator;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientActionResult;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
@@ -215,8 +218,16 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         return getPropertyView(lp, object).view;
     }
 
+    protected PropertyObjectNavigator getPropertyImplement(LP<?> lp, GroupObjectNavigator groupObject) {
+        return getPropertyView(lp, groupObject).view;
+    }
+
     protected PropertyViewNavigator<?> getPropertyView(LP<?> lp, ObjectNavigator object) {
         return getPropertyView(lp.property, object.groupTo);
+    }
+
+    protected PropertyViewNavigator<?> getPropertyView(LP<?> lp, GroupObjectNavigator groupObject) {
+        return getPropertyView(lp.property, groupObject);
     }
 
     protected PropertyViewNavigator getPropertyView(PropertyObjectNavigator property) {
@@ -335,5 +346,13 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
         autoActionObjects.add(object);
         autoActions.add(action);
+    }
+
+    public List<? extends ClientAction> getApplyActions(RemoteForm<?> form) {
+        return null; // будем возвращать именно null, чтобы меньше данных передавалось        
+    }
+
+    public String checkApplyActions(int actionID, ClientActionResult result) {
+        return null;
     }
 }

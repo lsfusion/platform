@@ -1,10 +1,12 @@
 package platform.interop.form;
 
 import platform.interop.action.ClientAction;
+import platform.interop.action.ClientActionResult;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.ArrayList;
 
 public interface RemoteFormInterface extends Remote {
 
@@ -55,7 +57,11 @@ public interface RemoteFormInterface extends Remote {
 
     boolean hasSessionChanges() throws RemoteException;
 
-    String saveChanges() throws RemoteException;
+    List<? extends ClientAction> getApplyActions() throws RemoteException;
+
+    String checkApplyActions(int actionID, ClientActionResult result) throws RemoteException;
+
+    String applyChanges() throws RemoteException;
 
     void cancelChanges() throws RemoteException;
 

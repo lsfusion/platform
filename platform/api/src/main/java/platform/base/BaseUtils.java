@@ -707,6 +707,12 @@ public class BaseUtils {
         return list;
     }
 
+    public static <K> Set<K> toSetElements(K... elements) {
+        Set<K> set = new HashSet<K>();
+        Collections.addAll(set,elements);
+        return set;
+    }
+    
     public static String replicate(char character, int length) {
 
         char[] chars = new char[length];
