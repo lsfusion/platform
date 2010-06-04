@@ -6,7 +6,8 @@ public class ImportFileClientAction extends ClientAction<ImportFileClientActionR
 
     public String fileName;
 
-    public ImportFileClientAction(String fileName) {
+    public ImportFileClientAction(int ID, String fileName) {
+        super(ID);
         this.fileName = fileName;
     }
 

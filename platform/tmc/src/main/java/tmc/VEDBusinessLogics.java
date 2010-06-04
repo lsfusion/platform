@@ -1132,24 +1132,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
 
             List<ClientAction> actions = new ArrayList<ClientAction>();
-
-            ExportFileClientAction exportAction = new ExportFileClientAction("bill.txt", false, createBillTxt(remoteForm));
-
-            RuntimeClientAction runAction = new RuntimeClientAction("calc.exe", null, null);
-
-            ImportFileClientAction importAction = new ImportFileClientAction("error.txt");
-            importAction.ID = 1;
-
-            actions.add(exportAction);
-            actions.add(runAction);
-            actions.add(importAction);
-            
+            actions.add(new ExportFileClientAction("d:\\bill\\bill.txt", false, createBillTxt(remoteForm)));
+            actions.add(new ExportFileClientAction("d:\\bill\\key.txt", false, "/T"));
+            actions.add(new ImportFileClientAction(1, "d:\\bill\\error.txt"));
             return actions;
         }
 
         private String createBillTxt(RemoteForm remoteForm) {
 
-            String result = "1,30\n";
+            String result = "1,0000\n";
 
             FormData data;
 
@@ -1169,7 +1160,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             for (FormRow row : data.rows) {
 
-                result += row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePrice, objArt)));
+                result += (Double)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePrice, objArt))) / 100;
                 result += ",0";
                 result += "," + row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(articleQuantity, objArt)));
 
@@ -1177,7 +1168,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 result += "," + artName;
 
                 Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderArticleSaleSumWithDiscount, objArt)));
-                result += "," + sumPos;
+                result += "," + sumPos / 100;
                 sumDoc += sumPos;
 
                 result += "\n";
@@ -1185,17 +1176,17 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             Double sumDisc = sumDoc - (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayNoObligation, objDoc)));
             if (sumDisc > 0) {
-                result += "#," + sumDisc + "\n";
+                result += "#," + sumDisc / 100 + "\n";
             }
 
             Double sumCard = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayCard, objDoc)));
             if (sumCard != null && sumCard > 0) {
-                result += "~1," + sumCard + "\n";
+                result += "~1," + sumCard / 100 + "\n";
             }
 
             Double sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayCash, objDoc)));
             if (sumCash != null && sumCash > 0) {
-                result += sumCash + "\n"; 
+                result += sumCash / 100 + "\n"; 
             }
 
             return result;

@@ -7,6 +7,15 @@ import java.io.Serializable;
 
 public abstract class ClientAction<R extends ClientActionResult>  implements Serializable {
 
-    public int ID = 0;
+    public int ID;
+
+    protected ClientAction() {
+        this(0);
+    }
+
+    protected ClientAction(int ID) {
+        this.ID = ID;
+    }
+
     public abstract R dispatch(ClientActionDispatcher dispatcher) throws IOException;
 }
