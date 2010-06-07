@@ -92,7 +92,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
 
-            return new ImportFileClientActionResult(true, new String(fileContent));
+            return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -120,7 +120,13 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
 
-            JOptionPane.showMessageDialog(null, new String(fileContent), action.caption, JOptionPane.INFORMATION_MESSAGE);
+            String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
+            if (action.multiplier > 0) {
+                fileText = ((Double)(Double.parseDouble(fileText) * 100)).toString();
+            }
+
+            JOptionPane.showMessageDialog(null, fileText,
+                                          action.caption, JOptionPane.INFORMATION_MESSAGE);
 
             return null;
 

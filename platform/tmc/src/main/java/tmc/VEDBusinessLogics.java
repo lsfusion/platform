@@ -1129,6 +1129,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     }
 
+    private static String CASHREGISTER_CHARSETNAME = "Cp866";
+    private static int CASHREGISTER_DELAY = 1000; 
+
     private class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
 
         private ObjectNavigator objObligation;
@@ -1154,10 +1157,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
 
             List<ClientAction> actions = new ArrayList<ClientAction>();
-            actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(remoteForm), "Cp866"));
-            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", "Cp866"));
-            actions.add(new SleepClientAction(3000));
-            actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt"));
+            actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(remoteForm), CASHREGISTER_CHARSETNAME));
+            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
+            actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+            actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME));
             return actions;
         }
 
@@ -1235,7 +1238,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Аннулировать чек", "/A"));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Продолжить печать", "/R"));
-        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt"));
+        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt", 100));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Открыть денежный ящик", "/O"));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос номера последнего чека", "/N", "bill_no.txt"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("X-отчет (сменный отчет без гашения)", "/X"));
@@ -1246,24 +1249,30 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class SimpleCashRegisterActionProperty extends ActionProperty {
 
         String command, outputFile;
+        int multiplier;
 
         private SimpleCashRegisterActionProperty(String caption, String command) {
             this(caption, command, null);
         }
 
         private SimpleCashRegisterActionProperty(String caption, String command, String outputFile) {
+            this(caption, command, outputFile, 0);
+        }
+
+        private SimpleCashRegisterActionProperty(String caption, String command, String outputFile, int multiplier) {
             super(genSID(), caption, new ValueClass[] {});
             this.command = command;
             this.outputFile = outputFile;
+            this.multiplier = multiplier;
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
 
-            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, "Cp866"));
+            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, CASHREGISTER_CHARSETNAME));
 
             if (outputFile != null) {
-                actions.add(new SleepClientAction(3000));
-                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, caption));
+                actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, caption, CASHREGISTER_CHARSETNAME, multiplier));
             }
         }
     }
