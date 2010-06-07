@@ -67,7 +67,7 @@ public class ClientDialog extends JDialog {
 
            @Override
            public boolean isDialogMode() {
-               return true;
+               return ClientDialog.this.isDialogMode();
            }
 
            @Override

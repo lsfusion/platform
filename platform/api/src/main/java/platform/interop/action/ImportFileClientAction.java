@@ -12,6 +12,6 @@ public class ImportFileClientAction extends ClientAction<ImportFileClientActionR
     }
 
     public ImportFileClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.executeImportFile(this);
+        return dispatcher.execute(this);
     }
 }

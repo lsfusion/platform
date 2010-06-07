@@ -6,6 +6,7 @@ import platform.client.Main;
 import platform.client.layout.ReportDockable;
 import platform.client.layout.ClientFormDockable;
 
+import javax.swing.*;
 import java.io.*;
 import java.nio.CharBuffer;
 import java.util.Scanner;
@@ -18,7 +19,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         this.clientNavigator = clientNavigator;
     }
 
-    public ClientActionResult executeForm(FormClientAction action) {
+    public ClientActionResult execute(FormClientAction action) {
         try {
             Main.layout.defaultStation.drop(action.isPrintForm?new ReportDockable(clientNavigator, action.remoteForm):new ClientFormDockable(clientNavigator, action.remoteForm));
         } catch (Exception e) {
@@ -27,7 +28,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         return null;
     }
 
-    public RuntimeClientActionResult executeRuntime(RuntimeClientAction action) {
+    public RuntimeClientActionResult execute(RuntimeClientAction action) {
         
         try {
 
@@ -59,13 +60,16 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public ClientActionResult executeExportFile(ExportFileClientAction action) {
+    public ClientActionResult execute(ExportFileClientAction action) {
 
         try {
 
-            FileWriter writer = new FileWriter(action.fileName);
-            writer.append(action.fileText);
-            writer.close();
+            FileOutputStream output = new FileOutputStream(action.fileName);
+            if (action.charsetName == null)
+                output.write(action.fileText.getBytes());
+            else
+                output.write(action.fileText.getBytes(action.charsetName));
+            output.close();
 
             return null;
             
@@ -74,7 +78,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         }
     }
 
-    public ImportFileClientActionResult executeImportFile(ImportFileClientAction action) {
+    public ImportFileClientActionResult execute(ImportFileClientAction action) {
 
         try {
 
@@ -93,6 +97,34 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ClientActionResult execute(SleepClientAction action) {
+        
+        try {
+            Thread.sleep(action.millis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    public ClientActionResult execute(MessageFileClientAction action) {
+
+        try {
+
+            FileInputStream fileStream = new FileInputStream(new File(action.fileName));
+
+            byte[] fileContent = new byte[fileStream.available()];
+            fileStream.read(fileContent);
+
+            JOptionPane.showMessageDialog(null, new String(fileContent), action.caption, JOptionPane.INFORMATION_MESSAGE);
+
+            return null;
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

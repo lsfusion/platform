@@ -20,6 +20,6 @@ public class RuntimeClientAction extends ClientAction<RuntimeClientActionResult>
     }
 
     public RuntimeClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.executeRuntime(this);
+        return dispatcher.execute(this);
     }
 }

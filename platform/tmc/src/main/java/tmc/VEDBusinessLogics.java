@@ -11,13 +11,18 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.data.Union;
 import platform.server.data.Time;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.view.form.client.DefaultFormView;
+import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.FormRow;
 import platform.server.view.form.*;
 import platform.server.auth.User;
@@ -539,6 +544,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // сдача/доплата
         orderSaleDiff = addDUProp(documentAggrPriceGroup, "Разница", orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
+
+        addCashRegisterProperties();
     }
 
     private LP addSupplierProperty(LP property) {
@@ -611,6 +618,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     AbstractGroup documentMoveGroup;
     AbstractGroup documentPriceGroup, documentAggrPriceGroup;
     AbstractGroup documentLogisticsGroup;
+    AbstractGroup cashRegGroup;
+    AbstractGroup cashRegOperGroup, cashRegAdminGroup;
 
     protected void initGroups() {
         allGroup = new AbstractGroup("Все");
@@ -642,6 +651,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         documentLogisticsGroup = new AbstractGroup("Логистические параметры документа");
         documentGroup.add(documentLogisticsGroup);
+
+        cashRegGroup = new AbstractGroup("Операции с ФР");
+        cashRegGroup.createContainer = false;
+        baseGroup.add(cashRegGroup);
+
+        cashRegOperGroup = new AbstractGroup("Оперативные операции с ФР");
+        cashRegGroup.add(cashRegOperGroup);
+
+        cashRegAdminGroup = new AbstractGroup("Административные операции с ФР");
+        cashRegGroup.add(cashRegAdminGroup);
     }
 
     protected void initConstraints() {
@@ -722,6 +741,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             NavigatorForm saleRetail = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(sale, 1300, true));
                 addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetail, 1310, false));
             addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(sale, 1320));
+                addNavigatorForm(new CashRegisterManagementNavigatorForm(sale, 1350));
             NavigatorForm returnSaleWholeArticle = addNavigatorForm(new ReturnSaleWholeNavigatorForm(sale, true, 1450));
                 addNavigatorForm(new ReturnSaleWholeNavigatorForm(returnSaleWholeArticle, false, 1460));
             NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(sale, true, 1475));
@@ -1123,7 +1143,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleUseObligation, objDoc, objObligation)));
-  
+
+            addPropertyView(properties, cashRegOperGroup, true);
+
             addBarcode(obligation, orderSaleUseObligation);
             addBarcode(customerCheckRetail, addPropertyObjectImplement(orderContragent, objDoc));
         }
@@ -1132,9 +1154,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
 
             List<ClientAction> actions = new ArrayList<ClientAction>();
-            actions.add(new ExportFileClientAction("d:\\bill\\bill.txt", false, createBillTxt(remoteForm)));
-            actions.add(new ExportFileClientAction("d:\\bill\\key.txt", false, "/T"));
-            actions.add(new ImportFileClientAction(1, "d:\\bill\\error.txt"));
+            actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(remoteForm), "Cp866"));
+            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", "Cp866"));
+            actions.add(new SleepClientAction(3000));
+            actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt"));
             return actions;
         }
 
@@ -1205,6 +1228,51 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
 
             return super.checkApplyActions(actionID, result);    //To change body of overridden methods use File | Settings | File Templates.
+        }
+    }
+
+    private void addCashRegisterProperties() {
+
+        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Аннулировать чек", "/A"));
+        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Продолжить печать", "/R"));
+        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt"));
+        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Открыть денежный ящик", "/O"));
+        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос номера последнего чека", "/N", "bill_no.txt"));
+        addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("X-отчет (сменный отчет без гашения)", "/X"));
+        addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Z-отчет (сменный отчет с гашением)", "/Z"));
+        addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Запрос серийного номера регистратора", "/S", "serial.txt"));
+    }
+
+    private class SimpleCashRegisterActionProperty extends ActionProperty {
+
+        String command, outputFile;
+
+        private SimpleCashRegisterActionProperty(String caption, String command) {
+            this(caption, command, null);
+        }
+
+        private SimpleCashRegisterActionProperty(String caption, String command, String outputFile) {
+            super(genSID(), caption, new ValueClass[] {});
+            this.command = command;
+            this.outputFile = outputFile;
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+
+            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, "Cp866"));
+
+            if (outputFile != null) {
+                actions.add(new SleepClientAction(3000));
+                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, caption));
+            }
+        }
+    }
+
+    private class CashRegisterManagementNavigatorForm extends NavigatorForm {
+
+        private CashRegisterManagementNavigatorForm(NavigatorElement parent, int iID) {
+            super(parent, iID, "Операции с ФР");
+            addPropertyView(properties, cashRegGroup, true);
         }
     }
 

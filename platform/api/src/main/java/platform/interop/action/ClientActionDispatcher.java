@@ -7,11 +7,15 @@ import java.io.IOException;
 // такая дебильная схема с Dispatcher'ом чтобы модульность не нарушать
 public interface ClientActionDispatcher {
 
-    public ClientActionResult executeForm(FormClientAction action);
+    public ClientActionResult execute(FormClientAction action);
 
-    public RuntimeClientActionResult executeRuntime(RuntimeClientAction action);
+    public RuntimeClientActionResult execute(RuntimeClientAction action);
 
-    public ClientActionResult executeExportFile(ExportFileClientAction action);
+    public ClientActionResult execute(ExportFileClientAction action);
 
-    public ImportFileClientActionResult executeImportFile(ImportFileClientAction action);
+    public ImportFileClientActionResult execute(ImportFileClientAction action);
+
+    public ClientActionResult execute(SleepClientAction action);
+
+    public ClientActionResult execute(MessageFileClientAction action);
 }

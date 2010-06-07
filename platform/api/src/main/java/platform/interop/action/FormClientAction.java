@@ -17,6 +17,6 @@ public class FormClientAction extends ClientAction {
     }
 
     public ClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
-        return dispatcher.executeForm(this);
+        return dispatcher.execute(this);
     }
 }
