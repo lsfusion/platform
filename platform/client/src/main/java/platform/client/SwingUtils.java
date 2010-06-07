@@ -111,18 +111,6 @@ public class SwingUtils {
 
     // приходится писать свой toString у KeyStroke, поскольку, по умолчанию, используется абсолютно кривой
     public static String getKeyStrokeCaption(KeyStroke editKey) {
-
-        String caption = editKey.toString();
-
-        if (caption.startsWith("typed"))
-            return caption.substring(6);
-
-        if (caption.startsWith("pressed"))
-            return caption.substring(8);
-
-        if (caption.startsWith("released"))
-            return caption.substring(9);
-        
-        return caption;
+        return editKey.toString().replaceAll("typed ", "").replaceAll("pressed ", "").replaceAll("released ", "");
     }
 }

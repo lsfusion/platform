@@ -181,6 +181,17 @@ public class ClientForm extends JPanel {
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 
+        // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
+        // хотя конечно идиотизм это делать таким образом
+        Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        while (comp != null && !(comp instanceof Window) && comp != this) {
+            if (comp instanceof JComponent) {
+                ClientGroupObjectImplementView groupObject = (ClientGroupObjectImplementView)((JComponent)comp).getClientProperty("groupObject");
+                if (groupObject != null && controllers.containsKey(groupObject) && controllers.get(groupObject).processKeyEvent(ks, e)) return true;
+            }
+            comp = comp.getParent();
+        }
+
         for (ClientGroupObjectImplementView groupObject : groupObjects) {
             if (controllers.get(groupObject).processKeyEvent(ks, e)) return true;
         }

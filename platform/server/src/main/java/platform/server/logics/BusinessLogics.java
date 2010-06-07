@@ -1927,8 +1927,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void addObjectActions(NavigatorForm form, ObjectNavigator object) {
-
-        form.addPropertyView(new LP<ClassPropertyInterface>(getAddObjectAction(object.baseClass))).setToDraw(object.groupTo).setForcePanel(true);
-        form.addPropertyView(new LP<ClassPropertyInterface>(getDeleteObjectAction(object.baseClass)), object);
+        form.addAddObjectView(object, getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
+        form.addDeleteObjectView(object, getDeleteObjectAction(object.baseClass));
     }
 }

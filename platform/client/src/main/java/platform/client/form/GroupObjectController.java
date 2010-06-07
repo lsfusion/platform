@@ -246,29 +246,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             }
         });
 
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK), "addObject");
-        comp.getActionMap().put("addObject", new AbstractAction() {
-
-            public void actionPerformed(ActionEvent ae) {
-                objects.get(groupObject.get(0)).addObject();
-            }
-        });
-
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK), "removeObject");
-        comp.getActionMap().put("removeObject", new AbstractAction() {
-
-            public void actionPerformed(ActionEvent ae) {
-                objects.get(groupObject.get(0)).deleteObject();
-            }
-        });
-
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.ALT_DOWN_MASK), "changeObjectClass");
-        comp.getActionMap().put("changeObjectClass", new AbstractAction() {
-
-            public void actionPerformed(ActionEvent ae) {
-                objects.get(groupObject.get(0)).classController.changeClass();
-            }
-        });
+        // вот так вот приходится делать, чтобы "узнавать" к какому GroupObject относится этот Component
+        comp.putClientProperty("groupObject", groupObject);
 
     }
 
