@@ -15,7 +15,8 @@ class TextFieldPropertyEditor extends JFormattedTextField {
         setBorder(new EmptyBorder(0, 3, 0, 0));
         setOpaque(true);
 
-        design.designComponent(this);
+        if (design != null)
+            design.designComponent(this);
     }
 
     @Override

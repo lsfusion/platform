@@ -19,7 +19,8 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
         setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
 
-        design.designComponent(this);
+        if (design != null)
+            design.designComponent(this);
 
         background = getBackground();
     }

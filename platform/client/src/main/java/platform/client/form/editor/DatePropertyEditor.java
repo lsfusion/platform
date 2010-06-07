@@ -26,7 +26,8 @@ public class DatePropertyEditor extends JDateChooser
             setDate(DateConverter.intToDate((Integer)value));
         ((JFormattedTextField)dateEditor).selectAll();
 
-        design.designComponent(this);
+        if (design != null)
+            design.designComponent(this);
     }
 
     @Override
