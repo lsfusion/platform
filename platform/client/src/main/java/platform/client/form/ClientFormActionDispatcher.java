@@ -82,9 +82,11 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
         try {
 
+            File file = new File(action.fileName);
             FileInputStream fileStream;
+
             try {
-                fileStream = new FileInputStream(new File(action.fileName));
+                fileStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
                 return new ImportFileClientActionResult(false, "");
             }
@@ -92,6 +94,8 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
             fileStream.close();
+
+            if (action.erase) file.delete();
 
             return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
 
@@ -116,11 +120,14 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
         try {
 
-            FileInputStream fileStream = new FileInputStream(new File(action.fileName));
+            File file = new File(action.fileName);
+            FileInputStream fileStream = new FileInputStream(file);
 
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
             fileStream.close();
+
+            if (action.erase) file.delete();
 
             String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
             if (action.multiplier > 0) {

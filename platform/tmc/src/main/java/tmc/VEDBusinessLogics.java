@@ -1160,7 +1160,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(remoteForm), CASHREGISTER_CHARSETNAME));
             actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
             actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-            actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME));
+            actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
             return actions;
         }
 
@@ -1272,7 +1272,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (outputFile != null) {
                 actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, caption, multiplier));
+                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, caption, multiplier));
             }
         }
     }

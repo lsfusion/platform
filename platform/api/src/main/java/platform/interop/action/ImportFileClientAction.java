@@ -7,10 +7,13 @@ public class ImportFileClientAction extends ClientAction<ImportFileClientActionR
     public String fileName;
     public String charsetName;
 
-    public ImportFileClientAction(int ID, String fileName, String charsetName) {
+    public boolean erase = false;
+
+    public ImportFileClientAction(int ID, String fileName, String charsetName, boolean erase) {
         super(ID);
         this.fileName = fileName;
         this.charsetName = charsetName;
+        this.erase = erase;
     }
 
     public ImportFileClientActionResult dispatch(ClientActionDispatcher dispatcher) throws IOException {
