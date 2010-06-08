@@ -471,27 +471,42 @@ public class DataSession extends SQLSession implements ChangesSession {
         }
     }
 
-    public String apply(final BusinessLogics<?> BL) throws SQLException {
-        // делается UpdateAggregations (для мн-ва persistent+constraints)
-        startTransaction();
+    public String check(final BusinessLogics<?> BL) throws SQLException {
+        return check(BL, new Increment(this));
+    }
 
-        Increment increment = new Increment(this);
-        Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
+    public String check(final BusinessLogics<?> BL, Increment increment) throws SQLException {
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
         for(Property<?> property : BL.getAppliedProperties()) {
             if(property.hasChanges(increment)) {
                 String constraintResult = increment.check(property);
-                if(constraintResult!=null) {
-                    // откатим транзакцию
-                    rollbackTransaction();
+                if(constraintResult!=null)
                     return constraintResult;
-                }
-
-                if(property.isStored()) // сохраним изменения в таблицы
-                    temporary.add(increment.read(Collections.<Property>singleton(property),baseClass));
             }
         }
+
+        return null;
+    }
+    
+    public String apply(final BusinessLogics<?> BL) throws SQLException {
+        // делается UpdateAggregations (для мн-ва persistent+constraints)
+        startTransaction();
+
+        Increment increment = new Increment(this);
+        String constraintsResult = check(BL, increment);
+        if (constraintsResult != null) {
+            rollbackTransaction();
+            return constraintsResult;
+        }
+
+        Collection<IncrementChangeTable> temporary = new ArrayList<IncrementChangeTable>();
+
+        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
+        for(Property<?> property : BL.getAppliedProperties())
+            if(property.hasChanges(increment))
+                if(property.isStored()) // сохраним изменения в таблицы
+                    temporary.add(increment.read(Collections.<Property>singleton(property),baseClass));
 
         // записываем в базу
         for(Collection<Property> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable,Property>(){public ImplementTable group(Property key) {return key.mapTable.table;}},

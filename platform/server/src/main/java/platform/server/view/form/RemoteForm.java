@@ -343,8 +343,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 }
     }
 
+    public String checkChanges() throws SQLException {
+        return session.check(BL);
+    }
+
     // Применение изменений
-    public String saveChanges() throws SQLException {
+    public String applyChanges() throws SQLException {
         String applyString = session.apply(BL);
         if(applyString==null) {
             refreshData();

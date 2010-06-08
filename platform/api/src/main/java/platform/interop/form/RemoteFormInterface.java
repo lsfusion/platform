@@ -61,6 +61,8 @@ public interface RemoteFormInterface extends Remote {
 
     String checkApplyActions(int actionID, ClientActionResult result) throws RemoteException;
 
+    String checkChanges() throws RemoteException;
+
     String applyChanges() throws RemoteException;
 
     void cancelChanges() throws RemoteException;

@@ -301,9 +301,17 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         return form.navigatorForm.checkApplyActions(actionID, result);
     }
 
+    public String checkChanges() {
+        try {
+            return form.checkChanges();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public String applyChanges() {
         try {
-            return form.saveChanges();
+            return form.applyChanges();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

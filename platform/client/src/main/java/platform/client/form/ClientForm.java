@@ -689,6 +689,13 @@ public class ClientForm extends JPanel {
 
                 List<? extends ClientAction> actions = remoteForm.getApplyActions();
                 if (actions != null) {
+
+                    String checkMessage = remoteForm.checkChanges();
+                    if (checkMessage != null) {
+                        Log.printFailedMessage(checkMessage);
+                        return false;
+                    }
+
                     for (ClientAction action : actions) {
                         String message = remoteForm.checkApplyActions(action.ID, action.dispatch(actionDispatcher));
                         if (message != null) {
