@@ -5,10 +5,12 @@ import platform.client.form.ClientForm;
 import platform.client.form.ClientFormLayout;
 
 import javax.swing.*;
+import java.io.IOException;
 
 public class CellController {
 
     private ClientCellView key;
+
     protected ClientCellView getKey() {
         return key;
     }
@@ -23,7 +25,7 @@ public class CellController {
     protected final ClientForm form;
 
     // форма нужна, поскольку ObjectEditor'у она нужна, чтобы создать диалог
-    protected CellController(ClientCellView ikey, final ClientForm iform) {
+    public CellController(ClientCellView ikey, final ClientForm iform) {
 
         key = ikey;
         form = iform;
@@ -64,11 +66,26 @@ public class CellController {
         return true;
     }
 
-    protected boolean cellValueChanged(Object value) {
+    public void startEditing() {
+        view.startEditing();
+    }
+
+    protected boolean cellValueChanged(Object ivalue) {
+
+        try {
+            form.changeProperty(getKey(), ivalue);
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка при изменении значения свойства", e);
+        }
+
         return true;
     }
 
-    public void startEditing() {
-        view.startEditing();
+    public void hideViews() {
+        view.setVisible(false);
+    }
+
+    public void showViews() {
+        view.setVisible(true);
     }
 }

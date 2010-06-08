@@ -4,6 +4,7 @@ import platform.client.logics.*;
 import platform.client.form.ClientForm;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ClientFormLayout;
+import platform.client.form.cell.CellController;
 
 import javax.swing.*;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.awt.event.KeyEvent;
 
 public abstract class PanelController {
 
-    final Map<ClientCellView, PanelCellController> controllers = new HashMap<ClientCellView, PanelCellController>();
+    final Map<ClientCellView, CellController> controllers = new HashMap<ClientCellView, CellController>();
 
     ClientForm form;
 
@@ -33,7 +34,7 @@ public abstract class PanelController {
 
             if(object.objectCellView.show) {
 
-                PanelCellController idController = new PanelCellController(object.objectCellView, form);
+                CellController idController = new CellController(object.objectCellView, form);
                 addGroupObjectActions(idController.getView());
                 idController.addView(formLayout);
 
@@ -42,7 +43,7 @@ public abstract class PanelController {
 
             if(object.classCellView.show) {
 
-                PanelCellController classController = new PanelCellController(object.classCellView, form);
+                CellController classController = new CellController(object.classCellView, form);
                 addGroupObjectActions(classController.getView());
                 classController.addView(formLayout);
 
@@ -60,14 +61,14 @@ public abstract class PanelController {
 
         for (ClientObjectImplementView object : logicsSupplier.getGroupObject()) {
             if(object.objectCellView.show) {
-                PanelCellController idController = controllers.get(object.objectCellView);
+                CellController idController = controllers.get(object.objectCellView);
                 if (idController != null) {
                     idController.removeView(formLayout);
                     controllers.remove(object.objectCellView);
                 }
             }
             if(object.classCellView.show) {
-                PanelCellController classController = controllers.get(object.classCellView);
+                CellController classController = controllers.get(object.classCellView);
                 if (classController != null) {
                     classController.removeView(formLayout);
                     controllers.remove(object.classCellView);
@@ -81,7 +82,7 @@ public abstract class PanelController {
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
         for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
             if(object.objectCellView.show) {
-                PanelCellController idController = controllers.get(object.objectCellView);
+                CellController idController = controllers.get(object.objectCellView);
                 if (idController != null) {
                     idController.getView().requestFocusInWindow();
                     return;
@@ -93,7 +94,7 @@ public abstract class PanelController {
 
         for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
             if(object.objectCellView.show) {
-                PanelCellController idcontroller = controllers.get(object.objectCellView);
+                CellController idcontroller = controllers.get(object.objectCellView);
                 if (idcontroller != null)
                     idcontroller.setValue(value.get(object));
             }
@@ -103,7 +104,7 @@ public abstract class PanelController {
 
         for (ClientObjectImplementView object : logicsSupplier.getGroupObject())
             if(object.classCellView.show) {
-                PanelCellController classController = controllers.get(object.classCellView);
+                CellController classController = controllers.get(object.classCellView);
                 if (classController != null)
                     classController.setValue(value.get(object));
             }
@@ -121,7 +122,7 @@ public abstract class PanelController {
 
         if (controllers.get(property) == null) {
 
-            PanelCellController propController = new PanelCellController(property, form);
+            CellController propController = new CellController(property, form);
             addGroupObjectActions(propController.getView());
             propController.addView(formLayout);
 
@@ -132,7 +133,7 @@ public abstract class PanelController {
 
     public void removeProperty(ClientPropertyView property) {
 
-        PanelCellController propController = controllers.get(property);
+        CellController propController = controllers.get(property);
         if (propController != null) {
             propController.removeView(formLayout);
             controllers.remove(property);
@@ -142,7 +143,7 @@ public abstract class PanelController {
 
     public void setPropertyValue(ClientPropertyView property, Object value) {
 
-        PanelCellController propmodel = controllers.get(property);
+        CellController propmodel = controllers.get(property);
         propmodel.setValue(value);
 
     }
