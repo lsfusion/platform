@@ -70,7 +70,8 @@ public class OrFilter extends Filter {
     }
 
     @Override
-    public boolean resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectImplement object, DataObject addObject) throws SQLException {
-        return op1.resolveAdd(session, modifier, object, addObject) || op2.resolveAdd(session, modifier, object, addObject);
+    public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectImplement object, DataObject addObject) throws SQLException {
+        op1.resolveAdd(session, modifier, object, addObject);
+        op2.resolveAdd(session, modifier, object, addObject);
     }
 }

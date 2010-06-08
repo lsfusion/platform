@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.PullExpr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
@@ -44,8 +45,8 @@ public class PropertyInterface<P extends PropertyInterface<P>> implements Proper
     // для того чтобы "попробовать" изменения (на самом деле для кэша)
     public final Expr changeExpr;
 
-    public DataChanges mapJoinDataChanges(Map<P, ? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        return new DataChanges();
+    public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        return new MapDataChanges<P>();
     }
 
     public void fill(Set<P> interfaces, Set<PropertyMapImplement<?, P>> properties) {

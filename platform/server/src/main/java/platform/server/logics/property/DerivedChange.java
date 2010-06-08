@@ -52,6 +52,6 @@ public class DerivedChange<D extends PropertyInterface, C extends PropertyInterf
             andWhere = andWhere.and(propChange.mapExpr(mapKeys, modifier, onChangeWhere).getWhere());
 
         return property.getDataChanges(new PropertyChange<C>(mapKeys, valueChanged ? value.property.getExpr(implementExprs, modifier, null): value.property.getExpr(implementExprs),
-                andWhere.and(onChangeWhere.toWhere())), null, modifier);
+                andWhere.and(onChangeWhere.toWhere())), null, modifier).changes;
     }
 }

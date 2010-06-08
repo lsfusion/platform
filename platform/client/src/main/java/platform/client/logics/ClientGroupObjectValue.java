@@ -14,7 +14,7 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObjectImplementView
 
     public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject) throws IOException {
         for (ClientObjectImplementView clientObject : clientGroupObject)
-            put(clientObject, inStream.readInt());
+            put(clientObject, BaseUtils.deserializeObject(inStream));
     }
     
     public ClientGroupObjectValue(DataInputStream inStream,ClientGroupObjectImplementView clientGroupObject,boolean nulls) throws IOException {

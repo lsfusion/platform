@@ -73,9 +73,8 @@ public class FormChanges {
         outStream.writeInt(objects.size());
         for (Map.Entry<GroupObjectImplement,Map<ObjectImplement,? extends ObjectValue>> objectValue : objects.entrySet()) {
             outStream.writeInt(objectValue.getKey().ID);
-            for (ObjectImplement object : objectValue.getKey().objects) { // именно так чтобы гарантировано в том же порядке
+            for (ObjectImplement object : objectValue.getKey().objects) // именно так чтобы гарантировано в том же порядке
                 BaseUtils.serializeObject(outStream,objectValue.getValue().get(object).getValue());
-            }
         }
 
         outStream.writeInt(classes.size()); // количество элементов в classes может быть меньше, поскольку в objects могут быть null'ы
@@ -100,7 +99,7 @@ public class FormChanges {
             outStream.writeInt(gridObject.getValue().size());
             for (Map<ObjectImplement, DataObject> groupObjectValue : gridObject.getValue())
                 for (ObjectImplement object : gridObject.getKey().objects) // именно так чтобы гарантировано в том же порядке
-                    outStream.writeInt((Integer)groupObjectValue.get(object).object);
+                    BaseUtils.serializeObject(outStream,groupObjectValue.get(object).object);
         }
 
         outStream.writeInt(gridClasses.size());
@@ -121,7 +120,7 @@ public class FormChanges {
             outStream.writeInt(gridProperty.getValue().size());
             for (Map.Entry<Map<ObjectImplement,DataObject>,Object> gridPropertyValue : gridProperty.getValue().entrySet()) {
                 for (ObjectImplement object : gridProperty.getKey().toDraw.objects) // именно так чтобы гарантировано в том же порядке
-                    outStream.writeInt((Integer) gridPropertyValue.getKey().get(object).getValue());
+                    BaseUtils.serializeObject(outStream,gridPropertyValue.getKey().get(object).getValue());
                 BaseUtils.serializeObject(outStream, gridPropertyValue.getValue());
             }
         }

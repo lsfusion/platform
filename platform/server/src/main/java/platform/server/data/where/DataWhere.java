@@ -4,12 +4,10 @@ import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.caches.ManualLazy;
+import platform.base.BaseUtils;
 
 
 abstract public class DataWhere extends ObjectWhere {
-
-    // определяет все
-    protected abstract DataWhereSet getExprFollows();
 
     public boolean directMeansFrom(AndObjectWhere where) {
         return where instanceof DataWhere && ((DataWhere)where).follow(this);
@@ -24,22 +22,20 @@ abstract public class DataWhere extends ObjectWhere {
     }
 
     public boolean follow(DataWhere dataWhere) {
-        return getFollows().contains(dataWhere);
-    }
-
-    public ObjectWhereSet calculateObjects() {
-        return new ObjectWhereSet(this);
+        return BaseUtils.hashEquals(this, dataWhere) || getFollows().contains(dataWhere);
     }
 
     // возвращает себя и все зависимости
     private DataWhereSet follows = null;
+    @ManualLazy
     public DataWhereSet getFollows() {
-        if(follows==null) {
-            follows = new DataWhereSet(getExprFollows());
-            follows.add(this);
-        }
+        if(follows==null)
+            follows = calculateFollows();
         return follows;
     }
+
+    // определяет все
+    protected abstract DataWhereSet calculateFollows();
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 

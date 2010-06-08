@@ -29,13 +29,13 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
     }
 
     @Lazy
-    public Property getConstrainedProperty() {
+    public Property getConstrainedProperty(boolean checkChange) {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
         Property constraint = DerivedProperty.createPartition(groupProperty.interfaces, DerivedProperty.<T>createStatic(true, LogicalClass.instance),
                 getMapInterfaces().values(), groupProperty.getImplement(), new HashMap<T, JoinProperty.Interface>(), Compare.NOT_EQUALS);
         constraint.caption = "cons";
-        constraint.setConstraint(true);
+        constraint.setConstraint(checkChange);
         return constraint;
     }
 
@@ -45,15 +45,15 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    public MapDataChanges<Interface<T>> getDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
 
         Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
         Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
 //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
-        DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null,modifier);
+        DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
         if(changedWhere!=null)
             getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
-        return dataChanges;
+        return new MapDataChanges<Interface<T>>(dataChanges);
     }
 
     private Expr getChangeExpr(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {

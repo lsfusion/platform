@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.server.data.expr.Expr;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
+import platform.base.BaseUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,18 +37,15 @@ public class OverrideUnionProperty extends UnionProperty {
 
     @Override
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-        U result = modifier.newChanges();
-        for(PropertyMapImplement<?, Interface> operand : operands)
-            result = result.add(operand.property.getUsedDataChanges(modifier));
-        return result;
+        return modifier.getUsedDataChanges(getDepends());
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        DataChanges result = new DataChanges();
-        for(PropertyMapImplement<?, Interface> operand : operands) {
+    public MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        MapDataChanges<Interface> result = new MapDataChanges<Interface>();
+        for(PropertyMapImplement<?, Interface> operand : BaseUtils.reverse(operands)) {
             WhereBuilder operandWhere = new WhereBuilder();
-            result = new DataChanges(result, operand.mapDataChanges(change,operandWhere,modifier));
+            result = result.add(operand.mapDataChanges(change, operandWhere, modifier));
             change = change.and(operandWhere.toWhere().not());
             if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }

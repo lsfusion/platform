@@ -3,14 +3,12 @@ package platform.server.data.expr;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.DoubleClass;
-import platform.server.classes.ActionClass;
 import platform.server.data.query.*;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.caches.hash.HashContext;
 import platform.base.BaseUtils;
@@ -97,8 +95,8 @@ public class ValueExpr extends StaticClassExpr {
         return translator.translate(this);
     }
 
-    public DataWhereSet getFollows() {
-        return new DataWhereSet();
+    public VariableExprSet calculateExprFollows() {
+        return new VariableExprSet();
     }
 
     public static ValueExpr ZERO = new ValueExpr(0, DoubleClass.instance);

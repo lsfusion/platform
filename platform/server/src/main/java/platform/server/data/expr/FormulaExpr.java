@@ -13,7 +13,6 @@ import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.HashMap;
@@ -87,7 +86,7 @@ public class FormulaExpr extends StaticClassExpr {
         return getWhere(params);
     }
 
-    public DataWhereSet getFollows() {
+    public VariableExprSet calculateExprFollows() {
         return InnerExpr.getExprFollows(params);
     }
 

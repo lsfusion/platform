@@ -6,6 +6,7 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.ObjectImplement;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.ValueExpr;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -30,4 +31,6 @@ public interface ValueClass extends RemoteClass {
     void serialize(DataOutputStream outStream) throws IOException;
 
     ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction);
+
+    ValueExpr getActionExpr(); 
 }

@@ -11,6 +11,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.SingleClassExpr;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -71,12 +72,16 @@ public class IsClassWhere extends DataWhere {
             expr.fillJoinWheres(joins,andWhere);        
     }
 
-    protected DataWhereSet getExprFollows() {
-        return expr.getFollows();
+    protected DataWhereSet calculateFollows() {
+        return new DataWhereSet(expr.getExprFollows());
+    }
+
+    public static boolean isObjectValueClass(AndClassSet set) {
+        return !(set instanceof UnknownClass || set instanceof DataClass);
     }
 
     public InnerJoins getInnerJoins() {
-        if(!(classes instanceof UnknownClass || classes instanceof DataClass))
+        if(isObjectValueClass(classes))
             return new InnerJoins(classExpr.getJoinExpr().getJoin(),this);
         return new InnerJoins(this);
     }

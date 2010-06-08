@@ -9,20 +9,22 @@ import platform.server.data.query.Query;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.TimeExpr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.type.Type;
+import platform.server.data.type.ObjectType;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.property.*;
 import platform.server.view.form.RemoteForm;
-import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
 import platform.server.classes.*;
 import platform.server.caches.hash.HashValues;
 import platform.server.caches.MapValuesIterable;
@@ -128,16 +130,16 @@ public class DataSession extends SQLSession implements ChangesSession {
 
     public final BaseClass baseClass;
     public final CustomClass namedObject;
-    public final Property<?> name;
+    public final LP<?> name;
     public final CustomClass transaction;
-    public final Property<?> date;
+    public final LP<?> date;
 
     // для отладки
     public static boolean reCalculateAggr = false;
 
     private final List<DerivedChange<?,?>> notDeterministic;
 
-    public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, Property name, CustomClass transaction, Property date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         super(adapter);
 
         this.baseClass = baseClass;
@@ -172,10 +174,6 @@ public class DataSession extends SQLSession implements ChangesSession {
         changes = SessionChanges.EMPTY;
     }
 
-    public <P extends PropertyInterface> void changeSingleProperty(Property<P> property, Modifier<? extends Changes> modifier, DataObject key, Object value) throws SQLException {
-        property.getChangeProperty(Collections.singletonMap(BaseUtils.single(property.interfaces),key)).execute(this,value,modifier,null,null);
-    }
-
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier) throws SQLException {
 
         DataObject object = new DataObject(IDTable.instance.generateID(this, IDTable.OBJECT),baseClass.unknown);
@@ -184,10 +182,10 @@ public class DataSession extends SQLSession implements ChangesSession {
         changeClass(object, customClass);
 
         if(customClass.isChild(namedObject))
-            changeSingleProperty(name,modifier,object,customClass.caption+" "+object.object);
+            name.execute(customClass.caption+" "+object.object, this, modifier, object);
 
         if(customClass.isChild(transaction))
-            changeSingleProperty(date,modifier,object,DateConverter.dateToInt(new Date()));
+            date.execute(DateConverter.dateToInt(new Date()), this, modifier, object);
 
         return object;
     }
@@ -224,33 +222,36 @@ public class DataSession extends SQLSession implements ChangesSession {
             incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
     }
 
-    public <P extends PropertyInterface> boolean execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, List<ClientAction> actions, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
         WhereBuilder changedWhere = new WhereBuilder();
-        DataChanges dataChanges = property.getDataChanges(change, changedWhere, modifier);
-        if(dataChanges.hasChanges()) {
-            for(Map.Entry<Time,TimeChangeDataProperty<P>> timeChange : property.timeChanges.entrySet()) // обновляем свойства времени изменения
-                dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
-                        BaseUtils.join(timeChange.getValue().mapInterfaces,change.mapKeys),
-                        new TimeExpr(timeChange.getKey()), changedWhere.toWhere()), null, modifier));
-            execute(dataChanges,executeForm, actions, propertyImplement);
-            return true;
-        } else
-            return false;
+        MapDataChanges<P> dataChanges = property.getDataChanges(change, changedWhere, modifier);
+        for(Map.Entry<Time,TimeChangeDataProperty<P>> timeChange : property.timeChanges.entrySet()) // обновляем свойства времени изменения
+            dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
+                    BaseUtils.join(timeChange.getValue().mapInterfaces,change.mapKeys),
+                    new TimeExpr(timeChange.getKey()), changedWhere.toWhere()), null, modifier).map(timeChange.getValue().mapInterfaces));
+        return execute(dataChanges, executeForm, mapObjects);
     }
 
 
-    private void execute(DataChanges changes, RemoteFormView executeForm, List<ClientAction> actions, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+    private <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
+
+        DataChanges dataChanges = mapChanges.changes;
 
         // если идет изменение и есть недетерменированное производное изменение зависищее от него, то придется его "выполнить"
         for(DerivedChange<?,?> derivedChange : notDeterministic) {
-            DataChanges derivedChanges = derivedChange.getDataChanges(new DataChangesModifier(modifier, changes));
+            DataChanges derivedChanges = derivedChange.getDataChanges(new DataChangesModifier(modifier, dataChanges));
             if(derivedChanges.hasChanges())
-                changes = changes.add(derivedChanges);
+                mapChanges = mapChanges.add(new MapDataChanges<P>(derivedChanges));
         }
 
-        for(int i=0;i<changes.size;i++)
-            for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : changes.getValue(i).getQuery("value").executeClasses(this, baseClass).entrySet())
-                changes.getKey(i).execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm, propertyImplement);
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        for(int i=0;i<dataChanges.size;i++)
+            for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : dataChanges.getValue(i).getQuery("value").executeClasses(this, baseClass).entrySet()) {
+                UserProperty property = dataChanges.getKey(i);
+                Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
+                property.execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm, mapInterfaces==null?null:BaseUtils.nullJoin(mapInterfaces, mapObjects));
+            }
+        return actions;
     }
 
     public ConcreteClass getCurrentClass(DataObject value) {
@@ -429,15 +430,12 @@ public class DataSession extends SQLSession implements ChangesSession {
 
             // подготовили - теперь надо сохранить в курсор и записать классы
             changeTable = changeTable.writeRows(session, changesQuery, baseClass);
+            changeTable.out(session);
 
             for(Property property : properties)
                 tables.put(property,changeTable);
 
             return changeTable;
-        }
-
-        private Expr getNameExpr(Expr expr) {
-            return session.name.getSingleExpr(this,expr);
         }
 
         public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
@@ -450,8 +448,14 @@ public class DataSession extends SQLSession implements ChangesSession {
                 changed.and(changedWhere.toWhere()); // только на измененные смотрим
 
                 // сюда надо name'ы вставить
-                for(T propertyInterface : property.interfaces)
-                   changed.properties.put("int"+propertyInterface.ID,getNameExpr(changed.mapKeys.get(propertyInterface)));
+                for(T propertyInterface : property.interfaces) {
+                    Expr nameExpr;
+                    if(property.getInterfaceType(propertyInterface) instanceof ObjectType) // иначе assert'ионы с compatible'ами нарушатся, если ключ скажем число
+                        nameExpr = session.name.getExpr(this, changed.mapKeys.get(propertyInterface));
+                    else
+                        nameExpr = CaseExpr.NULL;
+                    changed.properties.put("int"+propertyInterface.ID, nameExpr);
+                }
 
                 OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(session);
                 if(result.size()>0) {
@@ -459,7 +463,7 @@ public class DataSession extends SQLSession implements ChangesSession {
                     for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
                         String objects = "";
                         for(T propertyInterface : property.interfaces)
-                            objects = (objects.length()==0?"":objects+", ") + row.getKey().get(propertyInterface)+" "+BaseUtils.nullString((String) row.getValue().get("int"+propertyInterface.ID)).trim();
+                            objects = (objects.length()==0?"":objects+", ") + row.getKey().get(propertyInterface)+" "+BaseUtils.nullToString(row.getValue().get("int"+propertyInterface.ID)).trim();
                         resultString += "    " + objects + '\n';
                     }
 

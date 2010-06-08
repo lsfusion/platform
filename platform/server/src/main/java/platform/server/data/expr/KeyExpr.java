@@ -5,8 +5,8 @@ import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.data.where.DataWhereSet;
 import platform.server.caches.hash.HashContext;
 
 import java.util.Map;
@@ -61,8 +61,8 @@ public class KeyExpr extends VariableClassExpr {
         return translator.translate(this);
     }
 
-    public DataWhereSet getFollows() {
-        return new DataWhereSet();
+    public VariableExprSet calculateExprFollows() {
+        return new VariableExprSet(this);
     }
 
     @Override
@@ -76,5 +76,8 @@ public class KeyExpr extends VariableClassExpr {
 
     public boolean twins(AbstractSourceJoin obj) {
         return false;
+    }
+
+    public void fillFollowSet(DataWhereSet fillSet) {
     }
 }

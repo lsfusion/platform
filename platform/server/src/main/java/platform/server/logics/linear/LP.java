@@ -5,8 +5,12 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.Expr;
 import platform.server.session.DataSession;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 import platform.base.BaseUtils;
+import platform.interop.action.ClientAction;
 
 import java.util.*;
 import java.sql.SQLException;
@@ -57,18 +61,32 @@ public class LP<T extends PropertyInterface> {
                 dataProperty.derivedChange = derivedChange;
     }
 
+    private Map<T, DataObject> getMapValues(DataObject... objects) {
+        Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
+        for(int i=0;i<listInterfaces.size();i++)
+            mapValues.put(listInterfaces.get(i),objects[i]);
+        return mapValues;
+    }
+
+    public Expr getExpr(Modifier<? extends Changes> modifier, Expr... exprs) {
+        Map<T, Expr> mapExprs = new HashMap<T, Expr>();
+        for(int i=0;i<listInterfaces.size();i++)
+            mapExprs.put(listInterfaces.get(i),exprs[i]);        
+        return property.getExpr(mapExprs,modifier,null);
+    }
+
+    public Object read(SQLSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+        Map<T, DataObject> mapValues = getMapValues(objects);
+        return property.read(session, mapValues, modifier);
+    }
+
     public Object read(DataSession session, DataObject... objects) throws SQLException {
-        Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
-        for(int i=0;i<listInterfaces.size();i++)
-            mapValues.put(listInterfaces.get(i),objects[i]);
-        return property.read(session, mapValues, session.modifier);
+        return read(session, session.modifier, objects);
     }
 
-    public PropertyValueImplement getChangeProperty(DataObject... objects) throws SQLException {
-        Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
-        for(int i=0;i<listInterfaces.size();i++)
-            mapValues.put(listInterfaces.get(i),objects[i]);
-        return property.getChangeProperty(mapValues);
+    // execute'ы без Form'
+    public List<ClientAction> execute(Object value, DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+        Map<T, DataObject> mapKeys = getMapValues(objects);
+        return property.execute(mapKeys, session, value, modifier, null, null);
     }
-
 }

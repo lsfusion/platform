@@ -1,9 +1,12 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
+import platform.base.DateConverter;
 import platform.interop.Compare;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
+import platform.server.classes.StringClass;
+import platform.server.classes.DateClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -18,10 +21,7 @@ import platform.server.view.navigator.ObjectNavigator;
 import platform.server.caches.hash.HashValues;
 import platform.server.session.ChangesSession;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.Collections;
+import java.util.*;
 import java.sql.SQLException;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, PropertyInterfaceNavigator {
@@ -45,6 +45,14 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         assert !(objectClass instanceof LogicalClass && !object.equals(true));
 
         this.objectClass = objectClass;
+    }
+
+    public DataObject(String string) {
+        this(string, StringClass.get(string.length()));
+    }
+
+    public DataObject(Date date) {
+        this(DateConverter.dateToInt(date), DateClass.instance);        
     }
 
     public boolean isString(SQLSyntax syntax) {

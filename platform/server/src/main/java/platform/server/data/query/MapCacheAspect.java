@@ -24,10 +24,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.AndFormulaProperty;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
-import platform.server.session.DataChanges;
+import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
 
@@ -376,17 +373,17 @@ public class MapCacheAspect {
         }
     }
 
-    static class DataChangesResult {
-        DataChanges changes;
+    static class DataChangesResult<P extends PropertyInterface> {
+        MapDataChanges<P> changes;
         Where where;
 
-        DataChangesResult(DataChanges changes, Where where) {
+        DataChangesResult(MapDataChanges<P> changes, Where where) {
             this.changes = changes;
             this.where = where;
         }
     }
 
-    public <K extends PropertyInterface,U extends Changes<U>> DataChanges getDataChanges(Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, Modifier<U> modifier, Map<Integer,Map<DataChangesInterfaceImplement,DataChangesResult>> dataChangesCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    public <K extends PropertyInterface,U extends Changes<U>> MapDataChanges<K> getDataChanges(Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, Modifier<U> modifier, Map<Integer,Map<DataChangesInterfaceImplement,DataChangesResult>> dataChangesCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         DataChangesInterfaceImplement<K,U> implement = new DataChangesInterfaceImplement<K,U>(property,change,modifier,changedWheres!=null);
 
@@ -406,14 +403,14 @@ public class MapCacheAspect {
                     if(cache.getKey().translate(translator).equals(implement)) {
                         System.out.println("getDataChanges - cached "+property);
                         if(changedWheres!=null) changedWheres.add(cache.getValue().where.translateDirect(translator));
-                        return cache.getValue().changes.translate(translator.values);
+                        return ((DataChangesResult<K>)cache.getValue()).changes.translate(translator.values);
                     }
                 }
             }
 
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
-            DataChanges changes = (DataChanges) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
-            hashCaches.put(implement, new DataChangesResult(changes, changedWheres!=null?cacheWheres.toWhere():null));
+            MapDataChanges<K> changes = (MapDataChanges<K>) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
+            hashCaches.put(implement, new DataChangesResult<K>(changes, changedWheres!=null?cacheWheres.toWhere():null));
             System.out.println("getDataChanges - not cached "+property);
 
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());
@@ -422,7 +419,7 @@ public class MapCacheAspect {
     }
 
     // aspect который ловит getExpr'ы и оборачивает их в query, для mapKeys после чего join'ит их чтобы импользовать кэши
-    @Around("call(platform.server.session.DataChanges platform.server.logics.property.Property.getDataChanges(platform.server.session.PropertyChange,platform.server.data.where.WhereBuilder,platform.server.session.Modifier)) " +
+    @Around("call(platform.server.session.MapDataChanges platform.server.logics.property.Property.getDataChanges(platform.server.session.PropertyChange,platform.server.data.where.WhereBuilder,platform.server.session.Modifier)) " +
             "&& target(property) && args(change,changedWhere,modifier)")
     public Object callGetDataChanges(ProceedingJoinPoint thisJoinPoint, Property property, PropertyChange change, WhereBuilder changedWhere, Modifier modifier) throws Throwable {
         // сначала target в аспекте должен быть
@@ -488,6 +485,9 @@ public class MapCacheAspect {
     }
 
     public <K extends PropertyInterface,U extends Changes<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, Map<Integer, Map<ExprInterfaceImplement, ExprResult>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+
+        // здесь по идее на And не надо проверять
+        if(property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
 
         ExprInterfaceImplement<K,U> implement = new ExprInterfaceImplement<K,U>(property,joinExprs,modifier,changedWheres!=null);
 

@@ -76,7 +76,7 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
     }
 
     @Override
-    public DataChanges getDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    public MapDataChanges<Interface<T>> getDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
         // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 
@@ -87,12 +87,12 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
         Where nullWhere = propertyChange.getQuery("value").join(getGroupImplements(mapKeys, modifier, null)).getWhere().and(
                 groupProperty.getExpr(mapKeys, modifier, null).getWhere());
         if(!nullWhere.isFalse())
-            propertyChanges = new PropertyChanges(propertyChanges, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier));
+            propertyChanges = new PropertyChanges(propertyChanges, groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, nullWhere), null, modifier).changes);
 
         Expr distributeExpr = distribute.mapExpr(mapKeys, new PropertyChangesModifier(modifier, propertyChanges), null);
-        DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), null, modifier);
+        DataChanges dataChanges = groupProperty.getDataChanges(new PropertyChange<T>(mapKeys, distributeExpr, distributeExpr.getWhere().or(nullWhere)), null, modifier).changes;
         if(changedWhere!=null)
             getExpr(propertyChange.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
-        return dataChanges;
+        return new MapDataChanges<Interface<T>>(dataChanges);
     }
 }

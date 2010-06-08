@@ -7,6 +7,7 @@ import platform.base.ListPermutations;
 import platform.base.OrderedMap;
 import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.linear.LP;
@@ -14,7 +15,6 @@ import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.FormView;
-import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.view.navigator.filter.OrderViewNavigator;
@@ -334,6 +334,8 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         barcodeProperties.add(property);
     }
 
+    public ConcreteCustomClass barcodeAdd;
+
     public List<ObjectNavigator> autoActionObjects = new ArrayList<ObjectNavigator>();
     public List<PropertyObjectNavigator> autoActions = new ArrayList<PropertyObjectNavigator>();
     public void addAutoAction(ObjectNavigator object, LP action) {
@@ -342,7 +344,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
 
     public void addAutoAction(ObjectNavigator object, PropertyObjectNavigator action) {
 
-        assert action.property instanceof ActionProperty;
+//        assert action.property instanceof ActionProperty;
 
         autoActionObjects.add(object);
         autoActions.add(action);

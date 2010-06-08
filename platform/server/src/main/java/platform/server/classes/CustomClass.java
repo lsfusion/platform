@@ -6,6 +6,7 @@ import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
@@ -311,5 +312,9 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction) {
         return new CustomObjectImplement(ID, SID, this, caption, classView, addOnTransaction);
+    }
+
+    public ValueExpr getActionExpr() {
+        return new ValueExpr(0,getConcreteChildren().iterator().next());
     }
 }

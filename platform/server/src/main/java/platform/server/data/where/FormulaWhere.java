@@ -4,11 +4,9 @@ import platform.base.BaseUtils;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
 import platform.server.data.query.SourceEnumerator;
-import net.jcip.annotations.Immutable;
 
 @GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
@@ -43,17 +41,6 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
     }
 
     abstract int hashCoeff();
-
-    public ObjectWhereSet calculateObjects() {
-        if(wheres.length==0)
-            return new ObjectWhereSet();
-        else {
-            ObjectWhereSet result = new ObjectWhereSet(wheres[0].getObjects());
-            for(int i=1;i<wheres.length;i++)
-                result.addAll(wheres[i].getObjects());
-            return result;
-        }
-    }
 
     static OrObjectWhere[] not(AndObjectWhere[] wheres) {
         OrObjectWhere[] result = new OrObjectWhere[wheres.length];

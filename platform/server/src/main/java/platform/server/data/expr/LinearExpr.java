@@ -11,7 +11,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Map;
@@ -106,11 +105,11 @@ public class LinearExpr extends StaticClassExpr {
         return map.packFollowFalse(where).getExpr();
     }
 
-    public DataWhereSet getFollows() {
-        DataWhereSet[] follows = new DataWhereSet[map.size()] ; int num = 0;
+    public VariableExprSet calculateExprFollows() {
+        VariableExprSet[] follows = new VariableExprSet[map.size()] ; int num = 0;
         for(BaseExpr expr : map.keySet())
-            follows[num++] = expr.getFollows();
-        return new DataWhereSet(follows);
+            follows[num++] = expr.getExprFollows();
+        return new VariableExprSet(follows);
     }
 
     @Lazy

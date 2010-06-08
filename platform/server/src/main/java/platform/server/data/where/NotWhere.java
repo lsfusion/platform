@@ -16,10 +16,6 @@ public class NotWhere extends ObjectWhere {
         where = iWhere;
     }
 
-    public ObjectWhereSet calculateObjects() {
-        return new ObjectWhereSet(this);
-    }
-
     public boolean directMeansFrom(AndObjectWhere meanWhere) {
         return meanWhere instanceof NotWhere && where.follow(((NotWhere)meanWhere).where);
     }

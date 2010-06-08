@@ -3,9 +3,9 @@ package platform.server.data.expr.query;
 import net.jcip.annotations.Immutable;
 import platform.server.data.expr.*;
 import platform.server.data.translator.DirectTranslator;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.DataWhere;
+import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerWhere;
 import platform.server.caches.hash.HashContext;
@@ -49,7 +49,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         }
     }
 
-    public DataWhereSet getJoinFollows() {
+    public VariableExprSet getJoinFollows() {
         return InnerExpr.getExprFollows(group);
     }
 
@@ -70,10 +70,10 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         return hashes.hashContext(hashContext);
     }
 
-    public boolean isIn(DataWhereSet set) {
+    public boolean isIn(VariableExprSet set) {
         for(int i=0;i<set.size;i++) {
-            DataWhere where = set.get(i);
-            if(where instanceof GroupExpr.NotNull && equals(((GroupExpr.NotNull)where).getGroupJoin()))
+            VariableClassExpr expr = set.get(i);
+            if(expr instanceof GroupExpr && equals(((GroupExpr)expr).getGroupJoin()))
                 return true;
         }
         return false;

@@ -12,9 +12,12 @@ import platform.server.data.type.Type;
 import platform.server.session.DataSession;
 import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
+import platform.server.caches.Lazy;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import net.jcip.annotations.Immutable;
 
 public abstract class AggregateProperty<T extends PropertyInterface> extends Property<T> {
 

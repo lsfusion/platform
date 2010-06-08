@@ -13,7 +13,9 @@ import platform.server.auth.User;
 import platform.server.data.*;
 import platform.server.data.query.Query;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
@@ -26,22 +28,18 @@ import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.linear.LP;
-import platform.server.session.DataSession;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 import platform.server.data.SQLSession;
-import platform.server.data.where.Where;
+import platform.server.data.translator.DirectTranslator;
+import platform.server.data.where.WhereBuilder;
 import platform.server.view.navigator.*;
 import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.CustomObjectImplement;
+import platform.server.view.form.*;
 import platform.server.classes.*;
 import platform.server.caches.GenericLazy;
 import platform.server.caches.GenericImmutable;
 
 import java.io.*;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
 import java.util.*;
@@ -85,8 +83,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         try {
-            DataObject loginObject = new DataObject(login, StringClass.get(30));
-            Integer userID = (Integer) loginToUser.read(session, loginObject);
+            Integer userID = readUser(login, session);
             if(userID==null)
                 throw new LoginException();
             String checkPassword = (String) userPassword.read(session, new DataObject(userID, user));
@@ -145,11 +142,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         DataSession session = createSession(adapter);
 
-        DataObject loginObject = new DataObject(login, StringClass.get(30));
-        Integer userID = (Integer) loginToUser.read(session, loginObject);
+        Integer userID = readUser(login, session);
         if(userID == null) {
             DataObject addObject = session.addObject(user, session.modifier);
-            userLogin.getChangeProperty(addObject).execute(loginObject, session, session.modifier, null, null, null);
+            userLogin.execute(login, session, session.modifier, addObject);
             userID = (Integer) addObject.object;
             session.apply(this);
         }
@@ -159,6 +155,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         User userObject = new User(userID);
         authPolicy.users.put(userID, userObject);
         return userObject;
+    }
+
+    private Integer readUser(String login, DataSession session) throws SQLException {
+        return (Integer) loginToUser.read(session, new DataObject(login, StringClass.get(30)));
     }
 
 
@@ -258,7 +258,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addObjectActions.get(cls);
     }
 
-    protected class AddObjectActionProperty extends ActionProperty {
+    protected static class AddObjectActionProperty extends ActionProperty {
 
         private CustomClass valueClass;
 
@@ -268,7 +268,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             this.valueClass = valueClass;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
             RemoteForm<?> form = (RemoteForm<?>)executeForm.form;
             if (valueClass.hasChildren())
                 form.addObject((ConcreteCustomClass)form.getCustomClass((Integer)value.getValue()));
@@ -277,7 +277,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected ActionClass getValueClass() {
+        protected ValueClass getValueClass() {
             if (valueClass.hasChildren())
                 return ClassActionClass.getInstance(valueClass);
             else
@@ -292,18 +292,144 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return deleteObjectActions.get(cls);
     }
 
-    protected class DeleteObjectActionProperty extends ActionProperty {
+    protected static class DeleteObjectActionProperty extends ActionProperty {
 
         public DeleteObjectActionProperty(String sID, CustomClass valueClass) {
             super(sID, "Удалить (" + valueClass + ")", new ValueClass[]{valueClass});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
-            for (ObjectImplement object : propertyImplement.getObjectImplements()) {
-                if (object instanceof CustomObjectImplement)
-                    ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)object, -1);
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+            ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)BaseUtils.singleValue(mapObjects), -1);
+        }
+    }
+
+    private static class ShiftActionProperty<P extends PropertyInterface> extends ActionProperty {
+
+         // map этого свойства на переданное
+         final Map<P, ClassPropertyInterface> mapInterfaces;
+         final Property<P> property;
+         LP<?> reverse;
+
+         // дебилизм из-за конструкторов
+         private ShiftActionProperty(String sID, String caption, Property<P> property, LP<?> reverse, ValueClass... classes) {
+             super(sID, caption, classes);
+
+             this.property = property;
+             this.reverse = reverse;
+
+             List<ClassPropertyInterface> listInterfaces = new ArrayList<ClassPropertyInterface>(interfaces);
+             int size = 0;
+             mapInterfaces = new HashMap<P, ClassPropertyInterface>();
+             for(P interfaceClass : property.interfaces)
+                 mapInterfaces.put(interfaceClass, listInterfaces.get(size++));
+         }
+
+         @Override
+         protected ValueClass getValueClass() {
+             return LogicalClass.instance;
+         }
+
+         // не должен вызываться если getDataChanges прописан
+         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+             // в value недостающий интерфейс
+             RemoteForm<?> remoteForm = executeForm.form;
+
+             boolean reverseChange = (reverse.read(remoteForm.session, remoteForm)!=null);
+             if(reverseChange) // собсно для этого и делается, иначе можно было бы просто ifElse разными shift'ами сделать
+                 reverse.execute(null, remoteForm.session, remoteForm);
+
+             Map<P, DataObject> shiftKeys = BaseUtils.join(mapInterfaces, keys);
+             Object incrementValue = ((IntegralClass) property.getType()).shift(property.read(remoteForm.session, shiftKeys, remoteForm), reverseChange);
+             actions.addAll(property.execute(shiftKeys, remoteForm.session, incrementValue, remoteForm, executeForm, BaseUtils.nullJoin(mapInterfaces, mapObjects)));
+         }
+
+/*      // без решения reverse'а не включишь этот механизм
+        @Override
+        public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+            return property.getUsedDataChanges(modifier);
+        }
+
+        @Override
+        public MapDataChanges<ClassPropertyInterface> getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+            Map<P, KeyExpr> mapKeys = BaseUtils.join(mapInterfaces, change.mapKeys);
+            return property.getDataChanges(new PropertyChange<P>(mapKeys,property.getExpr(mapKeys, modifier, null).sum(new ValueExpr(1, (IntegralClass) property.getType())), change.where), changedWhere, modifier).map(mapInterfaces);
+        }*/
+     }
+
+    // действие, инвертирующее свойство выбором одного из интерфейсов
+    private static class ToggleActionProperty<P extends PropertyInterface> extends ActionProperty {
+
+        // map этого свойства на переданное
+        final Map<P, ClassPropertyInterface> mapInterfaces;
+        final Property<P> property;
+        final P toggleInterface;
+        final ValueClass toggleClass;
+
+        // дебилизм из-за конструкторов
+        private ToggleActionProperty(String sID, String caption, Property<P> property, P toggleInterface, ValueClass toggleClass, ValueClass... classes) {
+            super(sID, caption, classes);
+
+            this.property = property;
+            this.toggleInterface = toggleInterface;
+            this.toggleClass = toggleClass;
+
+            List<ClassPropertyInterface> listInterfaces = new ArrayList<ClassPropertyInterface>(interfaces);
+            int size = 0;
+            mapInterfaces = new HashMap<P, ClassPropertyInterface>();
+            for(P interfaceClass : property.interfaces)
+                if(!interfaceClass.equals(toggleInterface))
+                    mapInterfaces.put(interfaceClass, listInterfaces.get(size++));
+        }
+
+        @Override
+        protected ValueClass getValueClass() {
+            return toggleClass;
+        }
+
+/*        @Override
+        public CustomClass getDialogClass(Map<ClassPropertyInterface, DataObject> mapValues, Map<ClassPropertyInterface, ConcreteClass> mapClasses) {
+            return (CustomClass)toggleClass;
+        }*/
+
+        // не должен вызываться если getDataChanges прописан
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+            // в value недостающий интерфейс
+            RemoteForm<?> remoteForm = executeForm.form;
+            if(value instanceof DataObject) {
+                DataObject dataObject = (DataObject) value;
+                Map<P, DataObject> shiftKeys = BaseUtils.merge(BaseUtils.join(mapInterfaces, keys), Collections.singletonMap(toggleInterface, dataObject));
+                Object incrementValue = property.read(remoteForm.session, shiftKeys, remoteForm)==null?true:null;
+                actions.addAll(property.execute(shiftKeys, remoteForm.session, incrementValue, remoteForm, executeForm, BaseUtils.nullJoin(mapInterfaces, mapObjects)));
+
+                // ищем на форме property и делаем туда seek
+/*                PropertyObjectInterface objectInterface = mapObjects.get(mapShift);
+                if(objectInterface instanceof ObjectImplement) {
+                    ObjectImplement objectImplement = (ObjectImplement)objectInterface;
+                    remoteForm.userGroupSeeks.put(objectImplement.groupTo, Collections.<OrderView,Object>singletonMap(objectImplement, dataObject.object));
+                }*/
             }
         }
+/*
+        @Override
+        public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+            return property.getUsedDataChanges(modifier);
+        }
+
+        @Override
+        public MapDataChanges<ClassPropertyInterface> getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+            Map<P, KeyExpr> mapKeys = property.getMapKeys();
+
+            // translate'им Where и Expr на новые и equals на равенство, как назад ? перенести changedWhere, сгруппировать собсно group by по keyExpr
+            DirectTranslator translator = new DirectTranslator(BaseUtils.crossJoin(BaseUtils.join(mapInterfaces, change.mapKeys), mapKeys), BaseUtils.toMap(change.getValues()));
+
+            WhereBuilder executeChanged = Property.cascadeWhere(changedWhere);
+            MapDataChanges<P> dataChanges = property.getDataChanges(new PropertyChange<P>(mapKeys,
+                    ValueExpr.TRUE.and(property.getExpr(mapKeys, modifier, null).getWhere().not()),
+                    change.where.translateDirect(translator).and(mapKeys.get(toggleInterface).compare(change.expr.translateDirect(translator), Compare.EQUALS))), executeChanged, modifier);
+            if(changedWhere!=null)
+                changedWhere.add(GroupExpr.create(BaseUtils.crossJoin(mapInterfaces, mapKeys), ValueExpr.TRUE, executeChanged.toWhere(), true, change.mapKeys).getWhere());
+            return dataChanges.map(mapInterfaces);
+        }*/
     }
 
     private class BarCodeActionProperty extends ActionProperty {
@@ -312,8 +438,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{StringClass.get(13)});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
-            ((RemoteForm<?>)executeForm.form).executeBarcode(BaseUtils.singleValue(keys), (Property<?>)barcodeToObject.property);
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+            ((RemoteForm<?>)executeForm.form).executeBarcode(BaseUtils.singleValue(keys), (Property<?>)barcodeToObject.property, (Property<?>)barcode.property);
         }
     }
 
@@ -379,7 +505,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         
         // запишем текущую дату
         DataSession session = createSession(adapter);
-        session.execute(currentDate.property, new PropertyChange<ClassPropertyInterface>(new HashMap<ClassPropertyInterface, KeyExpr>(), new DataObject(DateConverter.dateToInt(new Date()), DateClass.instance).getExpr(), Where.TRUE), session.modifier, null, null, null);
+        currentDate.execute(DateConverter.dateToInt(new Date()), session, session.modifier);
         session.apply(this);
         session.close();
     }
@@ -500,7 +626,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать
     public DataSession createSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        return new DataSession(adapter, baseClass, namedObject, name.property, transaction, date.property, notDeterministic);
+        return new DataSession(adapter, baseClass, namedObject, name, transaction, date, notDeterministic);
     }
 
     public List<DerivedChange<?,?>> notDeterministic = new ArrayList<DerivedChange<?,?>>();
@@ -823,6 +949,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addFAProp(AbstractGroup group, String caption, NavigatorForm form, ObjectNavigator... params) {
         return addProperty(group,new LP<ClassPropertyInterface>(new FormActionProperty(genSID(),caption,form,params)));
     }
+    protected <P extends PropertyInterface> LP addTAProp(LP<P> lp, int shiftInterface, ValueClass shiftClass, ValueClass... classes) {
+        return addTAProp(null, "sys", lp, shiftInterface, shiftClass, classes);
+    }
+    protected <P extends PropertyInterface> LP addTAProp(AbstractGroup group, String caption, LP<P> lp, int toggleInterface, ValueClass toggleClass, ValueClass... classes) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new ToggleActionProperty<P>(genSID(),caption,lp.property,lp.listInterfaces.get(toggleInterface-1),toggleClass,classes)));
+    }
+    protected <P extends PropertyInterface> LP addSAProp(LP<P> lp, ValueClass... classes) {
+        return addSAProp(null, "sys", lp, classes);
+    }
+    protected <P extends PropertyInterface> LP addSAProp(AbstractGroup group, String caption, LP<P> lp, ValueClass... classes) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new ShiftActionProperty<P>(genSID(),caption,lp.property,reverseBarcode,classes)));
+    }
 
     protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
@@ -1024,6 +1162,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
         return addJProp(group, genSID(), caption, mainProp, params);
+    }
+
+    protected LP addJProp(boolean implementChange, String caption, LP mainProp, Object... params) {
+        return addJProp((AbstractGroup)null, implementChange, caption, mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, boolean implementChange, String caption, LP mainProp, Object... params) {
@@ -1239,11 +1381,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <T extends PropertyInterface,P extends PropertyInterface> LP addCGProp(AbstractGroup group, String sID, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
+        return addCGProp(group, true, sID, caption, groupProp, dataProp, params);
+    }
+    protected <T extends PropertyInterface,P extends PropertyInterface> LP addCGProp(AbstractGroup group, boolean checkChange, String sID, String caption, LP<T> groupProp, LP<P> dataProp, Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         CycleGroupProperty<T,P> property = new CycleGroupProperty<T,P>(sID, caption, listImplements, groupProp.property, dataProp.property);
 
         // нужно добавить ограничение на уникальность
-        properties.add(property.getConstrainedProperty());
+        properties.add(property.getConstrainedProperty(checkChange));
 
         return mapLGProp(group, property, listImplements);
     }
@@ -1358,6 +1503,37 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addUProp(group,sID,caption,Union.SUM, params);
     }
 
+    // XOR
+    protected LP addXorUProp(LP prop1, LP prop2) {
+        return addXorUProp(null, genSID(), "sys", prop1, prop2);
+    }
+    protected LP addXorUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
+        int intNum = prop1.listInterfaces.size();
+        Object[] params = new Object[2*(1+intNum)];
+        params[0] = prop1;
+        for(int i=0;i<intNum;i++)
+            params[1+i] = i+1;
+        params[1+intNum] = prop2;
+        for(int i=0;i<intNum;i++)
+            params[2+intNum+i] = i+1;
+        return addXSUProp(group,sID,caption,addJProp(andNot1,getUParams(new LP[]{prop1,prop2},0)), addJProp(andNot1,getUParams(new LP[]{prop2,prop1},0)));
+    }
+
+    // IF и IF ELSE
+    protected LP addIfProp(LP prop, boolean not, LP ifProp, Object... params) {
+        return addIfProp(null, genSID(), "sys", prop, not, ifProp, params);
+    }
+    protected LP addIfProp(AbstractGroup group, String sID, String caption, LP prop, boolean not, LP ifProp, Object... params) {
+        return addJProp(group, sID, caption, and(not), BaseUtils.add(getUParams(new LP[]{prop},0),BaseUtils.add(new LP[]{ifProp},params)));
+    }
+
+    protected LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
+        return addIfElseUProp(null, genSID(), "sys", prop1, prop2, ifProp, params);
+    }
+    protected LP addIfElseUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
+        return addXSUProp(group,sID,caption,addIfProp(prop1, false, ifProp, params), addIfProp(prop2, true, ifProp, params));
+    }
+
     // объединение пересекающихся свойств
     protected LP addSUProp(Union unionType, LP... props) {
         return addSUProp("sys", unionType, props);
@@ -1377,11 +1553,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         assert checkSUProps.add(props);
         return addUProp(group,sID,caption,unionType,getUParams(props,(unionType==Union.SUM?1:0)));
     }
+    // объединяет заведомо непересекающиеся но не классовые свойства
+    protected LP addXSUProp(AbstractGroup group, String sID, String caption, LP... props) {
+        return addSUProp(group, sID, caption, Union.OVERRIDE, props);
+    }
 
     protected LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {
         int propNum = props.length/(1+extra);
         LP[] maxProps = Arrays.copyOfRange(props,0,propNum);
-        
+
         LP[] result = new LP[extra+1];
         int i = 0;
         do {

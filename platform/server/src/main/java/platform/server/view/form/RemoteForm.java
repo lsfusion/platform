@@ -7,7 +7,6 @@ package platform.server.view.form;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.interop.Compare;
 import platform.interop.Scroll;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientAction;
@@ -16,7 +15,6 @@ import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.KeyField;
 import platform.server.data.type.TypeSerializer;
-import platform.server.data.type.Type;
 import platform.server.classes.*;
 import platform.server.data.query.Query;
 import platform.server.data.expr.KeyExpr;
@@ -27,7 +25,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.session.*;
-import platform.server.view.form.filter.CompareFilter;
 import platform.server.view.form.filter.Filter;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
@@ -289,25 +286,28 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     // добавляет во все
-    public void addObject(ConcreteCustomClass cls) throws SQLException {
+    public DataObject addObject(ConcreteCustomClass cls) throws SQLException {
 
         DataObject addObject = createObject(cls);
-        if (addObject == null) return;
+        if (addObject == null) return addObject;
 
         for (GroupObjectImplement groupObject : groups)
             for (ObjectImplement object : groupObject.objects)
-                if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass)) {
+                if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass))
                     resolveAddObjectImplement((CustomObjectImplement)object, cls, addObject);
-                }
+
+        return addObject;
     }
 
-    public void addObject(CustomObjectImplement object, ConcreteCustomClass cls) throws SQLException {
+    public DataObject addObject(CustomObjectImplement object, ConcreteCustomClass cls) throws SQLException {
         // пока тупо в базу
 
         DataObject addObject = createObject(cls);
-        if (addObject == null) return;
+        if (addObject == null) return addObject;
 
         resolveAddObjectImplement(object, cls, addObject);
+
+        return addObject;
     }
 
     public void changeClass(CustomObjectImplement object, int classID) throws SQLException {
@@ -320,7 +320,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         dataChanged = true;
 
         // изменяем св-во
-        return property.getChangeProperty().execute(session, value, this, executeForm, property);
+        return property.execute(session, value, this, executeForm);
     }
 
     // Обновление данных
@@ -1127,7 +1127,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
-    public <P extends PropertyInterface> boolean executeBarcodeProperty(DataObject dataObject, PropertyObjectImplement<P> implement, boolean onlyValue, boolean reverse) throws SQLException {
+/*    public <P extends PropertyInterface> boolean executeBarcodeProperty(DataObject dataObject, PropertyObjectImplement<P> implement, boolean onlyValue, boolean reverse) throws SQLException {
         Property<P> property = implement.property;
         Type type = implement.getType();
         if(!onlyValue && type instanceof IncrementClass) {
@@ -1148,15 +1148,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
 
         return !implement.hasNulls(null) && implement.getChangeProperty().execute(dataObject, session, this, null, null, implement);
-    }
+    }*/
 
-    public <B extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject) throws SQLException {
+    public <B extends PropertyInterface, O extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject, Property<O> objectBarcode) throws SQLException {
 
-        PropertyValueImplement<?> reverseProperty = BL.reverseBarcode.getChangeProperty();
-        boolean reverseChange = (reverseProperty.read(session, this)!=null);
+        boolean reverseChange = (BL.reverseBarcode.read(session, this)!=null);
         if(reverseChange)
-            reverseProperty.execute(session, null, this, null, null);
-
+            BL.reverseBarcode.execute(null, session, this);
+/*
         ObjectValue value = barcodeToObject.readClasses(session, Collections.singletonMap(BaseUtils.single(barcodeToObject.interfaces), barcode), this);
         if(value instanceof DataObject) {
             DataObject dataObject = (DataObject)value;
@@ -1168,14 +1167,17 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             for(GroupObjectImplement group : groups) // просто ищем первый попавшийся объект
                 for(ObjectImplement object : group.objects)
                     if(object instanceof CustomObjectImplement && dataClass.isChild(((CustomObjectImplement)object).getGridClass())) {
+                        // сюда также можно вставить замену штрих-кода если надо
                         userGroupSeeks.put(group, Collections.<OrderView,Object>singletonMap(object, dataObject.object));
                         return;
                     }
-
-            for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем
+  */
+/*            for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем, очень хаотичная штука
                 if(executeBarcodeProperty(dataObject, property.view, true, reverseChange))
-                    return;
-        }
+                    return;*/
+/*        } else
+        if(navigatorForm.barcodeAdd != null) // если не нашли - добавляем
+            objectBarcode.getChangeProperty(Collections.singletonMap(BaseUtils.single(objectBarcode.interfaces), addObject(navigatorForm.barcodeAdd))).execute(barcode, session, this);*/
     }
 
     private void executeAutoActions(ObjectImplement object, RemoteFormView form) throws SQLException {
@@ -1184,7 +1186,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             if (object.equals(mapper.mapObject(navigatorForm.autoActionObjects.get(i)))) {
 
                 PropertyObjectImplement action = mapper.mapProperty(navigatorForm.autoActions.get(i));
-                changeProperty(action, null, form);
+                changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form);
             }
     }
 }

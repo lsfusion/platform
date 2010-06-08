@@ -4,6 +4,7 @@ import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.server.data.Table;
 import platform.server.data.where.DNFWheres;
+import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.expr.query.GroupJoin;
 import platform.server.caches.hash.HashContext;

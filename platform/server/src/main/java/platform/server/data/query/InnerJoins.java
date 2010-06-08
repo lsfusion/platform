@@ -1,11 +1,11 @@
 package platform.server.data.query;
 
-import platform.base.QuickMap;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.DNFWheres;
+import platform.base.BaseUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +39,8 @@ public class InnerJoins extends DNFWheres<InnerWhere, InnerJoins> {
         // находим "верхние" вершины - разбивая на компоненты, и соответственно or'им (все Ji.FF(вершина) and Wi) (все можно не FF все равно явно нету)
         Collection<Entry> result = new ArrayList<Entry>();
         for(int i=0;i<size;i++) {
-            InnerWhere mean = getKey(i);
             Where where = getValue(i);
+            InnerWhere mean = getKey(i);//where.getInnerJoins().singleKey(); // чтобы не было избыточных join'ов objects
 
             boolean found = false;
             // ищем кого-нибудь кого он means
@@ -67,7 +67,7 @@ public class InnerJoins extends DNFWheres<InnerWhere, InnerJoins> {
             Entry resultJoin = it.next();
             resultJoin.where = resultJoin.where.pack();
             if(resultJoin.where.isFalse())
-                it.remove();            
+                it.remove();
         }
         
         return result;

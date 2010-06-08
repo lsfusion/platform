@@ -15,8 +15,6 @@ import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 
 public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
@@ -90,11 +88,6 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         }
     }
 
-    // не пересекаются ни в одном направлении
-    static boolean decomposed(Where where1,Where where2) {
-        return where1.getObjects().depends(where2.getObjects());
-    }
-
     // системные
     static AndObjectWhere[] siblings(AndObjectWhere[] wheres,int i) {
         AndObjectWhere[] siblings = new AndObjectWhere[wheres.length-1];
@@ -123,15 +116,6 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     static Where siblingsWhere(OrObjectWhere[] wheres,int i) {
         return toWhere(siblings(wheres,i));
     }
-
-    private ObjectWhereSet objects = null;
-    @ManualLazy
-    public ObjectWhereSet getObjects() {
-        if(objects==null)
-            objects = calculateObjects();
-        return objects;
-    }
-    abstract ObjectWhereSet calculateObjects();
 
     public ClassExprWhere classWhere = null;
     @ManualLazy

@@ -2,15 +2,20 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.interop.action.ClientAction;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 import java.sql.SQLException;
 
 public class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterface> extends PropertyImplement<P,T> implements PropertyInterfaceImplement<P> {
@@ -35,16 +40,22 @@ public class PropertyMapImplement<T extends PropertyInterface,P extends Property
         return property.readClasses(session,BaseUtils.join(mapping,interfaceValues),modifier);
     }
 
-    public DataChanges mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        return property.getDataChanges(change.map(mapping), changedWhere, modifier);
+    public MapDataChanges<P> mapDataChanges(PropertyChange<P> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        return property.getDataChanges(change.map(mapping), changedWhere, modifier).map(mapping);
     }
 
-    public DataChanges mapJoinDataChanges(Map<P, ? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, modifier, changedWhere);
+    public MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        return property.getJoinDataChanges(BaseUtils.join(mapping, joinImplement), expr, where, modifier, changedWhere).map(mapping);
     }
 
-    public PropertyValueImplement mapChangeProperty(Map<P,DataObject> mapValues) {
-        return property.getChangeProperty(BaseUtils.join(mapping, mapValues));
+    public PropertyMapImplement<?,P> mapChangeImplement() {
+        return property.getChangeImplement().map(mapping);
+    }
+    public PropertyValueImplement<T> mapValues(Map<P, DataObject> mapValues) {
+        return new PropertyValueImplement<T>(property, BaseUtils.join(mapping, mapValues));        
+    }
+    public List<ClientAction> execute(Map<P,DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
+        return mapValues(keys).execute(session, value, modifier, executeForm, BaseUtils.nullJoin(mapping, mapObjects));
     }
 
     public void fill(Set<P> interfaces, Set<PropertyMapImplement<?, P>> properties) {

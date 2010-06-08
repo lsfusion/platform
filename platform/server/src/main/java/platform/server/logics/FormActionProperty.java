@@ -6,7 +6,7 @@ import platform.server.classes.ValueClass;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.ObjectNavigator;
 import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.interop.action.ClientAction;
 import platform.interop.action.FormClientAction;
 import platform.base.BaseUtils;
@@ -36,7 +36,7 @@ public class FormActionProperty extends ActionProperty {
         this.form = form;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapExecuteObjects) {
         actions.add(new FormClientAction(form.isPrintForm, executeForm.createForm(form, BaseUtils.join(mapObjects,keys)))); 
     }
 }

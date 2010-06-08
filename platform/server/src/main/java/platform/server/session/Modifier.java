@@ -25,4 +25,10 @@ public abstract class Modifier<U extends Changes<U>> {
         return result;
     }
 
+    public U getUsedDataChanges(Collection<Property> col) {
+        U result = newChanges();
+        for(Property<?> property : col)
+            result = result.add(property.getUsedDataChanges(this));
+        return result;
+    }
 }

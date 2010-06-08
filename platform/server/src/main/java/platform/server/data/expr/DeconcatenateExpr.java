@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.JoinData;
@@ -52,8 +51,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return new DeconcatenateExpr(expr.translateDirect(translator), part, baseClass);
     }
 
-    public DataWhereSet getFollows() {
-        return expr.getFollows();
+    public VariableExprSet calculateExprFollows() {
+        return expr.getExprFollows();
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {

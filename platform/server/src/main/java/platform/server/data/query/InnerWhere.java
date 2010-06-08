@@ -5,6 +5,7 @@ import platform.server.data.translator.DirectTranslator;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.DNFWheres;
+import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
 

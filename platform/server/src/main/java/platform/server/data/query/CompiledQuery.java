@@ -523,7 +523,7 @@ public class CompiledQuery<K,V> {
                 for(Map.Entry<Expr,GroupExpr> expr : exprs.entrySet())
                     propertySelect.put(queries.get(expr.getKey()),(expr.getValue().isMax()?"MAX":"SUM") + "(" + fromPropertySelect.get(expr.getKey()) +")");
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
-                        BaseUtils.toString(whereSelect," AND "),"",BaseUtils.toString(keySelect.values(),","),"") + ")";
+                        BaseUtils.toString(whereSelect," AND "),"",BaseUtils.evl(BaseUtils.toString(keySelect.values(),","),"3+2"),"") + ")";
             }
         }
 

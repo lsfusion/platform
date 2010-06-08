@@ -13,6 +13,7 @@ import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Reader;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.caches.ManualLazy;
 import platform.base.QuickMap;
 
 
@@ -30,7 +31,15 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(this);
     }
 
-    public abstract DataWhereSet getFollows();
+    protected abstract VariableExprSet calculateExprFollows();
+    private VariableExprSet exprFollows = null;
+    @ManualLazy
+    public VariableExprSet getExprFollows() {
+        if(exprFollows==null)
+            exprFollows = calculateExprFollows();
+        return exprFollows;
+    }
+
 
     public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));

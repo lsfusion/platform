@@ -27,15 +27,22 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
         return exprFJ;
     }
 
-    @Override
-    public DataWhereSet getFollows() {
-        return ((DataWhere)getWhere()).getFollows();
+    public VariableExprSet calculateExprFollows() {
+        VariableExprSet result = new VariableExprSet(getJoinFollows());
+        result.add(this);
+        return result;
     }
+
+    public abstract VariableExprSet getJoinFollows();
 
     public abstract class NotNull extends DataWhere {
 
         public InnerExpr getExpr() {
             return InnerExpr.this;
+        }
+
+        protected DataWhereSet calculateFollows() {
+            return new DataWhereSet(getJoinFollows());
         }
 
         public String getSource(CompileSource compile) {
@@ -72,7 +79,11 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
         }
     }
 
-    public static <K> DataWhereSet getExprFollows(Map<K, BaseExpr> map) {
-        return new DataWhereSet(map.values());
+    public static <K> VariableExprSet getExprFollows(Map<K, BaseExpr> map) {
+        return new VariableExprSet(map.values());
+    }
+
+    public void fillFollowSet(DataWhereSet fillSet) {
+        fillSet.add((DataWhere) getWhere());
     }
 }

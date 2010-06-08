@@ -11,7 +11,7 @@ import platform.server.data.query.Join;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 
@@ -41,11 +41,6 @@ public abstract class DataProperty extends UserProperty {
         SessionChanges session = modifier.getSession();
         return (derivedChange != null ? derivedChange.getUsedChanges(modifier) : modifier.newChanges()).addChanges(
                 session.getSessionChanges(this).add(new SessionChanges(session, ClassProperty.getValueClasses(interfaces), true)));
-    }
-
-    @Override
-    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-        return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), ClassProperty.getValueClasses(interfaces), false));
     }
 
     @Override
@@ -93,7 +88,7 @@ public abstract class DataProperty extends UserProperty {
         return value;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm, PropertyObjectImplement<?> propertyImplement) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
         session.changeProperty(this, keys, value);
     }
 

@@ -85,10 +85,10 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
     }
 
     @Override
-    public boolean resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectImplement object, DataObject addObject) throws SQLException {
+    public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectImplement object, DataObject addObject) throws SQLException {
 
         if(compare!=Compare.EQUALS)
-            return false;
+            return;
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterface, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
@@ -104,8 +104,8 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
                     mapWhere = new EqualsWhere(mapObject.getValue(),addObject.getExpr());
             changeWhere = changeWhere.and(mapWhere);
         }
-        return session.execute(property.property, new PropertyChange<P>(mapKeys,
+        session.execute(property.property, new PropertyChange<P>(mapKeys,
                             value.getExpr(object.groupTo.getClassGroup(), BaseUtils.filterKeys(mapObjects, property.getObjectImplements()), modifier), changeWhere),
-                            modifier, null, null, null);
+                            modifier, null, null);
     }
 }

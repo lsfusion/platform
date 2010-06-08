@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.JoinData;
@@ -44,8 +43,8 @@ public class ConcatenateExpr extends BaseExpr {
         return result.getExpr();
     }
 
-    public DataWhereSet getFollows() {
-        return new DataWhereSet(exprs);
+    public VariableExprSet calculateExprFollows() {
+        return new VariableExprSet(exprs);
     }
 
     public ConcatenateExpr translateDirect(DirectTranslator translator) {

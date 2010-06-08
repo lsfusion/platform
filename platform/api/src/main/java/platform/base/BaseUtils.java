@@ -39,6 +39,10 @@ public class BaseUtils {
         return true;
     }
 
+    public static <K,E,V> Map<K,V> nullJoin(Map<K,? extends E> map, Map<E,V> joinMap) {
+        return joinMap==null?null:join(map, joinMap);
+    }
+
     public static <K,E,V> Map<K,V> join(Map<K,? extends E> map, Map<E,V> joinMap) {
         Map<K,V> result = new HashMap<K, V>();
         for(Map.Entry<K,? extends E> entry : map.entrySet())
@@ -439,6 +443,10 @@ public class BaseUtils {
         return value1==null?value2:value1;
     }
 
+    public static String evl(String primary,String secondary) {
+        return (primary.length()==0?secondary:primary);
+    }
+
     public static boolean hashEquals(Object obj1,Object obj2) {
         return obj1.hashCode()==obj2.hashCode() && obj1.equals(obj2);
     }
@@ -683,11 +691,11 @@ public class BaseUtils {
             return value;
     }
 
-    public static String nullString(String name) {
+    public static String nullToString(Object name) {
         if(name==null)
             return "";
         else
-            return name;
+            return name.toString();
     }
 
     public static <K,V> Map<K,V> buildMap(Collection<K> col1, Collection<V> col2) {

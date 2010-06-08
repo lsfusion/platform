@@ -2,7 +2,6 @@ package platform.server.data.expr;
 
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -27,8 +26,8 @@ public class TimeExpr extends StaticClassExpr {
         return DoubleClass.instance;
     }
 
-    public DataWhereSet getFollows() {
-        return new DataWhereSet();
+    public VariableExprSet calculateExprFollows() {
+        return new VariableExprSet();
     }
 
     public BaseExpr translateDirect(DirectTranslator translator) {

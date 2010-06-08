@@ -17,7 +17,6 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.expr.*;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.classes.DataClass;
@@ -115,10 +114,6 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
     }
 
     public abstract class NotNull extends InnerExpr.NotNull {
-
-        protected DataWhereSet getExprFollows() {
-            return InnerExpr.getExprFollows(group);
-        }
 
         public int hashContext(HashContext hashContext) {
             return GroupExpr.this.hashContext(hashContext);

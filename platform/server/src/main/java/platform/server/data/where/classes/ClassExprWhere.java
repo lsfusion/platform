@@ -4,10 +4,13 @@ import platform.base.BaseUtils;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.where.IsClassWhere;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.*;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.UnknownClass;
 
 import java.util.Map;
 
@@ -125,15 +128,15 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return transWhere;
     }
 
-    public DataWhereSet getFollows() {
-        DataWhereSet[] follows = new DataWhereSet[wheres.length] ; int num = 0;
+    public VariableExprSet getExprFollows() {
+        VariableExprSet[] follows = new VariableExprSet[wheres.length] ; int num = 0;
         for(And<VariableClassExpr> where : wheres) {
-            DataWhereSet result = new DataWhereSet();
+            VariableExprSet result = new VariableExprSet();
             for(int i=0;i<where.size;i++)
-                result.addAll(where.getKey(i).getFollows());
+                result.addAll(where.getKey(i).getExprFollows());
             follows[num++] = result;
         }
-        return new DataWhereSet(follows);
+        return new VariableExprSet(follows);
     }
 
     public ClassExprWhere map(Map<BaseExpr, BaseExpr> map) {

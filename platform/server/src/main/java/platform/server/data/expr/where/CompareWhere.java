@@ -5,6 +5,7 @@ import platform.server.data.query.SourceEnumerator;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.data.where.*;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -41,10 +42,8 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
         operator2.fillJoinWheres(joins,andWhere);
     }
 
-    public DataWhereSet getExprFollows() {
-        DataWhereSet follows = new DataWhereSet(operator1.getFollows());
-        follows.addAll(operator2.getFollows());
-        return follows;
+    public DataWhereSet calculateFollows() {
+        return new DataWhereSet(new VariableExprSet(operator1, operator2));
     }
 
     // такой же where но без прямых сравнений

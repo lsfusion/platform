@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.DataWhereSet;
 import platform.server.data.translator.DirectTranslator;
 import platform.base.QuickMap;
 
@@ -21,4 +22,6 @@ public abstract class VariableClassExpr extends SingleClassExpr {
         assert added;
         return true;
     }
+
+    public abstract void fillFollowSet(DataWhereSet fillSet);
 }

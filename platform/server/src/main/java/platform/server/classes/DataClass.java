@@ -8,6 +8,7 @@ import platform.server.data.type.Type;
 import platform.server.data.SQLSession;
 import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
@@ -31,8 +32,8 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public abstract DataClass getCompatible(DataClass compClass);
     public abstract Object getDefaultValue();
 
-    public Object getAnyValue() {
-        return getDefaultValue();
+    public ValueExpr getActionExpr() {
+        return new ValueExpr(getDefaultValue(), this);
     }
 
     public AbstractGroup getParent() {

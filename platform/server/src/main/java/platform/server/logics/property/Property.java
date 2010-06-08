@@ -8,7 +8,6 @@ import platform.server.data.*;
 import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.DoubleClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.Query;
@@ -27,6 +26,11 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
+import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.form.PropertyObjectImplement;
+import platform.server.view.form.ObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.interop.action.ClientAction;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -246,9 +250,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public boolean isFalse = false;
     public boolean checkChange = true;
 
-    // для реляционных свойств
-    public PropertyValueImplement getChangeProperty(Map<T, DataObject> mapValues) {
-        return new PropertyValueImplement<T>(this, mapValues);                                                                              
+    public PropertyMapImplement<?,T> getChangeImplement() {
+        return new PropertyMapImplement<T,T>(this, BaseUtils.toMap(new HashSet<T>(interfaces)));
     }
 
     public Object read(SQLSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
@@ -285,8 +288,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return modifier.newChanges();
     }
     
-    public DataChanges getDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        return new DataChanges();
+    public MapDataChanges<T> getDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        return new MapDataChanges<T>();
     }
 
     public Map<T,Expr> getChangeExprs() {
@@ -301,7 +304,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     private DataChanges getDataChanges(Modifier<? extends Changes> modifier, boolean toNull) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        return getDataChanges(new PropertyChange<T>(mapKeys,toNull?CaseExpr.NULL: changeExpr,CompareWhere.compare(mapKeys, getChangeExprs())),null,modifier);
+        return getDataChanges(new PropertyChange<T>(mapKeys,toNull?CaseExpr.NULL: changeExpr,CompareWhere.compare(mapKeys, getChangeExprs())),null, modifier).changes;
     }
 
     public Modifier<? extends Changes> getChangeModifier(Modifier<? extends Changes> modifier, boolean toNull) {
@@ -313,19 +316,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return (Collection<DataProperty>)((Collection<? extends Property>)getDataChanges(defaultModifier, false).getProperties());
     }
 
-    protected DataChanges getJoinDataChanges(Map<T,? extends Expr> implementExprs, Expr expr, Where where, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    protected MapDataChanges<T> getJoinDataChanges(Map<T, ? extends Expr> implementExprs, Expr expr, Where where, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         WhereBuilder changedImplementWhere = cascadeWhere(changedWhere);
-        DataChanges result = getDataChanges(new PropertyChange<T>(mapKeys,
+        MapDataChanges<T> result = getDataChanges(new PropertyChange<T>(mapKeys,
                 GroupExpr.create(implementExprs, expr, where, true, mapKeys),
                 GroupExpr.create(implementExprs, ValueExpr.TRUE, where, true, mapKeys).getWhere()),
                 changedImplementWhere, modifier);
         if(changedWhere!=null) changedWhere.add(new Query<T,Object>(mapKeys,changedImplementWhere.toWhere()).join(implementExprs).getWhere());// нужно перемаппить назад
         return result;
-    }
-
-    public Expr getSingleExpr(Modifier<? extends Changes> modifier, Expr expr) {
-        return getExpr(Collections.singletonMap(BaseUtils.single(interfaces),expr),modifier,null);
     }
 
     public PropertyMapImplement<T,T> getImplement() {
@@ -342,4 +341,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return changed==null?null:new WhereBuilder();
     }
 
+    public List<ClientAction> execute(Map<T,DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<T, PropertyObjectInterface> mapObjects) throws SQLException {
+        return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects);
+    }
 }

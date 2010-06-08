@@ -11,6 +11,8 @@ import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.*;
+import platform.server.view.form.client.RemoteFormView;
+import platform.interop.action.ClientAction;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -94,27 +96,21 @@ public class PropertyObjectImplement<P extends PropertyInterface> extends Proper
         return false;
     }
 
-    public Map<P, DataObject> getInterfaceValues(P overrideInterface, DataObject overrideObject) {
+    public Map<P, DataObject> getInterfaceValues() {
         Map<P,DataObject> mapInterface = new HashMap<P,DataObject>();
         for(Map.Entry<P,PropertyObjectInterface> implement : mapping.entrySet())
-            if(overrideInterface!=null && implement.getKey().equals(overrideInterface))
-                mapInterface.put(overrideInterface, overrideObject);
-            else
-                mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
+            mapInterface.put(implement.getKey(),implement.getValue().getDataObject());
         return mapInterface;
     }
 
-    public Map<P, DataObject> getInterfaceValues() {
-        return getInterfaceValues(null, null);
-    }
-
     public PropertyValueImplement<?> getChangeProperty() {
-        return property.getChangeProperty(getInterfaceValues());
+        return property.getChangeImplement().mapValues(getInterfaceValues());
     }
 
-    public PropertyValueImplement<?> getChangeProperty(P overrideInterface, DataObject overrideObject) {
-        return property.getChangeProperty(getInterfaceValues(overrideInterface, overrideObject));
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm) throws SQLException {
+        return property.execute(getInterfaceValues(), session, value, modifier, executeForm, mapping);
     }
+
 
     public Expr getExpr(Set<GroupObjectImplement> classGroup, Map<ObjectImplement, ? extends Expr> classSource, Modifier<? extends Changes> modifier) throws SQLException {
 

@@ -24,7 +24,7 @@ public class DataChanges extends AbstractPropertyChanges<ClassPropertyInterface,
         super(property, change);
     }
 
-    public DataChanges(DataChanges changes1, DataChanges changes2) {
+    private DataChanges(DataChanges changes1, DataChanges changes2) {
         super(changes1, changes2);
     }
 

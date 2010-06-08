@@ -8,11 +8,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.query.*;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.translator.DirectTranslator;
@@ -27,6 +23,7 @@ import platform.server.data.where.Where;
 import platform.server.classes.BaseClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.table.ObjectTable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -172,12 +169,8 @@ public class Table implements MapKeysInterface<KeyField> {
             return platform.server.data.expr.Expr.getWhere(joins);
         }
 
-        public DataWhereSet getJoinFollows() {
+        public VariableExprSet getJoinFollows() {
             return InnerExpr.getExprFollows(joins);
-        }
-
-        protected DataWhereSet getExprFollows() {
-            return ((IsIn)getWhere()).getFollows();
         }
 
         @TwinLazy
@@ -233,8 +226,13 @@ public class Table implements MapKeysInterface<KeyField> {
             return this == o || o instanceof Join && Table.this.equals(((Join) o).getTable()) && joins.equals(((Join) o).joins);
         }
 
-        public boolean isIn(DataWhereSet set) {
-            return set.contains((DataWhere)getWhere());
+        public boolean isIn(VariableExprSet set) {
+            for(int i=0;i<set.size;i++) {
+                VariableClassExpr expr = set.get(i);
+                if(expr instanceof Expr && equals(((Expr)expr).getJoin()))
+                    return true;
+            }
+            return false;
         }
 
         @Override
@@ -281,8 +279,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.translateQuery(translator).getWhere();
             }
 
-            protected DataWhereSet getExprFollows() {
-                return getJoinFollows();
+            protected DataWhereSet calculateFollows() {
+                return new DataWhereSet(getJoinFollows());
             }
 
             public platform.server.data.expr.Expr getFJExpr() {
@@ -366,19 +364,32 @@ public class Table implements MapKeysInterface<KeyField> {
                 return compile.getSource(this);
             }
 
-            public class NotNull extends InnerExpr.NotNull {
+            public VariableExprSet getJoinFollows() {
+                return Join.this.getJoinFollows();
+            }
 
-                protected DataWhereSet getExprFollows() {
-                    return Join.this.getExprFollows();
-                }
+            public class NotNull extends InnerExpr.NotNull {
 
                 public InnerJoins getInnerJoins() {
                     return new InnerJoins(Join.this,this);
                 }
 
+                @Override
+                protected DataWhereSet calculateFollows() {
+                    DataWhereSet result = new DataWhereSet(super.calculateFollows());
+                    result.add((DataWhere) Join.this.getWhere());
+                    return result;
+                }
+
                 public ClassExprWhere calculateClassWhere() {
                     return propertyClasses.get(property).map(BaseUtils.merge(joins,Collections.singletonMap(property, Expr.this))).and(Join.this.getJoinsWhere().getClassWhere());
                 }
+            }
+
+            @Override
+            public void fillFollowSet(DataWhereSet fillSet) {
+                super.fillFollowSet(fillSet);
+                fillSet.add((DataWhere) Join.this.getWhere());
             }
         }
 

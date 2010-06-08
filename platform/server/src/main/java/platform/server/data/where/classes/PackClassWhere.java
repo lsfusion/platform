@@ -4,6 +4,7 @@ import platform.server.data.query.*;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
@@ -21,8 +22,8 @@ public class PackClassWhere extends DataWhere {
         assert !packWhere.isTrue();
     }
 
-    protected DataWhereSet getExprFollows() {
-        return packWhere.getFollows();
+    protected DataWhereSet calculateFollows() {
+        return new DataWhereSet(packWhere.getExprFollows());
     }
 
     public void enumerate(SourceEnumerator enumerator) {

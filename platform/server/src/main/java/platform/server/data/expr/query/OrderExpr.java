@@ -76,10 +76,6 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         super(new Query(expr, orders, partitions),group);
     }
 
-    public DataWhereSet getFollows() {
-        return InnerExpr.getExprFollows(group);
-    }
-
     // трансляция
     private OrderExpr(OrderExpr orderExpr, DirectTranslator translator) {
         super(orderExpr, translator);

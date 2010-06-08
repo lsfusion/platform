@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class LogicalClass extends IncrementClass<Boolean> {
+public class LogicalClass extends DataClass<Boolean> {
 
     public static final LogicalClass instance = new LogicalClass();
 

@@ -20,13 +20,14 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
         assert size()>0;
 
         IntegralClass type = null;
-        for(BaseExpr expr : keySet()) {
-            IntegralClass exprType = (IntegralClass) expr.getSelfType();
-            if(type==null)
-                type = exprType;
-            else
-                type = (IntegralClass)type.getCompatible(exprType);
-        }
+        for(BaseExpr expr : keySet())
+            if(!(expr instanceof KeyExpr)) {
+                IntegralClass exprType = (IntegralClass) expr.getSelfType();
+                if(type==null)
+                    type = exprType;
+                else
+                    type = (IntegralClass)type.getCompatible(exprType);
+            }
         return type;        
     }
 

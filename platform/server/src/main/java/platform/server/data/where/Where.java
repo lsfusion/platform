@@ -45,8 +45,6 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
     Map<BaseExpr,BaseExpr> getNotExprValues();
     Map<KeyExpr, BaseExpr> getKeyExprs();
 
-    ObjectWhereSet getObjects();
-
     static String TRUE_STRING = "1=1";
     static String FALSE_STRING = "1<>1";
 

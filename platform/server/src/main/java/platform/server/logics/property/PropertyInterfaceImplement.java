@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
@@ -20,7 +21,7 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> {
 
     ObjectValue read(DataSession session, Map<P, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException;
 
-    DataChanges mapJoinDataChanges(Map<P,? extends Expr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier);
+    MapDataChanges<P> mapJoinDataChanges(Map<P, KeyExpr> joinImplement, Expr expr, Where where, WhereBuilder changedWhere, Modifier<? extends Changes> modifier);
 
     void fill(Set<P> interfaces, Set<PropertyMapImplement<?,P>> properties);
     public <K extends PropertyInterface> PropertyInterfaceImplement<K> map(Map<P,K> remap);

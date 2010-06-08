@@ -86,6 +86,10 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
             enumerator.add(value);
     }
 
+    public VariableExprSet getJoinFollows() {
+        return InnerExpr.getExprFollows(group);
+    }
+
     public boolean twins(AbstractSourceJoin obj) {
         QueryExpr<K,I,J> groupExpr = (QueryExpr)obj;
 

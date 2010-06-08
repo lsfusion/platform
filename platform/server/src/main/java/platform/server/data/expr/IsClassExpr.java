@@ -11,7 +11,6 @@ import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Type;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
 import java.util.Collections;
@@ -36,8 +35,8 @@ public class IsClassExpr extends StaticClassExpr {
                 Collections.singletonMap(baseClass.table.key, expr)).getExpr(baseClass.table.objectClass);
     }
 
-    public DataWhereSet getFollows() {
-        return expr.getFollows();
+    public VariableExprSet calculateExprFollows() {
+        return expr.getExprFollows();
     }
 
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
