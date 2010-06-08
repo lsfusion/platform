@@ -1186,16 +1186,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             for (FormRow row : data.rows) {
 
-                result += (Double)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePrice, objArt))) / 100;
+                Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePrice, objArt)));
+                result += price / 100;
+
+                // отдел
                 result += ",0";
-                result += "," + row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(articleQuantity, objArt)));
+
+                Double quantity = (Double) row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(articleQuantity, objArt)));
+                result += "," + quantity;
+
+                sumDoc += price*quantity;
 
                 String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(name, objArt)))).trim();
                 result += "," + artName;
 
                 Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderArticleSaleSumWithDiscount, objArt)));
                 result += "," + sumPos / 100;
-                sumDoc += sumPos;
 
                 result += "\n";
             }
