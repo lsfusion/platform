@@ -561,10 +561,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
-        inCoupon = addXorUProp(baseGroup, "inCoupon", "Выд. купон", xorCouponArticle, addJProp(xorCouponArticleGroup, articleToGroup, 1));
+        inCoupon = addXorUProp(couponGroup, "inCoupon", "Выд. купон", xorCouponArticle, addJProp(xorCouponArticleGroup, articleToGroup, 1));
 
         couponIssueSum = addDProp(couponGroup, "couponIssueSum", "Сумма купона", DoubleClass.instance, DoubleClass.instance);
-        couponToIssueQuantity = addDUProp(addSGProp(articleQuantity, 1, addJProp(and1, addMGProp(addJProp(and1, couponIssueSum, 3, addJProp(greater2, addIfProp(orderSaleDocPrice, false, is(commitSaleCheckArticleRetail), 1), 1, 2, 3), 1, 2, 3), 1, 2), 1, 2, inCoupon, 2), 1, 2),
+
+        LP couponDocToIssueSum = addDProp("couponDocToIssueSum", "Сумма купона к выд.", DoubleClass.instance, commitSaleCheckArticleRetail, article); // здесь конечно хорошо было бы orderSaleDocPrice вытащить за скобки, но будет висячий ключ поэтому приходится пока немого извращаться
+        couponDocToIssueSum.setDerivedChange(addIfProp(addMGProp(addJProp(and1, couponIssueSum, 3, addJProp(greater2, orderSaleDocPrice, 1, 2, 3), 1, 2, 3), 1, 2), false, inCoupon, 2), true, 1, 2, orderSaleDocPrice, 1, 2);
+
+        couponToIssueQuantity = addDUProp("К выдаче", addSGProp(articleQuantity, 1, couponDocToIssueSum, 1, 2),
                                           addSGProp(addJProp(and1, addCProp(DoubleClass.instance, 1), addIfProp(issueObligation, false, is(coupon), 2), 1, 2), 1, obligationSum, 2));
         addConstraint(addJProp("Кол-во выданных купонов не соответствует требуемому", diff2, couponToIssueQuantity, 1, 2, vzero), false);
 
@@ -1686,9 +1690,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class CouponIntervalNavigatorForm extends NavigatorForm {
         protected CouponIntervalNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, (toAdd?"Ввод порога":"Интервалы"));
+            super(parent, ID, (toAdd?"Ввод интервалов цен по купонам":"Интервалы"));
 
-            ObjectNavigator objInterval = addSingleGroupObjectImplement(DoubleClass.instance, "Группа товаров", properties, couponGroup, true);
+            ObjectNavigator objInterval = addSingleGroupObjectImplement(DoubleClass.instance, "Цена товара от", properties, couponGroup, true);
             if(toAdd) {
                 objInterval.groupTo.initClassView = ClassViewType.PANEL;
                 objInterval.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
@@ -1701,7 +1705,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class CouponArticleNavigatorForm extends NavigatorForm {
         protected CouponArticleNavigatorForm(NavigatorElement parent, int ID) {
-            super(parent, ID, "Остатки по форматам");
+            super(parent, ID, "Товары с купонами");
 
             ObjectNavigator objArticleGroup = addSingleGroupObjectImplement(articleGroup, "Группа товаров", properties, baseGroup, true, couponGroup, true);
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, couponGroup, true);
