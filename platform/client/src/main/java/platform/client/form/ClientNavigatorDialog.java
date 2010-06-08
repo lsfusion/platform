@@ -33,7 +33,7 @@ public class ClientNavigatorDialog extends ClientDialog {
     }
 
     @Override
-    protected boolean isDialogMode() {
+    protected boolean isReadOnlyMode() {
         return false;
     }
 }

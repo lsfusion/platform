@@ -48,7 +48,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
             // Grid идет как единый неделимый JComponent, поэтому смысла передавать туда FormLayout нет
             grid = new GridController(groupObject.gridView, this, form);
-            if (!form.isDialogMode()) addGroupObjectActions(grid.getView());
+            addGroupObjectActions(grid.getView());
 
             grid.addView(formLayout);
 

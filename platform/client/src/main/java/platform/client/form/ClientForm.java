@@ -48,6 +48,10 @@ public class ClientForm extends JPanel {
         return false;
     }
 
+    public boolean isReadOnlyMode() {
+        return false;
+    }
+
     private int ID;
     public int getID() {
         return ID;
@@ -371,7 +375,7 @@ public class ClientForm extends JPanel {
         KeyStroke keyF5 = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
         im.put(keyF5, "f5Pressed");
 
-        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (isDialogMode()) ? 0 : InputEvent.ALT_DOWN_MASK);
+        KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (isDialogMode() && isReadOnlyMode()) ? 0 : InputEvent.ALT_DOWN_MASK);
         im.put(altEnter, "enterPressed");
 
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
