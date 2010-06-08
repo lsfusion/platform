@@ -1,6 +1,7 @@
 package platform.client;
 
 import platform.client.form.ClientForm;
+import platform.client.form.classes.ClassDialog;
 
 import javax.swing.*;
 import javax.swing.Timer;
@@ -112,5 +113,12 @@ public class SwingUtils {
     // приходится писать свой toString у KeyStroke, поскольку, по умолчанию, используется абсолютно кривой
     public static String getKeyStrokeCaption(KeyStroke editKey) {
         return editKey.toString().replaceAll("typed ", "").replaceAll("pressed ", "").replaceAll("released ", "");
+    }
+
+    // запрашивает положение объекта, чтобы он не вылезал за экран
+    public static void requestLocation(Component comp, Point point) {
+        point.x = Math.min(point.x, comp.getParent().getWidth() - comp.getWidth());
+        point.y = Math.min(point.y, comp.getParent().getHeight() - comp.getHeight());
+        comp.setLocation(point);
     }
 }

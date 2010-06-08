@@ -79,7 +79,7 @@ public class ClassDialog extends JDialog {
     public static ClientConcreteClass dialogConcreteClass(Component owner, ClientObjectImplementView object, ClientObjectClass value) {
 
         ClassDialog dialog = new ClassDialog(owner, (ClientObjectClass)object.baseClass, value);
-        dialog.setLocation(java.awt.MouseInfo.getPointerInfo().getLocation());
+        SwingUtils.requestLocation(dialog, java.awt.MouseInfo.getPointerInfo().getLocation());
         dialog.setVisible(true);
         return dialog.getChosenClass();
     }

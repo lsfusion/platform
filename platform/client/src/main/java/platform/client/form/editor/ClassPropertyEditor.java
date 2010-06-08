@@ -6,6 +6,7 @@ import platform.client.logics.ClientObjectImplementView;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
+import platform.client.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +24,7 @@ public class ClassPropertyEditor extends JComponent implements PropertyEditorCom
 
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
 
-        dialog.setLocation(new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
+        SwingUtils.requestLocation(dialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
         dialog.setVisible(true);
         return null;
     }

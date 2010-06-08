@@ -4,6 +4,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
 import platform.client.form.ClientDialog;
 import platform.client.form.ClientNavigatorDialog;
+import platform.client.SwingUtils;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
 
@@ -38,8 +39,8 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
             clientDialog.setBounds(owner.getBounds());
         } else {
             clientDialog = new ClientDialog(owner,dialog);
-            clientDialog.setLocation(new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
             clientDialog.setSize(500, 300);
+            SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
         }
 
         clientDialog.setVisible(true);

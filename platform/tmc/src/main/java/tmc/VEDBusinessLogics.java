@@ -1129,7 +1129,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 // делаем, чтобы суммы были внизу и как можно правее
                 design.get(getPropertyView(orderSalePay)).getContainer().setContainer(design.getMainContainer());
                 design.get(getPropertyView(orderSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
-                design.get(getPropertyView(orderSalePay)).getContainer().constraints.order = 200;
+                design.get(getPropertyView(orderSalePay)).getContainer().constraints.order = 6;
 
                 design.get(getPropertyView(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
                 design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1200,6 +1200,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(couponToIssueQuantity, objDoc, objIssue);
             objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
             addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(couponToIssueQuantity)));
+
+            addPropertyView(properties, cashRegOperGroup, true);
         }
 
         @Override
