@@ -252,7 +252,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP onlyPositive = addJProp(and1, 1, positive, 1);
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
 
-        LP articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article);
+        articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article);
         articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
         incStore = addCUProp("incStore", "Склад (прих.)", // generics
@@ -570,7 +570,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         couponToIssueQuantity = addDUProp("К выдаче", addSGProp(articleQuantity, 1, couponDocToIssueSum, 1, 2),
                                           addSGProp(addJProp(and1, addCProp(DoubleClass.instance, 1), addIfProp(issueObligation, false, is(coupon), 2), 1, 2), 1, obligationSum, 2));
-        addConstraint(addJProp("Кол-во выданных купонов не соответствует требуемому", diff2, couponToIssueQuantity, 1, 2, vzero), false);
+        couponToIssueConstraint = addJProp("Кол-во выданных купонов не соответствует требуемому", diff2, couponToIssueQuantity, 1, 2, vzero);
+        addConstraint(couponToIssueConstraint, false);
 
         addCashRegisterProperties();
     }
@@ -579,6 +580,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         return addSUProp(Union.SUM, property, addSGProp(property, articleStoreSupplier, 1, 2, 2));
     }
 
+    LP articleToGroup;
+    LP couponToIssueConstraint;
     LP couponIssueSum;
     LP couponToIssueQuantity;
     LP inCoupon;
@@ -1199,7 +1202,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objIssue = addSingleGroupObjectImplement(DoubleClass.instance, "Выдать", properties);
             addPropertyView(couponToIssueQuantity, objDoc, objIssue);
             objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
-            addFixedFilter(new NotNullFilterNavigator(getPropertyImplement(couponToIssueQuantity)));
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponToIssueConstraint, objDoc, objIssue)));
 
             addPropertyView(properties, cashRegOperGroup, true);
         }
@@ -1636,6 +1639,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(objAction, objArtGroup, properties, allGroup, true);
             addPropertyView(objAction, objArt, properties, allGroup, true);
 
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new CompareFilterNavigator(addPropertyObjectImplement(articleToGroup, objArt), Compare.EQUALS, objArtGroup),
+                                  "В группе",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), true);
+            addRegularFilterGroup(filterGroup);
+
             addAutoAction(objBarcode, addPropertyObjectImplement(TA, objAction, objBarcode));
         }
     }
@@ -1672,7 +1682,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(addPropertyObjectImplement(issueObligation,objDoc,objObligation)),
                                   "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)), !toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)), true);
             addRegularFilterGroup(filterGroup);
 
         }
@@ -1709,8 +1719,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected CouponArticleNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Товары с купонами");
 
-            ObjectNavigator objArticleGroup = addSingleGroupObjectImplement(articleGroup, "Группа товаров", properties, baseGroup, true, couponGroup, true);
+            ObjectNavigator objArtGroup = addSingleGroupObjectImplement(articleGroup, "Группа товаров", properties, baseGroup, true, couponGroup, true);
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, couponGroup, true);
+
+            RegularFilterGroupNavigator filterGroup = new RegularFilterGroupNavigator(IDShift(1));
+            filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new CompareFilterNavigator(addPropertyObjectImplement(articleToGroup, objArt), Compare.EQUALS, objArtGroup),
+                                  "В группе",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), true);
+            addRegularFilterGroup(filterGroup);
         }
     }
 

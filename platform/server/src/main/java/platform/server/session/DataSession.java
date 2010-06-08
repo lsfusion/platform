@@ -244,10 +244,16 @@ public class DataSession extends SQLSession implements ChangesSession {
                 mapChanges = mapChanges.add(new MapDataChanges<P>(derivedChanges));
         }
 
-        List<ClientAction> actions = new ArrayList<ClientAction>();
+        // сначала читаем изменения, чтобы не было каскадных непредсказуемых эффектов
+        Map<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> propRows = new HashMap<UserProperty, Map<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>>();
         for(int i=0;i<dataChanges.size;i++)
-            for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : dataChanges.getValue(i).getQuery("value").executeClasses(this, baseClass).entrySet()) {
-                UserProperty property = dataChanges.getKey(i);
+            propRows.put(dataChanges.getKey(i), dataChanges.getValue(i).getQuery("value").executeClasses(this, baseClass));
+
+        // потом изменяем
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        for(Map.Entry<UserProperty,Map<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>>> propRow : propRows.entrySet()) 
+            for(Map.Entry<Map<ClassPropertyInterface,DataObject>,Map<String,ObjectValue>> row : propRow.getValue().entrySet()) {
+                UserProperty property = propRow.getKey();
                 Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
                 property.execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm, mapInterfaces==null?null:BaseUtils.nullJoin(mapInterfaces, mapObjects));
             }
