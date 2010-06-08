@@ -1130,7 +1130,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private static String CASHREGISTER_CHARSETNAME = "Cp866";
-    private static int CASHREGISTER_DELAY = 1000; 
+    private static int CASHREGISTER_DELAY = 3000; 
 
     private class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
 
@@ -1272,7 +1272,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (outputFile != null) {
                 actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, caption, CASHREGISTER_CHARSETNAME, multiplier));
+                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, caption, multiplier));
             }
         }
     }

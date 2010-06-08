@@ -91,6 +91,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
+            fileStream.close();
 
             return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
 
@@ -119,6 +120,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
+            fileStream.close();
 
             String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
             if (action.multiplier > 0) {
