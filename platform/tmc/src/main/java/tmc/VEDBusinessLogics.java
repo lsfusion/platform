@@ -1173,7 +1173,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private static String CASHREGISTER_CHARSETNAME = "Cp866";
-    private static int CASHREGISTER_DELAY = 3000;
+    private static int CASHREGISTER_DELAY = 2000;
 
     private class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
 
@@ -1315,6 +1315,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt", 100));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Открыть денежный ящик", "/O"));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос номера последнего чека", "/N", "bill_no.txt"));
+        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Внесение денег", "/G"));
+        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Изъятие денег", "/P"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("X-отчет (сменный отчет без гашения)", "/X"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Z-отчет (сменный отчет с гашением)", "/Z"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Запрос серийного номера регистратора", "/S", "serial.txt"));
@@ -1346,8 +1348,32 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (outputFile != null) {
                 actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, caption, multiplier));
+                actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
+                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, true, caption, multiplier));
             }
+        }
+    }
+
+    private class IntegerCashRegisterActionProperty extends ActionProperty {
+
+        String command;
+
+        private IntegerCashRegisterActionProperty(String caption, String command) {
+            super(genSID(), caption, new ValueClass[] {});
+            this.command = command;
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+            if (value.getValue() != null && value.getValue() instanceof Double) {
+                actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command + ":" + (Double)value.getValue()/100, CASHREGISTER_CHARSETNAME));
+                actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+                actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
+            }
+        }
+
+        @Override
+        protected ValueClass getValueClass() {
+            return DoubleClass.instance;
         }
     }
 

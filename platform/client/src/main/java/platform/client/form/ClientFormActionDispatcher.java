@@ -121,7 +121,16 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
         try {
 
             File file = new File(action.fileName);
-            FileInputStream fileStream = new FileInputStream(file);
+            FileInputStream fileStream = null;
+
+            try {
+                fileStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                if (action.mustExist)
+                    throw new RuntimeException(e);
+                else
+                    return null;
+            }
 
             byte[] fileContent = new byte[fileStream.available()];
             fileStream.read(fileContent);
@@ -139,7 +148,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
             return null;
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
