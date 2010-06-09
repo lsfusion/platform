@@ -62,6 +62,8 @@ public class FormView implements ClientSerialize {
 
     public List<CellView> order = new ArrayList<CellView>();
 
+    public boolean readOnly = false;
+
     public FormView() {
     }
 
@@ -72,6 +74,9 @@ public class FormView implements ClientSerialize {
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {
+
+        outStream.writeBoolean(readOnly);
+
         List<ContainerView> orderedContainers = new ArrayList<ContainerView>();
         for(ContainerView container : containers)
             container.fillOrderList(orderedContainers);
@@ -172,6 +177,17 @@ public class FormView implements ClientSerialize {
         
         for (PropertyCellView property : getProperties(group, groupObject)) {
             setFont(property, font);
+        }
+    }
+
+    public void setFont(LP property, Font font, GroupObjectNavigator groupObject) {
+        setFont(property.property, font, groupObject);
+    }
+
+    public void setFont(Property property, Font font, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView propertyView : getProperties(property, groupObject)) {
+            setFont(propertyView, font);
         }
     }
 

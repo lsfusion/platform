@@ -72,7 +72,7 @@ public class ClientDialog extends JDialog {
 
            @Override
            public boolean isReadOnlyMode() {
-               return ClientDialog.this.isReadOnlyMode();
+               return super.isReadOnlyMode() || ClientDialog.this.isReadOnlyMode();
            }
 
            @Override

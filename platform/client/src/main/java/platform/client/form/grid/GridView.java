@@ -51,18 +51,21 @@ public abstract class GridView extends JPanel {
         queriesContainer = new JPanel();
         queriesContainer.setLayout(new BoxLayout(queriesContainer, BoxLayout.X_AXIS));
 
-//              отключим поиски пока они не работают
-//                queriesContainer.add(findView);
-//                queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
-        queriesContainer.add(filterView);
+        if (findView != null) {
+            queriesContainer.add(findView);
+            queriesContainer.add(Box.createRigidArea(new Dimension(4,0)));
+            findView.addActions(gridTable);
+        }
+
+        if (filterView != null) {
+            queriesContainer.add(filterView);
+            filterView.addActions(gridTable);
+        }
+
         queriesContainer.add(Box.createHorizontalGlue());
 
         add(pane);
         add(queriesContainer);
-
-        // делаем, чтобы по нажатию кнопок в гриде вызывались фильтры и поиски
-        findView.addActions(gridTable);
-        filterView.addActions(gridTable);
 
     }
 

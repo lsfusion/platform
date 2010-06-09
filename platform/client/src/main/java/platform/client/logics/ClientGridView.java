@@ -6,7 +6,13 @@ import java.util.Collection;
 
 public class ClientGridView extends ClientComponentView {
 
+    public boolean showFind;
+    public boolean showFilter;
+
     public ClientGridView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
         super(inStream, containers);
+
+        showFind = inStream.readBoolean();
+        showFilter = inStream.readBoolean();
     }
 }

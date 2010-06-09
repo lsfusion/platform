@@ -49,7 +49,7 @@ public class ClientForm extends JPanel {
     }
 
     public boolean isReadOnlyMode() {
-        return false;
+        return formView.readOnly;
     }
 
     private int ID;

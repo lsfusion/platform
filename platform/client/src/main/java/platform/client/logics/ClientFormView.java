@@ -10,6 +10,8 @@ import java.util.*;
 
 public class ClientFormView implements Serializable, LogicsSupplier {
 
+    public boolean readOnly = false;
+
     // нужен именно List, чтобы проще был обход по дереву
     // считается, что containers уже топологически отсортированы
     public final List<ClientContainerView> containers;
@@ -86,6 +88,8 @@ public class ClientFormView implements Serializable, LogicsSupplier {
     }
 
     public ClientFormView(DataInputStream inStream) throws IOException, ClassNotFoundException {
+
+        readOnly = inStream.readBoolean();
         /// !!!! самому вернуть ссылку на groupObject после инстанцирования
 
         containers = new ArrayList<ClientContainerView>();

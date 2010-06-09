@@ -769,26 +769,31 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 NavigatorForm deliveryWarehouseLocalBrowse = addNavigatorForm(new DeliveryWarehouseLocalNavigatorForm(deliveryWarehouseLocal, false, 1135));
             NavigatorForm deliveryImport = addNavigatorForm(new DeliveryImportNavigatorForm(delivery, true, 1150));
                 NavigatorForm deliveryImportBrowse = addNavigatorForm(new DeliveryImportNavigatorForm(deliveryImport, false, 1175));
-            NavigatorForm returnDelivery = addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(delivery, 1400, true));
-                addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(returnDelivery, 1410, false));
+            NavigatorForm returnDelivery = addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(delivery, 1190, true));
+                addNavigatorForm(new ReturnDeliveryLocalNavigatorForm(returnDelivery, 1195, false));
 
         NavigatorElement sale = new NavigatorElement(baseElement, 1200, "Управление продажами");
-            NavigatorForm saleCheckCert = addNavigatorForm(new SaleCheckCertNavigatorForm(sale, 1225, true));
-                addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1235, false));
-            NavigatorForm saleInvoiceCert = addNavigatorForm(new SaleInvoiceCertNavigatorForm(sale, 1240, true));
-                addNavigatorForm(new SaleInvoiceCertNavigatorForm(saleInvoiceCert, 1245, false));
-            NavigatorForm saleWhole = addNavigatorForm(new SaleWholeNavigatorForm(sale, 1250, true));
-                addNavigatorForm(new SaleWholeNavigatorForm(saleWhole, 1275, false));
-            NavigatorForm saleRetail = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(sale, 1300, true));
-                addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetail, 1310, false));
-            addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(sale, 1320));
-                addNavigatorForm(new CashRegisterManagementNavigatorForm(sale, 1350));
-            NavigatorForm returnSaleWholeArticle = addNavigatorForm(new ReturnSaleWholeNavigatorForm(sale, true, 1450));
-                addNavigatorForm(new ReturnSaleWholeNavigatorForm(returnSaleWholeArticle, false, 1460));
-            NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(sale, true, 1475));
-                addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1485));
-            NavigatorForm returnSaleInvoiceRetailArticle = addNavigatorForm(new ReturnSaleInvoiceRetailNavigatorForm(sale, true, 1477));
-                addNavigatorForm(new ReturnSaleInvoiceRetailNavigatorForm(returnSaleInvoiceRetailArticle, false, 1487));
+            NavigatorElement saleRetail = new NavigatorElement(sale, 1250, "Управление розничными продажами");
+                NavigatorElement saleRetailCashRegister = new NavigatorElement(saleRetail, 1300, "Управление розничными продажами через кассу");
+                    NavigatorForm commitSale = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(saleRetailCashRegister, 1310, true));
+                        addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(commitSale, 1320, false));
+                    NavigatorForm saleCheckCert = addNavigatorForm(new SaleCheckCertNavigatorForm(saleRetailCashRegister, 1325, true));
+                        addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1335, false));
+                    NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(saleRetailCashRegister, true, 1345));
+                        addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1355));
+                    addNavigatorForm(new CashRegisterManagementNavigatorForm(saleRetailCashRegister, 1365));
+                NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetail, 1400, "Управление розничными продажами по накладным");
+                    NavigatorForm saleRetailInvoiceForm = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoice, 1410, true));
+                        addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoiceForm, 1420, false));
+                    NavigatorForm saleInvoiceCert = addNavigatorForm(new SaleInvoiceCertNavigatorForm(saleRetailInvoice, 1440, true));
+                        addNavigatorForm(new SaleInvoiceCertNavigatorForm(saleInvoiceCert, 1445, false));
+                    NavigatorForm returnSaleInvoiceRetailArticle = addNavigatorForm(new ReturnSaleInvoiceRetailNavigatorForm(saleRetailInvoice, true, 1477));
+                        addNavigatorForm(new ReturnSaleInvoiceRetailNavigatorForm(returnSaleInvoiceRetailArticle, false, 1487));
+            NavigatorElement saleWhole = new NavigatorElement(sale, 1500, "Управление оптовыми продажами");
+                NavigatorForm saleWholeForm = addNavigatorForm(new SaleWholeNavigatorForm(saleWhole, 1520, true));
+                    addNavigatorForm(new SaleWholeNavigatorForm(saleWholeForm, 1540, false));
+                NavigatorForm returnSaleWholeArticle = addNavigatorForm(new ReturnSaleWholeNavigatorForm(saleWhole, 1560, true));
+                    addNavigatorForm(new ReturnSaleWholeNavigatorForm(returnSaleWholeArticle, 1580, false));
 
         NavigatorElement distribute = new NavigatorElement(baseElement, 3000, "Управление распределением");
             NavigatorForm distributeShopForm = addNavigatorForm(new DistributeShopNavigatorForm(distribute, 3100, true));
@@ -846,6 +851,26 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
 //            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objBarcode));
         }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.get(getPropertyView(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
+            design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.get(getPropertyView(reverseBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.setFont(design.get(objBarcode).objectCellView, new Font("Tahoma", Font.BOLD, 14));
+            design.setFont(reverseBarcode, new Font("Tahoma", Font.BOLD, 14));
+            design.setFont(barcodeObjectName, new Font("Tahoma", Font.BOLD, 28));
+            design.setBackground(barcodeObjectName, new Color(240,240,240));
+
+            design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
+            design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            
+            return design;
+        }
     }
 
     private class DocumentNavigatorForm extends BarcodeNavigatorForm {
@@ -875,6 +900,43 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addObjectActions(this, objDoc);
 
             addAutoAction(objBarcode, addPropertyObjectImplement(TA, objDoc, objBarcode));
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = super.createDefaultRichDesign();
+            
+            if (toAdd) {
+
+                // так конечно делать неправильно, но DocumentNavigatorForm - это первый общий класс у продажи сертификатов и кассы
+                PropertyViewNavigator payView = getPropertyView(orderSalePay);
+
+                if (payView != null) {
+                    // делаем, чтобы суммы были внизу и как можно правее
+                    design.get(payView).getContainer().setContainer(design.getMainContainer());
+                    design.get(payView).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+                    design.get(payView).getContainer().constraints.order = 6;
+                }
+
+                // устанавливаем дизайн
+                design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
+                design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
+
+                design.setFont(nameContragent, new Font("Tahoma", Font.BOLD, 24), objDoc.groupTo);
+                design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24), objDoc.groupTo);
+
+                // ставим Label сверху
+                design.setPanelLabelAbove(documentPriceGroup, true, objDoc.groupTo);
+
+                // привязываем функциональные кнопки
+                design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
+                design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+                design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
+
+            }
+
+            return design;
         }
     }
 
@@ -911,9 +973,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView form = super.createDefaultRichDesign();
-            form.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
-            return form;
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.get(objArt.groupTo).gridView.constraints.fillVertical = 3;
+            return design;
         }
 
         protected ArticleNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
@@ -1102,6 +1164,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             // чтобы в порядке нужном
             addPropertyView(changeQuantityOrder, objDoc, objArt);
+            addPropertyView(barcode, objArt);
             addPropertyView(name, objArt);
             addPropertyView(articleQuantity, objDoc, objArt);
             addPropertyView(documentFreeQuantity, objDoc, objArt);
@@ -1129,43 +1192,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (toAdd) {
 
-                // делаем, чтобы суммы были внизу и как можно правее
-                design.get(getPropertyView(orderSalePay)).getContainer().setContainer(design.getMainContainer());
-                design.get(getPropertyView(orderSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
-                design.get(getPropertyView(orderSalePay)).getContainer().constraints.order = 6;
-
-                design.get(getPropertyView(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
-                design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-                design.addIntersection(design.get(getPropertyView(reverseBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-                // устанавливаем дизайн
-                design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
-                design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
-
-                design.setFont(barcodeObjectName, new Font("Tahoma", Font.BOLD, 36));
-                design.setBackground(barcodeObjectName, new Color(240,240,240));
-
-                design.setFont(design.get(objBarcode).objectCellView, new Font("Tahoma", Font.BOLD, 18));
-                design.setFont(reverseBarcode, new Font("Tahoma", Font.BOLD, 18));
-                design.setFont(nameContragent, new Font("Tahoma", Font.BOLD, 24));
-                design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24));
-
                 // блокируем объекты для ввода
                 design.setFocusable(reverseBarcode, false);
                 design.setFocusable(false, objBarcode.groupTo);
                 design.setFocusable(false, objDoc.groupTo);
                 design.setFocusable(design.get(objBarcode).objectCellView, false);
-
-                // ставим Label сверху
-                design.setPanelLabelAbove(documentPriceGroup, true, objDoc.groupTo);
             }
-
-            // привязываем функциональные кнопки
-            design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
-            design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
-            design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-            design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
-            design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
 
             return design;
         }
@@ -1181,8 +1213,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private ObjectNavigator objCoupon;
         private ObjectNavigator objIssue;
 
-        private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID) {
-            super(parent, ID, commitSaleCheckArticleRetail, true);
+        private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
+            super(parent, ID, commitSaleCheckArticleRetail, toAdd);
 
             objObligation = addSingleGroupObjectImplement(obligation, "Сертификат", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
@@ -1212,11 +1244,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
-            if (toAdd) {
-                design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-                design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-                design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            }
+            design.get(objIssue.groupTo).gridView.constraints.fillHorizontal /= 3;
+            design.get(objIssue.groupTo).gridView.showFilter = false;
+            design.get(objCoupon.groupTo).gridView.showFilter = false;
+            design.get(objObligation.groupTo).gridView.showFilter = false;
+
+            design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.readOnly = !toAdd;
 
             return design;
         }
@@ -1512,7 +1549,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnSaleWholeNavigatorForm extends ReturnSaleNavigatorForm {
-        private ReturnSaleWholeNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
+        private ReturnSaleWholeNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, toAdd, returnSaleWhole, commitSaleWhole);
         }
     }
@@ -1696,6 +1733,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class SaleCertNavigatorForm extends DocumentNavigatorForm {
 
+        @Override
+        protected Object[] getDocumentProps() {
+            return new Object[] {nameContragent, orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+        }
+
         protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, documentClass, toAdd);
 
@@ -1717,6 +1759,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
         protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, saleCheckCert, toAdd);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.readOnly = !toAdd;
+            return design;
         }
     }
 
