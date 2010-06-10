@@ -406,7 +406,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP articleDiscount = addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
         LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
 
-        LP articleActionToGroup = addDProp(baseGroup, "articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
+        LP articleActionToGroup = addDProp("articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
+        addJProp(baseGroup, "Группа акций", name, articleActionToGroup, 1);
 
         LP articleActionHourFrom = addDProp(baseGroup, "articleActionHourFrom", "Час от", DoubleClass.instance, articleAction);
         LP articleActionHourTo = addDProp(baseGroup, "articleActionHourTo", "Час до", DoubleClass.instance, articleAction);
@@ -571,7 +572,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSalePayCard = addDProp(documentPriceGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleCheckRetail);
 
         // сдача/доплата
-        orderSaleDiff = addDUProp(documentAggrPriceGroup, "Разница", orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
+        orderSaleDiff = addDUProp(documentAggrPriceGroup, "Доплата", orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
@@ -842,8 +843,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         NavigatorElement actions = new NavigatorElement(baseElement, 7400, "Управление акциями");
             NavigatorForm saleAction = addNavigatorForm(new ActionNavigatorForm(actions, 7800));
-            NavigatorForm couponInterval = addNavigatorForm(new CouponIntervalNavigatorForm(actions, 7825, true));
-                addNavigatorForm(new CouponIntervalNavigatorForm(couponInterval, 7830, false));
+            NavigatorForm couponInterval = addNavigatorForm(new CouponIntervalNavigatorForm(actions, 7825));
             NavigatorForm couponArticle = addNavigatorForm(new CouponArticleNavigatorForm(actions, 7850));
 
         NavigatorElement balance = new NavigatorElement(baseElement, 1500, "Управление хранением");
@@ -1945,23 +1945,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class CouponIntervalNavigatorForm extends NavigatorForm {
-        protected CouponIntervalNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, (toAdd?"Ввод интервалов цен по купонам":"Интервалы"));
+        protected CouponIntervalNavigatorForm(NavigatorElement parent, int ID) {
+            super(parent, ID, "Интервалы цен по купонам");
 
-            ObjectNavigator objInterval = addSingleGroupObjectImplement(DoubleClass.instance, "Цена товара от", properties, couponGroup, true);
-            if(toAdd) {
-                objInterval.groupTo.initClassView = ClassViewType.PANEL;
-                objInterval.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
-            } else {
-                objInterval.groupTo.banClassView = ClassViewType.PANEL | ClassViewType.HIDE;
-                addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponIssueSum, objInterval)));
-            }
+            ObjectNavigator objIntervalAdd = addSingleGroupObjectImplement(DoubleClass.instance, "Цена товара от", properties, couponGroup, true);
+            objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
+            objIntervalAdd.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+
+            ObjectNavigator objInterval = addSingleGroupObjectImplement(DoubleClass.instance, "Цена товара", properties, couponGroup, true);
+            objInterval.groupTo.banClassView = ClassViewType.PANEL | ClassViewType.HIDE;
+            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponIssueSum, objInterval)));
         }
     }
 
     private class CouponArticleNavigatorForm extends NavigatorForm {
         protected CouponArticleNavigatorForm(NavigatorElement parent, int ID) {
-            super(parent, ID, "Товары с купонами");
+            super(parent, ID, "Товары по купонам");
 
             ObjectNavigator objArtGroup = addSingleGroupObjectImplement(articleGroup, "Группа товаров", properties, baseGroup, true, couponGroup, true);
             ObjectNavigator objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true, couponGroup, true);
