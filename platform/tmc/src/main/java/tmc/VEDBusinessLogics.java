@@ -317,7 +317,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addConstraint(addJProp("Кол-во возврата должно быть не меньше кол-ва самой операции", greater2, vzero, confirmedInnerQuantity, 1, 2, 3), false);
 
         // для док. \ товара \ парт. \ док. прод.   - кол-во подтв. парт. если совпадают контрагенты
-        returnInnerFreeQuantity = addJProp(documentGroup, "Макс. кол-во по возврату парт.", and(false, true), confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4, diffContragent, 1, 4);
+        returnInnerFreeQuantity = addJProp(documentGroup, "Дост. кол-во по возврату парт.", and(false, true), confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4, diffContragent, 1, 4);
         returnInnerQuantity = addDGProp(documentGroup, "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4, returnInnerFreeQuantity, 1, 2, 3, 4, date, 3, 3);
         LP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
         addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", and1, diffContragent, 1, 3, returnDocumentQuantity, 1, 2, 3), false);
@@ -348,22 +348,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(moveGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, incStore, 1, 2, 3);
         addJProp(moveGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, outStore, 1, 2, 3);
 
-        returnFreeQuantity = addSGProp(documentGroup, "Макс. кол-во к возврату", returnInnerFreeQuantity, 1, 2, 4);
+        returnFreeQuantity = addSGProp(documentGroup, "Дост. кол-во к возврату", returnInnerFreeQuantity, 1, 2, 4);
 
-        LP documentOutSklFreeQuantity = addJProp("Свободно парт. расх.", balanceSklFreeQuantity, outStore, 1, 2, 3);
+        LP documentOutSklFreeQuantity = addJProp("Дост. парт. расх.", balanceSklFreeQuantity, outStore, 1, 2, 3);
         // создаем свойства ограничения для расчета себестоимости (являются следствием addConstraint)
-        documentInnerFreeQuantity = addCUProp(documentMoveGroup, "Макс. кол-во по парт.",
+        documentInnerFreeQuantity = addCUProp(documentMoveGroup, "Дост. кол-во по парт.",
                             addJProp(and1, documentOutSklFreeQuantity, 1, 2, 3, sameContragent, 1, 3), // возврата поставщику - ограничение что кол-во своб. (всегда меньше кол-во подтв.) + условие что партии этого поставщика
                             addJProp(and1, documentOutSklFreeQuantity, 1, 2, 3, is(orderInner), 1), // прямого расхода - кол-во свободного для этого склада
                             innerBalanceCheckDB, // для инвентаризации - не больше зафиксированного количества по учету
                             addSGProp(returnInnerFreeQuantity, 1, 2, 3)); // возврата расхода  - кол-во подтв. этого контрагента
 
         sumReturnedQuantity = addSGProp(documentGroup, "Кол-во возврата", returnInnerQuantity, 1, 3);
-        sumReturnedQuantityFree = addSGProp(documentGroup, "Макс. кол-во к возврату", returnFreeQuantity, 1, 3);
+        sumReturnedQuantityFree = addSGProp(documentGroup, "Дост. кол-во к возврату", returnFreeQuantity, 1, 3);
 
         // добавляем свойства по товарам
         articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", "Кол-во операции", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, date, 3, 3);
-        documentFreeQuantity = addSGProp(documentMoveGroup, "Макс. кол-во по товару", documentInnerFreeQuantity, 1, 2);
+        documentFreeQuantity = addSGProp(documentMoveGroup, "Доступ. кол-во", documentInnerFreeQuantity, 1, 2);
 
         articleQuantity = addCUProp("Кол-во операции", outerCommitedQuantity, articleInnerQuantity);
         articleOrderQuantity = addCUProp("Заяв. кол-во операции", outerOrderQuantity, articleInnerQuantity);
@@ -1070,7 +1070,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if(!fixFilters)
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(getPropertyImplement(documentFreeQuantity)),
-                                  "Макс. кол-во",
+                                  "Дост. кол-во",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
         }
 
@@ -1148,7 +1148,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 if(!fixFilters)
                    filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                       documentFreeFilter,
-                                      "Макс. кол-во",
+                                      "Дост. кол-во",
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)),toAdd && !filled);
                 addRegularFilterGroup(filterGroup);
             }
@@ -1253,7 +1253,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, commitSaleCheckArticleRetail, toAdd);
 
-            objObligation = addSingleGroupObjectImplement(obligation, "Сертификат", properties, baseGroup, true);
+            objObligation = addSingleGroupObjectImplement(obligation, "Доп. платежи", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
             addHintsNoUpdate(obligationDocument);
             objObligation.show = false; objObligation.showClass = false; objObligation.showTree = false; objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
@@ -1261,7 +1261,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleUseObligation, objDoc, objObligation)));
 
-            objCoupon = addSingleGroupObjectImplement(coupon, "Купон", properties, baseGroup, true);
+            objCoupon = addSingleGroupObjectImplement(coupon, "Выдано", properties, baseGroup, true);
             addPropertyView(objDoc, objCoupon, properties, baseGroup, true, issueObligation);
             objCoupon.show = false; objCoupon.showClass = false; objCoupon.showTree = false; objCoupon.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
@@ -1568,7 +1568,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if(!fixFilters)
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   documentFreeFilter,
-                                  "Макс. кол-во",
+                                  "Дост. кол-во",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             addRegularFilterGroup(filterGroup);
 
@@ -1596,7 +1596,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if(!fixFilters)
                 articleFilterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   articleFreeFilter,
-                                  "Макс. кол-во",
+                                  "Дост. кол-во",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             addRegularFilterGroup(articleFilterGroup);
 

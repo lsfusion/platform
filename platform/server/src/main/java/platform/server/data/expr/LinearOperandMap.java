@@ -110,7 +110,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
     public Where getSiblingsWhere(BaseExpr expr) {
         Where result = Where.FALSE;
         for(BaseExpr sibling : keySet())
-            if(!sibling.equals(expr))
+            if(!BaseUtils.hashEquals(sibling,expr))
                 result = result.or(sibling.getWhere());    
         return result;
     }
