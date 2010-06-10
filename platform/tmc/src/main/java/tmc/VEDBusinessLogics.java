@@ -283,10 +283,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderWhole),
                 addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
                 addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleCheckRetail));
-        nameContragent = addJProp(baseGroup, true, "Контрагент", name, orderContragent, 1);
-        phoneContragent = addJProp(baseGroup, true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
-        bornContragent = addJProp(baseGroup, true, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
-        addressContragent = addJProp(baseGroup, true, "Адрес", customerCheckRetailAddress, orderContragent, 1);
+        nameContragent = addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
+        phoneContragent = addJProp(baseGroup, "Телефон", customerCheckRetailPhone, orderContragent, 1);
+        bornContragent = addJProp(baseGroup, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
+        addressContragent = addJProp(baseGroup, "Адрес", customerCheckRetailAddress, orderContragent, 1);
+
+        nameContragentImpl = addJProp(true, "Контрагент", name, orderContragent, 1);
+        phoneContragentImpl = addJProp(true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
+        bornContragentImpl = addJProp(true, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
+        addressContragentImpl = addJProp(true, "Адрес", customerCheckRetailAddress, orderContragent, 1);
 
         LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
         LP diffContragent = addJProp(diff2, orderContragent, 1, orderContragent, 2);
@@ -648,6 +653,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP customerCheckRetailPhone, customerCheckRetailBorn, customerCheckRetailAddress;
 
     LP nameContragent, phoneContragent, bornContragent, addressContragent;
+    LP nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl;
 
     LP documentLogisticsSupplied, documentLogisticsRequired, documentLogisticsRecommended;
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
@@ -958,7 +964,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     design.get(payView).getContainer().constraints.order = 6;
                 }
 
-                design.setFont(baseGroup, new Font("Tahoma", Font.BOLD, 18), objDoc.groupTo);
+                design.setFont(new Font("Tahoma", Font.BOLD, 18), objDoc.groupTo);
 
                 // устанавливаем дизайн
                 design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
@@ -1189,7 +1195,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[] {nameContragent, phoneContragent, bornContragent, addressContragent, orderClientSum,
+            return new Object[] {nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, orderClientSum,
                                  orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleDiff};
         }
 
@@ -1876,7 +1882,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[] {nameContragent, orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+            return new Object[] {nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl,
+                                 orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleDiff};
         }
 
         protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
@@ -1901,11 +1908,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected boolean isBarcodeFocusable() {
-            return false;
-        }
-
-        @Override
-        protected boolean isDocumentFocusable() {
             return false;
         }
 

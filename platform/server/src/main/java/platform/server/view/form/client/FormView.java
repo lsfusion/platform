@@ -219,6 +219,13 @@ public class FormView implements ClientSerialize {
         }
     }
 
+    public void setFont(Font font, GroupObjectNavigator groupObject) {
+
+        for (PropertyCellView property : getProperties(groupObject)) {
+            setFont(property, font);
+        }
+    }
+
     public void setFont(LP property, Font font, GroupObjectNavigator groupObject) {
         setFont(property.property, font, groupObject);
     }
