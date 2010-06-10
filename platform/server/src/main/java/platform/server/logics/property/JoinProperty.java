@@ -128,7 +128,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
 
     @Override
     public PropertyMapImplement<?,Interface> getChangeImplement() {
-        if(implement.mapping.size()==1)
+        if(implement.mapping.size()==1 && !implementChange)
             return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapChangeImplement();
         else
             return super.getChangeImplement();

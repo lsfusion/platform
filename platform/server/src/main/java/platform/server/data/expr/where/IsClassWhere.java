@@ -12,6 +12,7 @@ import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -81,9 +82,9 @@ public class IsClassWhere extends DataWhere {
     }
 
     public InnerJoins getInnerJoins() {
-        if(isObjectValueClass(classes))
-            return new InnerJoins(classExpr.getJoinExpr().getJoin(),this);
-        return new InnerJoins(this);
+        if(expr instanceof KeyExpr && isObjectValueClass(classes))
+            return new InnerJoins((KeyExpr)expr, ((ObjectClassSet)classes).getBaseClass() ,this);
+        return expr.getWhere().getInnerJoins().and(new InnerJoins(this));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());

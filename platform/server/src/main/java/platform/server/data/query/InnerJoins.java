@@ -5,6 +5,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.DNFWheres;
+import platform.server.classes.BaseClass;
 import platform.base.BaseUtils;
 
 import java.util.ArrayList;
@@ -40,12 +41,12 @@ public class InnerJoins extends DNFWheres<InnerWhere, InnerJoins> {
         Collection<Entry> result = new ArrayList<Entry>();
         for(int i=0;i<size;i++) {
             Where where = getValue(i);
-            InnerWhere mean = getKey(i);//where.getInnerJoins().singleKey(); // чтобы не было избыточных join'ов objects
+            InnerWhere mean = getKey(i);// where.getInnerJoins().singleKey(); // чтобы не было избыточных join'ов objects
 
             boolean found = false;
             // ищем кого-нибудь кого он means
             for(Entry resultJoin : result)
-                if(mean.means(resultJoin.mean)) {
+                if(mean.means(resultJoin.mean, where.getClassWhere())) {
                     resultJoin.where = resultJoin.where.or(where); //.and(whereJoin.mean.followFalse(resultJoin.mean.not())
                     found = true;
                 }
@@ -53,7 +54,7 @@ public class InnerJoins extends DNFWheres<InnerWhere, InnerJoins> {
                 // ищем все кто его means и удаляем
                 for(Iterator<Entry> it = result.iterator();it.hasNext();) {
                     Entry resultJoin = it.next();
-                    if(resultJoin.mean.means(mean)) {
+                    if(resultJoin.mean.means(mean, resultJoin.where.getClassWhere())) {
                         where = where.or(resultJoin.where);
                         it.remove();
                     }
@@ -82,6 +83,10 @@ public class InnerJoins extends DNFWheres<InnerWhere, InnerJoins> {
 
     public InnerJoins(Where where) {
         this(new InnerWhere(),where);
+    }
+
+    public InnerJoins(KeyExpr expr, BaseClass baseClass, Where where) {
+        this(new InnerWhere(expr, baseClass),where);
     }
 
     public InnerJoins(InnerJoin join,Where where) {

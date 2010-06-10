@@ -408,9 +408,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // продажа облигаций
         issueObligation = addCUProp(documentPriceGroup, "Выдать", addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation),
                                         addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
-        LP obligationIssued = addCGProp(null, "obligationIssued", "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
+        obligationIssued = addCGProp(null, "obligationIssued", "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
-        LP obligationTo = addDProp(baseGroup, "obligationTo", "До", DateClass.instance, obligation);
         LP obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
         LP obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
 
@@ -537,9 +536,21 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderSaleUseObligation = addDProp(documentPriceGroup, "orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
         LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
         obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
-        orderSaleObligationCanBeUsed = addJProp(and(false, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
+
+        LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
+
+        LP couponDelay = addDProp(baseGroup, "couponDelay", "Отсрочка купонов", DoubleClass.instance);
+        LP obligationExpiry = addCUProp(addJProp(and1, addDProp(baseGroup, "couponExpiry", "Срок действия купонов", DoubleClass.instance), is(coupon), 1), addJProp(and1, addDProp(baseGroup, "certExpiry", "Срок действия серт.", DoubleClass.instance), is(giftObligation), 1));
+
+        LP dateIssued = addJProp("Дата выдачи", date, obligationIssued, 1);
+        LP couponFromIssued = addDProp(baseGroup, "couponFromIssued", "Дата начала", DateClass.instance, coupon);
+        couponFromIssued.setDerivedChange(addJProp(addDays, 1, couponDelay), dateIssued, 1);
+        LP obligationToIssued = addDProp(baseGroup, "obligationToIssued", "Дата окончания", DateClass.instance, obligation);
+        obligationToIssued.setDerivedChange(addJProp(addDays, 1, obligationExpiry, 2), dateIssued, 1, 1);
+        orderSaleObligationCanBeUsed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
                                                     addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
-                                                    addJProp(greater2, date, 1, obligationTo, 2), 1, 2);
+                                                    addJProp(greater2, date, 1, obligationToIssued, 2), 1, 2,
+                                                    addJProp(less2, date, 1, couponFromIssued, 2), 1, 2);
         addConstraint(addJProp("Нельзя использовать выбранный сертификат", andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationCanBeUsed, 1, 2), false);
         LP orderSalePayGiftObligation = addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
@@ -554,9 +565,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // сдача/доплата
         orderSaleDiff = addDUProp(documentAggrPriceGroup, "Разница", orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
 
+        LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
+
         TA = addJProp(true, "Ввод штрих-кода", addCUProp(addSAProp(articleInnerQuantity, orderInner, article), // отдельно inner и outerCommit чтобы timechanges работали пока временно
                 addSAProp(addIfElseUProp(outerCommitedQuantity, outerOrderQuantity, is(commitInc), 1), orderDelivery, article),
-                addIfElseUProp(orderSaleUseObligation, issueObligation, obligationIssued, 2),addJProp(equals2, orderContragent, 1, 2),
+                addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),addJProp(equals2, orderContragent, 1, 2),
                 xorActionArticle, articleFormatToSell, NDS, documentRevalued), 1, barcodeToObject, 2);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
@@ -586,6 +599,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP couponToIssueQuantity;
     LP inCoupon;
     LP issueObligation;
+    LP obligationIssued;
     LP orderSaleCoupon;
     LP TA;
     LP orderClientSum;
@@ -730,6 +744,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         persistents.add((AggregateProperty) inAction.property);
         persistents.add((AggregateProperty) inCoupon.property);
 
+        persistents.add((AggregateProperty) obligationIssued.property);
+
         // все связанное с ассортиментами чтобы веселее работало
         persistents.add((AggregateProperty) articleStoreSupplier.property);
         persistents.add((AggregateProperty) articleStorePeriod.property);
@@ -868,7 +884,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
             design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-            
+
             return design;
         }
     }
@@ -893,7 +909,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objDoc = addSingleGroupObjectImplement(documentClass, "Документ", properties, getDocumentProps());
             if(toAdd) {
                 objDoc.groupTo.initClassView = ClassViewType.PANEL;
-                objDoc.groupTo.banClassView = ClassViewType.GRID;
+                objDoc.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
                 objDoc.show = false;
                 objDoc.addOnTransaction = true;
             } else
@@ -906,7 +922,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
-            
+
             if (toAdd) {
 
                 // так конечно делать неправильно, но DocumentNavigatorForm - это первый общий класс у продажи сертификатов и кассы
@@ -1172,8 +1188,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(orderArticleSaleDiscount, objDoc, objArt);
             addPropertyView(orderArticleSaleSumWithDiscount, objDoc, objArt);
 
-            objDoc.groupTo.banClassView |= ClassViewType.HIDE;
-
             objArt.show = false; objArt.showClass = false; objArt.showTree = false; objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
 //            addFixedFilter(new OrFilterNavigator(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement),
@@ -1231,12 +1245,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(issueObligation, objDoc, objCoupon)));
 
-            objIssue = addSingleGroupObjectImplement(DoubleClass.instance, "Выдать", properties);
-            addPropertyView(couponToIssueQuantity, objDoc, objIssue);
-            objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
-            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponToIssueConstraint, objDoc, objIssue)));
+            if(toAdd) {
+                objIssue = addSingleGroupObjectImplement(DoubleClass.instance, "Выдать", properties);
+                addPropertyView(couponToIssueQuantity, objDoc, objIssue);
+                objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
+                addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponToIssueConstraint, objDoc, objIssue)));
 
-            addPropertyView(properties, cashRegOperGroup, true);
+                addPropertyView(properties, cashRegOperGroup, true);
+            }
         }
 
         @Override
@@ -1244,14 +1260,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
-            design.get(objIssue.groupTo).gridView.constraints.fillHorizontal /= 3;
-            design.get(objIssue.groupTo).gridView.showFilter = false;
+            if(toAdd) {
+                design.get(objIssue.groupTo).gridView.constraints.fillHorizontal /= 3;
+                design.get(objIssue.groupTo).gridView.showFilter = false;
+                design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            }
+            
             design.get(objCoupon.groupTo).gridView.showFilter = false;
             design.get(objObligation.groupTo).gridView.showFilter = false;
-
-            design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.readOnly = !toAdd;
 

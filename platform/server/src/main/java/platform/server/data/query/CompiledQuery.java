@@ -656,7 +656,7 @@ public class CompiledQuery<K,V> {
             innerWhere = BaseUtils.single(where.getInnerJoins().compileMeans()).mean;
         }
 
-        InnerSelect compile = new InnerSelect(innerWhere.joins,syntax,params);
+        InnerSelect compile = new InnerSelect(innerWhere.getJoins(),syntax,params);
         // первым так как должны keySelect'ы и inner'ы заполнится
         for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet()) // свойства
             propertySelect.put(joinProp.getKey(), joinProp.getValue().getSource(compile));

@@ -1,6 +1,7 @@
 package platform.server.data.where.classes;
 
 import platform.base.BaseUtils;
+import platform.base.QuickMap;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
@@ -13,6 +14,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.UnknownClass;
 
 import java.util.Map;
+import java.util.Set;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
 
@@ -54,6 +56,9 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         super(key,classes);
     }
 
+    public ClassExprWhere(QuickMap<KeyExpr,AndClassSet> andKeys) {
+        this(new And<VariableClassExpr>(andKeys));
+    }
 
     private ClassExprWhere(And<VariableClassExpr>[] iWheres) {
         super(iWheres);

@@ -86,6 +86,13 @@ public class DirectTranslator {
         return result;
     }
 
+    public Set<KeyExpr> translateKeys(Set<KeyExpr> set) {
+        Set<KeyExpr> result = new HashSet<KeyExpr>();
+        for(KeyExpr expr : set)
+            result.add(expr.translateDirect(this));
+        return result;
+    }
+
     public List<Expr> translate(List<Expr> list) {
         List<Expr> result = new ArrayList<Expr>();
         for(Expr expr : list)

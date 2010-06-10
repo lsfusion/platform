@@ -124,12 +124,8 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
             return GroupExpr.this.packFollowFalse(falseWhere).getWhere();
         }
 
-        public GroupJoin getGroupJoin() {
-            return GroupExpr.this.getGroupJoin();
-        }
-
         public InnerJoins getInnerJoins() {
-            return new InnerJoins(getGroupJoin(),this);
+            return new InnerJoins(GroupExpr.this.getGroupJoin(),this);
         }
         public ClassExprWhere calculateClassWhere() {
             Where fullWhere = getFullWhere();

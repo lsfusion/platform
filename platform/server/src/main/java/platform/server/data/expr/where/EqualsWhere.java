@@ -88,9 +88,9 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     public InnerJoins getInnerJoins() {
         if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
-            return new InnerJoins((KeyExpr)operator1,operator2);
+            return operator2.getWhere().getInnerJoins().and(new InnerJoins((KeyExpr)operator1,operator2));
         if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
-            return new InnerJoins((KeyExpr)operator2,operator1);
+            return operator1.getWhere().getInnerJoins().and(new InnerJoins((KeyExpr)operator2,operator1));
         return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
     }
 

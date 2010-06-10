@@ -7,6 +7,7 @@ import platform.server.data.where.DNFWheres;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.expr.query.GroupJoin;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
 
@@ -73,5 +74,12 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
         for(int i=0;i<wheres.length;i++)
             transJoins[i] = wheres[i].translateDirect(translator);
         return new JoinSet(transJoins);
+    }
+
+    public VariableExprSet getJoinFollows() {
+        VariableExprSet exprs = new VariableExprSet();
+        for(int i=0;i<wheres.length;i++)
+            exprs.addAll(wheres[i].getJoinFollows());
+        return exprs;
     }
 }

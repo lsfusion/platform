@@ -2,6 +2,13 @@ package platform.server.classes;
 
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.logics.table.ObjectTable;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.PropertyField;
+import platform.server.data.KeyField;
+import platform.server.data.query.Join;
+
+import java.util.Map;
+import java.util.Collections;
 
 public class BaseClass extends AbstractCustomClass {
 
