@@ -39,6 +39,8 @@ public class DefaultFormView extends FormView {
 
     public DefaultFormView(NavigatorForm<?> navigatorForm) {
 
+        readOnly = navigatorForm.readOnly;
+
         mainContainer = addContainer();
         mainContainer.constraints.childConstraints = SingleSimplexConstraint.TOTHE_BOTTOM;
 

@@ -121,6 +121,19 @@ public class FormView implements ClientSerialize {
         comp1.constraints.intersects.put(comp2, cons);
     }
 
+    public List<PropertyCellView> getProperties(AbstractGroup group) {
+
+        List<PropertyCellView> result = new ArrayList<PropertyCellView>();
+
+        for (PropertyCellView property : properties) {
+            if (group.hasChild(property.view.view.property)) {
+                result.add(property);
+            }
+        }
+
+        return result;
+    }
+
     public List<PropertyCellView> getProperties(AbstractGroup group, GroupObjectNavigator groupObject) {
 
         List<PropertyCellView> result = new ArrayList<PropertyCellView>();
@@ -171,6 +184,13 @@ public class FormView implements ClientSerialize {
         }
 
         return result;
+    }
+
+    public void setFont(AbstractGroup group, Font font) {
+
+        for (PropertyCellView property : getProperties(group)) {
+            setFont(property, font);
+        }
     }
 
     public void setFont(AbstractGroup group, Font font, GroupObjectNavigator groupObject) {

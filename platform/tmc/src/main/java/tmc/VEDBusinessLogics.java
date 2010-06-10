@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.Union;
@@ -258,7 +259,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         incStore = addCUProp("incStore", "Склад (прих.)", // generics
                 addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
                 addDProp("incWarehouse", "Распред. центр (прих.)", warehouse, orderWarehouseInc));
-        addJProp(baseGroup, "Склад (прих.)", name, incStore, 1);
+        incStoreName = addJProp(baseGroup, "Склад (прих.)", name, incStore, 1);
         outStore = addCUProp("outCStore", "Склад (расх.)", // generics
                 addDProp("outStore", "Склад (расх.)", store, orderStoreOut),
                 addDProp("outShop", "Магазин (расх.)", shop, orderShopOut),
@@ -273,12 +274,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP outSubject = addCUProp(addJProp(and1, orderSupplier, 1, is(orderDelivery), 1), outStore);
 
+        customerCheckRetailPhone = addDProp(baseGroup, "checkRetailCustomerPhone", "Телефон", StringClass.get(20), customerCheckRetail);
+        customerCheckRetailBorn = addDProp(baseGroup, "checkRetailCustomerBorn", "Дата роджения", DateClass.instance, customerCheckRetail);
+        customerCheckRetailAddress = addDProp(baseGroup, "checkRetailCustomerAddress", "Адрес", StringClass.get(40), customerCheckRetail);
+
         orderContragent = addCUProp("Контрагент", // generics
                 orderSupplier,
                 addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderWhole),
                 addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
                 addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleCheckRetail));
         nameContragent = addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
+        phoneContragent = addJProp(baseGroup, "Телефон", customerCheckRetailPhone, orderContragent, 1);
+        bornContragent = addJProp(baseGroup, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
+        addressContragent = addJProp(baseGroup, "Адрес", customerCheckRetailAddress, orderContragent, 1);
 
         LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
         LP diffContragent = addJProp(diff2, orderContragent, 1, orderContragent, 2);
@@ -410,7 +418,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                         addDProp("orderSaleCoupon", "Выдать", LogicalClass.instance, commitSaleCheckArticleRetail, coupon));
         obligationIssued = addCGProp(null, "obligationIssued", "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
 
-        LP obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
+        obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
         LP obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
 
         LP couponMaxPercent = addDProp(baseGroup, "couponMaxPercent", "Макс. процент по купонам", DoubleClass.instance);
@@ -526,8 +534,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
         LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2);
-        LP returnSaleDiscount = addSGProp(documentPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
-        LP returnSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
+        returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
+        returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
 
         LP orderDeliveryPrice = addDProp("orderDeliveryPrice", "Цена закуп.", DoubleClass.instance, orderDelivery, article);
         orderDeliveryPrice.setDerivedChange(articleSupplierPrice, 2, articleQuantity, 1, 2);
@@ -600,6 +608,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP inCoupon;
     LP issueObligation;
     LP obligationIssued;
+    LP obligationSum;
     LP orderSaleCoupon;
     LP TA;
     LP orderClientSum;
@@ -619,6 +628,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderSalePayNoObligation;
     LP clientSum;
     LP incStore;
+    LP incStoreName;
     LP outStore;
 
     LP orderContragent;
@@ -634,13 +644,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP articleStoreMin;
     LP articleFullStoreDemand;
 
-    LP nameContragent;
+    LP customerCheckRetailPhone, customerCheckRetailBorn, customerCheckRetailAddress;
+
+    LP nameContragent, phoneContragent, bornContragent, addressContragent;
 
     LP documentLogisticsSupplied, documentLogisticsRequired, documentLogisticsRecommended;
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
     LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
     LP orderSaleDiscountSum, orderSalePay, orderSaleDiff;
+    LP returnSaleDiscount, returnSalePay;
     LP orderArticleSaleDiscount;
     LP shopPrice;
     LP priceStore, inDocumentPrice;
@@ -790,7 +803,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         NavigatorElement sale = new NavigatorElement(baseElement, 1200, "Управление продажами");
             NavigatorElement saleRetail = new NavigatorElement(sale, 1250, "Управление розничными продажами");
-                NavigatorElement saleRetailCashRegister = new NavigatorElement(saleRetail, 1300, "Управление розничными продажами через кассу");
+                NavigatorElement saleRetailCashRegister = new NavigatorElement(saleRetail, 1300, "Касса");
                     NavigatorForm commitSale = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(saleRetailCashRegister, 1310, true));
                         addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(commitSale, 1320, false));
                     NavigatorForm saleCheckCert = addNavigatorForm(new SaleCheckCertNavigatorForm(saleRetailCashRegister, 1325, true));
@@ -798,7 +811,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(saleRetailCashRegister, true, 1345));
                         addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1355));
                     addNavigatorForm(new CashRegisterManagementNavigatorForm(saleRetailCashRegister, 1365));
-                NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetail, 1400, "Управление розничными продажами по накладным");
+                NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetail, 1400, "Безналичный расчет");
                     NavigatorForm saleRetailInvoiceForm = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoice, 1410, true));
                         addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoiceForm, 1420, false));
                     NavigatorForm saleInvoiceCert = addNavigatorForm(new SaleInvoiceCertNavigatorForm(saleRetailInvoice, 1440, true));
@@ -856,6 +869,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         ObjectNavigator objBarcode;
 
+        protected boolean isBarcodeFocusable() { return true; }
+
         private BarcodeNavigatorForm(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
 
@@ -885,6 +900,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
             design.setEditKey(reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 
+            if (!isBarcodeFocusable()) {
+                design.setFocusable(reverseBarcode, false);
+                design.setFocusable(false, objBarcode.groupTo);
+                design.setFocusable(design.get(objBarcode).objectCellView, false);
+            }
+
             return design;
         }
     }
@@ -900,6 +921,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected Object[] getDocumentProps() {
             return new Object[] {baseGroup, true, documentGroup, true};
         }
+
+        protected boolean isDocumentFocusable() { return true; }
 
         protected DocumentNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, (toAdd?documentClass.caption:"Документы"));
@@ -935,12 +958,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     design.get(payView).getContainer().constraints.order = 6;
                 }
 
+                design.setFont(baseGroup, new Font("Tahoma", Font.BOLD, 18), objDoc.groupTo);
+
                 // устанавливаем дизайн
                 design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
                 design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
-
-                design.setFont(nameContragent, new Font("Tahoma", Font.BOLD, 24), objDoc.groupTo);
-                design.setFont(orderClientSum, new Font("Tahoma", Font.BOLD, 24), objDoc.groupTo);
 
                 // ставим Label сверху
                 design.setPanelLabelAbove(documentPriceGroup, true, objDoc.groupTo);
@@ -949,6 +971,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
                 design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
                 design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
+
+                if (!isDocumentFocusable())
+                    design.setFocusable(false, objDoc.groupTo);
+                else
+                    design.setFocusable(documentAggrPriceGroup, false, objDoc.groupTo);
 
             }
 
@@ -1162,7 +1189,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[] {nameContragent, orderClientSum, orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+            return new Object[] {nameContragent, phoneContragent, bornContragent, addressContragent, orderClientSum,
+                                 orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleDiff};
         }
 
         @Override
@@ -1173,6 +1201,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentArticleProps() {
             return new Object[] {};
+        }
+
+        @Override
+        protected boolean isBarcodeFocusable() {
+            return false;
         }
 
         protected SaleRetailNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
@@ -1203,19 +1236,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
-
-            if (toAdd) {
-
-                // блокируем объекты для ввода
-                design.setFocusable(reverseBarcode, false);
-                design.setFocusable(false, objBarcode.groupTo);
-                design.setFocusable(false, objDoc.groupTo);
-                design.setFocusable(design.get(objBarcode).objectCellView, false);
-            }
-
+            design.setFocusable(orderClientSum, false);
             return design;
         }
-
     }
 
     private static String CASHREGISTER_CHARSETNAME = "Cp866";
@@ -1253,6 +1276,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                 addPropertyView(properties, cashRegOperGroup, true);
             }
+
+            readOnly = !toAdd;
         }
 
         @Override
@@ -1266,101 +1291,128 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
-            
+
             design.get(objCoupon.groupTo).gridView.showFilter = false;
             design.get(objObligation.groupTo).gridView.showFilter = false;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.readOnly = !toAdd;
 
             return design;
         }
 
         @Override
         public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
-
-            List<ClientAction> actions = new ArrayList<ClientAction>();
-            actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, createBillTxt(remoteForm), CASHREGISTER_CHARSETNAME));
-            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
-            actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-            actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
-            return actions;
+            return getCashRegApplyActions(createBillTxt(remoteForm));
         }
 
         private String createBillTxt(RemoteForm remoteForm) {
 
-            String result = "1,0000\n";
-
-            FormData data;
-
             ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
             ObjectImplement art = remoteForm.mapper.mapObject(objArt);
 
-            try {
-                 data = remoteForm.getFormData(
-                        BaseUtils.toSetElements(doc.groupTo, art.groupTo),
-                        BaseUtils.toSetElements(art.groupTo)
-                        );
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-
-            Double sumDoc = 0.0;
-
-            for (FormRow row : data.rows) {
-
-                Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePrice, objArt)));
-                result += price / 100;
-
-                // отдел
-                result += ",0";
-
-                Double quantity = (Double) row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(articleQuantity, objArt)));
-                result += "," + quantity;
-
-                sumDoc += price*quantity;
-
-                String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(name, objArt)))).trim();
-                result += "," + artName;
-
-                Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderArticleSaleSumWithDiscount, objArt)));
-                result += "," + sumPos / 100;
-
-                result += "\n";
-            }
-
-            Double sumDisc = sumDoc - (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayNoObligation, objDoc)));
-            if (sumDisc > 0) {
-                result += "#," + sumDisc / 100 + "\n";
-            }
-
-            Double sumCard = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayCard, objDoc)));
-            if (sumCard != null && sumCard > 0) {
-                result += "~1," + sumCard / 100 + "\n";
-            }
-
-            Double sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(getPropertyView(orderSalePayCash, objDoc)));
-            if (sumCash != null && sumCash > 0) {
-                result += sumCash / 100 + "\n";
-            }
-
-            return result;
+            return VEDBusinessLogics.this.createBillTxt(remoteForm, 1,
+                    BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
+                    getPropertyView(orderSalePrice, objArt), getPropertyView(articleQuantity, objArt),
+                    getPropertyView(name, objArt), getPropertyView(orderArticleSaleSumWithDiscount, objArt),
+                    getPropertyView(orderSalePayNoObligation, objDoc),
+                    getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
         }
 
         @Override
         public String checkApplyActions(int actionID, ClientActionResult result) {
 
-            if (actionID == 1) {
-
-                ImportFileClientActionResult impFileResult = ((ImportFileClientActionResult)result);
-
-                if (impFileResult.fileExists) {
-                    return (impFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + impFileResult.fileContent);
-                }
-            }
+            String check = checkCashRegApplyActions(actionID, result);
+            if (check != null) return check;
 
             return super.checkApplyActions(actionID, result);    //To change body of overridden methods use File | Settings | File Templates.
         }
+    }
+
+    private List<ClientAction> getCashRegApplyActions(String billTxt) {
+
+        List<ClientAction> actions = new ArrayList<ClientAction>();
+        actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, billTxt, CASHREGISTER_CHARSETNAME));
+        actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
+        actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+        actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
+        return actions;
+    }
+
+    private String createBillTxt(RemoteForm remoteForm, int payType,
+                                 Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups,
+                                 PropertyViewNavigator<?> priceProp, Object quantityProp,
+                                 PropertyViewNavigator<?> nameProp, PropertyViewNavigator<?> sumProp,
+                                 PropertyViewNavigator<?> toPayProp,
+                                 PropertyViewNavigator<?> sumCardProp, PropertyViewNavigator<?> sumCashProp) {
+
+        String result = payType + ",0000\n";
+
+        FormData data;
+
+        try {
+             data = remoteForm.getFormData(propertyGroups, classGroups);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        Double sumDoc = 0.0;
+
+        for (FormRow row : data.rows) {
+
+            Double quantity = (quantityProp instanceof PropertyViewNavigator) ?
+                              (Double) row.values.get(remoteForm.mapper.mapPropertyView((PropertyViewNavigator)quantityProp)) :
+                              (Double) quantityProp;
+
+            if (quantity != null) {
+
+                Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(priceProp));
+                String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(nameProp))).trim();
+                Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(sumProp));
+
+                result += price / 100;
+                result += ",0";
+                result += "," + quantity;
+                result += "," + artName;
+                result += "," + sumPos / 100;
+                result += "\n";
+
+                sumDoc += price*quantity;
+            }
+        }
+
+        Double sumDisc = sumDoc - (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(toPayProp));
+        if (sumDisc > 0) {
+            result += "#," + sumDisc / 100 + "\n";
+        }
+
+        if (sumCardProp != null) {
+            Double sumCard = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCardProp));
+            if (sumCard != null && sumCard > 0) {
+                result += "~1," + sumCard / 100 + "\n";
+            }
+        }
+
+        if (sumCashProp != null) {
+            Double sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCashProp));
+            if (sumCash != null && sumCash > 0) {
+                result += sumCash / 100 + "\n";
+            }
+        }
+
+        return result;
+    }
+
+    private String checkCashRegApplyActions(int actionID, ClientActionResult result) {
+
+        if (actionID == 1) {
+
+            ImportFileClientActionResult impFileResult = ((ImportFileClientActionResult)result);
+
+            if (impFileResult.fileExists) {
+                return (impFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + impFileResult.fileContent);
+            }
+        }
+
+        return null;
     }
 
     private void addCashRegisterProperties() {
@@ -1477,6 +1529,22 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnSaleNavigatorForm extends DocumentNavigatorForm {
+
+        @Override
+        protected Object[] getDocumentProps() {
+            return new Object[] {returnSaleDiscount, returnSalePay};
+        }
+
+        @Override
+        protected boolean isDocumentFocusable() {
+            return false;
+        }
+
+        @Override
+        protected boolean isBarcodeFocusable() {
+            return false;
+        }
+
         final ObjectNavigator objInner;
         final ObjectNavigator objArt;
         ObjectNavigator objOuter;
@@ -1496,7 +1564,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   documentFilter,
                                   "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)), !toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), !toAdd);
             if(!fixFilters)
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   documentFreeFilter,
@@ -1504,10 +1572,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
             addRegularFilterGroup(filterGroup);
 
-            objArt = addSingleGroupObjectImplement(article, "Товар", properties, baseGroup, true);
-            addPropertyView(objDoc, objArt, properties, baseGroup, true);
+            objArt = addSingleGroupObjectImplement(article, "Товар", properties);
+
+            addPropertyView(changeQuantityOrder, objInner, objArt);
+            addPropertyView(barcode, objArt);
+            addPropertyView(name, objArt);
             addPropertyView(objInner, objDoc, objArt, properties, baseGroup, true, documentGroup, true);
-            addPropertyView(objInner, objArt, properties, baseGroup, true, documentPriceGroup, true);
+            addPropertyView(orderSalePrice, objInner, objArt);
+            addPropertyView(orderArticleSaleDiscount, objInner, objArt);
+            addPropertyView(orderArticleSaleSumWithDiscount, objInner, objArt);
 
             PropertyObjectNavigator returnInnerImplement = getPropertyImplement(returnInnerQuantity);
 
@@ -1529,6 +1602,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
 //            addHintsNoUpdate(properties, moveGroup);
             addBarcode(article, returnInnerImplement);
+
+            addFixedOrder(addPropertyObjectImplement(changeQuantityTime, objInner, objArt), false);
+
+            PropertyObjectNavigator shopImplement = addPropertyObjectImplement(computerShop, CurrentComputerNavigator.instance);
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(incStore, objDoc), Compare.EQUALS, shopImplement));
 
             if(!noOuters) {
                 objOuter = addSingleGroupObjectImplement(commitDelivery, "Партия", properties, baseGroup, true);
@@ -1559,10 +1637,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
-            DefaultFormView form = super.createDefaultRichDesign();
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            if (toAdd) {
+
+                // делаем, чтобы суммы были внизу и как можно правее
+                design.get(getPropertyView(returnSalePay)).getContainer().setContainer(design.getMainContainer());
+                design.get(getPropertyView(returnSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+                design.get(getPropertyView(returnSalePay)).getContainer().constraints.order = 3;
+            }
+
             if(!noOuters)
-                form.addIntersection(form.getGroupObjectContainer(objInner.groupTo), form.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            return form;
+                design.addIntersection(design.getGroupObjectContainer(objInner.groupTo), design.getGroupObjectContainer(objOuter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            return design;
         }
     }
 
@@ -1579,8 +1667,33 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class ReturnSaleCheckRetailNavigatorForm extends ReturnSaleNavigatorForm {
+
         private ReturnSaleCheckRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
             super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail);
+            readOnly = !toAdd;
+        }
+
+        @Override
+        public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
+            return getCashRegApplyActions(createBillTxt(remoteForm));
+        }
+
+        @Override
+        public String checkApplyActions(int actionID, ClientActionResult result) {
+            return checkCashRegApplyActions(actionID, result);
+        }
+
+        private String createBillTxt(RemoteForm remoteForm) {
+
+            ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+            ObjectImplement art = remoteForm.mapper.mapObject(objArt);
+
+            return VEDBusinessLogics.this.createBillTxt(remoteForm, 2,
+                    BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
+                    getPropertyView(orderSalePrice, objArt), getPropertyView(returnInnerQuantity, objArt),
+                    getPropertyView(name, objArt), getPropertyView(orderArticleSaleSumWithDiscount, objArt),
+                    getPropertyView(returnSalePay, objDoc),
+                    null, null);
         }
     }
 
@@ -1751,6 +1864,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class SaleCertNavigatorForm extends DocumentNavigatorForm {
 
+        ObjectNavigator objObligation;
+
         @Override
         protected Object[] getDocumentProps() {
             return new Object[] {nameContragent, orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleDiff};
@@ -1759,7 +1874,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, documentClass, toAdd);
 
-            ObjectNavigator objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
+            objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
             barcodeAdd = giftObligation;
 
             addPropertyView(objDoc, objObligation, properties, allGroup, true);
@@ -1768,22 +1883,50 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(addPropertyObjectImplement(issueObligation,objDoc,objObligation)),
                                   "Документ",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)), true);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
             addRegularFilterGroup(filterGroup);
 
         }
     }
 
     private class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
-        protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
-            super(parent, ID, saleCheckCert, toAdd);
+
+        @Override
+        protected boolean isBarcodeFocusable() {
+            return false;
         }
 
         @Override
-        public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
-            design.readOnly = !toAdd;
-            return design;
+        protected boolean isDocumentFocusable() {
+            return false;
+        }
+
+        protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
+            super(parent, ID, saleCheckCert, toAdd);
+            readOnly = !toAdd;
+        }
+
+        @Override
+        public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
+            return getCashRegApplyActions(createBillTxt(remoteForm));
+        }
+
+        @Override
+        public String checkApplyActions(int actionID, ClientActionResult result) {
+            return checkCashRegApplyActions(actionID, result);
+        }
+
+        private String createBillTxt(RemoteForm remoteForm) {
+
+            ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+            ObjectImplement obligation = remoteForm.mapper.mapObject(objObligation);
+
+            return VEDBusinessLogics.this.createBillTxt(remoteForm, 1,
+                    BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(obligation.groupTo),
+                    getPropertyView(obligationSum, objObligation), 1.0,
+                    getPropertyView(name, objObligation), getPropertyView(obligationSum, objObligation),
+                    getPropertyView(orderSalePay, objDoc),
+                    getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
         }
     }
 

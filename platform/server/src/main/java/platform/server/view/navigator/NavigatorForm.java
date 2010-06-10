@@ -28,6 +28,8 @@ import java.util.*;
 
 public abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
+    public boolean readOnly = false;
+
     public List<GroupObjectNavigator> groups = new ArrayList<GroupObjectNavigator>();
     public List<PropertyViewNavigator> propertyViews = new ArrayList<PropertyViewNavigator>();
 
