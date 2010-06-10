@@ -283,10 +283,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderWhole),
                 addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
                 addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleCheckRetail));
-        nameContragent = addJProp(baseGroup, "Контрагент", name, orderContragent, 1);
-        phoneContragent = addJProp(baseGroup, "Телефон", customerCheckRetailPhone, orderContragent, 1);
-        bornContragent = addJProp(baseGroup, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
-        addressContragent = addJProp(baseGroup, "Адрес", customerCheckRetailAddress, orderContragent, 1);
+        nameContragent = addJProp(baseGroup, true, "Контрагент", name, orderContragent, 1);
+        phoneContragent = addJProp(baseGroup, true, "Телефон", customerCheckRetailPhone, orderContragent, 1);
+        bornContragent = addJProp(baseGroup, true, "Дата рождения", customerCheckRetailBorn, orderContragent, 1);
+        addressContragent = addJProp(baseGroup, true, "Адрес", customerCheckRetailAddress, orderContragent, 1);
 
         LP sameContragent = addJProp(equals2, orderContragent, 1, orderContragent, 2);
         LP diffContragent = addJProp(diff2, orderContragent, 1, orderContragent, 2);
