@@ -1490,6 +1490,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, iID, "Операции с ФР");
             addPropertyView(properties, cashRegGroup, true);
         }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.setFont(baseGroup, new Font("Tahoma", Font.BOLD, 48));
+            design.setPanelLabelAbove(baseGroup, true);
+            return design;
+        }
     }
 
     private class OrderSaleInvoiceRetailNavigatorForm extends SaleRetailNavigatorForm {
@@ -1964,6 +1972,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   "В группе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), true);
             addRegularFilterGroup(filterGroup);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+            design.setFont(baseGroup, new Font("Tahoma", Font.BOLD, 32), true);
+            return design;
         }
     }
 

@@ -6,6 +6,7 @@ import platform.base.DefaultIDGenerator;
 import platform.server.view.navigator.CellViewNavigator;
 import platform.server.view.navigator.PropertyViewNavigator;
 import platform.server.view.navigator.GroupObjectNavigator;
+import platform.server.view.form.GroupObjectImplement;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.Property;
 import platform.server.logics.linear.LP;
@@ -134,6 +135,20 @@ public class FormView implements ClientSerialize {
         return result;
     }
 
+    public List<CellView> getCells(AbstractGroup group) {
+
+        List<CellView> result = new ArrayList<CellView>(getProperties(group));
+
+        for (GroupObjectImplementView groupObject : groupObjects)
+            for (ObjectImplementView object : groupObject)
+                if (group.hasChild(object.view.baseClass.getParent())) {
+                    result.add(object.objectCellView);
+                    result.add(object.classCellView);
+                }
+
+        return result;
+    }
+
     public List<PropertyCellView> getProperties(AbstractGroup group, GroupObjectNavigator groupObject) {
 
         List<PropertyCellView> result = new ArrayList<PropertyCellView>();
@@ -187,8 +202,12 @@ public class FormView implements ClientSerialize {
     }
 
     public void setFont(AbstractGroup group, Font font) {
+        setFont(group, font, false);
+    }
 
-        for (PropertyCellView property : getProperties(group)) {
+    public void setFont(AbstractGroup group, Font font, boolean cells) {
+
+        for (CellView property : cells ? getCells(group) : getProperties(group)) {
             setFont(property, font);
         }
     }
@@ -317,6 +336,13 @@ public class FormView implements ClientSerialize {
     public void setPanelLabelAbove(AbstractGroup group, boolean panelLabelAbove, GroupObjectNavigator groupObject) {
 
         for (PropertyCellView property : getProperties(group, groupObject)) {
+            setPanelLabelAbove(property, panelLabelAbove);
+        }
+    }
+
+    public void setPanelLabelAbove(AbstractGroup group, boolean panelLabelAbove) {
+
+        for (PropertyCellView property : getProperties(group)) {
             setPanelLabelAbove(property, panelLabelAbove);
         }
     }

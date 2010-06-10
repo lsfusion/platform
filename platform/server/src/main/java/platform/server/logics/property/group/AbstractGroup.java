@@ -23,6 +23,7 @@ public class AbstractGroup extends AbstractNode {
     }
 
     public boolean hasChild(AbstractNode prop) {
+        if (this == prop) return true;
         for (AbstractNode child : children) {
             if (child == prop) return true;
             if (child instanceof AbstractGroup && ((AbstractGroup)child).hasChild(prop)) return true;

@@ -61,6 +61,8 @@ public abstract class GridTable extends ClientFormTable
 
     public void updateTable() {
 
+        int rowHeight = 0;
+
         createDefaultColumnsFromModel();
         for (ClientCellView property : gridColumns) {
 
@@ -68,9 +70,12 @@ public abstract class GridTable extends ClientFormTable
             column.setMinWidth(property.getMinimumWidth(this));
             column.setPreferredWidth(property.getPreferredWidth(this));
             column.setMaxWidth(property.getMaximumWidth(this));
+
+            rowHeight = Math.max(rowHeight, property.getPreferredHeight(this));
         }
 
         if (gridColumns.size() != 0) {
+            setRowHeight(rowHeight);
             needToBeShown();
         } else {
             needToBeHidden();

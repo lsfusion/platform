@@ -16,11 +16,11 @@ import java.awt.*;
 public class ClientObjectType implements ClientType {
 
     public int getMinimumWidth(FontMetrics fontMetrics) {
-        return getPreferredWidth(fontMetrics);
+        return fontMetrics.stringWidth("999 999") + 8;
     }
 
     public int getPreferredWidth(FontMetrics fontMetrics) {
-        return 45;
+        return fontMetrics.stringWidth("9 999 999") + 8;
     }
 
     public int getMaximumWidth(FontMetrics fontMetrics) { 

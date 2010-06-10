@@ -80,7 +80,7 @@ abstract public class ClientCellView extends ClientComponentView {
         return baseType.getPreferredWidth(comp.getFontMetrics(design.getFont(comp)));
     }
 
-    int getPreferredHeight(JComponent comp) {
+    public int getPreferredHeight(JComponent comp) {
         return comp.getFontMetrics(design.getFont(comp)).getHeight() + 1;
     }
 
