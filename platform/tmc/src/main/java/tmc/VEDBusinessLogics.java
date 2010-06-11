@@ -1443,8 +1443,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt", 100));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Открыть денежный ящик", "/O"));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос номера последнего чека", "/N", "bill_no.txt"));
-        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Внесение денег", "/P"));
-        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Изъятие денег", "/G"));
+        addProp(cashRegAdminGroup, new IntegerCashRegisterActionProperty("Внесение денег", "/P"));
+        addProp(cashRegAdminGroup, new IntegerCashRegisterActionProperty("Изъятие денег", "/G"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("X-отчет (сменный отчет без гашения)", "/X"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Z-отчет (сменный отчет с гашением)", "/Z"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Запрос серийного номера регистратора", "/S", "serial.txt"));
@@ -1515,7 +1515,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-            design.setFont(baseGroup, new Font("Tahoma", Font.BOLD, 48));
+            design.setFont(new Font("Tahoma", Font.BOLD, 36), true);
             design.setPanelLabelAbove(baseGroup, true);
             return design;
         }
@@ -1995,13 +1995,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   "В группе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), true);
             addRegularFilterGroup(filterGroup);
-        }
-
-        @Override
-        public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
-            design.setFont(baseGroup, new Font("Tahoma", Font.PLAIN, 16), true);
-            return design;
         }
     }
 

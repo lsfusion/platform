@@ -3,6 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
+import platform.client.form.cell.CellView;
 import platform.client.logics.ClientCellView;
 import platform.interop.CellDesign;
 
@@ -19,7 +20,9 @@ public interface ClientType {
     Format getDefaultFormat();
 
     PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design);
+    CellView getPanelComponent(ClientCellView key, ClientForm form);
 
-    abstract public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException;
-    abstract public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
+
 }

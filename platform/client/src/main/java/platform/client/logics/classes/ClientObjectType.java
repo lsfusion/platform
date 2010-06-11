@@ -3,6 +3,8 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
+import platform.client.form.cell.CellView;
+import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientCellView;
@@ -32,6 +34,8 @@ public class ClientObjectType implements ClientType {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new IntegerPropertyRenderer(format, design); }
+
+    public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new TableCellView(key, form); }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form, property.createEditorForm(form.remoteForm));

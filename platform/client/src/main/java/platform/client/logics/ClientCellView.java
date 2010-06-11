@@ -3,6 +3,7 @@ package platform.client.logics;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
+import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.SwingUtils;
@@ -108,6 +109,10 @@ abstract public class ClientCellView extends ClientComponentView {
     public PropertyRendererComponent getRendererComponent() {
         if (renderer == null) renderer = baseType.getRendererComponent(getFormat(), caption, design);
         return renderer;
+    }
+
+    public CellView getPanelComponent(ClientForm form) {
+        return baseType.getPanelComponent(this, form);
     }
 
     // диалог для получения возможных значений, используются только в нижних методах

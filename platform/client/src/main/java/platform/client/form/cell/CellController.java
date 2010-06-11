@@ -7,7 +7,7 @@ import platform.client.form.ClientFormLayout;
 import javax.swing.*;
 import java.io.IOException;
 
-public class CellController {
+public class CellController implements CellViewListener {
 
     private ClientCellView key;
 
@@ -19,7 +19,7 @@ public class CellController {
 
     // возвращаем только как компоненту, большего пока не надо
     public JComponent getView() {
-        return view;
+        return view.getComponent();
     }
 
     protected final ClientForm form;
@@ -30,32 +30,18 @@ public class CellController {
         key = ikey;
         form = iform;
 
-        view = new CellView(key) {
+        view = key.getPanelComponent(form);
+        view.getComponent().setFocusable(key.focusable);
 
-            protected ClientCellView getKey() {
-                return key;
-            }
-
-            protected boolean cellValueChanged(Object value) {
-                 return CellController.this.cellValueChanged(value);
-            }
-
-            protected boolean isDataChanging() {
-                return CellController.this.isDataChanging();
-            }
-
-            protected ClientForm getForm() {
-                return form;
-            }
-        };
+        view.addListener(this);
     }
 
     public void addView(ClientFormLayout formLayout) {
-        formLayout.add(key, view);
+        formLayout.add(key, getView());
     }
 
     public void removeView(ClientFormLayout formLayout) {
-        formLayout.remove(key, view);
+        formLayout.remove(key, getView());
     }
 
     public void setValue(Object ivalue) {
@@ -70,7 +56,7 @@ public class CellController {
         view.startEditing();
     }
 
-    protected boolean cellValueChanged(Object ivalue) {
+    public boolean cellValueChanged(Object ivalue) {
 
         try {
             form.changeProperty(getKey(), ivalue);
@@ -82,10 +68,10 @@ public class CellController {
     }
 
     public void hideViews() {
-        view.setVisible(false);
+        getView().setVisible(false);
     }
 
     public void showViews() {
-        view.setVisible(true);
+        getView().setVisible(true);
     }
 }

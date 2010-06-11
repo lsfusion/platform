@@ -3,6 +3,9 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
+import platform.client.form.cell.CellView;
+import platform.client.form.cell.TableCellView;
+import platform.client.form.cell.ButtonCellView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientCellView;
@@ -34,6 +37,9 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new ActionPropertyRenderer(caption); }
+
+    public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new ButtonCellView(key); }
+
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return null; }
     protected PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return null; }
