@@ -16,6 +16,7 @@ import platform.base.BaseUtils;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 
 import net.jcip.annotations.Immutable;
 
@@ -86,12 +87,12 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
         return Compare.EQUALS;
     }
 
-    public InnerJoins getInnerJoins() {
+    public InnerJoins groupInnerJoins() {
         if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
-            return operator2.getWhere().getInnerJoins().and(new InnerJoins((KeyExpr)operator1,operator2));
+            return operator2.getWhere().groupInnerJoins().and(new InnerJoins((KeyExpr)operator1,operator2));
         if(operator2 instanceof KeyExpr && !operator1.hasKey((KeyExpr) operator2))
-            return operator1.getWhere().getInnerJoins().and(new InnerJoins((KeyExpr)operator2,operator1));
-        return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
+            return operator1.getWhere().groupInnerJoins().and(new InnerJoins((KeyExpr)operator2,operator1));
+        return operator1.getWhere().and(operator2.getWhere()).groupInnerJoins().and(new InnerJoins(this));
     }
 
     @Override

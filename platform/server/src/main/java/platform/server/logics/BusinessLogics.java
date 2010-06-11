@@ -180,7 +180,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP barcode;
     protected LP barcodeToObject;
     protected LP barcodeObjectName;
-    protected LP barcodeAction;
     public LP reverseBarcode;
 
     public LP userLogin, userPassword, userFirstName, userLastName;
@@ -246,7 +245,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), user);
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), user);
 
-        barcodeAction = addProperty(null, new LP<ClassPropertyInterface>(new BarCodeActionProperty(genSID(),"Ввод штрих-кода")));
         reverseBarcode = addDProp("Реверс", LogicalClass.instance);
     }
 
@@ -430,17 +428,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 changedWhere.add(GroupExpr.create(BaseUtils.crossJoin(mapInterfaces, mapKeys), ValueExpr.TRUE, executeChanged.toWhere(), true, change.mapKeys).getWhere());
             return dataChanges.map(mapInterfaces);
         }*/
-    }
-
-    private class BarCodeActionProperty extends ActionProperty {
-
-        public BarCodeActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{StringClass.get(13)});
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            ((RemoteForm<?>)executeForm.form).executeBarcode(BaseUtils.singleValue(keys), (Property<?>)barcodeToObject.property, (Property<?>)barcode.property);
-        }
     }
 
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();

@@ -139,7 +139,7 @@ public class CompiledQuery<K,V> {
         for(Map.Entry<V,Expr> property : query.properties.entrySet())
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
-        Collection<InnerJoins.Entry> queryJoins = query.where.getInnerJoins().compileMeans();
+        Collection<InnerJoins.Entry> queryJoins = query.where.getInnerJoins();
 
         unionAll = !(syntax.useFJ() || queryJoins.size() < 2);
         if (unionAll) {
@@ -155,7 +155,7 @@ public class CompiledQuery<K,V> {
                 fromString = (fromString.length()==0?"":fromString+" UNION ALL ") + getInnerSelect(query.mapKeys, queryJoin.mean, queryJoin.where, queryJoin.where.followTrue(query.properties), params, new OrderedMap<V, Boolean>(), 0, syntax, keyNames, propertyNames, keyOrder, propertyOrder, castTypes);
 
                 restWhere = restWhere.and(queryJoin.where.not());
-                queryJoins = restWhere.getInnerJoins().compileMeans();
+                queryJoins = restWhere.getInnerJoins();
 
                 castTypes = null;
             }
@@ -653,7 +653,7 @@ public class CompiledQuery<K,V> {
             QueryTranslator translator = new QueryTranslator(keyExprs,false);
             compiledProps = translator.translate(compiledProps);
             where = where.translateQuery(translator);
-            innerWhere = BaseUtils.single(where.getInnerJoins().compileMeans()).mean;
+            innerWhere = BaseUtils.single(where.getInnerJoins()).mean;
         }
 
         InnerSelect compile = new InnerSelect(innerWhere.getJoins(),syntax,params);

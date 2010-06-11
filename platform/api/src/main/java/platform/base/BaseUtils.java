@@ -651,8 +651,6 @@ public class BaseUtils {
     }
 
     public static <I> I single(Collection<I> col) {
-        if(col.size()!=1)
-            col = col;
         assert col.size()==1;
         return col.iterator().next();
     }

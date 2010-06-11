@@ -12,6 +12,8 @@ import platform.server.data.where.Where;
 import platform.base.BaseUtils;
 import net.jcip.annotations.Immutable;
 
+import java.util.Collection;
+
 // если operator1 не null и больше operator2 или operator2 null
 @Immutable
 public class GreaterWhere extends CompareWhere {
@@ -100,8 +102,8 @@ public class GreaterWhere extends CompareWhere {
             return "(" + result + " OR " + compare + ")";
     }
 
-    public InnerJoins getInnerJoins() {
-        return operator1.getWhere().and(operator2.getWhere()).getInnerJoins().and(new InnerJoins(this));
+    public InnerJoins groupInnerJoins() {
+        return operator1.getWhere().and(operator2.getWhere()).groupInnerJoins().and(new InnerJoins(this));
     }
     public ClassExprWhere calculateClassWhere() {
         return operator1.getWhere().getClassWhere().and(operator2.getWhere().getClassWhere());

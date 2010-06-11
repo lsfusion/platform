@@ -124,7 +124,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
             return GroupExpr.this.packFollowFalse(falseWhere).getWhere();
         }
 
-        public InnerJoins getInnerJoins() {
+        public InnerJoins groupInnerJoins() {
             return new InnerJoins(GroupExpr.this.getGroupJoin(),this);
         }
         public ClassExprWhere calculateClassWhere() {
@@ -246,7 +246,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
     private static Collection<InnerJoins.Entry> getInnerJoins(Map<BaseExpr,BaseExpr> group, Expr expr,boolean max) {
         Where fullWhere = getFullWhere(group, expr);
         if(fullWhere.isFalse()) return new ArrayList<InnerJoins.Entry>();
-        return max?fullWhere.getInnerJoins().compileMeans():Collections.singleton(new InnerJoins.Entry(new InnerWhere(),Where.TRUE));
+        return max?fullWhere.getInnerJoins():Collections.singleton(new InnerJoins.Entry(new InnerWhere(),Where.TRUE));
     }
 
     private static Expr splitInner(boolean max, Map<BaseExpr, BaseExpr> group, Expr expr) {

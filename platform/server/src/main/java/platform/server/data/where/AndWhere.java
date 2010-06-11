@@ -12,6 +12,8 @@ import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 
+import java.util.Collection;
+
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
 
@@ -83,10 +85,10 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return where instanceof AndWhere && ((AndWhere)where).substractWheres(wheres)!=null;
     }
 
-    public InnerJoins getInnerJoins() {
+    public InnerJoins groupInnerJoins() {
         InnerJoins result = new InnerJoins(TRUE);
         for(Where where : wheres)
-            result = result.and(where.getInnerJoins());
+            result = result.and(where.groupInnerJoins());
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {

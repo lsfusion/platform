@@ -11,7 +11,6 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.SingleClassExpr;
-import platform.server.data.expr.VariableExprSet;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -19,6 +18,8 @@ import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import net.jcip.annotations.Immutable;
+
+import java.util.Collection;
 
 @Immutable
 public class IsClassWhere extends DataWhere {
@@ -81,10 +82,10 @@ public class IsClassWhere extends DataWhere {
         return !(set instanceof UnknownClass || set instanceof DataClass);
     }
 
-    public InnerJoins getInnerJoins() {
+    public InnerJoins groupInnerJoins() {
         if(expr instanceof KeyExpr && isObjectValueClass(classes))
             return new InnerJoins((KeyExpr)expr, ((ObjectClassSet)classes).getBaseClass() ,this);
-        return expr.getWhere().getInnerJoins().and(new InnerJoins(this));
+        return expr.getWhere().groupInnerJoins().and(new InnerJoins(this));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());

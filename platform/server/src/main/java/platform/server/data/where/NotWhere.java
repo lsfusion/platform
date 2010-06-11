@@ -9,6 +9,8 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.caches.hash.HashContext;
 
+import java.util.Collection;
+
 public class NotWhere extends ObjectWhere {
 
     DataWhere where;
@@ -58,7 +60,7 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public InnerJoins getInnerJoins() {
+    public InnerJoins groupInnerJoins() {
         return new InnerJoins(this);
     }
 

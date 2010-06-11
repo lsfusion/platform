@@ -34,7 +34,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         // I1=I1' AND … In = In' AND G!=G' == false
         Property constraint = DerivedProperty.createPartition(groupProperty.interfaces, DerivedProperty.<T>createStatic(true, LogicalClass.instance),
                 getMapInterfaces().values(), groupProperty.getImplement(), new HashMap<T, JoinProperty.Interface>(), Compare.NOT_EQUALS);
-        constraint.caption = "cons";
+        constraint.caption = "Нарушена уникальность свойства (" + caption + ")";
         constraint.setConstraint(checkChange);
         return constraint;
     }

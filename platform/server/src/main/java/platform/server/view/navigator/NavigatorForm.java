@@ -326,17 +326,8 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         outStream.writeBoolean(isPrintForm);
     }
 
-    public List<CustomClass> barcodeClasses = new ArrayList<CustomClass>();
-    public List<PropertyObjectNavigator> barcodeProperties = new ArrayList<PropertyObjectNavigator>();
-    public void addBarcode(CustomClass customClass, LP lp) {
-        addBarcode(customClass, getPropertyImplement(lp));
-    }
     public void addBarcode(CustomClass customClass, PropertyObjectNavigator property) {
-        barcodeClasses.add(customClass);
-        barcodeProperties.add(property);
     }
-
-    public ConcreteCustomClass barcodeAdd;
 
     public List<ObjectNavigator> autoActionObjects = new ArrayList<ObjectNavigator>();
     public List<PropertyObjectNavigator> autoActions = new ArrayList<PropertyObjectNavigator>();

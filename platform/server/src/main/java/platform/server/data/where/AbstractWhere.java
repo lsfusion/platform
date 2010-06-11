@@ -6,6 +6,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
+import platform.server.data.query.InnerJoins;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -15,6 +16,7 @@ import platform.base.BaseUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collection;
 
 public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
@@ -177,5 +179,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public Where map(Map<KeyExpr, ? extends Expr> map) {
         return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
+    }
+
+    public Collection<InnerJoins.Entry> getInnerJoins() {
+        return groupInnerJoins().compileMeans();
     }
 }

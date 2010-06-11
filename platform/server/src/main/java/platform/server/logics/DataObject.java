@@ -51,10 +51,6 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         this(string, StringClass.get(string.length()));
     }
 
-    public DataObject(Date date) {
-        this(DateConverter.dateToInt(date), DateClass.instance);        
-    }
-
     public boolean isString(SQLSyntax syntax) {
         return objectClass.getType().isSafeString(object);
     }

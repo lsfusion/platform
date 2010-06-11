@@ -16,6 +16,8 @@ import platform.server.data.translator.DirectTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.*;
 
+import java.util.Collection;
+
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
 
@@ -451,10 +453,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public InnerJoins getInnerJoins() {
+    public InnerJoins groupInnerJoins() {
         InnerJoins result = new InnerJoins();
         for(Where where : wheres)
-            result.or(where.getInnerJoins());
+            result.or(where.groupInnerJoins());
         return result;
     }
     public MeanClassWheres calculateMeanClassWheres() {

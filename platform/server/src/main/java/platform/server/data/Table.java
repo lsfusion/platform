@@ -23,7 +23,6 @@ import platform.server.data.where.Where;
 import platform.server.classes.BaseClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.table.ObjectTable;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -291,7 +290,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return exprFJ + " IS NOT NULL";
             }
 
-            public InnerJoins getInnerJoins() {
+            public InnerJoins groupInnerJoins() {
                 return new InnerJoins(Join.this,this);
             }
             public ClassExprWhere calculateClassWhere() {
@@ -370,7 +369,7 @@ public class Table implements MapKeysInterface<KeyField> {
 
             public class NotNull extends InnerExpr.NotNull {
 
-                public InnerJoins getInnerJoins() {
+                public InnerJoins groupInnerJoins() {
                     return new InnerJoins(Join.this,this);
                 }
 

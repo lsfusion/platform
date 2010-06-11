@@ -12,6 +12,7 @@ import platform.server.caches.TranslateContext;
 import platform.server.data.translator.QueryTranslator;
 
 import java.util.Map;
+import java.util.Collection;
 
 public interface Where extends SourceJoin, TranslateContext<Where> {
 
@@ -50,8 +51,10 @@ public interface Where extends SourceJoin, TranslateContext<Where> {
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    abstract public InnerJoins getInnerJoins();
-    abstract public MeanClassWheres getMeanClassWheres();
+    public Collection<InnerJoins.Entry> getInnerJoins();
+    public InnerJoins groupInnerJoins(); // на самом деле protected
+
+    public MeanClassWheres getMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();
 

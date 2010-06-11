@@ -1127,59 +1127,6 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         }
     }
 
-/*    public <P extends PropertyInterface> boolean executeBarcodeProperty(DataObject dataObject, PropertyObjectImplement<P> implement, boolean onlyValue, boolean reverse) throws SQLException {
-        Property<P> property = implement.property;
-        Type type = implement.getType();
-        if(!onlyValue && type instanceof IncrementClass) {
-            IncrementClass incrementType = (IncrementClass)type;
-            for(P propertyInterface : property.interfaces)
-                if(!implement.hasNulls(propertyInterface)) {
-                    Map<P, DataObject> interfaceValues = implement.getInterfaceValues(propertyInterface, dataObject);
-                    Object incrementValue = incrementType.shift(property.read(session, interfaceValues, this), reverse);
-                    if(property.getChangeProperty(interfaceValues).execute(ObjectValue.getValue(incrementValue,incrementType), session, this, null, null, implement)) {
-                        PropertyObjectInterface objectInterface = implement.mapping.get(propertyInterface);
-                        if(objectInterface instanceof ObjectImplement) {
-                            ObjectImplement objectImplement = (ObjectImplement)objectInterface;
-                            userGroupSeeks.put(objectImplement.groupTo, Collections.<OrderView,Object>singletonMap(objectImplement, dataObject.object));
-                        }
-                        return true;
-                    }
-                }
-        }
-
-        return !implement.hasNulls(null) && implement.getChangeProperty().execute(dataObject, session, this, null, null, implement);
-    }*/
-
-    public <B extends PropertyInterface, O extends PropertyInterface> void executeBarcode(DataObject barcode, Property<B> barcodeToObject, Property<O> objectBarcode) throws SQLException {
-
-        boolean reverseChange = (BL.reverseBarcode.read(session, this)!=null);
-        if(reverseChange)
-            BL.reverseBarcode.execute(null, session, this);
-/*
-        ObjectValue value = barcodeToObject.readClasses(session, Collections.singletonMap(BaseUtils.single(barcodeToObject.interfaces), barcode), this);
-        if(value instanceof DataObject) {
-            DataObject dataObject = (DataObject)value;
-            ConcreteCustomClass dataClass = (ConcreteCustomClass)session.getCurrentClass(dataObject);
-            for(int i=0;i<navigatorForm.barcodeClasses.size();i++) // проверяем заданные пользователем свойства
-                if(dataClass.isChild(navigatorForm.barcodeClasses.get(i)) && executeBarcodeProperty(dataObject, mapper.mapProperty(navigatorForm.barcodeProperties.get(i)), false, reverseChange)) // нашли свойство
-                    return;
-
-            for(GroupObjectImplement group : groups) // просто ищем первый попавшийся объект
-                for(ObjectImplement object : group.objects)
-                    if(object instanceof CustomObjectImplement && dataClass.isChild(((CustomObjectImplement)object).getGridClass())) {
-                        // сюда также можно вставить замену штрих-кода если надо
-                        userGroupSeeks.put(group, Collections.<OrderView,Object>singletonMap(object, dataObject.object));
-                        return;
-                    }
-  */
-/*            for(PropertyView<?> property : properties) // по всем свойствам если значения подходят меняем, очень хаотичная штука
-                if(executeBarcodeProperty(dataObject, property.view, true, reverseChange))
-                    return;*/
-/*        } else
-        if(navigatorForm.barcodeAdd != null) // если не нашли - добавляем
-            objectBarcode.getChangeProperty(Collections.singletonMap(BaseUtils.single(objectBarcode.interfaces), addObject(navigatorForm.barcodeAdd))).execute(barcode, session, this);*/
-    }
-
     private void executeAutoActions(ObjectImplement object, RemoteFormView form) throws SQLException {
 
         for (int i = 0; i < navigatorForm.autoActions.size(); i++)
