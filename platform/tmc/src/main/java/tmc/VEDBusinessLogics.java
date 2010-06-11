@@ -878,6 +878,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         ObjectNavigator objBarcode;
 
         protected boolean isBarcodeFocusable() { return true; }
+        protected Font getDefaultFont() { return null; }
 
         private BarcodeNavigatorForm(NavigatorElement parent, int iID, String caption) {
             super(parent, iID, caption);
@@ -895,6 +896,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = super.createDefaultRichDesign();
+
+            if (getDefaultFont() != null)
+                design.setFont(getDefaultFont(), true);
 
             design.get(getPropertyView(reverseBarcode)).setContainer(design.getPanelContainer(design.get(objBarcode.groupTo)));
             design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1216,6 +1220,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return false;
         }
 
+        @Override
+        protected Font getDefaultFont() {
+            return new Font("Tahoma", Font.PLAIN, 14);
+        }
+
         protected SaleRetailNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, toAdd, documentClass, true);
 
@@ -1387,7 +1396,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
         }
 
-        Double sumDisc = sumDoc - (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(toPayProp));
+        Double toPay = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(toPayProp));
+        if (toPay == null) toPay = 0.0;
+        Double sumDisc = sumDoc - toPay;
         if (sumDisc > 0) {
             result += "#," + sumDisc / 100 + "\n";
         }
@@ -1430,8 +1441,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt", 100));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Открыть денежный ящик", "/O"));
         addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос номера последнего чека", "/N", "bill_no.txt"));
-        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Внесение денег", "/G"));
-        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Изъятие денег", "/P"));
+        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Внесение денег", "/P"));
+        addProp(cashRegOperGroup, new IntegerCashRegisterActionProperty("Изъятие денег", "/G"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("X-отчет (сменный отчет без гашения)", "/X"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Z-отчет (сменный отчет с гашением)", "/Z"));
         addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Запрос серийного номера регистратора", "/S", "serial.txt"));
@@ -1460,10 +1471,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
 
             actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, CASHREGISTER_CHARSETNAME));
-
+            actions.add(new SleepClientAction(CASHREGISTER_DELAY));
+            actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
+            
             if (outputFile != null) {
-                actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-                actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
                 actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, true, caption, multiplier));
             }
         }
@@ -1559,6 +1570,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected boolean isBarcodeFocusable() {
             return false;
+        }
+
+        @Override
+        protected Font getDefaultFont() {
+            return new Font("Tahoma", Font.PLAIN, 14);
         }
 
         final ObjectNavigator objInner;
@@ -1884,6 +1900,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected Object[] getDocumentProps() {
             return new Object[] {nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl,
                                  orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+        }
+
+        @Override
+        protected Font getDefaultFont() {
+            return new Font("Tahoma", Font.PLAIN, 14);
         }
 
         protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
