@@ -1105,7 +1105,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     public RemoteDialog<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyValueImplement<?> change = getPropertyView(viewID).view.getChangeProperty();
         DataChangeNavigatorForm<T> navigatorForm = new DataChangeNavigatorForm<T>(BL, change.getDialogClass(session), change);
-        return new RemoteDialog<T>(navigatorForm, BL, session, securityPolicy, focusView, classView, navigatorForm.object, mapper.user, mapper.computer);
+        return new RemoteDialog<T>(navigatorForm, BL, session, securityPolicy, focusView, classView, navigatorForm.object, mapper.user, mapper.computer, change.read(session, this));
     }
 
     public RemoteDialog<T> createObjectDialog(int objectID) throws SQLException {

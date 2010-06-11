@@ -50,6 +50,6 @@ public class ButtonCellView extends JButton implements CellView {
     }
 
     public void startEditing() {
-        doClick(500);
+        doClick(20);
     }
 }
