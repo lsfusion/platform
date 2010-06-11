@@ -1410,12 +1410,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             }
         }
 
+        Double sumCash;
         if (sumCashProp != null) {
-            Double sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCashProp));
-            if (sumCash != null && sumCash > 0) {
-                result += sumCash / 100 + "\n";
-            }
-        }
+            sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCashProp));
+            if (sumCash == null) sumCash = toPay;
+        } else
+            sumCash = toPay;
+
+        result += sumCash / 100 + "\n";
 
         return result;
     }
