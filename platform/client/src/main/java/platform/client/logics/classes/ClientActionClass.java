@@ -38,7 +38,7 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new ActionPropertyRenderer(caption); }
 
-    public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new ButtonCellView(key); }
+    public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new ButtonCellView(key, form); }
 
     public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return null; }
