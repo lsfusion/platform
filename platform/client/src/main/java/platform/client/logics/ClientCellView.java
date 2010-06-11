@@ -36,7 +36,7 @@ abstract public class ClientCellView extends ClientComponentView {
 
     public CellDesign design;
 
-    public boolean focusable;
+    public Boolean focusable;
 
     public boolean panelLabelAbove;
 
@@ -58,7 +58,7 @@ abstract public class ClientCellView extends ClientComponentView {
 
         design = (CellDesign) new ObjectInputStream(inStream).readObject();
 
-        focusable = inStream.readBoolean();
+        focusable = (Boolean) new ObjectInputStream(inStream).readObject();
 
         panelLabelAbove = inStream.readBoolean();
     }

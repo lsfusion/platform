@@ -31,7 +31,11 @@ public class CellController implements CellViewListener {
         form = iform;
 
         view = key.getPanelComponent(form);
-        view.getComponent().setFocusable(key.focusable);
+
+        if (key.focusable != null)
+            view.getComponent().setFocusable(key.focusable);
+        else if (key.editKey != null)
+            view.getComponent().setFocusable(false);
 
         view.addListener(this);
     }

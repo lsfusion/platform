@@ -27,7 +27,7 @@ abstract public class CellView extends ComponentView {
 
     public CellDesign design = new CellDesign();
 
-    public boolean focusable = true;
+    public Boolean focusable;
 
     public boolean panelLabelAbove = false;
 
@@ -53,7 +53,7 @@ abstract public class CellView extends ComponentView {
 
         new ObjectOutputStream(outStream).writeObject(design);
 
-        outStream.writeBoolean(focusable);
+        new ObjectOutputStream(outStream).writeObject(focusable);
 
         outStream.writeBoolean(panelLabelAbove);
     }

@@ -66,18 +66,25 @@ public class ReportDockable extends FormDockable {
         return print;
     }
 
-    public static void exportToExcel(RemoteFormInterface remoteForm) throws JRException, IOException, ClassNotFoundException {
+    public static void exportToExcel(RemoteFormInterface remoteForm) {
 
-        File tempFile = File.createTempFile("lsf", ".xls");
+        try {
 
-        JExcelApiExporter xlsExporter = new JExcelApiExporter();
-        xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm, true));
-        xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-        xlsExporter.exportReport();
+            File tempFile = File.createTempFile("lsf", ".xls");
 
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().open(tempFile);
+            JExcelApiExporter xlsExporter = new JExcelApiExporter();
+            xlsExporter.setParameter(JRExporterParameter.JASPER_PRINT, createJasperPrint(remoteForm, true));
+            xlsExporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+            xlsExporter.exportReport();
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(tempFile);
+            }
+
+            tempFile.deleteOnExit();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при экспорте в Excel", e);
         }
-
     }
 }

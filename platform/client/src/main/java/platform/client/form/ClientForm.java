@@ -296,78 +296,11 @@ public class ClientForm extends JPanel {
         InputMap im = getInputMap(JPanel.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap am = getActionMap();
 
-        // Добавляем стандартные кнопки
-        JButton buttonPrint = new JButton("Печать");
-        buttonPrint.addActionListener(new ActionListener() {
+        KeyStroke altP = KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_DOWN_MASK);
+        im.put(altP, "altPPressed");
 
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    print();
-                } catch (Exception e) {
-                    throw new RuntimeException("Ошибка при печати формы", e);
-                }
-            }
-        });
-
-        JButton buttonXls = new JButton("Excel");
-        buttonXls.addActionListener(new ActionListener() {
-
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    ReportDockable.exportToExcel(remoteForm);
-                } catch (Exception e) {
-                    throw new RuntimeException("Ошибка при экспорте в Excel", e);
-                }
-            }
-        });
-
-        AbstractAction nullAction = new AbstractAction("Сбросить") {
-
-            public void actionPerformed(ActionEvent ae) {
-                nullPressed();
-            }
-        };
-        JButton buttonNull = new JButton(nullAction);
-
-        AbstractAction refreshAction = new AbstractAction("Обновить") {
-
-            public void actionPerformed(ActionEvent ae) {
-                refreshData();
-            }
-        };
-        JButton buttonRefresh = new JButton(refreshAction);
-
-        AbstractAction applyAction = new AbstractAction("Применить") {
-
-            public void actionPerformed(ActionEvent ae) {
-                applyChanges();
-            }
-        };
-        buttonApply = new JButton(applyAction);
-
-        AbstractAction cancelAction = new AbstractAction("Отменить") {
-
-            public void actionPerformed(ActionEvent ae) {
-                cancelChanges();
-            }
-        };
-        buttonCancel = new JButton(cancelAction);
-
-        AbstractAction okAction = new AbstractAction("OK") {
-
-            public void actionPerformed(ActionEvent ae) {
-                okPressed();
-            }
-        };
-        JButton buttonOK = new JButton(okAction);
-
-        AbstractAction closeAction = new AbstractAction("Закрыть") {
-
-            public void actionPerformed(ActionEvent ae) {
-                closePressed();
-            }
-        };
-        JButton buttonClose = new JButton(closeAction);
+        KeyStroke altX = KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_DOWN_MASK);
+        im.put(altX, "altXPressed");
 
         KeyStroke altDel = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
         im.put(altDel, "altDelPressed");
@@ -381,6 +314,82 @@ public class ClientForm extends JPanel {
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         im.put(escape, "escPressed");
 
+        // Добавляем стандартные кнопки
+
+        AbstractAction printAction = new AbstractAction("Печать (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                print();
+            }
+        };
+        JButton buttonPrint = new JButton(printAction);
+        buttonPrint.setFocusable(false);
+
+        AbstractAction xlsAction = new AbstractAction("Excel (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                ReportDockable.exportToExcel(remoteForm);
+            }
+        };
+        JButton buttonXls = new JButton(xlsAction);
+        buttonXls.setFocusable(false);
+
+        AbstractAction nullAction = new AbstractAction("Сбросить (" + SwingUtils.getKeyStrokeCaption(altDel) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                nullPressed();
+            }
+        };
+        JButton buttonNull = new JButton(nullAction);
+        buttonNull.setFocusable(false);
+
+        AbstractAction refreshAction = new AbstractAction("Обновить (" + SwingUtils.getKeyStrokeCaption(keyF5) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                refreshData();
+            }
+        };
+        JButton buttonRefresh = new JButton(refreshAction);
+        buttonRefresh.setFocusable(false);
+
+        AbstractAction applyAction = new AbstractAction("Применить (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                applyChanges();
+            }
+        };
+        buttonApply = new JButton(applyAction);
+        buttonApply.setFocusable(false);
+
+        AbstractAction cancelAction = new AbstractAction("Отменить (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                cancelChanges();
+            }
+        };
+        buttonCancel = new JButton(cancelAction);
+        buttonCancel.setFocusable(false);
+
+        AbstractAction okAction = new AbstractAction("OK (" + SwingUtils.getKeyStrokeCaption(altEnter) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                okPressed();
+            }
+        };
+        JButton buttonOK = new JButton(okAction);
+        buttonOK.setFocusable(false);
+
+        AbstractAction closeAction = new AbstractAction("Закрыть (" + SwingUtils.getKeyStrokeCaption(escape) + ")") {
+
+            public void actionPerformed(ActionEvent ae) {
+                closePressed();
+            }
+        };
+        JButton buttonClose = new JButton(closeAction);
+        buttonClose.setFocusable(false);
+
+        am.put("altPPressed", printAction);
+        am.put("altXPressed", xlsAction);
         am.put("f5Pressed", refreshAction);
 
         formLayout.add(formView.refreshView, buttonRefresh);
@@ -655,10 +664,13 @@ public class ClientForm extends JPanel {
 //        applyFormChanges();
     }
 
-    void print() throws IOException, ClassNotFoundException, JRException {
+    void print() {
 
-        Main.layout.defaultStation.drop(new ReportDockable(clientNavigator, remoteForm));
-
+        try {
+            Main.layout.defaultStation.drop(new ReportDockable(clientNavigator, remoteForm));
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при печати формы", e);
+        }
     }
 
     void refreshData() {
