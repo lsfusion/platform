@@ -200,7 +200,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
     }
 
-    @GenericLazy
     public abstract Type getType();
 
     @GenericLazy

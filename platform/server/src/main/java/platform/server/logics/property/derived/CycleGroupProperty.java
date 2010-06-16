@@ -53,8 +53,12 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
 //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
         DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
-        if(changedWhere!=null)
-            getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+        if(changedWhere!=null) {
+            if(SIMPLE_SCHEME)
+                changedWhere.add(change.where);
+            else
+                getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+        }
         return new MapDataChanges<Interface<T>>(dataChanges);
     }
 

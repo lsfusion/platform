@@ -14,6 +14,7 @@ import platform.server.data.query.Join;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.data.expr.where.CompareWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -537,7 +538,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderHour.setDerivedChange(currentHour, is(orderSale), 1);
 
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail, article);
-        changeQuantityOrder = addOProp(documentGroup, "Номер", addCProp(IntegerClass.instance, 1, orderSaleArticleRetail, article), false, true, true, 1, 1, changeQuantityTime, 1, 2);
+        changeQuantityOrder = addOProp(documentGroup, "Номер", addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), false, true, true, 1, 1, changeQuantityTime, 1, 2);
 
         LP orderSaleDocPrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderSale, article);
         orderSaleDocPrice.setDerivedChange(saleStorePrice, outStore, 1, 2, articleQuantity, 1, 2);
@@ -1252,7 +1253,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(changeQuantityOrder, objDoc, objArt);
             addPropertyView(barcode, objArt);
             addPropertyView(name, objArt);
-            addPropertyView(articleQuantity, objDoc, objArt);
+            addPropertyView(articleInnerQuantity, objDoc, objArt); // для timeChanges иначе можно было бы articleQuantity
             addPropertyView(documentFreeQuantity, objDoc, objArt);
             addPropertyView(orderSalePrice, objDoc, objArt);
             addPropertyView(orderArticleSaleDiscount, objDoc, objArt);

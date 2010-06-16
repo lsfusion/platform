@@ -89,6 +89,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
 
+    @GenericLazy
     public Type getType() {
         return calculateExpr(getMapKeys()).getSelfType();
     }

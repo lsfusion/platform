@@ -1419,6 +1419,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             case OVERRIDE:
                 property = new OverrideUnionProperty(sID,caption,intNum);
                 break;
+            case EXCLUSIVE:
+                property = new ExclusiveUnionProperty(sID,caption,intNum);
+                break;
         }
 
         LP listProperty = new LP<UnionProperty.Interface>(property);
@@ -1439,6 +1442,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     break;
                 case OVERRIDE:
                     ((OverrideUnionProperty)property).operands.add(operand);
+                    break;
+                case EXCLUSIVE:
+                    ((ExclusiveUnionProperty)property).operands.add(operand);
                     break;
             }
         }
@@ -1464,7 +1470,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     // объединяет разные по классам св-ва
     protected LP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
         assert checkCUProps.add(props);
-        return addUProp(group,sID,caption,Union.OVERRIDE, getUParams(props, 0));
+        return addXSUProp(group,sID,caption,props);
     }
 
     // разница
@@ -1544,7 +1550,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     // объединяет заведомо непересекающиеся но не классовые свойства
     protected LP addXSUProp(AbstractGroup group, String sID, String caption, LP... props) {
-        return addSUProp(group, sID, caption, Union.OVERRIDE, props);
+        return addUProp(group, sID, caption, Union.EXCLUSIVE, getUParams(props, 0));
     }
 
     protected LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {

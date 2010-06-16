@@ -228,7 +228,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
-        WhereBuilder changedWhere = new WhereBuilder();
+        WhereBuilder changedWhere = property.timeChanges.isEmpty()?null:new WhereBuilder();
         MapDataChanges<P> dataChanges = property.getDataChanges(change, changedWhere, modifier);
         for(Map.Entry<Time,TimeChangeDataProperty<P>> timeChange : property.timeChanges.entrySet()) // обновляем свойства времени изменения
             dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
