@@ -1,33 +1,30 @@
 package platform.server.data.expr;
 
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.Where;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.query.JoinData;
-import platform.server.data.query.AbstractSourceJoin;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.SourceEnumerator;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.type.Type;
-import platform.server.data.type.ConcatenateType;
+import platform.base.BaseUtils;
+import platform.base.QuickMap;
+import platform.server.caches.Lazy;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
-import platform.base.BaseUtils;
-import platform.base.QuickMap;
+import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.ConcatenateType;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
 public class ConcatenateExpr extends BaseExpr {
 
     private final List<BaseExpr> exprs;
@@ -47,7 +44,7 @@ public class ConcatenateExpr extends BaseExpr {
         return new VariableExprSet(exprs);
     }
 
-    public ConcatenateExpr translateDirect(DirectTranslator translator) {
+    public ConcatenateExpr translate(MapTranslate translator) {
         return new ConcatenateExpr(translator.translateDirect(exprs));
     }
 
@@ -122,7 +119,7 @@ public class ConcatenateExpr extends BaseExpr {
         return ((ConcatenateType)getSelfType()).getConcatenateSource(sources,compile.syntax);
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         enumerator.fill(exprs);
     }
 }

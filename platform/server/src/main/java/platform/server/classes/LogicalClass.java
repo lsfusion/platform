@@ -2,8 +2,8 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.SQLSession;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
 

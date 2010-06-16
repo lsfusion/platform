@@ -1,19 +1,24 @@
 package platform.server.data.expr;
 
+import platform.base.BaseUtils;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
-import platform.server.classes.LogicalClass;
 import platform.server.classes.DoubleClass;
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
+import platform.server.classes.LogicalClass;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.caches.hash.HashContext;
-import platform.base.BaseUtils;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 public class ValueExpr extends StaticClassExpr {
@@ -52,7 +57,7 @@ public class ValueExpr extends StaticClassExpr {
         return object + " - " + objectClass;
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         enumerator.add(this);
     }
 
@@ -91,7 +96,7 @@ public class ValueExpr extends StaticClassExpr {
         return this;
     }
 
-    public BaseExpr translateDirect(DirectTranslator translator) {
+    public BaseExpr translate(MapTranslate translator) {
         return translator.translate(this);
     }
 

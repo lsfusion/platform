@@ -1,31 +1,31 @@
 package platform.server.data.type;
 
 import net.sf.jasperreports.engine.JRAlignment;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.SQLSession;
+import platform.base.BaseUtils;
+import platform.base.OrderedMap;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.PropertyField;
-import platform.server.data.where.Where;
+import platform.server.data.SQLSession;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.query.Query;
 import platform.server.data.query.Join;
+import platform.server.data.query.Query;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.BaseClass;
-import platform.server.classes.sets.AndClassSet;
-import platform.base.OrderedMap;
-import platform.base.BaseUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.HashMap;
 import java.util.Collections;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ObjectType implements Type<Integer> {
 

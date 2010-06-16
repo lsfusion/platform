@@ -1,6 +1,8 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.core.io.FileSystemResource;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
@@ -10,43 +12,39 @@ import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
 import platform.server.auth.User;
+import platform.server.caches.GenericImmutable;
+import platform.server.caches.GenericLazy;
+import platform.server.classes.*;
 import platform.server.data.*;
-import platform.server.data.query.Query;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.table.ImplementTable;
-import platform.server.logics.table.TableFactory;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.DistrGroupProperty;
-import platform.server.logics.property.derived.CycleGroupProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.linear.LP;
-import platform.server.session.*;
-import platform.server.data.SQLSession;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.where.WhereBuilder;
-import platform.server.view.navigator.*;
+import platform.server.logics.table.ImplementTable;
+import platform.server.logics.table.TableFactory;
+import platform.server.session.DataSession;
+import platform.server.view.form.CustomObjectImplement;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.*;
-import platform.server.classes.*;
-import platform.server.caches.GenericLazy;
-import platform.server.caches.GenericImmutable;
+import platform.server.view.navigator.NavigatorElement;
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.ObjectNavigator;
+import platform.server.view.navigator.RemoteNavigator;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
 import java.util.*;
-import java.net.MalformedURLException;
-
-import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.core.io.FileSystemResource;
 
 @GenericImmutable
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {

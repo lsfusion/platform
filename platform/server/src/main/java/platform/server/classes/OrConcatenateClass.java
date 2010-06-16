@@ -1,7 +1,7 @@
 package platform.server.classes;
 
-import platform.server.classes.sets.OrClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.OrClassSet;
 import platform.server.data.where.classes.AbstractClassWhere;
 
 import java.util.Map;

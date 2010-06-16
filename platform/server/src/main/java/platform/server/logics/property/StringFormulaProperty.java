@@ -3,11 +3,14 @@ package platform.server.logics.property;
 import platform.server.classes.ConcreteValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.FormulaExpr;
+import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.data.where.WhereBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaProperty.Interface> {
 

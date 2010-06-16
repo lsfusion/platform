@@ -1,23 +1,22 @@
 package platform.server.data.expr;
 
+import net.jcip.annotations.Immutable;
 import platform.interop.Compare;
-import platform.server.caches.ManualLazy;
 import platform.server.caches.Lazy;
+import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
-import platform.server.logics.DataObject;
 import platform.server.data.where.Where;
+import platform.server.logics.DataObject;
 
 import java.util.Collection;
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
 
 // абстрактный класс выражений
 

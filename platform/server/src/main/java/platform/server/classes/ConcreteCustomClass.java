@@ -1,7 +1,7 @@
 package platform.server.classes;
 
-import platform.server.data.expr.ValueExpr;
 import platform.server.classes.sets.*;
+import platform.server.data.expr.ValueExpr;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
 

@@ -5,11 +5,11 @@ import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.NullValue;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
-import platform.server.session.ChangesSession;
 import platform.server.session.Changes;
+import platform.server.session.ChangesSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;

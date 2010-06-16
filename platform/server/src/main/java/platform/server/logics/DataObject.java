@@ -1,28 +1,30 @@
 package platform.server.logics;
 
 import platform.base.BaseUtils;
-import platform.base.DateConverter;
 import platform.interop.Compare;
+import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
-import platform.server.classes.DateClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
-import platform.server.view.form.PropertyObjectInterface;
+import platform.server.session.ChangesSession;
 import platform.server.view.form.GroupObjectImplement;
-import platform.server.view.navigator.PropertyInterfaceNavigator;
+import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.navigator.Mapper;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.caches.hash.HashValues;
-import platform.server.session.ChangesSession;
+import platform.server.view.navigator.PropertyInterfaceNavigator;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterface, PropertyInterfaceNavigator {
 
@@ -131,8 +133,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         this(expr.object,expr.objectClass);
     }
 
-    public DataObject translate(Map<ValueExpr,ValueExpr> mapValues) {
-        return new DataObject(mapValues.get(getExpr()));
+    public DataObject translate(MapValuesTranslate mapValues) {
+        return new DataObject(mapValues.translate(getExpr()));
     }
 
     public DataObject refresh(ChangesSession session) throws SQLException {

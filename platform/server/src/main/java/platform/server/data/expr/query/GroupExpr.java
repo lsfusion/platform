@@ -1,30 +1,30 @@
 package platform.server.data.expr.query;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.caches.*;
-import platform.server.data.expr.query.GroupJoin;
-import platform.server.data.query.CompileSource;
+import platform.server.caches.Lazy;
+import platform.server.caches.ManualLazy;
+import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.query.InnerJoins;
-import platform.server.data.query.InnerWhere;
+import platform.server.classes.DataClass;
+import platform.server.data.expr.*;
+import platform.server.data.expr.cases.Case;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.Case;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.EqualsWhere;
-import platform.server.data.expr.*;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.InnerJoins;
+import platform.server.data.query.InnerWhere;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.classes.DataClass;
 
 import java.util.*;
 
-@Immutable
-public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> implements MapContext {
+public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     @TwinLazy
     public Where getJoinsWhere() {
@@ -78,7 +78,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
     }
 
     // трансляция
-    public GroupExpr(GroupExpr groupExpr, DirectTranslator translator) {
+    public GroupExpr(GroupExpr groupExpr, MapTranslate translator) {
         super(groupExpr, translator);
     }
 
@@ -346,7 +346,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
         // translate'им все key = выражение
         Map<KeyExpr, BaseExpr> keyExprs;
         if(!(keyExprs = expr.getWhere().getKeyExprs()).isEmpty()) {
-            QueryTranslator translator = new QueryTranslator(keyExprs,false);
+            QueryTranslator translator = new PartialQueryTranslator(keyExprs);
 
             Map<BaseExpr,BaseExpr> transBase = new HashMap<BaseExpr, BaseExpr>();
             for(BaseExpr groupExpr : group.keySet()) {
@@ -373,7 +373,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> imple
         Set<KeyExpr> keys = getKeys(expr, group);
         Map<KeyExpr, BaseExpr> groupKeys = BaseUtils.splitKeys(group, keys, compares);
         if(groupKeys.size()==keys.size()) {
-            QueryTranslator translator = new QueryTranslator(groupKeys,true);
+            QueryTranslator translator = new QueryTranslator(groupKeys);
             Where equalsWhere = Where.TRUE; // чтобы лишних проталкиваний не было
             for(Map.Entry<BaseExpr, BaseExpr> compare : compares.entrySet()) // оставшиеся
                 equalsWhere = equalsWhere.and(EqualsWhere.create((BaseExpr) compare.getKey().translateQuery(translator),compare.getValue()));

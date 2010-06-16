@@ -1,23 +1,23 @@
 package platform.server.logics.property;
 
+import platform.base.BaseUtils;
+import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.session.*;
+import platform.server.data.Field;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.Field;
-import platform.server.data.PropertyField;
-import platform.server.data.KeyField;
-import platform.server.data.type.Type;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.DataObject;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.logics.ObjectValue;
+import platform.server.session.*;
 import platform.server.view.form.PropertyObjectInterface;
-import platform.interop.action.ClientAction;
-import platform.base.BaseUtils;
+import platform.server.view.form.client.RemoteFormView;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 public abstract class UserProperty extends Property<ClassPropertyInterface> {
 

@@ -1,16 +1,15 @@
 package platform.server.view.form;
 
+import platform.base.BaseUtils;
 import platform.server.data.*;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.base.BaseUtils;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.List;
 import java.util.Set;
-import java.sql.SQLException;
 
 // таблица куда виды складывают свои объекты
 public class ViewTable extends SessionTable<ViewTable> {

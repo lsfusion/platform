@@ -1,18 +1,17 @@
 package platform.server.session;
 
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.Property;
 import platform.server.logics.property.DataProperty;
+import platform.server.logics.property.Property;
 import platform.server.view.form.RemoteForm;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteCustomClass;
 
 import java.sql.SQLException;
 import java.util.Collection;

@@ -3,20 +3,23 @@ package platform.server.logics.property.derived;
 import net.jcip.annotations.Immutable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
-import platform.server.session.*;
 import platform.server.data.where.WhereBuilder;
-import platform.server.view.navigator.PropertyObjectNavigator;
-import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.navigator.PropertyInterfaceNavigator;
 import platform.server.logics.DataObject;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
+import platform.server.view.navigator.ObjectNavigator;
+import platform.server.view.navigator.PropertyInterfaceNavigator;
+import platform.server.view.navigator.PropertyObjectNavigator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
-@Immutable
 public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends AggregateProperty<MaxChangeProperty.Interface<P>> {
 
     public abstract static class Interface<P extends PropertyInterface> extends PropertyInterface<Interface<P>> {

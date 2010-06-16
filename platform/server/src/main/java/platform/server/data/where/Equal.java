@@ -1,8 +1,8 @@
 package platform.server.data.where;
 
+import platform.base.BaseUtils;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.base.BaseUtils;
 
 public class Equal {
     public BaseExpr[] exprs;

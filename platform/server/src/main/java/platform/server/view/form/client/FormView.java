@@ -1,25 +1,24 @@
 package platform.server.view.form.client;
 
-import platform.base.OrderedMap;
-import platform.base.IDGenerator;
 import platform.base.DefaultIDGenerator;
-import platform.server.view.navigator.CellViewNavigator;
-import platform.server.view.navigator.PropertyViewNavigator;
-import platform.server.view.navigator.GroupObjectNavigator;
-import platform.server.view.form.GroupObjectImplement;
-import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.property.Property;
-import platform.server.logics.linear.LP;
+import platform.base.IDGenerator;
+import platform.base.OrderedMap;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.logics.linear.LP;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.group.AbstractGroup;
+import platform.server.view.navigator.CellViewNavigator;
+import platform.server.view.navigator.GroupObjectNavigator;
+import platform.server.view.navigator.PropertyViewNavigator;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.awt.*;
 
 public class FormView implements ClientSerialize {
 

@@ -2,29 +2,28 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.BaseClass;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.where.Where;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.data.SQLSession;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.where.CompareWhere;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.query.Query;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashValues;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.query.Query;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 
 import java.sql.SQLException;
 import java.util.*;
 
 // временная таблица на момент сессии
-@GenericImmutable
 public abstract class SessionTable<This extends SessionTable<This>> extends Table implements MapValues<This> {
 
     // конструктор чистой структуры
@@ -74,7 +73,7 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         };
     }
 
-    @GenericLazy
+    @Lazy
     public int hashValues(HashValues hashValues) {
         int hash = 0;
         if(rows!=null)
@@ -93,12 +92,12 @@ public abstract class SessionTable<This extends SessionTable<This>> extends Tabl
         return result;
     }
 
-    public This translate(Map<ValueExpr,ValueExpr> mapValues) {
+    public This translate(MapValuesTranslate mapValues) {
         Map<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> transRows = null;
         if(rows!=null) {
             transRows = new HashMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>();
             for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())
-                transRows.put(MapValuesIterable.translate(row.getKey(), mapValues), MapValuesIterable.translate(row.getValue(), mapValues));
+                transRows.put(mapValues.translateValues(row.getKey()), mapValues.translateValues(row.getValue()));
         }
         return createThis(classes, propertyClasses, transRows);
     }

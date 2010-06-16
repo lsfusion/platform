@@ -1,21 +1,28 @@
 package platform.server.data.expr.query;
 
-import platform.server.data.expr.*;
+import net.jcip.annotations.Immutable;
+import platform.server.caches.AbstractTranslateContext;
+import platform.server.caches.Lazy;
+import platform.server.caches.ParamLazy;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.SourceJoin;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.query.*;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.caches.*;
-import platform.server.caches.hash.HashContext;
+import platform.server.data.where.Where;
 
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
@@ -32,8 +39,8 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         }
 
         @ParamLazy
-        public Query translateDirect(DirectTranslator translator) {
-            return new Query(expr.translateDirect(translator),translator.translate(orders),translator.translate(partitions));
+        public Query translate(MapTranslate translator) {
+            return new Query(expr.translate(translator),translator.translate(orders),translator.translate(partitions));
         }
 
         @Lazy
@@ -77,11 +84,11 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     }
 
     // трансляция
-    private OrderExpr(OrderExpr orderExpr, DirectTranslator translator) {
+    private OrderExpr(OrderExpr orderExpr, MapTranslate translator) {
         super(orderExpr, translator);
     }
 
-    public OrderExpr translateDirect(DirectTranslator translator) {
+    public OrderExpr translate(MapTranslate translator) {
         return new OrderExpr(this,translator);
     }
 
@@ -137,7 +144,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             else
                 restGroup.put(groupKey.getKey(), groupKey.getValue());
         if(translate.size()>0) {
-            QueryTranslator translator = new QueryTranslator(translate,false);
+            QueryTranslator translator = new PartialQueryTranslator(translate);
             expr = expr.translateQuery(translator);
             orders = translator.translate(orders);
             restPartitions = translator.translate(restPartitions);

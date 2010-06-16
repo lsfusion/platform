@@ -1,7 +1,5 @@
 package platform.server.view.form;
 
-import platform.server.view.form.FormRow;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;

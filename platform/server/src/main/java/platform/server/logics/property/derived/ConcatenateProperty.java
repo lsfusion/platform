@@ -1,17 +1,17 @@
 package platform.server.logics.property.derived;
 
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.FormulaProperty;
-import platform.server.data.expr.Expr;
 import platform.server.data.expr.ConcatenateExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.FormulaProperty;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class ConcatenateProperty extends FormulaProperty<ConcatenateProperty.Interface> {
 

@@ -1,7 +1,7 @@
 package platform.server.view.form.client;
 
-import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexConstraints;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

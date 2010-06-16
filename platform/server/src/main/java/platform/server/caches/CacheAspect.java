@@ -8,8 +8,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.SoftHashMap;
 import platform.base.WeakIdentityHashMap;
 import platform.base.WeakIdentityHashSet;
-import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.query.AbstractSourceJoin;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -75,7 +75,8 @@ public class CacheAspect {
         return result;
     }
 
-    @Around("execution(@platform.server.caches.Lazy * (@net.jcip.annotations.Immutable *).*(..)) && target(object)") // с call'ом есть баги
+    //@net.jcip.annotations.Immutable 
+    @Around("execution(@platform.server.caches.Lazy * *.*(..)) && target(object)") // с call'ом есть баги
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return lazyExecute(object,thisJoinPoint,thisJoinPoint.getArgs());
     }
@@ -84,12 +85,14 @@ public class CacheAspect {
     @DeclareParents(value="@platform.server.caches.GenericImmutable *",defaultImpl=ImmutableInterfaceImplement.class)
     private ImmutableInterface genericImmutable;
 
-    @Around("execution(@platform.server.caches.GenericLazy * (@platform.server.caches.GenericImmutable *).*(..)) && target(object)") // с call'ом есть баги
+    //@platform.server.caches.GenericImmutable
+    @Around("execution(@platform.server.caches.GenericLazy * *.*(..)) && target(object)") // с call'ом есть баги
     public Object callGenericMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         return lazyExecute(object,thisJoinPoint,thisJoinPoint.getArgs());
     }
-  */
-    @Around("execution(@platform.server.caches.ParamLazy * *.*(@net.jcip.annotations.Immutable *)) && target(object)") // с call'ом есть баги
+ */
+    //@net.jcip.annotations.Immutable *
+    @Around("execution(@platform.server.caches.ParamLazy * *.*(..)) && target(object)") // с call'ом есть баги
     public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         Object[] args = thisJoinPoint.getArgs();
         Object[] switchArgs = new Object[args.length];
@@ -99,7 +102,8 @@ public class CacheAspect {
         return lazyExecute(args[0],thisJoinPoint,switchArgs);
     }
 
-    @Around("execution(@platform.server.caches.SynchronizedLazy * (@net.jcip.annotations.Immutable *).*(..)) && target(object)") // с call'ом есть баги
+    //@net.jcip.annotations.Immutable
+    @Around("execution(@platform.server.caches.SynchronizedLazy * *.*(..)) && target(object)") // с call'ом есть баги
     public Object callSynchronizedMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
         synchronized(object) {
             return callMethod(thisJoinPoint, object);

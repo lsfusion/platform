@@ -1,14 +1,7 @@
 package platform.server.session;
 
-import platform.server.logics.property.*;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.session.PropertyChange;
-import platform.server.view.form.client.RemoteFormView;
-import platform.interop.action.ClientAction;
-
-import java.sql.SQLException;
-import java.util.*;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.UserProperty;
 
 // вообще должен содержать только DataProperty и ActionProperty но так как мн-вого наследования нету приходится извращаться
 public class DataChanges extends AbstractPropertyChanges<ClassPropertyInterface, UserProperty, DataChanges> {

@@ -1,16 +1,16 @@
 package platform.server.view.form.filter;
 
 import platform.server.data.expr.Expr;
-import platform.server.logics.property.Property;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.Property;
 import platform.server.session.Changes;
-import platform.server.session.Modifier;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.view.form.CustomObjectImplement;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.RemoteForm;
-import platform.server.view.form.CustomObjectImplement;
-import platform.server.data.where.Where;
 
 import java.io.DataInputStream;
 import java.io.IOException;

@@ -1,18 +1,16 @@
 package platform.server.caches;
 
-import platform.base.BaseUtils;
 import platform.base.EmptyIterator;
 import platform.base.Pairs;
 import platform.server.caches.hash.HashMapContext;
 import platform.server.caches.hash.HashMapKeysContext;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.translator.*;
 
 import java.util.Iterator;
 import java.util.Map;
 
-public class MapParamsIterable implements Iterable<DirectTranslator> {
+public class MapParamsIterable implements Iterable<MapTranslate> {
 
     public static int hash(MapContext map,final boolean values) {
         return map.hash(values? HashMapContext.instance: HashMapKeysContext.instance);
@@ -28,15 +26,15 @@ public class MapParamsIterable implements Iterable<DirectTranslator> {
         this.values = values;
     }
 
-    public Iterator<DirectTranslator> iterator() {
+    public Iterator<MapTranslate> iterator() {
         return new MapIterator();
     }
 
     // перебирает Map'ы KeyExpr -> KeyExpr и ValueExpr -> ValueExpr
-    private class MapIterator implements Iterator<DirectTranslator> {
+    private class MapIterator implements Iterator<MapTranslate> {
         private Pairs<KeyExpr,KeyExpr> keyPairs;
 
-        private Iterator<Map<ValueExpr,ValueExpr>> valueIterator;
+        private Iterator<MapValuesTranslate> valueIterator;
         private Iterator<Map<KeyExpr,KeyExpr>> keysIterator;
 
         public MapIterator() {
@@ -46,9 +44,9 @@ public class MapParamsIterable implements Iterable<DirectTranslator> {
                 if(valueIterator.hasNext())
                     mapValues = valueIterator.next();
             } else {
-                valueIterator = new EmptyIterator<Map<ValueExpr, ValueExpr>>();
+                valueIterator = new EmptyIterator<MapValuesTranslate>();
                 if(from.getValues().equals(to.getValues())) // если контексты не совпадают то сразу вываливаемся
-                    mapValues = BaseUtils.toMap(from.getValues());
+                    mapValues = MapValuesTranslator.noTranslate;
             }
 
             if(mapValues==null)
@@ -57,7 +55,7 @@ public class MapParamsIterable implements Iterable<DirectTranslator> {
                 keyPairs = new Pairs<KeyExpr,KeyExpr>(from.getKeys(),to.getKeys());
                 keysIterator = keyPairs.iterator();
                 if(!keysIterator.hasNext())
-                    valueIterator = new EmptyIterator<Map<ValueExpr, ValueExpr>>();    
+                    valueIterator = new EmptyIterator<MapValuesTranslate>();    
             }
         }
 
@@ -65,16 +63,16 @@ public class MapParamsIterable implements Iterable<DirectTranslator> {
             return keysIterator.hasNext() || valueIterator.hasNext();
         }
 
-        private Map<ValueExpr,ValueExpr> mapValues;
+        private MapValuesTranslate mapValues;
 
-        public DirectTranslator next() {
+        public MapTranslate next() {
             Map<KeyExpr,KeyExpr> mapKeys;
             if(!keysIterator.hasNext()) {
                 mapValues = valueIterator.next();
                 keysIterator = keyPairs.iterator();
             }
             mapKeys = keysIterator.next();
-            return new DirectTranslator(mapKeys,mapValues);
+            return new MapTranslator(mapKeys,mapValues);
         }
 
         public void remove() {

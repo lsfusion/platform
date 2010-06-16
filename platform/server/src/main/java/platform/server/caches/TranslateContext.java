@@ -1,14 +1,14 @@
 package platform.server.caches;
 
-import platform.server.data.translator.DirectTranslator;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.translator.MapTranslate;
 
 public interface TranslateContext<This extends TranslateContext> {
 
     int hashContext(HashContext hashContext);
 
-    This translateDirect(DirectTranslator translator);
+    This translate(MapTranslate translator);
 
     SourceJoin[] getEnum();
 }

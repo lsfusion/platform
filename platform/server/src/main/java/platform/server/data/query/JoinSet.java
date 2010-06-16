@@ -1,19 +1,17 @@
 package platform.server.data.query;
 
+import net.jcip.annotations.Immutable;
 import platform.base.AddSet;
 import platform.base.BaseUtils;
-import platform.server.data.Table;
-import platform.server.data.where.DNFWheres;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.expr.query.GroupJoin;
-import platform.server.data.expr.VariableExprSet;
-import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.Table;
+import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.query.GroupJoin;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.DNFWheres;
 
 import java.util.Collection;
-
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Interface<JoinSet> {
@@ -69,10 +67,10 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
         return hash;
     }
 
-    public JoinSet translateDirect(DirectTranslator translator) {
+    public JoinSet translate(MapTranslate translator) {
         InnerJoin[] transJoins = new InnerJoin[wheres.length];
         for(int i=0;i<wheres.length;i++)
-            transJoins[i] = wheres[i].translateDirect(translator);
+            transJoins[i] = wheres[i].translate(translator);
         return new JoinSet(transJoins);
     }
 

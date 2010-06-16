@@ -1,31 +1,30 @@
 package platform.server.view.form.client;
 
-import net.sf.jasperreports.engine.design.JasperDesign;
+import ar.com.fdvs.dj.core.DynamicJasperHelper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import platform.base.BaseUtils;
 import platform.interop.*;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.RemoteDialogInterface;
-import platform.server.classes.CustomClass;
+import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
 import platform.server.view.form.*;
 import platform.server.view.form.client.report.DefaultJasperDesign;
 import platform.server.view.form.filter.Filter;
-import platform.server.view.navigator.ObjectNavigator;
 import platform.server.view.navigator.NavigatorForm;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
+import platform.server.view.navigator.ObjectNavigator;
 
 import java.io.*;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-
-import ar.com.fdvs.dj.core.DynamicJasperHelper;
 
 // фасад для работы с клиентом
 public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>> extends RemoteObject implements RemoteFormInterface {

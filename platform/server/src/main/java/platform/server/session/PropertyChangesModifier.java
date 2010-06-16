@@ -1,13 +1,10 @@
 package platform.server.session;
 
+import net.jcip.annotations.Immutable;
+import platform.server.caches.Lazy;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.data.expr.ValueExpr;
-import platform.server.caches.Lazy;
-
-import net.jcip.annotations.Immutable;
-
-import java.util.Map;
 
 @Immutable
 public class PropertyChangesModifier extends AbstractPropertyChangesModifier<PropertyInterface, Property<PropertyInterface>, PropertyChanges, PropertyChangesModifier.UsedChanges> {
@@ -31,11 +28,11 @@ public class PropertyChangesModifier extends AbstractPropertyChangesModifier<Pro
             super(modifier);
         }
 
-        protected UsedChanges(UsedChanges usedChanges, Map<ValueExpr,ValueExpr> mapValues) {
+        protected UsedChanges(UsedChanges usedChanges, MapValuesTranslate mapValues) {
             super(usedChanges, mapValues);
         }
         
-        public UsedChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
+        public UsedChanges translate(MapValuesTranslate mapValues) {
             return new UsedChanges(this, mapValues);
         }
 
@@ -69,5 +66,10 @@ public class PropertyChangesModifier extends AbstractPropertyChangesModifier<Pro
 
     protected PropertyChange<PropertyInterface> getPropertyChange(Property property) {
         return changes.get(property);
+    }
+
+    @Override
+    public boolean neededClass(Changes changes) {
+        return changes instanceof UsedChanges;
     }
 }

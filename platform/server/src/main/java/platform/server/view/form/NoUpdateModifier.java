@@ -1,20 +1,20 @@
 package platform.server.view.form;
 
-import platform.server.session.Modifier;
-import platform.server.session.Changes;
-import platform.server.session.SessionChanges;
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
+import platform.server.caches.Lazy;
+import platform.server.caches.GenericLazy;
+import platform.server.caches.hash.HashValues;
+import platform.server.data.expr.Expr;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.where.WhereBuilder;
-import platform.server.caches.hash.HashValues;
-import platform.server.caches.Lazy;
-import platform.base.BaseUtils;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
 
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedChanges> {
 
@@ -27,7 +27,6 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         this.hintsNoUpdate = hintsNoUpdate;
     }
 
-    @Immutable
     public static class UsedChanges extends Changes<UsedChanges> {
         final Set<Property> noUpdateProps;
 
@@ -62,22 +61,27 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         }
 
         @Override
-        public boolean equals(Object o) {
-            return this==o || o instanceof UsedChanges && noUpdateProps.equals(((UsedChanges)o).noUpdateProps) && super.equals(o);
+        public boolean modifyUsed() {
+            return !noUpdateProps.isEmpty();
         }
 
         @Override
-        @Lazy
-        public int hashValues(HashValues hashValues) {
-            return 31 * super.hashValues(hashValues) + noUpdateProps.hashCode();
+        protected boolean modifyEquals(UsedChanges changes) {
+            return noUpdateProps.equals(changes.noUpdateProps);
         }
 
-        private UsedChanges(UsedChanges usedChanges, Map<ValueExpr,ValueExpr> mapValues) {
+        @Override
+        @GenericLazy
+        public int hashValues(HashValues hashValues) {
+            return super.hashValues(hashValues) * 31 + noUpdateProps.hashCode();
+        }
+
+        private UsedChanges(UsedChanges usedChanges, MapValuesTranslate mapValues) {
             super(usedChanges, mapValues);
             noUpdateProps = usedChanges.noUpdateProps;
         }
 
-        public UsedChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
+        public UsedChanges translate(MapValuesTranslate mapValues) {
             return new UsedChanges(this, mapValues);
         }
     }
@@ -104,4 +108,7 @@ public abstract class NoUpdateModifier extends Modifier<NoUpdateModifier.UsedCha
         return UsedChanges.EMPTY;
     }
 
+    public boolean neededClass(Changes changes) {
+        return changes instanceof UsedChanges;
+    }
 }

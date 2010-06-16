@@ -1,29 +1,27 @@
 package platform.server.session;
 
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.SQLSession;
-import platform.server.data.PropertyField;
-import platform.server.data.where.Where;
-import platform.server.data.where.WhereBuilder;
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
+import platform.server.caches.AbstractMapValues;
+import platform.server.caches.Lazy;
+import platform.server.caches.MapValuesIterable;
+import platform.server.caches.hash.HashValues;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
+import platform.server.data.PropertyField;
+import platform.server.data.SQLSession;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.DataProperty;
-import platform.server.caches.MapValuesIterable;
-import platform.server.caches.Lazy;
-import platform.server.caches.AbstractMapValues;
-import platform.server.caches.hash.HashValues;
-import platform.base.BaseUtils;
 
-import java.util.*;
 import java.sql.SQLException;
-
-import net.jcip.annotations.Immutable;
+import java.util.*;
 
 @Immutable
 public class SessionChanges extends AbstractMapValues<SessionChanges> {
@@ -63,13 +61,13 @@ public class SessionChanges extends AbstractMapValues<SessionChanges> {
 
     public final static SessionChanges EMPTY = new SessionChanges();
 
-    private SessionChanges(SessionChanges changes, Map<ValueExpr,ValueExpr> mapValues) {
-        add = MapValuesIterable.translate(changes.add, mapValues);
-        remove = MapValuesIterable.translate(changes.remove, mapValues);
-        data = MapValuesIterable.translate(changes.data, mapValues);
+    private SessionChanges(SessionChanges changes, MapValuesTranslate mapValues) {
+        add = mapValues.translateValues(changes.add);
+        remove = mapValues.translateValues(changes.remove);
+        data = mapValues.translateValues(changes.data);
     }
 
-    public SessionChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
+    public SessionChanges translate(MapValuesTranslate mapValues) {
         return new SessionChanges(this, mapValues);
     }
 

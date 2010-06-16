@@ -1,7 +1,6 @@
 package platform.server.data.expr;
 
 import platform.base.QuickSet;
-import platform.server.data.where.DataWhereSet;
 
 import java.util.Collection;
 

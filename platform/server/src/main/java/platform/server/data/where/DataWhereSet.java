@@ -1,10 +1,7 @@
 package platform.server.data.where;
 
 import platform.base.QuickSet;
-import platform.server.data.expr.*;
-
-import java.util.List;
-import java.util.Collection;
+import platform.server.data.expr.VariableExprSet;
 
 public class DataWhereSet extends QuickSet<DataWhere> {
 

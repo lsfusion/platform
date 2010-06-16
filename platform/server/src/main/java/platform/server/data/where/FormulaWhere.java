@@ -1,12 +1,12 @@
 package platform.server.data.where;
 
 import platform.base.BaseUtils;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.query.CompileSource;
-import platform.server.caches.hash.HashContext;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
-import platform.server.data.query.SourceEnumerator;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.where.classes.ClassExprWhere;
 
 @GenericImmutable
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
@@ -27,7 +27,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
         return "("+result+")";
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         for(Where where : wheres)
             where.enumerate(enumerator);
     }

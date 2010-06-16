@@ -1,22 +1,22 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.interop.action.ClientAction;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.session.*;
-import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.view.form.client.RemoteFormView;
+import platform.server.session.*;
 import platform.server.view.form.PropertyObjectInterface;
-import platform.interop.action.ClientAction;
+import platform.server.view.form.client.RemoteFormView;
 
+import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.List;
-import java.sql.SQLException;
 
 public class PropertyMapImplement<T extends PropertyInterface,P extends PropertyInterface> extends PropertyImplement<P,T> implements PropertyInterfaceImplement<P> {
 

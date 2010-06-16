@@ -1,12 +1,14 @@
 package platform.server.classes;
 
-import platform.server.data.expr.cases.CaseExpr;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.sets.ObjectClassSet;
+import platform.server.classes.sets.OrObjectClassSet;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
 import platform.server.logics.DataObject;
-import platform.server.classes.sets.*;
 
 import java.sql.SQLException;
 import java.util.Collection;

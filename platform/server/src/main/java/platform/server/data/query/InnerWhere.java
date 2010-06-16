@@ -1,21 +1,20 @@
 package platform.server.data.query;
 
+import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.base.QuickMap;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.expr.*;
+import platform.server.caches.Lazy;
+import platform.server.caches.hash.HashCodeContext;
+import platform.server.caches.hash.HashContext;
+import platform.server.classes.BaseClass;
+import platform.server.data.Table;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.VariableExprSet;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.Table;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashCodeContext;
-import platform.server.caches.Lazy;
-import platform.server.classes.BaseClass;
-import platform.server.classes.sets.AndClassSet;
 
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 // цель механизма InnerJoins, чтобы не было висячих ключей, из этого и следует InnerWhere
 @Immutable
@@ -124,10 +123,10 @@ public class InnerWhere implements DNFWheres.Interface<InnerWhere> {
         return hash * 31 + joins.hashContext(hashContext);
     }
 
-    public InnerWhere translateDirect(DirectTranslator translator) {
+    public InnerWhere translate(MapTranslate translator) {
         Map<KeyExpr,BaseExpr> transKeyExprs = new HashMap<KeyExpr, BaseExpr>();
         for(Map.Entry<KeyExpr,BaseExpr> keyValue : keyExprs.entrySet())
-            transKeyExprs.put(keyValue.getKey().translateDirect(translator),keyValue.getValue().translateDirect(translator));
-        return new InnerWhere(joins.translateDirect(translator),transKeyExprs,translator.translateKeys(keyObjects),baseClass);
+            transKeyExprs.put(keyValue.getKey().translate(translator),keyValue.getValue().translate(translator));
+        return new InnerWhere(joins.translate(translator),transKeyExprs,translator.translateKeys(keyObjects),baseClass);
     }
 }

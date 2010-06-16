@@ -1,13 +1,16 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.PullExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.session.*;
-import platform.server.data.where.WhereBuilder;
+import platform.server.data.expr.PullExpr;
 import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.MapDataChanges;
+import platform.server.session.Modifier;
 
 import java.util.Collection;
 import java.util.Map;

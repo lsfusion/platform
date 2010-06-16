@@ -1,25 +1,23 @@
 package platform.server.data.expr.where;
 
+import net.jcip.annotations.Immutable;
+import platform.server.caches.Lazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.classes.DataClass;
 import platform.server.classes.UnknownClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.query.*;
 import platform.server.data.expr.IsClassExpr;
-import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.expr.SingleClassExpr;
+import platform.server.data.query.*;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import net.jcip.annotations.Immutable;
-
-import java.util.Collection;
+import platform.server.data.where.classes.ClassExprWhere;
 
 @Immutable
 public class IsClassWhere extends DataWhere {
@@ -55,15 +53,15 @@ public class IsClassWhere extends DataWhere {
     }
 
     @ParamLazy
-    public Where translateDirect(DirectTranslator translator) {
-        return new IsClassWhere(expr.translateDirect(translator),classes);
+    public Where translate(MapTranslate translator) {
+        return new IsClassWhere(expr.translate(translator),classes);
     }
     @ParamLazy
     public Where translateQuery(QueryTranslator translator) {
         return expr.translateQuery(translator).isClass(classes);
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         expr.enumerate(enumerator);
     }
 

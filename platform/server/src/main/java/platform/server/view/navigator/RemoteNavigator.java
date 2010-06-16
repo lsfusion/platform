@@ -9,23 +9,17 @@ package platform.server.view.navigator;
 
 import platform.interop.RemoteObject;
 import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.RemoteDialogInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.type.ObjectType;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.DataSession;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
-import platform.base.BaseUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -36,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.sql.SQLException;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 

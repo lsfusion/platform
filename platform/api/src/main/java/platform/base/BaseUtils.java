@@ -130,8 +130,8 @@ public class BaseUtils {
         return join(crossJoin(map,mapJoin),mapTo);
     }
 
-    public static <KA,VA,KB,VB> Map<KA,KB> crossValues(Map<KA,VA> map,Map<KB,VB> mapTo,Map<VB,VA> mapJoin) {
-        return join(join(map,reverse(mapJoin)),reverse(mapTo));
+    public static <KA,KB,V> Map<KA,KB> crossValues(Map<KA,V> map,Map<KB,V> mapTo) {
+        return join(map,reverse(mapTo));
     }
 
     public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {

@@ -1,13 +1,13 @@
 package platform.server.session;
 
+import platform.base.BaseUtils;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.UserProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.data.expr.ValueExpr;
-import platform.base.BaseUtils;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MapDataChanges<P extends PropertyInterface> {
 
@@ -51,11 +51,11 @@ public class MapDataChanges<P extends PropertyInterface> {
         return new MapDataChanges<P>(this, add);
     }
 
-    private MapDataChanges(MapDataChanges<P> trans, Map<ValueExpr, ValueExpr> mapValues) {
+    private MapDataChanges(MapDataChanges<P> trans, MapValuesTranslate mapValues) {
         changes = trans.changes.translate(mapValues);
         map = trans.map;
     }
-    public MapDataChanges<P> translate(Map<ValueExpr,ValueExpr> mapValues) {
+    public MapDataChanges<P> translate(MapValuesTranslate mapValues) {
         return new MapDataChanges<P>(this, mapValues);
     }
 }

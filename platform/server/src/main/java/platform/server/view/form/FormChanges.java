@@ -1,9 +1,9 @@
 package platform.server.view.form;
 
 import platform.base.BaseUtils;
+import platform.server.classes.ConcreteValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.classes.ConcreteValueClass;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

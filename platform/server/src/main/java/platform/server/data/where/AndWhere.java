@@ -3,16 +3,14 @@ package platform.server.data.where;
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.server.caches.ManualLazy;
-import platform.server.data.where.classes.MeanClassWheres;
-import platform.server.data.where.classes.MeanClassWhere;
+import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.expr.where.MapWhere;
-
-import java.util.Collection;
+import platform.server.data.where.classes.MeanClassWhere;
+import platform.server.data.where.classes.MeanClassWheres;
 
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
@@ -106,8 +104,8 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return not;
     }
 
-    public Where translateDirect(DirectTranslator translator) {
-        return not().translateDirect(translator).not();
+    public Where translate(MapTranslate translator) {
+        return not().translate(translator).not();
     }
     public Where translateQuery(QueryTranslator translator) {
         return not().translateQuery(translator).not();

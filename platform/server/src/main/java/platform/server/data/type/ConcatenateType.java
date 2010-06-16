@@ -1,18 +1,18 @@
 package platform.server.data.type;
 
-import platform.server.data.sql.SQLSyntax;
-import platform.server.data.SQLSession;
-import platform.server.data.where.Where;
-import platform.server.data.query.Query;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.DeconcatenateExpr;
-import platform.server.logics.DataObject;
-import platform.server.view.form.client.report.ReportDrawField;
-import platform.server.classes.ConcreteClass;
+import platform.base.ListCombinations;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
+import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.base.ListCombinations;
+import platform.server.data.SQLSession;
+import platform.server.data.expr.DeconcatenateExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.query.Query;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
+import platform.server.logics.DataObject;
+import platform.server.view.form.client.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

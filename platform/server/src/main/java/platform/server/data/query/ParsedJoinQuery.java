@@ -5,17 +5,16 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.caches.Lazy;
 import platform.server.caches.SynchronizedLazy;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.*;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,6 +29,10 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     protected final Where where;
 
     protected final Set<ValueExpr> values;
+
+    public Set<ValueExpr> getValues() {
+        return values;
+    }
 
     ParsedJoinQuery(Query<K,V> query) {
         mapKeys = query.mapKeys;
@@ -49,12 +52,12 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
         assert joinImplement.size()==mapKeys.size();
-        return join(joinImplement,BaseUtils.toMap(values));
+        return join(joinImplement, MapValuesTranslator.noTranslate);
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) {
+    public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {
         assert joinImplement.size()==mapKeys.size();
-        assert ValueExpr.noStaticEquals(mapValues.keySet(),values); // все должны быть параметры
+        assert mapValues.assertValuesEquals(values); // все должны быть параметры
 
         Map<K,KeyExpr> joinKeys = new HashMap<K, KeyExpr>();
         for(Map.Entry<K,? extends Expr> joinExpr : joinImplement.entrySet()) {
@@ -62,16 +65,16 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
                 return joinExprs(joinImplement, mapValues);
            joinKeys.put(joinExpr.getKey(), (KeyExpr) joinExpr.getValue());
         }
-        return new DirectTranslateJoin<V>(new DirectTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
+        return new DirectTranslateJoin<V>(new MapTranslator(BaseUtils.crossJoin(mapKeys, joinKeys), mapValues), this);
     }
 
-    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement,Map<ValueExpr,ValueExpr> mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
+    public Join<V> joinExprs(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) { // последний параметр = какой есть\какой нужно, joinImplement не translate'ся
         assert joinImplement.size()==mapKeys.size();
 
         Join<V> join = this;
 
         // сначала map'им значения
-        join = new DirectTranslateJoin<V>(new DirectTranslator(BaseUtils.toMap(BaseUtils.reverse(mapKeys).keySet()),mapValues), join);
+        join = new DirectTranslateJoin<V>(mapValues.mapKeys(), join);
 
         // затем делаем подстановку
         join = new QueryTranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement)), join);

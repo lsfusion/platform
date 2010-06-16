@@ -2,19 +2,19 @@ package platform.server.data.where.classes;
 
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
 import platform.server.data.expr.VariableExprSet;
-import platform.server.data.expr.where.IsClassWhere;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
-import platform.server.data.where.*;
-import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.UnknownClass;
+import platform.server.data.where.DNFWheres;
+import platform.server.data.where.Equal;
+import platform.server.data.where.EqualMap;
+import platform.server.data.where.Where;
 
 import java.util.Map;
-import java.util.Set;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
 
@@ -110,7 +110,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
     private ClassExprWhere(ClassExprWhere classes, Map<VariableClassExpr, VariableClassExpr> map) {
         super(classes, map);
     }
-    public ClassExprWhere translate(DirectTranslator translator) {
+    public ClassExprWhere translate(MapTranslate translator) {
         return new ClassExprWhere(this, translator.translateVariable(BaseUtils.toMap(keySet())));
     }
 

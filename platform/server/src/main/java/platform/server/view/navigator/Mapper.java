@@ -1,13 +1,12 @@
 package platform.server.view.navigator;
 
-import platform.server.view.form.*;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.DataObject;
+import platform.server.view.form.*;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Mapper {
 

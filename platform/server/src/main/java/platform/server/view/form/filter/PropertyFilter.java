@@ -4,8 +4,8 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.RemoteForm;
 import platform.server.view.form.PropertyView;
+import platform.server.view.form.RemoteForm;
 
 import java.io.DataInputStream;
 import java.io.IOException;

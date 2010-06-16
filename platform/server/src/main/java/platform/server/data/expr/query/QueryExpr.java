@@ -1,23 +1,22 @@
 package platform.server.data.expr.query;
 
+import platform.server.caches.*;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.caches.hash.HashContext;
-import platform.server.data.query.SourceEnumerator;
 import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-import platform.server.caches.*;
-import platform.base.BaseUtils;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-@GenericImmutable
 public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>,J extends QueryJoin> extends InnerExpr implements MapContext {
 
     public I query;
@@ -35,19 +34,19 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
     }
 
     // трансляция
-    protected QueryExpr(QueryExpr<K,I,J> queryExpr, DirectTranslator translator) {
+    protected QueryExpr(QueryExpr<K,I,J> queryExpr, MapTranslate translator) {
         // надо еще транслировать "внутренние" values
-        Map<ValueExpr, ValueExpr> mapValues = BaseUtils.filterKeys(translator.values, queryExpr.getValues());
+        MapValuesTranslate mapValues = translator.mapValues().filter(queryExpr.getValues());
 
-        if(BaseUtils.identity(mapValues)) { // если все совпадает то и не перетранслируем внутри ничего
+        if(mapValues.identity()) { // если все совпадает то и не перетранслируем внутри ничего
             query = queryExpr.query;
             group = translator.translateDirect(queryExpr.group);
         } else { // еще values перетранслируем
-            DirectTranslator valueTranslator = new DirectTranslator(BaseUtils.toMap(queryExpr.getKeys()), mapValues);
-            query = queryExpr.query.translateDirect(valueTranslator);
+            MapTranslate valueTranslator = mapValues.mapKeys();
+            query = queryExpr.query.translate(valueTranslator);
             group = new HashMap<K, BaseExpr>();
             for(Map.Entry<K, BaseExpr> keyJoin : queryExpr.group.entrySet())
-                group.put((K)keyJoin.getKey().translateDirect(valueTranslator),keyJoin.getValue().translateDirect(translator));
+                group.put((K)keyJoin.getKey().translate(valueTranslator),keyJoin.getValue().translate(translator));
         }
 
         assert checkExpr();        
@@ -80,7 +79,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         return hashes.hash(hashContext);
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         enumerator.fill(group);
         for(ValueExpr value : getValues())
             enumerator.add(value);
@@ -95,8 +94,8 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
 
         assert hashCode()==groupExpr.hashCode();
 
-        for(DirectTranslator translator : new MapHashIterable(this, groupExpr, false))
-            if(query.translateDirect(translator).equals(groupExpr.query) &&
+        for(MapTranslate translator : new MapHashIterable(this, groupExpr, false))
+            if(query.translate(translator).equals(groupExpr.query) &&
                     translator.translateKeys(group).equals(groupExpr.group)) // нельзя reverse'ить
                 return true;
         return false;
@@ -112,12 +111,12 @@ public abstract class QueryExpr<K extends BaseExpr,I extends TranslateContext<I>
         return enumKeys(group.keySet(),expr.getEnum());
     }
 
-    @GenericLazy
+    @Lazy
     public Set<KeyExpr> getKeys() {
         return getKeys(query, group);
     }
 
-    @GenericLazy
+    @Lazy
     public Set<ValueExpr> getValues() {
         return enumValues(group.keySet(), query.getEnum());
     }

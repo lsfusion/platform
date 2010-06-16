@@ -1,12 +1,10 @@
 package platform.server.view.form;
 
-import platform.server.view.form.ObjectImplement;
-import platform.server.view.form.PropertyView;
 import platform.base.BaseUtils;
 
-import java.util.Map;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 public class FormRow {
 

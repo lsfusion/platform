@@ -4,11 +4,16 @@ import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.session.*;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ClassProperty extends AggregateProperty<ClassPropertyInterface> {
 

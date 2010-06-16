@@ -2,10 +2,12 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.MapValuesTranslator;
+import platform.server.data.where.classes.ClassWhere;
 
 import java.util.Collection;
 import java.util.Map;
@@ -18,13 +20,13 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
     final Map<V,MV> mapProps;
     final Map<K,MK> mapKeys;
     // какой есть в query -> какой нужен
-    final Map<ValueExpr, ValueExpr> mapValues;
+    final MapValuesTranslate mapValues;
 
-    MapParsedQuery(ParsedQuery<MK,MV> iQuery,Map<V,MV> iMapProps,Map<K,MK> iMapKeys,Map<ValueExpr,ValueExpr> iMapValues) {
-        query = iQuery;
-        mapProps = iMapProps;
-        mapKeys = iMapKeys;
-        mapValues = iMapValues;
+    public MapParsedQuery(ParsedQuery<MK,MV> query,Map<V,MV> mapProps,Map<K,MK> mapKeys,MapValuesTranslate mapValues) {
+        this.query = query;
+        this.mapProps = mapProps;
+        this.mapKeys = mapKeys;
+        this.mapValues = mapValues;
     }
 
     public CompiledQuery<K, V> compileSelect(SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top) {
@@ -36,18 +38,16 @@ public class MapParsedQuery<K,V,MK,MV> implements ParsedQuery<K,V> {
         return (ClassWhere<B>) new ClassWhere<Object>(query.getClassWhere(BaseUtils.filterKeys(mapProps, classProps).values()), BaseUtils.reverse(BaseUtils.merge(mapProps, mapKeys)));
     }
     
-
-    private Set<ValueExpr> getValues() {
-        return BaseUtils.reverse(mapValues).keySet();
+    public Set<ValueExpr> getValues() {
+        return mapValues.translateValues(query.getValues());
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return join(joinImplement,BaseUtils.toMap(getValues()));
+        return join(joinImplement, MapValuesTranslator.noTranslate);
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr, ValueExpr> joinValues) {
-        assert ValueExpr.noStaticEquals(joinValues.keySet(),getValues());
-        return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),BaseUtils.join(mapValues,joinValues)),mapProps);
+    public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate joinValues) {
+        assert joinValues.assertValuesEquals(getValues());
+        return new MapJoin<V,MV>(query.join(BaseUtils.crossJoin(mapKeys,joinImplement),mapValues.map(joinValues)),mapProps);
     }
-
 }

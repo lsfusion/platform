@@ -1,41 +1,42 @@
 package platform.server.logics.property;
 
-import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
-import platform.server.caches.Lazy;
+import platform.interop.action.ClientAction;
+import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
-import platform.server.data.*;
-import platform.server.classes.ValueClass;
-import platform.server.classes.CustomClass;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.query.Query;
-import platform.server.data.query.MapKeysInterface;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.*;
-import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.*;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.PullExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.query.MapKeysInterface;
+import platform.server.data.query.Query;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.table.MapKeysTable;
-import platform.server.logics.table.TableFactory;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.table.MapKeysTable;
+import platform.server.logics.table.TableFactory;
 import platform.server.session.*;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectImplement;
-import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.PropertyObjectInterface;
-import platform.interop.action.ClientAction;
+import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;
 import java.util.*;
 
-@Immutable
+@GenericImmutable
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T> {
 
     public final String sID;
@@ -96,6 +97,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return depends;
     }
 
+    @GenericLazy
     public Map<T, KeyExpr> getMapKeys() {
         Map<T, KeyExpr> result = new HashMap<T, KeyExpr>();
         for(T propertyInterface : interfaces)
@@ -122,10 +124,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return new DefaultChanges(this, changes);
         }
 
-        public DefaultChanges(DefaultChanges changes, Map<ValueExpr,ValueExpr> mapValues) {
+        public DefaultChanges(DefaultChanges changes, MapValuesTranslate mapValues) {
             super(changes, mapValues);
         }
-        public DefaultChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
+        public DefaultChanges translate(MapValuesTranslate mapValues) {
             return new DefaultChanges(this, mapValues);
         }
     }
@@ -146,6 +148,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
             return null;
+        }
+
+        public boolean neededClass(Changes changes) {
+            return changes instanceof DefaultChanges;
         }
     };
 
@@ -180,7 +186,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
 
-    @Lazy
+    @GenericLazy
     public ClassWhere<T> getClassWhere() {
         return getQuery("value").getClassWhere(new ArrayList<String>());
     }
@@ -194,10 +200,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
     }
 
-    @Lazy
+    @GenericLazy
     public abstract Type getType();
 
-    @Lazy
+    @GenericLazy
     public Type getInterfaceType(T propertyInterface) {
         return getQuery("value").getKeyType(propertyInterface);
     }
@@ -214,7 +220,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getUsedChanges(modifier).hasChanges();
     }
 
-    @Lazy
+    @GenericLazy
     <JV> Query<T,JV> getQuery(JV value) {
         Map<T, KeyExpr> mapKeys = getMapKeys();
         return new Query<T,JV>(mapKeys, getExpr(mapKeys),value);
@@ -279,7 +285,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // используется для оптимизации - если Stored то попытать использовать это значение
     protected abstract boolean usePreviousStored();
 
-    @Lazy
+    @GenericLazy
     public <P extends PropertyInterface> MaxChangeProperty<T,P> getMaxChangeProperty(Property<P> change) {
         return new MaxChangeProperty<T,P>(this,change);
     }
@@ -313,7 +319,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Collection<DataProperty> getDataChanges() { // не должно быть Action'ов
-        return (Collection<DataProperty>)((Collection<? extends Property>)getDataChanges(defaultModifier, false).getProperties());
+        return (Collection<DataProperty>)((Collection<? extends Property>) getDataChanges(defaultModifier, false).keys());
     }
 
     protected MapDataChanges<T> getJoinDataChanges(Map<T, ? extends Expr> implementExprs, Expr expr, Where where, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

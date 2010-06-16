@@ -2,12 +2,11 @@ package platform.server.data.expr.query;
 
 import platform.server.caches.ParamLazy;
 import platform.server.classes.IntegralClass;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.where.Where;
-import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.Map;
 
@@ -17,11 +16,11 @@ public class SumGroupExpr extends GroupExpr {
         super(group, expr);
     }
 
-    private SumGroupExpr(SumGroupExpr sumExpr, DirectTranslator translator) {
+    private SumGroupExpr(SumGroupExpr sumExpr, MapTranslate translator) {
         super(sumExpr, translator);
     }    
     @ParamLazy
-    public SumGroupExpr translateDirect(DirectTranslator translator) {
+    public SumGroupExpr translate(MapTranslate translator) {
         return new SumGroupExpr(this, translator); 
     }
 

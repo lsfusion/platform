@@ -1,27 +1,27 @@
 package platform.server.data.expr;
 
+import platform.server.caches.Lazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.classes.ConcreteValueClass;
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.TranslateExprLazy;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
 @TranslateExprLazy
-@Immutable
 public class FormulaExpr extends StaticClassExpr {
 
     private final String formula;
@@ -42,7 +42,7 @@ public class FormulaExpr extends StaticClassExpr {
         return result.getExpr();
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         enumerator.fill(params);
     }
 
@@ -68,7 +68,7 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     @ParamLazy
-    public BaseExpr translateDirect(DirectTranslator translator) {
+    public BaseExpr translate(MapTranslate translator) {
         return new FormulaExpr(formula,translator.translateDirect(params),valueClass);
     }
 

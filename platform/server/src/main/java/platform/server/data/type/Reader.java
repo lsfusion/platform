@@ -1,13 +1,10 @@
 package platform.server.data.type;
 
-import platform.server.data.query.Query;
-import platform.server.data.expr.Expr;
-import platform.server.data.where.Where;
-import platform.server.data.SQLSession;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
-import platform.server.logics.ObjectValue;
+import platform.server.data.expr.Expr;
+import platform.server.data.query.Query;
+import platform.server.data.where.Where;
 
 import java.util.Map;
 

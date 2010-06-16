@@ -1,11 +1,13 @@
 package platform.server.logics.property.derived;
 
-import platform.interop.Compare;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.classes.*;
+import platform.interop.Compare;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteValueClass;
+import platform.server.classes.DoubleClass;
+import platform.server.classes.ValueClass;
 import platform.server.logics.property.*;
-import platform.server.logics.property.group.AbstractGroup;
 
 import java.util.*;
 

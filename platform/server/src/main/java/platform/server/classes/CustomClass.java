@@ -1,28 +1,28 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.table.ObjectTable;
 import platform.server.logics.property.group.AbstractNode;
+import platform.server.logics.table.ObjectTable;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.CustomObjectImplement;
 import platform.server.view.form.ObjectImplement;
+import platform.server.view.navigator.ClassNavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.view.navigator.NavigatorForm;
-import platform.server.view.navigator.ClassNavigatorForm;
-import platform.server.auth.SecurityPolicy;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

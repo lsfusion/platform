@@ -1,20 +1,17 @@
 package platform.server.logics.table;
 
+import platform.server.classes.BaseClass;
+import platform.server.classes.SystemClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.Table;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.query.Join;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.classes.BaseClass;
-import platform.server.classes.SystemClass;
-import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
+import platform.server.data.where.classes.ClassWhere;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
 
 // таблица в которой лежат объекты
 public class ObjectTable extends Table {

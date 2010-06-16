@@ -1,18 +1,18 @@
 package platform.server.data.expr;
 
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.where.Where;
-import platform.server.data.expr.where.IsClassWhere;
+import platform.base.QuickMap;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
-import platform.base.QuickMap;
+import platform.server.classes.sets.OrObjectClassSet;
+import platform.server.data.expr.where.IsClassWhere;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.Where;
 
 public abstract class SingleClassExpr extends BaseExpr {
 
-    public abstract SingleClassExpr translateDirect(DirectTranslator translator);
+    public abstract SingleClassExpr translate(MapTranslate translator);
 
     private Expr classExpr;
     public Expr classExpr(BaseClass baseClass) {

@@ -1,19 +1,22 @@
 package platform.server.logics.property;
 
-import platform.server.logics.DataObject;
-import platform.server.data.SQLSession;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.where.CompareWhere;
-import platform.server.session.*;
-import platform.server.classes.CustomClass;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectInterface;
 import platform.interop.action.ClientAction;
+import platform.server.classes.CustomClass;
+import platform.server.data.SQLSession;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.CompareWhere;
+import platform.server.logics.DataObject;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.client.RemoteFormView;
 
-import java.util.Map;
-import java.util.List;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<DataObject,P> {
 
@@ -44,7 +47,7 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
     }
 
     public boolean canBeChanged(Modifier<? extends Changes> modifier) {
-        return property.getDataChanges(getPropertyChange(property.changeExpr), null, modifier).changes.hasChanges();
+        return !property.getDataChanges(getPropertyChange(property.changeExpr), null, modifier).changes.isEmpty();
     }
 
     public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {

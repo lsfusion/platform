@@ -2,18 +2,18 @@ package platform.server.caches;
 
 import platform.base.MapIterable;
 import platform.base.QuickMap;
-import platform.server.data.expr.ValueExpr;
 import platform.server.caches.hash.HashCodeValues;
 import platform.server.caches.hash.HashTranslateValues;
 import platform.server.caches.hash.HashValues;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.MapValuesTranslate;
 
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 
 // нужен чтобы с использованием hash'ей строить мапы ValueExpr'ов
-public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>, Map<ValueExpr,ValueExpr>> {
+public class MapValuesIterable extends MapIterable<MapValuesTranslate, MapValuesTranslate> {
 
     private final MapValues<?> from;
     private final MapValues<?> to;
@@ -23,14 +23,14 @@ public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>, Map
         this.to = to;
     }
 
-    protected Map<ValueExpr,ValueExpr> map(final Map<ValueExpr, ValueExpr> map) {
+    protected MapValuesTranslate map(final MapValuesTranslate map) {
         if(from.hashValues(new HashTranslateValues(map))==to.hashValues(HashCodeValues.instance))
             return map;
         else
             return null;
     }
 
-    protected Iterator<Map<ValueExpr, ValueExpr>> mapIterator() {
+    protected Iterator<MapValuesTranslate> mapIterator() {
         return new ValuePairs(from.getValues(), to.getValues()).iterator();
     }
 
@@ -51,12 +51,5 @@ public class MapValuesIterable extends MapIterable<Map<ValueExpr,ValueExpr>, Map
     public static <K> void enumValues(Set<ValueExpr> values, Map<K,? extends MapValues> map) {
         for(MapValues<?> value : map.values())
             values.addAll(value.getValues());
-    }
-
-    public static <K,U extends MapValues<U>> Map<K,U> translate(Map<K,U> map, Map<ValueExpr,ValueExpr> mapValues) {
-        Map<K,U> result = new HashMap<K,U>();
-        for(Map.Entry<K,U> entry : map.entrySet())
-            result.put(entry.getKey(),entry.getValue().translate(mapValues));
-        return result;
     }
 }

@@ -1,7 +1,7 @@
 package platform.server.data.where;
 
-import platform.server.data.expr.BaseExpr;
 import platform.base.SimpleMap;
+import platform.server.data.expr.BaseExpr;
 
 public class EqualMap extends SimpleMap<BaseExpr, Equal> {
 

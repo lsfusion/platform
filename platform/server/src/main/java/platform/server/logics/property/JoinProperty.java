@@ -1,11 +1,14 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.data.expr.Expr;
-import platform.server.session.*;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
 import platform.interop.Compare;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
+import platform.server.session.Changes;
+import platform.server.session.MapDataChanges;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
 import java.util.*;
 

@@ -1,18 +1,19 @@
 package platform.server.session;
 
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.Property;
-import platform.server.caches.hash.HashValues;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
-import platform.server.data.expr.ValueExpr;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
-import platform.server.data.where.WhereBuilder;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Join;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 
-import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractPropertyChangesModifier<P extends PropertyInterface, T extends Property<P>, AC extends AbstractPropertyChanges<P,T,AC>,
                                             UC extends AbstractPropertyChangesModifier.UsedChanges<P,T,AC,UC>> extends Modifier<UC> {
@@ -44,8 +45,13 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         }
 
         @Override
+        public boolean modifyUsed() {
+            return !changes.isEmpty();
+        }
+
+        @Override
         public boolean hasChanges() {
-            return super.hasChanges() || changes.hasChanges();
+            return super.hasChanges() || modifyUsed();
         }
 
         protected UsedChanges(UC changes, SessionChanges merge) {
@@ -59,8 +65,8 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         }
 
         @Override
-        public boolean equals(Object o) {
-            return this==o || o instanceof UsedChanges && changes.equals(((UsedChanges)o).changes) && super.equals(o);
+        protected boolean modifyEquals(UC changes) {
+            return this.changes.equals(changes.changes);
         }
 
         @Override
@@ -78,7 +84,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
             return result;
         }
 
-        protected UsedChanges(UC usedChanges, Map<ValueExpr,ValueExpr> mapValues) {
+        protected UsedChanges(UC usedChanges, MapValuesTranslate mapValues) {
             super(usedChanges, mapValues);
             changes = usedChanges.changes.translate(mapValues);
         }

@@ -1,12 +1,12 @@
 package platform.server.view.navigator;
 
+import platform.server.classes.CustomClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.PropertyValueImplement;
+import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.view.navigator.filter.NotFilterNavigator;
 import platform.server.view.navigator.filter.NotNullFilterNavigator;
-import platform.server.classes.CustomClass;
 
 public class DataChangeNavigatorForm<T extends BusinessLogics<T>> extends ClassNavigatorForm<T> {
 

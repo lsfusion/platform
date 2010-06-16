@@ -1,10 +1,10 @@
 package platform.server.caches;
 
-import platform.server.data.expr.ValueExpr;
 import platform.server.caches.hash.HashValues;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.Set;
-import java.util.Map;
 
 public interface MapValues<T extends MapValues<T>> {
 
@@ -12,5 +12,5 @@ public interface MapValues<T extends MapValues<T>> {
 
     Set<ValueExpr> getValues();
 
-    T translate(Map<ValueExpr,ValueExpr> mapValues);
+    T translate(MapValuesTranslate mapValues);
 }

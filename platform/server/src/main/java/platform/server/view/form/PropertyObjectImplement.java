@@ -1,8 +1,9 @@
 package platform.server.view.form;
 
-import platform.server.classes.sets.AndClassSet;
-import platform.server.classes.CustomClass;
+import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -10,9 +11,10 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyValueImplement;
-import platform.server.session.*;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.view.form.client.RemoteFormView;
-import platform.interop.action.ClientAction;
 
 import java.sql.SQLException;
 import java.util.*;

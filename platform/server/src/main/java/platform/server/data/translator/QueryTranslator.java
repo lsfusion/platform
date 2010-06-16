@@ -1,7 +1,9 @@
 package platform.server.data.translator;
 
 import net.jcip.annotations.Immutable;
-import platform.server.data.expr.*;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.PullExpr;
 
 import java.util.*;
 
@@ -13,7 +15,7 @@ public class QueryTranslator {
 
     private final boolean allKeys;
 
-    public QueryTranslator(Map<KeyExpr, ? extends Expr> keys, boolean allKeys) {
+    protected QueryTranslator(Map<KeyExpr, ? extends Expr> keys, boolean allKeys) {
         this.keys = keys;
 
         assert !keys.containsValue(null);

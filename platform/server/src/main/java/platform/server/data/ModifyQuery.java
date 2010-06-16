@@ -5,7 +5,6 @@ import platform.server.data.query.CompiledQuery;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLExecute;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.SQLSession;
 import platform.server.data.type.NullReader;
 import platform.server.data.where.Where;
 

@@ -1,13 +1,13 @@
 package platform.server.session;
 
-import platform.server.caches.hash.HashValues;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
+import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.Set;
-import java.util.Map;
 
 @GenericImmutable
 public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U> {
@@ -15,14 +15,14 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
     public SessionChanges session;
 
     public boolean hasChanges() {
-        return session.hasChanges();
+        return session.hasChanges() || modifyUsed();
     }
 
     public Changes() {
         session = SessionChanges.EMPTY;
     }
 
-    protected Changes(Changes<U> changes, Map<ValueExpr,ValueExpr> mapValues) {
+    protected Changes(Changes<U> changes, MapValuesTranslate mapValues) {
         session = changes.session.translate(mapValues);
     }
 
@@ -30,9 +30,24 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
         session = modifier.getSession();
     }
 
+    // весь этот огород, для того чтобы если даже разные классы, но нету изменений, все равно давать equals и использовать одни кэши
+    public boolean modifyUsed() {
+        return false;
+    }
+
+    protected boolean modifyEquals(U changes) {
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
-        return this == o || getClass()==o.getClass() && session.equals(((Changes) o).session);
+        if(this == o) return true;
+        if(!(o instanceof Changes && session.equals(((Changes) o).session))) return false;
+
+        if(getClass()==o.getClass())
+            return modifyEquals((U)o);
+
+        return !modifyUsed() && !((Changes)o).modifyUsed();
     }
 
     protected Changes(U changes, SessionChanges merge) {

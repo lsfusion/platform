@@ -1,13 +1,12 @@
 package platform.server.data.type;
 
-import platform.server.data.sql.SQLSyntax;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.query.Query;
+import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.BaseClass;
-import platform.server.classes.sets.AndClassSet;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

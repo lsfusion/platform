@@ -1,17 +1,15 @@
 package platform.server.logics.property.derived;
 
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.FormulaProperty;
-import platform.server.data.expr.Expr;
+import platform.base.BaseUtils;
+import platform.server.classes.BaseClass;
 import platform.server.data.expr.DeconcatenateExpr;
+import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.FormulaProperty;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.classes.BaseClass;
-import platform.base.BaseUtils;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 

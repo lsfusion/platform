@@ -1,13 +1,12 @@
 package platform.server.data.query;
 
+import net.jcip.annotations.Immutable;
+import platform.server.caches.Lazy;
+import platform.server.data.expr.Expr;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
-import platform.server.data.expr.Expr;
-import platform.server.caches.Lazy;
 
 import java.util.Collection;
-
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public class QueryTranslateJoin<U> extends Join<U> {

@@ -1,18 +1,20 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
-import platform.server.classes.IntegralClass;
-import platform.server.data.query.*;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.expr.query.OrderExpr;
-import platform.server.data.where.Where;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.IntegralClass;
+import platform.server.data.expr.query.OrderExpr;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
 
@@ -91,7 +93,7 @@ public class LinearOperandMap extends HashMap<BaseExpr,Integer> {
         return "L(" + result + ")";
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         enumerator.fill(keySet());
     }
 

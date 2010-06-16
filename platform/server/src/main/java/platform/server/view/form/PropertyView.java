@@ -1,7 +1,6 @@
 package platform.server.view.form;
 
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.Property;
 
 // представление св-ва
 public class PropertyView<P extends PropertyInterface> extends CellView {

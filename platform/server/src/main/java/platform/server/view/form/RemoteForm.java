@@ -7,38 +7,45 @@ package platform.server.view.form;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.interop.Scroll;
 import platform.interop.ClassViewType;
+import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.auth.SecurityPolicy;
+import platform.server.caches.ManualLazy;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.ConcreteValueClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.DataClass;
 import platform.server.data.KeyField;
-import platform.server.data.type.TypeSerializer;
-import platform.server.classes.*;
-import platform.server.data.query.Query;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
+import platform.server.data.query.Query;
+import platform.server.data.type.TypeSerializer;
+import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.property.*;
-import platform.server.session.*;
-import platform.server.view.form.filter.Filter;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyValueImplement;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.SessionChanges;
 import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.form.filter.Filter;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.FilterNavigator;
 import platform.server.view.navigator.filter.OrderViewNavigator;
-import platform.server.data.where.Where;
-import platform.server.caches.ManualLazy;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.rmi.RemoteException;
 
 // класс в котором лежит какие изменения произошли
 

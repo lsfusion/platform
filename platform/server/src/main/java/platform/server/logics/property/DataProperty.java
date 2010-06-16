@@ -1,25 +1,25 @@
 package platform.server.logics.property;
 
-import platform.server.classes.ValueClass;
-import platform.server.session.*;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
-import platform.server.data.PropertyField;
-import platform.server.data.query.Join;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectInterface;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
+import platform.server.classes.ValueClass;
+import platform.server.data.PropertyField;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.query.Join;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.session.*;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.client.RemoteFormView;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Map;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class DataProperty extends UserProperty {
 

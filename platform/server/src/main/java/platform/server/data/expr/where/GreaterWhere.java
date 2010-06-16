@@ -1,21 +1,18 @@
 package platform.server.data.expr.where;
 
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.caches.Lazy;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.data.query.InnerJoins;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.Where;
-import platform.base.BaseUtils;
-import net.jcip.annotations.Immutable;
-
-import java.util.Collection;
+import platform.server.data.where.classes.ClassExprWhere;
 
 // если operator1 не null и больше operator2 или operator2 null
-@Immutable
 public class GreaterWhere extends CompareWhere {
 
     // public только для symmetricWhere

@@ -1,8 +1,6 @@
 package platform.server.view.navigator;
 
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.Property;
-import platform.server.view.form.PropertyObjectImplement;
 
 public class PropertyViewNavigator<P extends PropertyInterface> extends CellViewNavigator {
 

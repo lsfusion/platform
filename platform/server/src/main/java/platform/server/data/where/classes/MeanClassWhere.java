@@ -1,12 +1,12 @@
 package platform.server.data.where.classes;
 
-import platform.server.data.expr.VariableClassExpr;
-import platform.server.data.where.DNFWheres;
-import platform.server.data.translator.DirectTranslator;
 import platform.base.BaseUtils;
+import platform.server.data.expr.VariableClassExpr;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.DNFWheres;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 // не будем выделять общий функционал с InnerWhere потому как он весьма сомнительные
 public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
@@ -44,10 +44,10 @@ public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
         return false;
     }
 
-    public MeanClassWhere translate(DirectTranslator translator) {
+    public MeanClassWhere translate(MapTranslate translator) {
         Map<VariableClassExpr,VariableClassExpr> transEquals = new HashMap<VariableClassExpr, VariableClassExpr>();
         for(Map.Entry<VariableClassExpr,VariableClassExpr> equal : equals.entrySet())
-            transEquals.put(equal.getKey().translateDirect(translator),equal.getValue().translateDirect(translator));
+            transEquals.put(equal.getKey().translate(translator),equal.getValue().translate(translator));
         return new MeanClassWhere(classWhere.translate(translator), transEquals);
     }
 

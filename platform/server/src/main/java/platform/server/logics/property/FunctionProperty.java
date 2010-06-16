@@ -1,11 +1,11 @@
 package platform.server.logics.property;
 
-import platform.server.session.Modifier;
 import platform.server.session.Changes;
+import platform.server.session.Modifier;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
 // свойство производное от остальных свойств
 public abstract class FunctionProperty<T extends PropertyInterface> extends AggregateProperty<T> {

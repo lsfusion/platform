@@ -1,12 +1,12 @@
 package platform.server.data.expr;
 
-import platform.server.classes.ConcreteObjectClass;
-import platform.server.classes.sets.AndClassSet;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.where.Where;
+import platform.base.QuickMap;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
-import platform.base.QuickMap;
+import platform.server.classes.ConcreteObjectClass;
+import platform.server.classes.sets.AndClassSet;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
 public abstract class StaticClassExpr extends BaseExpr {
 

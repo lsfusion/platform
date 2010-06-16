@@ -1,23 +1,23 @@
 package platform.server.logics;
 
+import platform.server.caches.AbstractMapValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.where.Where;
 import platform.server.logics.property.Property;
 import platform.server.session.Changes;
-import platform.server.session.Modifier;
 import platform.server.session.ChangesSession;
+import platform.server.session.Modifier;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.filter.CompareValue;
-import platform.server.data.where.Where;
-import platform.server.caches.AbstractMapValues;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 
 public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapValues<T> implements CompareValue {
 

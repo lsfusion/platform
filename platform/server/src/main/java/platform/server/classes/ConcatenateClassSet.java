@@ -1,10 +1,10 @@
 package platform.server.classes;
 
+import platform.base.BaseUtils;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
-import platform.server.data.type.Type;
 import platform.server.data.type.ConcatenateType;
-import platform.base.BaseUtils;
+import platform.server.data.type.Type;
 
 public class ConcatenateClassSet implements ConcreteClass  {
 

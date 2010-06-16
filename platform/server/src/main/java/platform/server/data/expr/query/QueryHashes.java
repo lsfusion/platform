@@ -1,14 +1,11 @@
 package platform.server.data.expr.query;
 
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
 
 @GenericImmutable
 public abstract class QueryHashes<K extends BaseExpr> {

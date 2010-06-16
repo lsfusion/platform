@@ -4,19 +4,17 @@ import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.base.QuickSet;
 import platform.base.SimpleMap;
-import platform.server.caches.ParamLazy;
 import platform.server.caches.ManualLazy;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.where.classes.PackClassWhere;
-import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.caches.ParamLazy;
+import platform.server.data.expr.where.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.JoinData;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.expr.where.*;
-
-import java.util.Collection;
+import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.data.where.classes.PackClassWhere;
 
 
 public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhere<AndWhere> {
@@ -415,10 +413,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     @ParamLazy
-    public Where translateDirect(DirectTranslator translator) {
+    public Where translate(MapTranslate translator) {
         AndObjectWhere[] resultWheres = new AndObjectWhere[wheres.length];
         for(int i=0;i<wheres.length;i++)
-            resultWheres[i] = (AndObjectWhere) wheres[i].translateDirect(translator);
+            resultWheres[i] = (AndObjectWhere) wheres[i].translate(translator);
         return toWhere(resultWheres);
     }
     @ParamLazy

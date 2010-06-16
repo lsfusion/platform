@@ -1,17 +1,19 @@
 package platform.server.logics;
 
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.classes.ValueClass;
-import platform.server.view.navigator.NavigatorForm;
-import platform.server.view.navigator.ObjectNavigator;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.PropertyObjectInterface;
+import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.interop.action.FormClientAction;
-import platform.base.BaseUtils;
+import platform.server.classes.ValueClass;
+import platform.server.logics.property.ActionProperty;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.navigator.NavigatorForm;
+import platform.server.view.navigator.ObjectNavigator;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends ActionProperty {

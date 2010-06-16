@@ -1,15 +1,16 @@
 package platform.server.session;
 
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.Property;
-import platform.server.caches.MapValues;
-import platform.server.caches.hash.HashValues;
-import platform.server.caches.MapValuesIterable;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.translator.DirectTranslator;
 import platform.base.QuickMap;
+import platform.server.caches.MapValues;
+import platform.server.caches.MapValuesIterable;
+import platform.server.caches.hash.HashValues;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 // Immutable
 public abstract class AbstractPropertyChanges<P extends PropertyInterface, T extends Property<P>, This extends AbstractPropertyChanges<P,T,This>> extends QuickMap<T, PropertyChange<P>> implements MapValues<This> {
@@ -17,14 +18,26 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
     protected abstract This createThis();
 
     protected AbstractPropertyChanges() {
+        assert check();
     }
 
     protected AbstractPropertyChanges(This set) {
         super(set);
+
+        assert check();
     }
 
     protected AbstractPropertyChanges(T property, PropertyChange<P> change) {
-        super(property, change);
+        if(!change.where.isFalse())
+            add(property,change);
+        
+        assert check();
+    }
+
+    public boolean check() {
+        for(int i=0;i<size;i++)
+            assert !getValue(i).where.isFalse();
+        return true;
     }
 
     protected <A1 extends PropertyInterface,B1 extends Property<A1>,T1 extends AbstractPropertyChanges<A1,B1,T1>,
@@ -32,6 +45,8 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         AbstractPropertyChanges(T1 changes1, T2 changes2) {
         super((QuickMap<? extends T,? extends PropertyChange<P>>) changes1);
         addAll((QuickMap<? extends T,? extends PropertyChange<P>>) changes2);
+
+        assert check();
     }
 
     protected PropertyChange<P> addValue(PropertyChange<P> prevValue, PropertyChange<P> newValue) {
@@ -42,21 +57,6 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
 
     protected boolean containsAll(PropertyChange<P> who, PropertyChange<P> what) {
         throw new RuntimeException("not supported yet");
-    }
-
-    public boolean hasChanges() {
-        for(int i=0;i<size;i++)
-            if(!getValue(i).where.isFalse())
-                return true;
-        return false;
-    }
-
-    public Collection<T> getProperties() {
-        Collection<T> result = new ArrayList<T>();
-        for(int i=0;i<size;i++)
-            if(!getValue(i).where.isFalse())
-                result.add(getKey(i));
-        return result;
     }
 
     public int hashValues(HashValues hashValues) {
@@ -70,18 +70,10 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         return result;
     }
 
-    public This translate(Map<ValueExpr,ValueExpr> mapValues) {
+    public This translate(MapValuesTranslate mapValues) {
         This result = createThis();
         for(int i=0;i<size;i++)
             result.add(getKey(i),getValue(i).translate(mapValues));
         return result;
     }
-
-    public This translate(DirectTranslator translator) {
-        This result = createThis();
-        for(int i=0;i<size;i++)
-            result.add(getKey(i),getValue(i).translate(translator));
-        return result;
-    }
-
 }

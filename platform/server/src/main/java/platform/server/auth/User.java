@@ -1,7 +1,5 @@
 package platform.server.auth;
 
-import platform.interop.UserInfo;
-
 import java.util.ArrayList;
 import java.util.List;
 

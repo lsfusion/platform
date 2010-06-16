@@ -1,24 +1,24 @@
 package platform.server.data.expr.where;
 
-import platform.server.data.query.JoinData;
-import platform.server.data.query.SourceEnumerator;
+import net.jcip.annotations.Immutable;
+import platform.interop.Compare;
+import platform.server.caches.ManualLazy;
+import platform.server.caches.ParamLazy;
+import platform.server.caches.hash.HashContext;
+import platform.server.caches.hash.HashKeyExprsContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableExprSet;
-import platform.server.data.where.*;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.PartialQueryTranslator;
+import platform.server.data.where.*;
 import platform.server.logics.DataObject;
-import platform.server.caches.ParamLazy;
-import platform.server.caches.ManualLazy;
-import platform.server.caches.hash.HashKeyExprsContext;
-import platform.server.caches.hash.HashContext;
-import platform.interop.Compare;
 
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
 
 
 @Immutable
@@ -32,7 +32,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
         operator2 = iOperator2;
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         operator1.enumerate(enumerator);
         operator2.enumerate(enumerator);
     }
@@ -92,8 +92,8 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     protected abstract Compare getCompare();
 
     @ParamLazy
-    public Where translateDirect(DirectTranslator translator) {
-        return createThis(operator1.translateDirect(translator),operator2.translateDirect(translator));
+    public Where translate(MapTranslate translator) {
+        return createThis(operator1.translate(translator),operator2.translate(translator));
     }
     @ParamLazy
     public Where translateQuery(QueryTranslator translator) {
@@ -112,7 +112,7 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
         if(keyExprs.size()>0) {
             HashContext hashKeyExprs = new HashKeyExprsContext(keyExprs);
             if(operator1.hashContext(hashKeyExprs)==operator2.hashContext(hashKeyExprs)) {
-                QueryTranslator translator = new QueryTranslator(keyExprs,false);
+                QueryTranslator translator = new PartialQueryTranslator(keyExprs);
                 if(operator1.translateQuery(translator).equals(operator2.translateQuery(translator)))
                     return ((CompareWhere)this) instanceof EqualsWhere?Where.TRUE:Where.FALSE;
             }

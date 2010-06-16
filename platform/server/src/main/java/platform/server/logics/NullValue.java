@@ -1,15 +1,15 @@
 package platform.server.logics;
 
+import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-import platform.server.caches.hash.HashValues;
 import platform.server.session.ChangesSession;
 
-import java.util.Set;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Set;
 
 public class NullValue extends ObjectValue<NullValue> {
 
@@ -53,7 +53,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return new HashSet<ValueExpr>();
     }
 
-    public NullValue translate(Map<ValueExpr,ValueExpr> mapValues) {
+    public NullValue translate(MapValuesTranslate mapValues) {
         return this;
     }
 

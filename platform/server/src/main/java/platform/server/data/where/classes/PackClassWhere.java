@@ -1,15 +1,13 @@
 package platform.server.data.where.classes;
 
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
+import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.*;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.caches.hash.HashContext;
-
-import java.util.Collection;
 
 // упрощенный Where
 public class PackClassWhere extends DataWhere {
@@ -27,7 +25,7 @@ public class PackClassWhere extends DataWhere {
         return new DataWhereSet(packWhere.getExprFollows());
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
 //        throw new RuntimeException("Not supported");
     }
 
@@ -55,7 +53,7 @@ public class PackClassWhere extends DataWhere {
         return packWhere.toString();
     }
 
-    public Where translateDirect(DirectTranslator translator) {
+    public Where translate(MapTranslate translator) {
         throw new RuntimeException("Not supported");
     }
     public Where translateQuery(QueryTranslator translator) {

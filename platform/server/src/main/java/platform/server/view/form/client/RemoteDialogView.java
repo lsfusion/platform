@@ -1,10 +1,9 @@
 package platform.server.view.form.client;
 
-import platform.server.view.form.RemoteForm;
-import platform.server.view.form.RemoteDialog;
-import platform.server.logics.BusinessLogics;
-import platform.interop.form.RemoteDialogInterface;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import platform.interop.form.RemoteDialogInterface;
+import platform.server.logics.BusinessLogics;
+import platform.server.view.form.RemoteDialog;
 
 import java.rmi.RemoteException;
 

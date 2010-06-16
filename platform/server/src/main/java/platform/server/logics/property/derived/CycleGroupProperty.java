@@ -1,23 +1,25 @@
 package platform.server.logics.property.derived;
 
-import platform.server.session.*;
-import platform.server.data.expr.*;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
-import platform.server.data.query.Join;
-import platform.server.logics.property.*;
-import platform.server.classes.LogicalClass;
-import platform.server.caches.Lazy;
+import net.jcip.annotations.Immutable;
 import platform.interop.Compare;
+import platform.server.caches.Lazy;
+import platform.server.caches.GenericLazy;
+import platform.server.classes.LogicalClass;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.PullExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.query.Join;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.*;
+import platform.server.session.*;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
 public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyInterface> extends MaxGroupProperty<T> {
 
     final Property<P> toChange;
@@ -28,7 +30,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         this.toChange = toChange;
     }
 
-    @Lazy
+    @GenericLazy
     public Property getConstrainedProperty(boolean checkChange) {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false

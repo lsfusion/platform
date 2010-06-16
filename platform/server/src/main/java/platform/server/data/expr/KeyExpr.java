@@ -1,17 +1,20 @@
 package platform.server.data.expr;
 
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.type.Type;
-import platform.server.data.where.Where;
-import platform.server.data.where.DataWhereSet;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.type.Type;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
 
-import java.util.Map;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 public class KeyExpr extends VariableClassExpr {
 
@@ -37,7 +40,7 @@ public class KeyExpr extends VariableClassExpr {
         return compile.keySelect.get(this);
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         enumerator.add(this);
     }
 
@@ -57,7 +60,7 @@ public class KeyExpr extends VariableClassExpr {
         return translator.translate(this);
     }
 
-    public KeyExpr translateDirect(DirectTranslator translator) {
+    public KeyExpr translate(MapTranslate translator) {
         return translator.translate(this);
     }
 

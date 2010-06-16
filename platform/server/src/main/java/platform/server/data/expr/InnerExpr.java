@@ -1,14 +1,17 @@
 package platform.server.data.expr;
 
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
-import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.caches.hash.HashContext;
 
 import java.util.Map;
 
@@ -54,14 +57,14 @@ public abstract class InnerExpr extends VariableClassExpr implements JoinData {
             return InnerExpr.this.getSource(compile) + " IS NULL";
         }
 
-        public Where translateDirect(DirectTranslator translator) {
-            return InnerExpr.this.translateDirect(translator).getWhere();
+        public Where translate(MapTranslate translator) {
+            return InnerExpr.this.translate(translator).getWhere();
         }
         public Where translateQuery(QueryTranslator translator) {
             return InnerExpr.this.translateQuery(translator).getWhere();
         }
 
-        public void enumerate(SourceEnumerator enumerator) {
+        public void enumerate(ContextEnumerator enumerator) {
             InnerExpr.this.enumerate(enumerator);
         }
 

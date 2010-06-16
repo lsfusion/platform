@@ -4,12 +4,12 @@ import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
-import platform.server.data.type.Type;
 import platform.server.data.SQLSession;
-import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.Query;
+import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.CustomClassView;
@@ -20,12 +20,12 @@ import platform.server.view.form.client.report.ReportDrawField;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.Format;
-import java.util.Random;
-import java.util.Map;
-import java.util.List;
-import java.util.Collections;
 import java.sql.SQLException;
+import java.text.Format;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndClassSet, OrClassSet {
 

@@ -1,26 +1,23 @@
 package platform.server.data.expr.where;
 
+import net.jcip.annotations.Immutable;
+import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.server.caches.hash.HashContext;
 import platform.server.caches.Lazy;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.StringClass;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.where.classes.MeanClassWhere;
+import platform.server.data.expr.*;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.InnerJoins;
-import platform.server.data.expr.*;
-import platform.server.data.where.Where;
 import platform.server.data.where.EqualMap;
-import platform.base.BaseUtils;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.MeanClassWhere;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.Collection;
+import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     // public только для symmetricWhere

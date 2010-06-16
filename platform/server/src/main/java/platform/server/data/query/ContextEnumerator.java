@@ -3,10 +3,10 @@ package platform.server.data.query;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 
-import java.util.Map;
 import java.util.Collection;
+import java.util.Map;
 
-public abstract class SourceEnumerator {
+public abstract class ContextEnumerator {
 
     public void add(KeyExpr keyExpr) {
     }

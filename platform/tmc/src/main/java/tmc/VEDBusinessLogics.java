@@ -927,7 +927,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         protected boolean toAdd = false;
 
-        protected static final boolean fixFilters = true;
+        protected static final boolean fixFilters = false;
         protected static final boolean noOuters = true;
 
         protected Object[] getDocumentProps() {
@@ -1081,7 +1081,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected void fillExtraFilters(RegularFilterGroupNavigator filterGroup, boolean toAdd) {
             if(!fixFilters)
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
-                                  new NotNullFilterNavigator(getPropertyImplement(documentFreeQuantity)),
+                                  new NotNullFilterNavigator(addPropertyObjectImplement(documentFreeQuantity, objDoc, objArt)),
                                   "Дост. кол-во",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
         }

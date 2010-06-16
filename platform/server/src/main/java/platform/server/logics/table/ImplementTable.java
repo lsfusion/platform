@@ -1,11 +1,11 @@
 package platform.server.logics.table;
 
-import platform.server.data.KeyField;
-import platform.server.data.Table;
-import platform.server.data.PropertyField;
-import platform.server.data.Field;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.classes.ValueClass;
+import platform.server.data.Field;
+import platform.server.data.KeyField;
+import platform.server.data.PropertyField;
+import platform.server.data.Table;
+import platform.server.data.where.classes.ClassWhere;
 
 import java.util.*;
 

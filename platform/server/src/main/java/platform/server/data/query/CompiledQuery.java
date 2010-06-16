@@ -2,21 +2,26 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.server.caches.TranslateContext;
 import platform.server.data.KeyField;
-import platform.server.data.Table;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.*;
+import platform.server.data.Table;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.*;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.type.NullReader;
 import platform.server.data.type.Reader;
-import platform.server.data.type.TypeObject;
 import platform.server.data.type.Type;
+import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
-import platform.server.caches.TranslateContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -51,7 +56,7 @@ public class CompiledQuery<K,V> {
     }
 
     // перемаппит другой CompiledQuery
-    <MK,MV> CompiledQuery(CompiledQuery<MK,MV> compile,Map<K,MK> mapKeys,Map<V,MV> mapProperties,Map<ValueExpr, ValueExpr> mapValues) {
+    <MK,MV> CompiledQuery(CompiledQuery<MK,MV> compile,Map<K,MK> mapKeys,Map<V,MV> mapProperties, MapValuesTranslate mapValues) {
         from = compile.from;
         whereSelect = compile.whereSelect;
         keySelect = BaseUtils.join(mapKeys,compile.keySelect);
@@ -74,7 +79,9 @@ public class CompiledQuery<K,V> {
         propertyReaders = BaseUtils.join(mapProperties,compile.propertyReaders);
         unionAll = compile.unionAll;
 
-        params = BaseUtils.crossJoin(mapValues,compile.params); // так как map'ся весь joinQuery а при parse -> compile могут уйти
+        params = new HashMap<ValueExpr, String>();
+        for(Map.Entry<ValueExpr,String> param : compile.params.entrySet())
+            params.put(mapValues.translate(param.getKey()), param.getValue());
 
         assert checkQuery();
     }
@@ -589,10 +596,10 @@ public class CompiledQuery<K,V> {
                     String getSource(Map<J,Q> selects, E expr) {
             J exprJoin = expr.getGroupJoin();
 
-            DirectTranslator translator;
+            MapTranslate translator;
             for(Map.Entry<J,Q> group : selects.entrySet())
                 if((translator=exprJoin.merge(group.getKey()))!=null)
-                    return group.getValue().add(expr.query.translateDirect(translator),expr);
+                    return group.getValue().add(expr.query.translate(translator),expr);
 
             Q select;
             if(((Object)exprJoin) instanceof GroupJoin) // нету группы - создаем, чтобы не нарушать модульность сделаем без наследования
@@ -650,7 +657,7 @@ public class CompiledQuery<K,V> {
                 for(KeyExpr keyKey : keyExprs.keySet())
                     assert !keyValue.hasKey(keyKey);
 
-            QueryTranslator translator = new QueryTranslator(keyExprs,false);
+            QueryTranslator translator = new PartialQueryTranslator(keyExprs);
             compiledProps = translator.translate(compiledProps);
             where = where.translateQuery(translator);
             innerWhere = BaseUtils.single(where.getInnerJoins()).mean;

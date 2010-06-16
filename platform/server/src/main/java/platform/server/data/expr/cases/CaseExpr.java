@@ -1,19 +1,22 @@
 package platform.server.data.expr.cases;
 
 import platform.interop.Compare;
+import platform.server.caches.Lazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.query.*;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
-import platform.server.data.expr.where.MapWhere;
-import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.NullReader;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
@@ -24,10 +27,7 @@ import java.util.HashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
 @TranslateExprLazy
-@Immutable
 public class CaseExpr extends Expr {
 
     private final ExprCaseList cases;
@@ -80,10 +80,10 @@ public class CaseExpr extends Expr {
     }
 
     @ParamLazy
-    public CaseExpr translateDirect(DirectTranslator translator) {
+    public CaseExpr translate(MapTranslate translator) {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
-            translatedCases.add(new ExprCase(exprCase.where.translateDirect(translator),exprCase.data.translateDirect(translator)));
+            translatedCases.add(new ExprCase(exprCase.where.translate(translator),exprCase.data.translate(translator)));
         return new CaseExpr(translatedCases);        
     }
 
@@ -134,7 +134,7 @@ public class CaseExpr extends Expr {
         return result;
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         for(ExprCase exprCase : cases) {
             exprCase.where.enumerate(enumerator);
             exprCase.data.enumerate(enumerator);

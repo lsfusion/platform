@@ -3,21 +3,21 @@ package platform.server.data.expr;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.Table;
 import platform.server.classes.BaseClass;
 import platform.server.classes.SystemClass;
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
+import platform.server.data.Table;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.Collections;
 
-import net.jcip.annotations.Immutable;
-
-@Immutable
 public class IsClassExpr extends StaticClassExpr {
 
     public final SingleClassExpr expr;
@@ -57,8 +57,8 @@ public class IsClassExpr extends StaticClassExpr {
         return expr.translateQuery(translator).classExpr(baseClass);
     }
     @ParamLazy
-    public StaticClassExpr translateDirect(DirectTranslator translator) {
-        return new IsClassExpr(expr.translateDirect(translator),baseClass);
+    public StaticClassExpr translate(MapTranslate translator) {
+        return new IsClassExpr(expr.translate(translator),baseClass);
     }
 
     public Where calculateWhere() {
@@ -76,7 +76,7 @@ public class IsClassExpr extends StaticClassExpr {
         return getJoinExpr().getSource(compile);
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         expr.enumerate(enumerator);
     }
 

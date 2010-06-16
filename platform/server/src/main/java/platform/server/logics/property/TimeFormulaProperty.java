@@ -1,17 +1,15 @@
 package platform.server.logics.property;
 
+import platform.server.classes.DoubleClass;
+import platform.server.data.Time;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.TimeExpr;
 import platform.server.data.where.WhereBuilder;
-import platform.server.data.Time;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
-import platform.server.classes.ConcreteValueClass;
-import platform.server.classes.DoubleClass;
 
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class TimeFormulaProperty extends ValueFormulaProperty<PropertyInterface> {
 

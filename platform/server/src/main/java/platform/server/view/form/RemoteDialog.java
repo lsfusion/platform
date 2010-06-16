@@ -1,16 +1,15 @@
 package platform.server.view.form;
 
+import platform.server.auth.SecurityPolicy;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
+import platform.server.session.DataSession;
 import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.session.DataSession;
-import platform.server.auth.SecurityPolicy;
 
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class RemoteDialog<T extends BusinessLogics<T>> extends RemoteForm<T> {
 

@@ -1,26 +1,28 @@
 package platform.server.data;
 
+import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.server.caches.*;
+import platform.server.caches.Lazy;
+import platform.server.caches.ParamLazy;
+import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashCodeContext;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.query.*;
+import platform.server.classes.BaseClass;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.data.translator.QueryTranslator;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.*;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.classes.BaseClass;
+import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -29,8 +31,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 @Immutable
 public class Table implements MapKeysInterface<KeyField> {
@@ -154,6 +154,7 @@ public class Table implements MapKeysInterface<KeyField> {
         return new Join(joinImplement);
     }
 
+    @Immutable
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin {
 
         public final Map<KeyField, BaseExpr> joins;
@@ -203,7 +204,7 @@ public class Table implements MapKeysInterface<KeyField> {
         }
 
         @ParamLazy
-        public Join translateDirect(DirectTranslator translator) {
+        public Join translate(MapTranslate translator) {
             return new Join(translator.translateDirect(joins));
         }
 
@@ -247,7 +248,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return keys.iterator().next().toString();
             }
 
-            public void enumerate(SourceEnumerator enumerator) {
+            public void enumerate(ContextEnumerator enumerator) {
                 enumerator.fill(joins);
             }
 
@@ -271,8 +272,8 @@ public class Table implements MapKeysInterface<KeyField> {
                 return "IN JOIN " + Join.this.toString();
             }
 
-            public Where translateDirect(DirectTranslator translator) {
-                return Join.this.translateDirect(translator).getDirectWhere();
+            public Where translate(MapTranslate translator) {
+                return Join.this.translate(translator).getDirectWhere();
             }
             public Where translateQuery(QueryTranslator translator) {
                 return Join.this.translateQuery(translator).getWhere();
@@ -306,7 +307,6 @@ public class Table implements MapKeysInterface<KeyField> {
             }
         }
 
-        @Immutable
         public class Expr extends InnerExpr {
 
             public final PropertyField property;
@@ -320,11 +320,11 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.translateQuery(translator).getExpr(property);
             }
 
-            public Expr translateDirect(DirectTranslator translator) {
-                return Join.this.translateDirect(translator).getDirectExpr(property);
+            public Expr translate(MapTranslate translator) {
+                return Join.this.translate(translator).getDirectExpr(property);
             }
 
-            public void enumerate(SourceEnumerator enumerator) {
+            public void enumerate(ContextEnumerator enumerator) {
                 enumerator.fill(joins);
             }
 

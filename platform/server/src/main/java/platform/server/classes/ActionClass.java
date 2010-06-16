@@ -1,16 +1,16 @@
 package platform.server.classes;
 
 import platform.interop.Data;
-import platform.server.logics.DataObject;
 import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.logics.DataObject;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.Format;
-import java.util.Random;
 import java.util.List;
 import java.util.Map;
-import java.sql.SQLException;
-import java.sql.PreparedStatement;
+import java.util.Random;
 
 // по умолчанию будем считать, что у ActionClass'а данные как у LogicalClass
 public class ActionClass extends DataClass<Object> {

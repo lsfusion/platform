@@ -1,7 +1,7 @@
 package platform.server.view.form.client;
 
-import platform.server.view.navigator.ObjectNavigator;
 import platform.base.IDGenerator;
+import platform.server.view.navigator.ObjectNavigator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

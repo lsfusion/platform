@@ -1,12 +1,15 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 // выбирает объект по битам
 public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Interface> {

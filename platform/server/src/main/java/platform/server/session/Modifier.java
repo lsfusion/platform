@@ -1,12 +1,12 @@
 package platform.server.session;
 
 import platform.server.data.expr.Expr;
+import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.data.where.WhereBuilder;
 
-import java.util.Map;
 import java.util.Collection;
+import java.util.Map;
 
 public abstract class Modifier<U extends Changes<U>> {
 
@@ -31,4 +31,6 @@ public abstract class Modifier<U extends Changes<U>> {
             result = result.add(property.getUsedDataChanges(this));
         return result;
     }
+
+    public abstract boolean neededClass(Changes changes);
 }

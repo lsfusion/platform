@@ -1,9 +1,9 @@
 package platform.server.view.form.client;
 
+import platform.interop.CellDesign;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.view.form.client.report.ReportDrawField;
-import platform.interop.CellDesign;
 
 import javax.swing.*;
 import java.awt.*;

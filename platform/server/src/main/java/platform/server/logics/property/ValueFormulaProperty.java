@@ -2,8 +2,6 @@ package platform.server.logics.property;
 
 import platform.server.classes.ConcreteValueClass;
 
-import java.util.Collection;
-import java.util.Set;
 import java.util.List;
 
 // вообще Collection

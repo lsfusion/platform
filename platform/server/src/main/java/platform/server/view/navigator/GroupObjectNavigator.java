@@ -1,7 +1,7 @@
 package platform.server.view.navigator;
 
-import platform.interop.form.RemoteFormInterface;
 import platform.interop.ClassViewType;
+import platform.interop.form.RemoteFormInterface;
 
 import java.util.ArrayList;
 

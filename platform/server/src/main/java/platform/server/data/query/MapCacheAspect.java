@@ -18,15 +18,18 @@ import platform.server.caches.MapValuesIterable;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.translator.DirectTranslator;
-import platform.server.logics.BusinessLogics;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.AndFormulaProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.AndFormulaProperty;
-import platform.server.logics.property.AggregateProperty;
-import platform.server.session.*;
-import platform.server.data.where.WhereBuilder;
-import platform.server.data.where.Where;
+import platform.server.session.Changes;
+import platform.server.session.MapDataChanges;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
 import java.util.*;
 
@@ -45,11 +48,11 @@ public class MapCacheAspect {
     private ParseInterface parseInterface;
 
     static <K,V,CK,CV> MapParsedQuery<CK,CV,K,V> cacheQuery(Query<K,V> cache, Query<CK,CV> query) {
-        for(DirectTranslator translator : new MapHashIterable(cache, query, true)) {
+        for(MapTranslate translator : new MapHashIterable(cache, query, true)) {
             Map<CV,V> mapProps;
-            if(cache.where.translateDirect(translator).equals(query.where) && (mapProps=BaseUtils.mapEquals(query.properties,translator.translate(cache.properties)))!=null)
+            if(cache.where.translate(translator).equals(query.where) && (mapProps=BaseUtils.mapEquals(query.properties,translator.translate(cache.properties)))!=null)
                 return new MapParsedQuery<CK,CV,K,V>((ParsedJoinQuery<K,V>) ((ParseInterface)cache).getParse(),
-                        mapProps,BaseUtils.crossValues(query.mapKeys, cache.mapKeys, translator.keys),translator.values);
+                        mapProps,BaseUtils.crossValues(query.mapKeys, translator.translateKey(cache.mapKeys)),translator.mapValues());
         }
         return null;
     }
@@ -102,9 +105,9 @@ public class MapCacheAspect {
     @GenericImmutable
     class JoinImplement<K> implements MapContext {
         final Map<K,? extends Expr> exprs;
-        final Map<ValueExpr,ValueExpr> mapValues; // map context'а values на те которые нужны
+        final MapValuesTranslate mapValues; // map context'а values на те которые нужны
 
-        JoinImplement(Map<K, ? extends Expr> exprs,Map<ValueExpr,ValueExpr> mapValues) {
+        JoinImplement(Map<K, ? extends Expr> exprs,MapValuesTranslate mapValues) {
             this.exprs = exprs;
             this.mapValues = mapValues;
         }
@@ -129,7 +132,7 @@ public class MapCacheAspect {
         }
     }
 
-    <K,V> Join<V> join(Map<K,? extends Expr> joinExprs,Map<ValueExpr, ValueExpr> joinValues,Map<Integer,Map<JoinImplement<K>,Join<V>>> joinCaches,ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    <K,V> Join<V> join(Map<K,? extends Expr> joinExprs, MapValuesTranslate joinValues,Map<Integer,Map<JoinImplement<K>,Join<V>>> joinCaches,ProceedingJoinPoint thisJoinPoint) throws Throwable {
         JoinImplement<K> joinImplement = new JoinImplement<K>(joinExprs,joinValues);
 
         Map<JoinImplement<K>,Join<V>> hashCaches;
@@ -143,13 +146,13 @@ public class MapCacheAspect {
         }
         synchronized(hashCaches) {
             for(Map.Entry<JoinImplement<K>,Join<V>> cache : hashCaches.entrySet())
-                for(DirectTranslator translator : new MapHashIterable(cache.getKey(), joinImplement, true))
+                for(MapTranslate translator : new MapHashIterable(cache.getKey(), joinImplement, true))
                     if(translator.translate(cache.getKey().exprs).equals(joinImplement.exprs)) {
                         // здесь не все values нужно докинуть их из контекста (ключи по идее все)
-                        Map<ValueExpr,ValueExpr> transValues;
-                        if((transValues=BaseUtils.mergeEqual(translator.values,BaseUtils.crossJoin(cache.getKey().mapValues,joinImplement.mapValues)))!=null) {
+                        MapTranslate transValues;
+                        if((transValues=translator.mergeEqual(cache.getKey().mapValues.crossMap(joinImplement.mapValues)))!=null) {
                             System.out.println("join cached");
-                            return new DirectTranslateJoin<V>(new DirectTranslator(translator.keys,transValues),cache.getValue());
+                            return new DirectTranslateJoin<V>(transValues,cache.getValue());
                         }
                     }
             System.out.println("join not cached");
@@ -159,9 +162,9 @@ public class MapCacheAspect {
         }
     }
 
-    @Around("call(platform.server.data.query.Join platform.server.data.query.ParsedJoinQuery.joinExprs(java.util.Map,java.util.Map)) && target(query) && args(joinExprs,joinValues)")
-    public Object callJoin(ProceedingJoinPoint thisJoinPoint, ParsedJoinQuery query, Map joinExprs, Map joinValues) throws Throwable {
-        return join(joinExprs,joinValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
+    @Around("call(platform.server.data.query.Join platform.server.data.query.ParsedJoinQuery.joinExprs(java.util.Map,platform.server.data.translator.MapValuesTranslate)) && target(query) && args(joinExprs,mapValues)")
+    public Object callJoin(ProceedingJoinPoint thisJoinPoint, ParsedJoinQuery query, Map joinExprs, MapValuesTranslate mapValues) throws Throwable {
+        return join(joinExprs,mapValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
     }
 
     public interface MapPropertyInterface {
@@ -204,10 +207,15 @@ public class MapCacheAspect {
 
         synchronized(hashCaches) {
             for(Map.Entry<U,U> cache : hashCaches.entrySet()) {
-                for(Map<ValueExpr,ValueExpr> mapValues : new MapValuesIterable(cache.getKey(), implement)) {
+                for(MapValuesTranslate mapValues : new MapValuesIterable(cache.getKey(), implement)) {
                     if(cache.getKey().translate(mapValues).equals(implement)) {
                         System.out.println("getUsedChanges - cached "+property);
-                        return cache.getValue().translate(mapValues);
+                        U cacheResult = cache.getValue().translate(mapValues);
+                        if(!modifier.neededClass(cacheResult)) {
+                            assert !cacheResult.modifyUsed();
+                            return modifier.newChanges().addChanges(cacheResult.session); 
+                        }
+                        return cacheResult;
                     }
                 }
             }
@@ -254,12 +262,12 @@ public class MapCacheAspect {
             return usedChanges.getValues();
         }
 
-        JoinExprInterfaceImplement(JoinExprInterfaceImplement<U> implement, Map<ValueExpr,ValueExpr> mapValues) {
+        JoinExprInterfaceImplement(JoinExprInterfaceImplement<U> implement, MapValuesTranslate mapValues) {
             usedChanges = implement.usedChanges.translate(mapValues);
             this.changed = implement.changed;
         }
 
-        public JoinExprInterfaceImplement<U> translate(Map<ValueExpr,ValueExpr> mapValues) {
+        public JoinExprInterfaceImplement<U> translate(MapValuesTranslate mapValues) {
             return new JoinExprInterfaceImplement<U>(this, mapValues);
         }
     }
@@ -288,10 +296,10 @@ public class MapCacheAspect {
         Join<String> queryJoin = null;
         synchronized(hashCaches) {
             for(Map.Entry<JoinExprInterfaceImplement<U>,Query<K,String>> cache : hashCaches.entrySet()) {
-                for(Map<ValueExpr,ValueExpr> mapValues : new MapValuesIterable(cache.getKey(), implement)) {
+                for(MapValuesTranslate mapValues : new MapValuesIterable(cache.getKey(), implement)) {
                     if(cache.getKey().translate(mapValues).equals(implement)) {
                         cached = true;
-                        queryJoin = cache.getValue().join(joinExprs,BaseUtils.filterKeys(mapValues,cache.getValue().getValues())); // так как могут не использоваться values в Query
+                        queryJoin = cache.getValue().join(joinExprs,mapValues.filter(cache.getValue().getValues())); // так как могут не использоваться values в Query
                     }
                 }
             }
@@ -362,13 +370,13 @@ public class MapCacheAspect {
             return result;
         }
 
-        DataChangesInterfaceImplement(DataChangesInterfaceImplement<P,U> implement, DirectTranslator translator) {
-            usedChanges = implement.usedChanges.translate(translator.values);
+        DataChangesInterfaceImplement(DataChangesInterfaceImplement<P,U> implement, MapTranslate translator) {
+            usedChanges = implement.usedChanges.translate(translator.mapValues());
             change = implement.change.translate(translator);
             this.where = implement.where;
         }
 
-        public DataChangesInterfaceImplement<P,U> translate(DirectTranslator translator) {
+        public DataChangesInterfaceImplement<P,U> translate(MapTranslate translator) {
             return new DataChangesInterfaceImplement<P,U>(this, translator);
         }
     }
@@ -399,11 +407,11 @@ public class MapCacheAspect {
 
         synchronized(hashCaches) {
             for(Map.Entry<DataChangesInterfaceImplement,DataChangesResult> cache : hashCaches.entrySet()) {
-                for(DirectTranslator translator : new MapHashIterable(cache.getKey(), implement, true)) {
+                for(MapTranslate translator : new MapHashIterable(cache.getKey(), implement, true)) {
                     if(cache.getKey().translate(translator).equals(implement)) {
                         System.out.println("getDataChanges - cached "+property);
-                        if(changedWheres!=null) changedWheres.add(cache.getValue().where.translateDirect(translator));
-                        return ((DataChangesResult<K>)cache.getValue()).changes.translate(translator.values);
+                        if(changedWheres!=null) changedWheres.add(cache.getValue().where.translate(translator));
+                        return ((DataChangesResult<K>)cache.getValue()).changes.translate(translator.mapValues());
                     }
                 }
             }
@@ -463,13 +471,13 @@ public class MapCacheAspect {
             return result;
         }
 
-        ExprInterfaceImplement(ExprInterfaceImplement<P,U> implement, DirectTranslator translator) {
-            usedChanges = implement.usedChanges.translate(translator.values);
+        ExprInterfaceImplement(ExprInterfaceImplement<P,U> implement, MapTranslate translator) {
+            usedChanges = implement.usedChanges.translate(translator.mapValues());
             joinImplement = translator.translate(implement.joinImplement);
             this.where = implement.where;
         }
 
-        public ExprInterfaceImplement<P,U> translate(DirectTranslator translator) {
+        public ExprInterfaceImplement<P,U> translate(MapTranslate translator) {
             return new ExprInterfaceImplement<P,U>(this, translator);
         }
     }
@@ -503,11 +511,11 @@ public class MapCacheAspect {
 
         synchronized(hashCaches) {
             for(Map.Entry<ExprInterfaceImplement,ExprResult> cache : hashCaches.entrySet()) {
-                for(DirectTranslator translator : new MapHashIterable(cache.getKey(), implement, true)) {
+                for(MapTranslate translator : new MapHashIterable(cache.getKey(), implement, true)) {
                     if(cache.getKey().translate(translator).equals(implement)) {
                         System.out.println("getExpr - cached "+property);
-                        if(changedWheres!=null) changedWheres.add(cache.getValue().where.translateDirect(translator));
-                        return cache.getValue().expr.translateDirect(translator);
+                        if(changedWheres!=null) changedWheres.add(cache.getValue().where.translate(translator));
+                        return cache.getValue().expr.translate(translator);
                     }
                 }
             }

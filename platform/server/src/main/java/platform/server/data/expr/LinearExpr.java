@@ -1,26 +1,26 @@
 package platform.server.data.expr;
 
 import platform.base.BaseUtils;
+import platform.server.caches.Lazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.Lazy;
 import platform.server.classes.IntegralClass;
-import platform.server.data.query.*;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.translator.TranslateExprLazy;
-import platform.server.data.expr.where.MapWhere;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.Map;
 
-import net.jcip.annotations.Immutable;
-
 // среднее что-то между CaseExpr и FormulaExpr - для того чтобы не плодить экспоненциальные case'ы
 // придется делать BaseExpr
 @TranslateExprLazy
-@Immutable
 public class LinearExpr extends StaticClassExpr {
 
     final LinearOperandMap map;
@@ -48,7 +48,7 @@ public class LinearExpr extends StaticClassExpr {
             return map.getSource(compile);
     }
 
-    public void enumerate(SourceEnumerator enumerator) {
+    public void enumerate(ContextEnumerator enumerator) {
         map.enumerate(enumerator);
     }
 
@@ -94,10 +94,10 @@ public class LinearExpr extends StaticClassExpr {
 
     // транслирует выражение/ также дополнительно вытаскивает ExprCase'ы
     @ParamLazy
-    public BaseExpr translateDirect(DirectTranslator translator) {
+    public BaseExpr translate(MapTranslate translator) {
         LinearOperandMap transMap = new LinearOperandMap();
         for(Map.Entry<BaseExpr,Integer> operand : map.entrySet())
-            transMap.put(operand.getKey().translateDirect(translator),operand.getValue());
+            transMap.put(operand.getKey().translate(translator),operand.getValue());
         return new LinearExpr(transMap);
     }
 

@@ -1,7 +1,7 @@
 package platform.server.view.navigator;
 
-import platform.server.classes.ValueClass;
 import platform.server.classes.CustomClass;
+import platform.server.classes.ValueClass;
 import platform.server.view.form.PropertyObjectInterface;
 
 import java.util.Set;

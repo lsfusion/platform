@@ -1,19 +1,19 @@
 package platform.server.data.query;
 
-import platform.base.BaseUtils;
 import platform.base.ArrayInstancer;
-import platform.server.data.Table;
-import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.OrderExpr;
+import platform.base.BaseUtils;
+import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.TranslateContext;
+import platform.server.data.Table;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.OrderExpr;
 import platform.server.logics.BusinessLogics;
-import platform.server.caches.AbstractTranslateContext;
 
-import java.util.Set;
-import java.util.HashSet;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends AbstractTranslateContext<T> implements SourceJoin {
 
@@ -61,7 +61,7 @@ abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends 
     }
 
     public void enumKeys(final Set<KeyExpr> keys) {
-        enumerate(new SourceEnumerator() {
+        enumerate(new ContextEnumerator() {
             @Override
             public void add(KeyExpr keyExpr) {
                 keys.add(keyExpr);
@@ -70,7 +70,7 @@ abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends 
     }
 
     public void enumValues(final Set<ValueExpr> values) {
-        enumerate(new SourceEnumerator() {
+        enumerate(new ContextEnumerator() {
             @Override
             public void add(ValueExpr keyExpr) {
                 values.add(keyExpr);

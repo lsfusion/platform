@@ -1,13 +1,13 @@
 package platform.server.logics.table;
 
+import platform.server.classes.CustomClass;
+import platform.server.classes.SystemClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.GlobalTable;
 import platform.server.data.PropertyField;
-import platform.server.classes.ValueClass;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
-import platform.server.classes.CustomClass;
-import platform.server.classes.SystemClass;
 
 import java.sql.SQLException;
 import java.util.*;

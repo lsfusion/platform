@@ -1,25 +1,25 @@
 package platform.server.data.query;
 
-import net.jcip.annotations.Immutable;
 import platform.base.OrderedMap;
-import platform.base.BaseUtils;
 import platform.interop.Compare;
-import platform.server.caches.Lazy;
-import platform.server.caches.MapContext;
 import platform.server.caches.GenericImmutable;
 import platform.server.caches.GenericLazy;
+import platform.server.caches.Lazy;
+import platform.server.caches.MapContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
-import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.type.Type;
-import platform.server.data.SQLSession;
+import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.data.where.Where;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -87,16 +87,16 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return new HashSet<KeyExpr>(mapKeys.values());
     }
 
-    @Lazy
+    @GenericLazy
     public Set<ValueExpr> getValues() {
         return AbstractSourceJoin.enumValues(properties.values(),where);
     }
 
     public Join<V> join(Map<K, ? extends Expr> joinImplement) {
-        return join(joinImplement, BaseUtils.toMap(getValues())); //parse().join(joinImplement);
+        return join(joinImplement, MapValuesTranslator.noTranslate); //parse().join(joinImplement);
     }
 
-    public Join<V> join(Map<K, ? extends Expr> joinImplement, Map<ValueExpr,ValueExpr> mapValues) {
+    public Join<V> join(Map<K, ? extends Expr> joinImplement, MapValuesTranslate mapValues) {
         assert joinImplement.size()==mapKeys.size();
         return parse().join(joinImplement, mapValues);
     }
@@ -121,7 +121,7 @@ public class Query<K,V> implements MapKeysInterface<K>, MapContext {
         return new ParsedJoinQuery<K,V>(this);
     }
 
-    @Lazy
+    @GenericLazy
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> properties) {
         return parse().getClassWhere(properties);
     }

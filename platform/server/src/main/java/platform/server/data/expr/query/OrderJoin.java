@@ -1,20 +1,19 @@
 package platform.server.data.expr.query;
 
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.where.Where;
-import platform.server.caches.hash.HashContext;
+import net.jcip.annotations.Immutable;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.Lazy;
+import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.translator.DirectTranslator;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.where.Where;
 
-import java.util.Set;
 import java.util.Map;
-
-import net.jcip.annotations.Immutable;
+import java.util.Set;
 
 public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
@@ -36,8 +35,8 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             return hash * 31 + where.hashContext(hashContext);
         }
 
-        public Query translateDirect(DirectTranslator translator) {
-            return new Query(where.translateDirect(translator),translator.translate(partitions));
+        public Query translate(MapTranslate translator) {
+            return new Query(where.translate(translator),translator.translate(partitions));
         }
 
         public SourceJoin[] getEnum() {

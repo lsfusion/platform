@@ -1,9 +1,9 @@
 package platform.server.classes.sets;
 
 import platform.base.ExtraSetWhere;
+import platform.server.classes.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
-import platform.server.classes.*;
 
 import java.util.HashSet;
 import java.util.Set;

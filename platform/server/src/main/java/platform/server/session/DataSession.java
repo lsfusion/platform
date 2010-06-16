@@ -1,40 +1,41 @@
 package platform.server.session;
 
+import net.jcip.annotations.Immutable;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
+import platform.interop.action.ClientAction;
+import platform.server.caches.Lazy;
+import platform.server.caches.MapValuesIterable;
+import platform.server.caches.GenericLazy;
+import platform.server.caches.hash.HashValues;
+import platform.server.classes.*;
 import platform.server.data.*;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.TimeExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.TimeExpr;
-import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.type.Type;
+import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.ObjectType;
+import platform.server.data.type.Type;
+import platform.server.data.where.WhereBuilder;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.*;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
-import platform.server.logics.property.*;
-import platform.server.view.form.RemoteForm;
 import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
-import platform.server.data.where.WhereBuilder;
-import platform.server.classes.*;
-import platform.server.caches.hash.HashValues;
-import platform.server.caches.MapValuesIterable;
-import platform.server.caches.Lazy;
-import platform.interop.action.ClientAction;
 
 import java.sql.SQLException;
 import java.util.*;
-
-import net.jcip.annotations.Immutable;
 
 public class DataSession extends SQLSession implements ChangesSession {
 
@@ -62,10 +63,10 @@ public class DataSession extends SQLSession implements ChangesSession {
             return new SimpleChanges(this, changes);
         }
 
-        private SimpleChanges(Changes<SimpleChanges> changes, Map<ValueExpr, ValueExpr> mapValues) {
+        private SimpleChanges(Changes<SimpleChanges> changes, MapValuesTranslate mapValues) {
             super(changes, mapValues);
         }
-        public SimpleChanges translate(Map<ValueExpr, ValueExpr> mapValues) {
+        public SimpleChanges translate(MapValuesTranslate mapValues) {
             return new SimpleChanges(this, mapValues);
         }
     }
@@ -89,6 +90,10 @@ public class DataSession extends SQLSession implements ChangesSession {
 
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
             return null;
+        }
+
+        public boolean neededClass(Changes changes) {
+            return changes instanceof SimpleChanges;
         }
     };
 
@@ -240,7 +245,7 @@ public class DataSession extends SQLSession implements ChangesSession {
         // если идет изменение и есть недетерменированное производное изменение зависищее от него, то придется его "выполнить"
         for(DerivedChange<?,?> derivedChange : notDeterministic) {
             DataChanges derivedChanges = derivedChange.getDataChanges(new DataChangesModifier(modifier, dataChanges));
-            if(derivedChanges.hasChanges())
+            if(!derivedChanges.isEmpty())
                 mapChanges = mapChanges.add(new MapDataChanges<P>(derivedChanges));
         }
 
@@ -341,8 +346,13 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
 
             @Override
+            public boolean modifyUsed() {
+                return !increment.isEmpty();
+            }
+
+            @Override
             public boolean hasChanges() {
-                return super.hasChanges() || !increment.isEmpty();
+                return super.hasChanges() || modifyUsed();
             }
 
             private UsedChanges(UsedChanges changes, SessionChanges merge) {
@@ -362,18 +372,18 @@ public class DataSession extends SQLSession implements ChangesSession {
             }
 
             @Override
-            public boolean equals(Object o) {
-                return this==o || o instanceof UsedChanges && increment.equals(((UsedChanges)o).increment) && super.equals(o);
+            protected boolean modifyEquals(UsedChanges changes) {
+                return increment.equals(changes.increment);
             }
 
             @Override
-            @Lazy
+            @GenericLazy
             public int hashValues(HashValues hashValues) {
                 return super.hashValues(hashValues) * 31 + MapValuesIterable.hash(increment,hashValues);
             }
 
             @Override
-            @Lazy
+            @GenericLazy
             public Set<ValueExpr> getValues() {
                 Set<ValueExpr> result = new HashSet<ValueExpr>();
                 result.addAll(super.getValues());
@@ -385,14 +395,16 @@ public class DataSession extends SQLSession implements ChangesSession {
                 increment = Collections.singletonMap(property, table);
             }
 
-            private UsedChanges(UsedChanges usedChanges, Map<ValueExpr,ValueExpr> mapValues) {
+            private UsedChanges(UsedChanges usedChanges, MapValuesTranslate mapValues) {
                 super(usedChanges, mapValues);
-                increment = MapValuesIterable.translate(usedChanges.increment, mapValues);
+                increment = mapValues.translateValues(usedChanges.increment);
             }
 
-            public UsedChanges translate(Map<ValueExpr,ValueExpr> mapValues) {
+            public UsedChanges translate(MapValuesTranslate mapValues) {
                 return new UsedChanges(this, mapValues);
             }
+
+
         }
 
         public UsedChanges fullChanges() {
@@ -407,6 +419,10 @@ public class DataSession extends SQLSession implements ChangesSession {
                 return incrementJoin.getExpr(incrementTable.changes.get(property));
             } else
                 return null;
+        }
+
+        public boolean neededClass(Changes changes) {
+            return changes instanceof UsedChanges;
         }
 
         public UsedChanges used(Property property, UsedChanges usedChanges) {

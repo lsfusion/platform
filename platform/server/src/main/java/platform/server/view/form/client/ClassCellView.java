@@ -1,8 +1,8 @@
 package platform.server.view.form.client;
 
+import platform.server.classes.StringClass;
 import platform.server.data.type.Type;
 import platform.server.view.navigator.ObjectNavigator;
-import platform.server.classes.StringClass;
 
 public class ClassCellView extends CellView implements ClientSerialize {
 

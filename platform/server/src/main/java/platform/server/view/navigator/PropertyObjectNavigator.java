@@ -2,14 +2,14 @@ package platform.server.view.navigator;
 
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyImplement;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.view.form.PropertyObjectImplement;
 import platform.server.view.navigator.filter.OrderViewNavigator;
 
-import java.util.Map;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public class PropertyObjectNavigator<P extends PropertyInterface> extends PropertyImplement<PropertyInterfaceNavigator,P> implements OrderViewNavigator {

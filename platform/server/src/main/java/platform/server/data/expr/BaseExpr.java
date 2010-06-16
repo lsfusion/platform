@@ -1,20 +1,19 @@
 package platform.server.data.expr;
 
+import platform.base.QuickMap;
 import platform.interop.Compare;
+import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.where.classes.ClassExprWhere;
-import platform.server.data.query.JoinData;
 import platform.server.data.expr.cases.CaseWhereInterface;
 import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.translator.DirectTranslator;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.expr.where.GreaterWhere;
 import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.JoinData;
+import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Reader;
-import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
-import platform.server.caches.ManualLazy;
-import platform.base.QuickMap;
+import platform.server.data.where.classes.ClassExprWhere;
 
 
 public abstract class BaseExpr extends Expr {
@@ -49,7 +48,7 @@ public abstract class BaseExpr extends Expr {
         return getType(where); // assert'ится что не null
     }
 
-    public abstract BaseExpr translateDirect(DirectTranslator translator);
+    public abstract BaseExpr translate(MapTranslate translator);
 
     public abstract void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere);
 
