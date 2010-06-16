@@ -76,23 +76,20 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         LP yearNumber = addDProp(baseGroup, "yearNum", "Год", IntegerClass.instance, year);
         LP dayCount = addDProp(baseGroup, "dayCount", "Количество дней", IntegerClass.instance, absMonth);
-        LP monthNumber = addDProp(baseGroup, "monthNum", "Номер месяца", IntegerClass.instance, absMonth);
+        LP monthNumber = addDProp("monthNum", "Номер месяца", IntegerClass.instance, absMonth);
 
-        LP salaryDays = addDProp(baseGroup, "salaryD", "Кол-во дней", IntegerClass.instance, salary);
-        //LP salaryCount = addDProp(baseGroup, "countS", "Размер", DoubleClass.instance, salary);
-        LP salaryMonth = addDProp(baseGroup, "monthS", "Месяц", month, salary);
-        LP currencySalary = addDProp("salaryCurrency", "Валюта", currency, salary);
+        LP salaryDays = addDProp( "salaryD", "Кол-во дней", IntegerClass.instance, salary);
+        LP salaryMonth = addDProp( "monthS", "Месяц", month, salary);
+        salaryPay = addDProp(baseGroup, "salaryPay", "Зарплата", salary, pay);
+       // LP currencySalary = addDProp("salaryCurrency", "Валюта", currency, salary);
         outPerson = addDProp("outP", "Сотрудник", person, salary);
 
         LP monthName = addJProp(baseGroup, "Название месяца", name, mYear, 1);
         salaryExtraCost = addDProp(baseGroup, "extraCostS", "Зарплата",salary, extraCost);
 
         LP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
-        salaryPay = addDProp(baseGroup, "salsryPay", "Выплата", salary, pay);
         
 
-        LP salaryCurName = addJProp(baseGroup, "Назв. валюты", name, currencySalary, 1);
-                
         LP outTime = addDProp("outM", "Месяц", month, absOutTime);
 
         LP outPersonName = addJProp(baseGroup, "Сотрудник", name, outPerson, 1);
@@ -130,6 +127,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP extraCostTotal = addSGProp(baseGroup, "Всего затрат", outSum, salaryExtraCost, 1);
 
         salaryInMonth = addDProp(baseGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, month);
+        LP currencyInMonth = addDProp(baseGroup, "currencyInM", "Валюта", currency, person, month);
 
         LP monthNum = addJProp(baseGroup, "Номер месяца", monthNumber, mYear, 1);
         LP monthYearName = addJProp(baseGroup, "Год", yearNumber, monthYear, 1);
@@ -143,13 +141,23 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         LP curMonth = addJProp("Месяц зарплаты", numToMonth, lastMonthNum, 1, 2);
         LP curSalary = addJProp(baseGroup, "Текущая зарплата", salaryInMonth, 1, curMonth, 2, 1);
+        LP curCurrency = addJProp(baseGroup, "Текущая валюта", currencyInMonth, 1, curMonth, 2, 1);
 
         LP workerCurSalary = addJProp(baseGroup, "Зарплата", curSalary, outPerson, 1, salaryMonth, 1);
         LP salaryRest = addDUProp(baseGroup, "Осталось", workerCurSalary, payTotal);
         addConstraint(addJProp("Много выплачено", greater2, vzero, salaryRest, 1), false);
         LP workDays = addSUProp(baseGroup, "total", "Дней",Union.OVERRIDE, addJProp( dayCount, addJProp(mYear, salaryMonth, 1), 1), salaryDays);
         
+        LP workerCurCurrency = addJProp("Валюта", curCurrency, outPerson, 1, salaryMonth, 1);
+        LP salaryCurName = addJProp(baseGroup, "Назв. валюты", name, workerCurCurrency, 1);
 
+        LP salaryMonthName = addJProp(baseGroup, "Месяц", name, addJProp( mYear, salaryMonth, 1), 1);
+        LP salaryYearName = addJProp(baseGroup, "Год", yearNumber, addJProp( monthYear, salaryMonth, 1), 1);
+
+        //
+        LP payCur = addSUProp(Union.OVERRIDE, addJProp(workerCurCurrency, salaryPay, 1), outCur);
+        LP payCurName = addJProp(baseGroup, "Валюта зарп.", name, payCur, 1);
+       // LP timeCur = addSUProp(baseGroup, "timeCur", "Валюта зарп.",Union.OVERRIDE, addJProp(salaryCurName, salaryPay, 1), outCurName);
     }
 
     LP totalMonth, lastMonthNum;
