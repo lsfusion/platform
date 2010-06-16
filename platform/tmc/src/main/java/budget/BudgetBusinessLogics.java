@@ -138,17 +138,17 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP monthYearName = addJProp(baseGroup, "Год", yearNumber, monthYear, 1);
         LP monthInY = addSFProp("prm1*12", IntegerClass.instance, 1);
         LP mYN = addJProp("Месяцев прошло", monthInY, monthYearName, 1);
-        totalMonth = addSUProp("Всего",Union.SUM, mYN, monthNum);
+        totalMonth = addSUProp("total", "Всего",Union.SUM, mYN, monthNum);
 
         LP monthCompare = addJProp(groeq2, totalMonth, 1, totalMonth, 2);
-        lastMonthNum = addMGProp(baseGroup, "max" , "Текущая", addJProp(and(false, false), totalMonth, 2, monthCompare, 1, 2, salaryInMonth,  3, 2), 1, 3);
+        lastMonthNum = addMGProp(addJProp(and(false, false), totalMonth, 2, monthCompare, 1, 2, salaryInMonth,  3, 2), 1, 3);
         LP numToMonth = addCGProp(null , false, "maxToObject", "Ближайший месяц", object(month), totalMonth, totalMonth, 1);
 
-        LP curMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, lastMonthNum, 1, 2);
-//        LP curSalary = addJProp(baseGroup, "Текущая зарплата", salaryInMonth, 1, curMonth, 2);
+        LP curMonth = addJProp("Месяц зарплаты", numToMonth, lastMonthNum, 1, 2);
+        LP curSalary = addJProp(baseGroup, "Текущая зарплата", salaryInMonth, 1, curMonth, 2, 1);
 
-       LP testNumber = addDProp(baseGroup, "Num", "Число", IntegerClass.instance, testSample);
-       LP testMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, testNumber, 1);
+     //  LP testNumber = addDProp(baseGroup, "Num", "Число", IntegerClass.instance, testSample);
+     //  LP testMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, testNumber, 1);
 
     }
 
@@ -213,12 +213,12 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             objMonth.groupTo.initClassView = ClassViewType.PANEL;
             objMonth.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
             ObjectNavigator objExOp = addSingleGroupObjectImplement(month, "Срок", properties, baseGroup);
-            ObjectNavigator objTestOp = addSingleGroupObjectImplement(testSample, "Test", properties, baseGroup);
+         //   ObjectNavigator objTestOp = addSingleGroupObjectImplement(testSample, "Test", properties, baseGroup);
 
             addObjectActions(this, objInOp);
             addObjectActions(this, objMonth);
             addObjectActions(this, objExOp);
-            addObjectActions(this, objTestOp);
+         //   addObjectActions(this, objTestOp);
 
             addPropertyView(objInOp, objMonth, properties, baseGroup);
             addPropertyView(objInOp, objExOp, properties, baseGroup);
