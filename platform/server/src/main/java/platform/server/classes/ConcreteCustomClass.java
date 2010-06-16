@@ -61,6 +61,6 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return set1.inSet(set2)?set1:UpClassSet.FALSE;
     }
     public static AndClassSet or(ConcreteObjectClass set1, AndClassSet set2) {
-        return set1.inSet(set2)?set1:OrObjectClassSet.or(set1,set2); 
+        return set1.inSet(set2)?set2:OrObjectClassSet.or(set1,set2); 
     }
 }

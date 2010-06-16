@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Immutable
 public abstract class CompareWhere<This extends CompareWhere<This>> extends DataWhere {
-
+    
     public final BaseExpr operator1;
     public final BaseExpr operator2;
 

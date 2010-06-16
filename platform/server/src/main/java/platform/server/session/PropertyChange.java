@@ -7,12 +7,14 @@ import platform.server.caches.hash.HashValues;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.DataObject;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -93,5 +95,9 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
 
     public PropertyChange<T> translate(MapValuesTranslate mapValues) {
         return translate(mapValues.mapKeys());
+    }
+
+    public static <K> Where compareValues(Map<K,? extends Expr> map,Map<K, DataObject> mapValues) {
+        return CompareWhere.compareValues(map, mapValues);
     }
 }

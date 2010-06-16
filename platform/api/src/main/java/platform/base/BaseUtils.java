@@ -655,6 +655,10 @@ public class BaseUtils {
         return col.iterator().next();
     }
 
+    public static <I> I singleKey(Map<I,?> map) {
+        return BaseUtils.single(map.keySet());
+    }
+
     public static <I> I singleValue(Map<?,I> map) {
         return BaseUtils.single(map.values());
     }

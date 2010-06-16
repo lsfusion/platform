@@ -6,6 +6,7 @@ import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.LogicalClass;
 import platform.server.classes.StringClass;
+import platform.server.classes.DoubleClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
@@ -53,6 +54,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         this(string, StringClass.get(string.length()));
     }
 
+    public DataObject(Double dbl) {
+        this(dbl, DoubleClass.instance);
+    }
+
     public boolean isString(SQLSyntax syntax) {
         return objectClass.getType().isSafeString(object);
     }
@@ -86,7 +91,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         Map<K,ConcreteClass> mapClasses = new HashMap<K,ConcreteClass>();
         for(Map.Entry<K,DataObject> keyField : map.entrySet())
             mapClasses.put(keyField.getKey(), keyField.getValue().objectClass);
-        return mapClasses;        
+        return mapClasses;
     }
 
     public Where order(Expr expr, boolean desc, Where orderWhere) {

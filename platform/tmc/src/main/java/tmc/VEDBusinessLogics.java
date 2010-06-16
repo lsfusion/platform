@@ -3,14 +3,17 @@ package tmc;
 import net.sf.jasperreports.engine.JRException;
 
 import java.sql.SQLException;
-import java.io.IOException;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.Union;
-import platform.server.data.Time;
+import platform.server.data.*;
+import platform.server.data.query.Query;
+import platform.server.data.query.Join;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -18,6 +21,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
@@ -27,23 +31,38 @@ import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.FormRow;
 import platform.server.view.form.*;
 import platform.server.auth.User;
+import platform.server.session.DataSession;
+import platform.server.session.MapDataChanges;
+import platform.server.session.PropertyChange;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
 import platform.interop.action.*;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+
+import org.xBaseJ.DBF;
+import org.xBaseJ.xBaseJException;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
+    private String importPath = "imp";
+
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
+
+        Thread priceImportThread = new Thread(new PriceImportController(this, importPath));
+        priceImportThread.setDaemon(true);
+        priceImportThread.start();
     }
 
     // конкретные классы
@@ -92,7 +111,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass move, moveInner, returnInner, returnOuter, orderInner;
 
     CustomClass supplier;
-    CustomClass store, article, articleGroup, localSupplier, importSupplier, orderLocal, format;
+    ConcreteCustomClass article;
+    CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format;
     CustomClass customerWhole;
     CustomClass customerInvoiceRetail;
     CustomClass customerCheckRetail;
@@ -2000,5 +2020,172 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         User user1 = addUser("user1");
+    }
+
+    private class PriceImportController implements Runnable {
+
+        VEDBusinessLogics BL;
+        String path;
+
+        public PriceImportController(VEDBusinessLogics BL, String path) {
+            this.BL = BL;
+            this.path = path;
+        }
+
+        public void run() {
+
+            while (true) {
+
+                File flagFile = new File(path + "\\tmc.upd");
+
+                if (flagFile.exists()) {
+
+                    boolean succeed = false;
+
+                    FileChannel flagChannel = null;
+                    FileLock flagLock = null;
+                    try {
+
+                        flagChannel = new RandomAccessFile(flagFile, "rw").getChannel();
+                        flagLock = flagChannel.tryLock();
+
+                        if (!flagLock.isShared()) {
+
+                            DBF impFile = new DBF(path + "\\dataupd.dbf");
+                            int recordCount = impFile.getRecordCount();
+
+                            DataClass barcodeClass = StringClass.get(13);
+                            DataClass nameClass = StringClass.get(50);
+                            DataClass priceClass = DoubleClass.instance;
+
+                            KeyField barcodeField = new KeyField("barcode", barcodeClass);
+                            PropertyField nameField = new PropertyField("name", nameClass);
+                            PropertyField priceField = new PropertyField("price", priceClass);
+
+                            Map<PropertyField, ClassWhere<Field>> classProperties = new HashMap<PropertyField, ClassWhere<Field>>();
+                            ClassWhere<Field> nameClassWhere = new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(nameField, nameClass));
+
+                            classProperties.put(nameField, nameClassWhere);
+                            classProperties.put(priceField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(priceField, priceClass)));
+
+                            CustomSessionTable table = new CustomSessionTable("priceimp",
+                                    new ClassWhere(barcodeField, barcodeClass), classProperties,
+                                    Collections.singleton(barcodeField), BaseUtils.toSetElements(nameField, priceField));
+
+                            DataSession session = BL.createSession();
+                            session.createTemporaryTable(table);
+
+                            for (int i = 0; i < recordCount; i++) {
+
+                                impFile.read();
+
+                                String barcode = new String(impFile.getField("bar").getBytes(), "Cp866");
+                                String name = new String(impFile.getField("name").getBytes(), "Cp866");
+                                Double price = Double.parseDouble(impFile.getField("cen").get());
+
+                                Map<KeyField, DataObject> keys = Collections.singletonMap(barcodeField, new DataObject(barcode));
+
+                                Map<PropertyField, ObjectValue> properties = new HashMap<PropertyField, ObjectValue>();
+                                properties.put(nameField, new DataObject(name));
+                                properties.put(priceField, new DataObject(price));
+
+                                session.insertRecord(table, keys, properties);
+                            }
+
+                            impFile.close();
+
+                            Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.barcodeToObject.property.getMapKeys();
+                            Map<KeyField, KeyExpr> mapFields = Collections.singletonMap(barcodeField, BaseUtils.singleValue(mapKeys));
+
+                            Query<KeyField, Object> query = new Query<KeyField, Object>(mapFields);
+                            query.and(table.joinAnd(mapFields).getWhere());
+
+                            query.properties.put("value", BL.barcodeToObject.property.getExpr(mapKeys));
+
+                            OrderedMap<Map<KeyField, Object>, Map<Object, Object>> result = query.execute(session);
+
+                            for (Map.Entry<Map<KeyField, Object>, Map<Object, Object>> row : result.entrySet()) {
+
+                                if (BaseUtils.singleValue(row.getValue()) == null) { // не нашли объект
+
+                                    DataObject article = session.addObject(BL.article, session.modifier);
+
+                                    String barcode = (String)row.getKey().get(barcodeField);
+
+                                    Map<PropertyInterface, KeyExpr> mapBarKeys = BL.barcode.property.getMapKeys();
+                                    MapDataChanges<PropertyInterface> barcodeChanges = BL.barcode.property.getDataChanges(new PropertyChange(mapBarKeys, new DataObject(barcode).getExpr(),
+                                            PropertyChange.compareValues(mapBarKeys, Collections.singletonMap(BaseUtils.singleKey(mapBarKeys), article))),
+                                            null, session.modifier);
+
+                                    session.execute(barcodeChanges, null, null);
+                                }
+                            }
+
+                            Map<PropertyInterface, KeyExpr> mapNameKeys = (Map<PropertyInterface, KeyExpr>) BL.name.property.getMapKeys();
+                            Map<PropertyInterface, KeyExpr> mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.barcode.property.interfaces),
+                                                                                               BaseUtils.singleValue(mapNameKeys));
+                            Join<PropertyField> priceImpJoin = table.join(Collections.singletonMap(barcodeField, BL.barcode.property.getExpr(mapBarKeys, session.modifier, null)));
+
+                            MapDataChanges<PropertyInterface> nameChanges = (MapDataChanges<PropertyInterface>) BL.name.property.getDataChanges(
+                                                                new PropertyChange(mapNameKeys, priceImpJoin.getExpr(nameField), priceImpJoin.getWhere()),
+                                                                null, session.modifier);
+
+                            session.execute(nameChanges, null, null);
+                            session.apply(BL);
+
+//                        ViewTable keyTable = groupTables.get(mapGroup.getKey()); // ставим фильтр на то что только из viewTable'а
+//                        selectProps.and(keyTable.joinAnd(BaseUtils.join(keyTable.mapKeys,selectProps.mapKeys)).getWhere());
+
+
+                            succeed = true;
+                        }
+
+                    } catch (ClassNotFoundException e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } catch (xBaseJException e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } catch (IllegalAccessException e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } catch (InstantiationException e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } catch (IOException e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                    } finally {
+
+                        if (flagLock != null) {
+                            try {
+                                flagLock.release();
+                            } catch (IOException e) {
+                                System.out.println("Удаление лока на флаг : " + e.getMessage());
+                            }
+                        }
+
+                        if (flagChannel != null) {
+                            try {
+                                flagChannel.close();
+                            } catch (IOException e) {
+                                System.out.println("Закрытие канала чтения флага: " + e.getMessage());
+                            }
+                        }
+                    }
+
+                    if (succeed) {
+                        if (!flagFile.delete()) {
+                            System.out.println("Не удалось удалить файл флага");
+                        }
+                    }
+                }
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    System.out.println("Такого вообще-то не бывает");
+                }
+            }
+        }
     }
 }

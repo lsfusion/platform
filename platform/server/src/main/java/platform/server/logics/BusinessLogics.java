@@ -175,8 +175,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP currentDate;
     protected LP currentHour;
     protected LP currentEpoch;
-    protected LP barcode;
-    protected LP barcodeToObject;
+    public LP<PropertyInterface> barcode;
+    public LP barcodeToObject;
     protected LP barcodeObjectName;
     public LP reverseBarcode;
 
@@ -607,6 +607,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for(LP<?> lp : lps)
             index.add(lp.property);
         indexes.add(index);
+    }
+
+    public DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        return createSession(adapter);
     }
 
     // счетчик сессий (пока так потом надо из базы или как-то по другому транзакционность сделать

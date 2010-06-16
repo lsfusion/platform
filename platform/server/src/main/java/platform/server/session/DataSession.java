@@ -238,7 +238,7 @@ public class DataSession extends SQLSession implements ChangesSession {
     }
 
 
-    private <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
+    public <P extends PropertyInterface> List<ClientAction> execute(MapDataChanges<P> mapChanges, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {
 
         DataChanges dataChanges = mapChanges.changes;
 
