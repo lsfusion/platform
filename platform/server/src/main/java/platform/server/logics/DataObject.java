@@ -44,8 +44,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     public DataObject(Object object, ConcreteClass objectClass) {
         this.object = object;
 
-        assert BaseUtils.isData(object);
-        assert !(objectClass instanceof LogicalClass && !object.equals(true));
+        assert objectClass.getType().read(object).equals(object); // чтобы читалось то что писалось
 
         this.objectClass = objectClass;
     }

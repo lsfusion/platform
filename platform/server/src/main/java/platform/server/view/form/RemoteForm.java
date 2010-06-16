@@ -1140,7 +1140,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             if (object.equals(mapper.mapObject(navigatorForm.autoActionObjects.get(i)))) {
 
                 PropertyObjectImplement action = mapper.mapProperty(navigatorForm.autoActions.get(i));
-                changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form);
+                if(action.isInInterface(null))
+                    changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form);
             }
     }
 }

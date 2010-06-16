@@ -352,82 +352,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }*/
      }
 
-    // действие, инвертирующее свойство выбором одного из интерфейсов
-    private static class ToggleActionProperty<P extends PropertyInterface> extends ActionProperty {
-
-        // map этого свойства на переданное
-        final Map<P, ClassPropertyInterface> mapInterfaces;
-        final Property<P> property;
-        final P toggleInterface;
-        final ValueClass toggleClass;
-
-        // дебилизм из-за конструкторов
-        private ToggleActionProperty(String sID, String caption, Property<P> property, P toggleInterface, ValueClass toggleClass, ValueClass... classes) {
-            super(sID, caption, classes);
-
-            this.property = property;
-            this.toggleInterface = toggleInterface;
-            this.toggleClass = toggleClass;
-
-            List<ClassPropertyInterface> listInterfaces = new ArrayList<ClassPropertyInterface>(interfaces);
-            int size = 0;
-            mapInterfaces = new HashMap<P, ClassPropertyInterface>();
-            for(P interfaceClass : property.interfaces)
-                if(!interfaceClass.equals(toggleInterface))
-                    mapInterfaces.put(interfaceClass, listInterfaces.get(size++));
-        }
-
-        @Override
-        protected ValueClass getValueClass() {
-            return toggleClass;
-        }
-
-/*        @Override
-        public CustomClass getDialogClass(Map<ClassPropertyInterface, DataObject> mapValues, Map<ClassPropertyInterface, ConcreteClass> mapClasses) {
-            return (CustomClass)toggleClass;
-        }*/
-
-        // не должен вызываться если getDataChanges прописан
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            // в value недостающий интерфейс
-            RemoteForm<?> remoteForm = executeForm.form;
-            if(value instanceof DataObject) {
-                DataObject dataObject = (DataObject) value;
-                Map<P, DataObject> shiftKeys = BaseUtils.merge(BaseUtils.join(mapInterfaces, keys), Collections.singletonMap(toggleInterface, dataObject));
-                Object incrementValue = property.read(remoteForm.session, shiftKeys, remoteForm)==null?true:null;
-                actions.addAll(property.execute(shiftKeys, remoteForm.session, incrementValue, remoteForm, executeForm, BaseUtils.nullJoin(mapInterfaces, mapObjects)));
-
-                // ищем на форме property и делаем туда seek
-/*                PropertyObjectInterface objectInterface = mapObjects.get(mapShift);
-                if(objectInterface instanceof ObjectImplement) {
-                    ObjectImplement objectImplement = (ObjectImplement)objectInterface;
-                    remoteForm.userGroupSeeks.put(objectImplement.groupTo, Collections.<OrderView,Object>singletonMap(objectImplement, dataObject.object));
-                }*/
-            }
-        }
-/*
-        @Override
-        public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-            return property.getUsedDataChanges(modifier);
-        }
-
-        @Override
-        public MapDataChanges<ClassPropertyInterface> getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-            Map<P, KeyExpr> mapKeys = property.getMapKeys();
-
-            // translate'им Where и Expr на новые и equals на равенство, как назад ? перенести changedWhere, сгруппировать собсно group by по keyExpr
-            DirectTranslator translator = new DirectTranslator(BaseUtils.crossJoin(BaseUtils.join(mapInterfaces, change.mapKeys), mapKeys), BaseUtils.toMap(change.getValues()));
-
-            WhereBuilder executeChanged = Property.cascadeWhere(changedWhere);
-            MapDataChanges<P> dataChanges = property.getDataChanges(new PropertyChange<P>(mapKeys,
-                    ValueExpr.TRUE.and(property.getExpr(mapKeys, modifier, null).getWhere().not()),
-                    change.where.translateDirect(translator).and(mapKeys.get(toggleInterface).compare(change.expr.translateDirect(translator), Compare.EQUALS))), executeChanged, modifier);
-            if(changedWhere!=null)
-                changedWhere.add(GroupExpr.create(BaseUtils.crossJoin(mapInterfaces, mapKeys), ValueExpr.TRUE, executeChanged.toWhere(), true, change.mapKeys).getWhere());
-            return dataChanges.map(mapInterfaces);
-        }*/
-    }
-
     private Map<ValueClass,LP> is = new HashMap<ValueClass, LP>();
     // получает свойство is
     protected LP is(ValueClass valueClass) {
@@ -938,12 +862,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addFAProp(AbstractGroup group, String caption, NavigatorForm form, ObjectNavigator... params) {
         return addProperty(group,new LP<ClassPropertyInterface>(new FormActionProperty(genSID(),caption,form,params)));
     }
-    protected <P extends PropertyInterface> LP addTAProp(LP<P> lp, int shiftInterface, ValueClass shiftClass, ValueClass... classes) {
-        return addTAProp(null, "sys", lp, shiftInterface, shiftClass, classes);
-    }
-    protected <P extends PropertyInterface> LP addTAProp(AbstractGroup group, String caption, LP<P> lp, int toggleInterface, ValueClass toggleClass, ValueClass... classes) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new ToggleActionProperty<P>(genSID(),caption,lp.property,lp.listInterfaces.get(toggleInterface-1),toggleClass,classes)));
-    }
+
     protected <P extends PropertyInterface> LP addSAProp(LP<P> lp, ValueClass... classes) {
         return addSAProp(null, "sys", lp, classes);
     }

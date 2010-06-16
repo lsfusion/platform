@@ -485,7 +485,7 @@ public class DataSession extends SQLSession implements ChangesSession {
                     for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
                         String objects = "";
                         for(T propertyInterface : property.interfaces)
-                            objects = (objects.length()==0?"":objects+", ") + row.getKey().get(propertyInterface)+" "+BaseUtils.nullToString(row.getValue().get("int"+propertyInterface.ID)).trim();
+                            objects = (objects.length()==0?"":objects+", ") + BaseUtils.nvl((String)row.getValue().get("int"+propertyInterface.ID),row.getKey().get(propertyInterface).toString()).trim();
                         resultString += "    " + objects + '\n';
                     }
 

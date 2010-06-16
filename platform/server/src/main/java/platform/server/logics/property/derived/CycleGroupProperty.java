@@ -35,8 +35,8 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
         Property constraint = DerivedProperty.createPartition(groupProperty.interfaces, DerivedProperty.<T>createStatic(true, LogicalClass.instance),
-                getMapInterfaces().values(), groupProperty.getImplement(), new HashMap<T, JoinProperty.Interface>(), Compare.NOT_EQUALS);
-        constraint.caption = "Нарушена уникальность свойства (" + caption + ")";
+                getMapInterfaces().values(), groupProperty.getImplement(), new HashMap<T, JoinProperty.Interface>(), Compare.GREATER);
+        constraint.caption = "Нарушена уникальность свойства (" + toChange.caption + ") для объектов :";
         constraint.setConstraint(checkChange);
         return constraint;
     }

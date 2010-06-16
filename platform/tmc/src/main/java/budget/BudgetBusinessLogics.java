@@ -62,7 +62,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         month = addConcreteClass("Месяц года", baseClass);
         year = addConcreteClass("Год", baseClass);
         person = addConcreteClass("Сотрудник", namedObject);
-      //  testSample = addConcreteClass("Пример", baseClass);
+//        testSample = addConcreteClass("Пример", baseClass);
     }
 
     LP groupBalanceQuantity, inSum, outSum, outComment, outSection, inCur, outCur, salaryExtraCost, salaryPay;
@@ -76,7 +76,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         LP yearNumber = addDProp(baseGroup, "yearNum", "Год", IntegerClass.instance, year);
         LP dayCount = addDProp(baseGroup, "dayCount", "Количество дней", IntegerClass.instance, absMonth);
-        LP monthNumber = addDProp("monthNum", "Номер месяца", IntegerClass.instance, absMonth);
+        LP monthNumber = addDProp(baseGroup, "monthNum", "Номер месяца", IntegerClass.instance, absMonth);
 
         LP salaryDays = addDProp( "salaryD", "Кол-во дней", IntegerClass.instance, salary);
         LP salaryMonth = addDProp( "monthS", "Месяц", month, salary);

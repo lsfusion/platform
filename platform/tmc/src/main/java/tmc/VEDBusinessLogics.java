@@ -5,16 +5,13 @@ import net.sf.jasperreports.engine.JRException;
 import java.sql.SQLException;
 import java.io.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.*;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.Expr;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.data.expr.where.CompareWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -604,7 +601,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
-        TA = addJProp(true, "Ввод штрих-кода", addCUProp(addSAProp(articleInnerQuantity, orderInner, article), // отдельно inner и outerCommit чтобы timechanges работали пока временно
+        barcodeAction = addJProp(true, "Ввод штрих-кода", addCUProp(addSAProp(articleInnerQuantity, orderInner, article), // отдельно inner и outerCommit чтобы timechanges работали пока временно
                 addSAProp(addIfElseUProp(outerCommitedQuantity, outerOrderQuantity, is(commitInc), 1), orderDelivery, article),
                 addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),addJProp(equals2, orderContragent, 1, 2),
                 xorActionArticle, articleFormatToSell, NDS, documentRevalued), 1, barcodeToObject, 2);
@@ -639,7 +636,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP obligationIssued;
     LP obligationSum;
     LP orderSaleCoupon;
-    LP TA;
+    LP barcodeAction;
     LP orderClientSum;
     LP orderArticleSaleSumWithDiscount;
     LP orderSalePrice;
@@ -971,7 +968,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             } else
                 addObjectActions(this, objDoc);
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(TA, objDoc, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objDoc, objBarcode));
         }
 
         @Override
@@ -1293,7 +1290,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objObligation = addSingleGroupObjectImplement(obligation, "Доп. платежи", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
-            addHintsNoUpdate(obligationDocument);
             objObligation.show = false; objObligation.showClass = false; objObligation.showTree = false; objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
@@ -1802,7 +1798,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyView(objFormat, objArt, properties, allGroup, true);
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(TA, objFormat, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objFormat, objBarcode));
         }
     }
 
@@ -1893,7 +1889,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), true);
             addRegularFilterGroup(filterGroup);
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(TA, objAction, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objAction, objBarcode));
         }
     }
 
