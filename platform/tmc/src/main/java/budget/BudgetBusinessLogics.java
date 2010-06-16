@@ -62,7 +62,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         month = addConcreteClass("Месяц года", baseClass);
         year = addConcreteClass("Год", baseClass);
         person = addConcreteClass("Сотрудник", namedObject);
-        testSample = addConcreteClass("Пример", baseClass);
+      //  testSample = addConcreteClass("Пример", baseClass);
     }
 
     LP groupBalanceQuantity, inSum, outSum, outComment, outSection, inCur, outCur, salaryExtraCost, salaryPay;
@@ -79,7 +79,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP monthNumber = addDProp(baseGroup, "monthNum", "Номер месяца", IntegerClass.instance, absMonth);
 
         LP salaryDays = addDProp(baseGroup, "salaryD", "Кол-во дней", IntegerClass.instance, salary);
-        LP salaryCount = addDProp(baseGroup, "countS", "Размер", DoubleClass.instance, salary);
+        //LP salaryCount = addDProp(baseGroup, "countS", "Размер", DoubleClass.instance, salary);
+        LP salaryMonth = addDProp(baseGroup, "monthS", "Месяц", month, salary);
         LP currencySalary = addDProp("salaryCurrency", "Валюта", currency, salary);
         outPerson = addDProp("outP", "Сотрудник", person, salary);
 
@@ -128,10 +129,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP payTotal = addSGProp(baseGroup, "Всего заплачено", paySum, salaryPay, 1);
         LP extraCostTotal = addSGProp(baseGroup, "Всего затрат", outSum, salaryExtraCost, 1);
 
-        LP salaryRest = addDUProp(baseGroup, "Осталось", salaryCount, payTotal);
-        
-        addConstraint(addJProp("Много выплачено", greater2, vzero, salaryRest, 1), false);
-
         salaryInMonth = addDProp(baseGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, month);
 
         LP monthNum = addJProp(baseGroup, "Номер месяца", monthNumber, mYear, 1);
@@ -147,8 +144,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP curMonth = addJProp("Месяц зарплаты", numToMonth, lastMonthNum, 1, 2);
         LP curSalary = addJProp(baseGroup, "Текущая зарплата", salaryInMonth, 1, curMonth, 2, 1);
 
-     //  LP testNumber = addDProp(baseGroup, "Num", "Число", IntegerClass.instance, testSample);
-     //  LP testMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, testNumber, 1);
+        LP workerCurSalary = addJProp(baseGroup, "Зарплата", curSalary, outPerson, 1, salaryMonth, 1);
+        LP salaryRest = addDUProp(baseGroup, "Осталось", workerCurSalary, payTotal);
+        addConstraint(addJProp("Много выплачено", greater2, vzero, salaryRest, 1), false);
+        LP workDays = addSUProp(baseGroup, "total", "Дней",Union.OVERRIDE, addJProp( dayCount, addJProp(mYear, salaryMonth, 1), 1), salaryDays);
+        
 
     }
 
