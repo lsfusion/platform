@@ -2,6 +2,7 @@ package budget;
 
 
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.Union;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.linear.LP;
 import platform.server.logics.BusinessLogics;
@@ -38,7 +39,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime;
 
-    ConcreteCustomClass  currency, exOperation, section, inOperation, outOperation, month, salary, extraCost, person, year, pay, absMonth;
+    ConcreteCustomClass  currency, exOperation, section, inOperation, outOperation, month, salary, extraCost, person, year, pay, absMonth, testSample;
 
     protected void initClasses() {
         operation = addAbstractClass("Операции", namedObject, transaction);
@@ -58,8 +59,9 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         currency = addConcreteClass("Валюта", namedObject);
         section = addConcreteClass("Статья", namedObject);
         month = addConcreteClass("Месяц года", baseClass);
-        year = addConcreteClass("Год", namedObject);
+        year = addConcreteClass("Год", baseClass);
         person = addConcreteClass("Сотрудник", namedObject);
+        testSample = addConcreteClass("Пример", baseClass);
     }
 
     LP groupBalanceQuantity, inSum, outSum, outComment, outSection, inCur, outCur, salaryExtraCost, salaryPay;
@@ -69,24 +71,30 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
 
         LP monthYear = addDProp("year", "Год", year, month);
-        LP dayCount = addDProp(baseGroup, "dayCount", "Количество дней", IntegerClass.instance, absMonth);
-        LP salaryDays = addDProp(baseGroup, "salaryD", "Кол-во дней", IntegerClass.instance, salary);
         LP mYear = addDProp("monthYear", "Месяц", absMonth, month);
+
+        LP yearNumber = addDProp(baseGroup, "yearNum", "Год", IntegerClass.instance, year);
+        LP dayCount = addDProp(baseGroup, "dayCount", "Количество дней", IntegerClass.instance, absMonth);
+        LP monthNumber = addDProp(baseGroup, "monthNum", "Номер месяца", IntegerClass.instance, absMonth);
+
+        LP salaryDays = addDProp(baseGroup, "salaryD", "Кол-во дней", IntegerClass.instance, salary);
+        LP salaryCount = addDProp(baseGroup, "countS", "Размер", DoubleClass.instance, salary);
+        LP currencySalary = addDProp("salaryCurrency", "Валюта", currency, salary);
+        outPerson = addDProp("outP", "Сотрудник", person, salary);
+
         LP monthName = addJProp(baseGroup, "Название месяца", name, mYear, 1);
         salaryExtraCost = addDProp(baseGroup, "extraCostS", "Зарплата",salary, extraCost);
+
+        LP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
         salaryPay = addDProp(baseGroup, "salsryPay", "Выплата", salary, pay);
         
-        LP currencySalary = addDProp("salaryCurrency", "Валюта", currency, salary);
-        LP salaryCurName = addJProp(baseGroup, "Назв. валюты", name, currencySalary, 1);
-        LP salaryCount = addDProp(baseGroup, "countS", "Размер", DoubleClass.instance, salary);
-        LP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
 
-        outPerson = addDProp("outP", "Сотрудник", person, salary);
+        LP salaryCurName = addJProp(baseGroup, "Назв. валюты", name, currencySalary, 1);
+                
         LP outTime = addDProp("outM", "Месяц", month, absOutTime);
 
         LP outPersonName = addJProp(baseGroup, "Сотрудник", name, outPerson, 1);
         LP outMonthName = addJProp(baseGroup, "Месяц", name, outTime, 1);
-        LP monthYearName = addJProp(baseGroup, "Год", name, monthYear, 1);
 
         addConstraint(addJProp("Слишком много дней", greater2, salaryDays, 1, dayCount, 2), false);
 
@@ -125,8 +133,22 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         salaryInMonth = addDProp(baseGroup, "salaryInM", "Зарплата", DoubleClass.instance, person, month);
 
+        LP monthNum = addJProp(baseGroup, "Номер месяца", monthNumber, mYear, 1);
+        LP monthYearName = addJProp(baseGroup, "Год", yearNumber, monthYear, 1);
+        LP monthInY = addSFProp("prm1*12", IntegerClass.instance, 1);
+        LP mYN = addJProp("Месяцев прошло", monthInY, monthYearName, 1);
+        LP totalMonth = addSUProp("Всего",Union.SUM, mYN, monthNum);
 
-        
+        LP monthCompare = addJProp(groeq2, totalMonth, 1, totalMonth, 2);
+        LP lastMonthNum = addMGProp(baseGroup, "max" , "Текущая", addJProp(and(false, false), totalMonth, 2, monthCompare, 1, 2, salaryInMonth,  3, 2), 1, 3);
+        LP numToMonth = addCGProp(null , "maxToObject", "Ближайший месяц", object(month), totalMonth, totalMonth, 1);
+
+        LP curMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, lastMonthNum, 1, 2);
+//        LP curSalary = addJProp(baseGroup, "Текущая зарплата", salaryInMonth, 1, curMonth, 2);
+
+       LP testNumber = addDProp(baseGroup, "Num", "Число", IntegerClass.instance, testSample);
+       LP testMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, testNumber, 1);
+
     }
 
     protected void initConstraints() {
@@ -186,16 +208,18 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             objMonth.groupTo.initClassView = ClassViewType.PANEL;
             objMonth.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
             ObjectNavigator objExOp = addSingleGroupObjectImplement(month, "Срок", properties, baseGroup);
+            ObjectNavigator objTestOp = addSingleGroupObjectImplement(testSample, "Test", properties, baseGroup);
 
             addObjectActions(this, objInOp);
             addObjectActions(this, objMonth);
             addObjectActions(this, objExOp);
+            addObjectActions(this, objTestOp);
 
             addPropertyView(objInOp, objMonth, properties, baseGroup);
             addPropertyView(objInOp, objExOp, properties, baseGroup);
 
-            NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(salaryInMonth));
-            addFixedFilter(documentFilter);
+            //NotNullFilterNavigator documentFilter = new NotNullFilterNavigator(getPropertyImplement(salaryInMonth));
+            //addFixedFilter(documentFilter);
 
         }
     }
