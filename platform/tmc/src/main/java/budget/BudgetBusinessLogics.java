@@ -4,6 +4,7 @@ package budget;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.Union;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.linear.LP;
 import platform.server.logics.BusinessLogics;
 import platform.server.view.navigator.*;
@@ -137,11 +138,11 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP monthYearName = addJProp(baseGroup, "Год", yearNumber, monthYear, 1);
         LP monthInY = addSFProp("prm1*12", IntegerClass.instance, 1);
         LP mYN = addJProp("Месяцев прошло", monthInY, monthYearName, 1);
-        LP totalMonth = addSUProp("Всего",Union.SUM, mYN, monthNum);
+        totalMonth = addSUProp("Всего",Union.SUM, mYN, monthNum);
 
         LP monthCompare = addJProp(groeq2, totalMonth, 1, totalMonth, 2);
-        LP lastMonthNum = addMGProp(baseGroup, "max" , "Текущая", addJProp(and(false, false), totalMonth, 2, monthCompare, 1, 2, salaryInMonth,  3, 2), 1, 3);
-        LP numToMonth = addCGProp(null , "maxToObject", "Ближайший месяц", object(month), totalMonth, totalMonth, 1);
+        lastMonthNum = addMGProp(baseGroup, "max" , "Текущая", addJProp(and(false, false), totalMonth, 2, monthCompare, 1, 2, salaryInMonth,  3, 2), 1, 3);
+        LP numToMonth = addCGProp(null , false, "maxToObject", "Ближайший месяц", object(month), totalMonth, totalMonth, 1);
 
         LP curMonth = addJProp(baseGroup, "Месяц зарплаты", numToMonth, lastMonthNum, 1, 2);
 //        LP curSalary = addJProp(baseGroup, "Текущая зарплата", salaryInMonth, 1, curMonth, 2);
@@ -151,11 +152,15 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     }
 
+    LP totalMonth, lastMonthNum;
+
     protected void initConstraints() {
 //        balanceQuantity.property.constraint = new PositiveConstraint();
     }
 
     protected void initPersistents() {
+        persistents.add((AggregateProperty) totalMonth.property);
+        persistents.add((AggregateProperty) lastMonthNum.property);
     }
 
     protected void initTables() {
