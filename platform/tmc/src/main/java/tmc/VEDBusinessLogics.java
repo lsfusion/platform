@@ -100,6 +100,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass customerCheckRetail;
     CustomClass orderWhole;
     CustomClass orderInvoiceRetail;
+    CustomClass checkRetail;
     CustomClass orderSaleCheckRetail;
 
     CustomClass documentRevalue;
@@ -120,6 +121,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass obligation;
     CustomClass coupon;
     ConcreteCustomClass giftObligation;
+
+    public LP checkRetailExported;
 
     protected void initClasses() {
 
@@ -181,7 +184,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderWhole = addAbstractClass("Оптовая операция", order);
         orderInvoiceRetail = addAbstractClass("Розничная операция по накладной", order);
 
-        orderSaleCheckRetail = addAbstractClass("Реализация через кассу", order);
+        checkRetail = addAbstractClass("Кассовые операции", baseClass);
+        orderSaleCheckRetail = addAbstractClass("Реализация через кассу", order, checkRetail);
 
         orderSaleWhole = addConcreteClass("Оптовый заказ", orderWarehouseOut, orderInner, orderWhole, orderSale);
         invoiceSaleWhole = addConcreteClass("Выписанный оптовый заказ", orderSaleWhole, invoiceDocument);
@@ -229,7 +233,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         returnSaleInvoice = addConcreteClass("Возврат по накладной", orderInc, returnInner, commitInc, invoiceDocument);
         returnSaleWhole = addConcreteClass("Оптовый возврат", orderWarehouseInc, orderWhole, returnSaleInvoice);
         returnSaleInvoiceRetail = addConcreteClass("Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
-        returnSaleCheckRetail = addConcreteClass("Возврат реализации через кассу", orderShopInc, returnInner, commitInc);
+        returnSaleCheckRetail = addConcreteClass("Возврат реализации через кассу", orderShopInc, returnInner, commitInc, checkRetail);
 
         obligation = addAbstractClass("Сертификат", namedObject, barcodeObject);
         coupon = addConcreteClass("Купон", obligation);
@@ -609,6 +613,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderUser.setDerivedChange(currentUser, true, is(order), 1);
         orderUserName = addJProp("Исп-ль заказа", name, orderUser, 1);
 
+        checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, checkRetail);
         addCashRegisterProperties();
     }
 
@@ -956,7 +961,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 objDoc.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
                 objDoc.show = false;
                 objDoc.addOnTransaction = true;
-            } else
+            } else if (!isReadOnly())
                 addObjectActions(this, objDoc);
 
             addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objDoc, objBarcode));
@@ -1279,6 +1284,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private ObjectNavigator objCoupon;
         private ObjectNavigator objIssue;
 
+        @Override
+        public boolean isReadOnly() {
+            return !toAdd;
+        }
+
         private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, commitSaleCheckArticleRetail, toAdd);
 
@@ -1303,9 +1313,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponToIssueConstraint, objDoc, objIssue)));
 
                 addPropertyView(properties, cashRegOperGroup, true);
+            } else {
+                addPropertyView(checkRetailExported, objDoc);
             }
-
-            readOnly = !toAdd;
         }
 
         @Override
@@ -1713,9 +1723,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class ReturnSaleCheckRetailNavigatorForm extends ReturnSaleNavigatorForm {
 
+        @Override
+        public boolean isReadOnly() {
+            return !toAdd;
+        }
+
         private ReturnSaleCheckRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
             super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail);
-            readOnly = !toAdd;
+
+            if(toAdd) {
+                addPropertyView(properties, cashRegOperGroup, true);
+            } else {
+                addPropertyView(checkRetailExported, objDoc);
+            }
         }
 
         @Override
@@ -1936,6 +1956,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
             addRegularFilterGroup(filterGroup);
 
+            if (!toAdd) {
+                addPropertyView(checkRetailExported, objDoc);
+            }
         }
     }
 
@@ -1946,9 +1969,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return false;
         }
 
+        @Override
+        public boolean isReadOnly() {
+            return !toAdd;
+        }
+
         protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, saleCheckCert, toAdd);
-            readOnly = !toAdd;
+
+            if(toAdd) {
+                addPropertyView(properties, cashRegOperGroup, true);
+            } else {
+                addPropertyView(checkRetailExported, objDoc);
+            }
         }
 
         @Override
