@@ -97,7 +97,4 @@ public class PropertyChange<T extends PropertyInterface> extends AbstractMapValu
         return translate(mapValues.mapKeys());
     }
 
-    public static <K> Where compareValues(Map<K,? extends Expr> map,Map<K, DataObject> mapValues) {
-        return CompareWhere.compareValues(map, mapValues);
-    }
 }

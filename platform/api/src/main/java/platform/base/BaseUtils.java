@@ -477,6 +477,13 @@ public class BaseUtils {
         return (data ==0?"":" "+ clause +" "+ data);
     }
 
+    public static <T, K> OrderedMap<T, K> listMap(List<T> list, Map<T, K> map) {
+        OrderedMap<T, K> result = new OrderedMap<T, K>();
+        for (T element : list)
+            result.put(element, map.get(element));
+        return result;
+    }
+
 
     public static abstract class Group<G,K> {
         public abstract G group(K key);

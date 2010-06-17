@@ -1,9 +1,11 @@
 package platform.server.logics.linear;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
@@ -65,6 +67,10 @@ public class LP<T extends PropertyInterface> {
         for(int i=0;i<listInterfaces.size();i++)
             mapValues.put(listInterfaces.get(i),objects[i]);
         return mapValues;
+    }
+
+    public OrderedMap<T, KeyExpr> getMapKeys() {
+        return BaseUtils.listMap(listInterfaces, property.getMapKeys());
     }
 
     public Expr getExpr(Modifier<? extends Changes> modifier, Expr... exprs) {

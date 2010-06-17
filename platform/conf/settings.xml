@@ -5,15 +5,36 @@
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-	  <constructor-arg><value>ved</value></constructor-arg>
-	  <constructor-arg><value>localhost</value></constructor-arg>
-	  <constructor-arg><value>postgres</value></constructor-arg>
-	  <constructor-arg><value>11111</value></constructor-arg>
+		<constructor-arg><value>ved</value></constructor-arg>
+		<constructor-arg><value>localhost</value></constructor-arg>
+		<constructor-arg><value>postgres</value></constructor-arg>
+		<constructor-arg><value>11111</value></constructor-arg>
 	</bean>
 
+	<bean id="priceImport" class="tmc.integration.PriceImportTask">
+		<constructor-arg><ref bean="businessLogics"/></constructor-arg>
+		<constructor-arg><list><value>imp</value></list></constructor-arg>
+		<constructor-arg><list><value type="int">421</value></list></constructor-arg>
+	</bean>
+
+    <bean id="saleExport" class="tmc.integration.SaleExportTask">
+        <constructor-arg><ref bean="businessLogics"/></constructor-arg>
+        <constructor-arg><list><value>exp</value></list></constructor-arg>
+    </bean>
+
+    <bean id="scheduler" class="platform.server.logics.scheduler.Scheduler">
+        <constructor-arg><value type="int">5000</value></constructor-arg>
+        <constructor-arg>
+            <list>
+                <ref bean="priceImport"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
 	<bean id="businessLogics" class="tmc.VEDBusinessLogics">
-	  <constructor-arg><ref bean="dataAdapter"/></constructor-arg>
-	  <constructor-arg type="int"><value>7652</value></constructor-arg>
+		<constructor-arg><ref bean="dataAdapter"/></constructor-arg>
+		<constructor-arg type="int"><value>7652</value></constructor-arg>
+		<property name="scheduler"><ref bean="scheduler"/></property>
 	</bean>
 
 </beans>

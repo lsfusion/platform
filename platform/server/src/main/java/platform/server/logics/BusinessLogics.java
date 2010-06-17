@@ -31,6 +31,7 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
+import platform.server.logics.scheduler.Scheduler;
 import platform.server.session.DataSession;
 import platform.server.view.form.CustomObjectImplement;
 import platform.server.view.form.PropertyObjectInterface;
@@ -2056,5 +2057,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void addObjectActions(NavigatorForm form, ObjectNavigator object) {
         form.addAddObjectView(object, getAddObjectAction(object.baseClass)).setToDraw(object.groupTo).setForcePanel(true);
         form.addDeleteObjectView(object, getDeleteObjectAction(object.baseClass));
+    }
+
+    private Scheduler scheduler;
+    public void setScheduler(Scheduler scheduler) {
+        this.scheduler = scheduler;
+        this.scheduler.start();
     }
 }
