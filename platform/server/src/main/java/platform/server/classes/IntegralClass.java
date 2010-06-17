@@ -48,10 +48,6 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
     }
 
-    public Object getDefaultValue() {
-        return 0;
-    }
-
     abstract int getWhole();
     abstract int getPrecision();
 

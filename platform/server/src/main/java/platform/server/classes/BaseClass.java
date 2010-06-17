@@ -9,8 +9,8 @@ public class BaseClass extends AbstractCustomClass {
 
     public final UnknownClass unknown;
 
-    public BaseClass(Integer iID, String caption) {
-        super(iID, caption);
+    public BaseClass(Integer ID, String caption) {
+        super(ID, caption);
         table = new ObjectTable(this);
         unknown = new UnknownClass(this);
     }

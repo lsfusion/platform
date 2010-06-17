@@ -12,8 +12,8 @@ import java.util.Collections;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
 
-    public ConcreteCustomClass(Integer iID, String iCaption, CustomClass... iParents) {
-        super(iID, iCaption, iParents);
+    public ConcreteCustomClass(Integer ID, String caption, CustomClass... parents) {
+        super(ID, caption, parents);
     }
 
     public boolean inSet(AndClassSet set) {

@@ -83,7 +83,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Integer userID = readUser(login, session);
             if(userID==null)
                 throw new LoginException();
-            String checkPassword = (String) userPassword.read(session, new DataObject(userID, user));
+            String checkPassword = (String) userPassword.read(session, new DataObject(userID, customUser));
             if(checkPassword != null && !password.trim().equals(checkPassword.trim()))
                 throw new LoginException();
 
@@ -108,7 +108,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected AbstractCustomClass namedObject, transaction, barcodeObject;
 
-    public ConcreteCustomClass user, computer;
+    public AbstractCustomClass user;
+    public ConcreteCustomClass systemUser;
+    public ConcreteCustomClass customUser; 
+    public ConcreteCustomClass computer;
 
     public Collection<Integer> getComputers() {
         Collection<Integer> result = new ArrayList<Integer>();
@@ -117,7 +120,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             DataSession session = createSession();
 
             Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
-            query.and(BaseUtils.singleValue(query.mapKeys).isClass(computer.getUpSet()));
+            query.and(BaseUtils.singleValue(query.mapKeys).isClass(computer));
             for(Map<String, Object> row : query.execute(session).keySet())
                 result.add((Integer) row.get("key"));
 
@@ -134,14 +137,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-
     protected User addUser(String login) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 
         DataSession session = createSession();
 
         Integer userID = readUser(login, session);
         if(userID == null) {
-            DataObject addObject = session.addObject(user, session.modifier);
+            DataObject addObject = session.addObject(customUser, session.modifier);
             userLogin.execute(login, session, session.modifier, addObject);
             userID = (Integer) addObject.object;
             session.apply(this);
@@ -196,14 +198,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         aggrGroup = new AbstractGroup("Аггрегированные атрибуты");
         aggrGroup.createContainer = false;
 
-        baseClass = new BaseClass(idShift(1), "Объект");
+        baseClass = new BaseClass(null, "Объект");
 
         namedObject = addAbstractClass("Объект с именем", baseClass);
         transaction = addAbstractClass("Транзакция", baseClass);
         barcodeObject = addAbstractClass("Штрих-кодированный объект", baseClass);
 
-        user = addConcreteClass("Пользователь", barcodeObject);
-        computer = addConcreteClass("Рабочее место", baseClass);
+        user = addAbstractClass("Пользователь", baseClass);
+        customUser = addConcreteClass(9999976, "Обычный пользователь", user, barcodeObject);
+        systemUser = addConcreteClass(9999974, "Системный пользователь", user);
+        computer = addConcreteClass(9999975, "Рабочее место", baseClass);
 
         tableFactory = new TableFactory();
         for(int i=0;i<TableFactory.MAX_INTERFACE;i++) { // заполним базовые таблицы
@@ -237,13 +241,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         currentHour = addTProp(Time.HOUR);
         currentEpoch = addTProp(Time.EPOCH);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(),user)));
-        changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(),user)));
+        changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(),customUser)));
 
-        userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), user);
-        loginToUser = addCGProp(null, "loginToUser", "Пользователь", object(user), userLogin, userLogin, 1);
-        userPassword = addDProp(baseGroup, "userPassword", "Пароль", StringClass.get(30), user);
-        userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), user);
-        userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), user);
+        userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), customUser);
+        loginToUser = addCGProp(null, "loginToUser", "Пользователь", object(customUser), userLogin, userLogin, 1);
+        userPassword = addDProp(baseGroup, "userPassword", "Пароль", StringClass.get(30), customUser);
+        userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), customUser);
+        userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
 
         name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", StringClass.get(50), namedObject),
                 addJProp(addSFProp("trim(prm1) || ' ' || rtrim(prm2)", StringClass.get(50), 2), userFirstName, 1, userLastName,1));
@@ -423,6 +427,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initBase();
 
         initLogics();
+
+        fillIDs();
+
         initImplements();
 
         // сначала инициализируем stored потому как используется для определения интерфейса
@@ -439,13 +446,40 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         synchronizeDB();
 
         initAuthentication();
-        
+
+        // считаем системного пользователя
+        try {
+            DataSession session = createSession(new UserController() {
+                public void changeCurrentUser(DataObject user) {
+                    throw new RuntimeException("not supported");
+                }
+                public DataObject getCurrentUser() {
+                    return new DataObject(0,systemUser);
+                }
+            });
+
+            Query<String, Object> query = new Query<String, Object>(Collections.singleton("key"));
+            query.and(BaseUtils.singleValue(query.mapKeys).isClass(systemUser));
+            Set<Map<String, Object>> rows = query.execute(session, new OrderedMap<Object, Boolean>(), 1).keySet();
+            if(rows.size()==0) { // если нету добавим
+                systemUserObject = (Integer) session.addObject(systemUser, session.modifier).object;
+                session.apply(this);
+            } else
+                systemUserObject = (Integer) BaseUtils.single(rows).get("key");
+
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         // запишем текущую дату
         DataSession session = createSession();
         currentDate.execute(DateConverter.dateToInt(new Date()), session, session.modifier);
         session.apply(this);
         session.close();
     }
+
+    public final int systemUserObject;
 /*
     final static Set<Integer> wereSuspicious = new HashSet<Integer>();
 
@@ -566,9 +600,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             public void changeCurrentUser(DataObject user) {
                 throw new RuntimeException("not supported");
             }
-
             public DataObject getCurrentUser() {
-                return new DataObject(0, user);
+                return new DataObject(systemUserObject, systemUser);
             }
         });
     }
@@ -640,16 +673,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public void fillIDs() {
+
+        int idPropertyNum = 0;
+        for(Property property : properties)
+            property.ID = idPropertyNum++;
+
+        Map<Integer, CustomClass> usedIds = new HashMap<Integer, CustomClass>();
+        Set<CustomClass> allClasses = new HashSet<CustomClass>();
+        baseClass.fillChilds(allClasses);
+        CustomClass usedClass;
+        for(CustomClass customClass: allClasses)
+            if(customClass.ID != null)
+                if((usedClass = usedIds.put(customClass.ID, customClass))!=null)
+                    throw new RuntimeException("Одинаковые идентификаторы у классов "+customClass.caption+" и "+usedClass.caption);
+        int free = 0;
+        for(CustomClass customClass: allClasses)
+            if(customClass.ID == null) {
+                while(usedIds.containsKey(free++));
+                customClass.ID = free++;
+            }        
+    }
+
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         DataSession session = createSession();
 
         session.startTransaction();
-
-        // запишем sID'ки
-        int idPropertyNum = 0;
-        for(Property property : properties)
-            property.ID = idPropertyNum++;
 
         // инициализируем таблицы
         tableFactory.fillDB(session);
@@ -855,7 +905,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     // функционал по заполнению св-в по номерам, нужен для BL
 
     protected ConcreteCustomClass addConcreteClass(String caption, CustomClass... parents) {
-        return addConcreteClass(baseGroup, idShift(1), caption, parents);
+        return addConcreteClass(baseGroup, null, caption, parents);
     }
     protected ConcreteCustomClass addConcreteClass(Integer ID, String caption, CustomClass... parents) {
         return addConcreteClass(baseGroup, ID, caption, parents);
@@ -867,13 +917,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected AbstractCustomClass addAbstractClass(String caption, CustomClass... parents) {
-        return addAbstractClass(baseGroup, idShift(1), caption, parents);
+        return addAbstractClass(baseGroup, caption, parents);
     }
-    protected AbstractCustomClass addAbstractClass(Integer ID, String caption, CustomClass... parents) {
-        return addAbstractClass(baseGroup, ID, caption, parents);
-    }
-    protected AbstractCustomClass addAbstractClass(AbstractGroup group, Integer ID, String caption, CustomClass... parents) {
-        AbstractCustomClass customClass = new AbstractCustomClass(ID, caption, parents);
+    protected AbstractCustomClass addAbstractClass(AbstractGroup group, String caption, CustomClass... parents) {
+        AbstractCustomClass customClass = new AbstractCustomClass(null, caption, parents);
         group.add(customClass);
         return customClass;
     }

@@ -55,4 +55,8 @@ public class DoubleClass extends IntegralClass<Double> {
             else
                 return null;
     }
+
+    public Object getDefaultValue() {
+        return 0.0;
+    }
 }

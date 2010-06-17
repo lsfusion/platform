@@ -2,6 +2,7 @@ package platform.server.data.expr;
 
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteValueClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.query.JoinData;
@@ -10,27 +11,27 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.query.ContextEnumerator;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.where.Where;
+import platform.server.data.where.DataWhereSet;
 import platform.server.data.type.Type;
 import platform.server.data.SQLSession;
 import platform.server.caches.hash.HashContext;
 
-public class CurrentUserExpr extends StaticClassExpr {
+public class CurrentUserExpr extends VariableClassExpr {
 
-    private final ConcreteValueClass userClass;
+    private final ValueClass userClass;
 
-    public CurrentUserExpr(ConcreteValueClass userClass) {
+    public CurrentUserExpr(ValueClass userClass) {
         this.userClass = userClass;
-    }
-
-    public ConcreteClass getStaticClass() {
-        return userClass;
     }
 
     protected VariableExprSet calculateExprFollows() {
         return new VariableExprSet();
     }
 
-    public BaseExpr translate(MapTranslate translator) {
+    public void fillFollowSet(DataWhereSet fillSet) {
+    }
+
+    public CurrentUserExpr translate(MapTranslate translator) {
         return this;
     }
 
@@ -38,7 +39,7 @@ public class CurrentUserExpr extends StaticClassExpr {
     }
 
     public Type getType(Where where) {
-        return getStaticClass().getType();
+        return userClass.getType();
     }
 
     public Where calculateWhere() {

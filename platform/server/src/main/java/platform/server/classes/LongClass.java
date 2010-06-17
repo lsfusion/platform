@@ -55,4 +55,8 @@ public class LongClass extends IntegralClass<Long> {
             else
                 return null;
     }
+
+    public Object getDefaultValue() {
+        return 0l;
+    }
 }

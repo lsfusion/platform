@@ -50,7 +50,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         securityPolicy = this.BL.authPolicy.getSecurityPolicy(currentUser);
 
-        user = new DataObject(currentUser.ID, BL.user);
+        user = new DataObject(currentUser.ID, BL.customUser);
         this.computer = new DataObject(computer, BL.computer);
     }
 

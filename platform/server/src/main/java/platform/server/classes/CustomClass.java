@@ -14,9 +14,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.group.AbstractNode;
-import platform.server.logics.table.ObjectTable;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.CustomObjectImplement;
 import platform.server.view.form.ObjectImplement;
@@ -42,8 +40,9 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return caption;
     }
 
-    public String caption;
     public Integer ID;
+
+    public String caption;
     public CustomClass(Integer ID, String caption, CustomClass... parents) {
         this.ID = ID;
         this.caption = caption;
@@ -78,7 +77,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public CustomClass findClassID(int idClass) {
-        if(ID.equals(idClass)) return this;
+        if(ID == idClass) return this;
 
         for(CustomClass child : children) {
             CustomClass findClass = child.findClassID(idClass);

@@ -60,4 +60,7 @@ public class IntegerClass extends IntegralClass<Integer> {
                 return null;
     }
 
+    public Object getDefaultValue() {
+        return 0;
+    }
 }

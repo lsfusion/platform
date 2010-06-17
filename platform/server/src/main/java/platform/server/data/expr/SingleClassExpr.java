@@ -14,11 +14,15 @@ public abstract class SingleClassExpr extends BaseExpr {
 
     public abstract SingleClassExpr translate(MapTranslate translator);
 
+    private boolean isTrueWhere() {
+        return this instanceof KeyExpr || this instanceof CurrentUserExpr;
+    }
+
     private Expr classExpr;
     public Expr classExpr(BaseClass baseClass) {
         if(classExpr==null) {
             ConcreteObjectClass singleClass;
-            if(!(this instanceof KeyExpr) && ((singleClass = ((OrObjectClassSet)getSet()).getSingleClass(baseClass))!=null))
+            if(!isTrueWhere() && ((singleClass = ((OrObjectClassSet)getSet()).getSingleClass(baseClass))!=null))
                 classExpr = singleClass.getIDExpr().and(getWhere());
             else
                 classExpr = new IsClassExpr(this,baseClass);
@@ -27,7 +31,7 @@ public abstract class SingleClassExpr extends BaseExpr {
     }
 
     private OrClassSet getSet() {
-        assert !(this instanceof KeyExpr);
+        assert !isTrueWhere();
         OrClassSet result = null;
         for(QuickMap<VariableClassExpr,AndClassSet> where : getWhere().getClassWhere().getAnds()) {
             OrClassSet classSet = getAndClassSet(where).getOr();
@@ -41,7 +45,7 @@ public abstract class SingleClassExpr extends BaseExpr {
     }
 
     private boolean intersect(AndClassSet set) {
-        if(this instanceof KeyExpr)
+        if(isTrueWhere())
             return !set.isEmpty();
         else {
             for(QuickMap<VariableClassExpr, AndClassSet> where : getWhere().getClassWhere().getAnds())
@@ -54,7 +58,7 @@ public abstract class SingleClassExpr extends BaseExpr {
         // в принципе можно было бы проand'ить но нарушит инварианты конструирования внутри IsClassExpr(baseClass+ joinExpr)
         if(!intersect(set)) // если не пересекается то false
             return Where.FALSE;
-        if(!(this instanceof KeyExpr))
+        if(!isTrueWhere())
             if(set.getOr().containsAll(getSet())) // если set содержит все элементы, то достаточно просто что не null
                 return getWhere();
         return new IsClassWhere(this,set);

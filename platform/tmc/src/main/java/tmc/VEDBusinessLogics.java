@@ -129,29 +129,29 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         subject = addAbstractClass("Субъект", namedObject);
 
         action = addAbstractClass("Акция", baseClass);
-        saleAction = addConcreteClass("Распродажа", action);
-        articleAction = addConcreteClass("Акции по позициям", action);
+        saleAction = addConcreteClass(1, "Распродажа", action);
+        articleAction = addConcreteClass(2, "Акции по позициям", action);
 
-        groupArticleAction = addConcreteClass("Группа акций", namedObject);
+        groupArticleAction = addConcreteClass(3, "Группа акций", namedObject);
 
         store = addAbstractClass("Склад", subject);
-        shop = addConcreteClass("Магазин", store);
-        warehouse = addConcreteClass("Распред. центр", store);
-        article = addConcreteClass("Товар", namedObject, barcodeObject);
-        articleGroup = addConcreteClass("Группа товаров", namedObject);
+        shop = addConcreteClass(4, "Магазин", store);
+        warehouse = addConcreteClass(5, "Распред. центр", store);
+        article = addConcreteClass(6, "Товар", namedObject, barcodeObject);
+        articleGroup = addConcreteClass(7, "Группа товаров", namedObject);
         supplier = addAbstractClass("Поставщик", subject);
-        localSupplier = addConcreteClass("Местный поставщик", supplier);
-        importSupplier = addConcreteClass("Импортный поставщик", supplier);
-        customerWhole = addConcreteClass("Оптовый покупатель", namedObject);
-        customerInvoiceRetail = addConcreteClass("Покупатель по накладным", namedObject);
-        customerCheckRetail = addConcreteClass("Розничный покупатель", namedObject, barcodeObject);
+        localSupplier = addConcreteClass(8, "Местный поставщик", supplier);
+        importSupplier = addConcreteClass(9, "Импортный поставщик", supplier);
+        customerWhole = addConcreteClass(10, "Оптовый покупатель", namedObject);
+        customerInvoiceRetail = addConcreteClass(11, "Покупатель по накладным", namedObject);
+        customerCheckRetail = addConcreteClass(12, "Розничный покупатель", namedObject, barcodeObject);
 
-        format = addConcreteClass("Формат", namedObject);
+        format = addConcreteClass(13, "Формат", namedObject);
 
         documentShopPrice = addAbstractClass("Изменение цены в магазине", transaction);
-        documentRevalue = addConcreteClass("Переоценка в магазине", documentShopPrice);
+        documentRevalue = addConcreteClass(14, "Переоценка в магазине", documentShopPrice);
 
-        documentNDS = addConcreteClass("Изменение НДС", transaction);
+        documentNDS = addConcreteClass(15, "Изменение НДС", transaction);
 
         // заявки на приход, расход
         order = addAbstractClass("Заявка", transaction);
@@ -187,57 +187,57 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         checkRetail = addAbstractClass("Кассовые операции", baseClass);
         orderSaleCheckRetail = addAbstractClass("Реализация через кассу", order, checkRetail);
 
-        orderSaleWhole = addConcreteClass("Оптовый заказ", orderWarehouseOut, orderInner, orderWhole, orderSale);
-        invoiceSaleWhole = addConcreteClass("Выписанный оптовый заказ", orderSaleWhole, invoiceDocument);
-        commitSaleWhole = addConcreteClass("Отгруженный оптовый заказ", invoiceSaleWhole, commitOut);
+        orderSaleWhole = addConcreteClass(16, "Оптовый заказ", orderWarehouseOut, orderInner, orderWhole, orderSale);
+        invoiceSaleWhole = addConcreteClass(17, "Выписанный оптовый заказ", orderSaleWhole, invoiceDocument);
+        commitSaleWhole = addConcreteClass(18, "Отгруженный оптовый заказ", invoiceSaleWhole, commitOut);
 
         orderSaleArticleRetail = addAbstractClass("Розничный заказ товаров", orderShopOut, orderInner, orderSale);
-        orderSaleInvoiceArticleRetail = addConcreteClass("Розничный заказ товаров по накладной", orderSaleArticleRetail, orderInvoiceRetail);
-        commitSaleInvoiceArticleRetail = addConcreteClass("Отгруженный розничный заказ по накладной", commitOut,
-                            addConcreteClass("Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, invoiceDocument));
-        commitSaleCheckArticleRetail = addConcreteClass("Реализация товаров через кассу", orderSaleArticleRetail, commitOut, orderSaleCheckRetail);
+        orderSaleInvoiceArticleRetail = addConcreteClass(19, "Розничный заказ товаров по накладной", orderSaleArticleRetail, orderInvoiceRetail);
+        commitSaleInvoiceArticleRetail = addConcreteClass(20, "Отгруженный розничный заказ по накладной", commitOut,
+                            addConcreteClass(21, "Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, invoiceDocument));
+        commitSaleCheckArticleRetail = addConcreteClass(22, "Реализация товаров через кассу", orderSaleArticleRetail, commitOut, orderSaleCheckRetail);
 
-        saleCert = addConcreteClass("Реализация сертификатов", order);
-        saleInvoiceCert = addConcreteClass("Реализация сертификатов по накладной", saleCert, orderInvoiceRetail, invoiceDocument);
-        saleCheckCert = addConcreteClass("Реализация сертификатов через кассу", saleCert, orderSaleCheckRetail);
+        saleCert = addConcreteClass(23, "Реализация сертификатов", order);
+        saleInvoiceCert = addConcreteClass(24, "Реализация сертификатов по накладной", saleCert, orderInvoiceRetail, invoiceDocument);
+        saleCheckCert = addConcreteClass(25, "Реализация сертификатов через кассу", saleCert, orderSaleCheckRetail);
 
-        balanceCheck = addConcreteClass("Инвентаризация", orderStoreOut, commitOut, documentInner);
+        balanceCheck = addConcreteClass(26, "Инвентаризация", orderStoreOut, commitOut, documentInner);
 
-        orderDistributeShop = addConcreteClass("Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderInner);
-        addConcreteClass("Принятое внутреннее перемещение на магазин", commitWholeShopInc,
-                addConcreteClass("Отгруженное внутреннее перемещение на магазин", commitOut,
-                        addConcreteClass("Выписанное внутреннее перемещение на магазин", orderDistributeShop, invoiceDocument)));
-        orderDistributeWarehouse = addConcreteClass("Заказ на внутреннее перемещение на распред. центр", orderStoreOut, orderWarehouseInc, orderInner);
-        addConcreteClass("Принятое внутреннее перемещение на распред. центр", commitInc,
-                addConcreteClass("Отгруженное внутреннее перемещение на распред. центр", commitOut,
-                        addConcreteClass("Выписанное внутреннее перемещение на распред. центр", orderDistributeWarehouse, invoiceDocument)));
+        orderDistributeShop = addConcreteClass(27, "Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderInner);
+        addConcreteClass(28, "Принятое внутреннее перемещение на магазин", commitWholeShopInc,
+                addConcreteClass(29, "Отгруженное внутреннее перемещение на магазин", commitOut,
+                        addConcreteClass(30, "Выписанное внутреннее перемещение на магазин", orderDistributeShop, invoiceDocument)));
+        orderDistributeWarehouse = addConcreteClass(31, "Заказ на внутреннее перемещение на распред. центр", orderStoreOut, orderWarehouseInc, orderInner);
+        addConcreteClass(32, "Принятое внутреннее перемещение на распред. центр", commitInc,
+                addConcreteClass(33, "Отгруженное внутреннее перемещение на распред. центр", commitOut,
+                        addConcreteClass(34, "Выписанное внутреннее перемещение на распред. центр", orderDistributeWarehouse, invoiceDocument)));
 
         orderLocal = addAbstractClass("Операция с местным поставщиком", order);
 
         orderDeliveryLocal = addAbstractClass("Закупка у местного поставщика", orderDelivery, orderLocal);
         commitDeliveryLocal = addAbstractClass("Приход от местного поставщика", orderDeliveryLocal, commitDelivery);
 
-        orderDeliveryShopLocal = addConcreteClass("Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
-        addConcreteClass("Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitWholeShopInc);
+        orderDeliveryShopLocal = addConcreteClass(35, "Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
+        addConcreteClass(36, "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitWholeShopInc);
 
-        orderDeliveryWarehouseLocal = addConcreteClass("Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
-        addConcreteClass("Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
+        orderDeliveryWarehouseLocal = addConcreteClass(37, "Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
+        addConcreteClass(38, "Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
 
-        orderDeliveryImport = addConcreteClass("Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
-        addConcreteClass("Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
+        orderDeliveryImport = addConcreteClass(39, "Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
+        addConcreteClass(40, "Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
 
-        orderReturnDeliveryLocal = addConcreteClass("Заявка на возврат местному поставщику", orderStoreOut, documentInner, orderLocal);
-        invoiceReturnDeliveryLocal = addConcreteClass("Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal,invoiceDocument);
-        commitReturnDeliveryLocal = addConcreteClass("Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
+        orderReturnDeliveryLocal = addConcreteClass(41, "Заявка на возврат местному поставщику", orderStoreOut, documentInner, orderLocal);
+        invoiceReturnDeliveryLocal = addConcreteClass(42, "Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal,invoiceDocument);
+        commitReturnDeliveryLocal = addConcreteClass(43, "Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
 
-        returnSaleInvoice = addConcreteClass("Возврат по накладной", orderInc, returnInner, commitInc, invoiceDocument);
-        returnSaleWhole = addConcreteClass("Оптовый возврат", orderWarehouseInc, orderWhole, returnSaleInvoice);
-        returnSaleInvoiceRetail = addConcreteClass("Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
-        returnSaleCheckRetail = addConcreteClass("Возврат реализации через кассу", orderShopInc, returnInner, commitInc, checkRetail);
+        returnSaleInvoice = addConcreteClass(44, "Возврат по накладной", orderInc, returnInner, commitInc, invoiceDocument);
+        returnSaleWhole = addConcreteClass(45, "Оптовый возврат", orderWarehouseInc, orderWhole, returnSaleInvoice);
+        returnSaleInvoiceRetail = addConcreteClass(46, "Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
+        returnSaleCheckRetail = addConcreteClass(47, "Возврат реализации через кассу", orderShopInc, returnInner, commitInc, checkRetail);
 
         obligation = addAbstractClass("Сертификат", namedObject, barcodeObject);
-        coupon = addConcreteClass("Купон", obligation);
-        giftObligation = addConcreteClass("Подарочный сертификат", obligation);
+        coupon = addConcreteClass(48, "Купон", obligation);
+        giftObligation = addConcreteClass(49, "Подарочный сертификат", obligation);
     }
 
     CustomClass saleCert;
