@@ -15,35 +15,36 @@ import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.query.Query;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.session.DataSession;
+import platform.server.logics.property.Property;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.session.*;
 import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
+import platform.base.BaseUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusView<T>, CustomClassView {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusView<T>, CustomClassView, UserController {
 
-    DataAdapter adapter;
     T BL;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
-    public RemoteNavigator(DataAdapter adapter,T BL,User currentUser, int computer, int port) throws RemoteException {
+    public RemoteNavigator(T BL,User currentUser, int computer, int port) throws RemoteException {
         super(port);
 
-        this.adapter = adapter;
         this.BL = BL;
         classCache = new ClassCache();
 
@@ -53,7 +54,23 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         this.computer = new DataObject(computer, BL.computer);
     }
 
-    PropertyObjectInterface user;
+    private DataObject user;
+
+    public DataObject getCurrentUser() {
+        return user;
+    }
+
+    WeakHashMap<DataSession, Object> sessions = new WeakHashMap<DataSession, Object>();
+    
+    public void changeCurrentUser(DataObject user) {
+        this.user = user;
+
+        Modifier<? extends Changes> userModifier = new PropertyChangesModifier(Property.defaultModifier, new PropertyChanges(
+                BL.currentUser.property,new PropertyChange<PropertyInterface>(new HashMap<PropertyInterface, KeyExpr>(), user.getExpr(), Where.TRUE)));
+        for(DataSession session : sessions.keySet())
+            session.updateProperties(userModifier);
+    }
+
     PropertyObjectInterface computer;
     // просто закэшируем, чтобы быстрее было
     SecurityPolicy securityPolicy;
@@ -64,13 +81,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
         try {
-            DataSession session = BL.createSession(adapter);
+            DataSession session = BL.createSession(this);
 
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
-            String firstName = (String) BL.userFirstName.read(session, user.getDataObject());
-            objectStream.writeObject(firstName==null?"(без имени)":firstName.trim());
-            String lastName = (String) BL.userLastName.read(session, user.getDataObject());
-            objectStream.writeObject(lastName==null?"(без фамилии)":lastName.trim());
+            Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
+            query.properties.put("name", BL.currentUserName.getExpr(session.modifier));
+            objectStream.writeObject(BaseUtils.nvl((String)query.execute(session).singleValue().get("name"),"(без имени)").trim());
+            
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -139,9 +156,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     CustomClass currentClass;
     public boolean changeCurrentClass(int classID) {
 
-        if (currentClass != null && currentClass.ID == classID) return false;
+        CustomClass changeClass = BL.baseClass.findClassID(classID);
+        if (currentClass != null && currentClass.equals(changeClass)) return false;
 
-        currentClass = BL.baseClass.findClassID(classID);
+        currentClass = changeClass;
         return true;
     }
 
@@ -170,10 +188,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             DataSession session;
             if (currentSession && currentForm != null)
                 session = currentForm.session;
-            else
-                session = BL.createSession(adapter);
+            else {
+                session = BL.createSession(this);
+                sessions.put(session, true);
+            }
 
-           RemoteForm<T> remoteForm = new RemoteForm<T>(navigatorForm, BL, session, securityPolicy, this, this, user, computer);
+           RemoteForm<T> remoteForm = new RemoteForm<T>(navigatorForm, BL, session, securityPolicy, this, this, computer);
 
             for (GroupObjectImplement groupObject : remoteForm.groups) {
                 Map<OrderView,Object> userSeeks = new HashMap<OrderView, Object>();

@@ -23,13 +23,6 @@ public class TableFactory {
             implementTables[i] = new HashSet<ImplementTable>();
     }
 
-    public void include(ValueClass... classes) {
-        String name = "table";
-        for (ValueClass fieldClass : classes)
-            name += "_" + ((CustomClass)fieldClass).ID.toString();
-        include(name,classes);
-    }
-
     public void include(String name, ValueClass... classes) {
         new ImplementTable(name,classes).include(implementTables[classes.length], true, new HashSet<ImplementTable>());
     }

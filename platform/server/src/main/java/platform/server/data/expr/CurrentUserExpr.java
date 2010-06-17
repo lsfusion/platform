@@ -1,0 +1,66 @@
+package platform.server.data.expr;
+
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.ConcreteValueClass;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.query.JoinData;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.CompileSource;
+import platform.server.data.query.ContextEnumerator;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.Where;
+import platform.server.data.type.Type;
+import platform.server.data.SQLSession;
+import platform.server.caches.hash.HashContext;
+
+public class CurrentUserExpr extends StaticClassExpr {
+
+    private final ConcreteValueClass userClass;
+
+    public CurrentUserExpr(ConcreteValueClass userClass) {
+        this.userClass = userClass;
+    }
+
+    public ConcreteClass getStaticClass() {
+        return userClass;
+    }
+
+    protected VariableExprSet calculateExprFollows() {
+        return new VariableExprSet();
+    }
+
+    public BaseExpr translate(MapTranslate translator) {
+        return this;
+    }
+
+    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    }
+
+    public Type getType(Where where) {
+        return getStaticClass().getType();
+    }
+
+    public Where calculateWhere() {
+        return Where.TRUE;
+    }
+
+    public Expr translateQuery(QueryTranslator translator) {
+        return this;
+    }
+
+    public boolean twins(AbstractSourceJoin obj) {
+        return true;
+    }
+
+    public int hashContext(HashContext hashContext) {
+        return 7895;
+    }
+
+    public String getSource(CompileSource compile) {
+        return SQLSession.userParam;
+    }
+
+    public void enumerate(ContextEnumerator enumerator) {
+    }
+}

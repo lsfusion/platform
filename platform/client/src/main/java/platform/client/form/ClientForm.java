@@ -526,9 +526,7 @@ public class ClientForm extends JPanel {
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
-            List<ClientAction> actions = remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value));
-
-            dispatchActions(actions);
+            dispatchActions(remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value)));
 
             dataChanged();
             applyFormChanges();
@@ -540,7 +538,7 @@ public class ClientForm extends JPanel {
             } else {
 
                 ClientObjectImplementView object = ((ClientObjectCellView)property).object;
-                remoteForm.changeObject(object.getID(), value);
+                dispatchActions(remoteForm.changeObject(object.getID(), value));
 
                 controllers.get(property.getGroupObject()).setCurrentObject(object, value);
 

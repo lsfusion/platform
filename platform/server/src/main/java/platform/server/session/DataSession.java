@@ -5,7 +5,6 @@ import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
-import platform.server.caches.Lazy;
 import platform.server.caches.MapValuesIterable;
 import platform.server.caches.GenericLazy;
 import platform.server.caches.hash.HashValues;
@@ -21,6 +20,7 @@ import platform.server.data.sql.DataAdapter;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.data.type.TypeObject;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -33,6 +33,7 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.RemoteForm;
 import platform.server.view.form.client.RemoteFormView;
+import platform.server.view.navigator.UserController;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -144,9 +145,16 @@ public class DataSession extends SQLSession implements ChangesSession {
 
     private final List<DerivedChange<?,?>> notDeterministic;
 
-    public DataSession(DataAdapter adapter, BaseClass baseClass, CustomClass namedObject, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        super(adapter);
+    public final UserController user;
 
+    public DataSession(DataAdapter adapter, final UserController user, BaseClass baseClass, CustomClass namedObject, LP<?> name, CustomClass transaction, LP<?> date, List<DerivedChange<?,?>> notDeterministic) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        super(adapter, new User() {
+            public TypeObject getSQLUser() {
+                return new TypeObject(user.getCurrentUser().object, ObjectType.instance);
+            }
+        });
+
+        this.user = user;
         this.baseClass = baseClass;
         this.namedObject = namedObject;
         this.name = name;
@@ -225,6 +233,11 @@ public class DataSession extends SQLSession implements ChangesSession {
         SessionChanges propertyChanges = changes.getSessionChanges(property);
         for(Map.Entry<RemoteForm,UpdateChanges> incrementChange : incrementChanges.entrySet())
             incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(propertyChanges));
+    }
+
+    public void updateProperties(Modifier<? extends Changes> modifier) {
+        for(Map.Entry<RemoteForm,UpdateChanges> incrementChange : incrementChanges.entrySet())
+            incrementChange.getValue().properties.addAll(((RemoteForm<?>) incrementChange.getKey()).getUpdateProperties(modifier));
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<P, PropertyObjectInterface> mapObjects) throws SQLException {

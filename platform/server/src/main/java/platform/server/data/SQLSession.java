@@ -21,8 +21,16 @@ public class SQLSession {
     
     private Connection connection;
 
-    public SQLSession(DataAdapter adapter) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+    protected static interface User {
+        TypeObject getSQLUser();
+    }
+    
+    private final User sqlUser; // вообще достаточно reader'а но не хочется ради этого делать отдельный интерфейс
+    public final static String userParam = "adsadaweewuser";
+
+    public SQLSession(DataAdapter adapter, User sqlUser) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         syntax = adapter;
+        this.sqlUser = sqlUser;
         connection = adapter.startConnection();
         connection.setAutoCommit(true);
     }
@@ -322,13 +330,15 @@ public class SQLSession {
 
     public PreparedStatement getStatement(String command, Map<String, TypeObject> paramObjects) throws SQLException {
 
-        char[][] params = new char[paramObjects.size()][];
+        char[][] params = new char[paramObjects.size()+1][];
         TypeObject[] values = new TypeObject[params.length];
         int paramNum = 0;
         for(Map.Entry<String,TypeObject> param : paramObjects.entrySet()) {
             params[paramNum] = param.getKey().toCharArray();
             values[paramNum++] = param.getValue();
         }
+        params[paramNum] = userParam.toCharArray();
+        values[paramNum++] = sqlUser.getSQLUser();
 
         // те которые isString сразу транслируем
         List<TypeObject> preparedParams = new ArrayList<TypeObject>();

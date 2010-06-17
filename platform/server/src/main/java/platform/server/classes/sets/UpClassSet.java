@@ -109,7 +109,7 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         Set<ConcreteCustomClass> children = new HashSet<ConcreteCustomClass>();
         for(CustomClass node : wheres)
             node.fillConcreteChilds(children);
-        for(CustomClass child : children)
+        for(ConcreteCustomClass child : children)
             childString = (childString.length()==0?"":childString+",") + child.ID;
         if(children.size()>0)
             childString = source + " IN (" + childString + ")";

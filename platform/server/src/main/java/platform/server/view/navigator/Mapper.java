@@ -10,11 +10,9 @@ import java.util.Map;
 
 public class Mapper {
 
-    public final PropertyObjectInterface user;
     public final PropertyObjectInterface computer;
 
-    public Mapper(PropertyObjectInterface user, PropertyObjectInterface computer) {
-        this.user = user;
+    public Mapper(PropertyObjectInterface computer) {
         this.computer = computer;
     }
 

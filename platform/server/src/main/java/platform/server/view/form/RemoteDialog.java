@@ -15,18 +15,18 @@ public class RemoteDialog<T extends BusinessLogics<T>> extends RemoteForm<T> {
 
     ObjectImplement dialogObject;
 
-    private RemoteDialog(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> tFocusView, CustomClassView classView, ObjectNavigator dialogNavigator, PropertyObjectInterface user, PropertyObjectInterface computer, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
-        super(navigatorForm, BL, session, securityPolicy, tFocusView, classView, user, computer, mapObjects);
+    private RemoteDialog(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> tFocusView, CustomClassView classView, ObjectNavigator dialogNavigator, PropertyObjectInterface computer, Map<ObjectNavigator, Object> mapObjects) throws SQLException {
+        super(navigatorForm, BL, session, securityPolicy, tFocusView, classView, computer, mapObjects);
         
         dialogObject = mapper.mapObject(dialogNavigator);
     }
 
-    public RemoteDialog(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, ObjectNavigator dialogNavigator, PropertyObjectInterface user, PropertyObjectInterface computer) throws SQLException {
-        this(navigatorForm, BL, session, securityPolicy, focusView, classView, dialogNavigator, user, computer, new HashMap<ObjectNavigator, Object>());
+    public RemoteDialog(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, ObjectNavigator dialogNavigator, PropertyObjectInterface computer) throws SQLException {
+        this(navigatorForm, BL, session, securityPolicy, focusView, classView, dialogNavigator, computer, new HashMap<ObjectNavigator, Object>());
     }
 
-    public RemoteDialog(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, ObjectNavigator dialogNavigator, PropertyObjectInterface user, PropertyObjectInterface computer, Object dialogValue) throws SQLException {
-        this(navigatorForm, BL, session, securityPolicy, focusView, classView, dialogNavigator, user, computer, Collections.singletonMap(dialogNavigator, dialogValue));
+    public RemoteDialog(NavigatorForm<T> navigatorForm, T BL, DataSession session, SecurityPolicy securityPolicy, FocusView<T> focusView, CustomClassView classView, ObjectNavigator dialogNavigator, PropertyObjectInterface computer, Object dialogValue) throws SQLException {
+        this(navigatorForm, BL, session, securityPolicy, focusView, classView, dialogNavigator, computer, Collections.singletonMap(dialogNavigator, dialogValue));
     }
 
     public Object getDialogValue() {

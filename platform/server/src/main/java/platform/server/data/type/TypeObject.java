@@ -11,11 +11,11 @@ public class TypeObject {
     private final Object object;
     private final Type type;
 
-    public TypeObject(Object iObject, Type iType) {
-        object = iObject;
-        type = iType;
+    public TypeObject(Object object, Type type) {
+        this.object = object;
+        this.type = type;
 
-        assert object!=null;
+        assert this.object !=null;
     }
 
     public TypeObject(DataObject dataObject) {

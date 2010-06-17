@@ -152,4 +152,16 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             throw new RuntimeException(e);
         }
     }
+
+    public ClientActionResult execute(UserChangedClientAction action) {
+        try {
+            Main.layout.drawCurrentUser(clientNavigator.remoteNavigator);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
 }

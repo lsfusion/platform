@@ -18,4 +18,6 @@ public interface ClientActionDispatcher {
     public ClientActionResult execute(SleepClientAction action);
 
     public ClientActionResult execute(MessageFileClientAction action);
+
+    public ClientActionResult execute(UserChangedClientAction action);
 }

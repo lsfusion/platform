@@ -601,10 +601,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
-        barcodeAction = addJProp(true, "Ввод штрих-кода", addCUProp(addSAProp(articleInnerQuantity, orderInner, article), // отдельно inner и outerCommit чтобы timechanges работали пока временно
+        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2", addCUProp(addSAProp(articleInnerQuantity, orderInner, article), // отдельно inner и outerCommit чтобы timechanges работали пока временно
                 addSAProp(addIfElseUProp(outerCommitedQuantity, outerOrderQuantity, is(commitInc), 1), orderDelivery, article),
                 addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),addJProp(equals2, orderContragent, 1, 2),
-                xorActionArticle, articleFormatToSell, NDS, documentRevalued), 1, barcodeToObject, 2);
+                xorActionArticle, articleFormatToSell, NDS, documentRevalued, addJProp(and1, changeUser, 2, is(baseClass), 1)), 1, barcodeToObject, 2);
+        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3", addSAProp(returnInnerQuantity, returnInner, article, orderSale), 1, barcodeToObject, 3, 2);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -620,6 +621,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         couponToIssueConstraint = addJProp("Кол-во выданных купонов не соответствует требуемому", diff2, couponToIssueQuantity, 1, 2, vzero);
         addConstraint(couponToIssueConstraint, false);
 
+        LP orderUser = addDProp("orderUser", "Исп-ль заказа", user, order);
+        orderUser.setDerivedChange(currentUser, true, is(order), 1);
+        orderUserName = addJProp("Исп-ль заказа", name, orderUser, 1);
+
         addCashRegisterProperties();
     }
 
@@ -627,6 +632,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         return addSUProp(Union.SUM, property, addSGProp(property, articleStoreSupplier, 1, 2, 2));
     }
 
+    LP orderUserName;
     LP articleToGroup;
     LP couponToIssueConstraint;
     LP couponIssueSum;
@@ -636,7 +642,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP obligationIssued;
     LP obligationSum;
     LP orderSaleCoupon;
-    LP barcodeAction;
+    LP barcodeAction2;
+    LP barcodeAction3;
     LP orderClientSum;
     LP orderArticleSaleSumWithDiscount;
     LP orderSalePrice;
@@ -968,7 +975,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             } else
                 addObjectActions(this, objDoc);
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objDoc, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objDoc, objBarcode));
+
+            if(!toAdd)
+                addPropertyView(orderUserName, objDoc);
         }
 
         @Override
@@ -1681,6 +1691,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)), toAdd);
                 addRegularFilterGroup(filterOutGroup);
             }
+
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction3, objDoc, objInner, objBarcode));
         }
 
         @Override
@@ -1798,7 +1810,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addPropertyView(objFormat, objArt, properties, allGroup, true);
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objFormat, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objFormat, objBarcode));
         }
     }
 
@@ -1889,7 +1901,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), true);
             addRegularFilterGroup(filterGroup);
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction, objAction, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objAction, objBarcode));
         }
     }
 

@@ -2,6 +2,13 @@ package platform.server.classes;
 
 import platform.server.classes.sets.*;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.SQLSession;
+import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
+import platform.server.logics.table.ObjectTable;
+
+import java.sql.SQLException;
+import java.util.Collections;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
 
@@ -62,5 +69,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
     }
     public static AndClassSet or(ConcreteObjectClass set1, AndClassSet set2) {
         return set1.inSet(set2)?set2:OrObjectClassSet.or(set1,set2); 
+    }
+
+    public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
+        ObjectTable classTable = getBaseClass().table;
+        session.updateInsertRecord(classTable, Collections.singletonMap(classTable.key,value),
+                Collections.singletonMap(classTable.objectClass,(ObjectValue)new DataObject(ID, SystemClass.instance)));
     }
 }

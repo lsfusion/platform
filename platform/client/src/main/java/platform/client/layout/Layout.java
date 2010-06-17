@@ -41,8 +41,7 @@ public class Layout extends JFrame implements ComponentCollector {
 
         setIconImage(new ImageIcon(getClass().getResource("/platform/images/lsfusion.jpg")).getImage());
 
-        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
-        setTitle("LS Fusion - " + inputStream.readObject() + " " + inputStream.readObject());
+        drawCurrentUser(remoteNavigator);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         setSize(1024, 768);
@@ -73,6 +72,11 @@ public class Layout extends JFrame implements ComponentCollector {
             }
         });
 
+    }
+
+    public void drawCurrentUser(RemoteNavigatorInterface remoteNavigator) throws IOException, ClassNotFoundException {
+        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
+        setTitle("LS Fusion - " + inputStream.readObject());
     }
 
     private DockFrontend frontend;

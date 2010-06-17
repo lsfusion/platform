@@ -44,14 +44,14 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public String caption;
     public Integer ID;
-    public CustomClass(Integer iID, String iCaption, CustomClass... iParents) {
-        ID = iID;
-        caption = iCaption;
-        parents = new ArrayList<CustomClass>();
+    public CustomClass(Integer ID, String caption, CustomClass... parents) {
+        this.ID = ID;
+        this.caption = caption;
+        this.parents = new ArrayList<CustomClass>();
         children = new ArrayList<CustomClass>();
 
-        for (CustomClass parent : iParents) {
-            parents.add(parent);
+        for (CustomClass parent : parents) {
+            this.parents.add(parent);
             parent.children.add(this);
             assert parent.childs==null;
         }
@@ -59,12 +59,6 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     public boolean hasChildren() {
         return !children.isEmpty();
-    }
-
-    public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
-        ObjectTable classTable = getBaseClass().table;
-        session.updateInsertRecord(classTable,Collections.singletonMap(classTable.key,value),
-                Collections.singletonMap(classTable.objectClass,(ObjectValue)new DataObject(ID, SystemClass.instance)));
     }
 
     public UpClassSet getUpSet() {
