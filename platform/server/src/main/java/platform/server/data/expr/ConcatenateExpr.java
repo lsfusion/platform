@@ -105,10 +105,10 @@ public class ConcatenateExpr extends BaseExpr {
         return hash;
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         Type[] types = new Type[exprs.size()];
         for(int i=0;i<exprs.size();i++)
-            types[i] = exprs.get(i).getType(where);
+            types[i] = exprs.get(i).getType(keyType);
         return new ConcatenateType(types);
     }
     
@@ -116,7 +116,7 @@ public class ConcatenateExpr extends BaseExpr {
         List<String> sources = new ArrayList<String>();
         for(BaseExpr expr : exprs)
             sources.add(expr.getSource(compile));
-        return ((ConcatenateType)getSelfType()).getConcatenateSource(sources,compile.syntax);
+        return ((ConcatenateType)getType(compile.keyType)).getConcatenateSource(sources,compile.syntax);
     }
 
     public void enumerate(ContextEnumerator enumerator) {

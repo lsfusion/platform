@@ -5,10 +5,7 @@ import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.Lazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
@@ -92,7 +89,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return new OrderExpr(this,translator);
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return query.getType();
     }
 

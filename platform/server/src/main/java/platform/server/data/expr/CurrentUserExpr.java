@@ -1,7 +1,5 @@
 package platform.server.data.expr;
 
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.ConcreteValueClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -38,7 +36,7 @@ public class CurrentUserExpr extends VariableClassExpr {
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return userClass.getType();
     }
 

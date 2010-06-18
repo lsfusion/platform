@@ -47,8 +47,8 @@ public class KeyExpr extends VariableClassExpr {
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
-    public Type getType(Where where) {
-        return where.getClassWhere().getType(this);
+    public Type getType(KeyType keyType) {
+        return keyType.getKeyType(this);
     }
 
     // возвращает Where без следствий

@@ -11,10 +11,10 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
 
@@ -102,7 +102,7 @@ public class ObjectType implements Type<Integer> {
         query.properties.put(expr,expr.classExpr(baseClass));
     }
 
-    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, Where where) {
+    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
         return baseClass.findConcreteClassID((Integer) classes.get(expr));
     }
 

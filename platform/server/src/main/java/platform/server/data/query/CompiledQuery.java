@@ -6,10 +6,7 @@ import platform.server.caches.TranslateContext;
 import platform.server.data.KeyField;
 import platform.server.data.SQLSession;
 import platform.server.data.Table;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
@@ -88,8 +85,8 @@ public class CompiledQuery<K,V> {
 
     static class FullSelect extends CompileSource {
 
-        FullSelect(Map<ValueExpr, String> params, SQLSyntax syntax) {
-            super(params, syntax);
+        FullSelect(KeyType keyType, Map<ValueExpr, String> params, SQLSyntax syntax) {
+            super(keyType, params, syntax);
         }
 
         public final Map<JoinData,String> joinData = new HashMap<JoinData, String>();
@@ -193,7 +190,7 @@ public class CompiledQuery<K,V> {
                     for(InnerJoins.Entry andWhere : queryJoins)
                         andProps.add(new AndJoinQuery(andWhere.mean,andWhere.where,"f"+andProps.size()));
 
-                    FullSelect FJSelect = new FullSelect(params,syntax);
+                    FullSelect FJSelect = new FullSelect(query.where,params,syntax);
 
                     MapWhere<JoinData> joinDataWheres = new MapWhere<JoinData>();
                     for(Map.Entry<V, Expr> joinProp : query.properties.entrySet())
@@ -327,8 +324,8 @@ public class CompiledQuery<K,V> {
 
         final JoinSet innerJoins;
 
-        public InnerSelect(JoinSet innerJoins, SQLSyntax syntax, Map<ValueExpr, String> params) {
-            super(params, syntax);
+        public InnerSelect(KeyType keyType, JoinSet innerJoins, SQLSyntax syntax, Map<ValueExpr, String> params) {
+            super(keyType, params, syntax);
 
             this.innerJoins = innerJoins;
 
@@ -663,7 +660,7 @@ public class CompiledQuery<K,V> {
             innerWhere = BaseUtils.single(where.getInnerJoins()).mean;
         }
 
-        InnerSelect compile = new InnerSelect(innerWhere.getJoins(),syntax,params);
+        InnerSelect compile = new InnerSelect(where, innerWhere.getJoins(),syntax,params);
         // первым так как должны keySelect'ы и inner'ы заполнится
         for(Map.Entry<AV, Expr> joinProp : compiledProps.entrySet()) // свойства
             propertySelect.put(joinProp.getKey(), joinProp.getValue().getSource(compile));

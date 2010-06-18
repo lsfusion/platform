@@ -37,7 +37,7 @@ public class TimeExpr extends StaticClassExpr {
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return getStaticClass().getType();
     }
 

@@ -8,6 +8,7 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.CompileSource;
@@ -69,14 +70,14 @@ public class CaseExpr extends Expr {
         return source + (noElse?"":" ELSE "+ SQLSyntax.NULL)+" END";
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         assert !cases.isEmpty();
-        return cases.iterator().next().data.getType(where);
+        return cases.iterator().next().data.getType(keyType);
     }
 
-    public Reader getReader(Where where) {
+    public Reader getReader(KeyType keyType) {
         if(cases.isEmpty()) return NullReader.instance;
-        return getType(where);
+        return getType(keyType);
     }
 
     @ParamLazy

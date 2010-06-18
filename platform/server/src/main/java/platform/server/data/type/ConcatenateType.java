@@ -8,9 +8,9 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.DeconcatenateExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
 
@@ -144,11 +144,11 @@ public class ConcatenateType implements Type<byte[]> {
         }
     }
 
-    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, Where where) {
+    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
         ConcreteClass[] classSets = new ConcreteClass[types.length];
         for(int i=0;i<types.length;i++) {
             Expr partExpr = DeconcatenateExpr.create(expr, i, baseClass);
-            classSets[i] = partExpr.getReader(where).readClass(partExpr,classes,baseClass,where);
+            classSets[i] = partExpr.getReader(keyType).readClass(partExpr,classes,baseClass, keyType);
         }
         return new ConcatenateClassSet(classSets);
     }

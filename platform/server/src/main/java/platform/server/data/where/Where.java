@@ -5,6 +5,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.translator.QueryTranslator;
@@ -14,7 +15,7 @@ import platform.server.data.where.classes.MeanClassWheres;
 import java.util.Collection;
 import java.util.Map;
 
-public interface Where extends SourceJoin, TranslateContext<Where> {
+public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);

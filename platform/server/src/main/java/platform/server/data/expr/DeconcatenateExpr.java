@@ -56,8 +56,8 @@ public class DeconcatenateExpr extends SingleClassExpr {
         expr.fillJoinWheres(joins, andWhere);
     }
 
-    public Type getType(Where where) {
-        return ((ConcatenateType)expr.getType(where)).get(part);
+    public Type getType(KeyType keyType) {
+        return ((ConcatenateType)expr.getType(keyType)).get(part);
     }
     
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
@@ -100,6 +100,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
     }
 
     public String getSource(CompileSource compile) {
-        return ((ConcatenateType) expr.getSelfType()).getDeconcatenateSource(expr.getSource(compile), part, compile.syntax);
+        return ((ConcatenateType) expr.getType(compile.keyType)).getDeconcatenateSource(expr.getSource(compile), part, compile.syntax);
     }
 }

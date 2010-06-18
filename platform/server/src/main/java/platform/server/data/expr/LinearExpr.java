@@ -32,7 +32,7 @@ public class LinearExpr extends StaticClassExpr {
         assert !(map.size()==1 && BaseUtils.singleValue(map).equals(1));
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return getStaticClass();
     }
 

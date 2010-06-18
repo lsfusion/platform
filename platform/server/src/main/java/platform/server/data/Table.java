@@ -340,7 +340,7 @@ public class Table implements MapKeysInterface<KeyField> {
                 return Join.this.toString() + "." + property;
             }
 
-            public Type getType(Where where) {
+            public Type getType(KeyType keyType) {
                 return property.type;
             }
 

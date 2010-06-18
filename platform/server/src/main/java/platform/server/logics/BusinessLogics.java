@@ -45,7 +45,7 @@ import java.rmi.registry.LocateRegistry;
 import java.sql.SQLException;
 import java.util.*;
 
-@GenericImmutable
+// @GenericImmutable нельзя так как Spring валится
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, FileNotFoundException, JRException, MalformedURLException {
@@ -624,7 +624,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             fillPropertyList(depend,set);
         set.add(property);
     }
-    @GenericLazy
+//    @GenericLazy
     Iterable<Property> getPropertyList() {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for(Property property : properties)

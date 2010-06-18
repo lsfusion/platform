@@ -44,8 +44,8 @@ public abstract class BaseExpr extends Expr {
         fillAndJoinWheres(joins, andWhere.and(getWhere()));
     }
 
-    public Reader getReader(Where where) {
-        return getType(where); // assert'ится что не null
+    public Reader getReader(KeyType keyType) {
+        return getType(keyType); // assert'ится что не null
     }
 
     public abstract BaseExpr translate(MapTranslate translator);

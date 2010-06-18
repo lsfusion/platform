@@ -61,7 +61,7 @@ public class ValueExpr extends StaticClassExpr {
         enumerator.add(this);
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return objectClass.getType();
     }
 

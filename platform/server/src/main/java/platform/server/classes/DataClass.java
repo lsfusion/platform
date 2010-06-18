@@ -7,9 +7,9 @@ import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
-import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.CustomClassView;
@@ -160,7 +160,7 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public void prepareClassesQuery(Expr expr, Query<?, Object> query, BaseClass baseClass) {
     }
 
-    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, Where where) {
+    public ConcreteClass readClass(Expr expr, Map<Object, Object> classes, BaseClass baseClass, KeyType keyType) {
         return this;
     }
 

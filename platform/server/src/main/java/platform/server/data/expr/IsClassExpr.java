@@ -44,7 +44,7 @@ public class IsClassExpr extends StaticClassExpr {
         expr.fillJoinWheres(joins,andWhere);
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return SystemClass.instance;
     }
 

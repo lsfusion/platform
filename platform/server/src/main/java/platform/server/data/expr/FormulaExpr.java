@@ -58,7 +58,7 @@ public class FormulaExpr extends StaticClassExpr {
          return "("+sourceString+")";
      }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return valueClass.getType();
     }
 

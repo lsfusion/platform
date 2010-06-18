@@ -109,7 +109,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         return getFullWhere(group, query);
     }
 
-    public Type getType(Where where) {
+    public Type getType(KeyType keyType) {
         return query.getType(getFullWhere());
     }
 

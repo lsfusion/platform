@@ -13,6 +13,7 @@ import platform.server.data.query.InnerJoins;
 import platform.server.data.query.Query;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+import platform.server.data.type.Type;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -183,5 +184,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public Collection<InnerJoins.Entry> getInnerJoins() {
         return groupInnerJoins().compileMeans();
+    }
+
+    public Type getKeyType(KeyExpr expr) {
+        return getClassWhere().getType(expr);
     }
 }

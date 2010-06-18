@@ -5,8 +5,11 @@ import platform.base.BaseUtils;
 import platform.server.caches.AbstractTranslateContext;
 import platform.server.caches.TranslateContext;
 import platform.server.data.Table;
+import platform.server.data.type.Type;
+import platform.server.data.type.ObjectType;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.logics.BusinessLogics;
@@ -30,7 +33,11 @@ abstract public class AbstractSourceJoin<T extends TranslateContext<T>> extends 
 
     protected static class ToString extends CompileSource  {
         public ToString(Set<ValueExpr> values, Set<KeyExpr> keys) {
-            super(BaseUtils.mapString(values), BusinessLogics.debugSyntax);
+            super(new KeyType() {
+                public Type getKeyType(KeyExpr expr) {
+                    return ObjectType.instance;
+                }
+            }, BaseUtils.mapString(values), BusinessLogics.debugSyntax);
             keySelect.putAll(BaseUtils.mapString(keys));
         }
 

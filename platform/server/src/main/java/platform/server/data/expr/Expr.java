@@ -25,13 +25,13 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
 
-    public abstract Type getType(Where where);
+    public abstract Type getType(KeyType keyType);
     @Lazy
     public Type getSelfType() {
         return getType(getWhere());
     }   
 
-    public abstract Reader getReader(Where where);
+    public abstract Reader getReader(KeyType keyType);
 
     // возвращает Where на notNull
     private Where where=null;
