@@ -690,7 +690,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int free = 0;
         for(CustomClass customClass: allClasses)
             if(customClass.ID == null) {
-                while(usedIds.containsKey(free++));
+                while(usedIds.containsKey(free))
+                    free++;
                 customClass.ID = free++;
             }        
     }
