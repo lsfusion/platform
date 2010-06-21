@@ -28,6 +28,7 @@ import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.Changes;
@@ -200,6 +201,17 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             if (filterGroup.ID == groupID)
                 return filterGroup;
         return null;
+    }
+
+    public PropertyView getPropertyView(Property<?> property) {
+        for (PropertyView propView : properties)
+            if (property.equals(propView.view.property))
+                return propView;
+        return null;
+    }
+
+    public PropertyView getPropertyView(LP<?> property) {
+        return getPropertyView(property.property); 
     }
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyView<?> propertyView) throws SQLException, IOException {
@@ -694,6 +706,16 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         return updated.dataUpdated(changedProps);
     }
 
+    private void applyFilters() {
+        for (GroupObjectImplement group : groups)
+            group.filters = group.getSetFilters();
+    }
+
+    private void applyOrders() {
+        for (GroupObjectImplement group : groups)
+            group.orders = group.getSetOrders();
+    }
+
     public FormChanges endApply() throws SQLException {
 
         ApplyTransaction transaction = new ApplyTransaction();
@@ -1043,22 +1065,25 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
     public FormData getFormData(boolean allProperties) throws SQLException {
 
+        // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
+        endApply();
+
         return getFormData((allProperties) ? new HashSet<GroupObjectImplement>(groups) : getPropertyGroups(), getClassGroups());
     }
 
     // считывает все данные с формы
     public FormData getFormData(Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups) throws SQLException {
 
-        // вызовем endApply, чтобы быть полностью уверенным в том, что мы работаем с последними данными
-        endApply();
+        applyFilters();
+        applyOrders();
 
-        Collection<ObjectImplement> readObjects = new ArrayList<ObjectImplement>();
+        Collection<ObjectImplement> classObjects = new ArrayList<ObjectImplement>();
         for(GroupObjectImplement group : classGroups)
-            readObjects.addAll(group.objects);
+            classObjects.addAll(group.objects);
 
         // пока сделаем тупо получаем один большой запрос
 
-        Query<ObjectImplement,Object> query = new Query<ObjectImplement,Object>(readObjects);
+        Query<ObjectImplement,Object> query = new Query<ObjectImplement,Object>(classObjects);
         OrderedMap<Object,Boolean> queryOrders = new OrderedMap<Object, Boolean>();
 
         for (GroupObjectImplement group : groups) {
@@ -1091,15 +1116,17 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         for(Entry<Map<ObjectImplement, Object>, Map<Object, Object>> row : resultSelect.entrySet()) {
             Map<ObjectImplement,Object> groupValue = new HashMap<ObjectImplement, Object>();
             for(GroupObjectImplement group : groups)
-                for(ObjectImplement object : group.objects)
-                    if (readObjects.contains(object))
-                        groupValue.put(object,row.getKey().get(object));
-                    else
-                        groupValue.put(object,object.getObjectValue().getValue());
+                if (propertyGroups.contains(group))
+                    for(ObjectImplement object : group.objects)
+                        if (classObjects.contains(object))
+                            groupValue.put(object,row.getKey().get(object));
+                        else
+                            groupValue.put(object,object.getObjectValue().getValue());
 
             Map<PropertyView,Object> propertyValues = new HashMap<PropertyView, Object>();
             for(PropertyView property : properties)
-                propertyValues.put(property,row.getValue().get(property));
+                if (propertyGroups.contains(property.toDraw))
+                    propertyValues.put(property,row.getValue().get(property));
 
             result.add(groupValue,propertyValues);
         }

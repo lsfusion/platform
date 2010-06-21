@@ -8,10 +8,6 @@ import java.awt.event.KeyEvent;
 
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.*;
-import platform.server.data.query.Query;
-import platform.server.data.query.Join;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -27,6 +23,7 @@ import platform.server.view.form.client.DefaultFormView;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.form.FormRow;
 import platform.server.view.form.*;
+import platform.server.view.form.filter.NotNullFilter;
 import platform.server.auth.User;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
@@ -548,6 +545,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP returnArticleSaleSum = addJProp(documentPriceGroup, "Сумма возвр.", multiplyDouble2, returnInnerQuantity, 1, 2, 3, orderSaleDocPrice, 3, 2);
         LP returnArticleSaleDiscount = addJProp(documentPriceGroup, "Сумма скидки возвр.", percent, returnArticleSaleSum, 1, 2, 3, orderArticleSaleDiscount, 3, 2);
+        returnArticleSalePay = addDUProp(documentPriceGroup, "Сумма к возвр.", returnArticleSaleSum, returnArticleSaleDiscount);
         returnSaleDiscount = addSGProp(documentAggrPriceGroup, "Сумма скидки возвр.", returnArticleSaleDiscount, 1);
         returnSalePay = addDUProp(documentAggrPriceGroup, "Сумма к возвр.", addSGProp("Сумма возвр.", returnArticleSaleSum, 1), returnSaleDiscount);
 
@@ -578,6 +576,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayCoupon = addJProp(min, addSGProp(addJProp(and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(percent, orderSalePay, 1, couponMaxPercent), 1);
 
         orderSalePayNoObligation = addJProp(documentAggrPriceGroup, "Сумма к оплате", onlyPositive, addDUProp(orderSalePay, addSUProp(Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon)), 1);
+        LP orderSalePayCoeff = addJProp("Коэфф. скидки", divideDouble, orderSalePayNoObligation, 1, orderSalePay, 1);
+        orderArticleSaleSumCoeff = addJProp(documentPriceGroup, "Сумма со скидкой", addMFProp(DoubleClass.instance, 2), orderArticleSaleSumWithDiscount, 1, 2, orderSalePayCoeff, 1);
+
         clientSum = addSGProp(baseGroup, "clientSum", "Нак. сумма", orderSalePayNoObligation, orderContragent, 1);
         orderClientSum.setDerivedChange(clientSum, orderContragent, 1);
 
@@ -627,15 +628,15 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP couponIssueSum;
     LP couponToIssueQuantity;
     LP inCoupon;
-    LP issueObligation;
+    public LP issueObligation;
     LP obligationIssued;
-    LP obligationSum;
+    public LP obligationSum;
     LP orderSaleCoupon;
     LP barcodeAction2;
     LP barcodeAction3;
     LP orderClientSum;
-    LP orderArticleSaleSumWithDiscount;
-    LP orderSalePrice;
+    public LP orderArticleSaleSumWithDiscount;
+    public LP orderSalePrice;
     LP changeQuantityOrder;
     LP computerShop;
     LP orderSalePayCash;
@@ -648,6 +649,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP inAction;
     LP orderSalePayNoObligation;
+    public LP orderArticleSaleSumCoeff;
     LP clientSum;
     LP incStore;
     LP incStoreName;
@@ -676,8 +678,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
     LP orderSaleDiscountSum, orderSalePay, orderSaleDiff;
+    public LP returnArticleSalePay;
     LP returnSaleDiscount, returnSalePay;
-    LP orderArticleSaleDiscount;
+    public LP orderArticleSaleDiscount;
     public LP shopPrice;
     LP priceStore, inDocumentPrice;
     LP isRevalued, isNewPrice, documentRevalued;
@@ -690,9 +693,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP sumReturnedQuantity;
     LP sumReturnedQuantityFree;
 
-    LP documentFreeQuantity, documentInnerFreeQuantity, returnFreeQuantity, innerQuantity, returnInnerCommitQuantity, returnInnerQuantity;
+    public LP documentFreeQuantity, documentInnerFreeQuantity, returnFreeQuantity, innerQuantity, returnInnerCommitQuantity, returnInnerQuantity;
     public LP outerOrderQuantity, outerCommitedQuantity, articleBalanceCheck, articleBalanceCheckDB, innerBalanceCheck, innerBalanceCheckDB, balanceSklCommitedQuantity;
-    LP articleInnerQuantity;
+    public LP articleInnerQuantity;
 
     AbstractGroup documentGroup;
     AbstractGroup priceGroup;
@@ -806,6 +809,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     protected void initIndexes() {
     }
 
+    public CommitSaleCheckRetailNavigatorForm commitSaleBrowse;
+    public SaleCheckCertNavigatorForm saleCheckCertBrowse;
+    public ReturnSaleCheckRetailNavigatorForm returnSaleCheckRetailBrowse;
+
     protected void initNavigators() throws JRException, FileNotFoundException {
 
         NavigatorElement print = new NavigatorElement(baseElement, 4000, "Печатные формы");
@@ -828,11 +835,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             NavigatorElement saleRetail = new NavigatorElement(sale, 1250, "Управление розничными продажами");
                 NavigatorElement saleRetailCashRegister = new NavigatorElement(saleRetail, 1300, "Касса");
                     NavigatorForm commitSale = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(saleRetailCashRegister, 1310, true));
-                        addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(commitSale, 1320, false));
+                        commitSaleBrowse = addNavigatorForm(new CommitSaleCheckRetailNavigatorForm(commitSale, 1320, false));
                     NavigatorForm saleCheckCert = addNavigatorForm(new SaleCheckCertNavigatorForm(saleRetailCashRegister, 1325, true));
-                        addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1335, false));
+                        saleCheckCertBrowse = addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1335, false));
                     NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(saleRetailCashRegister, true, 1345));
-                        addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1355));
+                        returnSaleCheckRetailBrowse = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1355));
                     addNavigatorForm(new CashRegisterManagementNavigatorForm(saleRetailCashRegister, 1365));
                 NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetail, 1400, "Безналичный расчет");
                     NavigatorForm saleRetailInvoiceForm = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoice, 1410, true));
@@ -937,7 +944,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private class DocumentNavigatorForm extends BarcodeNavigatorForm {
-        final ObjectNavigator objDoc;
+        
+        public final ObjectNavigator objDoc;
 
         protected boolean toAdd = false;
 
@@ -1013,7 +1021,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     private abstract class ArticleNavigatorForm extends DocumentNavigatorForm {
-        final ObjectNavigator objArt;
+        public final ObjectNavigator objArt;
 
         protected abstract PropertyObjectNavigator getCommitedQuantity();
 
@@ -1245,6 +1253,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SaleRetailNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, toAdd, documentClass, true);
 
+            if (!toAdd)
+                addPropertyView(date, objDoc);
+
             // чтобы в порядке нужном
             addPropertyView(changeQuantityOrder, objDoc, objArt);
             addPropertyView(barcode, objArt);
@@ -1254,6 +1265,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(orderSalePrice, objDoc, objArt);
             addPropertyView(orderArticleSaleDiscount, objDoc, objArt);
             addPropertyView(orderArticleSaleSumWithDiscount, objDoc, objArt);
+            if (!toAdd) {
+                addPropertyView(orderArticleSaleSumCoeff, objDoc, objArt);
+            }
 
             objArt.show = false; objArt.showClass = false; objArt.showTree = false; objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
@@ -1278,7 +1292,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private static String CASHREGISTER_CHARSETNAME = "Cp866";
     private static int CASHREGISTER_DELAY = 2000;
 
-    private class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
+    public class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
 
         private ObjectNavigator objObligation;
         private ObjectNavigator objCoupon;
@@ -1386,10 +1400,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         FormData data;
 
+        PropertyView quantityView = null;
+        if (quantityProp instanceof PropertyViewNavigator) {
+            quantityView = remoteForm.mapper.mapPropertyView((PropertyViewNavigator<?>)quantityProp);
+            quantityView.toDraw.addTempFilter(new NotNullFilter(quantityView.view));
+        }
+
         try {
              data = remoteForm.getFormData(propertyGroups, classGroups);
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (quantityView != null)
+                quantityView.toDraw.clearTempFilters();
         }
 
         Double sumDoc = 0.0;
@@ -1600,8 +1623,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             return new Font("Tahoma", Font.PLAIN, 14);
         }
 
-        final ObjectNavigator objInner;
-        final ObjectNavigator objArt;
+        public final ObjectNavigator objInner;
+        public final ObjectNavigator objArt;
         ObjectNavigator objOuter;
 
         protected ReturnSaleNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
@@ -1721,7 +1744,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class ReturnSaleCheckRetailNavigatorForm extends ReturnSaleNavigatorForm {
+    public class ReturnSaleCheckRetailNavigatorForm extends ReturnSaleNavigatorForm {
 
         @Override
         public boolean isReadOnly() {
@@ -1751,12 +1774,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private String createBillTxt(RemoteForm remoteForm) {
 
             ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+            ObjectImplement inner = remoteForm.mapper.mapObject(objInner);
             ObjectImplement art = remoteForm.mapper.mapObject(objArt);
 
             return VEDBusinessLogics.this.createBillTxt(remoteForm, 2,
-                    BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
+                    BaseUtils.toSetElements(doc.groupTo, inner.groupTo, art.groupTo), BaseUtils.toSetElements(inner.groupTo, art.groupTo),
                     getPropertyView(orderSalePrice, objArt), getPropertyView(returnInnerQuantity, objArt),
-                    getPropertyView(name, objArt), getPropertyView(orderArticleSaleSumWithDiscount, objArt),
+                    getPropertyView(name, objArt), getPropertyView(returnArticleSalePay, objArt),
                     getPropertyView(returnSalePay, objDoc),
                     null, null);
         }
@@ -1929,7 +1953,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private class SaleCertNavigatorForm extends DocumentNavigatorForm {
 
-        ObjectNavigator objObligation;
+        public ObjectNavigator objObligation;
 
         @Override
         protected Object[] getDocumentProps() {
@@ -1944,6 +1968,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
             super(parent, ID, documentClass, toAdd);
+
+            if (!toAdd)
+                addPropertyView(date, objDoc);
 
             objObligation = addSingleGroupObjectImplement(giftObligation, "Подарочный сертификат", properties, allGroup, true);
 
@@ -1962,7 +1989,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
+    public class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
 
         @Override
         protected boolean isBarcodeFocusable() {

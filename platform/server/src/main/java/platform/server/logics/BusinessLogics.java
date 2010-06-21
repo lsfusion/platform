@@ -166,11 +166,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP between;
     protected LP object1, and1, andNot1;
     protected LP equals2,diff2;
+    protected LP divideDouble;
 
     protected LP vtrue, vzero;
 
     public LP<?> name;
-    protected LP<?> date;
+    public LP<?> date;
 
     protected LP transactionLater;
     protected LP currentDate;
@@ -228,6 +229,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         greater2 = addCFProp(Compare.GREATER);
         less2 = addCFProp(Compare.LESS);
         diff2 = addCFProp(Compare.NOT_EQUALS);
+        divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2,1,2, groeq2,3,1);
         vtrue = addCProp("Истина",LogicalClass.instance,true);
         vzero = addCProp("0",DoubleClass.instance,0); 
@@ -2097,7 +2099,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
     }
 
-    public NavigatorForm addNavigatorForm(NavigatorForm form) {
+    public <T extends NavigatorForm> T addNavigatorForm(T form) {
         form.richDesign = form.createDefaultRichDesign();
         return form;
     }

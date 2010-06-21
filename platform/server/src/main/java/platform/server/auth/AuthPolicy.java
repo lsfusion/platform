@@ -7,7 +7,7 @@ public class AuthPolicy {
 
     public Map<Integer, User> users = new HashMap<Integer, User>();
 
-    SecurityPolicy defaultSecurityPolicy = new SecurityPolicy();
+    public static SecurityPolicy defaultSecurityPolicy = new SecurityPolicy();
 
     public SecurityPolicy getSecurityPolicy(User user) {
 

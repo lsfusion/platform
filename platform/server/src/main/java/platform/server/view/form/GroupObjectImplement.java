@@ -57,7 +57,7 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
     public Set<Filter> setFilters = null;
     public Set<Filter> getSetFilters() {
         if(setFilters==null)
-            setFilters = BaseUtils.mergeSet(BaseUtils.mergeSet(fixedFilters,userFilters),regularFilters);
+            setFilters = BaseUtils.mergeSet(BaseUtils.mergeSet(BaseUtils.mergeSet(fixedFilters,userFilters),regularFilters),tempFilters);
         return setFilters;
     }
 
@@ -88,6 +88,20 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
 
     public void removeRegularFilter(Filter filter) {
         regularFilters.remove(filter);
+
+        setFilters = null;
+        updated |= UPDATED_FILTER;
+    }
+
+    private Set<Filter> tempFilters = new HashSet<Filter>();
+    public void clearTempFilters() {
+        tempFilters.clear();
+
+        setFilters = null;
+        updated |= UPDATED_FILTER;
+    }
+    public void addTempFilter(Filter addFilter) {
+        tempFilters.add(addFilter);
 
         setFilters = null;
         updated |= UPDATED_FILTER;

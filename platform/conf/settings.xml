@@ -14,12 +14,12 @@
 	<bean id="priceImport" class="tmc.integration.PriceImportTask">
 		<constructor-arg><ref bean="businessLogics"/></constructor-arg>
 		<constructor-arg><list><value>imp</value></list></constructor-arg>
-		<constructor-arg><list><value type="int">421</value></list></constructor-arg>
+		<constructor-arg><list><value type="int">5</value></list></constructor-arg>
 	</bean>
 
     <bean id="saleExport" class="tmc.integration.SaleExportTask">
         <constructor-arg><ref bean="businessLogics"/></constructor-arg>
-        <constructor-arg><list><value>exp</value></list></constructor-arg>
+        <constructor-arg><value>exp</value></constructor-arg>
     </bean>
 
     <bean id="scheduler" class="platform.server.logics.scheduler.Scheduler">
@@ -27,6 +27,7 @@
         <constructor-arg>
             <list>
                 <ref bean="priceImport"/>
+                <ref bean="saleExport"/>
             </list>
         </constructor-arg>
     </bean>
