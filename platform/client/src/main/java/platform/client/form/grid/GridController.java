@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.awt.event.KeyEvent;
+import java.awt.*;
 
 public class GridController {
 
@@ -76,6 +77,11 @@ public class GridController {
         };
         gridTable = gridView.getTable();
 
+        if (view.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени
+            Dimension minSize = gridTable.getMinimumSize();
+            minSize.height = Math.max(minSize.height, (int)gridTable.getTableHeader().getPreferredSize().getHeight() + view.minRowCount * gridTable.getRowHeight());
+            gridView.setMinimumSize(minSize);
+        }
     }
 
     public void addView(ClientFormLayout formLayout) {

@@ -887,6 +887,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentShopPrice.addRelevant(pricers);
     }
 
+    private static Font FONT_SMALL_BOLD = new Font("Tahoma", Font.BOLD, 12);
+    private static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
+    private static Font FONT_MEDIUM_BOLD = new Font("Tahoma", Font.BOLD, 14);
+    private static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 24);
+    private static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 32);
+
     private class GlobalNavigatorForm extends NavigatorForm {
         protected GlobalNavigatorForm(NavigatorElement parent, int ID) {
             super(parent, ID, "Глобальные параметры");
@@ -925,9 +931,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.addIntersection(design.get(objBarcode).objectCellView, design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.get(getPropertyView(reverseBarcode)), design.get(getPropertyView(barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.setFont(design.get(objBarcode).objectCellView, new Font("Tahoma", Font.BOLD, 14));
-            design.setFont(reverseBarcode, new Font("Tahoma", Font.BOLD, 14));
-            design.setFont(barcodeObjectName, new Font("Tahoma", Font.BOLD, 28));
+            design.setFont(design.get(objBarcode).objectCellView, FONT_SMALL_BOLD);
+            design.setFont(reverseBarcode, FONT_SMALL_BOLD);
+            design.setFont(barcodeObjectName, FONT_LARGE_BOLD);
             design.setBackground(barcodeObjectName, new Color(240,240,240));
 
             design.setEditKey(design.get(objBarcode).objectCellView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
@@ -995,10 +1001,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     design.get(payView).getContainer().constraints.order = 6;
                 }
 
-                design.setFont(new Font("Tahoma", Font.BOLD, 18), objDoc.groupTo);
+                design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
 
                 // устанавливаем дизайн
-                design.setFont(documentPriceGroup, new Font("Tahoma", Font.BOLD, 32), objDoc.groupTo);
+                design.setFont(documentPriceGroup, FONT_HUGE_BOLD, objDoc.groupTo);
                 design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
 
                 // ставим Label сверху
@@ -1247,7 +1253,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Font getDefaultFont() {
-            return new Font("Tahoma", Font.PLAIN, 14);
+            return FONT_SMALL_PLAIN;
         }
 
         protected SaleRetailNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {
@@ -1338,13 +1344,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
 
+            design.get(objArt.groupTo).gridView.minRowCount = 6;
+
             if(toAdd) {
                 design.get(objIssue.groupTo).gridView.constraints.fillHorizontal /= 3;
+                design.get(objIssue.groupTo).gridView.minRowCount = 2;
                 design.get(objIssue.groupTo).gridView.showFilter = false;
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
+            design.get(objCoupon.groupTo).gridView.minRowCount = 2;
+            design.get(objObligation.groupTo).gridView.minRowCount = 2;
             design.get(objCoupon.groupTo).gridView.showFilter = false;
             design.get(objObligation.groupTo).gridView.showFilter = false;
             design.addIntersection(design.getGroupObjectContainer(objCoupon.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1563,7 +1574,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
-            design.setFont(new Font("Tahoma", Font.BOLD, 36), true);
+            design.setFont(FONT_HUGE_BOLD, true);
             design.setPanelLabelAbove(baseGroup, true);
             return design;
         }
@@ -1624,7 +1635,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Font getDefaultFont() {
-            return new Font("Tahoma", Font.PLAIN, 14);
+            return FONT_SMALL_PLAIN;
         }
 
         public final ObjectNavigator objInner;
@@ -1971,7 +1982,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Font getDefaultFont() {
-            return new Font("Tahoma", Font.PLAIN, 14);
+            return FONT_SMALL_PLAIN;
         }
 
         protected SaleCertNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd) {

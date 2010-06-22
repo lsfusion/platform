@@ -8,6 +8,8 @@ public class GridView extends ComponentView implements ClientSerialize {
     public boolean showFind = false;
     public boolean showFilter = true;
 
+    public byte minRowCount = 0;
+
     public GridView(int ID) {
         super(ID);
     }
@@ -18,5 +20,7 @@ public class GridView extends ComponentView implements ClientSerialize {
 
         outStream.writeBoolean(showFind);
         outStream.writeBoolean(showFilter);
+
+        outStream.writeByte(minRowCount);
     }
 }
