@@ -141,7 +141,7 @@ public class SimplexLayout implements LayoutManager2 {
 
             fillObjFunction(solver);
 
-//            solver.setTimeout(2);
+            solver.setTimeout(2);
 
             solver.setVerbose(LpSolve.IMPORTANT);
             solver.setOutputfile("");
