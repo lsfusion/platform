@@ -105,10 +105,9 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         outDbf.addField(percentField);
     }
 
-    private FormData getDataSale(Map<Field, PropertyView> map) throws Exception {
+    private FormData getDataSale(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        DataSession session = BL.createSession();
         RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         PropertyView<?> exported = remoteForm.getPropertyView(BL.checkRetailExported);
@@ -128,13 +127,16 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         map.put(summField, remoteForm.getPropertyView(BL.orderArticleSaleSumCoeff));
         map.put(percentField, remoteForm.getPropertyView(BL.orderArticleSaleDiscount));
 
-        return remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(doc.groupTo, art.groupTo));
+        FormData data = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(doc.groupTo, art.groupTo));
+
+        remoteForm.changeProperty(exported, true, null, true);
+
+        return data;
     }
 
-    private FormData getDataCert(Map<Field, PropertyView> map) throws Exception {
+    private FormData getDataCert(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        DataSession session = BL.createSession();
         RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         PropertyView<?> exported = remoteForm.getPropertyView(BL.checkRetailExported);
@@ -152,13 +154,16 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         map.put(dateField, remoteForm.getPropertyView(BL.date));
         map.put(summField, remoteForm.getPropertyView(BL.obligationSum));
 
-        return remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(doc.groupTo, obligation.groupTo));
+        FormData data = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(doc.groupTo, obligation.groupTo));
+
+        remoteForm.changeProperty(exported, true, null, true);
+
+        return data;
     }
 
-    private FormData getDataReturn(Map<Field, PropertyView> map) throws Exception {
+    private FormData getDataReturn(DataSession session, Map<Field, PropertyView> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        DataSession session = BL.createSession();
         RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
         PropertyView<?> exported = remoteForm.getPropertyView(BL.checkRetailExported);
@@ -179,7 +184,11 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         map.put(summField, remoteForm.getPropertyView(BL.returnArticleSalePay));
         map.put(percentField, remoteForm.getPropertyView(BL.orderArticleSaleDiscount));
 
-        return remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo), BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo));
+        FormData result = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo), BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo));
+
+        remoteForm.changeProperty(exported, true, null, true);
+
+        return result;
     }
 
     private void writeToDbf(FormData data, Map<Field, PropertyView> map, boolean reverse) throws Exception {
@@ -237,19 +246,23 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
 
             createDBF();
 
+            DataSession session = BL.createSession();
+
             Map<Field, PropertyView> mapSale = new HashMap<Field, PropertyView>();
-            FormData dataSale = getDataSale(mapSale);
+            FormData dataSale = getDataSale(session, mapSale);
             writeToDbf(dataSale, mapSale, false);
 
             Map<Field, PropertyView> mapCert = new HashMap<Field, PropertyView>();
-            FormData dataCert = getDataCert(mapCert);
+            FormData dataCert = getDataCert(session, mapCert);
             writeToDbf(dataCert, mapCert, false);
 
             Map<Field, PropertyView> mapReturn = new HashMap<Field, PropertyView>();
-            FormData dataReturn = getDataReturn(mapReturn);
+            FormData dataReturn = getDataReturn(session, mapReturn);
             writeToDbf(dataReturn, mapReturn, true);
 
             outDbf.close();
+
+            session.apply(BL);
 
         } catch (SQLException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

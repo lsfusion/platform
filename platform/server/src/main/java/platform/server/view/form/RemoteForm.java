@@ -337,12 +337,20 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         dataChanged = true;
     }
 
+    public List<ClientAction> changeProperty(PropertyView<?> property, Object value, RemoteFormView executeForm, boolean all) throws SQLException {
+        return changeProperty(property.view, value, executeForm, all ? property.toDraw : null);
+    }
+
     public List<ClientAction> changeProperty(PropertyObjectImplement<?> property, Object value, RemoteFormView executeForm) throws SQLException {
+        return changeProperty(property, value, executeForm, null);
+    }
+
+    public List<ClientAction> changeProperty(PropertyObjectImplement<?> property, Object value, RemoteFormView executeForm, GroupObjectImplement groupObject) throws SQLException {
 
         dataChanged = true;
 
         // изменяем св-во
-        return property.execute(session, value, this, executeForm);
+        return property.execute(session, value, this, executeForm, groupObject);
     }
 
     // Обновление данных

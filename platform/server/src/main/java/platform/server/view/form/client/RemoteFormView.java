@@ -187,9 +187,9 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         }
     }
 
-    public List<ClientAction> changePropertyView(int propertyID, byte[] object) {
+    public List<ClientAction> changePropertyView(int propertyID, byte[] object, boolean all) {
         try {
-            return form.changeProperty(form.getPropertyView(propertyID).view, BaseUtils.deserializeObject(object), this);
+            return form.changeProperty(form.getPropertyView(propertyID), BaseUtils.deserializeObject(object), this, all);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

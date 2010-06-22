@@ -9,6 +9,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.awt.*;
+import java.util.EventObject;
 
 public abstract class CellTable extends SingleCellTable
                         implements ClientCellViewTable {
@@ -86,5 +87,10 @@ public abstract class CellTable extends SingleCellTable
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0 && pressed && !isDataChanging()) return false;
 
         return super.processKeyBinding(ks, e, condition, pressed);
+    }
+
+    private EventObject editEvent;
+    public void setEditEvent(EventObject editEvent) {
+        this.editEvent = editEvent;
     }
 }

@@ -31,6 +31,7 @@ import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.session.*;
 import platform.server.view.form.PropertyObjectInterface;
+import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.client.RemoteFormView;
 
 import java.sql.SQLException;
@@ -346,7 +347,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return changed==null?null:new WhereBuilder();
     }
 
-    public List<ClientAction> execute(Map<T,DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<T, PropertyObjectInterface> mapObjects) throws SQLException {
-        return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects);
+    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteFormView executeForm, Map<T, PropertyObjectInterface> mapObjects, GroupObjectImplement groupObject) throws SQLException {
+        return getChangeImplement().execute(keys, session, value, modifier, executeForm, mapObjects, groupObject);
     }
 }

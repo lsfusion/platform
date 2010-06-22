@@ -13,8 +13,6 @@ import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.server.auth.AuthPolicy;
 import platform.server.auth.User;
-import platform.server.caches.GenericImmutable;
-import platform.server.caches.GenericLazy;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
@@ -353,7 +351,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
              Map<P, DataObject> shiftKeys = BaseUtils.join(mapInterfaces, keys);
              Object incrementValue = ((IntegralClass) property.getType()).shift(property.read(remoteForm.session, shiftKeys, remoteForm), reverseChange);
-             actions.addAll(property.execute(shiftKeys, remoteForm.session, incrementValue, remoteForm, executeForm, BaseUtils.nullJoin(mapInterfaces, mapObjects)));
+             actions.addAll(property.execute(shiftKeys, remoteForm.session, incrementValue, remoteForm, executeForm, BaseUtils.nullJoin(mapInterfaces, mapObjects), null));
          }
 
 /*      // без решения reverse'а и timeChanges не включишь этот механизм

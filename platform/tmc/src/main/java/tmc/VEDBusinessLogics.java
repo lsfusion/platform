@@ -1300,7 +1300,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public boolean isReadOnly() {
-            return !toAdd;
+            return false;
+//            return !toAdd;
         }
 
         private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
@@ -1353,7 +1354,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
-            return getCashRegApplyActions(createBillTxt(remoteForm));
+            if (toAdd)
+                return getCashRegApplyActions(createBillTxt(remoteForm));
+            else
+                return super.getApplyActions(remoteForm);
         }
 
         private String createBillTxt(RemoteForm remoteForm) {
@@ -1748,7 +1752,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public boolean isReadOnly() {
-            return !toAdd;
+            return false;
+//            return !toAdd;
         }
 
         private ReturnSaleCheckRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
@@ -1763,7 +1768,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
-            return getCashRegApplyActions(createBillTxt(remoteForm));
+            if (toAdd)
+                return getCashRegApplyActions(createBillTxt(remoteForm));
+            else
+                return super.getApplyActions(remoteForm);
         }
 
         @Override
@@ -1998,7 +2006,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public boolean isReadOnly() {
-            return !toAdd;
+            return false;
+//            return !toAdd;
         }
 
         protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
@@ -2013,7 +2022,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
-            return getCashRegApplyActions(createBillTxt(remoteForm));
+            if (toAdd)
+                return getCashRegApplyActions(createBillTxt(remoteForm));
+            else
+                return super.getApplyActions(remoteForm);
         }
 
         @Override

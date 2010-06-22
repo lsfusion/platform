@@ -63,7 +63,7 @@ public class CellController implements CellViewListener {
     public boolean cellValueChanged(Object ivalue) {
 
         try {
-            form.changeProperty(getKey(), ivalue);
+            form.changeProperty(getKey(), ivalue, false);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при изменении значения свойства", e);
         }

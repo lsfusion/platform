@@ -397,7 +397,7 @@ public abstract class GridTable extends ClientFormTable
             if (BaseUtils.nullEquals(value, getValueAt(row, col))) return;
 
             try {
-                form.changeProperty(gridColumns.get(col), value);
+                form.changeProperty(gridColumns.get(col), value, editEvent instanceof KeyEvent && ((KeyEvent)editEvent).getKeyCode() == KeyEvent.VK_F11);
             } catch (IOException e) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", e);
             }
@@ -470,4 +470,8 @@ public abstract class GridTable extends ClientFormTable
         return (ordNum != -1) ? orderDirections.get(ordNum) : null;
     }
 
+    EventObject editEvent;
+    public void setEditEvent(EventObject editEvent) {
+        this.editEvent = editEvent;
+    }
 }

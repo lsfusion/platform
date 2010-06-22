@@ -27,7 +27,7 @@ public interface RemoteFormInterface extends Remote {
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    List<ClientAction> changePropertyView(int propertyID, byte[] object) throws RemoteException;
+    List<ClientAction> changePropertyView(int propertyID, byte[] object, boolean all) throws RemoteException;
 
     List<ClientAction> changeObject(int objectID, Object value) throws RemoteException;
 

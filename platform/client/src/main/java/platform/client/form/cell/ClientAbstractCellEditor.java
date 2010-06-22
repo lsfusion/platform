@@ -36,6 +36,8 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
             KeyEvent event = (KeyEvent) e;
 
+            if (event.getKeyCode() == KeyEvent.VK_F11) return true; // групповая корректировка
+
             if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
 
             // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
@@ -75,6 +77,8 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         ClientCellViewTable cellTable = (ClientCellViewTable)table;
 
         if (cellTable.getForm().isReadOnlyMode() && cellTable.isDataChanging()) return null;
+
+        cellTable.setEditEvent(editEvent);
 
         ClientCellView property = cellTable.getCellView(column);
 

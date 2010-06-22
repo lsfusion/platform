@@ -518,7 +518,7 @@ public class ClientForm extends JPanel {
         clientNavigator.changeCurrentClass(remoteForm,groupObject.get(0));
     }
 
-    public void changeProperty(ClientCellView property, Object value) throws IOException {
+    public void changeProperty(ClientCellView property, Object value, boolean all) throws IOException {
 
         if (property.getGroupObject() != null) // для глобальных свойств пока не может быть отложенных действий
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
@@ -526,7 +526,7 @@ public class ClientForm extends JPanel {
         if (property instanceof ClientPropertyView) {
 
             // типа только если меняется свойство
-            dispatchActions(remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value)));
+            dispatchActions(remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value), all));
 
             dataChanged();
             applyFormChanges();
