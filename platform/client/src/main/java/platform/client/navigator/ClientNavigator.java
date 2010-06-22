@@ -32,10 +32,17 @@ public abstract class ClientNavigator extends AbstractNavigator {
         relevantFormNavigator.tree.createRootNode();
     }
 
+    private int classID = 0; // временная оптимизация
+
     public void changeCurrentClass(RemoteFormInterface form,ClientObjectImplementView object) throws RemoteException {
-        int classID = form.getObjectClassID(object.getID());
-        if (classID != 0)
+        changeCurrentClass(form, form.getObjectClassID(object.getID()));
+    }
+
+    public void changeCurrentClass(RemoteFormInterface form,int classID) throws RemoteException {
+        if (classID != 0 && this.classID != classID) {
             changeCurrentClass(classID);
+            this.classID = classID;
+        }
     }
 
     void changeCurrentClass(int classID) throws RemoteException {

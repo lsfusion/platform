@@ -427,6 +427,14 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // --------------------- Общение в обратную сторону с ClientForm ------------------------- //
     // --------------------------------------------------------------------------------------- //
 
+    public ConcreteCustomClass getObjectClass(ObjectImplement object) {
+
+        if (!(object instanceof CustomObjectImplement))
+            return null;
+
+        return ((CustomObjectImplement)object).currentClass;
+    }
+
     public Collection<Property> getUpdateProperties() {
 
         Set<Property> result = new HashSet<Property>();

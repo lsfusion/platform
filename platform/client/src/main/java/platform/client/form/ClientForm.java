@@ -13,13 +13,14 @@ import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.layout.ReportDockable;
-import platform.client.layout.ClientFormDockable;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.CompressingInputStream;
 import platform.interop.Scroll;
 import platform.interop.Order;
 import platform.interop.action.*;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.response.ChangeGroupObjectResponse;
+import platform.interop.form.response.ChangePropertyViewResponse;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,9 +33,6 @@ import java.rmi.RemoteException;
 import java.io.IOException;
 import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-
-import net.sf.jasperreports.engine.JRException;
 
 public class ClientForm extends JPanel {
 
@@ -429,12 +427,12 @@ public class ClientForm extends JPanel {
     }
 
     void applyFormChanges() throws IOException {
+        applyFormChanges(remoteForm.getFormChangesByteArray());
+    }
 
-        byte[] state = remoteForm.getFormChangesByteArray();
-        Log.incrementBytesReceived(state.length);
-
-        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(state))), formView));
-
+    void applyFormChanges(byte[] changes) throws IOException {
+        Log.incrementBytesReceived(changes.length);
+        applyFormChanges(new ClientFormChanges(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(changes))), formView));
     }
 
     void applyFormChanges(ClientFormChanges formChanges) {
@@ -498,13 +496,14 @@ public class ClientForm extends JPanel {
 
         if (!objectValue.equals(curObjectValue)) {
 
-            remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
+            // приходится вот так возвращать класс, чтобы не было лишних запросов
+            ChangeGroupObjectResponse response = remoteForm.changeGroupObject(groupObject.getID(), Serializer.serializeClientGroupObjectValue(objectValue));
 
             controllers.get(groupObject).setCurrentGroupObject(objectValue,true);
 
-            applyFormChanges();
+            applyFormChanges(response.formChanges);
 
-            clientNavigator.changeCurrentClass(remoteForm,groupObject.get(0));
+            clientNavigator.changeCurrentClass(remoteForm,response.classID);
         }
 
     }
@@ -525,11 +524,10 @@ public class ClientForm extends JPanel {
 
         if (property instanceof ClientPropertyView) {
 
-            // типа только если меняется свойство
-            dispatchActions(remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value), all));
-
+            ChangePropertyViewResponse response = remoteForm.changePropertyView(property.getID(), BaseUtils.serializeObject(value), all); 
+            dispatchActions(response.actions);
             dataChanged();
-            applyFormChanges();
+            applyFormChanges(response.formChanges);
 
         } else {
 

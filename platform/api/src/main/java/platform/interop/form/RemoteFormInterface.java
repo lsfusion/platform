@@ -2,11 +2,12 @@ package platform.interop.form;
 
 import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
+import platform.interop.form.response.ChangeGroupObjectResponse;
+import platform.interop.form.response.ChangePropertyViewResponse;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
-import java.util.ArrayList;
 
 public interface RemoteFormInterface extends Remote {
 
@@ -21,13 +22,13 @@ public interface RemoteFormInterface extends Remote {
 
     byte[] getFormChangesByteArray() throws RemoteException;
 
-    void changeGroupObject(int groupID, byte[] value) throws RemoteException;
+    ChangeGroupObjectResponse changeGroupObject(int groupID, byte[] value) throws RemoteException;
 
     int getObjectClassID(int objectID) throws RemoteException;
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    List<ClientAction> changePropertyView(int propertyID, byte[] object, boolean all) throws RemoteException;
+    ChangePropertyViewResponse changePropertyView(int propertyID, byte[] object, boolean all) throws RemoteException;
 
     List<ClientAction> changeObject(int objectID, Object value) throws RemoteException;
 

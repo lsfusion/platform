@@ -11,6 +11,8 @@ import platform.interop.action.ClientAction;
 import platform.interop.action.ClientActionResult;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.form.response.ChangeGroupObjectResponse;
+import platform.interop.form.response.ChangePropertyViewResponse;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.logics.BusinessLogics;
@@ -149,32 +151,31 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         return outStream.toByteArray();
     }
 
-    public void changeGroupObject(int groupID, byte[] value) {
+    public ChangeGroupObjectResponse changeGroupObject(int groupID, byte[] value) {
         
         GroupObjectImplement groupObject = form.getGroupObjectImplement(groupID);
         try {
+
             DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(value));
             // считаем ключи и найдем groupObjectValue
             Map<ObjectImplement,Object> mapValues = new HashMap<ObjectImplement, Object>();
             for(ObjectImplement object : groupObject.objects)
                 mapValues.put(object, BaseUtils.deserializeObject(inStream));
             form.changeGroupObject(groupObject, groupObject.findGroupObjectValue(mapValues));
+            return new ChangeGroupObjectResponse(getFormChangesByteArray(), getObjectClassID(groupObject.objects.iterator().next()));
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private int getObjectClassID(ObjectImplement objectImplement) {
+        ConcreteCustomClass currentClass = form.getObjectClass(objectImplement);
+        return (currentClass == null) ? 0 : currentClass.ID;
+    }
+
     public int getObjectClassID(int objectID) {
-
-        ObjectImplement objectImplement = form.getObjectImplement(objectID);
-        if(!(objectImplement instanceof CustomObjectImplement))
-            return 0;
-
-        ConcreteCustomClass currentClass = ((CustomObjectImplement) objectImplement).currentClass;
-        if (currentClass == null)
-            return 0;
-
-        return currentClass.ID;
+        return getObjectClassID(form.getObjectImplement(objectID));
     }
 
     public void changeGroupObject(int groupID, byte changeType) {
@@ -187,9 +188,10 @@ public class RemoteFormView<T extends BusinessLogics<T>,F extends RemoteForm<T>>
         }
     }
 
-    public List<ClientAction> changePropertyView(int propertyID, byte[] object, boolean all) {
+    public ChangePropertyViewResponse changePropertyView(int propertyID, byte[] object, boolean all) {
         try {
-            return form.changeProperty(form.getPropertyView(propertyID), BaseUtils.deserializeObject(object), this, all);
+            List<ClientAction> actions = form.changeProperty(form.getPropertyView(propertyID), BaseUtils.deserializeObject(object), this, all);
+            return new ChangePropertyViewResponse(actions, getFormChangesByteArray());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
