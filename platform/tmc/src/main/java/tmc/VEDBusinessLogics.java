@@ -1378,7 +1378,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             return VEDBusinessLogics.this.createBillTxt(remoteForm, 1,
                     BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
-                    getPropertyView(orderSalePrice, objArt), getPropertyView(articleQuantity, objArt),
+                    getPropertyView(orderSalePrice, objArt), getPropertyView(articleInnerQuantity, objArt),
                     getPropertyView(name, objArt), getPropertyView(orderArticleSaleSumWithDiscount, objArt),
                     getPropertyView(orderSalePayNoObligation, objDoc),
                     getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
