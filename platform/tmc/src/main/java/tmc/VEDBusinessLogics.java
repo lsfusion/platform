@@ -1406,7 +1406,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     private String createBillTxt(RemoteForm remoteForm, int payType,
                                  Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups,
-                                 PropertyViewNavigator<?> priceProp, Object quantityProp,
+                                 PropertyViewNavigator<?> priceProp, PropertyViewNavigator<?> quantityProp,
                                  PropertyViewNavigator<?> nameProp, PropertyViewNavigator<?> sumProp,
                                  PropertyViewNavigator<?> toPayProp,
                                  PropertyViewNavigator<?> sumCardProp, PropertyViewNavigator<?> sumCashProp) {
@@ -1415,31 +1415,26 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         FormData data;
 
-        PropertyView quantityView = null;
-        if (quantityProp instanceof PropertyViewNavigator) {
-            quantityView = remoteForm.mapper.mapPropertyView((PropertyViewNavigator<?>)quantityProp);
-            quantityView.toDraw.addTempFilter(new NotNullFilter(quantityView.view));
-        }
+        PropertyView quantityView = remoteForm.mapper.mapPropertyView((PropertyViewNavigator<?>)quantityProp);
+        quantityView.toDraw.addTempFilter(new NotNullFilter(quantityView.view));
 
         try {
-             data = remoteForm.getFormData(propertyGroups, classGroups);
+            data = remoteForm.getFormData(propertyGroups, classGroups);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            if (quantityView != null)
-                quantityView.toDraw.clearTempFilters();
+            quantityView.toDraw.clearTempFilters();
         }
 
         Double sumDoc = 0.0;
 
         for (FormRow row : data.rows) {
 
-            Double quantity = (quantityProp instanceof PropertyViewNavigator) ?
-                              (Double) row.values.get(remoteForm.mapper.mapPropertyView((PropertyViewNavigator)quantityProp)) :
-                              (Double) quantityProp;
+            Object quantityObject = row.values.get(remoteForm.mapper.mapPropertyView(quantityProp));
 
-            if (quantity != null) {
+            if (quantityObject != null) {
 
+                Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
                 Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(priceProp));
                 String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(nameProp))).trim();
                 Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(sumProp));
@@ -2051,7 +2046,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             return VEDBusinessLogics.this.createBillTxt(remoteForm, 1,
                     BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(obligation.groupTo),
-                    getPropertyView(obligationSum, objObligation), 1.0,
+                    getPropertyView(obligationSum, objObligation), getPropertyView(issueObligation, objObligation),
                     getPropertyView(name, objObligation), getPropertyView(obligationSum, objObligation),
                     getPropertyView(orderSalePay, objDoc),
                     getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
