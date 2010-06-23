@@ -11,13 +11,13 @@
 		<constructor-arg><value>11111</value></constructor-arg>
 	</bean>
 
-	<bean id="priceImport" class="tmc.integration.PriceImportTask">
+	<bean id="priceImport" class="tmc.integration.imp.PriceImportTask">
 		<constructor-arg><ref bean="businessLogics"/></constructor-arg>
 		<constructor-arg><list><value>imp</value></list></constructor-arg>
 		<constructor-arg><list><value type="int">5</value></list></constructor-arg>
 	</bean>
 
-    <bean id="saleExport" class="tmc.integration.SaleExportTask">
+    <bean id="saleExport" class="tmc.integration.exp.SaleExportTask">
         <constructor-arg><ref bean="businessLogics"/></constructor-arg>
         <constructor-arg><value>exp</value></constructor-arg>
     </bean>

@@ -30,7 +30,8 @@ public class Scheduler implements Runnable {
                 try {
                     task.execute();
                 } catch (Exception e) {
-                    System.out.println("Ошибка выполнении задания " + task.getID() + " : " + e.getMessage());
+                    System.out.println("Ошибка выполнении задания " + task.getID() + " : ");
+                    e.printStackTrace();
                 }
 
             try {

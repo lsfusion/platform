@@ -1,20 +1,4 @@
-package tmc.integration;
-
-import platform.server.logics.scheduler.SchedulerTask;
-import platform.server.logics.scheduler.FlagSemaphoreTask;
-import platform.server.logics.DataObject;
-import platform.server.view.form.*;
-import platform.server.view.form.filter.NotNullFilter;
-import platform.server.view.form.filter.NotFilter;
-import platform.server.session.DataSession;
-import platform.server.auth.AuthPolicy;
-import platform.base.BaseUtils;
-import platform.base.DateConverter;
-
-import java.util.*;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
+package tmc.integration.exp;
 
 import org.xBaseJ.DBF;
 import org.xBaseJ.xBaseJException;
@@ -22,12 +6,39 @@ import org.xBaseJ.fields.CharField;
 import org.xBaseJ.fields.NumField;
 import org.xBaseJ.fields.DateField;
 import org.xBaseJ.fields.Field;
+import platform.server.view.form.*;
+import platform.server.view.form.filter.NotNullFilter;
+import platform.server.session.DataSession;
+import platform.server.auth.AuthPolicy;
+import platform.server.logics.DataObject;
+import platform.server.logics.scheduler.FlagSemaphoreTask;
+import platform.base.BaseUtils;
+import platform.base.DateConverter;
+
+import java.util.Map;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.text.DecimalFormatSymbols;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.sql.SQLException;
+
 import tmc.VEDBusinessLogics;
 
-public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
+public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
-    private VEDBusinessLogics BL;
-    private String path;
+    VEDBusinessLogics BL;
+    String path;
+
+    protected AbstractSaleExportTask(VEDBusinessLogics BL, String path) {
+        this.BL = BL;
+        this.path = path;
+    }
+
+    protected abstract String getDbfName();
+    protected abstract void setRemoteFormFilter(RemoteForm remoteForm) throws ParseException;
+    protected abstract void updateRemoteFormProperties(RemoteForm remoteForm) throws SQLException;
+
     CharField barField;
     CharField nameField;
     NumField cenField;
@@ -43,24 +54,10 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
     CharField discField;
     NumField percentField;
 
-    public SaleExportTask(VEDBusinessLogics BL, String path) {
-
-        this.BL = BL;
-        this.path = path;
-    }
-
-    public String getID() {
-        return "saleExport";
-    }
-
-    public void execute() throws Exception {
-        FlagSemaphoreTask.run(path + "\\pos.cur", this);
-    }
-
     DBF outDbf;
     private void createDBF() throws Exception {
 
-        outDbf = new DBF(path + "\\datacur.dbf", true, "Cp866");
+        outDbf = new DBF(path + "\\" + getDbfName(), true, "Cp866");
 
         barField = new CharField("bar", 12);
         outDbf.addField(barField);
@@ -110,8 +107,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         // Выгружаем продажи по кассе
         RemoteForm remoteForm = new RemoteForm(BL.commitSaleBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
-        PropertyView<?> exported = remoteForm.getPropertyView(BL.checkRetailExported);
-        exported.toDraw.addTempFilter(new NotFilter(new NotNullFilter(exported.view)));
+        setRemoteFormFilter(remoteForm);
 
         PropertyView quantity = remoteForm.getPropertyView(BL.articleInnerQuantity);
         quantity.toDraw.addTempFilter(new NotNullFilter(quantity.view));
@@ -129,7 +125,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
 
         FormData data = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(doc.groupTo, art.groupTo));
 
-        remoteForm.changeProperty(exported, true, null, true);
+        updateRemoteFormProperties(remoteForm);
 
         return data;
     }
@@ -139,8 +135,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         // Выгружаем продажи по кассе
         RemoteForm remoteForm = new RemoteForm(BL.saleCheckCertBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
-        PropertyView<?> exported = remoteForm.getPropertyView(BL.checkRetailExported);
-        exported.toDraw.addTempFilter(new NotFilter(new NotNullFilter(exported.view)));
+        setRemoteFormFilter(remoteForm);
 
         PropertyView issued = remoteForm.getPropertyView(BL.issueObligation);
         issued.toDraw.addTempFilter(new NotNullFilter(issued.view));
@@ -156,7 +151,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
 
         FormData data = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(doc.groupTo, obligation.groupTo));
 
-        remoteForm.changeProperty(exported, true, null, true);
+        updateRemoteFormProperties(remoteForm);
 
         return data;
     }
@@ -166,8 +161,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         // Выгружаем продажи по кассе
         RemoteForm remoteForm = new RemoteForm(BL.returnSaleCheckRetailBrowse, BL, session, AuthPolicy.defaultSecurityPolicy, null, null, new DataObject(BL.getComputers().iterator().next(), BL.computer)); // здесь надо переделать на нормальный компьютер
 
-        PropertyView<?> exported = remoteForm.getPropertyView(BL.checkRetailExported);
-        exported.toDraw.addTempFilter(new NotFilter(new NotNullFilter(exported.view)));
+        setRemoteFormFilter(remoteForm);
 
         PropertyView returnQuantity = remoteForm.getPropertyView(BL.returnInnerQuantity);
         returnQuantity.toDraw.addTempFilter(new NotNullFilter(returnQuantity.view));
@@ -186,7 +180,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
 
         FormData result = remoteForm.getFormData(BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo), BaseUtils.toSetElements(doc.groupTo, inner.groupTo, article.groupTo));
 
-        remoteForm.changeProperty(exported, true, null, true);
+        updateRemoteFormProperties(remoteForm);
 
         return result;
     }
@@ -224,6 +218,7 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
         fld.put(valueOfField(fld, val).getBytes());
     }
 
+    // метод нужен лишь потому, что xBaseJ не умеет нормально писать в dbf-файлы Double
     private String valueOfField(NumField fld, Double val) {
 
         int intlen = fld.getLength() - fld.getDecimalPositionCount() - 1;
@@ -260,22 +255,13 @@ public class SaleExportTask extends FlagSemaphoreTask implements SchedulerTask {
             FormData dataReturn = getDataReturn(session, mapReturn);
             writeToDbf(dataReturn, mapReturn, true);
 
-            outDbf.close();
-
             session.apply(BL);
 
-        } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (InstantiationException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         } finally {
             if (outDbf != null)
                 outDbf.close();
         }
 
     }
+
 }

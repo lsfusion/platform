@@ -3,12 +3,15 @@ package platform.server.logics.scheduler;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.io.IOException;
+import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
 public abstract class FlagSemaphoreTask {
 
     protected abstract void run() throws Exception;
+
+    protected byte[] flagContent;
 
     public static void run(String flagName, FlagSemaphoreTask task) throws Exception {
 
@@ -18,14 +21,20 @@ public abstract class FlagSemaphoreTask {
 
             boolean succeed = false;
 
+            RandomAccessFile flagAccess = null;
             FileChannel flagChannel = null;
             FileLock flagLock = null;
             try {
 
-                flagChannel = new RandomAccessFile(flagFile, "rw").getChannel();
+                flagAccess = new RandomAccessFile(flagFile, "rw");
+                flagChannel = flagAccess.getChannel();
                 flagLock = flagChannel.tryLock();
 
                 if (!flagLock.isShared()) {
+
+                    task.flagContent = new byte[(int)flagAccess.length()];
+                    flagAccess.read(task.flagContent);
+
                     task.run();
                     succeed = true;
                 }
@@ -42,9 +51,9 @@ public abstract class FlagSemaphoreTask {
                     }
                 }
 
-                if (flagChannel != null) {
+                if (flagAccess != null) {
                     try {
-                        flagChannel.close();
+                        flagAccess.close();
                     } catch (IOException e) {
                         System.out.println("Закрытие канала чтения флага: " + e.getMessage());
                     }
