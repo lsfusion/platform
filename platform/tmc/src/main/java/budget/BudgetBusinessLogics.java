@@ -71,7 +71,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     }
 
     LP groupBalanceQuantity, inSum, outSum, outComment, outSection, inCur, outCur, salaryExtraCost, outPerson, outYear, outMonth;
-    LP balanceQuantity, incQuantity, balanceGroupQuantity, curBalance, exRate, salaryPerson, salaryInMonth, missionOperation;
+    LP balanceQuantity, incQuantity, balanceGroupQuantity, curBalance, exRate, salaryPerson, salaryInMonth, missionOperation, roundSalary, dayInMonthOv;
 
     protected void initProperties() {
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
@@ -129,7 +129,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP currencyInMonth = addDProp("currencyInM", currency, person, absMonth, IntegerClass.instance);
         LP workDays = addDProp(dateTimeGroup, "workD", "Раб. дни", IntegerClass.instance, absMonth, IntegerClass.instance);
         LP dayInMonth = addDProp("dayWorkInM", "Дней отраб.", IntegerClass.instance, person, absMonth, IntegerClass.instance);
-        LP dayInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Дней отраб.", Union.OVERRIDE, addJProp(and1, workDays, 2, 3, is(person), 1), dayInMonth);
+        dayInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Дней отраб.", Union.OVERRIDE, addJProp(and1, workDays, 2, 3, is(person), 1), dayInMonth);
         LP hourInMonth = addDProp("hourInM", "Часов отраб.", DoubleClass.instance, person, absMonth, IntegerClass.instance);
         LP hourInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Часов отраб.", Union.OVERRIDE, addJProp(hourInDay, dayInMonthOv, 1, 2, 3), hourInMonth);
         LP extraInMonth = addDProp(baseGroup, "extraInM", "Затраты",DoubleClass.instance, extraSection, absMonth, IntegerClass.instance);
@@ -157,7 +157,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         addJProp(baseGroup, "Тек. валюта", name, curExtraCurrency, 1, 2, 3);
 
         LP workCoeff = addJProp(calcCoef, hourInMonthOv, 1, 2, 3, addJProp(and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
-        LP roundSalary = addJProp(baseGroup, "К оплате", roundMult, workCoeff, 3, 1, 2, curSalary, 1, 2, 3);
+        roundSalary = addJProp(baseGroup, "К оплате", roundMult, workCoeff, 3, 1, 2, curSalary, 1, 2, 3);
 
         LP paySum = addJProp("Выплачено", multiplyDouble2, payRate, 1, outSum, 1);
         LP payTotal = addSGProp(baseGroup, "Всего заплачено", paySum, outPerson, 1, outMonth, 1, outYear, 1);
@@ -237,6 +237,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
            NavigatorForm recordForm = new RecordNavigatorForm(primaryData, 114, "Список операций");
            NavigatorForm salaryForm = new ExtraNavigatorForm(primaryData, 115, "Затраты");
            NavigatorForm missionForm = new MissionNavigatorForm(primaryData, 116, "Командировка");
+           NavigatorForm exampleForm = new ExampleNavigatorForm(primaryData, 117, "Пример");
 
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
            NavigatorForm systemCurrency = new SystemCurrencyForm(aggregateData, 213, "Остаток по валютам");
@@ -371,6 +372,30 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(missionOperation, objOutOp), Compare.EQUALS, objMission));
             //addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCur));
         }
+    }
+
+
+     private class ExampleNavigatorForm extends NavigatorForm {
+
+        public ExampleNavigatorForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectNavigator objPersonOp = addSingleGroupObjectImplement(person, "Персонал", properties, baseGroup);
+            ObjectNavigator objYearOp = addSingleGroupObjectImplement(IntegerClass.instance, "Год", properties, baseGroup);
+                    objYearOp.groupTo.initClassView = ClassViewType.PANEL;
+                    objYearOp.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
+            ObjectNavigator objMonthOp = addSingleGroupObjectImplement(absMonth, "Операция зарплата", properties, baseGroup);
+
+            //addPropertyView(objYearOp, objMonthOp, properties, dateTimeGroup);
+            //addPropertyView(objPersonOp, objYearOp, objMonthOp, properties, dateTimeGroup);
+            //addPropertyView(objPersonOp, objYearOp, objMonthOp, properties, baseGroup);
+            addPropertyView(dayInMonthOv, objPersonOp, objMonthOp, objYearOp);
+            addPropertyView(roundSalary, objMonthOp, objYearOp, objPersonOp);
+
+
+            addObjectActions(this, objPersonOp);
+            addObjectActions(this, objMonthOp);
+            }
     }
 
 }
