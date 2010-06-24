@@ -341,6 +341,10 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         dataChanged = true;
     }
 
+    public List<ClientAction> changeProperty(PropertyView<?> property, Object value) throws SQLException {
+        return changeProperty(property.view, value, null);
+    }
+
     public List<ClientAction> changeProperty(PropertyView<?> property, Object value, RemoteFormView executeForm, boolean all) throws SQLException {
         return changeProperty(property.view, value, executeForm, all ? property.toDraw : null);
     }

@@ -90,7 +90,8 @@ public class CustomObjectImplement extends ObjectImplement {
                 return;
             }
             changeClass = (ConcreteCustomClass) sessionClass;
-            classView.objectChanged(changeClass, (Integer) getDataObject().object);
+            if (classView != null) // если вообще кто-то следит за изменением классов объектов
+                classView.objectChanged(changeClass, (Integer) getDataObject().object);
         }
 
         if(changeClass != currentClass) {

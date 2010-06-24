@@ -20,4 +20,6 @@ public interface ClientActionDispatcher {
     public ClientActionResult execute(MessageFileClientAction action);
 
     public ClientActionResult execute(UserChangedClientAction action);
+
+    public ClientActionResult execute(MessageClientAction action);
 }

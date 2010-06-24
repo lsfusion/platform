@@ -164,4 +164,12 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
         return null;
     }
+
+    public ClientActionResult execute(MessageClientAction action) {
+
+        JOptionPane.showMessageDialog(null, action.message,
+                                      action.caption, JOptionPane.INFORMATION_MESSAGE);
+
+        return null;
+    }
 }

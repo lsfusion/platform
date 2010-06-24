@@ -37,6 +37,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
+
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
@@ -94,7 +96,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     CustomClass store, articleGroup, localSupplier, importSupplier, orderLocal, format;
     CustomClass customerWhole;
     CustomClass customerInvoiceRetail;
-    CustomClass customerCheckRetail;
+    public ConcreteCustomClass customerCheckRetail;
     CustomClass orderWhole;
     CustomClass orderInvoiceRetail;
     CustomClass checkRetail;
@@ -515,7 +517,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentLogisticsSupplied = addJProp(documentLogisticsGroup, "Поставляется", equals2, outSubject, 1, addJProp(articleStoreSupplier, incStore, 1, 2), 1, 2);
         documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
 
-        orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), addDProp("orderClientSum", DoubleClass.instance, orderSaleArticleRetail));
+        orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), addDProp("orderClientSum", "Нак. сумма", DoubleClass.instance, orderSaleArticleRetail));
         LP orderHour = addDProp(baseGroup, "orderHour", "Час", DoubleClass.instance, orderSaleArticleRetail);
         orderHour.setDerivedChange(currentHour, is(orderSale), 1);
 
@@ -579,7 +581,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayCoeff = addJProp("Коэфф. скидки", divideDouble, orderSalePayNoObligation, 1, orderSalePay, 1);
         orderArticleSaleSumCoeff = addJProp(documentPriceGroup, "Сумма со скидкой", addMFProp(DoubleClass.instance, 2), orderArticleSaleSumWithDiscount, 1, 2, orderSalePayCoeff, 1);
 
-        clientSum = addSGProp(baseGroup, "clientSum", "Нак. сумма", orderSalePayNoObligation, orderContragent, 1);
+        clientInitialSum = addDProp(baseGroup, "clientInitialSum", "Начальная сумма", DoubleClass.instance, customerCheckRetail);
+        clientSum = addSUProp(baseGroup, "clientSum", "Нак. сумма", Union.SUM, addSGProp(orderSalePayNoObligation, orderContragent, 1), clientInitialSum);
         orderClientSum.setDerivedChange(clientSum, orderContragent, 1);
 
         orderSalePayCash = addDProp(documentPriceGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleCheckRetail);
@@ -616,6 +619,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, checkRetail);
         addCashRegisterProperties();
+
+        LP importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(this, genSID()));
+
     }
 
     private LP addSupplierProperty(LP property) {
@@ -650,6 +656,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP inAction;
     LP orderSalePayNoObligation;
     public LP orderArticleSaleSumCoeff;
+    public LP clientInitialSum;
     LP clientSum;
     LP incStore;
     LP incStoreName;
