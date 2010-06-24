@@ -310,7 +310,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)BaseUtils.singleValue(mapObjects), -1);
+            ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), -1);
         }
     }
 

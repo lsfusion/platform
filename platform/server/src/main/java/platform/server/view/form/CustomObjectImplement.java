@@ -134,18 +134,17 @@ public class CustomObjectImplement extends ObjectImplement {
         return value.getExpr();
     }
 
-    public void changeClass(ChangesSession session,int classID) throws SQLException {
+    public void changeClass(ChangesSession session, DataObject change, int classID) throws SQLException {
 
         // запишем объекты, которые надо будет сохранять
         if(classID==-1) {
-            session.changeClass(getDataObject(),null);
+            session.changeClass(change,null);
             changeValue(session, NullValue.instance);
         } else {
-            session.changeClass(getDataObject(), baseClass.findConcreteClassID(classID));
+            session.changeClass(change, baseClass.findConcreteClassID(classID));
             updateValueClass(session);
         }
     }
-
 
     public void changeGridClass(int classID) {
 

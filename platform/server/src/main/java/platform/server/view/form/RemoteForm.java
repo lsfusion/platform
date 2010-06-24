@@ -333,7 +333,11 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public void changeClass(CustomObjectImplement object, int classID) throws SQLException {
-        object.changeClass(session, classID);
+        changeClass(object, object.getDataObject(), classID);
+    }
+
+    public void changeClass(CustomObjectImplement object, DataObject change, int classID) throws SQLException {
+        object.changeClass(session, change, classID);
         dataChanged = true;
     }
 
