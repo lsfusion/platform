@@ -3,6 +3,7 @@ package platform.server.data.where.classes;
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableClassExpr;
@@ -19,12 +20,15 @@ import java.util.Map;
 public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
 
     public Type getType(KeyExpr keyExpr) {
-        assert wheres.length>0;
         Type type = wheres[0].get(keyExpr).getType();
         assert checkType(keyExpr,type);
         return type;
     }
 
+    public ValueClass getBaseClass(KeyExpr keyExpr) {
+        return wheres[0].get(keyExpr).getBaseClass();
+    }
+    
     public boolean checkType(KeyExpr keyExpr,Type type) {
         for(int i=1;i<wheres.length;i++)
             assert type.isCompatible(wheres[0].get(keyExpr).getType());

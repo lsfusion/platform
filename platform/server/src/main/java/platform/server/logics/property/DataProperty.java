@@ -91,5 +91,4 @@ public abstract class DataProperty extends UserProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
         session.changeProperty(this, keys, value);
     }
-
 }

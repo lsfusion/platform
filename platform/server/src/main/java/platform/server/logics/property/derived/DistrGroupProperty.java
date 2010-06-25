@@ -68,12 +68,12 @@ public class DistrGroupProperty<T extends PropertyInterface, L extends PropertyI
     }
 
     @Override
-    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
         return distribute.property.getUsedChanges(modifier).add(groupProperty.getUsedChanges(modifier)).add(groupProperty.getUsedDataChanges(modifier));
     }
 
     @Override
-    public MapDataChanges<Interface<T>> getDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface<T>> calculateDataChanges(PropertyChange<Interface<T>> propertyChange, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         // создаем распределяющее свойство от этого, moidfier который меняет это свойство на PropertyChange, получаем значение распределяющего и условие на изменение
         // зацепит лишние changed'ы как и в MaxChangeExpr и иже с ними но пока забьем
 

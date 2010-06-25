@@ -32,7 +32,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         super(sID, caption, getInterfaces(classes));
     }
 
-    protected Map<ClassPropertyInterface, ValueClass> getMapClasses() {
+    public Map<ClassPropertyInterface, ValueClass> getMapClasses() {
         Map<ClassPropertyInterface, ValueClass> result = new HashMap<ClassPropertyInterface, ValueClass>();
         for(ClassPropertyInterface propertyInterface : interfaces)
             result.put(propertyInterface,propertyInterface.interfaceClass);
@@ -40,16 +40,16 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
     }
 
     @Override
-    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
         return modifier.newChanges().addChanges(new SessionChanges(modifier.getSession(), BaseUtils.merge(ClassProperty.getValueClasses(interfaces),Collections.singleton(getValueClass())), false));
     }
 
     @Override
-    public MapDataChanges<ClassPropertyInterface> getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<ClassPropertyInterface> calculateDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         change = change.and(ClassProperty.getIsClassWhere(change.mapKeys, modifier, null).and(modifier.getSession().getIsClassWhere(change.expr, getValueClass(), null).or(change.expr.getWhere().not())));
         if(changedWhere !=null) changedWhere.add(change.where); // помечаем что можем обработать тока подходящие по интерфейсу классы
         // изменяет себя, если классы совпадают
-        return new MapDataChanges<ClassPropertyInterface>(new DataChanges(this, change), Collections.singletonMap(this, BaseUtils.toMap(new HashSet<ClassPropertyInterface>(interfaces))));
+        return new MapDataChanges<ClassPropertyInterface>(new DataChanges(this, change), Collections.singletonMap(this, getIdentityInterfaces()));
     }
 
     public Type getType() {

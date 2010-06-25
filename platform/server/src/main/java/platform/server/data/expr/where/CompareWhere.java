@@ -27,9 +27,9 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Data
     public final BaseExpr operator1;
     public final BaseExpr operator2;
 
-    protected CompareWhere(BaseExpr iOperator1, BaseExpr iOperator2) {
-        operator1 = iOperator1;
-        operator2 = iOperator2;
+    protected CompareWhere(BaseExpr operator1, BaseExpr operator2) {
+        this.operator1 = operator1;
+        this.operator2 = operator2;
     }
 
     public void enumerate(ContextEnumerator enumerator) {

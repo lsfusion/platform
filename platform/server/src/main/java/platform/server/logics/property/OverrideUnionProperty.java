@@ -39,12 +39,12 @@ public class OverrideUnionProperty extends UnionProperty {
     }
 
     @Override
-    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
         return modifier.getUsedDataChanges(getDepends());
     }
 
     @Override
-    public MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(PropertyMapImplement<?, Interface> operand : BaseUtils.reverse(operands)) {
             WhereBuilder operandWhere = new WhereBuilder();

@@ -3,13 +3,18 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.query.Query;
+import platform.server.data.where.DataWhereSet;
+import platform.server.data.where.Where;
+import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.QueryTranslator;
+import platform.server.data.expr.*;
+import platform.server.data.expr.where.MapWhere;
+import platform.server.data.query.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
@@ -307,7 +312,58 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return new CustomObjectImplement(ID, SID, this, caption, classView, addOnTransaction);
     }
 
-    public ValueExpr getActionExpr() {
-        return new ValueExpr(0,getConcreteChildren().iterator().next());
+    private static class ActionExpr extends VariableClassExpr {
+
+        private final ValueClass valueClass;
+
+        private ActionExpr(ValueClass valueClass) {
+            this.valueClass = valueClass;
+        }
+
+        public VariableClassExpr translate(MapTranslate translator) {
+            return this;
+        }
+
+        public void fillFollowSet(DataWhereSet fillSet) {
+        }
+
+        protected VariableExprSet calculateExprFollows() {
+            return new VariableExprSet();
+        }
+
+        public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+            throw new RuntimeException("not supported");
+        }
+
+        public Type getType(KeyType keyType) {
+            return valueClass.getType();
+        }
+
+        public Where calculateWhere() {
+            return Where.TRUE;
+        }
+
+        public Expr translateQuery(QueryTranslator translator) {
+            return this;
+        }
+
+        public boolean twins(AbstractSourceJoin obj) {
+            return valueClass.equals((ActionExpr)obj);
+        }
+
+        public int hashContext(HashContext hashContext) {
+            return 1562;
+        }
+
+        public String getSource(CompileSource compile) {
+            throw new RuntimeException("not supported");
+        }
+
+        public void enumerate(ContextEnumerator enumerator) {
+        }
+    }
+
+    public BaseExpr getActionExpr() {
+        return new ActionExpr(this);
     }
 }

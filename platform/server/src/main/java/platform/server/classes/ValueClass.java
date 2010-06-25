@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.view.form.CustomClassView;
@@ -32,5 +33,5 @@ public interface ValueClass extends RemoteClass {
 
     ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction);
 
-    ValueExpr getActionExpr(); 
+    BaseExpr getActionExpr(); 
 }

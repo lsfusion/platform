@@ -5,6 +5,7 @@ import platform.base.OrderedMap;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassWhere;
@@ -30,9 +31,11 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     // проверяет аггрегацию для отладки
     public boolean checkAggregation(SQLSession session,String caption) throws SQLException {
-        OrderedMap<Map<T, Object>, Map<String, Object>> aggrResult = getQuery("value").execute(session);
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+
+        OrderedMap<Map<T, Object>, Map<String, Object>> aggrResult = new Query<T,String>(mapKeys,getExpr(mapKeys),"value").execute(session);
         DataSession.reCalculateAggr = true;
-        OrderedMap<Map<T, Object>, Map<String, Object>> calcResult = getQuery("value").execute(session);
+        OrderedMap<Map<T, Object>, Map<String, Object>> calcResult = new Query<T,String>(mapKeys,getExpr(mapKeys),"value").execute(session);
         DataSession.reCalculateAggr = false;
 
         Iterator<Map.Entry<Map<T,Object>,Map<String,Object>>> i = aggrResult.entrySet().iterator();
@@ -91,18 +94,19 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
 
     @GenericLazy
     public Type getType() {
-        return calculateExpr(getMapKeys()).getSelfType();
+        return calculateClassExpr(getMapKeys()).getSelfType();
     }
 
-    protected Map<T, ValueClass> getMapClasses() {
+    @GenericLazy
+    public Map<T, ValueClass> getMapClasses() {
         Query<T, String> query = new Query<T, String>(this);
-        query.and(calculateExpr(query.mapKeys).getWhere());
+        query.and(calculateClassExpr(query.mapKeys).getWhere());
         return query.<T>getClassWhere(new ArrayList<String>()).getCommonParent(interfaces);
     }
 
     protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
         Query<KeyField, Field> query = new Query<KeyField,Field>(mapTable.table);
-        Expr expr = calculateExpr(BaseUtils.join(mapTable.mapKeys, query.mapKeys));
+        Expr expr = calculateClassExpr(BaseUtils.join(mapTable.mapKeys, query.mapKeys));
         query.properties.put(storedField,expr);
         query.and(expr.getWhere());
         return query.getClassWhere(Collections.singleton(storedField));

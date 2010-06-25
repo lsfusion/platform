@@ -141,4 +141,11 @@ public class OrObjectClassSet implements OrClassSet, AndClassSet {
     public static AndClassSet or(ObjectClassSet set1, AndClassSet set2) {
         return set1.getOr().or(set2.getOr());
     }
+
+    public ValueClass getBaseClass() {
+        if(up.isEmpty())
+            return set.getSingle().getBaseClass();
+        else
+            return up.getBaseClass();
+    }
 }

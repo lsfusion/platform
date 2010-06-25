@@ -106,10 +106,6 @@ public class DerivedProperty {
         return new PropertyMapImplement<ClassPropertyInterface,T>(new ClassProperty(genID(),"sys",new ValueClass[]{}, valueClass, value),new HashMap<ClassPropertyInterface, T>());
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createImplement(Property<T> property) {
-        return new PropertyMapImplement<T,T>(property,BaseUtils.toMap(new HashSet<T>(property.interfaces)));        
-    }
-
     private static <T extends PropertyInterface> PropertyMapImplement<?,T> createFormula(Collection<T> interfaces, String formula, ConcreteValueClass valueClass, List<? extends PropertyInterfaceImplement<T>> params) {
         return createFormula(genID(), "sys", interfaces, formula, valueClass, params);
     }
@@ -286,7 +282,7 @@ public class DerivedProperty {
         // старый вариант : пока  MIN(огр., распр. - пред.) И распр. > пред. (1) ИЛИ MIN(огр., распр.) И пред. null (2)
         // новый вариант : пред. = UNION (0 and огр., сум. без) или считаем (суи. с - огр.) = пред. ??? и зтем обычную формулу
 
-        PropertyMapImplement<?, T> restImplement = createImplement(restriction);
+        PropertyMapImplement<?, T> restImplement = restriction.getImplement();
         
         // считаем пред., тут 2 варианта
         PropertyMapImplement<?, T> previous;
@@ -337,7 +333,7 @@ public class DerivedProperty {
     private static <T extends PropertyInterface> List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> createEqualsMGProp(String[] sIDs, String[] captions, Property<T> property, List<PropertyInterfaceImplement<T>> extra, Set<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
         Collection<T> interfaces = property.interfaces;
 
-        PropertyMapImplement<?,T> propertyImplement = new PropertyMapImplement<T,T>(property,BaseUtils.toMap(new HashSet<T>(property.interfaces)));
+        PropertyMapImplement<?,T> propertyImplement = property.getImplement();
 
         List<PropertyImplement<PropertyInterfaceImplement<T>, ?>> result = new ArrayList<PropertyImplement<PropertyInterfaceImplement<T>, ?>>();
         int i = 0;
@@ -366,7 +362,7 @@ public class DerivedProperty {
         String concID = BaseUtils.toString(sIDs, "_");
         String concCaption = BaseUtils.toString(captions, ", ");
 
-        PropertyMapImplement<?, T> concate = createConcatenate("CC_" + concID, "Concatenate - "+ concCaption, property.interfaces, BaseUtils.mergeList(Collections.singletonList(createImplement(property)), extra));
+        PropertyMapImplement<?, T> concate = createConcatenate("CC_" + concID, "Concatenate - "+ concCaption, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extra));
         persist.add(concate.property);
         
         PropertyImplement<PropertyInterfaceImplement<T>, ?> max = createMaxProp("MC_" + concID, "Concatenate - " + concCaption, concate, group);

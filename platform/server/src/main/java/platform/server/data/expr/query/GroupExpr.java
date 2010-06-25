@@ -5,7 +5,8 @@ import platform.server.caches.Lazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.DataClass;
+import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.Case;
 import platform.server.data.expr.cases.CaseExpr;
@@ -48,11 +49,11 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     public abstract boolean isMax();
 
     @TwinLazy
-    private Map<KeyExpr, Type> getContextTypeWhere() {
-        Map<KeyExpr, Type> result = new HashMap<KeyExpr, Type>();
+    private Map<KeyExpr, AndClassSet> getKeepClasses() {
+        Map<KeyExpr, AndClassSet> result = new HashMap<KeyExpr, AndClassSet>();
         Where fullWhere = getFullWhere();
         for(KeyExpr key : getKeys())
-            result.put(key,key.getType(fullWhere));
+            result.put(key,fullWhere.getKeyBaseClass(key).getUpSet());
         return result;
     }
 
@@ -68,7 +69,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
                 return this;
         } else
             classWhere = falseWhere.not().andMeans(getWhere(pushedGroup)).getClassWhere().mapBack(group).and(getWhere(pushedGroup.keySet()).getClassWhere());
-        Expr packed = pushValues(pushedGroup, query, isMax(), classWhere.getPackWhere(), getContextTypeWhere());
+        Expr packed = pushValues(pushedGroup, query, isMax(), classWhere.getPackWhere(), getKeepClasses());
         if(packed instanceof BaseExpr)
             return (BaseExpr) packed;
         else {
@@ -275,11 +276,11 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
                 expr = expr.and(EqualsWhere.create(groupExpr.getKey(),groupKey));
         }
 
-        return pushValues(BaseUtils.reverse(reversedGroup), expr, max, getWhere(group).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getPackWhere(), new HashMap<KeyExpr, Type>());
+        return pushValues(BaseUtils.reverse(reversedGroup), expr, max, getWhere(group).getClassWhere().mapBack(group).and(getWhere(group.keySet()).getClassWhere()).getPackWhere(), new HashMap<KeyExpr, AndClassSet>());
     }
 
     // проталкиваем Values, которые в группировке (group.values)
-    private static Expr pushValues(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr, Type> keepTypes) {
+    private static Expr pushValues(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr, AndClassSet> keepClasses) {
 
         // PUSH VALUES
         Map<BaseExpr, BaseExpr> keepGroup = new HashMap<BaseExpr, BaseExpr>(); // проталкиваем values внутрь
@@ -290,11 +291,11 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
             else
                 keepGroup.put(groupExpr.getKey(),groupExpr.getValue());
 
-        return pullGroupEquals(keepGroup, expr.and(valueWhere), max, pushWhere, keepTypes);
+        return pullGroupEquals(keepGroup, expr.and(valueWhere), max, pushWhere, keepClasses);
     }
 
     // обратное pushValues - если видит равенство, убирает из группировки и дает равенство наверх, как в pullOuter   
-    private static Expr pullGroupEquals(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,Type> keepTypes) {
+    private static Expr pullGroupEquals(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,AndClassSet> keepClasses) {
         Where equalsWhere = Where.TRUE;
         Map<BaseExpr, BaseExpr> exprValues = expr.getWhere().getExprValues();
         Map<BaseExpr, BaseExpr> keepGroup = new HashMap<BaseExpr, BaseExpr>();
@@ -305,11 +306,11 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
             else
                 keepGroup.put(groupExpr.getKey(), groupExpr.getValue());
         }
-        return pullGroupNotEquals(keepGroup, expr, max, pushWhere, keepTypes).and(equalsWhere);
+        return pullGroupNotEquals(keepGroup, expr, max, pushWhere, keepClasses).and(equalsWhere);
     }
 
     // вытаскивает наверх условие на неравенство, одновременно убирая потом из общего условия push'ая (нужно в том числе чтобы в packFollowFalse assertion не нарушить)
-    private static Expr pullGroupNotEquals(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,Type> keepTypes) {
+    private static Expr pullGroupNotEquals(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,AndClassSet> keepClasses) {
         Where notWhere = Where.TRUE;
         for(Map.Entry<BaseExpr,BaseExpr> exprValue : expr.getWhere().getNotExprValues().entrySet()) {
             BaseExpr notValue = group.get(exprValue.getKey());
@@ -318,25 +319,24 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
                 notWhere = notWhere.and(EqualsWhere.create(notValue,exprValue.getValue()).not());
             }
         }
-        return pack(group, expr, max, pushWhere, keepTypes).and(notWhere);
+        return pack(group, expr, max, pushWhere, keepClasses).and(notWhere);
     }
 
     // пакуем все что можно
-    private static Expr pack(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,Type> keepTypes) {
+    private static Expr pack(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Where pushWhere, Map<KeyExpr,AndClassSet> keepClasses) {
 
         expr = expr.followFalse(pushWhere.not()); // сначала pack'аем expr
         Map<BaseExpr, BaseExpr> packGroup = new HashMap<BaseExpr, BaseExpr>();
         for(Map.Entry<BaseExpr, BaseExpr> entry : group.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
             packGroup.put(entry.getKey().packFollowFalse(expr.getWhere().and(pushWhere.or(entry.getKey().getWhere().not()))),entry.getValue());
 
-        return keepTypes(packGroup, expr, max, keepTypes);
+        return keepClasses(packGroup, expr, max, keepClasses);
     }
 
     // сохраняем типы для инварианта
-    private static Expr keepTypes(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Map<KeyExpr,Type> keepTypes) {
-        for(Map.Entry<KeyExpr,Type> keepType : BaseUtils.filterKeys(keepTypes,getKeys(expr,group)).entrySet()) // сохраним типы
-            if(keepType.getValue() instanceof DataClass)
-                expr = expr.and(keepType.getKey().isClass((DataClass)keepType.getValue()));
+    private static Expr keepClasses(Map<BaseExpr, BaseExpr> group, Expr expr, boolean max, Map<KeyExpr,AndClassSet> keepClasses) {
+        for(Map.Entry<KeyExpr, AndClassSet> keepClass : BaseUtils.filterKeys(keepClasses,getKeys(expr,group)).entrySet()) // сохраним типы
+            expr = expr.and(keepClass.getKey().isClass(keepClass.getValue()));
 
         return transKeyEquals(group, expr, max);
     }

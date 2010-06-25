@@ -75,4 +75,8 @@ public class ConcatenateClassSet implements ConcreteClass  {
     public boolean inSet(AndClassSet set) {
         return set.containsAll(this);
     }
+
+    public ValueClass getBaseClass() {
+        throw new RuntimeException("not supported");
+    }
 }

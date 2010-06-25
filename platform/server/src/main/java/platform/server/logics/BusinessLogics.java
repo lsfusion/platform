@@ -30,7 +30,7 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.scheduler.Scheduler;
-import platform.server.session.DataSession;
+import platform.server.session.*;
 import platform.server.view.form.CustomObjectImplement;
 import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.RemoteForm;
@@ -53,19 +53,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
 
         BusinessLogics bl = (BusinessLogics)factory.getBean("businessLogics");
-        
+
         LocateRegistry.createRegistry(bl.getExportPort()).rebind("BusinessLogics", bl);
 
         System.out.println("Server has successfully started");
     }
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
-    
+
     protected DataAdapter adapter;
     public SQLSyntax getAdapter() {
         return adapter;
     }
-    
+
     public final static boolean activateCaches = true;
 
     public RemoteNavigatorInterface createNavigator(String login, String password, int computer) {
@@ -108,7 +108,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
-    public ConcreteCustomClass customUser; 
+    public ConcreteCustomClass customUser;
     public ConcreteCustomClass computer;
 
     public Collection<Integer> getComputers() {
@@ -230,7 +230,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2,1,2, groeq2,3,1);
         vtrue = addCProp("Истина",LogicalClass.instance,true);
-        vzero = addCProp("0",DoubleClass.instance,0); 
+        vzero = addCProp("0",DoubleClass.instance,0);
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
@@ -258,7 +258,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
-        reverseBarcode = addDProp("Реверс", LogicalClass.instance);
+        reverseBarcode = addSDProp("Реверс", LogicalClass.instance);
     }
 
     Map<ValueClass, ActionProperty> addObjectActions = new HashMap<ValueClass, ActionProperty>();
@@ -313,59 +313,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             ((RemoteForm<?>)executeForm.form).changeClass((CustomObjectImplement)BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), -1);
         }
     }
-
-    private static class ShiftActionProperty<P extends PropertyInterface> extends ActionProperty {
-
-         // map этого свойства на переданное
-         final Map<P, ClassPropertyInterface> mapInterfaces;
-         final Property<P> property;
-         LP<?> reverse;
-
-         // дебилизм из-за конструкторов
-         private ShiftActionProperty(String sID, String caption, Property<P> property, LP<?> reverse, ValueClass... classes) {
-             super(sID, caption, classes);
-
-             this.property = property;
-             this.reverse = reverse;
-
-             List<ClassPropertyInterface> listInterfaces = new ArrayList<ClassPropertyInterface>(interfaces);
-             int size = 0;
-             mapInterfaces = new HashMap<P, ClassPropertyInterface>();
-             for(P interfaceClass : property.interfaces)
-                 mapInterfaces.put(interfaceClass, listInterfaces.get(size++));
-         }
-
-         @Override
-         protected ValueClass getValueClass() {
-             return LogicalClass.instance;
-         }
-
-         // не должен вызываться если getDataChanges прописан
-         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-             // в value недостающий интерфейс
-             RemoteForm<?> remoteForm = executeForm.form;
-
-             boolean reverseChange = (reverse.read(remoteForm.session, remoteForm)!=null);
-             if(reverseChange) // собсно для этого и делается, иначе можно было бы просто ifElse разными shift'ами сделать
-                 reverse.execute(null, remoteForm.session, remoteForm);
-
-             Map<P, DataObject> shiftKeys = BaseUtils.join(mapInterfaces, keys);
-             Object incrementValue = ((IntegralClass) property.getType()).shift(property.read(remoteForm.session, shiftKeys, remoteForm), reverseChange);
-             actions.addAll(property.execute(shiftKeys, remoteForm.session, incrementValue, remoteForm, executeForm, BaseUtils.nullJoin(mapInterfaces, mapObjects), null));
-         }
-
-/*      // без решения reverse'а и timeChanges не включишь этот механизм
-        @Override
-        public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-            return property.getUsedDataChanges(modifier);
-        }
-
-        @Override
-        public MapDataChanges<ClassPropertyInterface> getDataChanges(PropertyChange<ClassPropertyInterface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-            Map<P, KeyExpr> mapKeys = BaseUtils.join(mapInterfaces, change.mapKeys);
-            return property.getDataChanges(new PropertyChange<P>(mapKeys,property.getExpr(mapKeys, modifier, null).sum(new ValueExpr(1, (IntegralClass) property.getType())), change.where), changedWhere, modifier).map(mapInterfaces);
-        }*/
-     }
 
     private static class ChangeUserActionProperty extends ActionProperty {
 
@@ -693,7 +640,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 while(usedIds.containsKey(free))
                     free++;
                 customClass.ID = free++;
-            }        
+            }
     }
 
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
@@ -704,7 +651,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // инициализируем таблицы
         tableFactory.fillDB(session);
-        
+
         // "старое" состояние базы
         DataInputStream inputDB = null;
         byte[] struct = (byte[]) session.readRecord(GlobalTable.instance,new HashMap<KeyField, DataObject>(), GlobalTable.instance.struct);
@@ -720,7 +667,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             byte[] readInput = new byte[inputDBFile.read()*255+inputDBFile.read()];
             inputDBFile.read(readInput);
             inputDB = new DataInputStream(new ByteArrayInputStream(readInput));
-        } catch (FileNotFoundException e) { 
+        } catch (FileNotFoundException e) {
         }*/
 
         // новое состояние базы
@@ -742,9 +689,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if(!baseProperty.isStored())
                 throw new RuntimeException("Запрещено создавать индексы по не постоянным св-вам ("+baseProperty+")");
             ImplementTable indexTable = baseProperty.mapTable.table;
-            
+
             List<String> tableIndex = new ArrayList<String>();
-            tableIndex.add(baseProperty.field.name); 
+            tableIndex.add(baseProperty.field.name);
 
             while (i.hasNext()) {
                 Property property = i.next();
@@ -843,7 +790,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
             if(!keep) {
                 session.dropColumn(prevTable.name,sID);
-                ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку 
+                ImplementTable table = implementTables.get(prevTable.name); // надо упаковать таблицу если удалили колонку
                 if(table!=null) packTables.add(table);
             }
         }
@@ -852,7 +799,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for(Property property : storedProperties) { // добавляем оставшиеся
             session.addColumn(property.mapTable.table.name,property.field);
             if(property instanceof AggregateProperty)
-                recalculateProperties.add((AggregateProperty)property);    
+                recalculateProperties.add((AggregateProperty)property);
         }
 
         // удаляем таблицы старые
@@ -863,7 +810,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // упакуем таблицы
         for(ImplementTable table : packTables)
             session.packTable(table);
-        
+
         recalculateAggregations(session, recalculateProperties);
 
         // создадим индексы в базе
@@ -881,7 +828,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         session.commitTransaction();
-        
+
 /*        byte[] outBytes = outDBStruct.toByteArray();
         FileOutputStream outFileStruct = new FileOutputStream("prevstruct.str");
         outFileStruct.write(outBytes.length/255);
@@ -933,7 +880,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addDProp(AbstractGroup group, String caption, ValueClass value, ValueClass... params) {
         return addDProp(group, genSID(), caption, value, params);
     }
-
     protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
         return addDProp(null, sID, caption, value, params);
     }
@@ -941,15 +887,29 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group,new LP<ClassPropertyInterface>(new StoredDataProperty(sID,caption,params,value)));
     }
 
+    // сессионные
+    protected LP addSDProp(String caption, ValueClass value, ValueClass... params) {
+        return addSDProp((AbstractGroup)null, caption, value, params);
+    }
+    protected LP addSDProp(AbstractGroup group, String caption, ValueClass value, ValueClass... params) {
+        return addSDProp(group, genSID(), caption, value, params);
+    }
+    protected LP addSDProp(String sID, String caption, ValueClass value, ValueClass... params) {
+        return addSDProp(null, sID, caption, value, params);
+    }
+    protected LP addSDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
+        return addProperty(group,new LP<ClassPropertyInterface>(new SessionDataProperty(sID,caption,params,value)));
+    }
+
     protected LP addFAProp(AbstractGroup group, String caption, NavigatorForm form, ObjectNavigator... params) {
         return addProperty(group,new LP<ClassPropertyInterface>(new FormActionProperty(genSID(),caption,form,params)));
     }
 
-    protected <P extends PropertyInterface> LP addSAProp(LP<P> lp, ValueClass... classes) {
-        return addSAProp(null, "sys", lp, classes);
+    protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
+        return addSCProp(null, "sys", lp);
     }
-    protected <P extends PropertyInterface> LP addSAProp(AbstractGroup group, String caption, LP<P> lp, ValueClass... classes) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new ShiftActionProperty<P>(genSID(),caption,lp.property,reverseBarcode,classes)));
+    protected <P extends PropertyInterface> LP addSCProp(AbstractGroup group, String caption, LP<P> lp) {
+        return addProperty(group, new LP<ShiftChangeProperty.Interface<P>>(new ShiftChangeProperty<P,PropertyInterface>(genSID(),caption,lp.property,new PropertyMapImplement<PropertyInterface,P>(reverseBarcode.property))));
     }
 
     protected LP addCProp(ConcreteValueClass valueClass, Object value, ValueClass... params) {
@@ -994,7 +954,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addAFProp(boolean... nots) {
         return addAFProp(genSID(),nots);
-    }    
+    }
     protected LP addAFProp(String sID, boolean... nots) {
         return addProperty(null,new LP<AndFormulaProperty.Interface>(new AndFormulaProperty(sID,nots)));
     }
@@ -1105,7 +1065,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 result.add(impl);
             }
         return result;
-    }                               
+    }
 
     static Object[] writeLI(List<LI> linearImpl) {
         Object[][] objectLI = new Object[linearImpl.size()][];
@@ -1118,7 +1078,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for(Object[] li : objectLI)
             for(Object param : li)
                 result[i++] = param;
-        return result; 
+        return result;
     }
 
     static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> mapLI(List<LI> linearImpl, List<T> interfaces) {
@@ -1252,7 +1212,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         OrderedMap<PropertyInterfaceImplement<R>,Boolean> orders = new OrderedMap<PropertyInterfaceImplement<R>, Boolean>(mapLI(li.subList(ungroup.listInterfaces.size(),li.size()),restriction.listInterfaces), ascending);
         return mapLProp(group, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<PropertyInterfaceImplement<R>, L>(ungroup.property,groupImplement), orders, restriction.property),restriction);
     }
-    
+
 /*
     // свойство обратное группируещему - для этого задается ограничивающее свойство, результирующее св-во с группировочными, порядковое св-во
     protected LF addUGProp(AbstractGroup group, String caption, LF maxGroupProp, LF unGroupProp, Object... params) {
@@ -1300,7 +1260,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LF remainPrev = addSGProp(groupPropPrev, remainParams);
 
         // создадим группировочное св-во с маппом на общий интерфейс, нужно поубирать "дырки"
-        
+
 
         // возвращаем MIN(unGroup-MU(prevGroup,0(maxGroup)),maxGroup) и не unGroup<=prevGroup
         LF zeroQuantity = addJProp(and1, BaseUtils.add(new Object[]{vzero},directLI(maxGroupProp)));
@@ -1621,7 +1581,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
                 if(changes) {
                     synchronizeDB();
-                    
+
                     fillData();
                 }
             }
@@ -1849,7 +1809,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int implementCount = randomizer.nextInt(8);
         for(int i=0;i<implementCount;i++) {
             int objCount = randomizer.nextInt(3)+1;
-            CustomClass[] randomClasses = new CustomClass[objCount]; 
+            CustomClass[] randomClasses = new CustomClass[objCount];
             for(int ioc=0;ioc<objCount;ioc++)
                 randomClasses[ioc] = classes.get(randomizer.nextInt(classes.size()));
             tableFactory.include(randomClasses);

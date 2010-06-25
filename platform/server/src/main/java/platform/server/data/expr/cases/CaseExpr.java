@@ -71,6 +71,8 @@ public class CaseExpr extends Expr {
     }
 
     public Type getType(KeyType keyType) {
+        if(cases.isEmpty())
+            keyType = keyType;
         assert !cases.isEmpty();
         return cases.iterator().next().data.getType(keyType);
     }

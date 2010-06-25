@@ -15,7 +15,7 @@ public class ExclusiveUnionProperty extends OverrideUnionProperty {
     }
 
     @Override
-    public MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(PropertyMapImplement<?, Interface> operand : BaseUtils.reverse(operands))
             result = result.add(operand.mapDataChanges(change, changedWhere, modifier));

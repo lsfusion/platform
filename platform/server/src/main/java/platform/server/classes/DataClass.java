@@ -171,4 +171,8 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
     public int getBinaryLength(boolean charBinary) {
         return 8;
     }
+
+    public DataClass getBaseClass() {
+        return this;
+    }
 }

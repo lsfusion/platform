@@ -54,7 +54,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     public final boolean implementChange;
     
     @Override
-    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             U result = modifier.newChanges();
             for(Property<?> property : getDepends())
@@ -79,7 +79,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             return implement.property.getUsedDataChanges(modifier).add(modifier.getUsedChanges(implementProps));
         }
 
-        return super.getUsedDataChanges(modifier);
+        return super.calculateUsedDataChanges(modifier);
     }
 
     private static MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier, PropertyInterfaceImplement<Interface> changeImp, PropertyInterfaceImplement<Interface> valueImp) {
@@ -90,7 +90,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     }
 
     @Override
-    public MapDataChanges<Interface> getDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
             assert implement.mapping.size()==2;
             Iterator<PropertyInterfaceImplement<Interface>> i = implement.mapping.values().iterator();
@@ -126,7 +126,7 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             return implement.property.getJoinDataChanges(getJoinImplements(change.mapKeys, modifier, null), change.expr, change.where, modifier, changedWhere).map(mapInterfaces);
         }
 
-        return super.getDataChanges(change, changedWhere, modifier);
+        return super.calculateDataChanges(change, changedWhere, modifier);
     }
 
     @Override

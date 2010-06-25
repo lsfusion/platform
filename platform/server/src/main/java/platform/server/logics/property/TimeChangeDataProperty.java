@@ -2,12 +2,13 @@ package platform.server.logics.property;
 
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
+import platform.server.logics.SessionDataProperty;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TimeChangeDataProperty<T extends PropertyInterface> extends StoredDataProperty {
+public class TimeChangeDataProperty<T extends PropertyInterface> extends SessionDataProperty {
 
     public final Map<ClassPropertyInterface, T> mapInterfaces = new HashMap<ClassPropertyInterface, T>();
 

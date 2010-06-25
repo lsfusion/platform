@@ -593,11 +593,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
-        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2", addCUProp(addSAProp(articleInnerQuantity, orderInner, article), // отдельно inner и outerCommit чтобы timechanges работали пока временно
-                addSAProp(addIfElseUProp(outerCommitedQuantity, outerOrderQuantity, is(commitInc), 1), orderDelivery, article),
+        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2", addCUProp(addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
                 addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),addJProp(equals2, orderContragent, 1, 2),
                 xorActionArticle, articleFormatToSell, NDS, documentRevalued, addJProp(and1, changeUser, 2, is(baseClass), 1)), 1, barcodeToObject, 2);
-        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3", addSAProp(returnInnerQuantity, returnInner, article, orderSale), 1, barcodeToObject, 3, 2);
+        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3", addSCProp(returnInnerQuantity), 1, barcodeToObject, 3, 2);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -1273,7 +1272,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyView(changeQuantityOrder, objDoc, objArt);
             addPropertyView(barcode, objArt);
             addPropertyView(name, objArt);
-            addPropertyView(articleInnerQuantity, objDoc, objArt); // для timeChanges иначе можно было бы articleQuantity
+            addPropertyView(articleQuantity, objDoc, objArt); // для timeChanges иначе можно было бы articleQuantity
             addPropertyView(documentFreeQuantity, objDoc, objArt);
             addPropertyView(orderSalePrice, objDoc, objArt);
             addPropertyView(orderArticleSaleDiscount, objDoc, objArt);

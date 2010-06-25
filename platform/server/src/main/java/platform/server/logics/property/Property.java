@@ -9,10 +9,7 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.PullExpr;
-import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.where.CompareWhere;
@@ -25,6 +22,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.SessionDataProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
@@ -160,6 +158,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getExpr(joinImplement, defaultModifier,null);
     }
 
+    public Expr getClassExpr(Map<T, ? extends Expr> joinImplement) {
+        return getExpr(joinImplement, SessionDataProperty.modifier, null);
+    }
+
     public <U extends Changes<U>> Expr getExpr(Map<T, ? extends Expr> joinImplement, Modifier<U> modifier, WhereBuilder changedWhere) {
 
         assert joinImplement.size()==interfaces.size();
@@ -185,11 +187,17 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return calculateExpr(joinImplement, defaultModifier, null);
     }
 
+    // нужен только для SessionDataProperty и неинициализированных 
+    public Expr calculateClassExpr(Map<T, ? extends Expr> joinImplement) {
+        return calculateExpr(joinImplement, SessionDataProperty.modifier, null);
+    }
+
     protected abstract Expr calculateExpr(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
 
     @GenericLazy
     public ClassWhere<T> getClassWhere() {
-        return getQuery("value").getClassWhere(new ArrayList<String>());
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        return new Query<T, String>(mapKeys, getClassExpr(mapKeys), "value").getClassWhere(new ArrayList<String>());
     }
 
     // получает базовый класс по сути нужен для определения класса фильтра
@@ -197,7 +205,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         Map<T,Expr> mapExprs = new HashMap<T, Expr>();
         for(Map.Entry<T,DataObject> keyField : mapValues.entrySet())
             mapExprs.put(keyField.getKey(), new ValueExpr(keyField.getValue().object,mapClasses.get(keyField.getKey())));
-        return (CustomClass) new Query<String,String>(new HashMap<String,KeyExpr>(),getExpr(mapExprs),"value").
+        return (CustomClass) new Query<String,String>(new HashMap<String,KeyExpr>(),getClassExpr(mapExprs),"value").
             getClassWhere(Collections.singleton("value")).getSingleWhere("value").getOr().getCommonClass();
     }
 
@@ -205,7 +213,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     @GenericLazy
     public Type getInterfaceType(T propertyInterface) {
-        return getQuery("value").getKeyType(propertyInterface);
+        Map<T, KeyExpr> mapKeys = getMapKeys();
+        return mapKeys.get(propertyInterface).getType(getClassExpr(mapKeys).getWhere());
     }
 
     // возвращает от чего "зависят" изменения - с callback'ов
@@ -220,19 +229,13 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return getUsedChanges(modifier).hasChanges();
     }
 
-    @GenericLazy
-    <JV> Query<T,JV> getQuery(JV value) {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
-        return new Query<T,JV>(mapKeys, getExpr(mapKeys),value);
-    }
-
     public boolean isObject() {
         return true;
     }
 
     public PropertyField field;
 
-    protected abstract Map<T, ValueClass> getMapClasses();
+    public abstract Map<T, ValueClass> getMapClasses();
     protected abstract ClassWhere<Field> getClassWhere(PropertyField storedField);
 
     public boolean cached = false;
@@ -256,8 +259,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public boolean isFalse = false;
     public boolean checkChange = true;
 
+    public Map<T,T> getIdentityInterfaces() {
+        return BaseUtils.toMap(new HashSet<T>(interfaces));
+    }
     public PropertyMapImplement<?,T> getChangeImplement() {
-        return new PropertyMapImplement<T,T>(this, BaseUtils.toMap(new HashSet<T>(interfaces)));
+        return new PropertyMapImplement<T,T>(this, getIdentityInterfaces());
     }
 
     public Object read(SQLSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
@@ -291,10 +297,30 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
-        return modifier.newChanges();
+        U result = calculateUsedDataChanges(modifier);
+        for(TimeChangeDataProperty<T> timeProperty : timeChanges.values())
+            result = result.add(timeProperty.getUsedDataChanges(modifier));
+        return result;
     }
     
     public MapDataChanges<T> getDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+        WhereBuilder calculateChangedWhere = timeChanges.isEmpty()?changedWhere:new WhereBuilder();
+        MapDataChanges<T> dataChanges = calculateDataChanges(change, calculateChangedWhere, modifier);
+        for(Map.Entry<Time,TimeChangeDataProperty<T>> timeChange : timeChanges.entrySet()) // обновляем свойства времени изменения
+            dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
+                    BaseUtils.join(timeChange.getValue().mapInterfaces,change.mapKeys),
+                    new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()), null, modifier).map(timeChange.getValue().mapInterfaces));
+        if(changedWhere!=null && !timeChanges.isEmpty())
+            changedWhere.add(calculateChangedWhere.toWhere());
+        return dataChanges;
+    }
+
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
+        return modifier.newChanges();
+    }
+
+    // для оболочки чтобы всем getDataChanges можно было бы timeChanges вставить
+    protected MapDataChanges<T> calculateDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         return new MapDataChanges<T>();
     }
 
@@ -334,7 +360,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public PropertyMapImplement<T,T> getImplement() {
-        return new PropertyMapImplement<T,T>(this, BaseUtils.toMap(new HashSet<T>(interfaces)));
+        return new PropertyMapImplement<T,T>(this, getIdentityInterfaces());
     }
 
     public void setConstraint(boolean checkChange) {

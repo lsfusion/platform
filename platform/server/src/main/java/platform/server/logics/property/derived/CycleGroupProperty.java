@@ -42,12 +42,12 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
     }
 
     @Override
-    public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
         return MaxChangeProperty.getUsedChanges(this,toChange,modifier);
     }
 
     @Override
-    public MapDataChanges<Interface<T>> getDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface<T>> calculateDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
 
         Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
         Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
