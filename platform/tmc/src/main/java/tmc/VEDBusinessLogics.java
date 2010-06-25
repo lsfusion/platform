@@ -9,21 +9,14 @@ import java.awt.event.KeyEvent;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.*;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.view.form.client.DefaultFormView;
-import platform.server.view.form.client.RemoteFormView;
-import platform.server.view.form.FormRow;
 import platform.server.view.form.*;
-import platform.server.view.form.filter.NotNullFilter;
 import platform.server.auth.User;
 import platform.interop.Compare;
 import platform.interop.ClassViewType;
@@ -34,13 +27,15 @@ import platform.base.BaseUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
 
 import tmc.integration.imp.CustomerCheckRetailImportActionProperty;
+import tmc.integration.exp.CashRegController;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
+
+    CashRegController cashRegController = new CashRegController(this);
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -617,7 +612,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         orderUserName = addJProp("Исп-ль заказа", name, orderUser, 1);
 
         checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, checkRetail);
-        addCashRegisterProperties();
+
+        cashRegController = new CashRegController(this); // бред конечно создавать его здесь, но влом создавать getCashRegController()
+        cashRegController.addCashRegProperties();
 
         LP importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(this, genSID()));
 
@@ -711,8 +708,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     AbstractGroup documentMoveGroup;
     AbstractGroup documentPriceGroup, documentAggrPriceGroup;
     AbstractGroup documentLogisticsGroup;
-    AbstractGroup cashRegGroup;
-    AbstractGroup cashRegOperGroup, cashRegAdminGroup;
+    public AbstractGroup cashRegGroup;
+    public AbstractGroup cashRegOperGroup, cashRegAdminGroup;
     AbstractGroup couponGroup;
 
     protected void initGroups() {
@@ -846,7 +843,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         saleCheckCertBrowse = addNavigatorForm(new SaleCheckCertNavigatorForm(saleCheckCert, 1335, false));
                     NavigatorForm returnSaleCheckRetailArticle = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(saleRetailCashRegister, true, 1345));
                         returnSaleCheckRetailBrowse = addNavigatorForm(new ReturnSaleCheckRetailNavigatorForm(returnSaleCheckRetailArticle, false, 1355));
-                    addNavigatorForm(new CashRegisterManagementNavigatorForm(saleRetailCashRegister, 1365));
+                    addNavigatorForm(cashRegController.createCashRegManagementNavigatorForm(saleRetailCashRegister, 1365));
                 NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetail, 1400, "Безналичный расчет");
                     NavigatorForm saleRetailInvoiceForm = addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoice, 1410, true));
                         addNavigatorForm(new OrderSaleInvoiceRetailNavigatorForm(saleRetailInvoiceForm, 1420, false));
@@ -893,11 +890,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         documentShopPrice.addRelevant(pricers);
     }
 
-    private static Font FONT_SMALL_BOLD = new Font("Tahoma", Font.BOLD, 12);
-    private static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
-    private static Font FONT_MEDIUM_BOLD = new Font("Tahoma", Font.BOLD, 14);
-    private static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 24);
-    private static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 32);
+    public static Font FONT_SMALL_BOLD = new Font("Tahoma", Font.BOLD, 12);
+    public static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
+    public static Font FONT_MEDIUM_BOLD = new Font("Tahoma", Font.BOLD, 14);
+    public static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 24);
+    public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 32);
 
     private class GlobalNavigatorForm extends NavigatorForm {
         protected GlobalNavigatorForm(NavigatorElement parent, int ID) {
@@ -1301,9 +1298,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private static String CASHREGISTER_CHARSETNAME = "Cp866";
-    private static int CASHREGISTER_DELAY = 2000;
-
     public class CommitSaleCheckRetailNavigatorForm extends SaleRetailNavigatorForm {
 
         private ObjectNavigator objObligation;
@@ -1371,213 +1365,28 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
-            if (toAdd)
-                return getCashRegApplyActions(createBillTxt(remoteForm));
-            else
-                return super.getApplyActions(remoteForm);
-        }
+            if (toAdd) {
 
-        private String createBillTxt(RemoteForm remoteForm) {
+                ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+                ObjectImplement art = remoteForm.mapper.mapObject(objArt);
 
-            ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
-            ObjectImplement art = remoteForm.mapper.mapObject(objArt);
-
-            return VEDBusinessLogics.this.createBillTxt(remoteForm, 1,
+                return cashRegController.getCashRegApplyActions(remoteForm, 1,
                     BaseUtils.toSetElements(doc.groupTo, art.groupTo), BaseUtils.toSetElements(art.groupTo),
-                    getPropertyView(orderSalePrice, objArt), getPropertyView(articleInnerQuantity, objArt),
+                    getPropertyView(orderSalePrice, objArt), getPropertyView(articleQuantity, objArt),
                     getPropertyView(name, objArt), getPropertyView(orderArticleSaleSumWithDiscount, objArt),
                     getPropertyView(orderSalePayNoObligation, objDoc),
                     getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
+            } else
+                return super.getApplyActions(remoteForm);
         }
 
         @Override
         public String checkApplyActions(int actionID, ClientActionResult result) {
 
-            String check = checkCashRegApplyActions(actionID, result);
+            String check = cashRegController.checkCashRegApplyActions(actionID, result);
             if (check != null) return check;
 
-            return super.checkApplyActions(actionID, result);    //To change body of overridden methods use File | Settings | File Templates.
-        }
-    }
-
-    private List<ClientAction> getCashRegApplyActions(String billTxt) {
-
-        List<ClientAction> actions = new ArrayList<ClientAction>();
-        actions.add(new ExportFileClientAction("c:\\bill\\bill.txt", false, billTxt, CASHREGISTER_CHARSETNAME));
-        actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, "/T", CASHREGISTER_CHARSETNAME));
-        actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-        actions.add(new ImportFileClientAction(1, "c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, true));
-        return actions;
-    }
-
-    private String createBillTxt(RemoteForm remoteForm, int payType,
-                                 Set<GroupObjectImplement> propertyGroups, Set<GroupObjectImplement> classGroups,
-                                 PropertyViewNavigator<?> priceProp, PropertyViewNavigator<?> quantityProp,
-                                 PropertyViewNavigator<?> nameProp, PropertyViewNavigator<?> sumProp,
-                                 PropertyViewNavigator<?> toPayProp,
-                                 PropertyViewNavigator<?> sumCardProp, PropertyViewNavigator<?> sumCashProp) {
-
-        String result = payType + ",0000\n";
-
-        FormData data;
-
-        PropertyView quantityView = remoteForm.mapper.mapPropertyView((PropertyViewNavigator<?>)quantityProp);
-        quantityView.toDraw.addTempFilter(new NotNullFilter(quantityView.view));
-
-        try {
-            data = remoteForm.getFormData(propertyGroups, classGroups);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            quantityView.toDraw.clearTempFilters();
-        }
-
-        Double sumDoc = 0.0;
-
-        for (FormRow row : data.rows) {
-
-            Object quantityObject = row.values.get(remoteForm.mapper.mapPropertyView(quantityProp));
-
-            if (quantityObject != null) {
-
-                Double quantity = (quantityObject instanceof Double) ? (Double)quantityObject : 1.0;
-                Double price = (Double)row.values.get(remoteForm.mapper.mapPropertyView(priceProp));
-                String artName = ((String)row.values.get(remoteForm.mapper.mapPropertyView(nameProp))).trim();
-                Double sumPos = (Double) row.values.get(remoteForm.mapper.mapPropertyView(sumProp));
-
-                result += price / 100;
-                result += ",0";
-                result += "," + quantity;
-                result += "," + artName;
-                result += "," + sumPos / 100;
-                result += "\n";
-
-                sumDoc += price*quantity;
-            }
-        }
-
-        Double toPay = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(toPayProp));
-        if (toPay == null) toPay = 0.0;
-        Double sumDisc = sumDoc - toPay;
-        if (sumDisc > 0) {
-            result += "#," + sumDisc / 100 + "\n";
-        }
-
-        if (sumCardProp != null) {
-            Double sumCard = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCardProp));
-            if (sumCard != null && sumCard > 0) {
-                result += "~1," + sumCard / 100 + "\n";
-            }
-        }
-
-        Double sumCash;
-        if (sumCashProp != null) {
-            sumCash = (Double)data.rows.get(0).values.get(remoteForm.mapper.mapPropertyView(sumCashProp));
-            if (sumCash == null) sumCash = toPay;
-        } else
-            sumCash = toPay;
-
-        result += sumCash / 100 + "\n";
-
-        return result;
-    }
-
-    private String checkCashRegApplyActions(int actionID, ClientActionResult result) {
-
-        if (actionID == 1) {
-
-            ImportFileClientActionResult impFileResult = ((ImportFileClientActionResult)result);
-
-            if (impFileResult.fileExists) {
-                return (impFileResult.fileContent.isEmpty()) ? "Произошла ошибка нижнего уровня ФР" : ("Ошибка при записи на фискальный регистратор :" + impFileResult.fileContent);
-            }
-        }
-
-        return null;
-    }
-
-    private void addCashRegisterProperties() {
-
-        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Аннулировать чек", "/A"));
-        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Продолжить печать", "/R"));
-        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос наличных в денежном ящике", "/C", "cash.txt", 100));
-        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Открыть денежный ящик", "/O"));
-        addProp(cashRegOperGroup, new SimpleCashRegisterActionProperty("Запрос номера последнего чека", "/N", "bill_no.txt"));
-        addProp(cashRegAdminGroup, new IntegerCashRegisterActionProperty("Внесение денег", "/P"));
-        addProp(cashRegAdminGroup, new IntegerCashRegisterActionProperty("Изъятие денег", "/G"));
-        addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("X-отчет (сменный отчет без гашения)", "/X"));
-        addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Z-отчет (сменный отчет с гашением)", "/Z"));
-        addProp(cashRegAdminGroup, new SimpleCashRegisterActionProperty("Запрос серийного номера регистратора", "/S", "serial.txt"));
-    }
-
-    private class SimpleCashRegisterActionProperty extends ActionProperty {
-
-        String command, outputFile;
-        int multiplier;
-
-        private SimpleCashRegisterActionProperty(String caption, String command) {
-            this(caption, command, null);
-        }
-
-        private SimpleCashRegisterActionProperty(String caption, String command, String outputFile) {
-            this(caption, command, outputFile, 0);
-        }
-
-        private SimpleCashRegisterActionProperty(String caption, String command, String outputFile, int multiplier) {
-            super(genSID(), caption, new ValueClass[] {});
-            this.command = command;
-            this.outputFile = outputFile;
-            this.multiplier = multiplier;
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-
-            actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command, CASHREGISTER_CHARSETNAME));
-            actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-            actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
-
-            if (outputFile != null) {
-                actions.add(new MessageFileClientAction("c:\\bill\\" + outputFile, CASHREGISTER_CHARSETNAME, true, true, caption, multiplier));
-            }
-        }
-    }
-
-    private class IntegerCashRegisterActionProperty extends ActionProperty {
-
-        String command;
-
-        private IntegerCashRegisterActionProperty(String caption, String command) {
-            super(genSID(), caption, new ValueClass[] {});
-            this.command = command;
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
-            if (value.getValue() != null && value.getValue() instanceof Double) {
-                actions.add(new ExportFileClientAction("c:\\bill\\key.txt", false, command + ":" + (Double)value.getValue()/100, CASHREGISTER_CHARSETNAME));
-                actions.add(new SleepClientAction(CASHREGISTER_DELAY));
-                actions.add(new MessageFileClientAction("c:\\bill\\error.txt", CASHREGISTER_CHARSETNAME, false, true, caption));
-            }
-        }
-
-        @Override
-        protected ValueClass getValueClass() {
-            return DoubleClass.instance;
-        }
-    }
-
-    private class CashRegisterManagementNavigatorForm extends NavigatorForm {
-
-        private CashRegisterManagementNavigatorForm(NavigatorElement parent, int iID) {
-            super(parent, iID, "Операции с ФР");
-            addPropertyView(properties, cashRegGroup, true);
-        }
-
-        @Override
-        public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
-            design.setFont(FONT_HUGE_BOLD, true);
-            design.setPanelLabelAbove(baseGroup, true);
-            return design;
+            return super.checkApplyActions(actionID, result);
         }
     }
 
@@ -1780,29 +1589,29 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
-            if (toAdd)
-                return getCashRegApplyActions(createBillTxt(remoteForm));
-            else
+            if (toAdd) {
+
+                ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+                ObjectImplement inner = remoteForm.mapper.mapObject(objInner);
+                ObjectImplement art = remoteForm.mapper.mapObject(objArt);
+
+                return cashRegController.getCashRegApplyActions(remoteForm, 2,
+                        BaseUtils.toSetElements(doc.groupTo, inner.groupTo, art.groupTo), BaseUtils.toSetElements(inner.groupTo, art.groupTo),
+                        getPropertyView(orderSalePrice, objArt), getPropertyView(returnInnerQuantity, objArt),
+                        getPropertyView(name, objArt), getPropertyView(returnArticleSalePay, objArt),
+                        getPropertyView(returnSalePay, objDoc),
+                        null, null);
+            } else
                 return super.getApplyActions(remoteForm);
         }
 
         @Override
         public String checkApplyActions(int actionID, ClientActionResult result) {
-            return checkCashRegApplyActions(actionID, result);
-        }
 
-        private String createBillTxt(RemoteForm remoteForm) {
+            String check = cashRegController.checkCashRegApplyActions(actionID, result);
+            if (check != null) return check;
 
-            ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
-            ObjectImplement inner = remoteForm.mapper.mapObject(objInner);
-            ObjectImplement art = remoteForm.mapper.mapObject(objArt);
-
-            return VEDBusinessLogics.this.createBillTxt(remoteForm, 2,
-                    BaseUtils.toSetElements(doc.groupTo, inner.groupTo, art.groupTo), BaseUtils.toSetElements(inner.groupTo, art.groupTo),
-                    getPropertyView(orderSalePrice, objArt), getPropertyView(returnInnerQuantity, objArt),
-                    getPropertyView(name, objArt), getPropertyView(returnArticleSalePay, objArt),
-                    getPropertyView(returnSalePay, objDoc),
-                    null, null);
+            return super.checkApplyActions(actionID, result);
         }
     }
 
@@ -2034,28 +1843,29 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
-            if (toAdd)
-                return getCashRegApplyActions(createBillTxt(remoteForm));
-            else
+            if (toAdd) {
+
+                ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
+                ObjectImplement obligation = remoteForm.mapper.mapObject(objObligation);
+
+                return cashRegController.getCashRegApplyActions(remoteForm, 1,
+                        BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(obligation.groupTo),
+                        getPropertyView(obligationSum, objObligation), getPropertyView(issueObligation, objObligation),
+                        getPropertyView(name, objObligation), getPropertyView(obligationSum, objObligation),
+                        getPropertyView(orderSalePay, objDoc),
+                        getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
+
+            } else
                 return super.getApplyActions(remoteForm);
         }
 
         @Override
         public String checkApplyActions(int actionID, ClientActionResult result) {
-            return checkCashRegApplyActions(actionID, result);
-        }
 
-        private String createBillTxt(RemoteForm remoteForm) {
+            String check = cashRegController.checkCashRegApplyActions(actionID, result);
+            if (check != null) return check;
 
-            ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
-            ObjectImplement obligation = remoteForm.mapper.mapObject(objObligation);
-
-            return VEDBusinessLogics.this.createBillTxt(remoteForm, 1,
-                    BaseUtils.toSetElements(doc.groupTo, obligation.groupTo), BaseUtils.toSetElements(obligation.groupTo),
-                    getPropertyView(obligationSum, objObligation), getPropertyView(issueObligation, objObligation),
-                    getPropertyView(name, objObligation), getPropertyView(obligationSum, objObligation),
-                    getPropertyView(orderSalePay, objDoc),
-                    getPropertyView(orderSalePayCard, objDoc), getPropertyView(orderSalePayCash, objDoc));
+            return super.checkApplyActions(actionID, result);
         }
     }
 

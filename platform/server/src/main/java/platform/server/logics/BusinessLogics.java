@@ -513,7 +513,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public AuthPolicy authPolicy = new AuthPolicy();
     protected abstract void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException;
 
-    protected String genSID() {
+    public String genSID() {
         return "property" + properties.size();
     }
 
@@ -963,7 +963,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProp(null, prop);
     }
 
-    protected LP addProp(AbstractGroup group, Property<? extends PropertyInterface> prop) {
+    public LP addProp(AbstractGroup group, Property<? extends PropertyInterface> prop) {
         return addProperty(group, new LP(prop));
     }
 
