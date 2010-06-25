@@ -678,7 +678,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP documentLogisticsSupplied, documentLogisticsRequired, documentLogisticsRecommended;
     LP currentNDSDate, currentNDSDoc, currentNDS, NDS;
-    LP articleQuantity, prevPrice, revalBalance;
+    public LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
     LP orderSaleDiscountSum, orderSalePay, orderSaleDiff;
     public LP returnArticleSalePay;

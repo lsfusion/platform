@@ -118,7 +118,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
         map.put(barField, remoteForm.getPropertyView(BL.barcode));
         map.put(nameField, remoteForm.getPropertyView(BL.name));
         map.put(cenField, remoteForm.getPropertyView(BL.orderSalePrice));
-        map.put(kolField, remoteForm.getPropertyView(BL.articleInnerQuantity));
+        map.put(kolField, remoteForm.getPropertyView(BL.articleQuantity));
         map.put(dateField, remoteForm.getPropertyView(BL.date));
         map.put(summField, remoteForm.getPropertyView(BL.orderArticleSaleSumCoeff));
         map.put(percentField, remoteForm.getPropertyView(BL.orderArticleSaleDiscount));

@@ -10,11 +10,14 @@
       <excludes>
           <exclude>commons-beanutils:commons-beanutils</exclude>
           <exclude>com.intellij:forms_rt</exclude>
+          <exclude>org.bouncycastle:bcmail-jdk14</exclude>
+          <exclude>org.bouncycastle:bcprov-jdk14</exclude>
       </excludes>
       <unpack>true</unpack>
       <unpackOptions>
           <excludes>
               <exclude>META-INF/*.*</exclude>
+              <exclude>license/**</exclude> <!-- какие то идиоты включили каталог license в jarку -->
           </excludes>
       </unpackOptions>
     </dependencySet>
