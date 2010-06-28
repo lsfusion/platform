@@ -78,4 +78,8 @@ public class UnknownClass implements ConcreteObjectClass {
     public BaseClass getBaseClass() {
         return baseClass;
     }
+
+    public AndClassSet getKeepClass() {
+        return this;
+    }
 }

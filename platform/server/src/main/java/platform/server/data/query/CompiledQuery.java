@@ -714,7 +714,7 @@ public class CompiledQuery<K,V> {
 
         OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
 
-        if(outSelect)
+//        if(outSelect)
             System.out.println(select);
 
         PreparedStatement statement = session.getStatement(select,getQueryParams());

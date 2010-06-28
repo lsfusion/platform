@@ -113,4 +113,8 @@ public class ObjectType implements Type<Integer> {
     public int getBinaryLength(boolean charBinary) {
         return 8;
     }
+
+    public boolean isSafeType(Object value) {
+        return true;
+    }
 }

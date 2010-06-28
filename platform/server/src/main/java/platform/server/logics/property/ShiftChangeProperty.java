@@ -13,6 +13,7 @@ import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
 import platform.server.classes.ValueClass;
 import platform.server.classes.IntegralClass;
+import platform.server.classes.LogicalClass;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 
@@ -71,7 +72,8 @@ public class ShiftChangeProperty<P extends PropertyInterface, R extends Property
         Where classWhere = Where.TRUE;
         for(Map.Entry<Interface<P>, ValueClass> interfaceClass : BaseUtils.crossJoin(getMapInterfaces(), property.getMapClasses()).entrySet())
             classWhere = classWhere.and(modifier.getSession().getIsClassWhere(joinImplement.get(interfaceClass.getKey()), interfaceClass.getValue(), changedWhere));
-        return ((IntegralClass) property.getType()).getActionExpr().and(classWhere);
+        return new ValueExpr(true, LogicalClass.instance).and(classWhere);
+//        return ((IntegralClass) property.getType()).getActionExpr().and(classWhere);
 
 /*          слишком сложное выполнение
         Map<P, KeyExpr> mapKeys = property.getMapKeys();

@@ -330,18 +330,9 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
     public void addBarcode(CustomClass customClass, PropertyObjectNavigator property) {
     }
 
-    public List<ObjectNavigator> autoActionObjects = new ArrayList<ObjectNavigator>();
-    public List<PropertyObjectNavigator> autoActions = new ArrayList<PropertyObjectNavigator>();
-    public void addAutoAction(ObjectNavigator object, LP action) {
-        addAutoAction(object, getPropertyImplement(action));
-    }
-
+    public Map<ObjectNavigator, PropertyObjectNavigator> autoActions = new HashMap<ObjectNavigator, PropertyObjectNavigator>();
     public void addAutoAction(ObjectNavigator object, PropertyObjectNavigator action) {
-
-//        assert action.property instanceof ActionProperty;
-
-        autoActionObjects.add(object);
-        autoActions.add(action);
+        autoActions.put(object, action);
     }
 
     public List<? extends ClientAction> getApplyActions(RemoteForm<?> form) {

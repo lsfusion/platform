@@ -31,11 +31,13 @@ public interface SQLSyntax {
 
     int updateModel();
 
-    abstract String getStringType(int length);
+    String getStringType(int length);
 
-    abstract String getNumericType(int length,int precision);
+    String getNumericType(int length,int precision);
 
-    abstract String getIntegerType();
+    String getIntegerType();
+
+    String getDateType();
 
     String getLongType();
 

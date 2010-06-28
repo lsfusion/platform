@@ -142,10 +142,18 @@ public class OrObjectClassSet implements OrClassSet, AndClassSet {
         return set1.getOr().or(set2.getOr());
     }
 
-    public ValueClass getBaseClass() {
-        if(up.isEmpty())
-            return set.getSingle().getBaseClass();
-        else
-            return up.getBaseClass();
+    public AndClassSet getKeepClass() {
+        if(up.isEmpty() && set.isEmpty()) {
+            if(unknown)
+                return new OrObjectClassSet();
+            else
+                return OrObjectClassSet.FALSE;
+        } else {
+            UpClassSet baseSet = (up.isEmpty() ? set.getSingle() : up).getBaseClass().getUpSet();
+            if(unknown)
+                return new OrObjectClassSet(baseSet,new ConcreteCustomClassSet(), true);
+            else
+                return baseSet; 
+        }
     }
 }

@@ -1,15 +1,10 @@
 package platform.server.classes;
 
-import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 public class SystemClass extends DataClass<Integer> {
 
@@ -29,14 +24,6 @@ public class SystemClass extends DataClass<Integer> {
 
     public Class getJavaClass() {
         return Integer.class;
-    }
-
-    public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        throw new RuntimeException("not supported yet");
-    }
-
-    public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        throw new RuntimeException("not supported yet");
     }
 
     public Object getDefaultValue() {

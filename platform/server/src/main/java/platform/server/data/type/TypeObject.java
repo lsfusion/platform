@@ -22,8 +22,17 @@ public class TypeObject {
         this(dataObject.object,dataObject.objectClass.getType());
     }
 
-    public boolean isString() {
+    public boolean isSafeString() {
         return type.isSafeString(object);
+    }
+
+    // нужно ли делать явный type (для дат важно)
+    public boolean isSafeType() {
+        return type.isSafeType(object);
+    }
+
+    public String getDBType(SQLSyntax syntax) {
+        return type.getDB(syntax);
     }
 
     public String getString(SQLSyntax syntax) {

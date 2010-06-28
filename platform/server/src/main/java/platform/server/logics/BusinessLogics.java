@@ -165,6 +165,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP object1, and1, andNot1;
     protected LP equals2,diff2;
     protected LP divideDouble;
+    protected LP string2;
 
     protected LP vtrue, vzero;
 
@@ -223,6 +224,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         object1 = addAFProp();
         and1 = addAFProp(false);
         andNot1 = addAFProp(true);
+        string2 = addSProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
         greater2 = addCFProp(Compare.GREATER);
         less2 = addCFProp(Compare.LESS);
@@ -250,7 +252,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
 
         name = addCUProp(baseGroup, "Имя", addDProp("name", "Имя", StringClass.get(50), namedObject),
-                addJProp(addSFProp("trim(prm1) || ' ' || rtrim(prm2)", StringClass.get(50), 2), userFirstName, 1, userLastName,1));
+                addJProp(string2, userFirstName, 1, userLastName,1));
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
@@ -288,7 +290,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected ValueClass getValueClass() {
+        protected DataClass getValueClass() {
             if (valueClass.hasChildren())
                 return ClassActionClass.getInstance(valueClass);
             else
@@ -321,7 +323,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected ValueClass getValueClass() {
+        protected DataClass getValueClass() {
             return LogicalClass.instance;
         }
 
@@ -948,6 +950,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(null,new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(),compare)));
     }
 
+    protected <P extends PropertyInterface> LP addSProp(int intNum) {
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(),"Объед.",intNum)));
+    }
+
     protected LP addMFProp(ConcreteValueClass value,int paramCount) {
         return addProperty(null,new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(),value,paramCount)));
     }
@@ -1459,6 +1465,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addUProp(group,sID,caption,Union.SUM, params);
     }
 
+    protected LP addNUProp(LP prop) {
+        return addNUProp(null, genSID(), "sys", prop);
+    }
+
+    protected LP addNUProp(AbstractGroup group, String sID, String caption, LP prop) {
+        int intNum = prop.listInterfaces.size();
+        Object[] params = new Object[2+intNum];
+        params[0] = -1; params[1] = prop;
+        for(int i=0;i<intNum;i++)
+            params[2+i] = i+1;
+        return addUProp(group, sID, caption, Union.SUM, params);
+    }
+
+
     // XOR
     protected LP addXorUProp(LP prop1, LP prop2) {
         return addXorUProp(null, genSID(), "sys", prop1, prop2);
@@ -1484,8 +1504,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
-        return addIfElseUProp(null, genSID(), "sys", prop1, prop2, ifProp, params);
+        return addIfElseUProp(null, "sys", prop1, prop2, ifProp, params);
     }
+    protected LP addIfElseUProp(AbstractGroup group, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
+        return addIfElseUProp(group, genSID(), caption, prop1, prop2, ifProp, params);
+    }    
     protected LP addIfElseUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
         return addXSUProp(group,sID,caption,addIfProp(prop1, false, ifProp, params), addIfProp(prop2, true, ifProp, params));
     }

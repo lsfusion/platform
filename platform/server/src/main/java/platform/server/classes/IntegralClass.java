@@ -1,39 +1,14 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
-import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
 
-import java.sql.SQLException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
-
-    public Object shift(Object object, boolean back) {
-        return shiftValue(read(object), back);
-    }
-
-    public abstract T shiftValue(T object, boolean back);
-
-    public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        return new DataObject(50,this);
-    }
-
-    public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        List<DataObject> result = new ArrayList<DataObject>();
-        for(int i=0;i<50;i++)
-            result.add(new DataObject(i,this));
-        return result;
-    }
-
 
     public int getMinimumWidth() { return 45; }
     public int getPreferredWidth() { return 80; }

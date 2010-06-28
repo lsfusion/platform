@@ -5,7 +5,6 @@ import platform.server.caches.Lazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.Case;
@@ -53,7 +52,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         Map<KeyExpr, AndClassSet> result = new HashMap<KeyExpr, AndClassSet>();
         Where fullWhere = getFullWhere();
         for(KeyExpr key : getKeys())
-            result.put(key,fullWhere.getKeyBaseClass(key).getUpSet());
+            result.put(key,fullWhere.getKeepClass(key));
         return result;
     }
 

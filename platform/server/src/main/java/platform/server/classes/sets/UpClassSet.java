@@ -25,6 +25,10 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return wheres[0].getBaseClass();
     }
 
+    public AndClassSet getKeepClass() {
+        return getBaseClass().getUpSet();
+    }
+
     public boolean has(CustomClass checkNode) {
         for(CustomClass node : wheres)
             if(checkNode.isChild(node)) return true;

@@ -25,8 +25,8 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return type;
     }
 
-    public ValueClass getBaseClass(KeyExpr keyExpr) {
-        return wheres[0].get(keyExpr).getBaseClass();
+    public AndClassSet getKeepClass(KeyExpr keyExpr) {
+        return wheres[0].get(keyExpr).getKeepClass();
     }
     
     public boolean checkType(KeyExpr keyExpr,Type type) {

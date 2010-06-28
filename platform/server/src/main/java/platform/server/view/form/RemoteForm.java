@@ -653,12 +653,12 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
         Map<OrderView, Expr> orderExprs = new HashMap<OrderView, Expr>();
         for(Map.Entry<OrderView,Boolean> toOrder : orders.entrySet())
-            orderExprs.put(toOrder.getKey(),toOrder.getKey().getExpr(group.getClassGroup(), mapKeys, this));
+            orderExprs.put(toOrder.getKey(),toOrder.getKey().getExpr(Collections.singleton(group), mapKeys, this));
 
         Set<KeyExpr> usedContext = null;
         if(readSize==1 && orderSeeks!=null && down) { // в частном случае если есть "висячие" ключи не в фильтре и нужна одна запись ставим равно вместо >
             usedContext = new HashSet<KeyExpr>();
-            group.getFilterWhere(mapKeys, group.getClassGroup(), this).enumKeys(usedContext); // именно после ff'са
+            group.getFilterWhere(mapKeys, Collections.singleton(group), this).enumKeys(usedContext); // именно после ff'са
             for(Expr expr : orderExprs.values())
                 if(!(expr instanceof KeyExpr))
                     expr.enumKeys(usedContext);
@@ -679,7 +679,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         } else
             orderWhere = Where.FALSE;
 
-        return new Query<ObjectImplement,OrderView>(mapKeys,orderExprs,group.getWhere(mapKeys, group.getClassGroup(), this).and(down?orderWhere:orderWhere.not())).executeClasses(session, down?orders:Query.reverseOrder(orders), readSize, BL.baseClass);
+        return new Query<ObjectImplement,OrderView>(mapKeys,orderExprs,group.getWhere(mapKeys, Collections.singleton(group), this).and(down?orderWhere:orderWhere.not())).executeClasses(session, down?orders:Query.reverseOrder(orders), readSize, BL.baseClass);
     }
 
     // считывает одну запись
@@ -950,8 +950,6 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
 
             for(PropertyView<?> drawProperty : properties) {
 
-                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
-
                 // прогоняем через кэши чтобы каждый раз не запускать isInInterface
                 boolean inGridInterface, inInterface;
 
@@ -978,6 +976,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                         assert inInterface==drawProperty.view.isInInterface(null);
                     }
 
+                if (drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.HIDE) continue;
+                
                 boolean read = refresh || dataUpdated(drawProperty.view,changedProps) ||
                         drawProperty.toDraw!=null && (drawProperty.toDraw.updated & GroupObjectImplement.UPDATED_KEYS)!=0;
                 if(inGridInterface && drawProperty.toDraw != null && drawProperty.toDraw.curClassView == ClassViewType.GRID) { // в grid'е
@@ -1021,7 +1021,7 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
                 selectProps.and(keyTable.joinAnd(BaseUtils.join(keyTable.mapKeys,selectProps.mapKeys)).getWhere());
 
                 for(PropertyView<?> drawProperty : groupList)
-                    selectProps.properties.put(drawProperty, drawProperty.view.getExpr(group.getClassGroup(), selectProps.mapKeys, this));
+                    selectProps.properties.put(drawProperty, drawProperty.view.getExpr(Collections.singleton(group), selectProps.mapKeys, this));
 
                 OrderedMap<Map<ObjectImplement, Object>, Map<PropertyView, Object>> resultProps = selectProps.execute(session);
 
@@ -1191,10 +1191,10 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     private List<ClientAction> executeAutoActions(ObjectImplement object, RemoteFormView form) throws SQLException {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for (int i = 0; i < navigatorForm.autoActions.size(); i++)
-            if (object.equals(mapper.mapObject(navigatorForm.autoActionObjects.get(i)))) {
+        for (Entry<ObjectNavigator, PropertyObjectNavigator> autoAction : navigatorForm.autoActions.entrySet())
+            if (object.equals(mapper.mapObject(autoAction.getKey()))) {
 
-                PropertyObjectImplement action = mapper.mapProperty(navigatorForm.autoActions.get(i));
+                PropertyObjectImplement action = mapper.mapProperty(autoAction.getValue());
                 if(action.isInInterface(null))
                     actions.addAll(changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form));
             }

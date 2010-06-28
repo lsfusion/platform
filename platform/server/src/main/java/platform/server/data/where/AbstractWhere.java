@@ -14,7 +14,7 @@ import platform.server.data.query.Query;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.data.type.Type;
-import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -191,7 +191,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return getClassWhere().getType(expr);
     }
 
-    public ValueClass getKeyBaseClass(KeyExpr expr) {
-        return getClassWhere().getBaseClass(expr);
+    public AndClassSet getKeepClass(KeyExpr expr) {
+        return getClassWhere().getKeepClass(expr);
     }
 }

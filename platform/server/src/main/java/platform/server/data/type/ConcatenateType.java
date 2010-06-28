@@ -39,6 +39,10 @@ public class ConcatenateType implements Type<byte[]> {
         return false;
     }
 
+    public boolean isSafeType(Object value) {
+        return true;
+    }
+    
     public String getString(Object value, SQLSyntax syntax) {
         return value.toString();
     }

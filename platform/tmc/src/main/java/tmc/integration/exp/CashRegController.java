@@ -13,6 +13,7 @@ import platform.server.view.navigator.NavigatorForm;
 import platform.server.view.navigator.NavigatorElement;
 import platform.server.classes.ValueClass;
 import platform.server.classes.DoubleClass;
+import platform.server.classes.DataClass;
 import platform.interop.action.*;
 
 import java.util.List;
@@ -202,7 +203,7 @@ public class CashRegController {
         }
 
         @Override
-        protected ValueClass getValueClass() {
+        protected DataClass getValueClass() {
             return DoubleClass.instance;
         }
     }

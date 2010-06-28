@@ -12,6 +12,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 
 import java.util.Collection;
 import java.util.Map;
@@ -71,5 +72,5 @@ public interface Where extends SourceJoin, TranslateContext<Where>, KeyType {
 
     public Where map(Map<KeyExpr,? extends Expr> map);
 
-    ValueClass getKeyBaseClass(KeyExpr expr);
+    AndClassSet getKeepClass(KeyExpr expr);
 }

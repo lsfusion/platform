@@ -76,4 +76,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         session.updateInsertRecord(classTable, Collections.singletonMap(classTable.key,value),
                 Collections.singletonMap(classTable.objectClass,(ObjectValue)new DataObject(ID, SystemClass.instance)));
     }
+
+    public AndClassSet getKeepClass() {
+        return getBaseClass().getUpSet();
+    }
 }

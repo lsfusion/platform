@@ -207,6 +207,10 @@ public class BaseUtils {
             return inStream.readBoolean();
         }
 
+        if (objectType == 6) {
+            return new java.sql.Date(inStream.readLong());
+        }
+
         throw new IOException();
     }
 
@@ -251,6 +255,12 @@ public class BaseUtils {
         if (object instanceof Boolean) {
             outStream.writeByte(5);
             outStream.writeBoolean((Boolean)object);
+            return;
+        }
+
+        if (object instanceof java.sql.Date) {
+            outStream.writeByte(6);
+            outStream.writeLong(((java.sql.Date)object).getTime());
             return;
         }
 

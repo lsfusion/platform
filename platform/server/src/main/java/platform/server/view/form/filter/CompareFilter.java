@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 
 public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P> {
 
@@ -105,7 +106,7 @@ public class CompareFilter<P extends PropertyInterface> extends PropertyFilter<P
             changeWhere = changeWhere.and(mapWhere);
         }
         session.execute(property.property, new PropertyChange<P>(mapKeys,
-                            value.getExpr(object.groupTo.getClassGroup(), BaseUtils.filterKeys(mapObjects, property.getObjectImplements()), modifier), changeWhere),
+                            value.getExpr(Collections.singleton(object.groupTo), BaseUtils.filterKeys(mapObjects, property.getObjectImplements()), modifier), changeWhere),
                             modifier, null, null);
     }
 }

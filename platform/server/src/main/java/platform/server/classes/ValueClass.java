@@ -24,14 +24,10 @@ public interface ValueClass extends RemoteClass {
 
     AndClassSet getUpSet();
 
-    // получает рандомный объект
-    DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException;
-
-    List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects);
-
     void serialize(DataOutputStream outStream) throws IOException;
 
     ObjectImplement newObject(int ID, String SID, String caption, CustomClassView classView, boolean addOnTransaction);
 
-    BaseExpr getActionExpr(); 
+    // получает выражение чисто для получения класса
+    BaseExpr getClassExpr();
 }

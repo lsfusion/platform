@@ -7,7 +7,6 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
-import platform.server.data.SQLSession;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.translator.MapTranslate;
@@ -18,7 +17,6 @@ import platform.server.data.query.*;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.view.form.CustomClassView;
 import platform.server.view.form.CustomObjectImplement;
@@ -29,7 +27,6 @@ import platform.server.view.navigator.NavigatorForm;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 
 public abstract class CustomClass extends AbstractNode implements ObjectClass, ValueClass {
@@ -228,17 +225,6 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
             child.commonClassSet3(common,free,up);
     }
 
-    public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        Query<String,Object> query = new Query<String,Object>(Collections.singletonMap("object",new KeyExpr("object")));
-        query.and(query.mapKeys.get("object").isClass(getUpSet()));
-        List<Map<String,DataObject>> result = new ArrayList<Map<String,DataObject>>(query.executeClasses(session,getBaseClass()).keySet());
-        return result.get(randomizer.nextInt(result.size())).get("object");
-    }
-
-    public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        return objects.get(this);
-    }
-
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(Data.OBJECT);
         outStream.writeBoolean(this instanceof ConcreteCustomClass);
@@ -363,7 +349,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         }
     }
 
-    public BaseExpr getActionExpr() {
+    public BaseExpr getClassExpr() {
         return new ActionExpr(this);
     }
 }

@@ -59,7 +59,7 @@ public class CustomObjectImplement extends ObjectImplement {
         return gridClass;
     }
 
-    ObjectValue value;
+    ObjectValue value = NullValue.instance;
 
     public void changeValue(ChangesSession session, ObjectValue changeValue) throws SQLException {
 

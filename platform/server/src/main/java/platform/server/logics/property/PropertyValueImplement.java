@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.interop.action.ClientAction;
 import platform.server.classes.CustomClass;
 import platform.server.data.SQLSession;
+import platform.server.data.where.Where;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
@@ -15,12 +16,10 @@ import platform.server.view.form.PropertyObjectInterface;
 import platform.server.view.form.GroupObjectImplement;
 import platform.server.view.form.ObjectImplement;
 import platform.server.view.form.client.RemoteFormView;
+import platform.base.BaseUtils;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 public class PropertyValueImplement<P extends PropertyInterface> extends PropertyImplement<DataObject,P> {
 
@@ -45,19 +44,16 @@ public class PropertyValueImplement<P extends PropertyInterface> extends Propert
         return property.getDialogClass(mapping, session.getCurrentClasses(mapping));
     }
 
-    private Map<ObjectImplement, KeyExpr> mapInterfaces(Map<P, KeyExpr> mapKeys, Map<P, PropertyObjectInterface> mapObjects) {
-        Map<ObjectImplement, KeyExpr> result = new HashMap<ObjectImplement, KeyExpr>();
-        for (Map.Entry<P, KeyExpr> entry : mapKeys.entrySet()) {
-            PropertyObjectInterface object = mapObjects.get(entry.getKey());
-            if (object instanceof ObjectImplement)
-                result.put((ObjectImplement) object, entry.getValue());
-        }
-        return result;
-    }
-
     public PropertyChange<P> getPropertyChange(Expr expr, Modifier<? extends Changes> modifier, Map<P, PropertyObjectInterface> mapObjects, GroupObjectImplement groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
-        return new PropertyChange<P>(mapKeys, expr, (groupObject == null ) ? CompareWhere.compareValues(mapKeys, mapping) : groupObject.getWhere(mapInterfaces(mapKeys, mapObjects), groupObject.getClassGroup(), modifier));
+        // все кто ObjectImplement и в переданном groupObject, KeyExpr'ы остальным mapping
+        Map<P,ObjectImplement> groupChange = new HashMap<P,ObjectImplement>();
+        if(groupObject!=null) {
+            for(Map.Entry<P,PropertyObjectInterface> mapObject : mapObjects.entrySet())
+                if(mapObject.getValue() instanceof ObjectImplement && ((ObjectImplement)mapObject.getValue()).groupTo==groupObject)
+                    groupChange.put(mapObject.getKey(),(ObjectImplement)mapObject.getValue());
+        }
+        return new PropertyChange<P>(mapKeys, expr, CompareWhere.compareValues(BaseUtils.filterNotKeys(mapKeys, groupChange.keySet()), mapping).and(groupObject==null? Where.TRUE:groupObject.getWhere(BaseUtils.crossJoin(groupChange, mapKeys), Collections.singleton(groupObject), modifier)));
     }
 
     public boolean canBeChanged(Modifier<? extends Changes> modifier) throws SQLException {

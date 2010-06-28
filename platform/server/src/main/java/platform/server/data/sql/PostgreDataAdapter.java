@@ -47,7 +47,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
-        return DriverManager.getConnection("jdbc:postgresql://"+ server +"/"+ dataBase +"?user=" + userID + "&password=" + password);
+        return DriverManager.getConnection("jdbc:postgresql://"+ server +"/"+ dataBase +"?user=" + userID + "&password=" + password );
     }
 
     public String getCommandEnd() {

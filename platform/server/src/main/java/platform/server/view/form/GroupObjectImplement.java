@@ -189,14 +189,6 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
         throw new RuntimeException("key not found");
     }
 
-    // получает Set группы
-    public Set<GroupObjectImplement> getClassGroup() {
-
-        Set<GroupObjectImplement> result = new HashSet<GroupObjectImplement>();
-        result.add(this);
-        return result;
-    }
-
     public Where getFilterWhere(Map<ObjectImplement, ? extends Expr> mapKeys, Set<GroupObjectImplement> classGroup, Modifier<? extends Changes> modifier) throws SQLException {
         Where where = Where.TRUE;
         for(Filter filt : filters)

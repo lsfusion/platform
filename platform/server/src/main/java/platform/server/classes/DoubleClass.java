@@ -43,19 +43,6 @@ public class DoubleClass extends IntegralClass<Double> {
         statement.setDouble(num, (Double)value);
     }
 
-    public Double shiftValue(Double object, boolean back) {
-        if(object!=null) {
-            if (back)
-                return object > 1.0 ? object - 1.0 : null;
-            else
-                return object + 1.0;
-        } else
-            if(!back)
-                return 1.0;
-            else
-                return null;
-    }
-
     public Object getDefaultValue() {
         return 0.0;
     }

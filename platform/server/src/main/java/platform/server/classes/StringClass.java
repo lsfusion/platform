@@ -1,9 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
-import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,17 +20,6 @@ public class StringClass extends DataClass<String> {
 
     public StringClass(int length) {
         this.length = length;
-    }
-
-    public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        return new DataObject("NAME "+ randomizer.nextInt(50),this);
-    }
-
-    public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        List<DataObject> result = new ArrayList<DataObject>();
-        for(int i=0;i<50;i++)
-            result.add(new DataObject("NAME "+i,this));
-        return result;
     }
 
     public int getMinimumWidth() { return 30; }

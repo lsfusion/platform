@@ -2,37 +2,21 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
-import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.Format;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
-public class DateClass extends DataClass<Integer> {
+public class DateClass extends DataClass<Date> {
 
     public final static DateClass instance = new DateClass();
 
     public String toString() {
         return "Дата";
-    }
-
-    public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        return new DataObject(randomizer.nextInt(30),this);
-    }
-
-    public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        List<DataObject> result = new ArrayList<DataObject>();
-        for(int i=0;i<30;i++)
-            result.add(new DataObject(i,this));
-        return result;
     }
 
     public int getPreferredWidth() { return 70; }
@@ -64,23 +48,33 @@ public class DateClass extends DataClass<Integer> {
     }
 
     public String getDB(SQLSyntax syntax) {
-        return syntax.getIntegerType();
+        return syntax.getDateType();
     }
 
-    public Integer read(Object value) {
+    public Date read(Object value) {
         if(value==null) return null;
-        return ((Number)value).intValue();
+        return (Date)value;
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        statement.setInt(num, (Integer)value);
+        statement.setDate(num, (Date)value);
+    }
+
+    @Override
+    public boolean isSafeType(Object value) {
+        return false;
+    }
+
+    @Override
+    public int getBinaryLength(boolean charBinary) {
+        return (charBinary?1:2) * 25;
     }
 
     public boolean isSafeString(Object value) {
-        return true;
+        return false;
     }
-
+    
     public String getString(Object value, SQLSyntax syntax) {
-        return value.toString();
+        throw new RuntimeException("not supported");
     }
 }

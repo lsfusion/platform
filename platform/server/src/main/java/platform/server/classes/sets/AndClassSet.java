@@ -6,7 +6,7 @@ import platform.server.classes.ValueClass;
 // по сути на Or
 public interface AndClassSet {
 
-    ValueClass getBaseClass();
+    AndClassSet getKeepClass();
 
     AndClassSet and(AndClassSet node);
 

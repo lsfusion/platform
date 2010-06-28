@@ -39,6 +39,10 @@ public abstract class DataAdapter implements SQLSyntax {
         return "integer";
     }
 
+    public String getDateType() {
+        return "date";
+    }
+
     public String getLongType() {
         return "long";
     }

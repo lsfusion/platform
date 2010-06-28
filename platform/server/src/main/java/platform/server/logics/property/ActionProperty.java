@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ActionClass;
 import platform.server.classes.ValueClass;
+import platform.server.classes.DataClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.DataObject;
@@ -39,7 +40,7 @@ public abstract class ActionProperty extends UserProperty {
         return getValueClass().getActionExpr().and(ClassProperty.getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 
-    protected ValueClass getValueClass() {
+    protected DataClass getValueClass() {
         return ActionClass.instance;
     }
 }

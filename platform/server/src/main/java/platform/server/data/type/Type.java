@@ -18,6 +18,7 @@ public interface Type<T> extends Reader<T> {
     String getDB(SQLSyntax syntax);
 
     boolean isSafeString(Object value);
+    boolean isSafeType(Object value);
     String getString(Object value, SQLSyntax syntax);
 
     void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException;

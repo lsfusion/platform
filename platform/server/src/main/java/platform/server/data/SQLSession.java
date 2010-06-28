@@ -344,16 +344,21 @@ public class SQLSession {
         List<TypeObject> preparedParams = new ArrayList<TypeObject>();
         char[] toparse = command.toCharArray();
         String parsedString = "";
-        char[] parsed = new char[toparse.length]; int num=0;
+        char[] parsed = new char[toparse.length+params.length*100]; int num=0;
         for(int i=0;i<toparse.length;) {
             int charParsed = 0;
             for(int p=0;p<params.length;p++) {
                 if(BaseUtils.startsWith(toparse,i,params[p])) { // нашли
-                    if(values[p].isString()) { // если можно вручную пропарсить парсим
+                    if(values[p].isSafeString()) { // если можно вручную пропарсить парсим
                         parsedString = parsedString + new String(parsed,0,num) + values[p].getString(this.syntax);
-                        parsed = new char[toparse.length-i]; num = 0;
+                        parsed = new char[toparse.length-i+(params.length-p)*100]; num = 0;
                     } else {
                         parsed[num++] = '?';
+                        if(!values[p].isSafeType()) {
+                            String castString = "::"+values[p].getDBType(syntax);
+                            System.arraycopy(castString.toCharArray(), 0, parsed, num, castString.length());
+                            num += castString.length();
+                        }
                         preparedParams.add(values[p]);
                     }
                     charParsed = params[p].length;

@@ -109,7 +109,7 @@ public class SessionDataProperty extends DataProperty {
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
             if(property instanceof SessionDataProperty) {
                 changedWhere.add(ClassProperty.getIsClassWhere((Map<ClassPropertyInterface,? extends Expr>)joinImplement, this, changedWhere));
-                return ((SessionDataProperty)property).value.getActionExpr();
+                return ((SessionDataProperty)property).value.getClassExpr();
             }
             return null;
         }

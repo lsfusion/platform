@@ -8,6 +8,7 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -34,6 +35,10 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
 
     public ValueExpr getActionExpr() {
         return new ValueExpr(getDefaultValue(), this);
+    }
+
+    public BaseExpr getClassExpr() {
+        return getActionExpr();
     }
 
     public AbstractGroup getParent() {
@@ -172,7 +177,11 @@ public abstract class DataClass<T> implements ConcreteValueClass, Type<T>, AndCl
         return 8;
     }
 
-    public DataClass getBaseClass() {
+    public DataClass getKeepClass() {
         return this;
+    }
+
+    public boolean isSafeType(Object value) {
+        return true;
     }
 }

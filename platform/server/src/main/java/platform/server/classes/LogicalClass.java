@@ -2,18 +2,12 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
-import platform.server.data.SQLSession;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.DataObject;
 import platform.server.view.form.client.report.ReportDrawField;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Format;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 public class LogicalClass extends DataClass<Boolean> {
 
@@ -21,14 +15,6 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public String toString() {
         return "Logical";
-    }
-
-    public DataObject getRandomObject(SQLSession session, Random randomizer) throws SQLException {
-        return new DataObject(true,this);
-    }
-
-    public List<DataObject> getRandomList(Map<CustomClass, List<DataObject>> objects) {
-        return Collections.singletonList(new DataObject(true,this));
     }
 
     public int getPreferredWidth() { return 35; }
