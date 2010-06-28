@@ -567,14 +567,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
 
-        LP couponDelay = addDProp(baseGroup, "couponDelay", "Отсрочка купонов", IntegerClass.instance);
-        LP obligationExpiry = addCUProp(addJProp(and1, addDProp(baseGroup, "couponExpiry", "Срок действия купонов", IntegerClass.instance), is(coupon), 1), addJProp(and1, addDProp(baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance), is(giftObligation), 1));
+        LP couponStart = addDProp(baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
+        LP couponExpiry = addDProp(baseGroup, "couponExpiry", "Дата окончания купонов", DateClass.instance);
+        LP certExpiry = addDProp(baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance);
 
         LP dateIssued = addJProp("Дата выдачи", date, obligationIssued, 1);
         LP couponFromIssued = addDProp(baseGroup, "couponFromIssued", "Дата начала", DateClass.instance, coupon);
-        couponFromIssued.setDerivedChange(addJProp(addDays, 1, couponDelay), dateIssued, 1);
-        LP obligationToIssued = addDProp(baseGroup, "obligationToIssued", "Дата окончания", DateClass.instance, obligation);
-        obligationToIssued.setDerivedChange(addJProp(addDays, 1, obligationExpiry, 2), dateIssued, 1, 1);
+        couponFromIssued.setDerivedChange(couponStart, dateIssued, 1);
+        LP couponToIssued = addDProp("couponToIssued", "Дата окончания", DateClass.instance, coupon);
+        couponToIssued.setDerivedChange(couponExpiry, obligationIssued, 1);
+        LP certToIssued = addDProp("certToIssued", "Дата окончания", DateClass.instance, giftObligation);
+        certToIssued.setDerivedChange(addJProp(addDays, 1, certExpiry), dateIssued, 1);
+        LP obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
         orderSaleObligationCanBeUsed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
                                                     addJProp(less2, orderSalePay, 1, obligationSumFrom, 2), 1, 2,
                                                     addJProp(greater2, date, 1, obligationToIssued, 2), 1, 2,
@@ -598,7 +602,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // сдача/доплата
         LP orderSaleDiffSum = addDUProp(orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
         orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "=", addJProp(string2, addCProp(StringClass.get(7), "К опл:"), orderSaleDiffSum, 1),
-                addJProp(string2, addCProp(StringClass.get(7), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1); 
+                addJProp(string2, addCProp(StringClass.get(7), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
