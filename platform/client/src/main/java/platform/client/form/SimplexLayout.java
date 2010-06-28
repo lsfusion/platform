@@ -11,11 +11,13 @@ import lpsolve.LpSolveException;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.io.IOException;
 
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.layout.SimplexComponentInfo;
 import platform.interop.form.layout.SingleSimplexConstraint;
 import platform.interop.form.layout.SimplexSolverDirections;
+import platform.base.OSUtils;
 
 /**
  *
@@ -472,5 +474,10 @@ public class SimplexLayout implements LayoutManager2 {
 
         oldDimension = null;
         cache.clear();
+    }
+
+    public static void loadLibraries() throws IOException {
+        OSUtils.loadLibrary("lpsolve55", "/platform/client/form/", SimplexLayout.class);
+        OSUtils.loadLibrary("lpsolve55j", "/platform/client/form/", SimplexLayout.class);
     }
 }

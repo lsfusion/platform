@@ -5,24 +5,25 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.client.layout.Layout;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
+import platform.client.form.SimplexLayout;
 
 import javax.swing.*;
-import java.rmi.RemoteException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.net.MalformedURLException;
-import java.sql.SQLException;
+import java.net.URL;
 import java.io.IOException;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class Main {
 
     public static Layout layout;
 
     public static void main(final String[] args) {
+
+        try {
+            loadLibraries();
+        } catch (IOException e) {
+            ClientExceptionManager.handleException(e);
+            throw new RuntimeException(e);
+        }
 
         new Thread(new ExceptionThreadGroup(), "Init thread") {
 
@@ -42,7 +43,7 @@ public class Main {
 
                     layout = new Layout(remoteNavigator);
                     layout.setVisible(true);
-                    
+
                 } catch (Exception e) {
                     throw new RuntimeException("Ошибка при инициализации приложения", e);
                 }
@@ -50,5 +51,10 @@ public class Main {
             }
        }.start();
 
+    }
+
+    // будет загружать все не кросс-платформенные библиотеки
+    private static void loadLibraries() throws IOException {
+        SimplexLayout.loadLibraries();
     }
 }
