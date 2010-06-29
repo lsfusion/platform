@@ -10,7 +10,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Map;
-import java.rmi.RemoteException;
 
 class ClientFormFactory implements DockFactory<FormDockable,Integer> {
 
@@ -52,7 +51,7 @@ class ClientFormFactory implements DockFactory<FormDockable,Integer> {
         try {
             return new ClientFormDockable(integer, navigator, false);
         } catch (Exception e) {
-            if(!Layout.readed)
+            if(!DockingMainFrame.readed)
                 throw new RuntimeException("Ошибка при открытии формы", e);
         }
         return null;

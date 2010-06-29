@@ -680,7 +680,7 @@ public class ClientForm extends JPanel {
     void print() {
 
         try {
-            Main.layout.defaultStation.drop(new ReportDockable(clientNavigator, remoteForm));
+            Main.frame.runReport(clientNavigator, remoteForm);
         } catch (Exception e) {
             throw new RuntimeException("Ошибка при печати формы", e);
         }

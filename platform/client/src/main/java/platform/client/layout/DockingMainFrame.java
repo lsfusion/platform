@@ -9,7 +9,6 @@ import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.FlapDockStation;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.StackDockStation;
-import bibliothek.gui.dock.station.split.SplitDockProperty;
 import bibliothek.gui.dock.station.split.SplitDockTree;
 import bibliothek.gui.dock.control.SingleParentRemover;
 import bibliothek.gui.dock.event.DockFrontendAdapter;
@@ -22,7 +21,7 @@ import platform.client.Main;
 import platform.client.Log;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
-import platform.interop.UserInfo;
+import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -34,27 +33,19 @@ import java.awt.event.WindowEvent;
 import java.io.*;
 import java.util.*;
 
-public class Layout extends JFrame implements ComponentCollector {
+public class DockingMainFrame extends MainFrame implements ComponentCollector {
 
-    public Layout(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
-        super();
-
-        setIconImage(new ImageIcon(getClass().getResource("/platform/images/lsfusion.jpg")).getImage());
-
-        drawCurrentUser(remoteNavigator);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        setSize(1024, 768);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+    public DockingMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+        super(remoteNavigator);
 
         ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
 
             public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
-                Main.layout.defaultStation.drop(new ClientFormDockable(element.ID, this, false));
+                defaultStation.drop(new ClientFormDockable(element.ID, this, false));
             }
 
             public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
-                Main.layout.defaultStation.drop(element.isPrintForm?new ReportDockable(element.ID, this, true):new ClientFormDockable(element.ID, this, true));
+                defaultStation.drop(element.isPrintForm?new ReportDockable(element.ID, this, true):new ClientFormDockable(element.ID, this, true));
             }
         };
 
@@ -74,16 +65,21 @@ public class Layout extends JFrame implements ComponentCollector {
 
     }
 
-    public void drawCurrentUser(RemoteNavigatorInterface remoteNavigator) throws IOException, ClassNotFoundException {
-        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(remoteNavigator.getCurrentUserInfoByteArray()));
-        setTitle("LS Fusion - " + inputStream.readObject());
+    @Override
+    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
+        defaultStation.drop(new ReportDockable(clientNavigator, remoteForm));
+    }
+
+    @Override
+    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+        defaultStation.drop(new ClientFormDockable(clientNavigator, remoteForm));
     }
 
     private DockFrontend frontend;
     private LookAndFeelList lookAndFeels;
     private ThemeMenu themes;
 
-    public StackDockStation defaultStation;
+    private StackDockStation defaultStation;
 
     private void initDockStations(ClientNavigator mainNavigator) {
 
@@ -93,7 +89,7 @@ public class Layout extends JFrame implements ComponentCollector {
         // дизайн
         // Look&Feel'ы
         lookAndFeels = LookAndFeelList.getDefaultList();
-        // пометим что мы сами будем следить за изменение Layout'а
+        // пометим что мы сами будем следить за изменение DockingMainFrame'а
         lookAndFeels.addComponentCollector(this);
         // темы
         themes = new ThemeMenu(frontend);

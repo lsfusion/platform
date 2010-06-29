@@ -1,20 +1,21 @@
 package platform.client;
 
+import platform.client.layout.DockingMainFrame;
+import platform.client.layout.MainFrame;
+import platform.client.layout.SimpleMainFrame;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.client.layout.Layout;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
 
 import javax.swing.*;
 import java.rmi.Naming;
-import java.net.URL;
 import java.io.IOException;
 
 public class Main {
 
-    public static Layout layout;
+    public static MainFrame frame;
 
     public static void main(final String[] args) {
 
@@ -41,8 +42,12 @@ public class Main {
                     RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator("user1", "", remoteLogics.getComputers().iterator().next());
                     if (remoteNavigator == null) return;
 
-                    layout = new Layout(remoteNavigator);
-                    layout.setVisible(true);
+                    String forms = System.getProperty("platform.client.forms");
+                    if (forms == null)
+                        frame = new DockingMainFrame(remoteNavigator);
+                    else
+                        frame = new SimpleMainFrame(remoteNavigator, forms);
+                    frame.setVisible(true);
 
                 } catch (Exception e) {
                     throw new RuntimeException("Ошибка при инициализации приложения", e);

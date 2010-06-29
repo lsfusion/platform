@@ -8,8 +8,6 @@ import platform.client.layout.ClientFormDockable;
 
 import javax.swing.*;
 import java.io.*;
-import java.nio.CharBuffer;
-import java.util.Scanner;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
@@ -21,7 +19,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public ClientActionResult execute(FormClientAction action) {
         try {
-            Main.layout.defaultStation.drop(action.isPrintForm?new ReportDockable(clientNavigator, action.remoteForm):new ClientFormDockable(clientNavigator, action.remoteForm));
+            if (action.isPrintForm)
+                Main.frame.runReport(clientNavigator, action.remoteForm);
+            else
+                Main.frame.runForm(clientNavigator, action.remoteForm);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -155,7 +156,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public ClientActionResult execute(UserChangedClientAction action) {
         try {
-            Main.layout.drawCurrentUser(clientNavigator.remoteNavigator);
+            Main.frame.drawCurrentUser(clientNavigator.remoteNavigator);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
