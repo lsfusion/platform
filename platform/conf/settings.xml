@@ -14,7 +14,8 @@
 	<bean id="priceImport" class="tmc.integration.imp.PriceImportTask">
 		<constructor-arg><ref bean="businessLogics"/></constructor-arg>
 		<constructor-arg><list><value>imp</value></list></constructor-arg>
-		<constructor-arg><list><value type="int">5</value></list></constructor-arg>
+		<constructor-arg><list><value type="int">14</value></list></constructor-arg>
+		<constructor-arg><list><value type="int">175</value></list></constructor-arg>
 	</bean>
 
     <bean id="saleExport" class="tmc.integration.exp.SaleExportTask">

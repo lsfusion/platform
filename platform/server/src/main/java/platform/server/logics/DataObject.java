@@ -54,6 +54,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         this(dbl, DoubleClass.instance);
     }
 
+    public DataObject(Boolean bl) {
+        this(bl, LogicalClass.instance);
+    }
+
     public boolean isString(SQLSyntax syntax) {
         return objectClass.getType().isSafeString(object);
     }

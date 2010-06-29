@@ -406,7 +406,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP xorActionAll = addDProp(baseGroup, "xorActionAll", "Вкл./искл.", LogicalClass.instance, action);
         LP xorActionArticleGroup = addDProp(baseGroup, "xorActionArticleGroup", "Вкл./искл.", LogicalClass.instance, action, articleGroup);
-        LP xorActionArticle = addDProp(baseGroup, "xorArticle", "Вкл./искл.", LogicalClass.instance, action, article);
+        xorActionArticle = addDProp(baseGroup, "xorArticle", "Вкл./искл.", LogicalClass.instance, action, article);
         inAction = addXorUProp(baseGroup, "inAction", "В акции", xorActionArticle, addXorUProp(
                             addJProp(and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2)));
 
@@ -601,7 +601,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // сдача/доплата
         LP orderSaleDiffSum = addDUProp(orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
-        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "=", addJProp(string2, addCProp(StringClass.get(7), "К опл:"), orderSaleDiffSum, 1),
+        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(7), "Допл:"), orderSaleDiffSum, 1),
                 addJProp(string2, addCProp(StringClass.get(7), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
@@ -667,6 +667,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderSaleObligationCanBeUsed;
     LP orderSaleUseObligation;
 
+    public LP xorActionArticle;
     LP inAction;
     LP orderSalePayNoObligation;
     public LP orderArticleSaleSumCoeff;
@@ -1779,6 +1780,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !noArticleGroups);
             addRegularFilterGroup(filterGroup);
 
+            PropertyObjectNavigator inActionImpl = addPropertyObjectImplement(inAction, objAction, objArt);
+            RegularFilterGroupNavigator inActionGroup = new RegularFilterGroupNavigator(IDShift(1));
+            inActionGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(inActionImpl),
+                                  "В акции",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
+            inActionGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotFilterNavigator(new NotNullFilterNavigator(inActionImpl)),
+                                  "Не в акции",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
+            addRegularFilterGroup(inActionGroup);
+
             addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objAction, objBarcode));
         }
     }
@@ -1926,6 +1939,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                                   "В группе",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0)), !noArticleGroups);
             addRegularFilterGroup(filterGroup);
+
+            PropertyObjectNavigator inCouponImpl = addPropertyObjectImplement(inCoupon, objArt);
+            RegularFilterGroupNavigator inCouponGroup = new RegularFilterGroupNavigator(IDShift(1));
+            inCouponGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotNullFilterNavigator(inCouponImpl),
+                                  "В акции",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0)));
+            inCouponGroup.addFilter(new RegularFilterNavigator(IDShift(1),
+                                  new NotFilterNavigator(new NotNullFilterNavigator(inCouponImpl)),
+                                  "Не в акции",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0)));
+            addRegularFilterGroup(inCouponGroup);
         }
     }
 

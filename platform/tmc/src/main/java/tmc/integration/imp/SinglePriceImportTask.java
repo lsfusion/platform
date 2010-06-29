@@ -3,10 +3,12 @@ package tmc.integration.imp;
 import platform.server.logics.scheduler.FlagSemaphoreTask;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.NullValue;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.classes.DataClass;
 import platform.server.classes.StringClass;
 import platform.server.classes.DoubleClass;
+import platform.server.classes.LogicalClass;
 import platform.server.data.KeyField;
 import platform.server.data.PropertyField;
 import platform.server.data.Field;
@@ -15,6 +17,7 @@ import platform.server.data.type.ObjectType;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.session.DataSession;
 import platform.server.session.MapDataChanges;
@@ -23,6 +26,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import org.xBaseJ.DBF;
+import org.xBaseJ.fields.LogicalField;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -35,11 +39,13 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
     VEDBusinessLogics BL;
     String impDbf;
     Integer impDocID;
+    Integer impSaleActionID;
 
-    public SinglePriceImportTask(VEDBusinessLogics BL, String impDbf, Integer impDocID) {
+    public SinglePriceImportTask(VEDBusinessLogics BL, String impDbf, Integer impDocID, Integer impSaleActionID) {
         this.BL = BL;
         this.impDbf = impDbf;
         this.impDocID = impDocID;
+        this.impSaleActionID = impSaleActionID;
     }
 
     public void run() throws Exception {
@@ -58,16 +64,17 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             KeyField barcodeField = new KeyField("barcode", barcodeClass);
             PropertyField nameField = new PropertyField("name", nameClass);
             PropertyField priceField = new PropertyField("price", priceClass);
+            PropertyField noDiscField = new PropertyField("nodisc", LogicalClass.instance);
 
             Map<PropertyField, ClassWhere<Field>> classProperties = new HashMap<PropertyField, ClassWhere<Field>>();
-            ClassWhere<Field> nameClassWhere = new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(nameField, nameClass));
 
-            classProperties.put(nameField, nameClassWhere);
+            classProperties.put(nameField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(nameField, nameClass)));
             classProperties.put(priceField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(priceField, priceClass)));
+            classProperties.put(noDiscField, new ClassWhere<Field>(barcodeField, barcodeClass).and(new ClassWhere<Field>(noDiscField, LogicalClass.instance)));
 
             CustomSessionTable table = new CustomSessionTable("priceimp",
                     new ClassWhere(barcodeField, barcodeClass), classProperties,
-                    Collections.singleton(barcodeField), BaseUtils.toSetElements(nameField, priceField));
+                    Collections.singleton(barcodeField), BaseUtils.toSetElements(nameField, priceField, noDiscField));
 
             DataSession session = BL.createSession();
             session.createTemporaryTable(table);
@@ -79,12 +86,14 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 String barcode = new String(impFile.getField("bar").getBytes(), "Cp866");
                 String name = new String(impFile.getField("name").getBytes(), "Cp866");
                 Double price = Double.parseDouble(impFile.getField("cen").get());
+                Boolean noDisc = (((LogicalField)impFile.getField("isdisc")).getBoolean()?null:true);
 
                 Map<KeyField, DataObject> keys = Collections.singletonMap(barcodeField, new DataObject(barcode));
 
                 Map<PropertyField, ObjectValue> properties = new HashMap<PropertyField, ObjectValue>();
                 properties.put(nameField, new DataObject(name));
                 properties.put(priceField, new DataObject(price));
+                properties.put(noDiscField, noDisc==null ? NullValue.instance : new DataObject(true, LogicalClass.instance));
 
                 session.insertRecord(table, keys, properties);
             }
@@ -125,8 +134,10 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                                                 new PropertyChange(mapNameKeys, priceImpJoin.getExpr(nameField), priceImpJoin.getWhere()),
                                                 null, session.modifier);
 
+            // импорт количества и цены
             ObjectValue docValue = session.getObjectValue(impDocID, ObjectType.instance);
 
+            // импорт количества
             OrderedMap<PropertyInterface, KeyExpr> mapQuantityKeys = BL.outerCommitedQuantity.getMapKeys();
             mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.barcode.property.interfaces),
                                                   mapQuantityKeys.getValue(1));
@@ -138,10 +149,11 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                                                 priceImpJoin.getWhere().and(mapQuantityKeys.getValue(0).compare(docValue.getExpr(), Compare.EQUALS))),
                                                 null, session.modifier);
 
+            // импорт цены
             OrderedMap<PropertyInterface, KeyExpr> mapPriceKeys = BL.shopPrice.getMapKeys();
+
             mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.barcode.property.interfaces),
                                                   mapPriceKeys.getValue(1));
-
             priceImpJoin = table.join(Collections.singletonMap(barcodeField, BL.barcode.property.getExpr(mapBarKeys, session.modifier, null)));
 
             MapDataChanges<PropertyInterface> priceChanges = (MapDataChanges<PropertyInterface>) BL.shopPrice.property.getDataChanges(
@@ -149,7 +161,21 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                                                 priceImpJoin.getWhere().and(mapPriceKeys.getValue(0).compare(docValue.getExpr(), Compare.EQUALS))),
                                                 null, session.modifier);
 
-            session.execute(priceChanges.add(quantityChanges.add(nameChanges)), null, null);
+            // импорт распродаж
+            ObjectValue saleActionValue = session.getObjectValue(impSaleActionID, ObjectType.instance);
+
+            OrderedMap<PropertyInterface, KeyExpr> mapActionKeys = BL.xorActionArticle.getMapKeys();
+            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.barcode.property.interfaces),
+                                                  mapActionKeys.getValue(1));
+
+            priceImpJoin = table.join(Collections.singletonMap(barcodeField, BL.barcode.property.getExpr(mapBarKeys, session.modifier, null)));
+
+            MapDataChanges<PropertyInterface> actionChanges = (MapDataChanges<PropertyInterface>) BL.xorActionArticle.property.getDataChanges(
+                                                new PropertyChange(mapActionKeys, priceImpJoin.getExpr(noDiscField),
+                                                priceImpJoin.getWhere().and(mapActionKeys.getValue(0).compare(saleActionValue.getExpr(), Compare.EQUALS))),
+                                                null, session.modifier);
+
+            session.execute(actionChanges.add(priceChanges.add(quantityChanges.add(nameChanges))), null, null);
 
             session.apply(BL);
 

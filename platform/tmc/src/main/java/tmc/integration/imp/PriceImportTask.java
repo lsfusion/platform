@@ -12,12 +12,14 @@ public class PriceImportTask implements SchedulerTask {
     VEDBusinessLogics BL;
     List<String> path;
     List<Integer> docID;
+    List<Integer> actionID;
 
-    public PriceImportTask(VEDBusinessLogics BL, List<String> path, List<Integer> docID) {
+    public PriceImportTask(VEDBusinessLogics BL, List<String> path, List<Integer> docID, List<Integer> actionID) {
 
         this.BL = BL;
         this.path = path;
         this.docID = docID;
+        this.actionID = actionID;
     }
 
     public String getID() {
@@ -30,9 +32,10 @@ public class PriceImportTask implements SchedulerTask {
 
             String impPath = path.get(impNum);
             Integer impDocID = docID.get(impNum);
+            Integer impActionID = actionID.get(impNum);
 
-            FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(BL, impPath + "\\datanew.dbf", impDocID));
-            FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(BL, impPath + "\\dataupd.dbf", impDocID));
+            FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(BL, impPath + "\\datanew.dbf", impDocID, impActionID));
+            FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(BL, impPath + "\\dataupd.dbf", impDocID, impActionID));
         }
     }
 }
