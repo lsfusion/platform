@@ -32,7 +32,7 @@ public class Main {
 
                 try {
 
-                    UIManager.setLookAndFeel(UIManager.getInstalledLookAndFeels()[2].getClassName());
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
                     String serverName = args.length>0?args[0]:"localhost";
                     String exportPort = args.length>1?args[1]:"7652";
