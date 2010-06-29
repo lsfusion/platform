@@ -163,16 +163,4 @@ public abstract class PanelController {
             controllers.get(property).showViews();
         }
     }
-
-    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
-
-        for (ClientCellView cell : controllers.keySet()) {
-            if (ks.equals(cell.editKey)) {
-                controllers.get(cell).startEditing();
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

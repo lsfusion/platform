@@ -195,11 +195,4 @@ public class GridController {
             gridTable.setColumnValues(object.classCellView, cls);
         }
     }
-
-    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
-
-        if (gridTable.processKeyEvent(ks, e)) return true;
-
-        return false;
-    }
 }

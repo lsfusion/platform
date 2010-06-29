@@ -185,20 +185,37 @@ public class ClientForm extends JPanel {
 
         // делаем так, чтобы первым нажатия клавиш обрабатывал GroupObject, у которого стоит фокус
         // хотя конечно идиотизм это делать таким образом
-        Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        Component comp = e.getComponent(); //KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         while (comp != null && !(comp instanceof Window) && comp != this) {
             if (comp instanceof JComponent) {
                 ClientGroupObjectImplementView groupObject = (ClientGroupObjectImplementView)((JComponent)comp).getClientProperty("groupObject");
-                if (groupObject != null && controllers.containsKey(groupObject) && controllers.get(groupObject).processKeyEvent(ks, e)) return true;
+                if (groupObject != null) {
+                    Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
+                    if (keyBinding != null && keyBinding.containsKey(groupObject)) {
+                        keyBinding.get(groupObject).run();
+                        return true;
+                    }
+                    break;
+                }
             }
             comp = comp.getParent();
         }
 
-        for (ClientGroupObjectImplementView groupObject : groupObjects) {
-            if (controllers.get(groupObject).processKeyEvent(ks, e)) return true;
-        }
+        Map<ClientGroupObjectImplementView, Runnable> keyBinding = bindings.get(ks);
+        if (keyBinding != null && !keyBinding.isEmpty())
+            keyBinding.values().iterator().next().run();
 
-        return super.processKeyBinding(ks, e, condition, pressed);
+        if (super.processKeyBinding(ks, e, condition, pressed)) return true;
+
+        return true;
+    }
+
+    private Map<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>> bindings = new HashMap<KeyStroke, Map<ClientGroupObjectImplementView, Runnable>>();
+
+    public void addKeyBinding(KeyStroke ks, ClientGroupObjectImplementView groupObject, Runnable run) {
+        if (!bindings.containsKey(ks))
+            bindings.put(ks, new HashMap<ClientGroupObjectImplementView, Runnable>());
+        bindings.get(ks).put(groupObject, run);
     }
 
     private void initializeRegularFilters() {

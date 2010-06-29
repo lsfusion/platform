@@ -256,7 +256,7 @@ public abstract class GridTable extends ClientFormTable
 
     }
 
-    public boolean addColumn(ClientCellView property) {
+    public boolean addColumn(final ClientCellView property) {
 
         if (gridColumns.indexOf(property) == -1) {
 
@@ -270,6 +270,17 @@ public abstract class GridTable extends ClientFormTable
             while (icp.hasNext() && cells.indexOf(icp.next()) < ind) { ins++; }
 
             gridColumns.add(ins, property);
+
+            if (property.editKey != null) {
+                form.addKeyBinding(property.editKey, property.getGroupObject(), new Runnable() {
+                    public void run() {
+                        int leadRow = getSelectionModel().getLeadSelectionIndex();
+                        if (leadRow != -1 && !isEditing()) {
+                            editCellAt(leadRow, gridColumns.indexOf(property));
+                        }
+                    }
+                });
+            }
 
             return true;
         } else
@@ -346,22 +357,6 @@ public abstract class GridTable extends ClientFormTable
             return getValueAt(row, col);
         else
             return null;
-    }
-
-    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
-
-        for (ClientCellView columns : gridColumns) {
-            if (ks.equals(columns.editKey)) {
-                int leadRow = getSelectionModel().getLeadSelectionIndex();
-                if (leadRow != -1 && !isEditing()) {
-                    if (editCellAt(leadRow, gridColumns.indexOf(columns)))
-                        return true;
-                }
-                return true;
-            }
-        }
-
-        return false;
     }
 
     // ---------------------------------------------------------------------------------------------- //

@@ -38,6 +38,13 @@ public class CellController implements CellViewListener {
             view.getComponent().setFocusable(false);
 
         view.addListener(this);
+
+        if (key.editKey != null)
+            form.addKeyBinding(key.editKey, key.getGroupObject(), new Runnable() {
+                public void run() {
+                    startEditing();
+                }
+            });
     }
 
     public void addView(ClientFormLayout formLayout) {

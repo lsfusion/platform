@@ -308,13 +308,4 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         return message;
     }
-
-    // метод для "обратной" обработки нажатий кнопок
-    public boolean processKeyEvent(KeyStroke ks, KeyEvent e) {
-
-        if (panel.processKeyEvent(ks, e)) return true;
-        if (grid != null && grid.processKeyEvent(ks, e)) return true;
-
-        return false;
-    }
 }
