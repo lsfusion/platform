@@ -10,6 +10,7 @@ import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
 
 import javax.swing.*;
+import java.awt.*;
 import java.rmi.Naming;
 import java.io.IOException;
 
@@ -47,7 +48,14 @@ public class Main {
                         frame = new DockingMainFrame(remoteNavigator);
                     else
                         frame = new SimpleMainFrame(remoteNavigator, forms);
+
+                    // вот таким вот извращенным методом приходится отключать SimplexLayout, чтобы он не вызывался по два раза
+                    // проблема в том, что setVisible сразу вызывает отрисовку, а setExtendedState "моделирует" нажатии кнопки ОС и все идет просто в EventDispatchThread
+                    SimplexLayout.ignoreLayout = true;
                     frame.setVisible(true);
+                    SimplexLayout.ignoreLayout = false;
+
+                    frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
                 } catch (Exception e) {
                     throw new RuntimeException("Ошибка при инициализации приложения", e);

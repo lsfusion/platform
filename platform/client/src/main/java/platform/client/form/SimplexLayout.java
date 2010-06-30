@@ -25,6 +25,7 @@ import platform.base.OSUtils;
  */
 public class SimplexLayout implements LayoutManager2 {
 
+    public static boolean ignoreLayout = false;
     public boolean disableLayout = false;
 
     Dimension oldDimension;
@@ -111,7 +112,7 @@ public class SimplexLayout implements LayoutManager2 {
 
     public void layoutContainer(final Container parent) {
 
-        if (disableLayout) return;
+        if (disableLayout || ignoreLayout) return;
 
         if (parent != mainContainer) return;
 

@@ -6,6 +6,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,8 +21,8 @@ public abstract class MainFrame extends JFrame {
         drawCurrentUser(remoteNavigator);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setSize(1024, 768);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize(screenSize);
     }
 
     public void drawCurrentUser(RemoteNavigatorInterface remoteNavigator) throws IOException, ClassNotFoundException {
