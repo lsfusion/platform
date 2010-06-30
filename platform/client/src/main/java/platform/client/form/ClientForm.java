@@ -188,7 +188,7 @@ public class ClientForm extends JPanel {
             controllers.put(groupObject, controller);
         }
 
-        for (ClientPropertyView properties : formView.properties) {
+        for (ClientPropertyView properties : formView.getProperties()) {
             if (properties.groupObject == null) {
                 groupObjects.add(null);
                 GroupObjectController controller = new GroupObjectController(null, formView, this, formLayout);

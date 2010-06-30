@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class ClientFormView implements Serializable, LogicsSupplier {
 
@@ -18,7 +20,7 @@ public class ClientFormView implements Serializable, LogicsSupplier {
     public final List<ClientContainerView> containers;
 
     public List<ClientGroupObjectImplementView> groupObjects;
-    public List<ClientPropertyView> properties;
+    private List<ClientPropertyView> properties;
 
     public final OrderedMap<ClientCellView,Boolean> defaultOrders = new OrderedMap<ClientCellView, Boolean>();
     public List<ClientRegularFilterGroupView> regularFilters;
@@ -70,10 +72,17 @@ public class ClientFormView implements Serializable, LogicsSupplier {
         return null;
     }
 
+    private Map<Integer, ClientPropertyView> idProps;
+    private Map<Integer, ClientPropertyView> getIDProps() {
+        if(idProps==null) {
+            idProps = new HashMap<Integer, ClientPropertyView>();
+            for(ClientPropertyView property : properties)
+                idProps.put(property.getID(), property);
+        }
+        return idProps;
+    }
     public ClientPropertyView getProperty(int id) {
-        for (ClientPropertyView property : properties)
-            if (property.getID() == id) return property;
-        return null;
+        return getIDProps().get(id);
     }
 
     abstract class DeSerializeInstancer<T> {
