@@ -1,13 +1,13 @@
 package platform.client.form.cell;
 
-import platform.client.logics.ClientCellView;
+import platform.client.SwingUtils;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
-import platform.client.SwingUtils;
+import platform.client.logics.ClientCellView;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ButtonCellView extends JButton implements CellView {
 

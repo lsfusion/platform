@@ -1,17 +1,17 @@
 package platform.client.form.queries;
 
-import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.logics.filter.ClientPropertyFilter;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public abstract class QueryView extends JPanel {
 

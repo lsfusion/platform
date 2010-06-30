@@ -1,12 +1,13 @@
 package platform.client.logics;
 
-import platform.client.form.LogicsSupplier;
 import platform.base.OrderedMap;
+import platform.client.form.LogicsSupplier;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientFormView implements Serializable, LogicsSupplier {
 

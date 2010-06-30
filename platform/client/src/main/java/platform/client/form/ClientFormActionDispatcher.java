@@ -1,10 +1,8 @@
 package platform.client.form;
 
-import platform.interop.action.*;
-import platform.client.navigator.ClientNavigator;
 import platform.client.Main;
-import platform.client.layout.ReportDockable;
-import platform.client.layout.ClientFormDockable;
+import platform.client.navigator.ClientNavigator;
+import platform.interop.action.*;
 
 import javax.swing.*;
 import java.io.*;

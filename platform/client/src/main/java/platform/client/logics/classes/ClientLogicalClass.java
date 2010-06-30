@@ -1,14 +1,15 @@
 package platform.client.logics.classes;
 
-import platform.client.form.*;
-import platform.client.form.renderer.LogicalPropertyRenderer;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.LogicalPropertyEditor;
+import platform.client.form.renderer.LogicalPropertyRenderer;
 import platform.interop.CellDesign;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
-import java.awt.*;
 
 public class ClientLogicalClass extends ClientDataClass {
 

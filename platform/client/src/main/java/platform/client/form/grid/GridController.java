@@ -1,20 +1,19 @@
 package platform.client.form.grid;
 
-import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientForm;
-import platform.client.form.queries.FindController;
+import platform.client.form.ClientFormLayout;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.queries.FilterController;
+import platform.client.form.queries.FindController;
 import platform.client.logics.*;
 import platform.interop.Order;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.awt.event.KeyEvent;
-import java.awt.*;
 
 public class GridController {
 

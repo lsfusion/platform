@@ -2,8 +2,8 @@ package platform.client.logics.filter;
 
 import platform.client.logics.ClientPropertyView;
 import platform.client.logics.ClientValueLink;
-import platform.interop.FilterType;
 import platform.interop.Compare;
+import platform.interop.FilterType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

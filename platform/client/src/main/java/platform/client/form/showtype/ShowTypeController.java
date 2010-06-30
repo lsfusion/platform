@@ -1,7 +1,7 @@
 package platform.client.form.showtype;
 
-import platform.client.form.ClientFormLayout;
 import platform.client.form.ClientForm;
+import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowTypeView;
 import platform.interop.ClassViewType;

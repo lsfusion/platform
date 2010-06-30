@@ -1,15 +1,13 @@
 package platform.client.navigator;
 
-import platform.client.logics.DeSerializer;
 import platform.client.logics.ClientObjectImplementView;
-import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.client.logics.DeSerializer;
 import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
-import java.util.List;
-import java.rmi.RemoteException;
 import java.io.IOException;
-
-import net.sf.jasperreports.engine.JRException;
+import java.rmi.RemoteException;
+import java.util.List;
 
 public abstract class ClientNavigator extends AbstractNavigator {
 
@@ -50,11 +48,11 @@ public abstract class ClientNavigator extends AbstractNavigator {
             relevantClassNavigator.tree.createRootNode();
     }
 
-    public void openRelevantForm(ClientNavigatorForm form) throws IOException, ClassNotFoundException, JRException {
+    public void openRelevantForm(ClientNavigatorForm form) throws IOException, ClassNotFoundException {
         openForm(form);
     }
 
-    void openClassForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException, JRException {
+    void openClassForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {
         openRelevantForm(form);
     }
 
@@ -65,7 +63,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
             super(iremoteNavigator);
         }
 
-        public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
+        public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
             openRelevantForm(element);
         }
 
@@ -82,7 +80,7 @@ public abstract class ClientNavigator extends AbstractNavigator {
             super(iremoteNavigator);
         }
 
-        public void openForm(ClientNavigatorForm element) throws ClassNotFoundException, IOException, JRException {
+        public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
             openClassForm(element);
         }
 

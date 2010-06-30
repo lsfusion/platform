@@ -1,6 +1,5 @@
-package platform.client.layout;
+package platform.client;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.client.form.ClientForm;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
@@ -20,7 +19,7 @@ public class SimpleMainFrame extends MainFrame {
         ClientNavigator navigator = new ClientNavigator(remoteNavigator) {
 
             @Override
-            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
+            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 // пока ничего не делаем, так как не должны вообще формы вызываться
             }
         };
@@ -41,12 +40,12 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
-    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
+    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
         // надо здесь подумать, что вызывать
     }
 
     @Override
-    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         // надо здесь подумать, что вызывать
     }
 }

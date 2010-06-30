@@ -1,11 +1,11 @@
 package platform.client.form.queries;
 
-import platform.client.logics.ClientUserValueLink;
-import platform.client.logics.ClientPropertyView;
-import platform.client.logics.ClientCellView;
-import platform.client.form.cell.CellTable;
 import platform.client.form.ClientForm;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.cell.CellTable;
+import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientPropertyView;
+import platform.client.logics.ClientUserValueLink;
 
 import javax.swing.*;
 import java.awt.*;

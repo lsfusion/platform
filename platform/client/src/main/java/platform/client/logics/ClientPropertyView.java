@@ -1,17 +1,17 @@
 package platform.client.logics;
 
+import platform.base.BaseUtils;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.base.BaseUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.util.Collection;
 import java.rmi.RemoteException;
+import java.util.Collection;
 
 public class ClientPropertyView extends ClientCellView {
 

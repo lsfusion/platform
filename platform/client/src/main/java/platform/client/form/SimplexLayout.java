@@ -7,6 +7,11 @@ package platform.client.form;
 
 import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
+import platform.base.OSUtils;
+import platform.interop.form.layout.SimplexComponentInfo;
+import platform.interop.form.layout.SimplexConstraints;
+import platform.interop.form.layout.SimplexSolverDirections;
+import platform.interop.form.layout.SingleSimplexConstraint;
 
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -15,12 +20,6 @@ import java.awt.event.ComponentListener;
 import java.util.*;
 import java.util.List;
 import java.io.IOException;
-
-import platform.interop.form.layout.SimplexConstraints;
-import platform.interop.form.layout.SimplexComponentInfo;
-import platform.interop.form.layout.SingleSimplexConstraint;
-import platform.interop.form.layout.SimplexSolverDirections;
-import platform.base.OSUtils;
 
 /**
  *
@@ -36,19 +35,19 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     List<Component> allComponents = new ArrayList<Component>();
     Map<Component, SimplexConstraints<Integer>> constraints = new HashMap<Component, SimplexConstraints<Integer>>();
-    
+
     private Container mainContainer;
-    
+
     public SimplexLayout(Container imainContainer) {
         mainContainer = imainContainer;
         constraints.put(mainContainer, SimplexConstraints.DEFAULT_CONSTRAINT);
     }
-    
+
     public SimplexLayout(Container imainContainer, SimplexConstraints<Integer> c) {
         mainContainer = imainContainer;
         constraints.put(mainContainer, c);
     }
-    
+
     public void addLayoutComponent(String name, Component comp) {
         addLayoutComponent(comp);
         constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
@@ -139,7 +138,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         for (Component child : container.getComponents())
             if (hasNotContainerChild(child))
                 return true;
-        
+
         return false;
     }
 
@@ -152,7 +151,7 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         boolean dimensionChanged = !parent.getSize().equals(oldDimension);
 
         if (!dimensionChanged && !componentsChanged) return;
-        
+
         if (fillVisibleComponents()) return;
 
         if (!dimensionChanged) {

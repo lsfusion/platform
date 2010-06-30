@@ -1,14 +1,13 @@
 package platform.client.form;
 
-import platform.client.form.SimplexLayout;
-import platform.client.logics.ClientContainerView;
 import platform.client.logics.ClientComponentView;
+import platform.client.logics.ClientContainerView;
 
 import javax.swing.*;
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClientFormLayout {
 

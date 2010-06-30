@@ -4,7 +4,6 @@ import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.util.EventObject;
 
 public class LogicalPropertyEditor extends JCheckBox

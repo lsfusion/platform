@@ -1,7 +1,7 @@
 package platform.client.form.cell;
 
-import platform.client.logics.ClientCellView;
 import platform.client.form.ClientForm;
+import platform.client.logics.ClientCellView;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;

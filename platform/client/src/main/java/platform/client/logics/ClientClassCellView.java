@@ -1,16 +1,15 @@
 package platform.client.logics;
 
+import platform.client.form.ClientForm;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.editor.ClassPropertyEditor;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.ClientForm;
-import platform.client.form.editor.ClassPropertyEditor;
-import platform.client.logics.classes.ClientConcreteClass;
-import platform.client.logics.classes.ClientObjectClass;
 
-import java.rmi.RemoteException;
-import java.io.IOException;
 import java.io.DataInputStream;
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.Collection;
 
 public class ClientClassCellView extends ClientObjectView {

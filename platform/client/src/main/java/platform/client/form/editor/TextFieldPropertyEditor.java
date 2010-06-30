@@ -5,7 +5,6 @@ import platform.interop.CellDesign;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.KeyEvent;
-import java.awt.*;
 
 class TextFieldPropertyEditor extends JFormattedTextField {
 

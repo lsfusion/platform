@@ -1,24 +1,24 @@
 package platform.client.logics;
 
+import platform.client.SwingUtils;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.client.SwingUtils;
-import platform.interop.form.RemoteFormInterface;
-import platform.interop.form.RemoteDialogInterface;
 import platform.interop.CellDesign;
+import platform.interop.form.RemoteDialogInterface;
+import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.rmi.RemoteException;
 import java.text.Format;
 import java.util.Collection;
-import java.rmi.RemoteException;
 
 abstract public class ClientCellView extends ClientComponentView {
 

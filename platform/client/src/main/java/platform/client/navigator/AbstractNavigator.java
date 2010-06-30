@@ -17,8 +17,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 
-import net.sf.jasperreports.engine.JRException;
-
 public abstract class AbstractNavigator extends JPanel {
 
     // Icons - загружаем один раз, для экономии
@@ -43,7 +41,7 @@ public abstract class AbstractNavigator extends JPanel {
 
     }
 
-    public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException;
+    public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
 
     class NavigatorTree extends JTree {
 

@@ -1,20 +1,20 @@
 package platform.client.form;
 
-import platform.client.logics.*;
-import platform.client.form.panel.PanelController;
 import platform.client.form.grid.GridController;
+import platform.client.form.panel.PanelController;
 import platform.client.form.showtype.ShowTypeController;
-import platform.interop.Order;
+import platform.client.logics.*;
 import platform.interop.ClassViewType;
+import platform.interop.Order;
 
 import javax.swing.*;
-import java.util.Map;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
-import java.io.IOException;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
+import java.util.Map;
 
 public class GroupObjectController implements GroupObjectLogicsSupplier {
 

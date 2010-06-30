@@ -1,15 +1,11 @@
 package platform.client.logics;
 
-import net.sf.jasperreports.engine.design.JasperDesign;
 import platform.client.logics.classes.ClientClass;
 import platform.client.navigator.ClientNavigatorElement;
-import platform.client.form.ClientReportData;
-import platform.interop.UserInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 

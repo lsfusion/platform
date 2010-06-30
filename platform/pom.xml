@@ -60,6 +60,7 @@
     <modules>
         <module>api</module>
         <module>client</module>
+        <module>fullclient</module>
         <module>server</module>
         <module>tmc</module>
     </modules>
@@ -74,6 +75,11 @@
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>fullclient</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

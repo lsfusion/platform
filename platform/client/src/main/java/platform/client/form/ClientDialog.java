@@ -1,14 +1,17 @@
 package platform.client.form;
 
+import platform.client.SwingUtils;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
-import platform.client.SwingUtils;
 import platform.interop.form.RemoteDialogInterface;
 
 import javax.swing.*;
-import java.io.IOException;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class ClientDialog extends JDialog {
 

@@ -1,31 +1,32 @@
 package platform.client.form.grid;
 
-import platform.client.form.ClientFormTable;
-import platform.client.form.ClientForm;
-import platform.client.form.GroupObjectLogicsSupplier;
-import platform.client.form.sort.GridHeaderRenderer;
-import platform.client.form.sort.GridHeaderMouseListener;
-import platform.client.form.cell.ClientCellViewTable;
-import platform.client.form.cell.ClientAbstractCellRenderer;
-import platform.client.form.cell.ClientAbstractCellEditor;
-import platform.client.logics.*;
-import platform.client.SwingUtils;
-import platform.interop.Scroll;
-import platform.interop.Order;
 import platform.base.BaseUtils;
+import platform.client.SwingUtils;
+import platform.client.form.ClientForm;
+import platform.client.form.ClientFormTable;
+import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.cell.ClientAbstractCellEditor;
+import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.cell.ClientCellViewTable;
+import platform.client.form.sort.GridHeaderMouseListener;
+import platform.client.form.sort.GridHeaderRenderer;
+import platform.client.logics.ClientCellView;
+import platform.client.logics.ClientGroupObjectValue;
+import platform.interop.Order;
+import platform.interop.Scroll;
 
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.*;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.ListSelectionEvent;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.awt.event.*;
-import java.awt.*;
-import java.io.IOException;
 
 public abstract class GridTable extends ClientFormTable
                                implements ClientCellViewTable {

@@ -3,9 +3,9 @@ package platform.client.form.editor;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.CellDesign;
 
-import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.util.EventObject;
 

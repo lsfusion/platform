@@ -1,15 +1,15 @@
 package platform.client.logics;
 
+import platform.base.BaseUtils;
 import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.base.BaseUtils;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.rmi.RemoteException;
+import java.util.Collection;
 
 public class ClientObjectCellView extends ClientObjectView {
 

@@ -1,18 +1,17 @@
 package platform.client.form.editor;
 
-import platform.client.form.PropertyEditorComponent;
-import platform.client.form.ClientForm;
-import platform.client.form.ClientDialog;
-import platform.client.form.ClientNavigatorDialog;
 import platform.client.SwingUtils;
-import platform.interop.form.RemoteFormInterface;
+import platform.client.form.ClientDialog;
+import platform.client.form.ClientForm;
+import platform.client.form.ClientNavigatorDialog;
+import platform.client.form.PropertyEditorComponent;
 import platform.interop.form.RemoteDialogInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.rmi.RemoteException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.EventObject;
 
 public class ObjectPropertyEditor extends JDialog implements PropertyEditorComponent {

@@ -1,18 +1,15 @@
 package platform.client.form.editor;
 
+import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.classes.ClassDialog;
-import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.classes.ClientConcreteClass;
-import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
-import platform.client.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.EventObject;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.EventObject;
 
 public class ClassPropertyEditor extends JComponent implements PropertyEditorComponent {
 

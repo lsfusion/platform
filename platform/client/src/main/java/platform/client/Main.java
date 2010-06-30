@@ -1,24 +1,33 @@
 package platform.client;
 
-import platform.client.layout.DockingMainFrame;
-import platform.client.layout.MainFrame;
-import platform.client.layout.SimpleMainFrame;
-import platform.interop.RemoteLogicsInterface;
-import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
 import platform.client.form.SimplexLayout;
+import platform.interop.RemoteLogicsInterface;
+import platform.interop.form.RemoteFormInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.rmi.Naming;
 import java.io.IOException;
+import java.rmi.Naming;
 
 public class Main {
 
     public static MainFrame frame;
 
-    public static void main(final String[] args) {
+    public interface ModuleFactory {
+        MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException;
+
+        void runExcel(RemoteFormInterface remoteForm);
+
+        boolean isFull();
+    }
+
+    public static ModuleFactory module;
+    public static void start(final String[] args, ModuleFactory startModule) {
+        module = startModule;
 
         try {
             loadLibraries();
@@ -43,11 +52,7 @@ public class Main {
                     RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator("user1", "", remoteLogics.getComputers().iterator().next());
                     if (remoteNavigator == null) return;
 
-                    String forms = System.getProperty("platform.client.forms");
-                    if (forms == null)
-                        frame = new DockingMainFrame(remoteNavigator);
-                    else
-                        frame = new SimpleMainFrame(remoteNavigator, forms);
+                    frame = module.initFrame(remoteNavigator);
 
                     // вот таким вот извращенным методом приходится отключать SimplexLayout, чтобы он не вызывался по два раза
                     // проблема в том, что setVisible сразу вызывает отрисовку, а setExtendedState "моделирует" нажатии кнопки ОС и все идет просто в EventDispatchThread
@@ -63,7 +68,25 @@ public class Main {
 
             }
        }.start();
+    }
 
+    public static void main(final String[] args) {
+        start(args, new ModuleFactory() {
+            public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+                String forms = System.getProperty("platform.client.forms");
+                if(forms==null)
+                    throw new RuntimeException("Не задано свойство : -Dplatform.client.forms=formID1,formID2,... ");
+                return new SimpleMainFrame(remoteNavigator, forms);
+            }
+
+            public void runExcel(RemoteFormInterface remoteForm) {
+                // not supported
+            }
+
+            public boolean isFull() {
+                return false;
+            }
+        });
     }
 
     // будет загружать все не кросс-платформенные библиотеки

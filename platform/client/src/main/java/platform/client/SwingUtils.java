@@ -1,17 +1,12 @@
 package platform.client;
 
-import platform.client.form.ClientForm;
-import platform.client.form.classes.ClassDialog;
-
 import javax.swing.*;
-import javax.swing.Timer;
-import javax.swing.plaf.ActionMapUIResource;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.InputEvent;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class SwingUtils {
 

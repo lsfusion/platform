@@ -1,8 +1,9 @@
 package platform.client.logics.classes;
 
-import platform.client.form.*;
-import platform.client.form.renderer.DatePropertyRenderer;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
+import platform.client.form.renderer.DatePropertyRenderer;
 import platform.interop.CellDesign;
 
 import java.io.DataInputStream;

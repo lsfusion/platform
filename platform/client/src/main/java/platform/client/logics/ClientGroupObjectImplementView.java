@@ -1,7 +1,7 @@
 package platform.client.logics;
 
-import platform.base.IDGenerator;
 import platform.base.DefaultIDGenerator;
+import platform.base.IDGenerator;
 
 import java.io.DataInputStream;
 import java.io.IOException;

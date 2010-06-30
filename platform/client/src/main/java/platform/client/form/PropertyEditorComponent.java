@@ -1,8 +1,8 @@
 package platform.client.form;
 
 import java.awt.*;
-import java.rmi.RemoteException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.EventObject;
 
 public interface PropertyEditorComponent {

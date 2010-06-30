@@ -1,15 +1,14 @@
-package platform.client.layout;
+package platform.client;
 
-import net.sf.jasperreports.engine.JRException;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.awt.*;
 
 public abstract class MainFrame extends JFrame {
 
@@ -30,6 +29,6 @@ public abstract class MainFrame extends JFrame {
         setTitle("LS Fusion - " + inputStream.readObject());
     }
 
-    public abstract void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException;
-    public abstract void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException;
+    public abstract void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException;
+    public abstract void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException;
 }

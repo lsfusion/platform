@@ -1,7 +1,7 @@
 package platform.client.logics;
 
-import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.form.layout.SimplexConstraints;
 
 import java.io.DataInputStream;
 import java.io.IOException;

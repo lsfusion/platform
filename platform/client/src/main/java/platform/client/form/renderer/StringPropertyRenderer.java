@@ -5,7 +5,6 @@ import platform.interop.CellDesign;
 
 import javax.swing.*;
 import java.text.Format;
-import java.awt.*;
 
 public class StringPropertyRenderer extends LabelPropertyRenderer
                              implements PropertyRendererComponent {

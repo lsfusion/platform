@@ -41,10 +41,6 @@
     <dependencies>
       <dependency>
           <groupId>by.luxsoft.platform</groupId>
-          <artifactId>api</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>by.luxsoft.platform</groupId>
           <artifactId>server</artifactId>
       </dependency>
       <dependency>

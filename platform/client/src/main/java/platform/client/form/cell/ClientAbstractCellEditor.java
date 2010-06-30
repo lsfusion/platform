@@ -1,17 +1,17 @@
 package platform.client.form.cell;
 
-import platform.client.logics.ClientCellView;
+import platform.base.BaseUtils;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
-import platform.base.BaseUtils;
+import platform.client.logics.ClientCellView;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
-import java.util.EventObject;
-import java.rmi.RemoteException;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.*;
+import java.rmi.RemoteException;
+import java.util.EventObject;
 
 public class ClientAbstractCellEditor extends AbstractCellEditor
                          implements TableCellEditor {

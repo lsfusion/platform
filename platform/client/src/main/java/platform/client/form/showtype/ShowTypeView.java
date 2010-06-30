@@ -4,8 +4,8 @@ import platform.client.form.GroupObjectLogicsSupplier;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Enumeration;
 
 public abstract class ShowTypeView extends JPanel implements ActionListener {

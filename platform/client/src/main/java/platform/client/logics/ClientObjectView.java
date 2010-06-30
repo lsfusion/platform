@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Collection;
-import java.awt.*;
 
 public abstract class ClientObjectView extends ClientCellView {
 

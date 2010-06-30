@@ -1,15 +1,14 @@
 package platform.client.form.panel;
 
-import platform.client.logics.*;
 import platform.client.form.ClientForm;
-import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ClientFormLayout;
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.CellController;
+import platform.client.logics.*;
 
 import javax.swing.*;
-import java.util.Map;
 import java.util.HashMap;
-import java.awt.event.KeyEvent;
+import java.util.Map;
 
 public abstract class PanelController {
 

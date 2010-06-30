@@ -1,9 +1,9 @@
 package platform.client.form.sort;
 
-import platform.client.logics.ClientCellView;
+import platform.client.Main;
 
-import javax.swing.table.TableCellRenderer;
 import javax.swing.*;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
 public abstract class GridHeaderRenderer implements TableCellRenderer {
@@ -24,7 +24,7 @@ public abstract class GridHeaderRenderer implements TableCellRenderer {
                                                    int row,
                                                    int column) {
 
-        if (value instanceof String)
+        if (Main.module.isFull() && value instanceof String)
             value = "<html>" + value + "</html>";
 
         Component comp = tableCellRenderer.getTableCellRendererComponent(itable,

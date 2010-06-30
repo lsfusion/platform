@@ -1,16 +1,16 @@
 package platform.client.logics.classes;
 
-import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
+import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.logics.ClientCellView;
 import platform.interop.CellDesign;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.Format;
-import java.awt.*;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 

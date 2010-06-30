@@ -9,16 +9,16 @@ import bibliothek.gui.dock.DefaultDockable;
 import bibliothek.gui.dock.FlapDockStation;
 import bibliothek.gui.dock.SplitDockStation;
 import bibliothek.gui.dock.StackDockStation;
-import bibliothek.gui.dock.station.split.SplitDockTree;
 import bibliothek.gui.dock.control.SingleParentRemover;
 import bibliothek.gui.dock.event.DockFrontendAdapter;
 import bibliothek.gui.dock.facile.action.ReplaceActionGuard;
+import bibliothek.gui.dock.station.split.SplitDockTree;
 import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
 import bibliothek.notes.view.menu.ThemeMenu;
 import net.sf.jasperreports.engine.JRException;
-import platform.client.Main;
 import platform.client.Log;
+import platform.client.MainFrame;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.form.RemoteFormInterface;
@@ -40,11 +40,11 @@ public class DockingMainFrame extends MainFrame implements ComponentCollector {
 
         ClientNavigator mainNavigator = new ClientNavigator(remoteNavigator) {
 
-            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
+            public void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 defaultStation.drop(new ClientFormDockable(element.ID, this, false));
             }
 
-            public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException, JRException {
+            public void openRelevantForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
                 defaultStation.drop(element.isPrintForm?new ReportDockable(element.ID, this, true):new ClientFormDockable(element.ID, this, true));
             }
         };
@@ -66,13 +66,17 @@ public class DockingMainFrame extends MainFrame implements ComponentCollector {
     }
 
     @Override
-    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException, JRException {
+    public void runReport(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
         defaultStation.drop(new ReportDockable(clientNavigator, remoteForm));
     }
 
     @Override
-    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
-        defaultStation.drop(new ClientFormDockable(clientNavigator, remoteForm));
+    public void runForm(ClientNavigator clientNavigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+        try {
+            defaultStation.drop(new ClientFormDockable(clientNavigator, remoteForm));
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private DockFrontend frontend;

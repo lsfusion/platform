@@ -6,18 +6,20 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
-import platform.client.*;
+import platform.client.Log;
+import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.logics.*;
-import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.logics.classes.ClientClass;
-import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientConcreteClass;
-import platform.client.layout.ReportDockable;
+import platform.client.logics.classes.ClientObjectClass;
+import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.CompressingInputStream;
-import platform.interop.Scroll;
 import platform.interop.Order;
-import platform.interop.action.*;
+import platform.interop.Scroll;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientActionResult;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.response.ChangeGroupObjectResponse;
 import platform.interop.form.response.ChangePropertyViewResponse;
@@ -27,12 +29,12 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
-import java.rmi.RemoteException;
-import java.io.IOException;
-import java.io.DataInputStream;
-import java.io.ByteArrayInputStream;
 
 public class ClientForm extends JPanel {
 
@@ -55,6 +57,23 @@ public class ClientForm extends JPanel {
         return ID;
     }
 
+    private static final Map<Integer, ClientFormView> cacheClientFormView = new HashMap<Integer, ClientFormView>();
+
+    private static ClientFormView cacheClientFormView(RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
+
+        int ID = remoteForm.getID();
+
+        if (!cacheClientFormView.containsKey(ID)) {
+
+            byte[] state = remoteForm.getRichDesignByteArray();
+            Log.incrementBytesReceived(state.length);
+
+            cacheClientFormView.put(ID, new ClientFormView(new DataInputStream(new CompressingInputStream(new ByteArrayInputStream(state)))));
+        }
+
+        return cacheClientFormView.get(ID);
+    }
+
     public ClientForm(RemoteFormInterface iremoteForm, ClientNavigator iclientNavigator) throws IOException, ClassNotFoundException {
 
         // Форма нужна, чтобы с ней общаться по поводу данных и прочих
@@ -65,7 +84,7 @@ public class ClientForm extends JPanel {
 
         actionDispatcher = new ClientFormActionDispatcher(clientNavigator);
 
-        formView = ClientObjectProxy.retrieveClientFormView(remoteForm);
+        formView = cacheClientFormView(remoteForm);
 
         // так неправильно делать по двум причинам :
         // 1. лишний ping
@@ -331,23 +350,34 @@ public class ClientForm extends JPanel {
 
         // Добавляем стандартные кнопки
 
-        AbstractAction printAction = new AbstractAction("Печать (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
+        if(Main.module.isFull()) {
+            AbstractAction printAction = new AbstractAction("Печать (" + SwingUtils.getKeyStrokeCaption(altP) + ")") {
 
-            public void actionPerformed(ActionEvent ae) {
-                print();
-            }
-        };
-        JButton buttonPrint = new JButton(printAction);
-        buttonPrint.setFocusable(false);
+                public void actionPerformed(ActionEvent ae) {
+                    print();
+                }
+            };
+            am.put("altPPressed", printAction);
 
-        AbstractAction xlsAction = new AbstractAction("Excel (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
+            JButton buttonPrint = new JButton(printAction);
+            buttonPrint.setFocusable(false);
 
-            public void actionPerformed(ActionEvent ae) {
-                ReportDockable.exportToExcel(remoteForm);
-            }
-        };
-        JButton buttonXls = new JButton(xlsAction);
-        buttonXls.setFocusable(false);
+            AbstractAction xlsAction = new AbstractAction("Excel (" + SwingUtils.getKeyStrokeCaption(altX) + ")") {
+
+                public void actionPerformed(ActionEvent ae) {
+                    Main.module.runExcel(remoteForm);
+                }
+            };
+            am.put("altXPressed", xlsAction);
+
+            JButton buttonXls = new JButton(xlsAction);
+            buttonXls.setFocusable(false);
+
+            if (!isDialogMode()) {
+                formLayout.add(formView.printView, buttonPrint);
+                formLayout.add(formView.xlsView, buttonXls);
+            }            
+        }
 
         AbstractAction nullAction = new AbstractAction("Сбросить (" + SwingUtils.getKeyStrokeCaption(altDel) + ")") {
 
@@ -403,8 +433,6 @@ public class ClientForm extends JPanel {
         JButton buttonClose = new JButton(closeAction);
         buttonClose.setFocusable(false);
 
-        am.put("altPPressed", printAction);
-        am.put("altXPressed", xlsAction);
         am.put("f5Pressed", refreshAction);
 
         formLayout.add(formView.refreshView, buttonRefresh);
@@ -414,8 +442,6 @@ public class ClientForm extends JPanel {
             am.put("enterPressed", applyAction);
             am.put("escPressed", cancelAction);
 
-            formLayout.add(formView.printView, buttonPrint);
-            formLayout.add(formView.xlsView, buttonXls);
             formLayout.add(formView.applyView, buttonApply);
             formLayout.add(formView.cancelView, buttonCancel);
 

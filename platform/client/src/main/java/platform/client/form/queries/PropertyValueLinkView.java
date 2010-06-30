@@ -1,13 +1,13 @@
 package platform.client.form.queries;
 
+import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientPropertyValueLink;
 import platform.client.logics.ClientPropertyView;
-import platform.client.form.GroupObjectLogicsSupplier;
 
 import javax.swing.*;
-import java.util.Vector;
-import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.Vector;
 
 class PropertyValueLinkView extends ValueLinkView {
 

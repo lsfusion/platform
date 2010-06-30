@@ -3,9 +3,9 @@ package platform.client.logics;
 import platform.base.OrderedMap;
 import platform.client.logics.classes.ClientClass;
 
-import java.io.Serializable;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 public class ClientGroupObjectClass extends OrderedMap<ClientObjectImplementView,ClientClass>
                              implements Serializable {

@@ -1,8 +1,8 @@
 package platform.client.form.grid;
 
-import platform.client.form.queries.QueryView;
 import platform.client.form.ClientForm;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.queries.QueryView;
 
 import javax.swing.*;
 import java.awt.*;

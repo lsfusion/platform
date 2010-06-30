@@ -1,7 +1,7 @@
 package platform.client.logics;
 
-import platform.base.OrderedMap;
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

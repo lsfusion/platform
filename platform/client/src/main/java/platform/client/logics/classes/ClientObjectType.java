@@ -1,8 +1,8 @@
 package platform.client.logics.classes;
 
-import platform.client.form.PropertyRendererComponent;
-import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
@@ -10,10 +10,10 @@ import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientCellView;
 import platform.interop.CellDesign;
 
+import java.awt.*;
+import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
-import java.io.IOException;
-import java.awt.*;
 
 public class ClientObjectType implements ClientType {
 

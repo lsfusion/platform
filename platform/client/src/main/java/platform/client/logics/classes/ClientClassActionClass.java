@@ -1,12 +1,9 @@
 package platform.client.logics.classes;
 
-import platform.client.logics.classes.ClientActionClass;
-import platform.client.logics.classes.ClientObjectClass;
-import platform.client.logics.ClientCellView;
-import platform.client.form.PropertyEditorComponent;
 import platform.client.form.ClientForm;
-import platform.client.form.editor.ClassPropertyEditor;
+import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.ClassActionPropertyEditor;
+import platform.client.logics.ClientCellView;
 import platform.interop.CellDesign;
 
 import java.io.DataInputStream;

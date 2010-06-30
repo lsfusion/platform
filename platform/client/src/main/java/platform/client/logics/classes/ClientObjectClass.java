@@ -2,8 +2,8 @@ package platform.client.logics.classes;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ClientObjectClass extends ClientClass {
 

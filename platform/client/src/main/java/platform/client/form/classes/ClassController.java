@@ -1,16 +1,14 @@
 package platform.client.form.classes;
 
-import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.classes.ClientObjectClass;
-import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.ClientForm;
 import platform.client.form.ClientFormLayout;
+import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.classes.ClientConcreteClass;
+import platform.client.logics.classes.ClientObjectClass;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
-import javax.swing.*;
 import java.io.IOException;
-import java.awt.event.*;
 
 public class ClassController {
 

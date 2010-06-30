@@ -1,14 +1,13 @@
 package platform.client.form.cell;
 
-import platform.client.form.SingleCellTable;
-import platform.client.form.ClientForm;
-import platform.client.logics.ClientCellView;
 import platform.base.BaseUtils;
+import platform.client.form.ClientForm;
+import platform.client.form.SingleCellTable;
+import platform.client.logics.ClientCellView;
 
-import javax.swing.table.AbstractTableModel;
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import java.awt.event.KeyEvent;
-import java.awt.*;
 import java.util.EventObject;
 
 public abstract class CellTable extends SingleCellTable

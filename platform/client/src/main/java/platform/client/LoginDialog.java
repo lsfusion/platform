@@ -1,16 +1,15 @@
 package platform.client;
 
-import platform.interop.navigator.RemoteNavigatorInterface;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
-import java.awt.event.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.rmi.RemoteException;
-
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.Spacer;
 
 public class LoginDialog extends JDialog {
 

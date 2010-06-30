@@ -1,12 +1,12 @@
 package platform.client.form.cell;
 
-import platform.client.logics.ClientCellView;
 import platform.client.form.PropertyRendererComponent;
+import platform.client.logics.ClientCellView;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
 
 // приходится наследоваться от JComponent только для того, чтобы поддержать updateUI
 public class ClientAbstractCellRenderer extends JComponent

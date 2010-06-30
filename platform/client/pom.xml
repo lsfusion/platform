@@ -45,7 +45,7 @@
                   </execution>
                 </executions>
               </plugin>
-              <plugin>
+              <!--plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                   <execution>
@@ -60,7 +60,7 @@
                     </goals>
                   </execution>
                 </executions>
-              </plugin>
+              </plugin-->
              <plugin>
                  <groupId>org.codehaus.mojo</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
@@ -86,39 +86,9 @@
         <artifactId>api</artifactId>
     </dependency>
     <dependency>
-        <groupId>jasperreports</groupId>
-        <artifactId>jasperreports</artifactId>
-        <version>3.7.2</version>
-    </dependency>
-    <dependency>
         <groupId>com.toedter</groupId>
         <artifactId>jcalendar</artifactId>
         <version>1.3.2</version>
-    </dependency>
-    <dependency>
-        <groupId>bibliothek.gui</groupId>
-        <artifactId>demonstration</artifactId>
-        <version>1.0.7</version>
-    </dependency>
-    <dependency>
-        <groupId>bibliothek.gui</groupId>
-        <artifactId>notes</artifactId>
-        <version>1.0.7</version>
-    </dependency>
-    <dependency>
-        <groupId>bibliothek.gui</groupId>
-        <artifactId>dockingFramesCore</artifactId>
-        <version>1.0.7</version>
-    </dependency>
-    <dependency>
-        <groupId>bibliothek.gui</groupId>
-        <artifactId>dockingFramesCommon</artifactId>
-        <version>1.0.7</version>
-    </dependency>
-    <dependency>
-        <groupId>bibliothek.gui</groupId>
-        <artifactId>interfaces</artifactId>
-        <version>1.0.7</version>
     </dependency>
     <dependency>
         <groupId>com.intellij</groupId>
@@ -130,15 +100,5 @@
          <artifactId>aspectjrt</artifactId>
          <version>1.6.8</version>
      </dependency>
-    <dependency>
-        <groupId>org.apache.poi</groupId>
-        <artifactId>poi</artifactId>
-        <version>3.5-FINAL</version>
-    </dependency>
-    <dependency>
-        <groupId>net.sourceforge.jexcelapi</groupId>
-        <artifactId>jxl</artifactId>
-        <version>2.6</version>
-    </dependency>
   </dependencies>
 </project>

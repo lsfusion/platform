@@ -1,5 +1,6 @@
 package platform.client.layout;
 
+import net.sf.jasperreports.engine.JRException;
 import platform.client.form.ClientForm;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
@@ -7,11 +8,9 @@ import platform.interop.form.RemoteFormInterface;
 import java.awt.*;
 import java.io.IOException;
 
-import net.sf.jasperreports.engine.JRException;
-
 public class ClientFormDockable extends FormDockable {
 
-    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+    public ClientFormDockable(int iformID, ClientNavigator inavigator, boolean currentSession) throws IOException, ClassNotFoundException {
         super(iformID, inavigator, currentSession);
     }
 

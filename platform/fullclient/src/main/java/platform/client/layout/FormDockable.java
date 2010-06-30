@@ -7,20 +7,18 @@ import platform.interop.form.RemoteFormInterface;
 import java.awt.*;
 import java.io.IOException;
 
-import net.sf.jasperreports.engine.JRException;
-
 // уничтожаемые формы
 abstract class FormDockable extends DefaultDockable {
 
     final int formID;
 
-    public FormDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+    public FormDockable(int iformID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
         this(iformID);
 
         createActiveComponent(navigator, navigator.remoteNavigator.createForm(formID, currentSession));
     }
 
-    FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+    protected FormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         this(remoteForm.getID());
 
         createActiveComponent(navigator, remoteForm);
@@ -31,7 +29,7 @@ abstract class FormDockable extends DefaultDockable {
         setFactoryID(ClientFormFactory.FACTORY_ID);
     }
 
-    void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+    void createActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         setActiveComponent(getActiveComponent(navigator, remoteForm), navigator.remoteNavigator.getCaption(formID));
     }
 
@@ -41,7 +39,7 @@ abstract class FormDockable extends DefaultDockable {
         add(comp);
     }
 
-    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException { return null; }
+    Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException { return null; }
 
 //    FormDockable(String caption) {super(caption);}
 //    FormDockable(Component Component,String caption) {super(Component,caption);}

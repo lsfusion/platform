@@ -1,6 +1,5 @@
 package platform.client.logics.classes;
 
-import platform.client.logics.classes.ClientClassActionClass;
 import platform.interop.Data;
 
 import java.io.DataInputStream;

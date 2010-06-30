@@ -1,16 +1,13 @@
 package platform.client.form;
 
-import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.classes.ClientObjectClass;
-import platform.client.logics.classes.ClientConcreteClass;
 import platform.client.form.classes.ClassController;
 import platform.client.form.classes.ClassDialog;
+import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.classes.ClientConcreteClass;
+import platform.client.logics.classes.ClientObjectClass;
 import platform.interop.ClassViewType;
 
-import javax.swing.*;
 import java.io.IOException;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 class ObjectController {
 

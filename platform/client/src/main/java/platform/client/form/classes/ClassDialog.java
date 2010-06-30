@@ -1,15 +1,15 @@
 package platform.client.form.classes;
 
-import platform.client.logics.ClientObjectImplementView;
-import platform.client.logics.classes.ClientConcreteClass;
-import platform.client.logics.classes.ClientClass;
-import platform.client.logics.classes.ClientObjectClass;
 import platform.client.SwingUtils;
+import platform.client.logics.ClientObjectImplementView;
+import platform.client.logics.classes.ClientClass;
+import platform.client.logics.classes.ClientConcreteClass;
+import platform.client.logics.classes.ClientObjectClass;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 public class ClassDialog extends JDialog {

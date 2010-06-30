@@ -1,16 +1,11 @@
 package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
-import platform.client.form.ClientForm;
-import platform.client.form.ClientDialog;
-import platform.client.form.ClientNavigatorDialog;
-import platform.interop.form.RemoteFormInterface;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.util.EventObject;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.EventObject;
 
 public class ActionPropertyEditor implements PropertyEditorComponent {
 
