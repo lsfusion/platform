@@ -47,10 +47,10 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
     AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs;
 
-    ConcreteCustomClass  currency, exOperation, section, inOperation, outOperation, salary, extraCost, person, pay, absMonth, extraSection, mission, misOperation, department, sectionOut;
+    ConcreteCustomClass  currency, exOperation, section, inOperation, outOperation, salary, extraCost, person, pay, absMonth, extraSection, mission, misOperation, department, sectionOut, city;
 
     protected void initClasses() {
-        operation = addAbstractClass("Операции", namedObject, transaction);
+        operation = addAbstractClass("Операции", transaction);
         inAbsOperation = addAbstractClass("Абс. приход", operation);
         outAbsOperation = addAbstractClass("Абс. расход", operation);
         absOutPerson = addAbstractClass("Абс. расход сотруд.", outAbsOperation);
@@ -73,6 +73,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         department = addConcreteClass(14, "Отдел", namedObject);
         sectionOut = addConcreteClass(15, "Статья расх.", namedObject);
+        city = addConcreteClass(16, "Город", namedObject);
     }
 
     LP groupBalanceQuantity, inSum, outSum, inCur, outCur, salaryExtraCost, outPerson, outYear, outMonth, operationDepartment, personDepartment;
@@ -88,7 +89,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP hourInDay = addSFProp("((prm1)*8)", IntegerClass.instance, 1);
         LP dayCount = addDProp("dayCount", IntegerClass.instance, absMonth);
 
-
         LP payRate = addDProp(baseGroup, "rateP", "Курс", DoubleClass.instance, pay);
         LP extraRate = addDProp(baseGroup, "rateExtra", "Курс", DoubleClass.instance, extraCost);
 
@@ -96,21 +96,22 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         outMonth = addDProp("outM", "Месяц", absMonth, absOutTime);
         outYear = addDProp("outY", "Год", IntegerClass.instance, absOutTime);
 
-        LP missionCity = addDProp(baseGroup, "misCity", "Город", StringClass.get(15), mission);
+        LP missionCity = addDProp("misCity", "Город", city, mission);
         LP departDate = addDProp(baseGroup, "depDate", "Отъезд", DateClass.instance, mission);
         LP arrivalDate = addDProp(baseGroup, "arrDate", "Приезд", DateClass.instance, mission);
         LP comment = addDProp(baseGroup, "misComm", "Коментарий", StringClass.get(50), mission);
         LP isPersonMission = addDProp(baseGroup, "isPM", "Наличие", LogicalClass.instance, person, mission);
         LP payOperationDepartment = addJProp(personDepartment, outPerson, 1);
 
-        missionOperation = addDProp("misOp", "Валюта пр.", mission, misOperation);
+        missionOperation = addDProp("misOp", "Командировка", mission, misOperation);
 
         inCur = addDProp("inCurrency", "Валюта пр.", currency, inAbsOperation);
         outCur = addDProp("outCurrency", "Валюта расх.", currency, outAbsOperation);
 
         LP inCurName = addJProp(baseGroup, "Валюта прих.", name, inCur, 1);
+        addJProp(baseGroup, "Город", name, missionCity, 1);
 
-        inSum = addDProp(baseGroup, "inSum", "Сумма прихода", DoubleClass.instance, inOperation);
+        inSum = addDProp(baseGroup, "inSum", "Сумма прихода", DoubleClass.instance, inAbsOperation);
         outSum = addDProp(baseGroup, "outSum", "Сумма расхода", DoubleClass.instance, outAbsOperation);
 
         LP outCurName = addJProp(baseGroup, "Валюта расх.", name, outCur, 1);       
@@ -122,24 +123,24 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP outSection = addDProp("outSection", "Статья расх.", sectionOut, outOperation);
         LP outSectionName = addJProp(baseGroup, "Статья расх.", name, outSection, 1);
 
-        exRate = addDProp(baseGroup, "rate", "Курс операции", DoubleClass.instance, exOperation);
+        //exRate = addDProp(baseGroup, "rate", "Курс операции", DoubleClass.instance, exOperation);
 
-        LP incOpVal =  addJProp("Кол-во прихода", and1, inSum, 1, is(inOperation), 1);
+       // LP incOpVal =  addJProp("Кол-во прихода", and1, inSum, 1, is(inOperation), 1);
         LP decVal =  addJProp("Расход", and1, outSum, 1, is(outAbsOperation), 1);
-        LP incExCalc = addJProp("Приход обмена", multiplyDouble2, outSum, 1, exRate, 1);
-        LP incExVal = addJProp("Приход обмена", and1, incExCalc, 1, is(exOperation), 1);
-        LP incVal = addCUProp(inOperationGroup, "Приход",  incOpVal, incExVal);
+        //LP incExCalc = addJProp("Приход обмена", multiplyDouble2, outSum, 1, exRate, 1);
+        //LP incExVal = addJProp("Приход обмена", and1, incExCalc, 1, is(exOperation), 1);
+        //LP incVal = addCUProp(inOperationGroup, "Приход",  incOpVal, incExVal);
 
         LP outComment = addDProp(baseGroup, "comment", "Коментарий", StringClass.get(40), operation);
         //department
         opDep = addCUProp(operationDepartment, payOperationDepartment);
-        LP incDepSum = addSGProp(baseGroup, "Приход по отделу", incVal, inCur, 1, opDep, 1);
+        LP incDepSum = addSGProp(baseGroup, "Приход по отделу", inSum, inCur, 1, opDep, 1);
         LP decDepSum = addSGProp(baseGroup, "Расход по отделу", decVal, outCur, 1, opDep, 1);
         LP depBalanceQuantity = addDUProp(baseGroup, "Ост. по отделу", incDepSum, decDepSum);
         //
 
 
-        LP incSum = addSGProp(baseGroup, "Приход по валюте", incVal, inCur, 1);
+        LP incSum = addSGProp(baseGroup, "Приход по валюте", inSum, inCur, 1);
         LP decSum = addSGProp(baseGroup, "Расход по валюте", decVal, outCur, 1);
 
         balanceQuantity = addDUProp(baseGroup, "Ост. по валюте", incSum, decSum);
@@ -155,6 +156,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP hourInMonth = addDProp("hourInM", "Часов отраб.", DoubleClass.instance, person, absMonth, IntegerClass.instance);
         LP hourInMonthOv = addSUProp(dateTimeGroup, "dayWorkInMOv", "Часов отраб.", Union.OVERRIDE, addJProp(hourInDay, dayInMonthOv, 1, 2, 3), hourInMonth);
         LP extraInMonth = addDProp(baseGroup, "extraInM", "Затраты",DoubleClass.instance, extraSection, absMonth, IntegerClass.instance);
+        LP extraAdminInMonth = addDProp(baseGroup, "extraAdminInM", "Админ. затраты",DoubleClass.instance, department, absMonth, IntegerClass.instance);
         LP currencyExtraInMonth = addDProp("currencyExtraInM", currency, extraSection, absMonth, IntegerClass.instance);
 
         addJProp(salaryGroup, "Валюта", name, currencyInMonth, 1, 2 ,3);
@@ -188,6 +190,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         LP roundExtra = addJProp(baseGroup, "Доп. затраты", calcExtraCoef, dayInMonthOv, 1, 2, 3, extraTotal, 1, 2, 3, addJProp(and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
 
         LP extraComTotal = addSGProp(extraGroup, "Общ. затр.", roundExtra, personDepartment, 1, 2, 3);
+        LP extraDepartmentTotal = addSUProp(baseGroup, "Всего затрат", Union.SUM, extraComTotal, extraAdminInMonth);
         //addConstraint(addJProp("Много затрат", greater2, extraTotal, 1, 2, 3, maxExtraTotal, 2, 3, 1), false);
 
         /*
@@ -240,6 +243,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         tableFactory.include("extraCurrency", extraSection, absMonth, IntegerClass.instance);
         tableFactory.include("isAddToSum", person, extraSection, absMonth, IntegerClass.instance);
         tableFactory.include("workDays", absMonth, IntegerClass.instance);
+        tableFactory.include("adminExtra", department, absMonth, IntegerClass.instance);
     }
 
     protected void initIndexes() {
@@ -309,6 +313,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addPropertyView(objYearOp, objMonthOp, properties, baseGroup);
             addPropertyView(objYearOp, objMonthOp, properties, extraGroup);
             addPropertyView(objYearOp, objMonthOp, objDepartment, properties, extraGroup);
+            addPropertyView(objDepartment, objMonthOp, objYearOp,  properties, baseGroup);
            
             addObjectActions(this, objExtraStateOp);
             addObjectActions(this, objExtraOp);
@@ -407,12 +412,16 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
                         objDepartment.groupTo.initClassView = ClassViewType.PANEL;
                         objDepartment.groupTo.banClassView = ClassViewType.GRID | ClassViewType.HIDE;
             ObjectNavigator objCur = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
-            ObjectNavigator objInOp = addSingleGroupObjectImplement(inAbsOperation, "Операция пр.", properties, baseGroup);
-            ObjectNavigator objOutOp = addSingleGroupObjectImplement(outAbsOperation, "Операция расх.", properties, baseGroup);
-            addPropertyView(objCur, objInOp, properties, baseGroup);
-            addPropertyView(objCur, objOutOp, properties, baseGroup);
-            addPropertyView(objDepartment, objCur, properties, baseGroup);
-            addPropertyView(objInOp, properties, inOperationGroup);
+            ObjectNavigator objInOp = addSingleGroupObjectImplement(inAbsOperation, "Операция пр.", properties, baseGroup, true);
+            ObjectNavigator objOutOp = addSingleGroupObjectImplement(outAbsOperation, "Операция расх.", properties, baseGroup, true);
+            addPropertyView(properties, baseGroup, true, objCur, objInOp);
+            addPropertyView(properties, baseGroup, true, objCur, objOutOp);
+            //addPropertyView(objCur, objOutOp, properties, baseGroup);
+            //addPropertyView(objDepartment, objCur, properties, baseGroup);
+            //addPropertyView(objInOp, properties, inOperationGroup);
+            addPropertyView(properties, baseGroup, false, objDepartment, objCur);
+//            addPropertyView(properties, baseGroup, true, objInOp);
+//            addPropertyView(properties, baseGroup, true, objOutOp);
 
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(inCur, objInOp), Compare.EQUALS, objCur));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCur));
