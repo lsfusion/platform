@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jnlp spec="1.0+" codebase="file:///d:/projects/source/platform/client/target">
+<jnlp spec="1.0+" codebase="http://localhost/fusion/">
 <information>
-  <title>LS Fusion</title>
-  <vendor>Luxsoft Ltd</vendor>
+  <title>Fusion</title>
+  <vendor>Fusioners Ltd.</vendor>
   <homepage href="/site" />
-  <description>LS Fusion</description>
+  <description>Fusion - VED</description>
 </information>
 <security>
   <all-permissions/>
 </security>
 <resources>
-  <j2se version="1.6+" />
+  <j2se version="1.6+"/>
+  <property name="platform.client.forms" value="1,2,3,4,5"/>
   <jar href="client.jar"/>
 </resources>
 <application-desc>
