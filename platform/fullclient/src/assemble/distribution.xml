@@ -18,6 +18,7 @@
           <excludes>
               <exclude>META-INF/*.*</exclude>
               <exclude>license/**</exclude> <!-- какие то идиоты включили каталог license в jarку -->
+              <exclude>builddef.lst</exclude> <!-- он появляется и при сборке client.jar, пока исключу, хотя потом надо разобраться нафига он вообще формируется -->
           </excludes>
       </unpackOptions>
     </dependencySet>
