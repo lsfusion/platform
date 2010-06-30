@@ -14,7 +14,7 @@
       <dependency>
           <groupId>lpsolve</groupId>
           <artifactId>lpsolve</artifactId>
-          <version>5.5</version>
+          <version>5.5.1</version>
       </dependency>
       <dependency>
           <groupId>findbugs</groupId>

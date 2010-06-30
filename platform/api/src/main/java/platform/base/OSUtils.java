@@ -11,10 +11,9 @@ public class OSUtils {
            "Linux".equals(system) ? ".so" : ".dll";
 
         String myLibName = libName + libExtension;
-        File file = new File(myLibName);
+        File file = createUserFile(myLibName);
         if (!file.exists()) { // пока сделаем так, хотя это не очень правильно, так как желательно все-таки обновлять lpsolve
 
-            file.createNewFile();
             InputStream in = cls.getResourceAsStream(path + myLibName);
 
             FileOutputStream out = new FileOutputStream(file);
@@ -29,6 +28,17 @@ public class OSUtils {
             out.close();
         }
 
-        System.loadLibrary(libName);
+        System.load(file.getAbsolutePath());
+    }
+
+    public static File createUserFile(String fileName) {
+
+        String userDirPath = System.getProperty("user.home", "") + "/.fusion" ;
+        File userDir = new File(userDirPath);
+        if (!userDir.exists()) {
+            userDir.mkdirs(); // создаем каталог, на всякий случай, чтобы каждому не приходилось его создавать
+        }
+
+        return new File(userDirPath + "/" + fileName);
     }
 }
