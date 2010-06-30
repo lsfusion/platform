@@ -9,6 +9,9 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.*;
 import java.util.List;
 import java.io.IOException;
@@ -23,7 +26,7 @@ import platform.base.OSUtils;
  *
  * @author NewUser
  */
-public class SimplexLayout implements LayoutManager2 {
+public class SimplexLayout implements LayoutManager2, ComponentListener {
 
     public static boolean ignoreLayout = false;
     public boolean disableLayout = false;
@@ -47,23 +50,51 @@ public class SimplexLayout implements LayoutManager2 {
     }
     
     public void addLayoutComponent(String name, Component comp) {
-        if (allComponents.indexOf(comp) == -1) allComponents.add(comp);
+        addLayoutComponent(comp);
         constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
     }
 
     public void addLayoutComponent(Component comp, Object constr) {
-        if (allComponents.indexOf(comp) == -1) allComponents.add(comp);
+        addLayoutComponent(comp);
         if (constr != null)
             constraints.put(comp, (SimplexConstraints)constr);
         else
             constraints.put(comp, SimplexConstraints.DEFAULT_CONSTRAINT);
 //        System.out.println("addLayoutComp");
     }
-    
+
+    private void addLayoutComponent(Component comp) {
+
+        if (allComponents.indexOf(comp) == -1) {
+
+            allComponents.add(comp);
+            componentsChanged = true;
+            comp.addComponentListener(this);
+        }
+    }
+
     public void removeLayoutComponent(Component comp) {
+
         allComponents.remove(comp);
         constraints.remove(comp);
+
+        componentsChanged = true;
+        comp.removeComponentListener(this);
 //        System.out.println("removeLayoutComp");
+    }
+
+    public void componentResized(ComponentEvent e) {
+    }
+
+    public void componentMoved(ComponentEvent e) {
+    }
+
+    public void componentShown(ComponentEvent e) {
+        componentsChanged = true;
+    }
+
+    public void componentHidden(ComponentEvent e) {
+        componentsChanged = true;
     }
 
     public Dimension preferredLayoutSize(Container parent) {
@@ -77,8 +108,9 @@ public class SimplexLayout implements LayoutManager2 {
     public Dimension maximumLayoutSize(Container target) {
         return new Dimension(10000,10000);
     }
-    
-    List<Component> components;
+
+    private boolean componentsChanged = true;
+    private List<Component> components;
     boolean fillVisibleComponents() {
 
         components = new ArrayList<Component>();
@@ -94,6 +126,7 @@ public class SimplexLayout implements LayoutManager2 {
                 components.add(component);
         }
 
+        componentsChanged = false;
         return components.isEmpty();
     }
 
@@ -116,9 +149,13 @@ public class SimplexLayout implements LayoutManager2 {
 
         if (parent != mainContainer) return;
 
+        boolean dimensionChanged = !parent.getSize().equals(oldDimension);
+
+        if (!dimensionChanged && !componentsChanged) return;
+        
         if (fillVisibleComponents()) return;
 
-        if (parent.getSize().equals(oldDimension)) {
+        if (!dimensionChanged) {
 
             Map<Component,Rectangle> cachedCoords = cache.get(components);
             if (cachedCoords != null) {
