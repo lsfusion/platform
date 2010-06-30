@@ -1,4 +1,4 @@
-package platform.client.layout;
+package platform.fullclient.layout;
 
 import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.DockFactory;

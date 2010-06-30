@@ -1,4 +1,4 @@
-package platform.client.layout;
+package platform.fullclient.layout;
 
 import bibliothek.gui.dock.DefaultDockable;
 import platform.client.navigator.AbstractNavigator;

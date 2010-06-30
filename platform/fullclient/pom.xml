@@ -18,7 +18,7 @@
                   <configuration>
                       <archive>
                           <manifest>
-                              <mainClass>platform.client.FullMain</mainClass>
+                              <mainClass>platform.fullclient.FullMain</mainClass>
                           </manifest>
                           <manifestEntries>
                                 <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
@@ -33,7 +33,7 @@
                      <appendAssemblyId>false</appendAssemblyId>
                      <archive>
                          <manifest>
-                             <mainClass>platform.client.FullMain</mainClass>
+                             <mainClass>platform.fullclient.FullMain</mainClass>
                          </manifest>
                          <manifestEntries>
                                <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>

@@ -1,4 +1,4 @@
-package platform.client.layout;
+package platform.fullclient.layout;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.client.form.ClientForm;

@@ -1,4 +1,4 @@
-package platform.client.layout;
+package platform.fullclient.layout;
 
 import bibliothek.demonstration.util.LookAndFeelMenu;
 import bibliothek.gui.DockController;
@@ -17,7 +17,6 @@ import bibliothek.gui.dock.support.lookandfeel.ComponentCollector;
 import bibliothek.gui.dock.support.lookandfeel.LookAndFeelList;
 import bibliothek.notes.view.menu.ThemeMenu;
 import net.sf.jasperreports.engine.JRException;
-import platform.base.OSUtils;
 import platform.client.Log;
 import platform.client.MainFrame;
 import platform.client.navigator.ClientNavigator;
@@ -185,10 +184,8 @@ public class DockingMainFrame extends MainFrame implements ComponentCollector {
 
     }
 
-    private static String LAYOUT_STOREFILE = "layout.txt";
-
     void write() throws IOException {
-        FileOutputStream Source = new FileOutputStream(OSUtils.createUserFile(LAYOUT_STOREFILE));
+        FileOutputStream Source = new FileOutputStream("layout.txt");
         DataOutputStream out = new DataOutputStream(Source);
 
         lookAndFeels.write(out);
@@ -209,7 +206,7 @@ public class DockingMainFrame extends MainFrame implements ComponentCollector {
     static boolean readed = false;
 
     void read() throws IOException{
-        FileInputStream source = new FileInputStream(OSUtils.createUserFile(LAYOUT_STOREFILE));
+        FileInputStream source = new FileInputStream("layout.txt");
         DataInputStream in = new DataInputStream(source);
 
         lookAndFeels.read(in);

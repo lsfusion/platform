@@ -1,9 +1,11 @@
-package platform.client;
+package platform.fullclient;
 
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.client.layout.DockingMainFrame;
-import platform.client.layout.ReportDockable;
+import platform.fullclient.layout.DockingMainFrame;
+import platform.fullclient.layout.ReportDockable;
+import platform.client.Main;
+import platform.client.MainFrame;
 
 import java.io.IOException;
 
