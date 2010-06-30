@@ -19,6 +19,9 @@
                         <manifest>
                             <mainClass>platform.client.Main</mainClass>
                         </manifest>
+                        <manifestEntries>
+                              <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
+                      </manifestEntries>
                     </archive>
                 </configuration>
              </plugin>
@@ -31,6 +34,9 @@
                        <manifest>
                            <mainClass>platform.client.Main</mainClass>
                        </manifest>
+                       <manifestEntries>
+                             <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
+                     </manifestEntries>
                    </archive>
                    <descriptors>
                       <descriptor>src/assemble/distribution.xml</descriptor>

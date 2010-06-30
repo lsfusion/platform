@@ -20,7 +20,7 @@ public class FullMain extends Main {
             }
 
             public boolean isFull() {
-                return false;
+                return true;
             }
         });
     }
