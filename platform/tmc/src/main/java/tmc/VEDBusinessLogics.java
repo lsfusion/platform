@@ -601,8 +601,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // сдача/доплата
         LP orderSaleDiffSum = addDUProp(orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
-        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(7), "Допл:"), orderSaleDiffSum, 1),
-                addJProp(string2, addCProp(StringClass.get(7), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
+        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(6), "Допл:"), orderSaleDiffSum, 1),
+                addJProp(string2, addCProp(StringClass.get(6), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
@@ -913,7 +913,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);
     public static Font FONT_MEDIUM_BOLD = new Font("Tahoma", Font.BOLD, 14);
     public static Font FONT_LARGE_BOLD = new Font("Tahoma", Font.BOLD, 24);
-    public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 32);
+    public static Font FONT_HUGE_BOLD = new Font("Tahoma", Font.BOLD, 28);
 
     private class GlobalNavigatorForm extends NavigatorForm {
         protected GlobalNavigatorForm(NavigatorElement parent, int ID) {
