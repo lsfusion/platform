@@ -85,6 +85,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         operationDepartment = addDProp("operDepartment", "Отдел", department, departmentAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
+        LP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
         LP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
         LP calcExtraCoef = addSFProp("(round((0.0+(prm1)*(prm2))/(prm3)))", DoubleClass.instance, 3);
         LP roundMult = addSFProp("(round((prm1)*(prm2)))", IntegerClass.instance, 2);
@@ -115,7 +116,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         inSum = addDProp(baseGroup, "inSum", "Сумма прихода", DoubleClass.instance, inAbsOperation);
         outSum = addDProp(baseGroup, "outSum", "Сумма расхода", DoubleClass.instance, outAbsOperation);
-
+        addJProp(baseGroup, "Курс", divDouble, inSum, 1, outSum, 1);
         LP outCurName = addJProp(baseGroup, "Валюта расх.", name, outCur, 1);
 
 
