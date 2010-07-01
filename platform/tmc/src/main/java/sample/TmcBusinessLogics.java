@@ -1870,8 +1870,8 @@ public class TmcBusinessLogics extends BusinessLogics<TmcBusinessLogics> {
 
         SecurityPolicy securityPolicy;
 
-        User user1 = addUser("user1");
-        User user2 = addUser("user2");
+        User user1 = addUser("user1", "");
+        User user2 = addUser("user2", "");
 
         securityPolicy = new SecurityPolicy();
 

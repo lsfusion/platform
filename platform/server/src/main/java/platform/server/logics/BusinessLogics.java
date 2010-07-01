@@ -135,7 +135,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    protected User addUser(String login) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    protected User addUser(String login, String defaultPassword) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
 
         DataSession session = createSession();
 
@@ -143,6 +143,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if(userID == null) {
             DataObject addObject = session.addObject(customUser, session.modifier);
             userLogin.execute(login, session, session.modifier, addObject);
+            userPassword.execute(defaultPassword, session, session.modifier, addObject);
             userID = (Integer) addObject.object;
             session.apply(this);
         }

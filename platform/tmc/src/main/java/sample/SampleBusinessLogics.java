@@ -85,7 +85,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        User user1 = addUser("user1");
+        User admin = addUser("admin", "fusion");
     }
 
     NavigatorForm mainAccountForm, salesArticleStoreForm;

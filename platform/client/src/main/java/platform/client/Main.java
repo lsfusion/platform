@@ -44,12 +44,21 @@ public class Main {
 
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    String serverName = args.length>0?args[0]:"localhost";
-                    String exportPort = args.length>1?args[1]:"7652";
+                    String serverName = System.getProperty("platform.client.hostname", "localhost");
+                    String exportPort = System.getProperty("platform.client.hostport", "7652");
 
-//                    RemoteNavigatorInterface remoteNavigator = new LoginDialog((RemoteLogicsInterface) Naming.lookup("rmi://"+serverName+":"+exportPort+"/BusinessLogics")).login();
+                    String user = System.getProperty("platform.client.user");
+                    String password = System.getProperty("platform.client.password");
+
                     RemoteLogicsInterface remoteLogics = (RemoteLogicsInterface) Naming.lookup("rmi://" + serverName + ":" + exportPort + "/BusinessLogics");
-                    RemoteNavigatorInterface remoteNavigator = remoteLogics.createNavigator("user1", "", remoteLogics.getComputers().iterator().next());
+                    int computer = remoteLogics.getComputers().iterator().next();
+
+                    RemoteNavigatorInterface remoteNavigator;
+                    if (user == null) {
+                        remoteNavigator = new LoginDialog(remoteLogics).login();
+                    } else
+                        remoteNavigator = remoteLogics.createNavigator(user, password, computer);
+
                     if (remoteNavigator == null) return;
 
                     frame = module.initFrame(remoteNavigator);
@@ -63,6 +72,7 @@ public class Main {
                     frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
                 } catch (Exception e) {
+                    ClientExceptionManager.handleException(e);
                     throw new RuntimeException("Ошибка при инициализации приложения", e);
                 }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="http://localhost/fusion/">
 <information>
-  <title>Fusion</title>
+  <title>Fusion - Full Client</title>
   <vendor>Fusioners Ltd.</vendor>
   <homepage href="/site" />
   <description>Fusion</description>
@@ -11,9 +11,10 @@
 </security>
 <resources>
   <j2se version="1.6+" />
+  <property name="platform.client.hostname" value="localhost"/>
+  <property name="platform.client.hostport" value="7652"/>
   <jar href="fullclient.jar"/>
 </resources>
 <application-desc>
-  <argument>localhost</argument>
 </application-desc>
 </jnlp>

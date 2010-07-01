@@ -3,7 +3,9 @@ package platform.client;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import platform.client.exceptions.ClientExceptionManager;
 import platform.interop.RemoteLogicsInterface;
+import platform.interop.exceptions.LoginException;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
@@ -66,7 +68,8 @@ public class LoginDialog extends JDialog {
         try {
             result = BL.createNavigator(loginField.getText(), new String(passwordField.getPassword()), BL.getComputers().iterator().next());
             dispose();
-        } catch (RemoteException e) {
+        } catch (Exception e) {
+            ClientExceptionManager.handleException(e, this);
             throw new RuntimeException("Ошибка при подключении к серверу", e);
         }
     }

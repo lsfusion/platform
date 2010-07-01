@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="http://localhost/fusion/">
 <information>
-  <title>Fusion</title>
+  <title>Fusion - Simple Client</title>
   <vendor>Fusioners Ltd.</vendor>
   <homepage href="/site" />
   <description>Fusion - VED</description>
@@ -12,9 +12,10 @@
 <resources>
   <j2se version="1.6+"/>
   <property name="platform.client.forms" value="1,2,3,4,5"/>
+  <property name="platform.client.hostname" value="localhost"/>
+  <property name="platform.client.hostport" value="7652"/>
   <jar href="client.jar"/>
 </resources>
 <application-desc>
-  <argument>localhost</argument>
 </application-desc>
 </jnlp>

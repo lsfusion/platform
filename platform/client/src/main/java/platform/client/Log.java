@@ -56,6 +56,10 @@ public final class Log {
     }
 
     public static void printFailedMessage(String message) {
+        printFailedMessage(message, null);
+    }
+
+    public static void printFailedMessage(String message, Component parentComponent) {
 
         printmsg(message);
         
@@ -66,7 +70,7 @@ public final class Log {
         }
 
         // ошибки всегда идут на экран
-        JOptionPane.showMessageDialog(null, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(parentComponent, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
     }
 
     private static class LogView extends JPanel {
