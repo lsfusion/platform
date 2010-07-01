@@ -6,10 +6,6 @@
   <includeBaseDirectory>false</includeBaseDirectory>
   <dependencySets>
     <dependencySet>
-      <!-->из-за того что в commons-beanutils по ошибке включены commons-collections<-->
-      <excludes>
-          <exclude>com.intellij:forms_rt</exclude>
-      </excludes>
       <unpack>true</unpack>
       <unpackOptions>
           <excludes>
@@ -17,18 +13,6 @@
               <exclude>license/**</exclude> <!-- какие то идиоты включили каталог license в jarку -->
           </excludes>
       </unpackOptions>
-    </dependencySet>
-    <dependencySet>
-       <includes>
-           <include>com.intellij:forms_rt</include>
-       </includes>
-       <unpack>true</unpack>
-       <unpackOptions>
-           <excludes>
-               <exclude>com/intellij/uiDesigner/core/**</exclude>
-               <exclude>META-INF/*.*</exclude>
-           </excludes>
-       </unpackOptions>
     </dependencySet>
   </dependencySets>
 </assembly>
