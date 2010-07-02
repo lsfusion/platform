@@ -35,19 +35,20 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         super(iAdapter,port);
     }
 
-    AbstractGroup salaryGroup, dateTimeGroup, extraGroup, inOperationGroup;
+    AbstractGroup salaryGroup, dateTimeGroup, extraGroup, inOperationGroup, payerGroup;
 
     protected void initGroups() {
         salaryGroup = new AbstractGroup("Параметры запрлаты");
         dateTimeGroup = new AbstractGroup("Параметры даты и времени");
         extraGroup = new AbstractGroup("Параметры затрат");
         inOperationGroup = new AbstractGroup("Параметры прихода");
+        payerGroup = new AbstractGroup("Параметры плательщика");
 
     }
 
-    AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs, extraSection;
+    AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs, extraSection, payer, payerAbs;
 
-    ConcreteCustomClass  currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection;
+    ConcreteCustomClass  currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor;
 
     protected void initClasses() {
         operation = addAbstractClass("Операции", transaction);
@@ -56,18 +57,20 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         absOutPerson = addAbstractClass("Абс. расход сотруд.", outAbsOperation);
         absOutTime = addAbstractClass("Абс. расход времен.", outAbsOperation);
         departmentAbs = addAbstractClass("Абс. отдел", baseClass);
+        payerAbs = addAbstractClass("Абс. плательщик", baseClass);
 
         extraCost = addConcreteClass(1, "Дополнительные затраты", absOutTime, departmentAbs);
         pay = addConcreteClass(2, "Выплата", absOutPerson, absOutTime);
         exOperation = addConcreteClass(3, "Опер. конверсия", inAbsOperation, outAbsOperation, departmentAbs);
         inOperation = addConcreteClass(4, "Опер. приход", inAbsOperation, departmentAbs);
-        outOperation = addConcreteClass(5, "Опер. расход", outAbsOperation, departmentAbs);
-        misOperation = addConcreteClass(13, "Опер. расход ком.", outAbsOperation, departmentAbs);
+        outOperation = addConcreteClass(5, "Опер. расход", outAbsOperation, departmentAbs, payerAbs);
+        misOperation = addConcreteClass(13, "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
+        payer = addAbstractClass("Плательщик", namedObject);
 
         absMonth = addConcreteClass(6, "Месяц", namedObject);
         currency = addConcreteClass(8, "Валюта", namedObject);
         section = addConcreteClass(9, "Статья ком.", namedObject);
-        person = addConcreteClass(10, "Сотрудник", namedObject);
+        person = addConcreteClass(10, "Сотрудник", payer);
         extraSection = addAbstractClass("Статья затрат", namedObject);
         mission = addConcreteClass(12, "Командировка", baseClass);
 
@@ -76,14 +79,17 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         city = addConcreteClass(16, "Город", namedObject);
         extraPersonSection = addConcreteClass(17, "Статья затрат перс.", extraSection);
         extraAdmSection = addConcreteClass(18, "Статья затрат админ.", extraSection);
+        contractor = addConcreteClass(19, "Контрагент", payer);
     }
 
     LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment;
-    LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep;
+    LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer;
 
     protected void initProperties() {
         operationDepartment = addDProp("operDepartment", "Отдел", department, departmentAbs);
+        operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
+        addJProp(payerGroup, "Плательщик", name, operationPayer, 1);
         LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
         LP divDouble = addSFProp("((prm1+0.0)/(prm2))", DoubleClass.instance, 2);
         LP calcCoef = addSFProp("((prm1+0.0)/((prm2)*8))", DoubleClass.instance, 2);
@@ -143,10 +149,10 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         //
 
 
-        LP incSum = addSGProp(baseGroup, "Приход по валюте", inSum, inCur, 1);
-        LP decSum = addSGProp(baseGroup, "Расход по валюте", decVal, outCur, 1);
+        LP incSum = addSGProp("Приход по валюте", inSum, inCur, 1);
+        LP decSum = addSGProp("Расход по валюте", decVal, outCur, 1);
 
-        balanceQuantity = addDUProp(baseGroup, "Ост. по валюте", incSum, decSum);
+        balanceQuantity = addDUProp("Ост. по валюте", incSum, decSum);
 
         LP extraSum =  addJProp(and1, addJProp(multiplyDouble2, outSum, 1, extraRate, 1), 1, is(extraCost), 1);
         LP extraMonthTotal = addSGProp(extraGroup, "Затрачено", extraSum, outMonth, 1, outYear, 1, operationDepartment, 1);
@@ -166,6 +172,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         addJProp(baseGroup, "Валюта", name, currencyExtraInMonth, 1, 2, 3, 4);
 
         LP extraAdd = addDProp(baseGroup, "isAdd", "Не учитывать", LogicalClass.instance, person, extraPersonSection, absMonth, IntegerClass.instance);
+        LP isReimbursed = addDProp(payerGroup, "isReimbersed", "Возмещено", LogicalClass.instance, payerAbs);
 
         LP yearGr = addJProp(and(false, false, false, false), greater2, 2, 4, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
         LP dateCmp = addJProp(and(false, false, false, false, false), equals2, 2, 4, groeq2,  1, 3, is(absMonth), 1, is(IntegerClass.instance), 2, is(absMonth), 3, is(IntegerClass.instance), 4);
@@ -198,6 +205,8 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
         
         LP extraDepartmentTotal = addSUProp(baseGroup, "Всего затрат", Union.SUM, extraComPerson, extraComAdm);
 
+        LP totalDebt = addSGProp(baseGroup, "Осталось выплатить", addJProp(andNot1, outSum, 1, isReimbursed, 1), operationPayer, 1, outCur, 1);
+        LP departmentDebt = addSGProp(baseGroup, "Осталось выплатить", addJProp(andNot1, outSum, 1, isReimbursed, 1), operationPayer, 1, outCur, 1, opDep, 1);
         /*
         LP monthNum = addJProp(baseGroup, "Номер месяца", monthNumber, mYear, 1);
         LP monthYearName = addJProp(baseGroup, "Год", yearNumber, monthYear, 1);
@@ -270,6 +279,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
 
         NavigatorElement aggregateData = new NavigatorElement(baseElement, 200, "Сводная информация");
            NavigatorForm departmentBalance = new DepartmentBalanceForm(aggregateData, 214, "Баланс по отделам");
+           NavigatorForm reimbursement = addNavigatorForm(new ReimbursementForm(aggregateData, 215, "Компенсация"));
     }
 
 
@@ -286,6 +296,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectNavigator objExOp = addSingleGroupObjectImplement(exOperation, "Операция конверсии", properties, baseGroup);
 
             addPropertyView(objExOp, properties, inOperationGroup);
+            addPropertyView(objOutOp, properties, payerGroup);
 
             addObjectActions(this, objInOp);
             addObjectActions(this, objOutOp);
@@ -364,11 +375,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outYear, objPayOp), Compare.EQUALS, objYearOp));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outMonth, objPayOp), Compare.EQUALS, objMonthOp));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(personDepartment, objPersonOp), Compare.EQUALS, objDepartment));
-             /*
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outPerson, objExtraOp), Compare.EQUALS, objPersonOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outYear, objExtraOp), Compare.EQUALS, objYearOp));
-            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outMonth, objExtraOp), Compare.EQUALS, objMonthOp));
-            */
         }
 
          @Override
@@ -396,6 +402,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectNavigator objOutOp = addSingleGroupObjectImplement(misOperation, "Расх. команд.", properties, baseGroup);
 
             addPropertyView(objMission, objPerson, properties, baseGroup);
+            addPropertyView(objOutOp, properties, payerGroup);
 
             addObjectActions(this, objMission);
             addObjectActions(this, objOutOp);
@@ -403,7 +410,6 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(missionOperation, objOutOp), Compare.EQUALS, objMission));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(operationDepartment, objOutOp), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(personDepartment, objPerson), Compare.EQUALS, objDepartment));
-            //addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCur));
         }
     }
 
@@ -420,12 +426,7 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             ObjectNavigator objOutOp = addSingleGroupObjectImplement(outAbsOperation, "Операция расх.", properties, baseGroup, true);
             addPropertyView(properties, baseGroup, true, objCur, objInOp);
             addPropertyView(properties, baseGroup, true, objCur, objOutOp);
-            //addPropertyView(objCur, objOutOp, properties, baseGroup);
-            //addPropertyView(objDepartment, objCur, properties, baseGroup);
-            //addPropertyView(objInOp, properties, inOperationGroup);
             addPropertyView(properties, baseGroup, false, objDepartment, objCur);
-//            addPropertyView(properties, baseGroup, true, objInOp);
-//            addPropertyView(properties, baseGroup, true, objOutOp);
 
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(inCur, objInOp), Compare.EQUALS, objCur));
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCur));
@@ -433,6 +434,39 @@ public class BudgetBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
             addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objOutOp), Compare.EQUALS, objDepartment));
 
         }
+    }
+
+     private class ReimbursementForm extends NavigatorForm {
+         private ObjectNavigator objCurrency;
+         private ObjectNavigator objDepartment;
+
+        public ReimbursementForm(NavigatorElement parent, int ID, String caption) {
+            super(parent, ID, caption);
+
+            ObjectNavigator objPayer = addSingleGroupObjectImplement(payer, "Плательщик", properties, baseGroup);
+            objCurrency = addSingleGroupObjectImplement(currency, "Валюта", properties, baseGroup);
+            objDepartment = addSingleGroupObjectImplement(department, "Отдел", properties, baseGroup);
+            ObjectNavigator objOutOp = addSingleGroupObjectImplement(payerAbs, "Оплаты", properties, baseGroup);
+
+            addPropertyView(objPayer, objCurrency, properties, baseGroup);
+            addPropertyView(objPayer, objCurrency, objDepartment, properties, baseGroup);
+
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(operationPayer, objOutOp), Compare.EQUALS, objPayer));
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(outCur, objOutOp), Compare.EQUALS, objCurrency));
+            addFixedFilter(new CompareFilterNavigator(addPropertyObjectImplement(opDep, objOutOp), Compare.EQUALS, objDepartment));
+        }
+
+         @Override
+         public DefaultFormView createDefaultRichDesign() {
+
+             DefaultFormView design = super.createDefaultRichDesign();
+
+             //design.get(objCurrency.groupTo).gridView.constraints.fillHorizontal /= 2;
+             design.addIntersection(design.getGroupObjectContainer(objCurrency.groupTo), design.getGroupObjectContainer(objDepartment.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+             return design;
+         }
+
     }
 
 }
