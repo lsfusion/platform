@@ -1,5 +1,5 @@
 <assembly>
-  <id>jar_full</id>
+  <id>full</id>
   <formats>
     <format>jar</format>
   </formats>
@@ -15,7 +15,7 @@
       <unpack>true</unpack>
       <unpackOptions>
           <excludes>
-              <exclude>META-INF/*.*</exclude>
+              <exclude>META-INF/**</exclude>
               <exclude>license/**</exclude> <!-- какие то идиоты включили каталог license в jarку -->
               <exclude>builddef.lst</exclude> <!-- он появляется и при сборке client.jar, пока исключу, хотя потом надо разобраться нафига он вообще формируется -->
           </excludes>

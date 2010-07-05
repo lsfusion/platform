@@ -29,7 +29,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                    <finalName>client</finalName>
-                   <appendAssemblyId>false</appendAssemblyId>
+                   <appendAssemblyId>true</appendAssemblyId>
                    <archive>
                        <manifest>
                            <mainClass>platform.client.Main</mainClass>

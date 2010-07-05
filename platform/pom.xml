@@ -59,9 +59,9 @@
 
     <modules>
         <module>api</module>
-        <module>server</module>
         <module>client</module>
         <module>fullclient</module>
+        <module>server</module>
         <module>tmc</module>
     </modules>
 
