@@ -31,6 +31,7 @@
     <dependency>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>api</artifactId>
+        <version>${project.version}</version>
     </dependency>
     <dependency>
         <groupId>jasperreports</groupId>

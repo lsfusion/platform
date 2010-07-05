@@ -59,39 +59,14 @@
 
     <modules>
         <module>api</module>
+        <module>server</module>
         <module>client</module>
         <module>fullclient</module>
-        <module>server</module>
         <module>tmc</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>fullclient</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>by.luxsoft.platform</groupId>
-                <artifactId>tmc</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>findbugs</groupId>
                 <artifactId>annotations</artifactId>

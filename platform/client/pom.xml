@@ -44,9 +44,9 @@
                 </configuration>
                 <executions>
                   <execution>
-                    <phase>package</phase>
+                    <phase>install</phase>
                     <goals>
-                      <goal>assembly</goal>
+                      <goal>single</goal>
                     </goals>
                   </execution>
                 </executions>
@@ -90,6 +90,7 @@
     <dependency>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>api</artifactId>
+        <version>${project.version}</version>
     </dependency>
     <dependency>
         <groupId>com.toedter</groupId>
