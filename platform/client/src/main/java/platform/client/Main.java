@@ -83,9 +83,17 @@ public class Main {
     public static void main(final String[] args) {
         start(args, new ModuleFactory() {
             public MainFrame initFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
+
                 String forms = System.getProperty("platform.client.forms");
-                if(forms==null)
-                    throw new RuntimeException("Не задано свойство : -Dplatform.client.forms=formID1,formID2,... ");
+                if (forms == null) {
+                    String formSet = System.getProperty("platform.client.formset");
+                    if (formSet == null)
+                        throw new RuntimeException("Не задано свойство : -Dplatform.client.forms=formID1,formID2,... или -Dplatform.client.formset=formsetID");
+                    forms = remoteNavigator.getForms(formSet);
+                    if (forms == null)
+                        throw new RuntimeException("На сервере не обнаружено множество свойств с идентификатором " + formSet);
+                }
+
                 return new SimpleMainFrame(remoteNavigator, forms);
             }
 

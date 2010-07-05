@@ -180,6 +180,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
          return navigatorForm;
     }
 
+    public String getForms(String formSet) throws RemoteException {
+        return BL.getForms(formSet);
+    }
+
     public RemoteFormInterface createForm(int formID, boolean currentSession) {
 
        try {

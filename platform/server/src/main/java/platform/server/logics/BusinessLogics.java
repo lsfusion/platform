@@ -2096,4 +2096,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         this.scheduler = scheduler;
         this.scheduler.start();
     }
+
+    private Map<String, String> formSets;
+    public void setFormSets(Map<String, String> formSets) {
+        this.formSets = formSets;
+    }
+
+    public String getForms(String formSet) {
+        if (formSets != null)
+            return formSets.get(formSet);
+        else
+            return null;
+    }
 }

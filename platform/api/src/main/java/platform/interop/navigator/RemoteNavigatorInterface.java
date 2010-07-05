@@ -9,6 +9,8 @@ import java.rmi.RemoteException;
 
 public interface RemoteNavigatorInterface extends Remote {
 
+    String getForms(String formSet) throws RemoteException;
+
     RemoteFormInterface createForm(int formID, boolean currentSession) throws RemoteException;
 
     byte[] getCurrentUserInfoByteArray() throws RemoteException;
