@@ -339,8 +339,8 @@ public class ClientForm extends JPanel {
         KeyStroke altDel = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.ALT_DOWN_MASK);
         im.put(altDel, "altDelPressed");
 
-        KeyStroke keyF5 = KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0);
-        im.put(keyF5, "f5Pressed");
+        KeyStroke altR = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
+        im.put(altR, "altRPressed");
 
         KeyStroke altEnter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, (isDialogMode() && isReadOnlyMode()) ? 0 : InputEvent.ALT_DOWN_MASK);
         im.put(altEnter, "enterPressed");
@@ -388,7 +388,7 @@ public class ClientForm extends JPanel {
         JButton buttonNull = new JButton(nullAction);
         buttonNull.setFocusable(false);
 
-        AbstractAction refreshAction = new AbstractAction("Обновить (" + SwingUtils.getKeyStrokeCaption(keyF5) + ")") {
+        AbstractAction refreshAction = new AbstractAction("Обновить (" + SwingUtils.getKeyStrokeCaption(altR) + ")") {
 
             public void actionPerformed(ActionEvent ae) {
                 refreshData();
@@ -433,7 +433,7 @@ public class ClientForm extends JPanel {
         JButton buttonClose = new JButton(closeAction);
         buttonClose.setFocusable(false);
 
-        am.put("f5Pressed", refreshAction);
+        am.put("altRPressed", refreshAction);
 
         formLayout.add(formView.refreshView, buttonRefresh);
         

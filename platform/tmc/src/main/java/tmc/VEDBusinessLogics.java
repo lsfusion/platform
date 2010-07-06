@@ -13,6 +13,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.AggregateProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.classes.*;
+import platform.server.view.form.client.ContainerView;
 import platform.server.view.navigator.*;
 import platform.server.view.navigator.filter.*;
 import platform.server.view.form.client.DefaultFormView;
@@ -1018,9 +1019,26 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                 if (payView != null) {
                     // делаем, чтобы суммы были внизу и как можно правее
-                    design.get(payView).getContainer().setContainer(design.getMainContainer());
-                    design.get(payView).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
-                    design.get(payView).getContainer().constraints.order = 6;
+                    ContainerView docSumsContainer = design.get(payView).getContainer();
+                    docSumsContainer.setContainer(design.getMainContainer());
+//                    docSumsContainer.constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+                    docSumsContainer.constraints.order = 6;
+
+                    PropertyViewNavigator payCash = getPropertyView(orderSalePayCash);
+                    PropertyViewNavigator payCard = getPropertyView(orderSalePayCard);
+
+                    if (payCash != null || payCard != null) {
+
+                        ContainerView payContainer = design.addContainer("Платежные средства");
+                        payContainer.setContainer(design.getMainContainer());
+                        payContainer.constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+                        payContainer.constraints.order = 6;
+
+                        if (payCash != null) design.get(payCash).setContainer(payContainer);
+                        if (payCard != null) design.get(payCard).setContainer(payContainer);
+
+                        design.addIntersection(docSumsContainer, payContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    }
                 }
 
                 design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
@@ -1565,7 +1583,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                 // делаем, чтобы суммы были внизу и как можно правее
                 design.get(getPropertyView(returnSalePay)).getContainer().setContainer(design.getMainContainer());
-                design.get(getPropertyView(returnSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+//                design.get(getPropertyView(returnSalePay)).getContainer().constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
                 design.get(getPropertyView(returnSalePay)).getContainer().constraints.order = 3;
             }
 
