@@ -1,6 +1,6 @@
 package platform.client.form.renderer;
 
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,7 +12,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
     Format format;
     Color background;
 
-    LabelPropertyRenderer(Format iformat, CellDesign design) {
+    LabelPropertyRenderer(Format iformat, ComponentDesign design) {
         super();
 
         format = iformat;
@@ -20,7 +20,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
         setOpaque(true);
 
         if (design != null)
-            design.designComponent(this);
+            design.designCell(this);
 
         background = getBackground();
     }

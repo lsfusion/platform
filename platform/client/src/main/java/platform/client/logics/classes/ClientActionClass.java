@@ -8,7 +8,7 @@ import platform.client.form.cell.CellView;
 import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientCellView;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -34,11 +34,11 @@ public class ClientActionClass extends ClientDataClass implements ClientType {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new ActionPropertyRenderer(caption); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new ActionPropertyRenderer(caption); }
 
     public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new ButtonCellView(key, form); }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException { return new ActionPropertyEditor(); }
     public PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException { return null; }
-    protected PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return null; }
+    protected PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return null; }
 }

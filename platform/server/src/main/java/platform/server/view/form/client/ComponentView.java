@@ -1,5 +1,6 @@
 package platform.server.view.form.client;
 
+import platform.interop.ComponentDesign;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
@@ -15,6 +16,8 @@ public class ComponentView implements ClientSerialize {
         this.ID = ID;
     }
 
+    public ComponentDesign design = new ComponentDesign();
+
     protected ContainerView container;
     public ContainerView getContainer() {
         return container;
@@ -27,6 +30,9 @@ public class ComponentView implements ClientSerialize {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(ID);
+
+        new ObjectOutputStream(outStream).writeObject(design);
+        
         outStream.writeBoolean(container==null);
         if(container!=null)
             outStream.writeInt(container.ID);

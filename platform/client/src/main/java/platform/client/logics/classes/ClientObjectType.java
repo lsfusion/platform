@@ -8,7 +8,7 @@ import platform.client.form.cell.TableCellView;
 import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientCellView;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.IOException;
@@ -33,11 +33,11 @@ public class ClientObjectType implements ClientType {
         return NumberFormat.getInstance();
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new IntegerPropertyRenderer(format, design); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new IntegerPropertyRenderer(format, design); }
 
     public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new TableCellView(key, form); }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return new ObjectPropertyEditor(form, property.createEditorForm(form.remoteForm));
     }
 

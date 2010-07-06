@@ -5,7 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.logics.ClientCellView;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.DataInputStream;
@@ -38,11 +38,11 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     
     abstract public String getPreferredMask();
 
-    protected abstract PropertyEditorComponent getComponent(Object value, Format format, CellDesign design);
+    protected abstract PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design);
 
     public CellView getPanelComponent(ClientCellView key, ClientForm form) { return new TableCellView(key, form); }
 
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return getComponent(value, format, design);
     }
 

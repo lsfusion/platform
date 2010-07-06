@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.interop.ComponentDesign;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
@@ -13,13 +14,18 @@ import java.util.HashMap;
 public class ClientComponentView implements Serializable {
 
     public int compID; // ID есть и у свойст и у объектов, так что чтобы не путаться
+
+    public ComponentDesign design;
+
     public ClientContainerView container;
     public SimplexConstraints<Integer> constraints;
 
     ClientComponentView(DataInputStream inStream, Collection<ClientContainerView> containers) throws IOException, ClassNotFoundException {
 
         compID = inStream.readInt();
-        
+
+        design = (ComponentDesign) new ObjectInputStream(inStream).readObject();
+
         if(!inStream.readBoolean()) {
             int containerID = inStream.readInt();
             for(ClientContainerView parent : containers)

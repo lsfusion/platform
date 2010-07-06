@@ -1,7 +1,7 @@
 package platform.client.form.editor;
 
 import platform.client.form.PropertyEditorComponent;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -12,7 +12,7 @@ import java.util.EventObject;
 public class StringPropertyEditor extends TextFieldPropertyEditor
                            implements PropertyEditorComponent {
 
-    public StringPropertyEditor(final int length, Object value, CellDesign design) {
+    public StringPropertyEditor(final int length, Object value, ComponentDesign design) {
         super(design);
 
         setDocument(new PlainDocument() {

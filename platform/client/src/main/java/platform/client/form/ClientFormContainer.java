@@ -14,6 +14,8 @@ class ClientFormContainer extends JPanel{
 
     public ClientFormContainer(ClientContainerView iview) {
 
+        setOpaque(false);
+        
         view = iview;
 
         String title = view.getTitle();
@@ -21,6 +23,10 @@ class ClientFormContainer extends JPanel{
             TitledBorder border = BorderFactory.createTitledBorder(title);
             setBorder(border);
         }
+
+        view.design.designComponent(this);
+
+//        this.setBackground(new Color((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
 
         setPreferredSize(new Dimension(10000, 10000));
 

@@ -1,6 +1,6 @@
 package platform.server.view.form.client;
 
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.view.form.client.report.ReportDrawField;
@@ -24,8 +24,6 @@ abstract public class CellView extends ComponentView {
     public boolean showEditKey = true;
 
     public Format format;
-
-    public CellDesign design = new CellDesign();
 
     public Boolean focusable;
 
@@ -51,8 +49,6 @@ abstract public class CellView extends ComponentView {
 
         new ObjectOutputStream(outStream).writeObject(format);
 
-        new ObjectOutputStream(outStream).writeObject(design);
-
         new ObjectOutputStream(outStream).writeObject(focusable);
 
         outStream.writeBoolean(panelLabelAbove);
@@ -62,7 +58,15 @@ abstract public class CellView extends ComponentView {
 
     abstract int getID();
     abstract String getSID();
-    abstract String getCaption();
+    abstract String getDefaultCaption();
+
+    public String caption;
+    String getCaption() {
+        if (caption != null)
+            return caption;
+        else
+            return getDefaultCaption();
+    };
 
     public void fillReportDrawField(ReportDrawField reportField) {
 

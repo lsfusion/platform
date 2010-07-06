@@ -29,6 +29,8 @@ public class TableCellView extends JPanel implements CellView {
 
     public TableCellView(ClientCellView key, ClientForm form) {
 
+        setOpaque(false);
+
         this.key = key;
         this.form = form;
 

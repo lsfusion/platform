@@ -1023,6 +1023,25 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             if (toAdd) {
 
+                design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
+
+                // устанавливаем дизайн
+                design.setFont(documentPriceGroup, FONT_HUGE_BOLD, objDoc.groupTo);
+                design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
+
+                // ставим Label сверху
+                design.setPanelLabelAbove(documentPriceGroup, true, objDoc.groupTo);
+
+                // привязываем функциональные кнопки
+                design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
+                design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+                design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
+
+                if (!isDocumentFocusable())
+                    design.setFocusable(false, objDoc.groupTo);
+                else
+                    design.setFocusable(documentAggrPriceGroup, false, objDoc.groupTo);
+
                 // так конечно делать неправильно, но DocumentNavigatorForm - это первый общий класс у продажи сертификатов и кассы
                 PropertyViewNavigator payView = getPropertyView(orderSalePay);
 
@@ -1047,32 +1066,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                         if (payCash != null) design.get(payCash).setContainer(payContainer);
                         if (payCard != null) design.get(payCard).setContainer(payContainer);
-                        if (toDo != null) design.get(toDo).setContainer(payContainer);
-                        if (toDoSum != null) design.get(toDoSum).setContainer(payContainer); 
+                        if (toDo != null) {
+                            design.get(toDo).setContainer(payContainer);
+                            design.get(toDo).design.background = Color.yellow;
+                        }
+                        if (toDoSum != null) {
+                            design.get(toDoSum).setContainer(payContainer);
+                            design.get(toDoSum).design.background = Color.yellow;
+                        }
 
                         design.addIntersection(docSumsContainer, payContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                     }
                 }
-
-                design.setFont(FONT_MEDIUM_BOLD, objDoc.groupTo);
-
-                // устанавливаем дизайн
-                design.setFont(documentPriceGroup, FONT_HUGE_BOLD, objDoc.groupTo);
-                design.setBackground(documentAggrPriceGroup, new Color(240,240,240), objDoc.groupTo);
-
-                // ставим Label сверху
-                design.setPanelLabelAbove(documentPriceGroup, true, objDoc.groupTo);
-
-                // привязываем функциональные кнопки
-                design.setEditKey(nameContragent, KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0), objDoc.groupTo);
-                design.setEditKey(orderSalePayCard, KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
-                design.setEditKey(orderSalePayCash, KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0));
-
-                if (!isDocumentFocusable())
-                    design.setFocusable(false, objDoc.groupTo);
-                else
-                    design.setFocusable(documentAggrPriceGroup, false, objDoc.groupTo);
-
             }
 
             return design;
@@ -1346,6 +1351,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             design.setFocusable(orderClientSum, false);
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
+            design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192,192,192);
 
             return design;
         }
@@ -1366,6 +1372,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, commitSaleCheckArticleRetail, toAdd);
 
+            objDoc.caption = "Чек";
+            
             objObligation = addSingleGroupObjectImplement(obligation, "Оплачено купонами/ сертификатами", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
             objObligation.show = false; objObligation.showClass = false; objObligation.showTree = false; objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
@@ -1656,6 +1664,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private ReturnSaleCheckRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
             super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail);
 
+            objDoc.caption = "Возвратный чек";
+
             if(toAdd) {
                 addPropertyView(properties, cashRegOperGroup, true);
             } else {
@@ -1664,7 +1674,19 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<? extends ClientAction> getApplyActions(RemoteForm<VEDBusinessLogics> remoteForm) {
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
+            design.get(objInner).objectCellView.caption = "Номер чека";
+            design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
+
+            return design;
+        }
+
+        @Override
+        public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
@@ -1688,16 +1710,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (check != null) return check;
 
             return super.checkApplyActions(actionID, result);
-        }
-
-        @Override
-        public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = super.createDefaultRichDesign();
-
-            design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
-            design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
-
-            return design;
         }
     }
 
@@ -1917,6 +1929,17 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addPropertyView(checkRetailExported, objDoc);
             }
         }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
+            design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192,192,192);
+
+            return design;
+        }
     }
 
     public class SaleCheckCertNavigatorForm extends SaleCertNavigatorForm {
@@ -1935,6 +1958,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected SaleCheckCertNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, saleCheckCert, toAdd);
 
+            objDoc.caption = "Чек";
+            
             if(toAdd) {
                 addPropertyView(properties, cashRegOperGroup, true);
             } else {

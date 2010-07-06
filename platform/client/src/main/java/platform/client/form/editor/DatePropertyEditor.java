@@ -5,7 +5,7 @@ import com.toedter.calendar.JTextFieldDateEditor;
 import platform.base.DateConverter;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -19,7 +19,7 @@ import java.util.EventObject;
 public class DatePropertyEditor extends JDateChooser
                            implements PropertyEditorComponent {
 
-    public DatePropertyEditor(Object value, SimpleDateFormat format, CellDesign design) {
+    public DatePropertyEditor(Object value, SimpleDateFormat format, ComponentDesign design) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
         if (value != null)
@@ -27,7 +27,7 @@ public class DatePropertyEditor extends JDateChooser
         ((JFormattedTextField)dateEditor).selectAll();
 
         if (design != null)
-            design.designComponent(this);
+            design.designCell(this);
     }
 
     @Override

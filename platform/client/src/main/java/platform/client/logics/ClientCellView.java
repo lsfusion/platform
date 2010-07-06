@@ -7,7 +7,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 
@@ -34,8 +34,6 @@ abstract public class ClientCellView extends ClientComponentView {
     public KeyStroke editKey;
     public boolean showEditKey;
 
-    public CellDesign design;
-
     public Boolean focusable;
 
     public boolean panelLabelAbove;
@@ -55,8 +53,6 @@ abstract public class ClientCellView extends ClientComponentView {
         showEditKey = inStream.readBoolean();
 
         format = (Format) new ObjectInputStream(inStream).readObject(); 
-
-        design = (CellDesign) new ObjectInputStream(inStream).readObject();
 
         focusable = (Boolean) new ObjectInputStream(inStream).readObject();
 

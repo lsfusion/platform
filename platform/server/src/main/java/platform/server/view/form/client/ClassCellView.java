@@ -28,7 +28,7 @@ public class ClassCellView extends CellView implements ClientSerialize {
         return view.getSID();
     }
 
-    String getCaption() {
+    String getDefaultCaption() {
         return view.caption; 
     }
 }

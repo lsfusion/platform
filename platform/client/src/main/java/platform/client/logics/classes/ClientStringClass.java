@@ -5,7 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.client.form.renderer.StringPropertyRenderer;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -34,6 +34,6 @@ public class ClientStringClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new StringPropertyRenderer(format, design); }
-    public PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return new StringPropertyEditor(length, value, design); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new StringPropertyRenderer(format, design); }
+    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new StringPropertyEditor(length, value, design); }
 }

@@ -4,7 +4,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
 import platform.client.form.renderer.DatePropertyRenderer;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class ClientDateClass extends ClientDataClass {
         return DateFormat.getDateInstance(DateFormat.SHORT);
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design) { return new DatePropertyRenderer(format, design); }
-    public PropertyEditorComponent getComponent(Object value, Format format, CellDesign design) { return new DatePropertyEditor(value, (SimpleDateFormat) format, design); }
+    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new DatePropertyRenderer(format, design); }
+    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new DatePropertyEditor(value, (SimpleDateFormat) format, design); }
 
 }

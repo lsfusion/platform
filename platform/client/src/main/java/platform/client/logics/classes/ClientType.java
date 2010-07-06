@@ -5,7 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.ClientCellView;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.awt.*;
 import java.io.IOException;
@@ -19,10 +19,10 @@ public interface ClientType {
 
     Format getDefaultFormat();
 
-    PropertyRendererComponent getRendererComponent(Format format, String caption, CellDesign design);
+    PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);
     CellView getPanelComponent(ClientCellView key, ClientForm form);
 
-    PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException;
+    PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException;
     PropertyEditorComponent getClassComponent(ClientForm form, ClientCellView property, Object value, Format format) throws IOException, ClassNotFoundException;
 
 }

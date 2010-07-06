@@ -25,7 +25,7 @@ public class ObjectCellView extends CellView {
         return view.getSID();
     }
 
-    String getCaption() {
+    String getDefaultCaption() {
         return view.caption;
     }
 

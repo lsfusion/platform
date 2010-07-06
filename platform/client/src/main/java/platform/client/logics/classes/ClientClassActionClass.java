@@ -4,7 +4,7 @@ import platform.client.form.ClientForm;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.ClassActionPropertyEditor;
 import platform.client.logics.ClientCellView;
-import platform.interop.CellDesign;
+import platform.interop.ComponentDesign;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class ClientClassActionClass extends ClientActionClass {
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, CellDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(ClientForm form, ClientCellView property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         return new ClassActionPropertyEditor(form, baseClass, baseClass);
     }
 }
