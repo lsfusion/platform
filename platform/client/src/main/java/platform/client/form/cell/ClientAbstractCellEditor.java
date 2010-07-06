@@ -36,7 +36,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
             KeyEvent event = (KeyEvent) e;
 
-            if (event.getKeyCode() == KeyEvent.VK_F11) return true; // групповая корректировка
+            if (event.getKeyCode() == KeyEvent.VK_F12) return true; // групповая корректировка
 
             if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
 

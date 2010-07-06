@@ -9,6 +9,7 @@ import platform.interop.Order;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -234,7 +235,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     // приходится делать именно так, так как логика отображения одного GroupObject може не совпадать с логикой Container-Component
     void addGroupObjectActions(JComponent comp) {
 
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), "switchClassView");
+        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.ALT_DOWN_MASK), "switchClassView");
         comp.getActionMap().put("switchClassView", new AbstractAction() {
 
             public void actionPerformed(ActionEvent ae) {
