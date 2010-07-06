@@ -24,6 +24,7 @@ import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.sql.SQLException;
 
 public abstract class NavigatorForm<T extends BusinessLogics<T>> extends NavigatorElement<T> {
 
@@ -342,7 +343,7 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
             propertyActions.add(action);
     }
 
-    public List<? extends ClientAction> getApplyActions(RemoteForm<?> form) {
+    public List<? extends ClientAction> getApplyActions(RemoteForm<T> form) {
         return null; // будем возвращать именно null, чтобы меньше данных передавалось        
     }
 
@@ -362,5 +363,8 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         PropertyViewNavigator propertyView = addPropertyView(new LP<ClassPropertyInterface>(property), object);
         deleteObjectViews.put(object, propertyView);
         return propertyView;
+    }
+
+    public void onCreateForm(RemoteForm<T> form) throws SQLException {        
     }
 }

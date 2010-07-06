@@ -57,7 +57,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> {
         return !children.isEmpty();
     }
 
-    NavigatorElement<T> getNavigatorElement(int elementID) {
+    public NavigatorElement<T> getNavigatorElement(int elementID) {
 
         if (ID == elementID) return this;
 

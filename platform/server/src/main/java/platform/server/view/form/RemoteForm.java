@@ -150,6 +150,8 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
             order.getApplyObject().fixedOrders.put(order, navigatorOrder.getValue());
         }
 
+        navigatorForm.onCreateForm(this);
+
         addObjectOnTransaction();
 
         for(Entry<ObjectNavigator, Object> mapObject : mapObjects.entrySet()) {

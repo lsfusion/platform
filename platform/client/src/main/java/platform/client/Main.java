@@ -91,7 +91,7 @@ public class Main {
                         throw new RuntimeException("Не задано свойство : -Dplatform.client.forms=formID1,formID2,... или -Dplatform.client.formset=formsetID");
                     forms = remoteNavigator.getForms(formSet);
                     if (forms == null)
-                        throw new RuntimeException("На сервере не обнаружено множество свойств с идентификатором " + formSet);
+                        throw new RuntimeException("На сервере не обнаружено множество форм с идентификатором " + formSet);
                 }
 
                 return new SimpleMainFrame(remoteNavigator, forms);

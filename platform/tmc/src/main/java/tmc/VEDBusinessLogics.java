@@ -569,7 +569,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
 
-        LP couponStart = addDProp(baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
+        couponStart = addDProp(baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
         LP couponExpiry = addDProp(baseGroup, "couponExpiry", "Дата окончания купонов", DateClass.instance);
         LP certExpiry = addDProp(baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance);
 
@@ -670,6 +670,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderSalePayCard;
     LP changeQuantityTime;
     LP confirmedInnerQuantity;
+    LP couponStart;
     LP obligationDocument;
     LP orderSaleObligationCanBeUsed;
     LP orderSaleUseObligation;
@@ -930,7 +931,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class BarcodeNavigatorForm extends NavigatorForm {
+    private class BarcodeNavigatorForm extends NavigatorForm<VEDBusinessLogics> {
 
         ObjectNavigator objBarcode;
 
@@ -1166,7 +1167,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 filterGroup.addFilter(new RegularFilterNavigator(IDShift(1),
                                   new NotNullFilterNavigator(addPropertyObjectImplement(documentFreeQuantity, objDoc, objArt)),
                                   "Дост. кол-во",
-                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)), toAdd);
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), toAdd);
         }
 
         protected InnerNavigatorForm(NavigatorElement parent, int ID, CustomClass documentClass, boolean toAdd, boolean filled) {
@@ -1416,7 +1417,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<? extends ClientAction> getApplyActions(RemoteForm remoteForm) {
+        public List<? extends ClientAction> getApplyActions(RemoteForm<VEDBusinessLogics> remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
@@ -1439,6 +1440,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (check != null) return check;
 
             return super.checkApplyActions(actionID, result);
+        }
+
+        @Override
+        public void onCreateForm(RemoteForm<VEDBusinessLogics> form) throws SQLException {
+
+            if(couponStart.read(form.session, form)==null) {
+                GroupObjectImplement group;
+                group = form.mapper.groupMapper.get(objCoupon.groupTo);
+                group.curClassView = ClassViewType.HIDE;
+                group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
+                group = form.mapper.groupMapper.get(objIssue.groupTo);
+                group.curClassView = ClassViewType.HIDE;
+                group.banClassView = ClassViewType.GRID | ClassViewType.PANEL;
+            }
         }
     }
 
@@ -1504,10 +1519,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public final ObjectNavigator objArt;
         ObjectNavigator objOuter;
 
+        protected String getReturnCaption() {
+            return "Документ к возврату";
+        }
+
         protected ReturnSaleNavigatorForm(NavigatorElement parent, int ID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
             super(parent, ID, documentClass, toAdd);
 
-            objInner = addSingleGroupObjectImplement(commitClass, "Документ к возврату", properties, baseGroup, true);
+            objInner = addSingleGroupObjectImplement(commitClass, getReturnCaption(), properties, baseGroup, true);
 
             addPropertyView(objInner, objDoc, properties, baseGroup, true, documentGroup, true);
 
@@ -1629,6 +1648,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 //            return !toAdd;
         }
 
+        @Override
+        protected String getReturnCaption() {
+            return "Номер чека";
+        }
+
         private ReturnSaleCheckRetailNavigatorForm(NavigatorElement parent, boolean toAdd, int ID) {
             super(parent, ID, toAdd, returnSaleCheckRetail, commitSaleCheckArticleRetail);
 
@@ -1640,7 +1664,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
+        public List<? extends ClientAction> getApplyActions(RemoteForm<VEDBusinessLogics> remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
@@ -1664,6 +1688,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             if (check != null) return check;
 
             return super.checkApplyActions(actionID, result);
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
+            design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
+
+            return design;
         }
     }
 
@@ -1909,7 +1943,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        public List<ClientAction> getApplyActions(RemoteForm remoteForm) {
+        public List<? extends ClientAction> getApplyActions(RemoteForm<VEDBusinessLogics> remoteForm) {
             if (toAdd) {
 
                 ObjectImplement doc = remoteForm.mapper.mapObject(objDoc);
