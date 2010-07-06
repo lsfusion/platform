@@ -29,6 +29,7 @@ public class ClientFormTable extends JTable {
 
     }
 
+    /* Скорее всего, уже не актуально после того, как ClientForm стал focusCycleRoot
     // Решение проблемы конфликта JTable и DockingFrames
     // Так сделано, чтобы setNextFocusableComponent в super.prepareEditor "словил" не DockFocusTraversalPolicy
     // у BasicDockableDisplayer (так как он при этом зацикливается), а DefaultFocusTraversalPolicy у JTable.
@@ -44,7 +45,7 @@ public class ClientFormTable extends JTable {
         super.removeEditor();
         setFocusCycleRoot(false);
         setFocusTraversalPolicy(new DefaultFocusTraversalPolicy());
-    }
+    } */
 
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
 
