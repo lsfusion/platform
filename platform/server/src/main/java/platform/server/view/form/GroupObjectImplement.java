@@ -222,11 +222,4 @@ public class GroupObjectImplement implements MapKeysInterface<ObjectImplement> {
                 return false;
         return true;
     }
-
-    public ObjectImplement getObjectImplement(int objectID) {
-        for (ObjectImplement object : objects)
-            if (object.ID == objectID)
-                return object;
-        return null;
-    }
 }

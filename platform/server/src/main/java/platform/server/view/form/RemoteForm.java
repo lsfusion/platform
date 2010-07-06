@@ -172,6 +172,18 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // собсно этот объект порядок колышет столько же сколько и дизайн представлений
     public List<PropertyView> properties = new ArrayList<PropertyView>();
 
+    private Collection<ObjectImplement> objects;
+    @ManualLazy
+    public Collection<ObjectImplement> getObjects() {
+        if(objects==null) {
+            objects = new ArrayList<ObjectImplement>();
+            for(GroupObjectImplement group : groups)
+                for(ObjectImplement object : group.objects)
+                    objects.add(object);
+        }
+        return objects;
+    }
+
     // ----------------------------------- Поиск объектов по ID ------------------------------ //
 
     public GroupObjectImplement getGroupObjectImplement(int groupID) {
@@ -182,10 +194,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     }
 
     public ObjectImplement getObjectImplement(int objectID) {
-        for (GroupObjectImplement groupObject : groups) {
-            ObjectImplement result = groupObject.getObjectImplement(objectID);
-            if(result!=null) return result;
-        }
+        for (ObjectImplement object : getObjects())
+            if (object.ID == objectID)
+                return object;
         return null;
     }
 
@@ -313,10 +324,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         DataObject addObject = createObject(cls);
         if (addObject == null) return addObject;
 
-        for (GroupObjectImplement groupObject : groups)
-            for (ObjectImplement object : groupObject.objects)
-                if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass))
-                    resolveAddObjectImplement((CustomObjectImplement)object, cls, addObject);
+        for (ObjectImplement object : getObjects())
+            if (object instanceof CustomObjectImplement && cls.isChild(((CustomObjectImplement)object).baseClass))
+                resolveAddObjectImplement((CustomObjectImplement)object, cls, addObject);
 
         return addObject;
     }
@@ -364,21 +374,19 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     // Обновление данных
     public void refreshData() throws SQLException {
 
-        for(GroupObjectImplement group : groups)
-            for(ObjectImplement object : group.objects)
-                if(object instanceof CustomObjectImplement)
-                    ((CustomObjectImplement)object).refreshValueClass(session);
+        for(ObjectImplement object : getObjects())
+            if(object instanceof CustomObjectImplement)
+                ((CustomObjectImplement)object).refreshValueClass(session);
         refresh = true;
     }
 
     void addObjectOnTransaction() throws SQLException {
-        for(GroupObjectImplement group : groups)
-            for(ObjectImplement object : group.objects)
-                if(object instanceof CustomObjectImplement) {
-                    CustomObjectImplement customObject = (CustomObjectImplement)object;
-                    if(customObject.addOnTransaction)
-                        addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
-                }
+        for(ObjectImplement object : getObjects())
+            if(object instanceof CustomObjectImplement) {
+                CustomObjectImplement customObject = (CustomObjectImplement)object;
+                if(customObject.addOnTransaction)
+                    addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
+            }
     }
 
     public String checkChanges() throws SQLException {
@@ -399,10 +407,9 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
         session.restart(true);
 
         // пробежим по всем объектам
-        for(GroupObjectImplement group : groups)
-            for(ObjectImplement object : group.objects)
-                if(object instanceof CustomObjectImplement)
-                    ((CustomObjectImplement)object).updateValueClass(session);
+        for(ObjectImplement object : getObjects())
+            if(object instanceof CustomObjectImplement)
+                ((CustomObjectImplement)object).updateValueClass(session);
         addObjectOnTransaction();
 
         dataChanged = true;
@@ -1191,13 +1198,13 @@ public class RemoteForm<T extends BusinessLogics<T>> extends NoUpdateModifier {
     private List<ClientAction> executeAutoActions(ObjectImplement object, RemoteFormView form) throws SQLException {
 
         List<ClientAction> actions = new ArrayList<ClientAction>();
-        for (Entry<ObjectNavigator, PropertyObjectNavigator> autoAction : navigatorForm.autoActions.entrySet())
-            if (object.equals(mapper.mapObject(autoAction.getKey()))) {
-
-                PropertyObjectImplement action = mapper.mapProperty(autoAction.getValue());
-                if(action.isInInterface(null))
-                    actions.addAll(changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form));
-            }
+        for (Entry<ObjectNavigator, List<PropertyObjectNavigator>> autoActions : navigatorForm.autoActions.entrySet())
+            if (object.equals(mapper.mapObject(autoActions.getKey())))
+                for(PropertyObjectNavigator autoAction : autoActions.getValue()) {
+                    PropertyObjectImplement action = mapper.mapProperty(autoAction);
+                    if(action.isInInterface(null))
+                        actions.addAll(changeProperty(action, action.getChangeProperty().read(session, this)==null?true:null, form));
+                }
         return actions;
     }
 }

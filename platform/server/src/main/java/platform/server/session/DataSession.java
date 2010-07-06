@@ -11,7 +11,6 @@ import platform.server.caches.hash.HashValues;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.TimeExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.Join;
@@ -198,7 +197,7 @@ public class DataSession extends SQLSession implements ChangesSession {
             name.execute(customClass.caption+" "+object.object, this, modifier, object);
 
         if(customClass.isChild(transaction))
-            date.execute(DateConverter.dateToInt(new Date()), this, modifier, object);
+            date.execute(DateConverter.dateToSql(new Date()), this, modifier, object);
 
         return object;
     }

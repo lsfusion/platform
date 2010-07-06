@@ -200,7 +200,7 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
             else
                 putDouble(kolField, 1.0);
 
-            calendar.setTime(DateConverter.intToDate((java.sql.Date)row.values.get(map.get(dateField))));
+            calendar.setTime(DateConverter.sqlToDate((java.sql.Date)row.values.get(map.get(dateField))));
             dateField.put(calendar);
 
             putDouble(summField, (Double)row.values.get(map.get(summField)) * (reverse ? -1 : 1));

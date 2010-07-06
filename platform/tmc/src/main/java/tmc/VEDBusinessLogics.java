@@ -255,6 +255,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP positive = addJProp(greater2, 1, vzero);
         LP onlyPositive = addJProp(and1, 1, positive, 1);
         LP min = addSFProp("(prm1+prm2-ABS(prm1-prm2))/2", DoubleClass.instance, 2);
+        LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
         articleToGroup = addDProp("articleToGroup", "Группа товаров", articleGroup, article);
         articleToGroupName = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
@@ -602,8 +603,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // сдача/доплата
         LP orderSaleDiffSum = addDUProp(orderSalePayNoObligation, addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash));
-        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(6), "Допл:"), orderSaleDiffSum, 1),
-                addJProp(string2, addCProp(StringClass.get(6), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
+//        orderSaleDiff = addIfElseUProp(documentAggrPriceGroup, "Необходимо", addJProp(string2, addCProp(StringClass.get(6), "Допл:"), orderSaleDiffSum, 1),
+//                addJProp(string2, addCProp(StringClass.get(6), "Сдача:"), addNUProp(orderSaleDiffSum), 1), addJProp(positive, orderSaleDiffSum, 1), 1);
+        orderSaleToDo = addJProp(documentAggrPriceGroup, "Необходимо", and1, addIfElseUProp(addCProp(StringClass.get(5), "Допл.", orderSaleCheckRetail),
+                addCProp(StringClass.get(5), "Сдача", orderSaleCheckRetail), addJProp(positive, orderSaleDiffSum, 1), 1), 1, orderSaleDiffSum, 1);
+        orderSaleToDoSum = addJProp(documentAggrPriceGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
 
         LP couponCanBeUsed = addJProp(greater2, addJProp(date, obligationIssued, 1), 2, date, 1);
 
@@ -611,6 +615,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),addJProp(equals2, orderContragent, 1, 2),
                 xorActionArticle, articleFormatToSell, NDS, documentRevalued, addJProp(and1, changeUser, 2, is(baseClass), 1)), 1, barcodeToObject, 2);
         barcodeAction3 = addJProp(true, "Ввод штрих-кода 3", addCUProp(addJProp(and(false, false), changeUser, 2, is(baseClass), 1, is(baseClass), 3), addSCProp(returnInnerQuantity)), 1, barcodeToObject, 3, 2);
+        seekAction = addJProp(true, "Поиск штрих-кода", addSAProp(null), barcodeToObject, 1);
 
         LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
         LP xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
@@ -655,6 +660,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP orderSaleCoupon;
     LP barcodeAction2;
     LP barcodeAction3;
+    LP seekAction;
     LP orderClientSum;
     public LP orderArticleSaleSumWithDiscount;
     public LP orderSalePrice;
@@ -701,6 +707,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public LP articleQuantity, prevPrice, revalBalance;
     LP articleOrderQuantity;
     LP orderSaleDiscountSum, orderSalePay, orderSaleDiff;
+    LP orderSaleToDo, orderSaleToDoSum;
     public LP returnArticleSalePay;
     LP returnSaleDiscount, returnSalePay;
     public LP orderArticleSaleDiscount;
@@ -1002,6 +1009,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addObjectActions(this, objDoc);
 
             addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction2, objDoc, objBarcode));
+            addAutoAction(objBarcode, addPropertyObjectImplement(seekAction, objBarcode));
 
             if(!toAdd)
                 addPropertyView(orderUserName, objDoc);
@@ -1273,7 +1281,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[] {nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl, orderClientSum,
-                                 orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+                                 orderSalePay, orderSaleDiscountSum, orderSalePayNoObligation, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum};
         }
 
         @Override
@@ -1317,6 +1325,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objArt.show = false; objArt.showClass = false; objArt.showTree = false; objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
+            objDoc.caption = "Клиент";
+
 //            addFixedFilter(new OrFilterNavigator(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement),
 //                                                    new NotFilterNavigator(new NotNullFilterNavigator(shopImplement))));
 
@@ -1331,6 +1341,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
             design.setFocusable(orderClientSum, false);
+
             return design;
         }
     }
@@ -1350,14 +1361,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         private CommitSaleCheckRetailNavigatorForm(NavigatorElement parent, int ID, boolean toAdd) {
             super(parent, ID, commitSaleCheckArticleRetail, toAdd);
 
-            objObligation = addSingleGroupObjectImplement(obligation, "Доп. платежи", properties, baseGroup, true);
+            objObligation = addSingleGroupObjectImplement(obligation, "Оплачено купонами/ сертификатами", properties, baseGroup, true);
             addPropertyView(objDoc, objObligation, properties, baseGroup, true, orderSaleUseObligation);
             objObligation.show = false; objObligation.showClass = false; objObligation.showTree = false; objObligation.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(orderSaleUseObligation, objDoc, objObligation)));
 
-            objCoupon = addSingleGroupObjectImplement(coupon, "Выдано", properties, baseGroup, true);
+            objCoupon = addSingleGroupObjectImplement(coupon, "Выдано купонов", properties, baseGroup, true);
             addPropertyView(objDoc, objCoupon, properties, baseGroup, true, issueObligation);
             objCoupon.show = false; objCoupon.showClass = false; objCoupon.showTree = false; objCoupon.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 //            addFixedFilter(new NotFilterNavigator(new NotNullFilterNavigator(addPropertyObjectImplement(obligationDocument, objObligation))));
@@ -1365,7 +1376,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(issueObligation, objDoc, objCoupon)));
 
             if(toAdd) {
-                objIssue = addSingleGroupObjectImplement(DoubleClass.instance, "Выдать", properties);
+                objIssue = addSingleGroupObjectImplement(DoubleClass.instance, "Выдать купоны", properties);
                 addPropertyView(couponToIssueQuantity, objDoc, objIssue);
                 objIssue.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
                 addFixedFilter(new NotNullFilterNavigator(addPropertyObjectImplement(couponToIssueConstraint, objDoc, objIssue)));
@@ -1390,6 +1401,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
+
+            design.get(getPropertyView(orderSalePay)).constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+            design.get(getPropertyView(orderSaleDiscountSum)).constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
+            design.get(getPropertyView(orderSalePayNoObligation)).constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
 
             design.get(objCoupon.groupTo).gridView.minRowCount = 2;
             design.get(objObligation.groupTo).gridView.minRowCount = 2;
@@ -1571,7 +1586,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addRegularFilterGroup(filterOutGroup);
             }
 
-            addAutoAction(objBarcode, addPropertyObjectImplement(barcodeAction3, objDoc, objInner, objBarcode));
+            addAutoAction(objBarcode, true, addPropertyObjectImplement(barcodeAction3, objDoc, objInner, objBarcode), addPropertyObjectImplement(seekAction, objBarcode));
         }
 
         @Override
@@ -1839,7 +1854,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         @Override
         protected Object[] getDocumentProps() {
             return new Object[] {nameContragentImpl, phoneContragentImpl, bornContragentImpl, addressContragentImpl, initialSumContragentImpl,
-                                 orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleDiff};
+                                 orderSalePay, orderSalePayCash, orderSalePayCard, orderSaleToDo, orderSaleToDoSum};
         }
 
         @Override

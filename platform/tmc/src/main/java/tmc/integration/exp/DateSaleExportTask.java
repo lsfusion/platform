@@ -40,7 +40,7 @@ public class DateSaleExportTask extends AbstractSaleExportTask {
     protected void setRemoteFormFilter(RemoteForm remoteForm) throws ParseException {
 
         PropertyView<?> date = remoteForm.getPropertyView(BL.date);
-        date.toDraw.addTempFilter(new CompareFilter(date.view, Compare.EQUALS, new DataObject(DateConverter.dateToInt(getExportDate()), DateClass.instance)));
+        date.toDraw.addTempFilter(new CompareFilter(date.view, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
     }
 
     protected void updateRemoteFormProperties(RemoteForm remoteForm) throws SQLException {

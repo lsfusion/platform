@@ -327,12 +327,19 @@ public abstract class NavigatorForm<T extends BusinessLogics<T>> extends Navigat
         outStream.writeBoolean(isPrintForm);
     }
 
-    public void addBarcode(CustomClass customClass, PropertyObjectNavigator property) {
+    public Map<ObjectNavigator, List<PropertyObjectNavigator>> autoActions = new HashMap<ObjectNavigator, List<PropertyObjectNavigator>>();
+    public void addAutoAction(ObjectNavigator object, PropertyObjectNavigator... actions) {
+        addAutoAction(object, false, actions);
     }
+    public void addAutoAction(ObjectNavigator object, boolean drop, PropertyObjectNavigator... actions) {
+        List<PropertyObjectNavigator> propertyActions = autoActions.get(object);
+        if(propertyActions==null || drop) {
+            propertyActions = new ArrayList<PropertyObjectNavigator>();
+            autoActions.put(object, propertyActions);
+        }
 
-    public Map<ObjectNavigator, PropertyObjectNavigator> autoActions = new HashMap<ObjectNavigator, PropertyObjectNavigator>();
-    public void addAutoAction(ObjectNavigator object, PropertyObjectNavigator action) {
-        autoActions.put(object, action);
+        for(PropertyObjectNavigator action : actions)
+            propertyActions.add(action);
     }
 
     public List<? extends ClientAction> getApplyActions(RemoteForm<?> form) {

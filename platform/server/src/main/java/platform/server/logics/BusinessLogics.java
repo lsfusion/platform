@@ -31,9 +31,7 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.session.*;
-import platform.server.view.form.CustomObjectImplement;
-import platform.server.view.form.PropertyObjectInterface;
-import platform.server.view.form.RemoteForm;
+import platform.server.view.form.*;
 import platform.server.view.form.client.RemoteFormView;
 import platform.server.view.navigator.*;
 
@@ -424,7 +422,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // запишем текущую дату
         DataSession session = createSession();
-        currentDate.execute(DateConverter.dateToInt(new Date()), session, session.modifier);
+        currentDate.execute(DateConverter.dateToSql(new Date()), session, session.modifier);
         session.apply(this);
         session.close();
     }
@@ -1509,7 +1507,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     protected LP addIfElseUProp(AbstractGroup group, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
         return addIfElseUProp(group, genSID(), caption, prop1, prop2, ifProp, params);
-    }    
+    }
     protected LP addIfElseUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
         return addXSUProp(group,sID,caption,addIfProp(prop1, false, ifProp, params), addIfProp(prop2, true, ifProp, params));
     }
@@ -1532,6 +1530,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
         assert checkSUProps.add(props);
         return addUProp(group,sID,caption,unionType,getUParams(props,(unionType==Union.SUM?1:0)));
+    }
+
+    protected LP addXSUProp(AbstractGroup group, String caption, LP... props) {
+        return addXSUProp(group, genSID(), caption, props);
     }
     // объединяет заведомо непересекающиеся но не классовые свойства
     protected LP addXSUProp(AbstractGroup group, String sID, String caption, LP... props) {
@@ -2095,6 +2097,46 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void setScheduler(Scheduler scheduler) {
         this.scheduler = scheduler;
         this.scheduler.start();
+    }
+
+    protected LP addSAProp(LP lp) {
+        return addSAProp(null, "sys", lp);
+    }
+
+    protected LP addSAProp(AbstractGroup group, String caption, LP lp) {
+        return addProperty(group,new LP<ClassPropertyInterface>(new SeekActionProperty(genSID(),caption,new ValueClass[]{baseClass},lp==null?null:lp.property)));
+    }
+
+    public class SeekActionProperty extends ActionProperty {
+
+        Property property;
+
+        private SeekActionProperty(String sID, String caption, ValueClass[] classes, Property property) {
+            super(sID, caption, classes);
+            this.property = property;
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteFormView executeForm, Map<ClassPropertyInterface, PropertyObjectInterface> mapObjects) throws SQLException {
+            RemoteForm<?> form = executeForm.form;
+            Collection<ObjectImplement> objects;
+            if(property!=null)
+                objects = form.mapper.mapProperty(form.navigatorForm.getPropertyImplement(property)).mapping.values();
+            else
+                objects = form.getObjects();
+            for(Map.Entry<ClassPropertyInterface,DataObject> key : keys.entrySet())
+                if(mapObjects.get(key.getKey())==null)
+                    for(ObjectImplement object : objects) {
+                        ConcreteClass keyClass = form.session.getCurrentClass(key.getValue());
+                        if(keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
+                            Map<OrderView, Object> userSeeks = form.userGroupSeeks.get(object.groupTo);
+                            if(userSeeks==null) {
+                                userSeeks = new HashMap<OrderView, Object>();
+                                form.userGroupSeeks.put(object.groupTo, userSeeks);
+                            }
+                            userSeeks.put(object, key.getValue().object);
+                        }
+                    }
+        }
     }
 
     private Map<String, String> formSets;

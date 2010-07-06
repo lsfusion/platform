@@ -21,7 +21,7 @@ public class ObjectNavigator extends CellViewNavigator implements PropertyInterf
 
     public GroupObjectNavigator groupTo;
 
-    public final String caption;
+    public String caption;
     public boolean show = true;
     public boolean showTree = false;
     public boolean showClass = false;

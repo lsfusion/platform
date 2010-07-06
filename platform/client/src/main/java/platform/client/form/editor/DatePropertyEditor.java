@@ -23,7 +23,7 @@ public class DatePropertyEditor extends JDateChooser
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(format.toPattern(),"##.##.##",' '));
 
         if (value != null)
-            setDate(DateConverter.intToDate((java.sql.Date)value));
+            setDate(DateConverter.sqlToDate((java.sql.Date)value));
         ((JFormattedTextField)dateEditor).selectAll();
 
         if (design != null)
@@ -91,7 +91,7 @@ public class DatePropertyEditor extends JDateChooser
 
     public Object getCellEditorValue() {
 
-        return DateConverter.dateToInt(getDate());
+        return DateConverter.dateToSql(getDate());
     }
 
     public boolean valueChanged() {
