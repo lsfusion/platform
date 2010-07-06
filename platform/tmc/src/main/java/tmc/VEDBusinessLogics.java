@@ -1034,8 +1034,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                     PropertyViewNavigator payCash = getPropertyView(orderSalePayCash);
                     PropertyViewNavigator payCard = getPropertyView(orderSalePayCard);
+                    PropertyViewNavigator toDo = getPropertyView(orderSaleToDo);
+                    PropertyViewNavigator toDoSum = getPropertyView(orderSaleToDoSum);
 
-                    if (payCash != null || payCard != null) {
+                    if (payCash != null || payCard != null || toDo != null || toDoSum != null) {
 
                         ContainerView payContainer = design.addContainer("Платежные средства");
                         payContainer.setContainer(design.getMainContainer());
@@ -1044,6 +1046,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
                         if (payCash != null) design.get(payCash).setContainer(payContainer);
                         if (payCard != null) design.get(payCard).setContainer(payContainer);
+                        if (toDo != null) design.get(toDo).setContainer(payContainer);
+                        if (toDoSum != null) design.get(toDoSum).setContainer(payContainer); 
 
                         design.addIntersection(docSumsContainer, payContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                     }
@@ -1325,8 +1329,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             objArt.show = false; objArt.showClass = false; objArt.showTree = false; objArt.groupTo.banClassView |= ClassViewType.HIDE | ClassViewType.PANEL;
 
-            objDoc.caption = "Клиент";
-
 //            addFixedFilter(new OrFilterNavigator(new CompareFilterNavigator(addPropertyObjectImplement(outStore, objDoc), Compare.EQUALS, shopImplement),
 //                                                    new NotFilterNavigator(new NotNullFilterNavigator(shopImplement))));
 
@@ -1341,6 +1343,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             DefaultFormView design = super.createDefaultRichDesign();
             design.setFocusable(orderClientSum, false);
+
+            design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
 
             return design;
         }
@@ -1401,10 +1405,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objCoupon.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
                 design.addIntersection(design.getGroupObjectContainer(objIssue.groupTo), design.getGroupObjectContainer(objObligation.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
-
-            design.get(getPropertyView(orderSalePay)).constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
-            design.get(getPropertyView(orderSaleDiscountSum)).constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
-            design.get(getPropertyView(orderSalePayNoObligation)).constraints.directions = new SimplexComponentDirections(0.1,-0.1,0,0.1);
 
             design.get(objCoupon.groupTo).gridView.minRowCount = 2;
             design.get(objObligation.groupTo).gridView.minRowCount = 2;
