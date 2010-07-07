@@ -365,7 +365,7 @@ public class BaseUtils {
     public static <K,V> boolean isSubMap(Map<? extends K,? extends V> map1,Map<K,? extends V> map2) {
         for(Map.Entry<? extends K,? extends V> entry : map1.entrySet()) {
             V value2 = map2.get(entry.getKey());
-            if(!(value2!=null && value2.equals(entry.getValue())))
+            if(!(value2!=null && hashEquals(value2,entry.getValue())))
                 return false;
         }
         return true;
