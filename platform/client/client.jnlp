@@ -11,7 +11,7 @@
 </security>
 <resources>
   <j2se version="1.6+"/>
-  <property name="platform.client.forms" value="1,2,3,4,5"/>
+  <property name="platform.client.formset" value="cashregister"/>
   <property name="platform.client.hostname" value="localhost"/>
   <property name="platform.client.hostport" value="7652"/>
   <jar href="client.jar"/>
