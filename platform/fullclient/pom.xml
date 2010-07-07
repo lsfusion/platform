@@ -59,7 +59,7 @@
                     <phase>install</phase>
                     <configuration>
                       <tasks>
-                        <signjar jar="${project.build.directory}/fullclient.jar" keystore="${project.basedir}/src/assemble/keystore" storepass="qwerty" alias="lsf"/>
+                        <signjar jar="${project.build.directory}/fullclient-full.jar" keystore="${project.basedir}/src/assemble/keystore" storepass="qwerty" alias="lsf"/>
                       </tasks>
                     </configuration>
                     <goals>

@@ -14,7 +14,7 @@
   <property name="platform.client.formset" value="cashregister"/>
   <property name="platform.client.hostname" value="localhost"/>
   <property name="platform.client.hostport" value="7652"/>
-  <jar href="client.jar"/>
+  <jar href="client-full.jar"/>
 </resources>
 <application-desc>
 </application-desc>
